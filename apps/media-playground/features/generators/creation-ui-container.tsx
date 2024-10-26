@@ -4,16 +4,10 @@ import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
-import {
-  Dialog,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import { Form } from '@/components/ui/form'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import CostIndicatorV2 from '@/features/generators/cost-indicator-v2'
+import CreationUIMobile from '@/features/generators/creation-ui-mobile'
 import ParameterField from '@/features/generators/parameters/parameter-field'
 import ParameterGroupCollapse from '@/features/generators/parameters/parameter-group-collapse'
 import { groupParameters } from '@/features/generators/utils/parameters'
@@ -23,10 +17,8 @@ import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { cn } from '@/lib/utils'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import axios, { AxiosError } from 'axios'
-import { ArrowLeftIcon, Loader2, PlusIcon, Settings2Icon } from 'lucide-react'
+import { Loader2, Settings2Icon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
@@ -38,9 +30,7 @@ type Props = {
   generator: GeneratorV2
 }
 
-const GeneratorForm = ({ generator }: Props) => {
-  const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
-
+const CreationUIContainer = ({ generator }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -302,6 +292,7 @@ const GeneratorForm = ({ generator }: Props) => {
 
   return (
     <>
+      {/*  // Desktop: hidden on smaller screens */}
       <div
         data-test-id="generator-form"
         className={cn([
@@ -312,32 +303,10 @@ const GeneratorForm = ({ generator }: Props) => {
         {formContent}
       </div>
 
-      <Dialog open={mobileIsFormVisible} onOpenChange={setMobileIsFormVisible}>
-        <DialogTrigger asChild>
-          <div className="lg:hidden fixed bottom-0 flex z-10 bg-accent p-2 w-full justify-center items-center gap-2">
-            <Button onClick={() => setMobileIsFormVisible(true)}>
-              <PlusIcon className="h-4 w-4 mr-1" />
-              Create
-            </Button>
-            <div className="text-sm text-muted-foreground">
-              {generator.name}
-            </div>
-          </div>
-        </DialogTrigger>
-        <DialogContentOverlayBlur className="p-0 rounded-md overflow-hidden bg-muted-darker">
-          <VisuallyHidden>
-            <DialogTitle>{generator.name}</DialogTitle>
-            <DialogDescription>Creation UI</DialogDescription>
-          </VisuallyHidden>
-          {formContent}
-          <DialogPrimitive.Close className="absolute w-9 h-9 top-0 left-0 rounded-t-none rounded-l-none flex items-center justify-center lg:left-2 lg:right-auto lg:top-2 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none bg-accent data-[state=open]:text-muted-foreground">
-            <ArrowLeftIcon className="h-8 w-8" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        </DialogContentOverlayBlur>
-      </Dialog>
+      {/* // Mobile: hidden on larger screens */}
+      <CreationUIMobile generator={generator}>{formContent}</CreationUIMobile>
     </>
   )
 }
 
-export default GeneratorForm
+export default CreationUIContainer

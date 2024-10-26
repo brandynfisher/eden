@@ -90,6 +90,8 @@ export type GeneratorParameterType =
   | 'lora'
   | 'video[]'
   | 'image[]'
+  | 'image[]|video[]'
+  | 'video[]|image[]'
   | 'model[]'
   | 'audio[]'
   | 'string[]'

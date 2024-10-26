@@ -394,7 +394,11 @@ const FileUploader = ({
                 <UploadCloudIcon className="mr-2 h-4 w-4" />
                 <div className="text-sm text-muted-foreground font-semibold">
                   Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
-                  {allowedFileTypes?.join(' or ')}
+                  {allowedFileTypes
+                    ?.map(type =>
+                      maxFiles && maxFiles > 1 ? `${type}s` : type,
+                    )
+                    .join(' or ')}
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
@@ -490,7 +494,9 @@ const FileUploader = ({
                                 })}
                               </div>
                             )}
-                            {file.duration && <div>{file.duration} s</div>}
+                            {file.duration && (
+                              <div>{file.duration.toFixed(2)} s</div>
+                            )}
                           </div>
                         </div>
                       </div>

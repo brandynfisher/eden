@@ -239,37 +239,9 @@ const ParameterField = ({ parameter, tool, form, className }: Props) => {
               </FormItem>
             )
           case 'image[]':
-            return (
-              <FormItem className="mt-0 !p-4 !pt-2">
-                <FormItemHead
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
-                  <Input
-                    className={'hidden'}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value || ''}
-                  />
-                </FormControl>
-                <FileUploader
-                  value={value === null ? [] : value || []}
-                  onChange={onChange}
-                  allowedFileTypes={['image']}
-                  maxFiles={
-                    parameter.max_length === null ||
-                    parameter.max_length === undefined
-                      ? 256
-                      : parameter.max_length || 1
-                  }
-                  allowMultiple={true}
-                />
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
-
           case 'video[]':
+          case 'image[]|video[]':
+          case 'video[]|image[]':
             return (
               <FormItem className="mt-0 !p-4 !pt-2">
                 <FormItemHead
@@ -287,11 +259,15 @@ const ParameterField = ({ parameter, tool, form, className }: Props) => {
                 <FileUploader
                   value={value === null ? [] : value || []}
                   onChange={onChange}
-                  allowedFileTypes={['video']}
+                  allowedFileTypes={parameter.type
+                    .replaceAll('[]', '')
+                    .split('|')}
                   maxFiles={
                     parameter.max_length === null ||
                     parameter.max_length === undefined
-                      ? 128
+                      ? parameter.type.includes('video')
+                        ? 128
+                        : 256
                       : parameter.max_length || 1
                   }
                   allowMultiple={parameter.max_length !== 1}
@@ -320,11 +296,11 @@ const ParameterField = ({ parameter, tool, form, className }: Props) => {
                 <FileUploader
                   value={value === null ? '' : value || ''}
                   onChange={onChange}
-                  allowedFileTypes={parameter.type.split('|')} // <-- Pass allowed types
+                  allowedFileTypes={parameter.type.split('|')}
                   maxFiles={1}
                   allowMultiple={false}
                 />
-                {/* //@todo: enable this by changing name */}
+                {/* //@todo: MaskPainter Inpaint - enable this by changing name */}
                 {parameter.name === 'mask_image_NOTYETNOTYETNOTYET' ? (
                   <MaskingCanvas baseImageFieldName={'image'} form={form} />
                 ) : null}

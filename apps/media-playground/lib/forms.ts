@@ -185,8 +185,9 @@ export function createZodParameterSchema(
     case 'video|image':
       return createFileUrlSchema(parameter)
     case 'video[]':
-      return createFileUrlArraySchema(parameter)
     case 'image[]':
+    case 'image[]|video[]':
+    case 'video[]|image[]':
       return createFileUrlArraySchema(parameter)
     default:
       throw new Error(`${parameter.type} not supported.`)
