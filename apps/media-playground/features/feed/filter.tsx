@@ -20,7 +20,7 @@ type Props = {
 }
 
 export const Filter = ({ options, onChange }: Props) => {
-  console.log({ options })
+  // console.log({ options })
   const handleFilterChange = (value: string) => {
     const selectedOption = options.find(
       option => JSON.stringify(option.value) === value,
