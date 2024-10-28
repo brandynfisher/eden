@@ -81,7 +81,6 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
   notify:
-    needs: build-and-push-to-ghcr
     runs-on: ubuntu-latest
 
     steps:

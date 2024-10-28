@@ -71,7 +71,6 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
 
   notify:
-    needs: build-and-push-to-ghcr
     runs-on: ubuntu-latest
 
     steps:

@@ -68,7 +68,6 @@ jobs:
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
             "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"
   notify:
-    needs: build-and-push-to-ghcr
     runs-on: ubuntu-latest
 
     steps:
