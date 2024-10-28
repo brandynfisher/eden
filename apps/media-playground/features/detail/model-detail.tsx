@@ -33,7 +33,7 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
     useState(false)
   const observedRef = useRef<HTMLDivElement>(null)
 
-  console.log({ shouldRenderRecentCreations, ref: observedRef.current })
+  // console.log({ shouldRenderRecentCreations, ref: observedRef.current })
 
   useEffect(() => {
     let observer: IntersectionObserver

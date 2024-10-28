@@ -1,12 +1,13 @@
 import { User } from '../../models/Creator'
 import { ModelV2 } from '../../models/v2/ModelV2'
+import { s3ThumbnailUrl } from '../../plugins/s3Plugin'
 import ModelV2Repository from '../../repositories/ModelV2Repository'
 import {
   ModelsV2GetArguments,
   ModelsV2ListArguments,
   ModelsV2PatchArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const listModels = async (
   request: FastifyRequest,
@@ -50,6 +51,7 @@ export const listModels = async (
 }
 
 export const getModel = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -86,6 +88,8 @@ export const getModel = async (
       })
     }
   }
+
+  model.thumbnail = s3ThumbnailUrl(server, model.thumbnail || '', 1024)
 
   return reply.status(200).send({ model })
 }

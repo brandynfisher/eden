@@ -22,10 +22,7 @@ type Props = {
 
 const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
   return (
-    <Card
-      className="relative overflow-hidden border-0 z-10 transition-shadow hover:shadow-[0_0px_8px_0_#030712,0_0px_3px_-1px_#030712] group"
-      style={style}
-    >
+    <Card className="relative overflow-hidden z-10 group" style={style}>
       {!model.public ? <PrivateIcon /> : null}
       {onClick ? (
         <div
@@ -39,7 +36,7 @@ const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
       <Link
         href={`/models/${model._id}`}
         prefetch={false}
-        className="relative w-full block"
+        className="relative w-full block p-4 border-b-0 bg-accent"
       >
         <div className="absolute bottom-2 right-2 pointer-events-none">
           <Badge variant="secondary" className="text-xs bg-opacity-80">
@@ -47,6 +44,7 @@ const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
           </Badge>
         </div>
         <CardImage
+          className="rounded-md"
           media={{
             url: model.thumbnail,
             thumbnail: model.thumbnail,

@@ -96,7 +96,7 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [async (request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => creationUpdate(request, reply),
+    handler: (request, reply) => creationUpdate(server, request, reply),
   })
 
   server.patch('/v2/creations/bulk', {

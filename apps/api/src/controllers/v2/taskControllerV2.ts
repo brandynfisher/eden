@@ -282,7 +282,11 @@ const injectResultUrls = (
   }
 }
 
-export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
+export const getTask = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   const { userId } = request.user
   const { taskId } = request.params as TasksV2GetArguments
 
@@ -309,6 +313,12 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
     return reply.status(404).send({
       message: 'Task not found',
     })
+  }
+
+  if (task.result) {
+    task.result = task.result.map(result =>
+      injectResultUrls(server, result, task.output_type === 'lora'),
+    )
   }
 
   return reply.status(200).send({ task })
@@ -940,6 +950,15 @@ export const publishTaskResult = async (
 
     await taskDocument.save()
     server.log.info(`Task document updated successfully for task ID: ${taskId}`)
+
+    if (savedCreation) {
+      savedCreation.url = s3Url(server, savedCreation.url || '')
+      savedCreation.thumbnail = s3ThumbnailUrl(
+        server,
+        savedCreation.thumbnail || '',
+        1024,
+      )
+    }
 
     return reply.status(200).send({ creation: savedCreation })
   } catch (error) {

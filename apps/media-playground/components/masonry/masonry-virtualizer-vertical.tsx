@@ -73,7 +73,6 @@ const MasonryVirtualizerVertical = ({
 
   const queryClient = useQueryClient()
 
-  // console.log({ queryKey })
   const onUpdate = useCallback(
     (updatedItem: RowItem) => {
       // console.log(
@@ -135,6 +134,7 @@ const MasonryVirtualizerVertical = ({
     data,
     error,
     // isFetching,
+    isLoading,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
@@ -286,6 +286,8 @@ const MasonryVirtualizerVertical = ({
               ) : null}
             </div>
           ) : null}
+
+          {isLoading ? <MasonrySkeleton /> : null}
 
           {rowVirtualizer
             .getVirtualItems()

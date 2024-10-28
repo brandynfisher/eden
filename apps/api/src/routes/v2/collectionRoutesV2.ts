@@ -50,7 +50,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [request => maybeAuthEden2(server, request)],
-    handler: (request, reply) => getCollection(request, reply),
+    handler: (request, reply) => getCollection(server, request, reply),
   })
 
   server.post('/v2/collections', {

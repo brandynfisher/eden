@@ -15,12 +15,13 @@ const config = {
     container: {
       center: true,
       padding: '2rem',
+    },
+    extend: {
       screens: {
+        xs: '540px',
         '2xl': '1400px',
         '3xl': '1536px',
       },
-    },
-    extend: {
       colors: {
         border: 'hsl(var(--border) / <alpha-value>)',
         input: 'hsl(var(--input) / <alpha-value>)',
