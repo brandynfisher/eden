@@ -59,6 +59,8 @@ jobs:
             "EDEN2_FRONTEND_URL=https://beta.eden.art"
             "CLERK_JWT_KEY=${{ secrets.CLERK_JWT_KEY }}"
   notify:
+    if: always()
+    needs: build-and-push-to-ghcr
     runs-on: ubuntu-latest
 
     steps:

@@ -8,8 +8,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { UserProfile } from '@clerk/nextjs'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import React from 'react'
 
 const ManageAccountCard = () => {
@@ -25,6 +33,15 @@ const ManageAccountCard = () => {
             <Button>Manage Account</Button>
           </DialogTrigger>
           <DialogContent className="!max-w-[calc(100%-32px)] sm:!max-w-fit !p-0 !border-none !bg-transparent">
+            <VisuallyHidden>
+              <DialogHeader>
+                <DialogTitle>Manage Account</DialogTitle>
+                <DialogDescription>
+                  update profile image, email, etc
+                </DialogDescription>
+              </DialogHeader>
+            </VisuallyHidden>
+
             <UserProfile routing="hash" />
           </DialogContent>
         </Dialog>
