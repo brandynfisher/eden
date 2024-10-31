@@ -63,12 +63,10 @@ export const LightboxGalleryItem = ({
       content={
         item.url?.endsWith('.mp4') ? (
           <VideoResult
-            videoUrl={getCloudfrontUrl(item.url) || siteConfig.mediaErrorUrl}
+            videoUrl={item.url || siteConfig.mediaErrorUrl}
             width={width}
             height={height}
-            posterUrl={
-              getCloudfrontUrl(item.thumbnail) || siteConfig.mediaErrorUrl
-            }
+            posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
             muted={true}
             loop={true}
             autoPlay={true}
