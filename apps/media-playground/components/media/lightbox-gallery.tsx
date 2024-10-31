@@ -51,14 +51,12 @@ export const LightboxGalleryItem = ({
       original={
         item.url?.endsWith('.mp4')
           ? undefined
-          : customImageLoader({ src: item.url || '', width }) ||
-            siteConfig.mediaErrorUrl
+          : item.url || siteConfig.mediaErrorUrl
       }
       thumbnail={
         item.thumbnail?.endsWith('.mp4')
           ? undefined
-          : customImageLoader({ src: item.thumbnail || '', width }) ||
-            siteConfig.mediaErrorUrl
+          : item.thumbnail || siteConfig.mediaErrorUrl
       }
       width={sizeOnLoad ? undefined : width}
       height={sizeOnLoad ? undefined : height}
