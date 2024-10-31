@@ -25,6 +25,7 @@ type GalleryItem = {
 
 type LightboxGalleryItemProps = {
   item: GalleryItem
+  unoptimized?: boolean
   forceRender?: boolean
   className?: string
   sizeOnLoad?: boolean
@@ -33,6 +34,7 @@ type LightboxGalleryItemProps = {
 export const LightboxGalleryItem = ({
   sizeOnLoad,
   item,
+  unoptimized,
   forceRender,
   className,
 }: LightboxGalleryItemProps) => {
@@ -94,6 +96,7 @@ export const LightboxGalleryItem = ({
                 ev.stopPropagation()
                 open(ev)
               }}
+              unoptimized={unoptimized}
               src={item.thumbnail || siteConfig.mediaErrorUrl}
               alt={item.url || ''}
               width={width}

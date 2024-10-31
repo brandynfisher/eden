@@ -117,17 +117,18 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                   }}
                 >
                   <div
-                    className={
+                    className={cn([
+                      'max-h-[calc(60dvh_-_72.4px)]',
                       (item.args.width ?? 1024) / (item.args.height ?? 1024) ||
                       ((item.output_type === 'audio' ? 3 : 1) < 1 &&
                         (item.args.n_samples || 1) === 1)
-                        ? 'h-[calc(60dvh_-_72.4px)] flex justify-center max-w-full max-h-full'
+                        ? 'h-[calc(60dvh_-_72.4px)] flex justify-center max-w-full'
                         : (item.args.width ?? 1024) /
                             (item.args.height ?? 1024) >
                             1 && (item.args.n_samples || 1) === 1
                         ? 'w-[calc(60dvh_-_72.4px)] max-h-full max-w-full'
-                        : ''
-                    }
+                        : '',
+                    ])}
                   >
                     <div
                       className="relative bg-accent z-10 rounded-md max-w-full max-h-full"

@@ -11,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { TaskV2Result } from '@edenlabs/eden-sdk'
 import { ImageIcon, XIcon } from 'lucide-react'
 import React from 'react'
@@ -58,13 +57,12 @@ export const IntermediateOutputsDialog = ({ result }: Props) => {
                     <div className="relative flex justify-center bg-muted-darker p-2 rounded-b-md">
                       {output[1].map((mediaResult, index) => (
                         <LightboxGalleryItem
-                          key={`${mediaResult.filename}_${index}`}
+                          key={`${mediaResult.url}_${index}`}
                           forceRender={false}
+                          unoptimized={true}
                           item={{
-                            url: getCloudfrontOriginalUrl(mediaResult.filename),
-                            thumbnail: getCloudfrontOriginalUrl(
-                              mediaResult.filename,
-                            ),
+                            url: mediaResult.url,
+                            thumbnail: mediaResult.url,
                             width: mediaResult.mediaAttributes?.width,
                             height: mediaResult.mediaAttributes?.height,
                           }}

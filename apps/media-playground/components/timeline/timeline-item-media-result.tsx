@@ -28,10 +28,11 @@ export const MediaResult = ({
       // className="relative bg-accent z-10 rounded-md"
       className={cn([
         'relative bg-accent z-10 rounded-md',
-        (task.args.width ?? 1024) / (task.args.height ?? 1024) ||
+        'max-h-[calc(60dvh_-_72.4px)]',
+        (task.args.width ?? 1024) / (task.args.height ?? 1024) < 1 ||
         ((task.output_type === 'audio' ? 3 : 1) < 1 &&
           (task.args.n_samples || 1) === 1)
-          ? 'h-[calc(60dvh_-_72.4px)] flex justify-center max-w-full max-h-full'
+          ? 'h-full max-w-full flex justify-center '
           : (task.args.width ?? 1024) / (task.args.height ?? 1024) > 1 &&
             (task.args.n_samples || 1) === 1
           ? 'w-[calc(60dvh_-_72.4px)] max-h-full max-w-full'
@@ -41,7 +42,7 @@ export const MediaResult = ({
         aspectRatio:
           result?.mediaAttributes?.aspectRatio ||
           (task.output_type === 'audio' ? 3 : 1),
-        height: '-webkit-fill-available',
+        // height: '-webkit-fill-available',
       }}
     >
       {!result.creation?.public ? <PrivateIcon /> : null}

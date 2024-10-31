@@ -7,6 +7,7 @@ import {
 import ParameterField from '@/features/generators/parameters/parameter-field'
 import { cn } from '@/lib/utils'
 import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { useWatch } from 'react-hook-form'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
@@ -14,20 +15,38 @@ type Props = {
   tool: GeneratorV2
   form: UseFormReturn
 }
+
 const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
+  const toggleName = group.toggle?.name || ''
+  const hasToggle = Boolean(group.toggle)
+
+  // Use useWatch to derive isOpen directly from the form's toggle field
+  const isOpen = useWatch({
+    control: form.control,
+    name: toggleName,
+    defaultValue: false, //@todo: test this with "use preset"
+  })
+
+  const handleTriggerClick = () => {
+    if (!hasToggle) return
+
+    // Toggle the current value of the switch in the form
+    form.setValue(toggleName, !isOpen)
+  }
+
+  // Early return if conditions are not met
   if (
+    !group.toggle ||
     !group.groupParameters ||
     !group.groupParameters.length ||
-    !group.toggle
+    !hasToggle
   ) {
     return null
   }
 
-  const isOpen = form.watch(group.toggle.name)
-
   return (
     <Collapsible open={isOpen}>
-      <CollapsibleTrigger asChild>
+      <CollapsibleTrigger onClick={handleTriggerClick}>
         <ParameterField
           form={form}
           tool={tool}
@@ -47,7 +66,7 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
             : '',
         ])}
       >
-        {group.groupParameters?.map(param => (
+        {group.groupParameters.map(param => (
           <ParameterField
             form={form}
             key={param.name}

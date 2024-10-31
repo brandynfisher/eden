@@ -262,6 +262,51 @@ export const listTasks = async (
 
   return reply.status(200).send(paginatedResponse)
 }
+//
+// const injectResultUrls = (
+//   server: FastifyInstance,
+//   result: TaskV2Result,
+//   isModelResult: boolean,
+// ): TaskV2Result => {
+//   if (!result.filename) {
+//     return result
+//   }
+//
+//   const thumbnailName = isModelResult ? result.thumbnail || '' : result.filename
+//   const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
+//
+//   // inject urls for each property of result.intermediateOutput, each property contains an array of partial TaskV2Results
+//
+//
+//
+//   return {
+//     ...result,
+//     url: s3Url(server, result.filename),
+//     thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+//   }
+// }
+//
+
+const injectUrlsToTaskV2Result = (
+  server: FastifyInstance,
+  taskResult: TaskV2Result,
+  isModelResult: boolean,
+): TaskV2Result => {
+  if (!taskResult.filename) {
+    return taskResult
+  }
+
+  const thumbnailName = isModelResult
+    ? taskResult.thumbnail || ''
+    : taskResult.filename
+  const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
+
+  return {
+    ...taskResult,
+    url: s3Url(server, taskResult.filename),
+    thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+  }
+}
 
 const injectResultUrls = (
   server: FastifyInstance,
@@ -275,11 +320,36 @@ const injectResultUrls = (
   const thumbnailName = isModelResult ? result.thumbnail || '' : result.filename
   const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
 
-  return {
+  const enrichedResult = {
     ...result,
     url: s3Url(server, result.filename),
     thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
   }
+
+  if (result.intermediateOutputs) {
+    enrichedResult.intermediateOutputs = Object.fromEntries(
+      Object.entries(result.intermediateOutputs).map(
+        ([key, partialResults]) => {
+          console.log(key, partialResults)
+          if (Array.isArray(partialResults)) {
+            return [
+              key,
+              partialResults.map(partialResult =>
+                injectUrlsToTaskV2Result(
+                  server,
+                  partialResult as TaskV2Result,
+                  isModelResult,
+                ),
+              ),
+            ]
+          }
+          return [key, partialResults]
+        },
+      ),
+    )
+  }
+
+  return enrichedResult
 }
 
 export const getTask = async (
@@ -398,7 +468,10 @@ export const subscribeTaskUpdates = async (
 
   reply.sse(
     // gather all accumulated emit calls for this tick
-    (async function* () {
+    (async function* (): AsyncGenerator<{
+      event: string
+      data: string
+    }> {
       // server.log.info(`SSE V2 to user ${userId}`)
       try {
         // handle task update emits

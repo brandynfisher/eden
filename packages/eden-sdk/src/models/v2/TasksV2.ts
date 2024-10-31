@@ -175,23 +175,23 @@ export type TaskV2Args = {
 }
 
 export type MediaResult = {
+  url?: string
+  thumbnail?: string
   filename: string
   mediaAttributes?: MediaAttributes
 }
 
 export type TaskV2Result = {
-  url?: string
-  thumbnail?: string
-  filename: string
-  metadata?: string | null
   mediaAttributes?: MediaAttributes & { type: GeneratorOutputTypeV2 }
+  metadata?: string | null
   published?: boolean
   model?: ModelV2
   creation?: CreationV2
   intermediateOutputs?: {
     inpaint_preview?: MediaResult[]
+    controlnet_signal?: MediaResult[]
   }
-}
+} & MediaResult
 
 export type TaskV2 = {
   _id: string
