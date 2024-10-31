@@ -30,6 +30,8 @@ type Props = {
   generator: GeneratorV2
 }
 
+const RUNWAY_TOOL_KEYS = ['runway', 'reel']
+
 const CreationUIContainer = ({ generator }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -142,6 +144,8 @@ const CreationUIContainer = ({ generator }: Props) => {
     () => (optionalParameters ? groupParameters(optionalParameters) : []),
     [optionalParameters],
   )
+
+  const isRunwayPoweredTool = RUNWAY_TOOL_KEYS.includes(generator.key)
 
   const formContent = (
     <Form {...form}>
@@ -270,6 +274,24 @@ const CreationUIContainer = ({ generator }: Props) => {
         </div>
 
         <div className="flex gap-2 justify-end p-2 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
+          {isRunwayPoweredTool ? (
+            <div className="flex items-center mr-auto">
+              <a
+                href={'https://runwayml.com'}
+                target={'_blank'}
+                rel="noreferrer noopener nofollow"
+                className="dark:invert"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="object-contain h-4"
+                  alt="powered by runway"
+                  src="https://runway-static-assets.s3.amazonaws.com/site/images/api-page/powered-by-runway-black.png"
+                ></img>
+              </a>
+            </div>
+          ) : null}
+
           <CostIndicatorV2 formula={generator.costEstimate} />
 
           <Button

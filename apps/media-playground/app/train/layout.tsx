@@ -27,6 +27,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             .filter(generator => generator.outputType === 'lora')
             .map(generator => ({
               label: generator.name,
+              private: generator.private,
               segments: [baseSegment, generator.key],
               description: generator.description,
             })),

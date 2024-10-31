@@ -27,6 +27,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             .filter(generator => generator.outputType === 'image')
             .map(generator => ({
               label: generator.name,
+              private: generator.private,
               segments: [baseSegment, 'image', generator.key],
               description: generator.description,
             })),
@@ -37,6 +38,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             .filter(generator => generator.outputType === 'video')
             .map(generator => ({
               label: generator.name,
+              private: generator.private,
               segments: [baseSegment, 'video', generator.key],
               description: generator.description,
             })),
@@ -47,6 +49,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             .filter(generator => generator.outputType === 'audio')
             .map(generator => ({
               label: generator.name,
+              private: generator.private,
               segments: [baseSegment, 'audio', generator.key],
               description: generator.description,
             })),

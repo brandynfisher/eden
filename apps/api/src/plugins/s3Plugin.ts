@@ -322,7 +322,7 @@ export const s3ThumbnailUrl = (
     ImageFormats.WEBP,
   )
 
-  console.log('thumbnail', { url: `${baseUrl}/${filenameWithNewExtension}` })
+  // console.log('thumbnail', { url: `${baseUrl}/${filenameWithNewExtension}` })
   return `${baseUrl}/${filenameWithNewExtension}`
 }
 

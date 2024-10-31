@@ -111,6 +111,11 @@ const RouterTabs = ({ tabs, globalFilterOptions, baseQuery }: Props) => {
     }
   }, [activeTab, globalFilterQuery, tabFilterQuery, tabs])
 
+  useEffect(() => {
+    // Update activeTab when search params change (e.g., external navigation)
+    setActiveTab(initialTab)
+  }, [initialTab])
+
   return (
     <Tabs
       value={activeTab}
