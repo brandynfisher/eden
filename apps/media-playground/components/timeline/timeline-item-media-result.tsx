@@ -28,14 +28,14 @@ export const MediaResult = ({
       // className="relative bg-accent z-10 rounded-md"
       className={cn([
         'relative bg-accent z-10 rounded-md',
-        'max-h-[calc(60dvh_-_72.4px)]',
+        'max-h-[calc(60vh_-_72.4px)]',
         (task.args.width ?? 1024) / (task.args.height ?? 1024) < 1 ||
         ((task.output_type === 'audio' ? 3 : 1) < 1 &&
           (task.args.n_samples || 1) === 1)
           ? 'h-full max-w-full flex justify-center '
           : (task.args.width ?? 1024) / (task.args.height ?? 1024) > 1 &&
             (task.args.n_samples || 1) === 1
-          ? 'w-[calc(60dvh_-_72.4px)] max-h-full max-w-full'
+          ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
           : '',
       ])}
       style={{
@@ -83,7 +83,7 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
           'relative',
           (result?.mediaAttributes?.aspectRatio || 1) < 1 &&
           (task.args.n_samples || 1) === 1
-            ? 'max-h-[60dvh] flex justify-center'
+            ? 'max-h-[60vh] flex justify-center'
             : '',
         ])}
       >

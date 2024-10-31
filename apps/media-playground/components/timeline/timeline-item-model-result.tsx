@@ -15,7 +15,7 @@ type Props = {
 const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
   return (
     <div className="p-2 bg-secondary rounded-md ">
-      <div className="max-h-[60dvh] aspect-square rounded-md overflow-hidden">
+      <div className="max-h-[60vh] aspect-square rounded-md overflow-hidden">
         <Image
           loader={customImageLoader}
           src={result.thumbnail || ''}

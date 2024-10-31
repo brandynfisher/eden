@@ -626,7 +626,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
             JSON.stringify({
               event: ServerEventName.MessageError,
               data: {
-                message: `onMessage::error - invalid msgJson - received message: ${message.toString()}`,
+                message: `onMessage::error - invalid msgJson - received message:  ${message.toString()}`,
               },
             }),
           )
