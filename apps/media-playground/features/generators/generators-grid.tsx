@@ -71,7 +71,7 @@ const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
   return (
     <Accordion
       type="multiple"
-      defaultValue={accordionState}
+      defaultValue={outputType.length === 1 ? outputType[0] : accordionState}
       onValueChange={handleAccordionChange}
     >
       {showFeatured ? (

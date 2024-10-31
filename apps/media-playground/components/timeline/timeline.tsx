@@ -122,8 +122,11 @@ const Timeline = ({ generator }: Props) => {
       {generator.outputType !== 'lora' ? (
         <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 my-2 bg-muted-darker">
           <div className="flex items-center justify-between gap-2">
-            <label className="text-sm">Show all tool results</label>
+            <label className="text-sm" htmlFor={'show-all-tool-results'}>
+              Show all tool results
+            </label>
             <Switch
+              id="show-all-tool-results"
               defaultChecked={showAllToolResults}
               onCheckedChange={setShowAllToolResults}
             />
