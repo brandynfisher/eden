@@ -19,17 +19,18 @@ import { Switch } from '@/components/ui/switch'
 import MaskingCanvas from '@/features/generators/masking-canvas'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
-import { Suspense } from 'react'
+import { ReactNode, Suspense } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   parameter: GeneratorParameterV2
   tool: GeneratorV2
   form: UseFormReturn
+  icon?: ReactNode
   className?: string
 }
 
-const ParameterField = ({ parameter, tool, form, className }: Props) => {
+const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
   const { name, label } = parameter
 
   return (
@@ -107,6 +108,7 @@ const ParameterField = ({ parameter, tool, form, className }: Props) => {
                 ])}
               >
                 <FormItemHead
+                  icon={icon}
                   label={label}
                   description={parameter.description}
                 />
