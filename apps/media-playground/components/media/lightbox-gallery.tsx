@@ -85,7 +85,6 @@ export const LightboxGalleryItem = ({
             `rounded-md overflow-hidden`,
             isLoaded ? 'flex max-w-full max-h-full ' : 'w-full h-full',
           ])}
-          // style={{ height: isLoaded ? '-webkit-fill-available' : '' }}
           ref={hoverRef}
         >
           {item.thumbnail?.endsWith('.mp4') ? null : (
@@ -126,6 +125,7 @@ export const LightboxGalleryItem = ({
               {item.thumbnail?.endsWith('.mp4') || forceRender || hovered ? (
                 <VideoResult
                   className={cn([
+                    'rounded-md',
                     item.thumbnail?.endsWith('.mp4')
                       ? ''
                       : 'absolute inset-0 cursor-zoom-in',

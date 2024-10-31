@@ -83,7 +83,7 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
           'relative',
           (result?.mediaAttributes?.aspectRatio || 1) < 1 &&
           (task.args.n_samples || 1) === 1
-            ? 'h-[60dvh] flex justify-center'
+            ? 'max-h-[60dvh] flex justify-center'
             : '',
         ])}
       >

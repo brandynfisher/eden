@@ -57,6 +57,7 @@ export const IntermediateOutputsDialog = ({ result }: Props) => {
                     <div className="relative flex justify-center bg-muted-darker p-2 rounded-b-md">
                       {output[1].map((mediaResult, index) => (
                         <LightboxGalleryItem
+                          className={'h-[calc(60dvh_-_72.4px)]'}
                           key={`${mediaResult.url}_${index}`}
                           forceRender={false}
                           unoptimized={true}
