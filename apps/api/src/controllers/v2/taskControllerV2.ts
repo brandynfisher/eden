@@ -126,7 +126,17 @@ export const createTask = async (
 
     const task = modalResponse.data as TaskV2
 
-    return reply.status(200).send({ task })
+    const taskWithUrls =
+      task && task.result
+        ? {
+            ...task,
+            result: task.result.map(result =>
+              injectResultUrls(server, result, task.output_type === 'lora'),
+            ),
+          }
+        : task
+
+    return reply.status(200).send({ task: taskWithUrls })
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage =

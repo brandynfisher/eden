@@ -1,6 +1,6 @@
 {
   "name": "@edenlabs/eden-sdk",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "SDK for interacting with the Eden API",
   "source": "src/index.ts",
   "main": "dist/index.js",

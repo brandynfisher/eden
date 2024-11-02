@@ -59,11 +59,12 @@ type GeneratorsGridProps = {
 const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
   const { generators } = useGeneratorsListQuery({ outputType })
 
-  const [accordionState, setAccordionState] = useLocalStorage<
-    GeneratorOutputTypeV2 | string[]
-  >('generatorsGridAccordionState', ['featured', ...outputType])
+  const [accordionState, setAccordionState] = useLocalStorage<string[]>(
+    'generatorsGridAccordionState',
+    ['featured', ...outputType],
+  )
 
-  const handleAccordionChange = (value: GeneratorOutputTypeV2 | string[]) => {
+  const handleAccordionChange = (value: string[]) => {
     setAccordionState(value)
   }
 
