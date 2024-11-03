@@ -122,7 +122,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                       (item.args.width ?? 1024) / (item.args.height ?? 1024) ||
                       ((item.output_type === 'audio' ? 3 : 1) < 1 &&
                         (item.args.n_samples || 1) === 1)
-                        ? ' h-full flex justify-center max-w-full'
+                        ? 'h-[calc(60dvh_-_72.4px)] max-h-full flex justify-center max-w-full'
                         : (item.args.width ?? 1024) /
                             (item.args.height ?? 1024) >
                             1 && (item.args.n_samples || 1) === 1
