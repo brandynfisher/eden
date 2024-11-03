@@ -340,7 +340,7 @@ const injectResultUrls = (
     enrichedResult.intermediateOutputs = Object.fromEntries(
       Object.entries(result.intermediateOutputs).map(
         ([key, partialResults]) => {
-          console.log(key, partialResults)
+          // console.log(key, partialResults)
           if (Array.isArray(partialResults)) {
             return [
               key,
