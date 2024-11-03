@@ -8,9 +8,11 @@ import { ClockArrowDownIcon, StarIcon } from 'lucide-react'
 
 const FeedTabs = () => {
   // Define a base query for the initial state to prevent any unfiltered requests
-  const creationsBaseQuery = {
-    collection: env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
-  }
+  const creationsBaseQuery = env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
+    ? {
+        collection: env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
+      }
+    : undefined
 
   // Define the tabs with filter options, ensuring we start with a consistent query
   const tabs: RouterTab[] = [

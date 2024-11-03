@@ -17,8 +17,7 @@ export const env = {
   NEXT_PUBLIC_AWS_CLOUDFRONT_URL:
     process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL || '',
   NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID:
-    process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID ||
-    '670a7250ff7f3809e9b380bf',
+    process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID || '',
 
   // serverRuntimeConfig
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
