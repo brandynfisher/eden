@@ -3,12 +3,13 @@
 import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
+import { env } from '@/lib/config'
 import { ClockArrowDownIcon, StarIcon } from 'lucide-react'
 
 const FeedTabs = () => {
   // Define a base query for the initial state to prevent any unfiltered requests
   const creationsBaseQuery = {
-    collection: '670a7250ff7f3809e9b380bf', // @todo: pull from config per ENV
+    collection: env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
   }
 
   // Define the tabs with filter options, ensuring we start with a consistent query
