@@ -27,6 +27,7 @@ const FormItemHead = ({ icon, label, description }: Props) => {
             <TooltipTrigger
               className="hover:text-accent-foreground cursor-pointer flex items-center"
               onClick={ev => ev.preventDefault()}
+              asChild
             >
               <InfoIcon className="h-4 w-4" />
             </TooltipTrigger>

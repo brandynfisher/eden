@@ -7,6 +7,7 @@ import StringArrayInput from '@/components/form/input/string-array-input'
 import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
+import { SwitchNoButton } from '@/components/ui/custom/switch-no-button'
 import {
   FormControl,
   FormField,
@@ -15,7 +16,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import MaskingCanvas from '@/features/generators/masking-canvas'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
@@ -113,7 +113,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   description={parameter.description}
                 />
                 <FormControl id={name} className="ml-4">
-                  <Switch
+                  <SwitchNoButton
                     className="!mt-0 data-[state=unchecked]:!bg-gray-400 data-[state=unchecked]:dark:!bg-gray-700"
                     checked={value}
                     onCheckedChange={checked => onChange(checked)}
