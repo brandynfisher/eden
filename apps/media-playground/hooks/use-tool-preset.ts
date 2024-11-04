@@ -10,7 +10,9 @@ type GenericValues = {
 }
 
 export const useToolPreset = () => {
-  const [presetValues, setPresetValues] = useState<GenericValues | false>(false)
+  const [presetValues, setPresetValues] = useState<GenericValues | undefined>(
+    undefined,
+  )
   const queryParams = useSearchParams()
 
   // Extract query parameters
@@ -42,12 +44,10 @@ export const useToolPreset = () => {
   })
 
   // console.log({taskData, isTaskLoading, taskError})
-
   useEffect(() => {
     const derivePresetValues = () => {
       let newPreset: GenericValues = {}
 
-      // Handle 'lora' parameter
       if (loraParam) {
         newPreset = {
           ...newPreset,
@@ -56,7 +56,6 @@ export const useToolPreset = () => {
         }
       }
 
-      // Handle 'creation' parameter
       if (creationParam && creationData) {
         const args = creationData.args as GenericValues
         if (args && typeof args === 'object') {
@@ -69,7 +68,6 @@ export const useToolPreset = () => {
         }
       }
 
-      // Handle 'task' parameter
       if (taskParam && taskData) {
         const args = taskData.args as GenericValues
         if (args && typeof args === 'object') {
@@ -99,11 +97,9 @@ export const useToolPreset = () => {
       )
 
       // If any presets are set, update the state
-      if (Object.keys(filteredPreset).length > 0) {
-        setPresetValues(filteredPreset)
-      } else {
-        setPresetValues(false)
-      }
+      setPresetValues(
+        Object.keys(filteredPreset).length > 0 ? filteredPreset : undefined,
+      )
     }
 
     derivePresetValues()

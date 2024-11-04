@@ -26,7 +26,10 @@ const SampleCountSelector = ({ parameter }: Props) => {
               <SelectInput
                 placeholder={'Sample Count'}
                 label={'Sample Count'}
-                onChange={newVal => onChange(Number(newVal))}
+                onChange={newVal => {
+                  if (!newVal) return
+                  return onChange(Number(newVal))
+                }}
                 value={value}
                 options={[1, 2, 3, 4]}
                 suffix={'x'}
