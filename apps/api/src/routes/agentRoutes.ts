@@ -1,3 +1,4 @@
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 import {
   createAgent,
   deleteAgent,
@@ -27,7 +28,10 @@ const agentRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [
+      (request, reply) =>
+        isAuthEden2(server, request, reply, [FeatureFlag.AssistantAccess]),
+    ],
     handler: (request, reply) => getAgent(server, request, reply),
   })
 
@@ -55,7 +59,10 @@ const agentRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [
+      (request, reply) =>
+        isAuthEden2(server, request, reply, [FeatureFlag.AssistantAccess]),
+    ],
     handler: (request, reply) => createAgent(server, request, reply),
   })
 
@@ -87,7 +94,10 @@ const agentRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [
+      (request, reply) =>
+        isAuthEden2(server, request, reply, [FeatureFlag.AssistantAccess]),
+    ],
     handler: (request, reply) => updateAgent(server, request, reply),
   })
 
@@ -107,7 +117,10 @@ const agentRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({}),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [
+      (request, reply) =>
+        isAuthEden2(server, request, reply, [FeatureFlag.AssistantAccess]),
+    ],
     handler: (request, reply) => deleteAgent(request, reply),
   })
 }

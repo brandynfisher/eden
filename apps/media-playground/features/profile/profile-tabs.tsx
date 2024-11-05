@@ -11,7 +11,7 @@ import { useParams } from 'next/navigation'
 
 const ProfileTabs = () => {
   const params = useParams<{ name: string }>()
-  const { user } = useAuthState()
+  const { user, hasAssistantAccess } = useAuthState()
   const { creator } = useCreatorQuery({ key: params.name })
 
   const tabs = [
@@ -40,14 +40,17 @@ const ProfileTabs = () => {
         <CollectionsFeed query={{ user: creator._id }} />
       ) : null,
     },
-    {
+  ]
+
+  if (hasAssistantAccess) {
+    tabs.push({
       key: 'assistants',
       title: 'Assistants',
       content: creator ? (
         <AssistantsFeed query={{ user: creator._id }} />
       ) : null,
-    },
-  ]
+    })
+  }
 
   return <RouterTabs tabs={tabs} />
 }

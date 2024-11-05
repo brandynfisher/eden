@@ -1,9 +1,10 @@
-import { eden2EarlyAccessCheck, isAllowedAccess } from '../lib/authorization'
-import { checkUserFlags } from '../lib/data'
-import { ApiKey } from '../models/ApiKey'
-import { User } from '../models/Creator'
-import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { eden2EarlyAccessCheck, isAllowedAccess } from '../lib/authorization';
+import { checkUserFlags } from '../lib/data';
+import { ApiKey } from '../models/ApiKey';
+import { User } from '../models/Creator';
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk';
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+
 
 const apiKeyVerify = async (
   server: FastifyInstance,
@@ -62,9 +63,15 @@ export const isAuthEden2 = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
+  requiredFeatureFlags?: FeatureFlag[],
 ) => {
   try {
     await getCredential(server, request, true)
+    if (requiredFeatureFlags) {
+      if (!request.user.featureFlags.some(flag => requiredFeatureFlags.includes(flag))) {
+        throw new Error('Missing required feature flags')
+      }
+    }
   } catch (error: any) {
     return reply.status(401).send({
       statusCode: 401,
@@ -161,11 +168,18 @@ export const hasFeatureFlag = (
 export const maybeAuthEden2 = async (
   server: FastifyInstance,
   request: FastifyRequest,
+  requiredFeatureFlags?: FeatureFlag[],
 ) => {
   try {
     await getCredential(server, request, true)
   } catch (error) {
     // Ignore
+  }
+
+  if (requiredFeatureFlags) {
+    if (!request.user.featureFlags.some(flag => requiredFeatureFlags.includes(flag))) {
+      throw new Error('Missing required feature flags')
+    }
   }
 }
 
