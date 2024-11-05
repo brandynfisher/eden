@@ -60,11 +60,13 @@ export const createAgent = async (
 
   const blurhash = await generateBlurhash(server, image)
 
+  const imageFilename = image.split('/').pop()
+
   const agent = new Agent({
     user: currentUserId,
     name,
     key,
-    image,
+    image: imageFilename,
     blurhash,
     description,
     instructions,
@@ -127,8 +129,9 @@ export const updateAgent = async (
 
   if (image) {
     const blurhash = await generateBlurhash(server, image)
+    const imageFilename = image.split('/').pop()
 
-    updateData.image = image
+    updateData.image = imageFilename
     updateData.blurhash = blurhash
   }
 
