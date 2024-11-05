@@ -22,6 +22,7 @@ import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import {
   BookmarkIcon,
+  BotIcon,
   ComponentIcon,
   CreditCardIcon,
   LogOutIcon,
@@ -165,6 +166,13 @@ const AccountDropdown = () => {
           <Link href={`/creators/${user?.username}?tab=collections`}>
             <BookmarkIcon className="mr-2 h-4 w-4" />
             <span>Collections</span>
+          </Link>
+          {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/creators/${user?.username}?tab=assistants`}>
+            <BotIcon className="mr-2 h-4 w-4" />
+            <span>Assistants</span>
           </Link>
           {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
         </DropdownMenuItem>

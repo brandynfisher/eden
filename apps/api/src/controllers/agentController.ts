@@ -1,8 +1,16 @@
-import { Agent } from '../models/Agent'
+import { Agent, AgentDocument } from '../models/Agent'
 import { s3ThumbnailUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
-import { AgentGetArguments, AgentsCreateArguments } from '@edenlabs/eden-sdk'
+import { generateBlurhash } from '../utils/blurhash'
+import {
+  AgentGetArguments,
+  AgentsCreateArguments,
+  AgentsDeleteArguments,
+  AgentsUpdateArguments,
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { UpdateResult } from 'mongodb'
+import { UpdateQuery } from 'mongoose'
 
 export const getAgent = async (
   server: FastifyInstance,
@@ -22,7 +30,7 @@ export const getAgent = async (
 
   const currentUserId = request.user ? request.user.userId : undefined
   const isOwnAgent =
-    currentUserId && agent.owner.toString() === currentUserId.toString()
+    currentUserId && agent.user.toString() === currentUserId.toString()
 
   if (!isOwnAgent && !agent.public) {
     return reply.status(401).send({
@@ -41,6 +49,7 @@ export const getAgent = async (
 }
 
 export const createAgent = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -49,18 +58,139 @@ export const createAgent = async (
 
   const currentUserId = request.user.userId
 
+  const blurhash = await generateBlurhash(server, image)
+
   const agent = new Agent({
-    owner: currentUserId,
+    user: currentUserId,
     name,
     key,
     image,
+    blurhash,
     description,
     instructions,
     tools,
     discordId,
   })
 
-  await agent.save()
+  try {
+    await agent.save()
+  } catch (error) {
+    // @ts-ignore
+    if (error.code === 11000) {
+      return reply.status(409).send({
+        error: 'An agent with this key already exists',
+      })
+    }
+
+    return reply.status(500).send({
+      error: 'An error occurred while creating the agent',
+    })
+  }
 
   return reply.status(200).send({ agentId: agent._id })
+}
+
+export const updateAgent = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+
+  const { agentId } = request.params as AgentsUpdateArguments
+  const {
+    name,
+    key,
+    description,
+    image,
+    instructions,
+    tools,
+    discordId,
+    public: isPublic,
+  } = request.body as AgentsUpdateArguments
+
+  if (!agentId) {
+    return reply.status(422).send({
+      error: 'Missing agentId',
+    })
+  }
+
+  const updateData: UpdateQuery<AgentDocument> = {
+    name,
+    key,
+    description,
+    instructions,
+    tools,
+    discordId,
+    public: isPublic,
+  }
+
+  if (image) {
+    const blurhash = await generateBlurhash(server, image)
+
+    updateData.image = image
+    updateData.blurhash = blurhash
+  }
+
+  let result: UpdateResult
+  try {
+    result = await Agent.updateOne(
+      {
+        _id: agentId,
+        user: currentUserId,
+        deleted: false,
+      },
+      updateData,
+    )
+  } catch (error) {
+    // @ts-ignore
+    if (error.code === 11000) {
+      return reply.status(409).send({
+        error: 'An agent with this key already exists',
+      })
+    }
+
+    return reply.status(500).send({
+      error: 'An error occurred while updating the agent',
+    })
+  }
+
+  if (!result.matchedCount) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  return reply.status(200).send({
+    agentId,
+  })
+}
+
+export const deleteAgent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+
+  const { agentId } = request.params as AgentsDeleteArguments
+
+  const agent = await Agent.findOne({
+    _id: agentId,
+  })
+
+  if (!agent || agent.deleted) {
+    return reply.status(404).send({
+      message: 'Agent not found',
+    })
+  }
+
+  if (agent.user.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      message: 'User not authorized to delete this',
+    })
+  }
+
+  await agent.delete()
+
+  return reply.status(200).send()
 }

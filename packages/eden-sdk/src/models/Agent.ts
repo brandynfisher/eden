@@ -8,9 +8,10 @@ export type Agent = {
   user: Creator
   name: string
   key: string
-  description?: string
-  image?: string
-  instructions?: string
+  description: string
+  image: string
+  blurhash: string
+  instructions: string
   tools?: string[]
   discordId?: string
   createdAt: Date
@@ -27,10 +28,26 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   name: string
   key: string
   description?: string
+  image: string
+  instructions?: string
+  tools?: string[]
+  discordId?: string
+}
+
+export interface AgentsUpdateArguments extends WebAPICallOptions {
+  agentId: string
+  name?: string
+  key?: string
+  description?: string
   image?: string
   instructions?: string
   tools?: string[]
   discordId?: string
+  public?: boolean
+}
+
+export interface AgentsDeleteArguments extends WebAPICallOptions {
+  agentId: string
 }
 
 // Requests
@@ -53,6 +70,25 @@ export const agentsCreateRequestConfig = (
   }
 }
 
+export const agentsUpdateRequestConfig = (
+  args: AgentsUpdateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `agents/${args.agentId}`,
+    data: args,
+  }
+}
+
+export const agentsDeleteRequestConfig = (
+  args: AgentsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `agents/${args.agentId}`,
+  }
+}
+
 // Responses
 export type AgentGetResponse = WebAPICallResult & {
   agent: Agent
@@ -61,5 +97,15 @@ export type AgentGetResponse = WebAPICallResult & {
 
 export type AgentsCreateResponse = WebAPICallResult & {
   agentId: string
+  error?: string
+}
+
+export type AgentsUpdateResponse = WebAPICallResult & {
+  agent: Agent
+  error?: string
+}
+
+export type AgentsDeleteResponse = WebAPICallResult & {
+  success: boolean
   error?: string
 }

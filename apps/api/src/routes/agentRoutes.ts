@@ -1,4 +1,9 @@
-import { createAgent, getAgent } from '../controllers/agentController'
+import {
+  createAgent,
+  deleteAgent,
+  getAgent,
+  updateAgent,
+} from '../controllers/agentController'
 import { isAuthEden2 } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -38,9 +43,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         name: Type.String(),
         key: Type.String(),
-        description: Type.Optional(Type.String()),
-        image: Type.Optional(Type.String()),
-        instructions: Type.Optional(Type.String()),
+        description: Type.String(),
+        image: Type.String(),
+        instructions: Type.String(),
         tools: Type.Optional(Type.Array(Type.String())),
         discordId: Type.Optional(Type.String()),
       }),
@@ -51,7 +56,59 @@ const agentRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => createAgent(request, reply),
+    handler: (request, reply) => createAgent(server, request, reply),
+  })
+
+  server.patch('/agents/:agentId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Update an agent',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        agentId: Type.String(),
+      },
+      body: Type.Object({
+        name: Type.Optional(Type.String()),
+        key: Type.Optional(Type.String()),
+        description: Type.Optional(Type.String()),
+        image: Type.Optional(Type.String()),
+        instructions: Type.Optional(Type.String()),
+        tools: Type.Optional(Type.Array(Type.String())),
+        discordId: Type.Optional(Type.String()),
+        public: Type.Optional(Type.Boolean()),
+      }),
+      response: {
+        200: Type.Object({
+          agentId: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => updateAgent(server, request, reply),
+  })
+
+  server.delete('/agents/:agentId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Delete an agent',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        agentId: Type.String(),
+      },
+      response: {
+        200: Type.Object({}),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => deleteAgent(request, reply),
   })
 }
 

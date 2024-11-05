@@ -1,4 +1,5 @@
 import { getSimilarCreationIds } from '../../lib/similar'
+import { Agent } from '../../models/Agent'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
 import { CollectionV2 } from '../../models/v2/CollectionV2'
 import { CreationV2 } from '../../models/v2/CreationV2'
@@ -917,6 +918,65 @@ export const getCollectionsFeedCursorV2 = async (
     if (customFilterOptions.praiseCount) {
       feed.nextValue =
         results && results.length && results[results.length - 1].praiseCount
+    }
+
+    reply.send(feed)
+  } catch (error) {
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+}
+
+export const getAgentsFeedCursor = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { query } = request
+  const { userId: authUserId } = request.user || {}
+
+  console.log(authUserId)
+
+  const { filters, sortOptions, customFilterOptions } = await handleArguments({
+    server,
+    reply,
+    authUserId,
+    query: query as CursorPaginatedFeedQuery,
+  })
+
+  const { cursor, limit } = query as CursorPaginatedFeedQuery
+
+  let results = []
+  const lateLookupStages = userLookup
+
+  const pipeline = await createPipeline({
+    limit: limit ?? 100,
+    sortOptions: { ...sortOptions, _id: -1 },
+    cursor,
+  })
+
+  const feedPipeline = [
+    { $match: filters },
+    ...pipeline,
+    ...lateLookupStages,
+  ].filter(Boolean)
+
+  console.log(JSON.stringify(feedPipeline, null, 2))
+
+  results = await Agent.aggregate(feedPipeline)
+
+  const feed: FeedResponse = {
+    docs: results,
+    reactions: [],
+    bookmarks: [],
+  }
+
+  try {
+    feed.nextCursor =
+      results && results.length && results[results.length - 1]._id
+
+    if (customFilterOptions.createdAt) {
+      feed.nextValue =
+        results && results.length && results[results.length - 1].createdAt
     }
 
     reply.send(feed)

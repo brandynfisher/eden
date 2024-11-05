@@ -31,7 +31,11 @@ export const fetcher = async <T>(
 
 export const handleAxiosServerError = (error: AxiosError | unknown) => {
   if (axios.isAxiosError(error)) {
-    return error.response?.data.message || 'Unknown Error has occurred'
+    return (
+      error.response?.data.message ||
+      error.response?.data.error ||
+      'Unknown Error has occurred'
+    )
   }
 
   return 'Unknown Error has occurred'

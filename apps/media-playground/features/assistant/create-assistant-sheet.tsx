@@ -20,14 +20,14 @@ import {
 } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
 import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const createAgentSchema = z.object({
+const createAssistantSchema = z.object({
   name: z.string(),
   key: z.string(),
   image: z.string().optional(),
@@ -36,13 +36,17 @@ const createAgentSchema = z.object({
   discordId: z.string().optional(),
 })
 
-type CreateAgentDto = z.infer<typeof createAgentSchema>
+type CreateAssistantDto = z.infer<typeof createAssistantSchema>
 
-const CreateAgentCard = () => {
+type CreateAssistantSheetProps = {
+  onCreated: () => void
+}
+
+const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const form = useForm<CreateAgentDto>({
-    resolver: zodResolver(createAgentSchema),
+  const form = useForm<CreateAssistantDto>({
+    resolver: zodResolver(createAssistantSchema),
     defaultValues: {
       name: '',
       key: '',
@@ -52,21 +56,25 @@ const CreateAgentCard = () => {
     },
   })
 
-  const onSubmit = async (data: CreateAgentDto) => {
+  const onSubmit = async (data: CreateAssistantDto) => {
     try {
-      await axios.post('/api/agents', data)
-      toast.success('Agent created successfully', {
+      await axios.post('/api/assistants', data)
+      toast.success('Assistant created successfully', {
         description: `"${data.name}" has been created successfully`,
         richColors: true,
         dismissible: true,
       })
+      onCreated()
       onOpenChange(false)
     } catch (error) {
-      toast.error('Agent creation failed', {
+      toast.error('Assistant creation failed', {
+        description:
+          // @ts-ignore
+          (error as AxiosError).response?.data?.message ||
+          'Unknown Error has occurred',
         richColors: true,
         dismissible: true,
       })
-      console.error(error)
     }
   }
 
@@ -78,11 +86,9 @@ const CreateAgentCard = () => {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button type="button" variant="outline" className="!size-64">
-          <div className="flex flex-col items-center justify-center space-y-2">
-            <PlusIcon className="size-8" />
-            <p className="text-lg font-semibold">Create Assistant</p>
-          </div>
+        <Button className="gap-x-2" type="button" variant="outline">
+          <PlusIcon className="size-4" />
+          <p className="text-sm font-semibold">Create Assistant</p>
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -105,7 +111,7 @@ const CreateAgentCard = () => {
               name="name"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Assistant Name (Friendly Name)</FormLabel>
+                  <FormLabel>Name (Friendly Name)</FormLabel>
                   <FormControl>
                     <Input placeholder="Abraham" {...field} />
                   </FormControl>
@@ -118,7 +124,7 @@ const CreateAgentCard = () => {
               name="key"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Assistant Key (Unique Key)</FormLabel>
+                  <FormLabel>Key (Unique Key)</FormLabel>
                   <FormControl>
                     <Input placeholder="Abraham" {...field} />
                   </FormControl>
@@ -131,7 +137,7 @@ const CreateAgentCard = () => {
               name="image"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Profile Photo (Optional)</FormLabel>
+                  <FormLabel>Photo</FormLabel>
                   <FormControl>
                     <Input
                       className={'hidden'}
@@ -157,7 +163,7 @@ const CreateAgentCard = () => {
               name="description"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Assistant Description</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
                       rows={4}
@@ -219,4 +225,4 @@ const CreateAgentCard = () => {
   )
 }
 
-export default CreateAgentCard
+export default CreateAssistantSheet

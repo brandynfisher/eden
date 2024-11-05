@@ -8,12 +8,13 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 
 export interface AgentSchema {
-  owner: UserDocument
+  user: UserDocument
   name: string
   key: string
-  description?: string
-  image?: string
-  instructions?: string
+  description: string
+  image: string
+  blurhash: string
+  instructions: string
   tools?: string[]
   discordId?: string
   createdAt: Date
@@ -25,7 +26,7 @@ export interface AgentDocument extends SoftDeleteDocument, AgentSchema {}
 
 export const agentSchema = new Schema<AgentDocument>(
   {
-    owner: {
+    user: {
       type: Schema.Types.ObjectId,
       ref: 'users',
       required: true,
@@ -43,14 +44,22 @@ export const agentSchema = new Schema<AgentDocument>(
     description: {
       type: String,
       maxlength: 1000,
+      required: true,
     },
     image: {
       type: String,
       maxlength: 1000,
+      required: true,
+    },
+    blurhash: {
+      type: String,
+      maxlength: 1000,
+      default: '',
     },
     instructions: {
       type: String,
       maxlength: 1000,
+      required: true,
     },
     tools: {
       type: [String],
@@ -76,7 +85,7 @@ export const agentSchema = new Schema<AgentDocument>(
 
 agentSchema.index({
   _id: -1,
-  owner: 1,
+  user: 1,
   public: 1,
   deleted: 1,
 })

@@ -1,13 +1,13 @@
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { useDelete } from '@/hooks/use-delete'
-import { CollectionV2, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { Agent, CollectionV2, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { Trash2Icon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
-  item: ModelV2 | CreationV2 | CollectionV2
-  type: 'creation' | 'model' | 'collection'
+  item: ModelV2 | CreationV2 | CollectionV2 | Agent
+  type: 'creation' | 'model' | 'collection' | 'assistant'
   queryKey: QueryKey
 }
 

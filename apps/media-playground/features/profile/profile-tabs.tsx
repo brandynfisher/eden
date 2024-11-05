@@ -1,7 +1,7 @@
 'use client'
 
 import RouterTabs from '@/components/tabs/router-tabs'
-import CreateAgentCard from '@/features/agent/create-agent-card'
+import AssistantsFeed from '@/features/feed/assistants-feed'
 import CollectionsFeed from '@/features/feed/collections-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
@@ -43,7 +43,9 @@ const ProfileTabs = () => {
     {
       key: 'assistants',
       title: 'Assistants',
-      content: creator ? <CreateAgentCard /> : null,
+      content: creator ? (
+        <AssistantsFeed query={{ user: creator._id }} />
+      ) : null,
     },
   ]
 
