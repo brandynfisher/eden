@@ -23,7 +23,7 @@ const CardImage = ({ media, className }: Props) => {
       src={
         media.thumbnail ||
         (media.type === 'image' ? media.url : siteConfig.mediaErrorUrl) ||
-        ''
+        siteConfig.mediaErrorUrl
       }
       alt={'card media thumbnail'}
       width={media.width || 1024}
