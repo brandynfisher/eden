@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { MannaVoucherRedeemResponse } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { useRouter } from 'next/navigation'
@@ -40,16 +41,19 @@ const RedeemVoucherForm = () => {
     setIsSubmitting(true)
 
     try {
-      const response = await axios.post('/api/voucher/redeem', {
-        code: values.code,
-      })
+      const response: MannaVoucherRedeemResponse = await axios.post(
+        '/api/voucher/redeem',
+        {
+          code: values.code,
+        },
+      )
 
       console.log({ response })
 
       toast.success(`Code redeemed`, {
         description: (
           <code className=" text-xs text-foreground">
-            You've been granted access!
+            {response.action || 'Voucher redeemed'}
           </code>
         ),
         dismissible: true,

@@ -33,12 +33,22 @@ export default function customImageLoader({
   format = Formats.WEBP,
 }: ImageLoaderProps): string {
   // use url as is
-  if (src.startsWith('https://')) {
+  if (
+    src.startsWith('https://') &&
+    process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL &&
+    !src.startsWith(process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL)
+  ) {
     return src
   }
 
   // set size and change extensions
   const selectedSize = determineSize(width)
+
+  if (src.endsWith('_1024.webp')) {
+    // prepend cloudfront url
+    return src.replace('_1024', `_${selectedSize}`)
+  }
+
   const srcWithSize = src.replace(EXTENSION_PATTERN, `_${selectedSize}$1`)
   const finalSrc = changeExtension(srcWithSize, format)
 

@@ -1,4 +1,3 @@
-import { sanitize } from '@/lib/strings'
 import { FileType, MimeType } from '@/types/Media'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 
@@ -180,23 +179,6 @@ export function convertBytes(
   const i = Math.floor(Math.log(bytes) / Math.log(base))
 
   return `${(bytes / Math.pow(base, i)).toFixed(decimals)} ${units[i]}`
-}
-
-const sanitizeFilenameForCloudinaryBug = (fileName: string) => {
-  return fileName.replaceAll('original', 'Original')
-}
-
-export const getDownloadFileName = (
-  userName: string,
-  itemId: string,
-  itemName?: string,
-) => {
-  const fileName = encodeURIComponent(
-    `Eden-${userName}-${
-      itemName ? sanitize(itemName.slice(0, 128)) : '___'
-    }-${itemId}`,
-  )
-  return sanitizeFilenameForCloudinaryBug(fileName)
 }
 
 export const downloadFile = async (url: string, fileName: string) => {

@@ -25,6 +25,7 @@ type GalleryItem = {
 
 type LightboxGalleryItemProps = {
   item: GalleryItem
+  unoptimized?: boolean
   forceRender?: boolean
   className?: string
   sizeOnLoad?: boolean
@@ -33,6 +34,7 @@ type LightboxGalleryItemProps = {
 export const LightboxGalleryItem = ({
   sizeOnLoad,
   item,
+  unoptimized,
   forceRender,
   className,
 }: LightboxGalleryItemProps) => {
@@ -49,24 +51,22 @@ export const LightboxGalleryItem = ({
       original={
         item.url?.endsWith('.mp4')
           ? undefined
-          : customImageLoader({ src: item.url || '', width }) ||
-            siteConfig.mediaErrorUrl
+          : item.url || siteConfig.mediaErrorUrl
       }
       thumbnail={
-        customImageLoader({ src: item.thumbnail || '', width }) ||
-        siteConfig.mediaErrorUrl
+        item.thumbnail?.endsWith('.mp4')
+          ? undefined
+          : item.thumbnail || siteConfig.mediaErrorUrl
       }
       width={sizeOnLoad ? undefined : width}
       height={sizeOnLoad ? undefined : height}
       content={
         item.url?.endsWith('.mp4') ? (
           <VideoResult
-            videoUrl={getCloudfrontUrl(item.url) || siteConfig.mediaErrorUrl}
+            videoUrl={item.url || siteConfig.mediaErrorUrl}
             width={width}
             height={height}
-            posterUrl={
-              getCloudfrontUrl(item.thumbnail) || siteConfig.mediaErrorUrl
-            }
+            posterUrl={item.thumbnail || siteConfig.mediaErrorUrl}
             muted={true}
             loop={true}
             autoPlay={true}
@@ -81,57 +81,70 @@ export const LightboxGalleryItem = ({
             `rounded-md overflow-hidden`,
             isLoaded ? 'flex max-w-full max-h-full ' : 'w-full h-full',
           ])}
-          // style={{ height: isLoaded ? '-webkit-fill-available' : '' }}
           ref={hoverRef}
         >
-          <NextImage
-            loader={customImageLoader}
-            ref={ref}
-            onClick={ev => {
-              ev.stopPropagation()
-              open(ev)
-            }}
-            src={item.thumbnail || siteConfig.mediaErrorUrl}
-            alt={item.url || ''}
-            width={width}
-            height={height}
-            blurDataURL={blurDataUrl}
-            placeholder={blurDataUrl ? 'blur' : undefined}
-            className={cn([
-              `object-contain cursor-zoom-in w-full !bg-contain`,
-              className,
-            ])}
-            loading={'eager'}
-            onLoad={() => {
-              // console.log(event)
-              setIsLoaded(true)
-            }}
-          />
+          {item.thumbnail?.endsWith('.mp4') ? null : (
+            <NextImage
+              loader={customImageLoader}
+              ref={ref}
+              onClick={ev => {
+                ev.stopPropagation()
+                open(ev)
+              }}
+              unoptimized={unoptimized}
+              src={item.thumbnail || siteConfig.mediaErrorUrl}
+              alt={item.url || ''}
+              width={width}
+              height={height}
+              blurDataURL={blurDataUrl}
+              placeholder={blurDataUrl ? 'blur' : undefined}
+              className={cn([
+                `object-contain cursor-zoom-in w-full !bg-contain`,
+                className,
+              ])}
+              loading={'eager'}
+              onLoad={() => {
+                // console.log(event)
+                setIsLoaded(true)
+              }}
+            />
+          )}
+
           {item.url?.endsWith('.mp4') ? (
             <>
-              {!forceRender ? (
+              {!forceRender && item.duration ? (
                 <MediaDurationBadge
                   duration={item.duration}
                   isLoading={hovered && hasStartedPlayback}
                 />
               ) : null}
-              {forceRender || hovered ? (
+              {item.thumbnail?.endsWith('.mp4') || forceRender || hovered ? (
                 <VideoResult
                   className={cn([
-                    'absolute inset-0 cursor-zoom-in',
-                    forceRender ? '' : 'pointer-events-none',
+                    'rounded-md',
+                    item.thumbnail?.endsWith('.mp4')
+                      ? ''
+                      : 'absolute inset-0 cursor-zoom-in',
+                    item.thumbnail?.endsWith('.mp4') || forceRender
+                      ? ''
+                      : 'pointer-events-none',
                     className,
                   ])}
                   videoUrl={getCloudfrontUrl(item.url) || ''}
                   width={width}
                   height={height}
                   posterUrl={
-                    getCloudfrontUrl(item.thumbnail) || siteConfig.mediaErrorUrl
+                    !item.thumbnail?.endsWith('.mp4')
+                      ? getCloudfrontUrl(item.thumbnail) ||
+                        siteConfig.mediaErrorUrl
+                      : undefined
                   }
                   muted={true}
                   loop={true}
                   autoPlay={forceRender}
-                  controls={!!forceRender}
+                  controls={
+                    item.thumbnail?.endsWith('.mp4') ? true : !!forceRender
+                  }
                   onPlay={() => setHasStartedPlayback(true)}
                 />
               ) : null}

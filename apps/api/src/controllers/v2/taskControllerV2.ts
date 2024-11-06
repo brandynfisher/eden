@@ -126,7 +126,17 @@ export const createTask = async (
 
     const task = modalResponse.data as TaskV2
 
-    return reply.status(200).send({ task })
+    const taskWithUrls =
+      task && task.result
+        ? {
+            ...task,
+            result: task.result.map(result =>
+              injectResultUrls(server, result, task.output_type === 'lora'),
+            ),
+          }
+        : task
+
+    return reply.status(200).send({ task: taskWithUrls })
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage =
@@ -262,6 +272,51 @@ export const listTasks = async (
 
   return reply.status(200).send(paginatedResponse)
 }
+//
+// const injectResultUrls = (
+//   server: FastifyInstance,
+//   result: TaskV2Result,
+//   isModelResult: boolean,
+// ): TaskV2Result => {
+//   if (!result.filename) {
+//     return result
+//   }
+//
+//   const thumbnailName = isModelResult ? result.thumbnail || '' : result.filename
+//   const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
+//
+//   // inject urls for each property of result.intermediateOutput, each property contains an array of partial TaskV2Results
+//
+//
+//
+//   return {
+//     ...result,
+//     url: s3Url(server, result.filename),
+//     thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+//   }
+// }
+//
+
+const injectUrlsToTaskV2Result = (
+  server: FastifyInstance,
+  taskResult: TaskV2Result,
+  isModelResult: boolean,
+): TaskV2Result => {
+  if (!taskResult.filename) {
+    return taskResult
+  }
+
+  const thumbnailName = isModelResult
+    ? taskResult.thumbnail || ''
+    : taskResult.filename
+  const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
+
+  return {
+    ...taskResult,
+    url: s3Url(server, taskResult.filename),
+    thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+  }
+}
 
 const injectResultUrls = (
   server: FastifyInstance,
@@ -275,14 +330,43 @@ const injectResultUrls = (
   const thumbnailName = isModelResult ? result.thumbnail || '' : result.filename
   const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
 
-  return {
+  const enrichedResult = {
     ...result,
     url: s3Url(server, result.filename),
     thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
   }
+
+  if (result.intermediateOutputs) {
+    enrichedResult.intermediateOutputs = Object.fromEntries(
+      Object.entries(result.intermediateOutputs).map(
+        ([key, partialResults]) => {
+          // console.log(key, partialResults)
+          if (Array.isArray(partialResults)) {
+            return [
+              key,
+              partialResults.map(partialResult =>
+                injectUrlsToTaskV2Result(
+                  server,
+                  partialResult as TaskV2Result,
+                  isModelResult,
+                ),
+              ),
+            ]
+          }
+          return [key, partialResults]
+        },
+      ),
+    )
+  }
+
+  return enrichedResult
 }
 
-export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
+export const getTask = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
   const { userId } = request.user
   const { taskId } = request.params as TasksV2GetArguments
 
@@ -309,6 +393,12 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
     return reply.status(404).send({
       message: 'Task not found',
     })
+  }
+
+  if (task.result) {
+    task.result = task.result.map(result =>
+      injectResultUrls(server, result, task.output_type === 'lora'),
+    )
   }
 
   return reply.status(200).send({ task })
@@ -388,7 +478,10 @@ export const subscribeTaskUpdates = async (
 
   reply.sse(
     // gather all accumulated emit calls for this tick
-    (async function* () {
+    (async function* (): AsyncGenerator<{
+      event: string
+      data: string
+    }> {
       // server.log.info(`SSE V2 to user ${userId}`)
       try {
         // handle task update emits
@@ -543,7 +636,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
             JSON.stringify({
               event: ServerEventName.MessageError,
               data: {
-                message: `onMessage::error - invalid msgJson - received message: ${message.toString()}`,
+                message: `onMessage::error - invalid msgJson - received message:  ${message.toString()}`,
               },
             }),
           )
@@ -940,6 +1033,15 @@ export const publishTaskResult = async (
 
     await taskDocument.save()
     server.log.info(`Task document updated successfully for task ID: ${taskId}`)
+
+    if (savedCreation) {
+      savedCreation.url = s3Url(server, savedCreation.url || '')
+      savedCreation.thumbnail = s3ThumbnailUrl(
+        server,
+        savedCreation.thumbnail || '',
+        1024,
+      )
+    }
 
     return reply.status(200).send({ creation: savedCreation })
   } catch (error) {

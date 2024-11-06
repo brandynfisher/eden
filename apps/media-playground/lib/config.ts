@@ -1,4 +1,5 @@
 import { SiteConfig } from '@/types/SiteConfig'
+import * as process from 'process'
 
 export const env = {
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV || 'staging',
@@ -10,15 +11,13 @@ export const env = {
   NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
   NEXT_PUBLIC_DISCORD_CLIENT_ID:
     process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '',
-  NEXT_PUBLIC_CLOUDINARY_API_KEY:
-    process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '',
-  NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET:
-    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
   NEXT_PUBLIC_GOOGLE_GTM_ID: process.env.NEXT_PUBLIC_GOOGLE_GTM_ID || '',
   NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID:
     process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID || '',
   NEXT_PUBLIC_AWS_CLOUDFRONT_URL:
     process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL || '',
+  NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID:
+    process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID || '',
 
   // serverRuntimeConfig
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',

@@ -3,6 +3,7 @@ import {
   CollectionV2Document,
 } from '../../models/v2/CollectionV2'
 import { CreationV2 } from '../../models/v2/CreationV2'
+import { s3ThumbnailUrl } from '../../plugins/s3Plugin'
 import CollectionV2Repository from '../../repositories/CollectionV2Repository'
 import {
   CollectionsV2AddCreationsArguments,
@@ -11,7 +12,7 @@ import {
   CollectionsV2GetArguments,
   CollectionsV2UpdateArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateQuery } from 'mongoose'
 
 export const getUserCollectionsLight = async (
@@ -37,6 +38,7 @@ export const getUserCollectionsLight = async (
 }
 
 export const getCollection = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -70,6 +72,14 @@ export const getCollection = async (
     path: 'coverCreation',
     select: '_id mediaAttributes thumbnail',
   })
+
+  if (collection.coverCreation) {
+    collection.coverCreation.thumbnail = s3ThumbnailUrl(
+      server,
+      collection.coverCreation.thumbnail || '',
+      1024,
+    )
+  }
 
   return reply.status(200).send({ collection })
 }

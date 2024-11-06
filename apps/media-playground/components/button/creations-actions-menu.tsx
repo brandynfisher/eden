@@ -10,10 +10,10 @@ import {
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
-  toggleShareDialog,
   updateAddToCollectionModal,
   updateQuickAnimateModal,
   updateQuickUpscaleModal,
+  updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CreationV2 } from '@edenlabs/eden-sdk'
@@ -105,7 +105,14 @@ const CreationActionsContent = ({
   }
 
   const handleShareClick = () => {
-    dispatch(toggleShareDialog())
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${baseUrl}/creations/${creationData._id}`
+    dispatch(
+      updateShareModal({
+        isOpen: true,
+        shareUrl: shareUrl,
+      }),
+    )
   }
 
   return (

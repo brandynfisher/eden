@@ -135,7 +135,7 @@ export type FileWithPreview = {
 type Props = {
   value: string | string[]
   onChange: (fileUrls: string | string[]) => void
-  allowedFileTypes?: FileType[]
+  allowedFileTypes?: string[]
   maxFiles?: number
   allowMultiple?: boolean
 }
@@ -152,6 +152,7 @@ const FileUploader = ({
     () => (Array.isArray(value) ? value : value ? [value] : []),
     [value],
   )
+
   const [existingFiles, setExistingFiles] = useState<FileWithPreview[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
 
@@ -382,7 +383,10 @@ const FileUploader = ({
               'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card hover:brightness-110',
               allowedFileTypes?.includes('video') ? VideoColor.borderColor : '',
               allowedFileTypes?.includes('image') ? ImageColor.borderColor : '',
-              // If multiple types, consider OtherColor.borderColor
+              allowedFileTypes?.includes('video') &&
+                allowedFileTypes?.includes('image')
+                ? 'border-l-purple-600 border-t-purple-600 border-r-green-400 border-b-green-400'
+                : '',
             )}
           >
             <div className="text-center">
@@ -390,7 +394,11 @@ const FileUploader = ({
                 <UploadCloudIcon className="mr-2 h-4 w-4" />
                 <div className="text-sm text-muted-foreground font-semibold">
                   Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
-                  {allowedFileTypes?.join(', ')}
+                  {allowedFileTypes
+                    ?.map(type =>
+                      maxFiles && maxFiles > 1 ? `${type}s` : type,
+                    )
+                    .join(' or ')}
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
@@ -417,7 +425,7 @@ const FileUploader = ({
           <div className="font-medium mb-2 text-muted-foreground text-sm flex gap-2 flex-wrap justify-between">
             <div>
               Uploaded {existingFiles.length + filesToUpload.length}{' '}
-              {allowedFileTypes?.join(', ')}
+              {allowedFileTypes?.length > 1 ? ' file' : allowedFileTypes[0]}
             </div>
             <div>(max. {maxFiles})</div>
           </div>
@@ -486,7 +494,9 @@ const FileUploader = ({
                                 })}
                               </div>
                             )}
-                            {file.duration && <div>{file.duration} s</div>}
+                            {file.duration && (
+                              <div>{file.duration.toFixed(2)} s</div>
+                            )}
                           </div>
                         </div>
                       </div>

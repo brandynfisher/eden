@@ -2,6 +2,7 @@
 
 import LoadingIndicator from '@/components/loading-indicator'
 import { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
+import { Badge } from '@/components/ui/badge'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -50,7 +51,9 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
               <NavigationMenuTrigger className="relative !z-0">
                 {item.title}
               </NavigationMenuTrigger>
-              <NavigationMenuContent>
+              <NavigationMenuContent
+                className={'max-h-[calc(100dvh_-_126px)] overflow-y-scroll'}
+              >
                 <Suspense fallback={<LoadingIndicator />}>
                   <ul className="grid gap-3 p-4 w-[350px] md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                     {item.links.map(link => (
@@ -58,6 +61,7 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
                         key={`/${link.segments.join('/')}`}
                         href={`/${link.segments.join('/')}`}
                         title={link.label}
+                        isPrivate={link.private}
                       >
                         {link.description}
                       </ListItem>
@@ -78,8 +82,8 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
 
 const ListItem = React.forwardRef<
   React.ElementRef<'a'>,
-  React.ComponentPropsWithoutRef<'a'>
->(({ className, href, title, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<'a'> & { isPrivate?: boolean }
+>(({ className, isPrivate, href, title, children, ...props }, ref) => {
   const pathname = usePathname()
   const isActive = href === pathname
 
@@ -103,8 +107,15 @@ const ListItem = React.forwardRef<
           )}
           {...props}
         >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+          <div className="text-sm font-medium leading-none">
+            {title}
+            {isPrivate ? (
+              <Badge variant="destructive" className="ml-2 text-xs">
+                private
+              </Badge>
+            ) : null}
+          </div>
+          <p className="line-clamp-1 md:line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>

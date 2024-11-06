@@ -1,4 +1,4 @@
-name: 'Build and Deploy - Garden'
+name: 'Build / Deploy - Garden - PROD'
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
     outputs:
       tag: ${{ steps.prep.outputs.tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - id: prep
         run: |
@@ -35,21 +35,19 @@ jobs:
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./apps/garden/Dockerfile
           push: true
-          tags:
-            ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
-            }}:latest
+          tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
           build-args: |
             "NEXT_PUBLIC_APP_ENV=production"
             "NEXT_PUBLIC_HOST=https://app.eden.art"
@@ -67,6 +65,12 @@ jobs:
             "NEXT_PUBLIC_CLOUDINARY_API_KEY=684785425828364"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
             "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"
+  notify:
+    if: always()
+    needs: [build-and-push-to-ghcr]
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Discord Webhook Trigger
         uses: sarisia/actions-status-discord@v1
         if: always()

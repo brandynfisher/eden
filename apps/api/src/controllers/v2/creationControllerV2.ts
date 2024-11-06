@@ -52,6 +52,7 @@ export const getCreation = async (
 }
 
 export const creationUpdate = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -69,7 +70,6 @@ export const creationUpdate = async (
       message: 'Missing parameters or malformed request body',
     })
   }
-  ``
 
   const creation = await CreationV2.findOne({
     _id: creationId,
@@ -96,6 +96,9 @@ export const creationUpdate = async (
     path: 'user',
     select: '_id username userId userImage',
   })
+
+  creation.url = s3Url(server, creation.url || '')
+  creation.thumbnail = s3ThumbnailUrl(server, creation.thumbnail || '', 1024)
 
   return reply.status(200).send({
     creation,

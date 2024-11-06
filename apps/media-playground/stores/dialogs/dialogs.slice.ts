@@ -21,6 +21,7 @@ export interface DialogsState {
   }
   shareDialog: {
     isOpen: boolean
+    shareUrl?: string
   }
 }
 
@@ -42,6 +43,7 @@ const initialState: DialogsState = {
   },
   shareDialog: {
     isOpen: false,
+    shareUrl: undefined,
   },
 }
 
@@ -88,15 +90,23 @@ const dialogsSlice = createSlice({
       // console.log('toggleCreateCollectionModal', state, !state.createCollectionModal.isOpen)
       state.createCollectionModal.isOpen = !state.createCollectionModal.isOpen
     },
-    toggleShareDialog(state) {
+    updateShareModal(
+      state,
+      action: { payload: { isOpen: boolean; shareUrl?: string } },
+    ) {
       if (!isMobile) {
-        state.shareDialog.isOpen = !state.shareDialog.isOpen
+        state.shareDialog.isOpen = action.payload.isOpen
+        if (action.payload.shareUrl) {
+          state.shareDialog.shareUrl = action.payload.shareUrl
+        } else {
+          state.shareDialog.shareUrl = undefined
+        }
       } else {
         if (navigator && navigator.share) {
           navigator.share({
             title: 'Share',
             text: 'Check out this on Eden',
-            url: window.location.href,
+            url: action.payload.shareUrl,
           })
           return
         }
@@ -111,7 +121,7 @@ const dialogsSlice = createSlice({
 })
 
 export const {
-  toggleShareDialog,
+  updateShareModal,
   updateQuickAnimateModal,
   updateQuickUpscaleModal,
   updateAddToCollectionModal,

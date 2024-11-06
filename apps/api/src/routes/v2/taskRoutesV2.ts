@@ -125,7 +125,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => getTask(request, reply),
+    handler: (request, reply) => getTask(server, request, reply),
   })
 
   server.get('/v2/tasks/events', {

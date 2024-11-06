@@ -42,6 +42,7 @@ const AssistantCard = ({ assistant, queryKey, onClick }: Props) => {
             type: 'image',
             blur: assistant.blurhash,
           }}
+          unoptimized={true}
           className="object-cover"
         />
       </Link>

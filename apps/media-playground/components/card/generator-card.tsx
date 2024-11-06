@@ -4,7 +4,6 @@ import ImageWithFallback from '@/components/media/image-with-fallback'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
-import customImageLoader from '@/image-loader'
 import Link from 'next/link'
 
 type Props = {
@@ -13,6 +12,7 @@ type Props = {
   image: string
   link: string
   isPrivate?: boolean
+  priority?: boolean
 }
 
 const GeneratorCard = ({
@@ -21,6 +21,7 @@ const GeneratorCard = ({
   link,
   description,
   isPrivate,
+  priority,
 }: Props) => {
   return (
     <Link prefetch={false} href={link} className="group aspect-square">
@@ -39,8 +40,8 @@ const GeneratorCard = ({
           />
         ) : (
           <ImageWithFallback
-            loading={'lazy'}
-            loader={customImageLoader}
+            loading={priority ? undefined : 'lazy'}
+            // loader={customImageLoader}
             src={image}
             alt={title}
             data-loaded="false"
@@ -48,7 +49,10 @@ const GeneratorCard = ({
               event.currentTarget.setAttribute('data-loaded', 'true')
             }}
             fill={true}
-            sizes={'100vw'}
+            priority={priority}
+            sizes={
+              '(max-width: 640px) 95vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw'
+            }
             className="object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10"
           />
         )}

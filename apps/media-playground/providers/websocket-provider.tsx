@@ -1,4 +1,3 @@
-// providers/WebSocketProvider.tsx
 'use client'
 
 import { useWebSocketAuth } from '@/hooks/use-websocket-auth'
@@ -6,10 +5,6 @@ import { useWebSocketConnection } from '@/hooks/use-websocket-connection'
 import { TaskV2 } from '@edenlabs/eden-sdk'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { ReadyState } from 'react-use-websocket'
-
-// providers/WebSocketProvider.tsx
-
-// providers/WebSocketProvider.tsx
 
 export type GenericObject = { [key: string]: string | boolean | number }
 

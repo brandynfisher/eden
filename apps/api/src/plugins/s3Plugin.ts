@@ -340,6 +340,7 @@ export const s3ThumbnailUrl = (
     srcWithSize,
     ImageFormats.WEBP,
   )
+
   return `${baseUrl}/${filenameWithNewExtension}`
 }
 

@@ -39,7 +39,7 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [request => maybeAuthEden2(server, request)],
-    handler: (request, reply) => getModel(request, reply),
+    handler: (request, reply) => getModel(server, request, reply),
   })
 
   server.patch('/v2/models/:modelId', {

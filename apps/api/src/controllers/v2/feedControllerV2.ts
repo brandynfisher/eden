@@ -1,10 +1,22 @@
 import { getSimilarCreationIds } from '../../lib/similar'
-import { Agent } from '../../models/Agent'
+import { Agent, AgentDocument } from '../../models/Agent'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
-import { CollectionV2 } from '../../models/v2/CollectionV2'
-import { CreationV2 } from '../../models/v2/CreationV2'
-import { ModelV2 } from '../../models/v2/ModelV2'
-import { CursorPaginatedFeedQuery, ReactionType } from '@edenlabs/eden-sdk'
+import {
+  CollectionV2,
+  CollectionV2Document,
+} from '../../models/v2/CollectionV2'
+import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
+import { ModelV2, ModelV2Document } from '../../models/v2/ModelV2'
+import {
+  forceCloudfrontUrl,
+  s3ThumbnailUrl,
+  s3Url,
+} from '../../plugins/s3Plugin'
+import {
+  CursorPaginatedFeedQuery,
+  FeedV2CursorResponse,
+  ReactionType,
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { Expression, PipelineStage } from 'mongoose'
@@ -13,13 +25,8 @@ const emptyPaginatedResponse = {
   docs: [],
 }
 
-interface CreationDocumentExtension {
-  reactions: Map<ReactionType, boolean>
-  bookmarked: boolean
-}
-
-type FeedResponse = {
-  docs: CreationDocumentExtension[]
+type FeedResponse<T> = {
+  docs: T
   reactions: { [key: string]: Map<ReactionType, boolean> } | []
   bookmarks: { [key: string]: boolean } | []
   nextValue?: number
@@ -50,6 +57,7 @@ type Filter =
       $or?: []
     }
 type Filters = Record<string, Filter>
+
 interface QueryOptions {
   cursor?: string
   sortCursor?:
@@ -612,6 +620,8 @@ export const getCreationsFeedCursorV2 = async (
     query: query as CursorPaginatedFeedQuery,
   })
 
+  // console.log(JSON.stringify(filters, null, 2))
+
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
@@ -708,7 +718,7 @@ export const getCreationsFeedCursorV2 = async (
     results = await CreationV2.aggregate(creationFeedPipeline)
   }
 
-  const feed: FeedResponse = {
+  const feed: FeedResponse<CreationV2Document[]> = {
     docs: results,
     reactions: [],
     bookmarks: [],
@@ -722,6 +732,13 @@ export const getCreationsFeedCursorV2 = async (
       feed.nextValue =
         results && results.length && results[results.length - 1].praiseCount
     }
+
+    feed.docs.forEach(doc => {
+      if (doc) {
+        doc.url = s3Url(server, doc.url || '')
+        doc.thumbnail = s3ThumbnailUrl(server, doc.thumbnail || '', 1024)
+      }
+    })
 
     reply.send(feed)
   } catch (error) {
@@ -808,7 +825,7 @@ export const getModelsFeedCursorV2 = async (
 
   results = await ModelV2.aggregate(feedPipeline)
 
-  const feed: FeedResponse = {
+  const feed: FeedResponse<ModelV2Document[]> = {
     docs: results,
     reactions: [],
     bookmarks: [],
@@ -822,6 +839,12 @@ export const getModelsFeedCursorV2 = async (
       feed.nextValue =
         results && results.length && results[results.length - 1].praiseCount
     }
+
+    feed.docs.forEach(doc => {
+      if (doc) {
+        doc.thumbnail = s3ThumbnailUrl(server, doc.thumbnail || '', 1024)
+      }
+    })
 
     reply.send(feed)
   } catch (error) {
@@ -901,11 +924,11 @@ export const getCollectionsFeedCursorV2 = async (
     ...lateLookupStages,
   ].filter(Boolean)
 
-  console.log(JSON.stringify(feedPipeline, null, 2))
+  // console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await CollectionV2.aggregate(feedPipeline)
 
-  const feed: FeedResponse = {
+  const feed: FeedResponse<CollectionV2Document[]> = {
     docs: results,
     reactions: [],
     bookmarks: [],
@@ -920,6 +943,16 @@ export const getCollectionsFeedCursorV2 = async (
         results && results.length && results[results.length - 1].praiseCount
     }
 
+    feed.docs.forEach(doc => {
+      if (doc && doc.coverCreation) {
+        doc.coverCreation.thumbnail = s3ThumbnailUrl(
+          server,
+          doc.coverCreation.thumbnail || '',
+          1024,
+        )
+      }
+    })
+
     reply.send(feed)
   } catch (error) {
     reply.code(500).send({ error: 'Internal Server Error' })
@@ -933,8 +966,6 @@ export const getAgentsFeedCursor = async (
 ) => {
   const { query } = request
   const { userId: authUserId } = request.user || {}
-
-  console.log(authUserId)
 
   const { filters, sortOptions, customFilterOptions } = await handleArguments({
     server,
@@ -960,14 +991,12 @@ export const getAgentsFeedCursor = async (
     ...lateLookupStages,
   ].filter(Boolean)
 
-  console.log(JSON.stringify(feedPipeline, null, 2))
+  // console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await Agent.aggregate(feedPipeline)
 
-  const feed: FeedResponse = {
+  const feed: FeedV2CursorResponse = {
     docs: results,
-    reactions: [],
-    bookmarks: [],
   }
 
   try {
@@ -978,6 +1007,12 @@ export const getAgentsFeedCursor = async (
       feed.nextValue =
         results && results.length && results[results.length - 1].createdAt
     }
+
+    feed.docs?.forEach((doc: AgentDocument) => {
+      if (doc && doc.image) {
+        doc.image = forceCloudfrontUrl(server, doc.image || '')
+      }
+    })
 
     reply.send(feed)
   } catch (error) {

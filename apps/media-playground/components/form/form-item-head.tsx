@@ -6,16 +6,19 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { InfoIcon } from 'lucide-react'
+import { ReactNode } from 'react'
 
 type Props = {
   label: string
   description: string
+  icon?: ReactNode
 }
 
-const FormItemHead = ({ label, description }: Props) => {
+const FormItemHead = ({ icon, label, description }: Props) => {
   return (
     <div className="space-y-0.5 flex items-center">
-      <FormLabel className="text-sm first-letter:uppercase mr-2">
+      <FormLabel className="flex items-center text-sm first-letter:uppercase mr-2 cursor-pointer">
+        {icon}
         {label}
       </FormLabel>
       <FormDescription className="ml-auto">
@@ -24,6 +27,7 @@ const FormItemHead = ({ label, description }: Props) => {
             <TooltipTrigger
               className="hover:text-accent-foreground cursor-pointer flex items-center"
               onClick={ev => ev.preventDefault()}
+              asChild
             >
               <InfoIcon className="h-4 w-4" />
             </TooltipTrigger>

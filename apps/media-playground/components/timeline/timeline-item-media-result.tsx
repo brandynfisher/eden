@@ -2,6 +2,7 @@ import PrivateIcon from '@/components/icons/private-icon'
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
+import { IntermediateOutputsDialog } from '@/components/timeline/intermediate-outputs-dialog'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { cn } from '@/lib/utils'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
@@ -27,20 +28,21 @@ export const MediaResult = ({
       // className="relative bg-accent z-10 rounded-md"
       className={cn([
         'relative bg-accent z-10 rounded-md',
-        (task.args.width ?? 1024) / (task.args.height ?? 1024) ||
+        'max-h-[calc(60vh_-_72.4px)]',
+        (task.args.width ?? 1024) / (task.args.height ?? 1024) < 1 ||
         ((task.output_type === 'audio' ? 3 : 1) < 1 &&
           (task.args.n_samples || 1) === 1)
-          ? 'h-[calc(60dvh_-_72.4px)] flex justify-center max-w-full max-h-full'
+          ? 'h-full max-w-full flex justify-center '
           : (task.args.width ?? 1024) / (task.args.height ?? 1024) > 1 &&
             (task.args.n_samples || 1) === 1
-          ? 'w-[calc(60dvh_-_72.4px)] max-h-full max-w-full'
+          ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
           : '',
       ])}
       style={{
         aspectRatio:
           result?.mediaAttributes?.aspectRatio ||
           (task.output_type === 'audio' ? 3 : 1),
-        height: '-webkit-fill-available',
+        // height: '-webkit-fill-available',
       }}
     >
       {!result.creation?.public ? <PrivateIcon /> : null}
@@ -77,14 +79,18 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
     <div className="p-2 bg-secondary rounded-md">
       <div
-        className={
+        className={cn([
+          'relative',
           (result?.mediaAttributes?.aspectRatio || 1) < 1 &&
           (task.args.n_samples || 1) === 1
-            ? 'h-[60dvh] flex justify-center'
-            : ''
-        }
+            ? 'max-h-[60vh] flex justify-center'
+            : '',
+        ])}
       >
         <MediaResult task={task} result={result} />
+        {result.intermediateOutputs ? (
+          <IntermediateOutputsDialog result={result} />
+        ) : null}
       </div>
       <TimelineItemResultTools
         task={task}

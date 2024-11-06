@@ -1,12 +1,18 @@
-import { Agent } from 'src/models/Agent';
-import { PaginatedCursorResponse, transformArgsIntoURLParams } from '../../types';
-import { PaginatedResponse, WebAPICallOptions, WebAPICallResult } from '../../types';
-import { CursorPaginatedFeedQuery } from '../Feed';
-import { CreationV2 } from './CreationsV2';
-import { ModelV2 } from './ModelsV2';
-import { AxiosRequestConfig } from 'axios';
-import { CollectionV2 } from 'src/models/v2/CollectionsV2';
-
+import {
+  PaginatedCursorResponse,
+  transformArgsIntoURLParams,
+} from '../../types'
+import {
+  PaginatedResponse,
+  WebAPICallOptions,
+  WebAPICallResult,
+} from '../../types'
+import { CursorPaginatedFeedQuery } from '../Feed'
+import { CreationV2 } from './CreationsV2'
+import { ModelV2 } from './ModelsV2'
+import { AxiosRequestConfig } from 'axios'
+import { Agent } from 'src/models/Agent'
+import { CollectionV2 } from 'src/models/v2/CollectionsV2'
 
 // Arguments
 
@@ -62,8 +68,7 @@ export interface FeedCollectionsV2CursorArguments
   direction?: 1 | -1
 }
 
-export interface FeedAgentsCursorArguments
-  extends CursorPaginatedFeedQuery {
+export interface FeedAgentsCursorArguments extends CursorPaginatedFeedQuery {
   user?: string
   name?: string
   orderBy?: string
@@ -155,7 +160,7 @@ export const feedCursorAgentsRequestConfig = (
 // Responses
 
 export type FeedV2CursorResponse = WebAPICallResult &
-  PaginatedCursorResponse<ModelV2 | CreationV2> & {
+  PaginatedCursorResponse<ModelV2 | CreationV2 | Agent> & {
     error?: string
     reactions?: {
       [creationId: string]: {
@@ -202,7 +207,6 @@ export type FeedAgentsCursorResponse = WebAPICallResult &
   PaginatedCursorResponse<Agent> & {
     error?: string
   }
-
 
 //
 // export type FeedConceptsResponse = WebAPICallResult &

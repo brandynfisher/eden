@@ -17,6 +17,7 @@ export default function Providers({ children }: PropsWithChildren) {
       disableTransitionOnChange
     >
       <ClerkProvider
+        dynamic
         appearance={{
           baseTheme: dark,
           layout: {
