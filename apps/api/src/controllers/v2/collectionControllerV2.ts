@@ -13,7 +13,7 @@ import {
   CollectionsV2UpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { UpdateQuery } from 'mongoose'
+import { UpdateQuery, UpdateWriteOpResult } from 'mongoose'
 
 export const getUserCollectionsLight = async (
   request: FastifyRequest,
@@ -132,7 +132,19 @@ export const createCollection = async (
     public: isPublic,
   })
 
-  await collection.save()
+  try {
+    await collection.save()
+  } catch (error) {
+    // @ts-ignore
+    if (error.code === 11000) {
+      return reply.status(409).send({
+        error: 'A collection with this name already exists',
+      })
+    }
+    return reply.status(500).send({
+      error: 'Error creating collection',
+    })
+  }
 
   return reply.status(200).send({ collectionId: collection._id })
 }
@@ -162,14 +174,27 @@ export const updateCollection = async (
     public: isPublic,
   }
 
-  const result = await CollectionV2.updateOne(
-    {
-      _id: collectionId,
-      user: currentUserId,
-      deleted: false,
-    },
-    updateData,
-  )
+  let result: UpdateWriteOpResult
+  try {
+    result = await CollectionV2.updateOne(
+      {
+        _id: collectionId,
+        user: currentUserId,
+        deleted: false,
+      },
+      updateData,
+    )
+  } catch (error) {
+    // @ts-ignore
+    if (error.code === 11000) {
+      return reply.status(409).send({
+        error: 'A collection with this name already exists',
+      })
+    }
+    return reply.status(500).send({
+      error: 'Error updating collection',
+    })
+  }
 
   if (!result.matchedCount) {
     return reply.status(404).send({
