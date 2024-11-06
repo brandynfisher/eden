@@ -42,7 +42,7 @@ const ProfileTabs = () => {
     },
   ]
 
-  if (hasAssistantAccess) {
+  if (hasAssistantAccess()) {
     tabs.push({
       key: 'assistants',
       title: 'Assistants',

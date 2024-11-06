@@ -29,7 +29,7 @@ const AssistantsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
     return { ...defaultQuery, ...queryProp }
   }, [defaultQuery, queryProp])
 
-  const queryKey = useMemo(() => ['collections', query], [query])
+  const queryKey = useMemo(() => ['assistants', query], [query])
 
   const onCreated = async () => {
     await queryClient.invalidateQueries({

@@ -44,7 +44,7 @@ export const agentSchema = new Schema<AgentDocument>(
     description: {
       type: String,
       maxlength: 1000,
-      required: true,
+      required: false,
     },
     image: {
       type: String,

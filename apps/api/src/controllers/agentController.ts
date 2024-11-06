@@ -1,5 +1,5 @@
 import { Agent, AgentDocument } from '../models/Agent'
-import { s3ThumbnailUrl } from '../plugins/s3Plugin'
+import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import {
@@ -43,7 +43,7 @@ export const getAgent = async (
     select: '_id userId username userImage',
   })
 
-  agent.image = s3ThumbnailUrl(server, agent.image || '', 1024)
+  agent.image = forceCloudfrontUrl(server, agent.image)
 
   return reply.status(200).send({ agent })
 }

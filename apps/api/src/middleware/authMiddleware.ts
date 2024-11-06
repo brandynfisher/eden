@@ -1,10 +1,9 @@
-import { eden2EarlyAccessCheck, isAllowedAccess } from '../lib/authorization';
-import { checkUserFlags } from '../lib/data';
-import { ApiKey } from '../models/ApiKey';
-import { User } from '../models/Creator';
-import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk';
-import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-
+import { eden2EarlyAccessCheck, isAllowedAccess } from '../lib/authorization'
+import { checkUserFlags } from '../lib/data'
+import { ApiKey } from '../models/ApiKey'
+import { User } from '../models/Creator'
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 const apiKeyVerify = async (
   server: FastifyInstance,
@@ -68,8 +67,14 @@ export const isAuthEden2 = async (
   try {
     await getCredential(server, request, true)
     if (requiredFeatureFlags) {
-      if (!request.user.featureFlags.some(flag => requiredFeatureFlags.includes(flag))) {
-        throw new Error('Missing required feature flags')
+      if (
+        !request.user.featureFlags.some(flag =>
+          requiredFeatureFlags.includes(flag),
+        )
+      ) {
+        throw new Error(
+          `Missing required feature flags: ${requiredFeatureFlags.join(', ')}`,
+        )
       }
     }
   } catch (error: any) {
@@ -165,21 +170,15 @@ export const hasFeatureFlag = (
   return checkUserFlags(request.user.featureFlags, featureFlag)
 }
 
+// used for public routes that may contain elements with extra data when authed (think like count on a feed)
 export const maybeAuthEden2 = async (
   server: FastifyInstance,
   request: FastifyRequest,
-  requiredFeatureFlags?: FeatureFlag[],
 ) => {
   try {
     await getCredential(server, request, true)
   } catch (error) {
     // Ignore
-  }
-
-  if (requiredFeatureFlags) {
-    if (!request.user.featureFlags.some(flag => requiredFeatureFlags.includes(flag))) {
-      throw new Error('Missing required feature flags')
-    }
   }
 }
 

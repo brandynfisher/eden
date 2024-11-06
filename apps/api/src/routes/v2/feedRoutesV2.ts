@@ -1,11 +1,10 @@
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import {
   getAgentsFeedCursor,
   getCollectionsFeedCursorV2,
   getCreationsFeedCursorV2,
   getModelsFeedCursorV2,
 } from '../../controllers/v2/feedControllerV2'
-import { maybeAuthEden2 } from '../../middleware/authMiddleware'
+import { isAuthEden2, maybeAuthEden2 } from '../../middleware/authMiddleware'
 import { cursorPaginatedResponse, cursorPaginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -109,10 +108,7 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
         200: cursorPaginatedResponse(Type.Any()),
       },
     },
-    preHandler: [
-      (request) =>
-        maybeAuthEden2(server, request, [FeatureFlag.AssistantAccess]),
-    ],
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => getAgentsFeedCursor(server, request, reply),
   })
 }
