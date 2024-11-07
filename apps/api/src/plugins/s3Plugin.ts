@@ -304,6 +304,25 @@ export const s3Url = (server: FastifyInstance, filename: string) => {
   return `${baseUrl}/${filename}`
 }
 
+export const forceCloudfrontUrl = (
+  server: FastifyInstance,
+  url: string,
+): string => {
+  const baseUrl = s3BaseUrl(server)
+
+  // Construct a full URL if the provided string is a relative URL, does nothing otherwise
+  const urlObject = new URL(url, baseUrl)
+
+  // Extract the filename (last segment of the pathname)
+  const pathnameSegments = urlObject.pathname.split('/')
+  const filename = pathnameSegments[pathnameSegments.length - 1]
+
+  // Create the new CloudFront URL by appending the filename to the base URL
+  const cloudfrontUrl = `${baseUrl}/${filename}`
+
+  return cloudfrontUrl
+}
+
 export const s3ThumbnailUrl = (
   server: FastifyInstance,
   filename: string,

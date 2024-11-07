@@ -22,6 +22,7 @@ import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import {
   BookmarkIcon,
+  BotIcon,
   ComponentIcon,
   CreditCardIcon,
   LogOutIcon,
@@ -47,7 +48,9 @@ const AccountDropdown = () => {
   const router = useRouter()
   const { isSignedIn } = useAuth()
 
-  const { user, balance } = useMe({ isAuthenticated: !!isSignedIn })
+  const { user, balance, hasAssistantAccess } = useMe({
+    isAuthenticated: !!isSignedIn,
+  })
   const { signOut } = useClerk()
 
   const logout = async () => {
@@ -168,6 +171,14 @@ const AccountDropdown = () => {
           </Link>
           {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
+        {hasAssistantAccess() && (
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/creators/${user?.username}?tab=assistants`}>
+              <BotIcon className="mr-2 h-4 w-4" />
+              <span>Assistants</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/settings/subscription`}>

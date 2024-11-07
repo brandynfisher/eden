@@ -1,3 +1,4 @@
+export * from './Agent'
 export * from './Admin'
 export * from './ApiKeys'
 export * from './Characters'

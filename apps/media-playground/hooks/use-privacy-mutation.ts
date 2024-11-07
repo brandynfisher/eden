@@ -8,6 +8,7 @@ import {
 } from '@/lib/query/guards'
 import { capitalize } from '@/lib/strings'
 import {
+  AgentsUpdateResponse,
   CollectionsV2UpdateResponse,
   CreationV2,
   CreationsV2PatchResponse,
@@ -32,7 +33,7 @@ type PreviousData =
   | undefined
 
 type MutationOptions = {
-  type: 'creation' | 'model' | 'collection'
+  type: 'creation' | 'model' | 'collection' | 'assistant'
   queryKey: QueryKey
   onSuccessMessage?: string
 }
@@ -47,7 +48,8 @@ export function usePrivacyMutation({
   return useMutation<
     | ModelsV2PatchResponse
     | CreationsV2PatchResponse
-    | CollectionsV2UpdateResponse,
+    | CollectionsV2UpdateResponse
+    | AgentsUpdateResponse,
     Error,
     { ids: string[]; public: boolean },
     { previousData: PreviousData }

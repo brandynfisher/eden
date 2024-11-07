@@ -1,6 +1,7 @@
 'use client'
 
 import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
+import AssistantsFeed from '@/features/feed/assistants-feed'
 import CollectionsFeed from '@/features/feed/collections-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
@@ -12,7 +13,7 @@ import { useParams } from 'next/navigation'
 
 const ProfileTabs = () => {
   const params = useParams<{ name: string }>()
-  const { user, isSignedIn } = useAuthState()
+  const { user, isSignedIn, hasAssistantAccess } = useAuthState()
   const { creator } = useCreatorQuery({ key: params.name })
 
   if (!creator || (isSignedIn && !user)) {
@@ -76,6 +77,14 @@ const ProfileTabs = () => {
       content: <CollectionsFeed query={baseQuery} />,
     },
   ]
+
+  if (hasAssistantAccess()) {
+    tabs.push({
+      key: 'assistants',
+      title: 'Assistants',
+      content: <AssistantsFeed query={baseQuery} />,
+    })
+  }
 
   return (
     <RouterTabs

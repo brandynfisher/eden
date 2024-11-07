@@ -62,9 +62,21 @@ export const isAuthEden2 = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
+  requiredFeatureFlags?: FeatureFlag[],
 ) => {
   try {
     await getCredential(server, request, true)
+    if (requiredFeatureFlags) {
+      if (
+        !request.user.featureFlags.some(flag =>
+          requiredFeatureFlags.includes(flag),
+        )
+      ) {
+        throw new Error(
+          `Missing required feature flags: ${requiredFeatureFlags.join(', ')}`,
+        )
+      }
+    }
   } catch (error: any) {
     return reply.status(401).send({
       statusCode: 401,
@@ -158,6 +170,7 @@ export const hasFeatureFlag = (
   return checkUserFlags(request.user.featureFlags, featureFlag)
 }
 
+// used for public routes that may contain elements with extra data when authed (think like count on a feed)
 export const maybeAuthEden2 = async (
   server: FastifyInstance,
   request: FastifyRequest,

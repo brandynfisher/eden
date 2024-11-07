@@ -7,10 +7,11 @@ import Image from 'next/image'
 
 type Props = {
   media: Media
+  unoptimized?: boolean
   className?: string
 }
 
-const CardImage = ({ media, className }: Props) => {
+const CardImage = ({ media, unoptimized, className }: Props) => {
   const { blur, width, height } = media
 
   const blurDataUrl = useBlurDataUrl(blur, width, height)
@@ -31,6 +32,7 @@ const CardImage = ({ media, className }: Props) => {
       blurDataURL={blurDataUrl}
       placeholder={blurDataUrl ? 'blur' : undefined}
       className={cn(['w-full h-full', className])}
+      unoptimized={unoptimized}
     />
   )
 }

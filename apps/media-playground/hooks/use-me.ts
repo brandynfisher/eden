@@ -49,10 +49,21 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
       : false
   }
 
+  const hasAssistantAccess = () => {
+    if (!isAuthenticated || !currentUser) {
+      return false
+    }
+
+    return currentUser.featureFlags
+      ? currentUser.featureFlags.includes(FeatureFlag.AssistantAccess)
+      : false
+  }
+
   return {
     user: currentUser,
     hasMinimumSubscriptionTier,
     hasEden2EarlyAccess,
+    hasAssistantAccess,
     balance: balance as number,
     foreverBalance,
     subscriptionBalance,

@@ -11,6 +11,7 @@ import { CursorPaginatedFeedQuery } from '../Feed'
 import { CreationV2 } from './CreationsV2'
 import { ModelV2 } from './ModelsV2'
 import { AxiosRequestConfig } from 'axios'
+import { Agent } from 'src/models/Agent'
 import { CollectionV2 } from 'src/models/v2/CollectionsV2'
 
 // Arguments
@@ -67,6 +68,13 @@ export interface FeedCollectionsV2CursorArguments
   direction?: 1 | -1
 }
 
+export interface FeedAgentsCursorArguments extends CursorPaginatedFeedQuery {
+  user?: string
+  name?: string
+  orderBy?: string
+  direction?: 1 | -1
+}
+
 // export interface FeedConceptsCursorArguments
 //   extends FeedCreationsV2Arguments,
 //     ListCursorQueryParams {}
@@ -116,6 +124,17 @@ export const feedCursorCollectionsV2RequestConfig = (
   }
 }
 
+export const feedCursorAgentsRequestConfig = (
+  args: FeedAgentsCursorArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'v2/feed-cursor/agents',
+    params,
+  }
+}
+
 // export const feedConceptsRequestConfig = (
 //   args: FeedConceptsArguments,
 // ): AxiosRequestConfig => {
@@ -141,7 +160,7 @@ export const feedCursorCollectionsV2RequestConfig = (
 // Responses
 
 export type FeedV2CursorResponse = WebAPICallResult &
-  PaginatedCursorResponse<ModelV2 | CreationV2> & {
+  PaginatedCursorResponse<ModelV2 | CreationV2 | Agent> & {
     error?: string
     reactions?: {
       [creationId: string]: {
@@ -181,6 +200,11 @@ export type FeedCreationsV2Response = WebAPICallResult &
 
 export type FeedCollectionsV2CursorResponse = WebAPICallResult &
   PaginatedCursorResponse<CollectionV2> & {
+    error?: string
+  }
+
+export type FeedAgentsCursorResponse = WebAPICallResult &
+  PaginatedCursorResponse<Agent> & {
     error?: string
   }
 

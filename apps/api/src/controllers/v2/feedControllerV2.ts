@@ -1,4 +1,5 @@
 import { getSimilarCreationIds } from '../../lib/similar'
+import { Agent, AgentDocument } from '../../models/Agent'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
 import {
   CollectionV2,
@@ -6,8 +7,16 @@ import {
 } from '../../models/v2/CollectionV2'
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
 import { ModelV2, ModelV2Document } from '../../models/v2/ModelV2'
-import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
-import { CursorPaginatedFeedQuery, ReactionType } from '@edenlabs/eden-sdk'
+import {
+  forceCloudfrontUrl,
+  s3ThumbnailUrl,
+  s3Url,
+} from '../../plugins/s3Plugin'
+import {
+  CursorPaginatedFeedQuery,
+  FeedV2CursorResponse,
+  ReactionType,
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { Expression, PipelineStage } from 'mongoose'
@@ -941,6 +950,67 @@ export const getCollectionsFeedCursorV2 = async (
           doc.coverCreation.thumbnail || '',
           1024,
         )
+      }
+    })
+
+    reply.send(feed)
+  } catch (error) {
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+}
+
+export const getAgentsFeedCursor = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { query } = request
+  const { userId: authUserId } = request.user || {}
+
+  const { filters, sortOptions, customFilterOptions } = await handleArguments({
+    server,
+    reply,
+    authUserId,
+    query: query as CursorPaginatedFeedQuery,
+  })
+
+  const { cursor, limit } = query as CursorPaginatedFeedQuery
+
+  let results = []
+  const lateLookupStages = userLookup
+
+  const pipeline = await createPipeline({
+    limit: limit ?? 100,
+    sortOptions: { ...sortOptions, _id: -1 },
+    cursor,
+  })
+
+  const feedPipeline = [
+    { $match: filters },
+    ...pipeline,
+    ...lateLookupStages,
+  ].filter(Boolean)
+
+  // console.log(JSON.stringify(feedPipeline, null, 2))
+
+  results = await Agent.aggregate(feedPipeline)
+
+  const feed: FeedV2CursorResponse = {
+    docs: results,
+  }
+
+  try {
+    feed.nextCursor =
+      results && results.length && results[results.length - 1]._id
+
+    if (customFilterOptions.createdAt) {
+      feed.nextValue =
+        results && results.length && results[results.length - 1].createdAt
+    }
+
+    feed.docs?.forEach((doc: AgentDocument) => {
+      if (doc && doc.image) {
+        doc.image = forceCloudfrontUrl(server, doc.image || '')
       }
     })
 

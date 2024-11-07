@@ -9,6 +9,8 @@ import {
 } from '@/lib/query/guards'
 import { capitalize } from '@/lib/strings'
 import {
+  Agent,
+  AgentsDeleteResponse,
   CollectionV2,
   CollectionsV2DeleteResponse,
   CollectionsV2UpdateResponse,
@@ -33,10 +35,11 @@ type PreviousData =
   | CreationV2
   | CollectionV2
   | ModelV2
+  | Agent
   | undefined
 
 type MutationOptions = {
-  type: 'creation' | 'model' | 'collection'
+  type: 'creation' | 'model' | 'collection' | 'assistant'
   queryKey: QueryKey
   onSuccessMessage?: string
 }
@@ -65,12 +68,18 @@ export function useDeleteMutation({
           ? { deleted: true }
           : { [`${type}Ids`]: ids, deleted: true }
 
+      let method = 'PATCH'
+      if (type === 'collection' || type === 'assistant') {
+        method = 'DELETE'
+      }
+
       const response = await fetcher<
         | ModelsV2PatchResponse
         | CreationsV2PatchResponse
         | CollectionsV2DeleteResponse
+        | AgentsDeleteResponse
       >(endpoint, {
-        method: type === 'collection' ? 'DELETE' : 'PATCH',
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
