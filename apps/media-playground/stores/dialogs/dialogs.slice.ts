@@ -23,6 +23,12 @@ export interface DialogsState {
     isOpen: boolean
     shareUrl?: string
   }
+  deleteDialog: {
+    isOpen: boolean
+    title: string
+    description: string
+    onDelete: () => void
+  }
 }
 
 const initialState: DialogsState = {
@@ -44,6 +50,12 @@ const initialState: DialogsState = {
   shareDialog: {
     isOpen: false,
     shareUrl: undefined,
+  },
+  deleteDialog: {
+    isOpen: false,
+    title: '',
+    description: '',
+    onDelete: () => {},
   },
 }
 
@@ -117,6 +129,29 @@ const dialogsSlice = createSlice({
         })
       }
     },
+    updateDeleteDialog(
+      state,
+      action: {
+        payload: {
+          isOpen?: boolean
+          title?: string
+          description?: string
+          onDelete?: () => void
+        }
+      },
+    ) {
+      if (!action.payload.isOpen) {
+        state.deleteDialog.isOpen = false
+        state.deleteDialog.title = ''
+        state.deleteDialog.description = ''
+        state.deleteDialog.onDelete = () => {}
+      } else {
+        state.deleteDialog = {
+          ...state.deleteDialog,
+          ...action.payload,
+        }
+      }
+    },
   },
 })
 
@@ -126,6 +161,7 @@ export const {
   updateQuickUpscaleModal,
   updateAddToCollectionModal,
   toggleCreateCollectionModal,
+  updateDeleteDialog,
 } = dialogsSlice.actions
 
 export default dialogsSlice.reducer

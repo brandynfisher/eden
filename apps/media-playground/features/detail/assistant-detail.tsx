@@ -6,7 +6,10 @@ import UserAvatarLink from '@/components/user/user-avatar-link'
 import UpdateAssistantSheet from '@/features/assistant/update-assistant-sheet'
 import { useAssistantQuery } from '@/hooks/query/use-assistant-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
+import {
+  updateDeleteDialog,
+  updateShareModal,
+} from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
 import { AvatarFallback } from '@radix-ui/react-avatar'
@@ -37,21 +40,32 @@ const AssistantDetail = ({ id, assistantSSRData }: Props) => {
   const assistant = assistantClientData || assistantSSRData
 
   const onDeleteAssistant = async () => {
-    try {
-      await axios.delete(`/api/assistants/${id}`)
-      toast.success('Assistant deleted', {
-        description: `Assistant: ${assistant?.name} deleted successfully`,
-        dismissible: true,
-        richColors: true,
-      })
-      router.push(`/creators/${user?.username}?tab=assistants`)
-    } catch (error) {
-      toast.error('Failed to delete assistant', {
-        description: `Assistant: ${assistant?.name} failed to delete`,
-        dismissible: true,
-        richColors: true,
-      })
+    const handleDelete = async () => {
+      try {
+        await axios.delete(`/api/assistants/${id}`)
+        toast.success('Assistant deleted', {
+          description: `Assistant: ${assistant?.name} deleted successfully`,
+          dismissible: true,
+          richColors: true,
+        })
+        router.push(`/creators/${user?.username}?tab=assistants`)
+      } catch (error) {
+        toast.error('Failed to delete assistant', {
+          description: `Assistant: ${assistant?.name} failed to delete`,
+          dismissible: true,
+          richColors: true,
+        })
+      }
     }
+
+    dispatch(
+      updateDeleteDialog({
+        isOpen: true,
+        title: 'Delete Assistant',
+        description: 'Are you sure you want to delete this assistant?',
+        onDelete: handleDelete,
+      }),
+    )
   }
 
   const onUpdateAssistant = () => {

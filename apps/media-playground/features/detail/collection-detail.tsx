@@ -22,7 +22,10 @@ import UserAvatarLink from '@/components/user/user-avatar-link'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useCollectionQuery } from '@/hooks/query/use-collection-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
+import {
+  updateDeleteDialog,
+  updateShareModal,
+} from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { CollectionV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -112,21 +115,32 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
   }
 
   const onDeleteCollection = async () => {
-    try {
-      await axios.delete(`/api/collections/${id}`)
-      toast.success('Collection deleted', {
-        description: `Collection: ${collection?.name} deleted successfully`,
-        dismissible: true,
-        richColors: true,
-      })
-      router.push(`/creators/${user?.username}?tab=collections`)
-    } catch (error) {
-      toast.error('Failed to delete collection', {
-        description: `Collection: ${collection?.name} failed to delete`,
-        dismissible: true,
-        richColors: true,
-      })
+    const handleDelete = async () => {
+      try {
+        await axios.delete(`/api/collections/${id}`)
+        toast.success('Collection deleted', {
+          description: `Collection: ${collection?.name} deleted successfully`,
+          dismissible: true,
+          richColors: true,
+        })
+        router.push(`/creators/${user?.username}?tab=collections`)
+      } catch (error) {
+        toast.error('Failed to delete collection', {
+          description: `Collection: ${collection?.name} failed to delete`,
+          dismissible: true,
+          richColors: true,
+        })
+      }
     }
+
+    dispatch(
+      updateDeleteDialog({
+        isOpen: true,
+        title: 'Delete Collection',
+        description: 'Are you sure you want to delete this collection?',
+        onDelete: handleDelete,
+      }),
+    )
   }
 
   const onShareCollection = () => {
