@@ -6,7 +6,7 @@ import UserAvatarLink from '@/components/user/user-avatar-link'
 import UpdateAssistantSheet from '@/features/assistant/update-assistant-sheet'
 import { useAssistantQuery } from '@/hooks/query/use-assistant-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { toggleShareDialog } from '@/stores/dialogs/dialogs.slice'
+import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
 import { AvatarFallback } from '@radix-ui/react-avatar'
@@ -59,7 +59,14 @@ const AssistantDetail = ({ id, assistantSSRData }: Props) => {
   }
 
   const onShareAssistant = () => {
-    dispatch(toggleShareDialog())
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${baseUrl}/assistants/${assistant?._id}`
+    dispatch(
+      updateShareModal({
+        isOpen: true,
+        shareUrl,
+      }),
+    )
   }
 
   if (!assistant) return null
