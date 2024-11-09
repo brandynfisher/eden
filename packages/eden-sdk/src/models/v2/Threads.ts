@@ -10,7 +10,12 @@ import { TaskV2Args } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
-export interface ThreadsCreateArguments extends WebAPICallOptions {}
+export interface ThreadsCreateArguments extends WebAPICallOptions {
+  threadId?: string
+  agentId?: string
+  content: string
+  attachments?: string[]
+}
 
 export interface ThreadsListArguments
   extends WebAPICallOptions,
@@ -64,7 +69,7 @@ export type ThreadsCreateResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { thread: Thread }
+    | { threadId?: Thread['_id']; success: boolean }
   )
 
 export type ThreadsListResponse = WebAPICallResult &
@@ -80,13 +85,13 @@ export type ThreadsGetResponse = WebAPICallResult & {
 // Types
 
 export type Message = {
-  role: 'user' | 'assistant' | 'tool'
+  role?: 'user' | 'assistant' | 'tool'
   createdAt: Date
 }
 
 export type UserMessage = Message & {
-  role: 'user'
-  name: string
+  role?: 'user'
+  // name: string
   content: string
   metadata?: { [key: string]: string | boolean | number }
   attachments?: string[]
@@ -103,19 +108,20 @@ export type ToolResults = {
 }
 
 export type AssistantMessage = Message & {
-  role: 'assistant'
+  role?: 'assistant'
   content: string
   tool_calls?: ToolCall[]
 }
 
 export type ToolMessage = Message & {
-  role: 'tool'
+  role?: 'tool'
   tool_results: ToolResults[]
 }
 
 export type Thread = {
   _id: string
   user: Creator
+  name: string
   messages: (UserMessage | AssistantMessage)[]
   createdAt: Date
   updatedAt: Date

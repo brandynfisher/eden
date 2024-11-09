@@ -34,6 +34,15 @@ export const handleTaskUpdateStreamEvent = async (
   server.internalMessages.publish('task-updates-v2', task)
 }
 
+export const handleThreadUpdateStreamEvent = async (
+  server: FastifyInstance,
+  thread: any,
+  _updatedFields?: GenericUpdate,
+) => {
+  // server.log.info({ msg: 'handleThreadUpdateStreamEvent', thread })
+  server.internalMessages.publish('thread-updates', thread)
+}
+
 export const calculateMaxDimensions = (
   aspectRatio: number,
   maxDimension: number,

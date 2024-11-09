@@ -1,13 +1,16 @@
+'use client'
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { AssistantV2 } from '@/types/Assistant'
 import { ThreadPrimitive } from '@assistant-ui/react'
+import { FC } from 'react'
 
-type CustomThreadWelcomeProps = {
+type ThreadWelcomeProps = {
   assistant: AssistantV2
 }
 
-const CustomThreadWelcome = ({ assistant }: CustomThreadWelcomeProps) => {
+const MyThreadWelcome: FC<ThreadWelcomeProps> = ({ assistant }) => {
   return (
     <ThreadPrimitive.Empty>
       <div className="flex flex-grow basis-full flex-col items-center justify-center">
@@ -24,4 +27,4 @@ const CustomThreadWelcome = ({ assistant }: CustomThreadWelcomeProps) => {
   )
 }
 
-export default CustomThreadWelcome
+export default MyThreadWelcome

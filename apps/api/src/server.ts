@@ -1,4 +1,4 @@
-import { subscribeWebSocketTaskUpdates } from './controllers/v2/taskControllerV2'
+import { subscribeWebSocketUpdates } from './controllers/v2/taskControllerV2'
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerAssetUpload from './plugins/assetUploadPlugin'
 import registerChroma from './plugins/chromaPlugin'
@@ -6,6 +6,7 @@ import registerClerk from './plugins/clerkPlugin'
 import registerCloudinary from './plugins/cloudinaryPlugin'
 import config from './plugins/config'
 import registerEden2TaskUpdates from './plugins/eden2TaskUpdatePlugin'
+import registerEden2ThreadUpdates from './plugins/eden2ThreadUpdatePlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerEventEmitter from './plugins/eventEmitterPlugin'
 import { registerInternalMessages } from './plugins/internalMessagesPlugin'
@@ -99,6 +100,7 @@ const createServer = async (
   await registerAssetUpload(server)
   await registerS3(server)
   await registerEden2TaskUpdates(server, opts)
+  await registerEden2ThreadUpdates(server, opts)
 
   registerTaskHandlers(server, opts.taskHandlers)
 
@@ -174,7 +176,7 @@ const createServer = async (
 
   // Register Routes
   // websocket route before all others
-  server.get('/ws/updates', { websocket: true }, subscribeWebSocketTaskUpdates)
+  server.get('/ws/updates', { websocket: true }, subscribeWebSocketUpdates)
 
   // all other routes
   routes.map(async route => {

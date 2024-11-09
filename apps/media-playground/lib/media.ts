@@ -1,11 +1,9 @@
-import { env } from '@/lib/config'
-
 export function getCloudfrontUrl(filename?: string, size: number = 2560) {
-  if (!filename) {
+  if (!filename || !process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL) {
     return ''
   }
 
-  if (filename.startsWith(env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL)) {
+  if (filename.startsWith(process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL)) {
     // if filename is a video or ends with _ followed by any number and then . and any extension, do nothing
     if (filename.endsWith('.mp4') || filename.match(/_\d+\.\w+$/)) {
       return filename
@@ -20,15 +18,15 @@ export function getCloudfrontUrl(filename?: string, size: number = 2560) {
     return filename
   }
 
-  return `${env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL}/${filename}`
+  return `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL}/${filename}`
 }
 
 export function getCloudfrontOriginalUrl(filename?: string) {
-  if (!filename) {
+  if (!filename || !process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL) {
     return ''
   }
 
-  if (filename.startsWith(env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL)) {
+  if (filename.startsWith(process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL)) {
     // if filename is a video or ends with _ followed by any number and then . and any extension, do nothing
     if (filename.endsWith('.mp4') || filename.match(/_\d+\.\w+$/)) {
       return filename
@@ -40,7 +38,7 @@ export function getCloudfrontOriginalUrl(filename?: string) {
     return filename
   }
 
-  return `${env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL}/${filename}`
+  return `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL}/${filename}`
 }
 
 export const calculateMaxDimensions = (

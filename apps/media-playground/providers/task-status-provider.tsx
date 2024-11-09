@@ -84,7 +84,6 @@ export const TaskStatusProvider = ({ children }: Props) => {
 
     if (event === 'task-update' && data?.task) {
       const taskUpdate = data.task as TaskV2
-
       // Update allTasks ensuring uniqueness
       setAllTasks(prev => {
         const existingTaskIndex = prev.findIndex(t => t._id === taskUpdate._id)

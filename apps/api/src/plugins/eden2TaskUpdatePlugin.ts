@@ -74,9 +74,9 @@ export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
       done()
     })
 
-    fastify.log.info('Successfully registered plugin: Eden2Tasks')
+    fastify.log.info('Successfully registered plugin: Eden2TaskUpdates')
   } catch (err) {
-    fastify.log.error('Failed to register plugin: Eden2Tasks', { err })
+    fastify.log.error('Failed to register plugin: Eden2TaskUpdates', { err })
   }
 }
 

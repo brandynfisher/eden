@@ -1,8 +1,10 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { ThreadPrimitive } from '@assistant-ui/react'
 import React, { FC, PropsWithChildren } from 'react'
 
-const CustomThreadSuggestion: FC<PropsWithChildren<{ prompt: string }>> = ({
+const MyThreadSuggestion: FC<PropsWithChildren<{ prompt: string }>> = ({
   prompt,
   children,
 }) => {
@@ -20,4 +22,4 @@ const CustomThreadSuggestion: FC<PropsWithChildren<{ prompt: string }>> = ({
   )
 }
 
-export default CustomThreadSuggestion
+export default MyThreadSuggestion

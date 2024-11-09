@@ -1,12 +1,16 @@
 'use client'
 
+import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
-import CustomThread from '@/features/chat/custom-thread'
+import Thread from '@/features/chat/components/thread'
+import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
+import { WebsearchTool } from '@/features/chat/components/tools/websearch-tool'
 import SessionsList from '@/features/chat/sessions-list'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { AssistantV2 } from '@/types/Assistant'
 
 const Chat = () => {
@@ -37,7 +41,35 @@ const Chat = () => {
           minSize={25}
           className="!basis-auto md:!basis-0"
         >
-          <CustomThread assistant={assistant} />
+          <Thread
+            welcome={{
+              suggestions: [
+                {
+                  prompt: 'Sugg 1',
+                },
+                {
+                  prompt: 'Sugg 2',
+                },
+                {
+                  prompt: 'Sugg 3',
+                },
+              ],
+              message: assistant.welcomeText,
+            }}
+            assistantAvatar={{
+              src: getCloudfrontOriginalUrl(assistant.image),
+              fallback: assistant.name,
+              alt: assistant.name,
+            }}
+            assistantMessage={{
+              allowSpeak: false,
+              components: {
+                Text: MarkdownText,
+                ToolFallback,
+              },
+            }}
+            tools={[WebsearchTool]}
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

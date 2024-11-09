@@ -2,15 +2,15 @@
 
 import { useWebSocketAuth } from '@/hooks/use-websocket-auth'
 import { useWebSocketConnection } from '@/hooks/use-websocket-connection'
-import { TaskV2 } from '@edenlabs/eden-sdk'
+import { TaskV2, Thread } from '@edenlabs/eden-sdk'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { ReadyState } from 'react-use-websocket'
 
 export type GenericObject = { [key: string]: string | boolean | number }
 
-type JsonMessage = {
+export type JsonMessage = {
   event: string
-  data: { task?: TaskV2 } | GenericObject
+  data: { task?: TaskV2; thread?: Thread } & GenericObject
 }
 
 type WebSocketMessageEvent = {
@@ -24,6 +24,7 @@ type WebSocketState = {
   sendMessage: (message: string) => void
   lastMessage?: WebSocketMessageEvent
   lastMessageJson?: JsonMessage | null
+  socket?: WebSocket | null
   readyState: ReadyState
   messageHistory?: WebSocketMessageEvent[]
 }
@@ -45,8 +46,13 @@ type Props = {
 
 export const WebSocketProvider = ({ endpoint, children }: Props) => {
   const [shouldConnect, setShouldConnect] = useState<boolean>(false)
-  const { sendMessage, sendJsonMessage, lastMessage, readyState } =
-    useWebSocketConnection(endpoint, shouldConnect)
+  const {
+    getWebSocket,
+    sendMessage,
+    sendJsonMessage,
+    lastMessage,
+    readyState,
+  } = useWebSocketConnection(endpoint, shouldConnect)
 
   const { isSignedIn } = useWebSocketAuth(sendJsonMessage)
 
@@ -71,6 +77,7 @@ export const WebSocketProvider = ({ endpoint, children }: Props) => {
   return (
     <WebSocketContext.Provider
       value={{
+        socket: getWebSocket() as WebSocket,
         sendJsonMessage,
         sendMessage,
         lastMessage: lastMessage as unknown as WebSocketMessageEvent,

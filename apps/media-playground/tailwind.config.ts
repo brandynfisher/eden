@@ -1,3 +1,4 @@
+import assistantUiTailwindPlugin from '@assistant-ui/react/tailwindcss'
 import { Config } from 'tailwindcss'
 import plugin from 'tailwindcss/plugin'
 
@@ -112,6 +113,7 @@ const config = {
   },
   plugins: [
     require('tailwindcss-animate'),
+    assistantUiTailwindPlugin({ shadcn: true }),
     plugin(({ matchUtilities, theme }) => {
       matchUtilities(
         {

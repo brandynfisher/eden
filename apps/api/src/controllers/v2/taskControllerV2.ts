@@ -38,6 +38,7 @@ export enum SocketClientEventName {
 
 export enum ServerEventName {
   TaskUpdate = 'task-update',
+  ThreadUpdate = 'thread-update',
   AuthInfo = 'auth-info',
   MessageError = 'message-error',
 }
@@ -177,9 +178,11 @@ export const listTasks = async (
     workflow && (workflow === 'lora_trainer' || workflow === 'flux_trainer')
   const typeQuery = !isModelTaskQuery
     ? {
-        workflow: { $nin: ['lora_trainer', 'flux_trainer'] },
+        workflow: { $nin: ['lora_trainer', 'flux_trainer', 'chat'] },
       }
-    : {}
+    : {
+        workflow: { $nin: ['chat'] },
+      }
 
   const tasksRepository = new TaskV2Repository(TaskV2Model)
 
@@ -544,7 +547,7 @@ export const subscribeTaskUpdates = async (
   })
 }
 
-export const subscribeWebSocketTaskUpdates = function wsHandler(
+export const subscribeWebSocketUpdates = function wsHandler(
   this: FastifyInstance,
   socket: WebSocket.WebSocket,
 ) {
@@ -558,11 +561,17 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
   // assume the connection to be unauthenticated by default
   try {
     // listen to internal message queue and forward task update events to the respective client
-    const internalEmitterEventHandler = async (task: TaskV2Document) => {
+    const internalEmitterEventHandlerTaskUpdates = async (
+      task: TaskV2Document,
+    ) => {
       // console.log('internalEmitterEventHandler', metaData, task)
 
       if (!metaData.userId) {
         this.log.error(`User not authenticated/not found - ${task.user}`)
+        return
+      }
+
+      if (task.workflow === 'chat') {
         return
       }
 
@@ -603,7 +612,7 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
             event: ServerEventName.TaskUpdate,
             data: {
               task:
-                task && task.result
+                task && task.result && Array.isArray(task.result)
                   ? {
                       ...task,
                       result: task.result.map(result =>
@@ -624,7 +633,46 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     this.internalMessages.connection.on(
       // InternalMessagesQueues.TaskUpdatesV2,
       'task-updates-v2',
-      internalEmitterEventHandler,
+      internalEmitterEventHandlerTaskUpdates,
+    )
+
+    // @todo: implement types, schema, repo, etc
+    const internalEmitterEventHandlerThreadUpdates = async (thread: any) => {
+      console.log('internalEmitterEventHandlerThreadUpdates', thread)
+
+      if (!metaData.userId) {
+        this.log.error(`User not authenticated/not found - ${thread.user}`)
+        return
+      }
+
+      console.log(metaData)
+
+      // const threadsRepository = new ThreadRepository(ThreadModel)
+
+      // socket message is only sent to the intended recipient
+      if (metaData?._id?.toString() === thread.user.toString()) {
+        console.log('sending ws even', {
+          event: ServerEventName.ThreadUpdate,
+          data: {
+            thread: thread,
+          },
+        })
+        // @todo: build and emit WS response
+        // @todo: handle status etc here?
+        socket.send(
+          JSON.stringify({
+            event: ServerEventName.ThreadUpdate,
+            data: {
+              thread: thread,
+            },
+          }),
+        )
+      }
+    }
+
+    this.internalMessages.connection.on(
+      'thread-updates',
+      internalEmitterEventHandlerThreadUpdates,
     )
 
     socket.on('message', async message => {
@@ -760,9 +808,13 @@ export const subscribeWebSocketTaskUpdates = function wsHandler(
     // clean up on socket close
     socket.on('close', () => {
       this.internalMessages.connection.off(
-        // InternalMessagesQueues.TaskUpdatesV2,
         'task-updates-v2',
-        internalEmitterEventHandler,
+        internalEmitterEventHandlerTaskUpdates,
+      )
+
+      this.internalMessages.connection.off(
+        'thread-updates',
+        internalEmitterEventHandlerThreadUpdates,
       )
     })
   } catch (e) {

@@ -248,6 +248,8 @@ import {
   TasksV2ListResponse,
   TasksV2PublishArguments,
   TasksV2PublishResponse,
+  ThreadsCreateArguments,
+  ThreadsCreateResponse,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -269,6 +271,7 @@ import {
   tasksV2GetRequestConfig,
   tasksV2ListRequestConfig,
   tasksV2PublishRequestConfig,
+  threadsCreateRequestConfig,
 } from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
@@ -737,6 +740,13 @@ export abstract class Methods {
         sessionEventsListRequestConfig,
       ),
     },
+  }
+
+  public readonly threads = {
+    create: bindApiCall<ThreadsCreateArguments, ThreadsCreateResponse>(
+      this,
+      threadsCreateRequestConfig,
+    ),
   }
 
   public readonly tasks = {

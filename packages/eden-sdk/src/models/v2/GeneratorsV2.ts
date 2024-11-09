@@ -60,7 +60,13 @@ export type GeneratorsGetResponseV2 = WebAPICallResult & {
 
 // Types
 
-export type BaseModelName = 'sdxl' | 'flux'
+export type BaseModelName =
+  | 'sdxl'
+  | 'sd3'
+  | 'sd15'
+  | 'flux'
+  | 'flux-dev'
+  | 'flux_dev'
 
 export type GeneratorV2 = {
   key: string
