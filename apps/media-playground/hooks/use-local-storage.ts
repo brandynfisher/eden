@@ -3,17 +3,24 @@ import { useState } from 'react'
 const useLocalStorage = <T>(
   key: string,
   initialValue: T,
-): [T, (value: T) => void] => {
+): [T, (value: T) => void, boolean] => {
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
   const readValue = (): T => {
+    setIsLoading(true)
     if (typeof window === 'undefined') {
+      setIsLoading(false)
       return initialValue
     }
 
     try {
       const item = window.localStorage.getItem(key)
-      return item ? JSON.parse(item) : initialValue
+      const value = item ? JSON.parse(item) : initialValue
+      setIsLoading(false)
+      return value
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error)
+      setIsLoading(false)
       return initialValue
     }
   }
@@ -38,7 +45,7 @@ const useLocalStorage = <T>(
     }
   }
 
-  return [storedValue, setValue]
+  return [storedValue, setValue, isLoading]
 }
 
 export default useLocalStorage
