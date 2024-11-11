@@ -2,28 +2,30 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { AssistantV2 } from '@/types/Assistant'
-import { ThreadPrimitive } from '@assistant-ui/react'
+import { ThreadWelcome, useThreadConfig } from '@assistant-ui/react'
 import { FC } from 'react'
 
-type ThreadWelcomeProps = {
-  assistant: AssistantV2
+const MyThreadWelcomeAvatar: FC = () => {
+  const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
+  return (
+    <Avatar className="w-16 h-16 md:w-24 md:h-24 col-start-1 row-span-full row-start-1 mr-4">
+      <AvatarImage src={getCloudfrontOriginalUrl(avatar.src)} />
+      <AvatarFallback delayMs={250} className="w-16 h-16 md:w-24 md:h-24">
+        {avatar.fallback}
+      </AvatarFallback>
+    </Avatar>
+  )
 }
 
-const MyThreadWelcome: FC<ThreadWelcomeProps> = ({ assistant }) => {
+const MyThreadWelcome: FC = () => {
   return (
-    <ThreadPrimitive.Empty>
-      <div className="flex flex-grow basis-full flex-col items-center justify-center">
-        <Avatar className="w-16 h-16 md:w-24 md:h-24">
-          <AvatarImage src={getCloudfrontOriginalUrl(assistant.image)} />
-          <AvatarFallback className="w-16 h-16 md:w-24 md:h-24">
-            {assistant.name}
-          </AvatarFallback>
-        </Avatar>
-
-        <p className="mt-4 font-medium">{assistant.welcomeText}</p>
-      </div>
-    </ThreadPrimitive.Empty>
+    <ThreadWelcome.Root>
+      <ThreadWelcome.Center>
+        <MyThreadWelcomeAvatar />
+        <ThreadWelcome.Message />
+      </ThreadWelcome.Center>
+      <ThreadWelcome.Suggestions />
+    </ThreadWelcome.Root>
   )
 }
 

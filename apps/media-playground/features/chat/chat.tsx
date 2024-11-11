@@ -7,6 +7,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import Thread from '@/features/chat/components/thread'
+import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { WebsearchTool } from '@/features/chat/components/tools/websearch-tool'
 import SessionsList from '@/features/chat/sessions-list'
@@ -42,6 +43,9 @@ const Chat = () => {
           className="!basis-auto md:!basis-0"
         >
           <Thread
+            components={{
+              ThreadWelcome: MyThreadWelcome,
+            }}
             welcome={{
               suggestions: [
                 {
