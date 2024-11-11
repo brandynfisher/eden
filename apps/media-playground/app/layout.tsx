@@ -3,6 +3,7 @@ import 'photoswipe/dist/photoswipe.css'
 
 import Providers from '@/app/providers'
 import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
+import DeleteConfirmationDialog from '@/components/dialog/delete-confirmation-dialog'
 import QuickAnimateDialog from '@/components/dialog/quick-animate-dialog'
 import QuickUpscaleDialog from '@/components/dialog/quick-upscale-dialog'
 import ShareDialog from '@/components/dialog/share-dialog'
@@ -125,6 +126,7 @@ export default function RootLayout({
             <CollectionSelectionDialog />
             <QuickAnimateDialog />
             <QuickUpscaleDialog />
+            <DeleteConfirmationDialog />
           </Providers>
         </body>
       </html>
