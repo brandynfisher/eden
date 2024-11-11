@@ -468,20 +468,6 @@ export const useChatModelAdapter = (): ChatModelAdapter => {
         yield failureResult
         return
       }
-      //
-      // const pendingResult: ChatModelRunResult = {
-      //   status: {
-      //     type: 'running',
-      //   },
-      //   content: [
-      //     {
-      //       type: 'text',
-      //       text: 'Eve is thinking...',
-      //     },
-      //   ],
-      // };
-      //
-      // yield pendingResult;
 
       const waitForThreadUpdate = async (): Promise<ChatModelRunResult> => {
         return new Promise((resolve, reject) => {
@@ -562,8 +548,11 @@ export function AssistantUiCustomProvider({
 }: Readonly<{
   children: ReactNode
 }>) {
+  // @todo: get thread list
+  //
+
   const chatModelAdapter = useChatModelAdapter()
-  const runtime = useLocalRuntime(chatModelAdapter)
+  const runtime = useLocalRuntime(chatModelAdapter, { initialMessages: [] })
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       {children}

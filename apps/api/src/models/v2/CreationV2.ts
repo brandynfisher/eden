@@ -1,4 +1,3 @@
-import { modelSchema } from './ModelV2'
 import { TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
@@ -103,8 +102,8 @@ export const creationSchema = new Schema<CreationV2Document>(
 )
 
 creationSchema.index({ createdAt: -1 })
-modelSchema.index({ deleted: -1, createdAt: -1 })
-modelSchema.index({ public: -1, deleted: -1, createdAt: -1 })
+creationSchema.index({ deleted: -1, createdAt: -1 })
+creationSchema.index({ public: -1, deleted: -1, createdAt: -1 })
 creationSchema.index({
   user: 1,
   task: -1,

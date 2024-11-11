@@ -1,5 +1,10 @@
-import { createThreadMessage } from '../../controllers/v2/threadController'
+import {
+  createThreadMessage,
+  getThread,
+  listThreads,
+} from '../../controllers/v2/threadController'
 import { isAuthEden2 } from '../../middleware/authMiddleware'
+import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -41,6 +46,52 @@ const threadRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
     handler: (request, reply) => createThreadMessage(server, request, reply),
+  })
+
+  server.get('/v2/threads', {
+    schema: {
+      tags: ['Threads'],
+      description: 'List threads',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      querystring: {
+        type: 'object',
+        properties: {
+          ...paginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: paginatedResponse(Type.Any()),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => listThreads(server, request, reply),
+  })
+
+  server.get('/v2/threads/:threadId', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Get a thread',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        threadId: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          thread: Type.Any(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => getThread(server, request, reply),
   })
 }
 

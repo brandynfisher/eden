@@ -250,6 +250,10 @@ import {
   TasksV2PublishResponse,
   ThreadsCreateArguments,
   ThreadsCreateResponse,
+  ThreadsGetArguments,
+  ThreadsGetResponse,
+  ThreadsListArguments,
+  ThreadsListResponse,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -272,6 +276,8 @@ import {
   tasksV2ListRequestConfig,
   tasksV2PublishRequestConfig,
   threadsCreateRequestConfig,
+  threadsGetRequestConfig,
+  threadsListRequestConfig,
 } from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
@@ -746,6 +752,14 @@ export abstract class Methods {
     create: bindApiCall<ThreadsCreateArguments, ThreadsCreateResponse>(
       this,
       threadsCreateRequestConfig,
+    ),
+    get: bindApiCall<ThreadsGetArguments, ThreadsGetResponse>(
+      this,
+      threadsGetRequestConfig,
+    ),
+    list: bindApiCall<ThreadsListArguments, ThreadsListResponse>(
+      this,
+      threadsListRequestConfig,
     ),
   }
 

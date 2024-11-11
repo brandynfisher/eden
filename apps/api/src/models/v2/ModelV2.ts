@@ -74,7 +74,6 @@ export const modelSchema = new Schema<ModelV2Document>(
     timestamps: true,
   },
 )
-
 modelSchema.index({ createdAt: -1 })
 modelSchema.index({ deleted: -1, createdAt: -1 })
 modelSchema.index({ public: -1, deleted: -1, createdAt: -1 })

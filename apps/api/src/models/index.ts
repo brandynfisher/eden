@@ -24,6 +24,7 @@ import { CreationV2, CreationV2Document } from './v2/CreationV2'
 import { GeneratorV2, GeneratorV2Document } from './v2/GeneratorV2'
 import { ModelV2, ModelV2Document } from './v2/ModelV2'
 import { TaskV2, TaskV2Document } from './v2/TaskV2'
+import { Thread, ThreadDocument } from './v2/Thread'
 import { Model } from 'mongoose'
 
 export interface Database {
@@ -34,6 +35,7 @@ export interface Database {
   Follow: Model<FollowDocument>
   Task: Model<TaskDocument>
   TaskV2: Model<TaskV2Document>
+  Thread: Model<ThreadDocument>
   Creation: Model<CreationDocument>
   CreationV2: Model<CreationV2Document>
   Embedding: Model<EmbeddingDocument>
@@ -63,6 +65,7 @@ export const models: Database = {
   Embedding,
   Task,
   TaskV2,
+  Thread,
   Creation,
   CreationV2,
   Concept,

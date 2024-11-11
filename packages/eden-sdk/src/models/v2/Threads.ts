@@ -19,9 +19,7 @@ export interface ThreadsCreateArguments extends WebAPICallOptions {
 
 export interface ThreadsListArguments
   extends WebAPICallOptions,
-    ListQueryParams {
-  userId?: string | string[]
-}
+    ListQueryParams {}
 
 export interface ThreadsGetArguments extends WebAPICallOptions {
   threadId: string
