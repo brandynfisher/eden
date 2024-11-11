@@ -591,7 +591,7 @@ const creationLookup: PipelineStage[] = [
       ],
     },
   },
-  { $unwind: '$coverCreation' },
+  { $unwind: { path: '$coverCreation', preserveNullAndEmptyArrays: true } },
 ]
 
 export const getCreationsFeedCursorV2 = async (
