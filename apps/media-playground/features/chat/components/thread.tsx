@@ -44,40 +44,6 @@ const MyThread: FC<ThreadConfig> = config => {
   } = config
 
   return (
-    // <ThreadPrimitive.Root className='bg-background h-full'>
-    //   <ThreadPrimitive.Viewport
-    //     className='flex h-full flex-col items-center overflow-y-scroll scroll-smooth bg-inherit px-4 pt-8'>
-    //     <MyThreadWelcome />
-    //     <ThreadPrimitive.Messages
-    //       components={{
-    //         UserMessage: MyUserMessage,
-    //         EditComposer: MyEditComposer,
-    //         AssistantMessage: MyAssistantMessage,
-    //       }}
-    //     />
-    //
-    //     <div className='min-h-8 flex-grow' />
-    //
-    //     <div
-    //       className='sticky bottom-0 mt-3 flex w-full max-w-2xl flex-col items-center justify-end rounded-t-lg bg-inherit pb-4'
-    //     >
-    //       <ThreadPrimitive.Empty>
-    //         <div className="flex flex-wrap w-full gap-4 mb-4">
-    //           <ThreadSuggestion prompt={'List all tools you have access to'}>
-    //             What can you do?
-    //           </ThreadSuggestion>
-    //           <ThreadSuggestion prompt={'Create an image of a penguin using flux-schnell.'}>
-    //             Create an image of a penguin
-    //           </ThreadSuggestion>
-    //         </div>
-    //       </ThreadPrimitive.Empty>
-    //
-    //       <MyThreadScrollToBottom />
-    //       <MyComposer />
-    //     </div>
-    //   </ThreadPrimitive.Viewport>
-    // </ThreadPrimitive.Root>
-
     <Thread.Root config={config}>
       <Thread.Viewport>
         <ThreadWelcomeComponent />

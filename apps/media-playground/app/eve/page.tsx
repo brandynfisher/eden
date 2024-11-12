@@ -1,6 +1,6 @@
 import Chat from '@/features/chat/chat'
 
-const EvePage = async () => {
+const EvePage = () => {
   return <Chat />
 }
 

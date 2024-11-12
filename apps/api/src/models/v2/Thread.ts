@@ -9,7 +9,7 @@ import mongooseDelete, {
 import paginate from 'mongoose-paginate-v2'
 
 export type MessageSchema = {
-  role: 'user' | 'assistant' | 'tool'
+  role: 'user' | 'assistant' | 'tool' | 'system'
   content?: string
   tool_results?: {
     id: string

@@ -105,7 +105,7 @@ export const listThreads = async (
     }
 
     const queryOptions: QueryOptions = {
-      select: '',
+      select: '_id name createdAt updatedAt user',
       limit,
       page,
       sort: {

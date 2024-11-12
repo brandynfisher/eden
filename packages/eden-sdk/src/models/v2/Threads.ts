@@ -45,7 +45,7 @@ export const threadsListRequestConfig = (
   const params = transformArgsIntoURLParams(args)
   return {
     method: 'GET',
-    url: 'v2/tasks',
+    url: 'v2/threads',
     params,
   }
 }
@@ -83,16 +83,18 @@ export type ThreadsGetResponse = WebAPICallResult & {
 // Types
 
 export type Message = {
-  role?: 'user' | 'assistant' | 'tool'
-  createdAt: Date
+  role: 'user' | 'assistant' | 'tool' | 'system'
+  createdAt?: Date
 }
 
+export type UserMessageAttachments = string
+
 export type UserMessage = Message & {
-  role?: 'user'
+  role: 'user'
   // name: string
   content: string
   metadata?: { [key: string]: string | boolean | number }
-  attachments?: string[]
+  attachments?: UserMessageAttachments[]
 }
 
 export type ToolCall = {
@@ -103,16 +105,25 @@ export type ToolCall = {
 
 export type ToolResults = {
   id: string
+  name: string
+  result: string
+  error?: string
 }
 
 export type AssistantMessage = Message & {
-  role?: 'assistant'
+  role: 'assistant'
   content: string
   tool_calls?: ToolCall[]
 }
 
+export type SystemMessage = Message & {
+  role: 'system'
+  content: string
+}
+
 export type ToolMessage = Message & {
-  role?: 'tool'
+  role: 'tool'
+  content?: string
   tool_results: ToolResults[]
 }
 
@@ -120,7 +131,7 @@ export type Thread = {
   _id: string
   user: Creator
   name: string
-  messages: (UserMessage | AssistantMessage)[]
+  messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
   createdAt: Date
   updatedAt: Date
 }

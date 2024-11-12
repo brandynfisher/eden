@@ -10,8 +10,9 @@ import {
   AssistantRuntimeProvider,
   type ChatModelAdapter,
   ChatModelRunResult,
+  SimpleImageAttachmentAdapter,
   TextContentPart,
-  useLocalRuntime,
+  useLocalRuntime, // CompleteAttachment,
 } from '@assistant-ui/react'
 import { ThreadsCreateResponse } from '@edenlabs/eden-sdk'
 import axios, { AxiosResponse } from 'axios'
@@ -432,6 +433,11 @@ export const useChatModelAdapter = (): ChatModelAdapter => {
   }) {
     abortSignalRef.current = abortSignal
 
+    const userMessage = messages[messages.length - 1]
+    const userMessageText = (userMessage.content[0] as TextContentPart)?.text
+    // const userMessageAttachments = (userMessage.attachments as CompleteAttachment[]) || []
+
+    console.log({ userMessage })
     try {
       const response: AxiosResponse<ThreadsCreateResponse> = await axios.post(
         '/api/tasks/create',
@@ -440,9 +446,8 @@ export const useChatModelAdapter = (): ChatModelAdapter => {
           args: {
             agent_id: agentId,
             thread_id: threadId,
-            content: (
-              messages[messages.length - 1].content[0] as TextContentPart
-            ).text,
+            content: userMessageText,
+            attachments: [],
           },
         },
         {
@@ -552,7 +557,27 @@ export function AssistantUiCustomProvider({
   //
 
   const chatModelAdapter = useChatModelAdapter()
-  const runtime = useLocalRuntime(chatModelAdapter, { initialMessages: [] })
+  const runtime = useLocalRuntime(chatModelAdapter, {
+    initialMessages: [],
+    adapters: {
+      attachments: new SimpleImageAttachmentAdapter(),
+      // threadList: {
+      //   threadId,
+      //   onSwitchToNewThread: !onSwitchToNewThread
+      //     ? undefined
+      //     : async () => {
+      //       await onSwitchToNewThread();
+      //       setMessages([]);
+      //     },
+      //   onSwitchToThread: !onSwitchToThread
+      //     ? undefined
+      //     : async (threadId) => {
+      //       const { messages } = await onSwitchToThread(threadId);
+      //       setMessages(messages);
+      //     },
+      // },
+    },
+  })
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       {children}

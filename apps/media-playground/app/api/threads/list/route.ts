@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     const res = await eden.threads.list({
       ...paginationParams,
     })
+
     return NextResponse.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
