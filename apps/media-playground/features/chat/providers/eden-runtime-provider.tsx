@@ -48,6 +48,7 @@ export function EdenRuntimeProvider({
         messages: thread.messages,
       }
     },
+    //@ts-expect-error Type error: Type '(messages: EdenMessage[]) => Promise<AsyncGenerator<{ data: EdenMessage; } | { data: { role: string; status: { type: string; reason: string; }; content: string; }; }, void, undefined>>' is not assignable to type '(messages: EdenMessage[]) => Promise<AsyncGenerator<{ data: EdenMessage; }, any, unknown>>
     stream: async messages => {
       return (async function* () {
         if (!threadIdRef.current) {
