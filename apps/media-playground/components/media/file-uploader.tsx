@@ -4,6 +4,7 @@ import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
+import { Button } from '@/components/ui/button'
 import {
   Sortable,
   SortableDragHandle,
@@ -26,6 +27,7 @@ import {
   FileImage,
   FolderArchive,
   GripVerticalIcon,
+  Trash2Icon,
   UploadCloudIcon,
   Video,
   X,
@@ -574,6 +576,22 @@ const FileUploader = ({
                 </button>
               </div>
             ))}
+
+            <div className="flex justify-end">
+              <Button
+                className="hover:bg-destructive hover:text-destructive-foreground"
+                size="sm"
+                variant="ghost"
+                type="button"
+                onClick={() => {
+                  setFilesToUpload([])
+                  setExistingFiles([])
+                }}
+              >
+                <Trash2Icon className="mr-2 h-4 w-4" />
+                Clear all uploads
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}

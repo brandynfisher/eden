@@ -67,7 +67,7 @@ const SliderInput = ({
         />
       </div>
       <Input
-        className="ml-2 w-20 h-8 rounded-md relative font-mono"
+        className="ml-2 w-28 h-8 rounded-md relative font-mono"
         type="number"
         min={min || 0}
         max={max || 1}

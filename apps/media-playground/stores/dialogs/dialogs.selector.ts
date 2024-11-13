@@ -31,3 +31,8 @@ export const useShareModal = () => {
   const dialogs = useAppSelector(selectDialogs)
   return dialogs.shareDialog
 }
+
+export const useDeleteDialog = () => {
+  const dialogs = useAppSelector(selectDialogs)
+  return dialogs.deleteDialog
+}
