@@ -1,4 +1,5 @@
 import { UserDocument } from '../Creator'
+import { ThreadMessage } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -8,26 +9,10 @@ import mongooseDelete, {
 } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-export type MessageSchema = {
-  role: 'user' | 'assistant' | 'tool' | 'system'
-  content?: string
-  tool_results?: {
-    id: string
-    name: string
-    result: string
-    error?: string
-  }[]
-  metadata?: {
-    [key: string]: string | number | boolean | Date | null
-  }
-  attachments?: string[]
-  createdAt: Date
-}
-
 export interface ThreadSchema {
   user: UserDocument
   name: string
-  messages: MessageSchema[]
+  messages: ThreadMessage[]
   createdAt: Date
   updatedAt: Date
 }

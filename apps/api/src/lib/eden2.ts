@@ -1,5 +1,6 @@
 import { TaskV2Document } from '../models/v2/TaskV2'
-import { MessageSchema, ThreadDocument } from '../models/v2/Thread'
+import { ThreadDocument } from '../models/v2/Thread'
+import { ThreadMessage } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 
 type GenericUpdate = { [key: string]: string | number | boolean }
@@ -17,7 +18,7 @@ export const handleTaskUpdateStreamEvent = async (
 export const handleThreadUpdateStreamEvent = async (
   server: FastifyInstance,
   thread?: ThreadDocument,
-  newMessages?: MessageSchema[],
+  newMessages?: ThreadMessage[],
 ) => {
   server.internalMessages.publish('thread-updates', { thread, newMessages })
 }

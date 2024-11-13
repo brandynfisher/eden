@@ -103,6 +103,22 @@ export type ToolCall = {
   input: TaskV2Args
 }
 
+export type ThreadMessage = {
+  role: 'user' | 'assistant' | 'tool' | 'system'
+  content?: string
+  tool_results?: {
+    id: string
+    name: string
+    result: string
+    error?: string
+  }[]
+  metadata?: {
+    [key: string]: string | number | boolean | Date | null
+  }
+  attachments?: string[]
+  createdAt: Date
+}
+
 export type ToolResults = {
   id: string
   name: string

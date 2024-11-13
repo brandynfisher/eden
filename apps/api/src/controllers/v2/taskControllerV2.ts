@@ -4,7 +4,7 @@ import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
 import { GeneratorV2 } from '../../models/v2/GeneratorV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
-import { MessageSchema, ThreadDocument } from '../../models/v2/Thread'
+import { ThreadDocument } from '../../models/v2/Thread'
 import {
   ImageFormats,
   changeExtension,
@@ -23,6 +23,7 @@ import {
   TasksV2GetArguments,
   TasksV2ListArguments,
   TasksV2PublishArguments,
+  ThreadMessage,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { encode } from 'blurhash'
@@ -642,7 +643,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
       newMessages,
     }: {
       thread: ThreadDocument
-      newMessages: MessageSchema[]
+      newMessages: ThreadMessage[]
     }) => {
       // console.log('internalEmitterEventHandlerThreadUpdates', thread)
 

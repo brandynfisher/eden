@@ -1,5 +1,6 @@
 import { handleThreadUpdateStreamEvent } from '../lib/eden2'
-import { MessageSchema, ThreadDocument } from '../models/v2/Thread'
+import { ThreadDocument } from '../models/v2/Thread'
+import { ThreadMessage } from '@edenlabs/eden-sdk'
 import { FastifyPluginAsync } from 'fastify'
 import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
 
@@ -57,7 +58,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
 
             if (updatedFields && updatedFields.messages) {
               // slice of the last messages from updatedFields.messages up until but not including the last message with message.role: 'user'
-              const messages = updatedFields.messages as MessageSchema[]
+              const messages = updatedFields.messages as ThreadMessage[]
               const lastUserMessageIndex = messages.findLastIndex(
                 message => message.role === 'user',
               )
