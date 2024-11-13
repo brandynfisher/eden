@@ -63,11 +63,11 @@ const TopLeft: FC = () => {
         )}
         tooltip="New Thread"
         side="right"
+        disabled={true} //@todo: temporary disabled until backend supports this
       >
         <div className="flex items-center gap-2 text-sm font-semibold">
           <span>New Thread</span>
         </div>
-
         <EditIcon className="size-4" />
       </ButtonWithTooltip>
     </ThreadListPrimitive.New>
@@ -85,6 +85,7 @@ const ThreadListItem: FC = () => {
           variant="ghost"
           className="hover:text-foreground/60 ml-auto h-auto p-0"
           tooltip="Archive"
+          disabled={true}
         >
           <ArchiveIcon className="size-4" />
         </ButtonWithTooltip>
@@ -94,6 +95,7 @@ const ThreadListItem: FC = () => {
           variant="ghost"
           className="hover:text-foreground/60 ml-auto h-auto p-0"
           tooltip="Delete"
+          disabled={true}
         >
           <DeleteIcon className="size-4" />
         </ButtonWithTooltip>

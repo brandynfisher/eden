@@ -10,7 +10,7 @@ import {
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
 import { SimpleImageAttachmentAdapter } from '@assistant-ui/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export const useEdenRuntime = ({
   threadId,
@@ -30,6 +30,16 @@ export const useEdenRuntime = ({
   const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
   const { threads } = useThreadListQuery()
 
+  useEffect(() => {
+    if (onSwitchToThread && !threadId && threads?.length) {
+      const selectInitialThread = async (threadId: string) => {
+        const { messages } = await onSwitchToThread(threadId)
+        setMessages(messages)
+        setIsRunning(false)
+      }
+      selectInitialThread(threads[0]._id)
+    }
+  }, [threadId, threads, onSwitchToThread])
   // console.log('useEdenRuntime', { threadId, threads, messages })
 
   const handleSendMessage = async (messages: EdenMessage[]) => {

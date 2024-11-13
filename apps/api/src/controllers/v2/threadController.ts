@@ -110,7 +110,7 @@ export const listThreads = async (
       page,
       sort: {
         ...sort,
-        createdAt: -1,
+        updatedAt: -1,
       },
     }
 

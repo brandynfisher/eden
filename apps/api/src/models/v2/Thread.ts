@@ -44,9 +44,10 @@ export const threadSchema = new Schema<ThreadDocument>(
   },
 )
 
-threadSchema.index({ createdAt: -1 })
+threadSchema.index({ updatedAt: -1, createdAt: -1 })
 threadSchema.index({
   user: 1,
+  updatedAt: -1,
   createdAt: -1,
 })
 threadSchema.plugin(paginate)
