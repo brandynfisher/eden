@@ -53,6 +53,7 @@ export const useEdenRuntime = ({
 
   return useExternalStoreRuntime({
     isRunning,
+    //@ts-expect-error: Type error: Type 'ThreadMessage[]' is not assignable to type 'EdenMessage[]'
     messages: threadMessages,
     setMessages,
     adapters: {
