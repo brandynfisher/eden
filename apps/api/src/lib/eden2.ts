@@ -1,5 +1,5 @@
 import { TaskV2Document } from '../models/v2/TaskV2'
-// import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
+import { MessageSchema, ThreadDocument } from '../models/v2/Thread'
 import { FastifyInstance } from 'fastify'
 
 type GenericUpdate = { [key: string]: string | number | boolean }
@@ -11,36 +11,15 @@ export const handleTaskUpdateStreamEvent = async (
   _updatedFields?: GenericUpdate,
 ) => {
   // server.log.info({ msg: 'handleTaskUpdateStreamEvent', task })
-  // const isStatusChange = !updatedFields || !!updatedFields.status
-
-  // // @todo: is there any thing specific we need to do based on
-  // if (isStatusChange) {
-  //   console.log('task status change', task.status)
-  //   switch (task.status) {
-  //     case 'pending':
-  //       break
-  //     case 'running':
-  //       break
-  //     case 'completed':
-  //       break
-  //     case 'failed':
-  //       break
-  //     default:
-  //       throw new Error(`Unknown status ${task.status}`)
-  //   }
-  // }
-
-  // server.internalMessages.publish(InternalMessagesQueues.TaskUpdatesV2, task)
   server.internalMessages.publish('task-updates-v2', task)
 }
 
 export const handleThreadUpdateStreamEvent = async (
   server: FastifyInstance,
-  thread: any,
-  _updatedFields?: GenericUpdate,
+  thread?: ThreadDocument,
+  newMessages?: MessageSchema[],
 ) => {
-  // server.log.info({ msg: 'handleThreadUpdateStreamEvent', thread })
-  server.internalMessages.publish('thread-updates', thread)
+  server.internalMessages.publish('thread-updates', { thread, newMessages })
 }
 
 export const calculateMaxDimensions = (

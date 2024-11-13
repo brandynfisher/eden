@@ -3,14 +3,21 @@
 import { useWebSocketAuth } from '@/hooks/use-websocket-auth'
 import { useWebSocketConnection } from '@/hooks/use-websocket-connection'
 import { TaskV2, Thread } from '@edenlabs/eden-sdk'
+import { MessageSchema } from 'api/src/models/v2/Thread'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { ReadyState } from 'react-use-websocket'
 
-export type GenericObject = { [key: string]: string | boolean | number }
+export type GenericObject = {
+  [key: string]: string | boolean | number | GenericObject[]
+}
 
 export type JsonMessage = {
   event: string
-  data: { task?: TaskV2; thread?: Thread } & GenericObject
+  data: {
+    task?: TaskV2
+    thread?: Thread
+    newMessages?: MessageSchema[]
+  } & GenericObject
 }
 
 type WebSocketMessageEvent = {

@@ -12,23 +12,6 @@ import {
 import { SimpleImageAttachmentAdapter } from '@assistant-ui/react'
 import { useState } from 'react'
 
-//
-// const getPendingToolCalls = (messages: LangChainMessage[]) => {
-//   const pendingToolCalls = new Map<string, LangChainToolCall>();
-//   for (const message of messages) {
-//     if (message.type === "ai") {
-//       for (const toolCall of message.tool_calls ?? []) {
-//         pendingToolCalls.set(toolCall.id, toolCall);
-//       }
-//     }
-//     if (message.type === "tool") {
-//       pendingToolCalls.delete(message.tool_call_id);
-//     }
-//   }
-//
-//   return [...pendingToolCalls.values()];
-// };
-
 export const useEdenRuntime = ({
   threadId,
   stream,
@@ -47,7 +30,7 @@ export const useEdenRuntime = ({
   const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
   const { threads } = useThreadListQuery()
 
-  console.log('useEdenRuntime', { threadId, threads, messages })
+  // console.log('useEdenRuntime', { threadId, threads, messages })
 
   const handleSendMessage = async (messages: EdenMessage[]) => {
     try {
@@ -66,7 +49,7 @@ export const useEdenRuntime = ({
     isRunning,
   })
 
-  console.log({ messages })
+  // console.log({ messages })
 
   return useExternalStoreRuntime({
     isRunning,

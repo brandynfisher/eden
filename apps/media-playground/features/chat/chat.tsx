@@ -76,7 +76,7 @@ const TopLeft: FC = () => {
 
 const ThreadListItem: FC = () => {
   return (
-    <ThreadListItemPrimitive.Root className="hover:text-primary data-[active]:bg-muted data-[active]:text-primary flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
+    <ThreadListItemPrimitive.Root className="hover:text-primary data-[active]:bg-muted data-[active]:text-primary hover:bg-muted-darker flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
       <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate">
         <ThreadListItemPrimitive.Title fallback="n/a" />
       </ThreadListItemPrimitive.Trigger>

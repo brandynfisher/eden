@@ -157,7 +157,7 @@ export const getThread = async (
       select: '_id username userId userImage',
     })
 
-    console.log(thread)
+    // console.log(thread)
 
     if (!thread) {
       return reply.status(404).send({

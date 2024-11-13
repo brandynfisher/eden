@@ -4,6 +4,7 @@ import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
 import { GeneratorV2 } from '../../models/v2/GeneratorV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
+import { MessageSchema, ThreadDocument } from '../../models/v2/Thread'
 import {
   ImageFormats,
   changeExtension,
@@ -636,35 +637,40 @@ export const subscribeWebSocketUpdates = function wsHandler(
       internalEmitterEventHandlerTaskUpdates,
     )
 
-    // @todo: implement types, schema, repo, etc
-    const internalEmitterEventHandlerThreadUpdates = async (thread: any) => {
-      console.log('internalEmitterEventHandlerThreadUpdates', thread)
+    const internalEmitterEventHandlerThreadUpdates = async ({
+      thread,
+      newMessages,
+    }: {
+      thread: ThreadDocument
+      newMessages: MessageSchema[]
+    }) => {
+      // console.log('internalEmitterEventHandlerThreadUpdates', thread)
 
       if (!metaData.userId) {
         this.log.error(`User not authenticated/not found - ${thread.user}`)
         return
       }
 
-      console.log(metaData)
-
+      // console.log(metaData)
       // const threadsRepository = new ThreadRepository(ThreadModel)
 
       // socket message is only sent to the intended recipient
       if (metaData?._id?.toString() === thread.user.toString()) {
-        console.log('sending ws even', {
-          event: ServerEventName.ThreadUpdate,
-          data: {
-            thread: thread,
-          },
-        })
+        // console.log('sending ws even', {
+        //   event: ServerEventName.ThreadUpdate,
+        //   data: {
+        //     thread: thread,
+        //   },
+        // })
         // @todo: build and emit WS response
         // @todo: handle status etc here?
+
         socket.send(
           JSON.stringify({
             event: ServerEventName.ThreadUpdate,
-            data: {
-              thread: thread,
-            },
+            data: newMessages
+              ? { newMessages: newMessages }
+              : { thread: thread },
           }),
         )
       }
