@@ -1,11 +1,16 @@
 'use client'
 
 import { createThread, getThread, sendMessage } from '@/features/chat/chatApi'
+import { EdenMessage } from '@/features/chat/convertEdenMessages'
 import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
+import { useWebSocketMessage } from '@/hooks/use-websocket-message'
+import { JsonMessage } from '@/providers/websocket-provider'
 import { AssistantRuntimeProvider } from '@assistant-ui/react'
-import { ReactNode, useRef } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
 
 const agentId = '67170abeb539c335ad24067a'
+const TIMEOUT_DURATION_MS = 5 * 60 * 1000 // You can adjust this value or pass it as a prop
+const MESSAGE_POLLING_INTERVAL_MS = 500
 
 export function EdenRuntimeProvider({
   children,
@@ -13,21 +18,24 @@ export function EdenRuntimeProvider({
   children: ReactNode
 }>) {
   const threadIdRef = useRef<string | undefined>()
+  const abortController = useRef<AbortController>(new AbortController())
+
+  // Use the custom hook to get WebSocket message updates
+  const websocketMessage = useWebSocketMessage({
+    eventType: 'thread-update',
+    abortSignal: abortController.current.signal,
+  })
+
+  // Create a ref to store the latest websocket message
+  const websocketMessageRef = useRef<JsonMessage | null>(null)
+
+  // Update the ref whenever websocketMessage changes
+  useEffect(() => {
+    websocketMessageRef.current = websocketMessage
+  }, [websocketMessage])
+
   const runtime = useEdenRuntime({
     threadId: threadIdRef.current,
-    stream: async messages => {
-      if (!threadIdRef.current) {
-        const { thread_id } = await createThread()
-        threadIdRef.current = thread_id
-      }
-
-      const threadId = threadIdRef.current
-      return sendMessage({
-        threadId,
-        agentId,
-        messages,
-      })
-    },
     onSwitchToNewThread: async () => {
       const { thread_id } = await createThread()
       threadIdRef.current = thread_id
@@ -38,6 +46,109 @@ export function EdenRuntimeProvider({
       return {
         messages: thread.messages,
       }
+    },
+    stream: async messages => {
+      return (async function* () {
+        if (!threadIdRef.current) {
+          const { thread_id } = await createThread()
+          threadIdRef.current = thread_id
+        }
+
+        const threadId = threadIdRef.current
+
+        try {
+          // Initiate message sending
+          yield* sendMessage({
+            threadId,
+            agentId,
+            messages,
+            abortSignal: abortController.current.signal,
+          })
+
+          const timeoutDuration = TIMEOUT_DURATION_MS
+          const pollingInterval = MESSAGE_POLLING_INTERVAL_MS
+          const startTime = Date.now()
+
+          while (true) {
+            const elapsedTime = Date.now() - startTime
+
+            if (elapsedTime >= timeoutDuration) {
+              // Timeout reached, yield error result
+              const timeoutMessage: EdenMessage = {
+                role: 'assistant',
+                status: { type: 'incomplete', reason: 'other' },
+                content: `Error: Timeout reached while waiting for a response.`,
+              }
+
+              yield {
+                data: timeoutMessage,
+              }
+              break
+            }
+
+            if (abortController.current.signal.aborted) {
+              // Abort signal received, yield error result
+              const cancelMessage: EdenMessage = {
+                role: 'assistant',
+                status: { type: 'incomplete', reason: 'cancelled' },
+                content: `Error: Operation was aborted.`,
+              }
+
+              yield {
+                data: cancelMessage,
+              }
+              break
+            }
+
+            // Access the latest websocket message from the ref
+            const currentMessage = websocketMessageRef.current
+
+            if (currentMessage) {
+              const latestThreadMessage =
+                currentMessage.data.thread?.messages.slice(-1)[0]
+
+              if (!latestThreadMessage) {
+                throw new Error('no thread message found')
+              }
+
+              // @todo: don't send full update but rather incremental one and then add all messages
+              // @todo: we will need the backend to communicate status type and reason eventually otherwise i have to guess whenever it may be done
+              // @todo: alternatively fastify has to produce this based on the thread `busy` flag or something
+
+              if (latestThreadMessage.role === 'tool') {
+                const toolResultMessage: EdenMessage = {
+                  role: 'tool',
+                  tool_results: latestThreadMessage.tool_results,
+                }
+                yield {
+                  data: toolResultMessage,
+                }
+              } else {
+                const assistantMessage: EdenMessage = {
+                  role: 'assistant',
+                  status: { type: 'complete', reason: 'stop' },
+                  content: latestThreadMessage.content,
+                }
+                yield {
+                  data: assistantMessage,
+                }
+                break // Exit the loop after yielding the message
+              }
+            }
+
+            await new Promise(resolve => setTimeout(resolve, pollingInterval))
+          }
+        } catch (error) {
+          const errorMessage = {
+            role: 'assistant',
+            status: { type: 'incomplete', reason: 'error' },
+            content: `Error: ${(error as { message: string }).message}`,
+          }
+          yield {
+            data: errorMessage,
+          }
+        }
+      })()
     },
   })
 

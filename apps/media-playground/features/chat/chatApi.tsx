@@ -1,6 +1,5 @@
 import { EdenMessage } from '@/features/chat/convertEdenMessages'
 import {
-  AssistantMessage,
   ThreadsCreateResponse,
   ThreadsGetResponse,
   UserMessage,
@@ -32,34 +31,12 @@ export const getThread = async (threadId: string) => {
   return response.data.thread
 }
 
-// export const getThreadState = async (
-//   threadId: string,
-// ): Promise<ThreadState<Record<string, unknown>>> => {
-//   // const client = createClient();
-//   // return client.threads.getState(threadId);
-//   console.log('getThreadState', threadId);
-// };
-
-// export const updateState = async (
-//   threadId: string,
-//   fields: {
-//     newState: Record<string, unknown>;
-//     asNode?: string;
-//   },
-// ) => {
-//   console.log('updateState', threadId, fields)
-//   // const client = createClient();
-//   // return client.threads.updateState(threadId, {
-//   //   values: fields.newState,
-//   //   asNode: fields.asNode!,
-//   // });
-// };
-
 export const sendMessage = async function* (params: {
   threadId: string
   agentId: string
   messages: EdenMessage[]
-}) {
+  abortSignal: AbortSignal | undefined
+}): AsyncGenerator<{ data: EdenMessage }, void, unknown> {
   console.log('sendMessage', params)
 
   const userMessage = params.messages[params.messages.length - 1] as UserMessage
@@ -75,34 +52,21 @@ export const sendMessage = async function* (params: {
         attachments: userMessage.attachments,
       },
     },
-    // {
-    //   signal: abortSignal,
-    // },
+    {
+      signal: params.abortSignal,
+    },
   )
 
-  await new Promise(resolve => setTimeout(resolve, 5000))
+  if (response.status !== 200) {
+    const errorMessage: EdenMessage = {
+      role: 'assistant',
+      content: `Failed response!`,
+      status: { type: 'incomplete', reason: 'error' },
+    }
 
-  console.log({ response })
-
-  const failureMessage: AssistantMessage = {
-    role: 'assistant',
-    content: `Failed response!`,
+    yield {
+      data: errorMessage,
+    }
+    return
   }
-
-  console.log('yielding', {
-    data: failureMessage,
-  })
-
-  yield {
-    data: failureMessage,
-  }
-  //
-  //
-  // console.log('yielding', {
-  //   data: userMessage,
-  // })
-  //
-  // yield {
-  //   data: userMessage,
-  // }
 }

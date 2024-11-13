@@ -1,6 +1,7 @@
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
+import { cn } from '@/lib/utils'
 import { makeAssistantToolUI } from '@assistant-ui/react'
 import { TaskV2Result } from '@edenlabs/eden-sdk'
 import React from 'react'
@@ -20,22 +21,29 @@ export const TaskResultTool = makeAssistantToolUI<TaskResultToolArgs, string>({
     return (
       <div className="relative mb-2">
         <LightboxGallery>
-          {resultsArray
-            ? resultsArray.map((result, index) => (
-                <div key={index}>
-                  <LightboxGalleryItem
-                    className="w-full h-full"
-                    item={{
-                      url: result.url,
-                      thumbnail: result.url,
-                      width: result.mediaAttributes?.width,
-                      height: result.mediaAttributes?.height,
-                      duration: result.mediaAttributes?.duration || undefined,
-                    }}
-                  />
-                </div>
-              ))
-            : null}
+          <div
+            className={cn([
+              resultsArray && resultsArray.length > 1 && 'grid',
+              'grid-cols-2 gap-4',
+            ])}
+          >
+            {resultsArray
+              ? resultsArray.map((result, index) => (
+                  <div key={index}>
+                    <LightboxGalleryItem
+                      className="w-full h-full"
+                      item={{
+                        url: result.url,
+                        thumbnail: result.url,
+                        width: result.mediaAttributes?.width,
+                        height: result.mediaAttributes?.height,
+                        duration: result.mediaAttributes?.duration || undefined,
+                      }}
+                    />
+                  </div>
+                ))
+              : null}
+          </div>
         </LightboxGallery>
       </div>
     )

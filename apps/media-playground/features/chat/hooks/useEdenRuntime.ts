@@ -70,7 +70,6 @@ export const useEdenRuntime = ({
 
   return useExternalStoreRuntime({
     isRunning,
-    // convertMessage: convertEdenMessages,
     messages: threadMessages,
     setMessages,
     adapters: {
@@ -97,26 +96,7 @@ export const useEdenRuntime = ({
       },
     },
     onNew: msg => {
-      // const cancellations =
-      //   autoCancelPendingToolCalls !== false
-      //     ? getPendingToolCalls(messages).map(
-      //       (t) =>
-      //         ({
-      //           type: "tool",
-      //           name: t.name,
-      //           tool_call_id: t.id,
-      //           content: JSON.stringify({ cancelled: true }),
-      //         }) satisfies EdenMessage & { type: "tool" },
-      //     )
-      //     : [];
-
-      // const allContent = [
-      //   ...msg.content,
-      //   ...msg.attachments.flatMap((a) => a.content),
-      // ];
-
       return handleSendMessage([
-        // ...cancellations,
         {
           role: 'user',
           content:
@@ -127,15 +107,5 @@ export const useEdenRuntime = ({
         },
       ])
     },
-    // onAddToolResult: async ({ toolCallId, toolName, result }) => {
-    //   await handleSendMessage([
-    //     {
-    //       type: "tool",
-    //       name: toolName,
-    //       tool_call_id: toolCallId,
-    //       content: JSON.stringify(result),
-    //     },
-    //   ]);
-    // },
   })
 }

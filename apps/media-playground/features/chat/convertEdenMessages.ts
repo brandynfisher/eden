@@ -1,6 +1,6 @@
 'use client'
 
-import { useExternalMessageConverter } from '@assistant-ui/react'
+import { MessageStatus, useExternalMessageConverter } from '@assistant-ui/react'
 import { ToolCallContentPart } from '@assistant-ui/react'
 import {
   AssistantMessage,
@@ -9,11 +9,12 @@ import {
   UserMessage,
 } from '@edenlabs/eden-sdk'
 
-export type EdenMessage =
+export type EdenMessage = { status?: MessageStatus } & (
   | UserMessage
   | SystemMessage
   | AssistantMessage
   | ToolMessage
+)
 
 const contentToParts = (
   content:
@@ -31,19 +32,18 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
     case 'system':
       return {
         role: 'system',
-        // id: message.id,
         content: [{ type: 'text', text: message.content }],
+        status: message.status,
       }
     case 'user':
       return {
         role: 'user',
-        // id: message.id,
         content: contentToParts(message.content),
+        status: message.status,
       }
     case 'assistant':
       return {
         role: 'assistant',
-        // id: message.id,
         content: [
           ...contentToParts(message.content),
           ...(message.tool_calls?.map(
@@ -57,12 +57,11 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
             }),
           ) ?? []),
         ],
+        status: message.status,
       }
     case 'tool':
       return {
         role: 'assistant',
-        // toolCallId: 'string',
-        // result: '',
         content: [
           ...(message.tool_results?.map(
             (chunk): ToolCallContentPart => ({
@@ -75,6 +74,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
             }),
           ) ?? []),
         ],
+        status: message.status,
       }
   }
 }
