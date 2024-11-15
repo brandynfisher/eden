@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { MyComposer } from '@/features/chat/components/composer'
 import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
@@ -166,6 +167,7 @@ const Chat: FC = () => {
         <Thread
           components={{
             ThreadWelcome: MyThreadWelcome,
+            Composer: MyComposer,
           }}
           welcome={{
             suggestions: [

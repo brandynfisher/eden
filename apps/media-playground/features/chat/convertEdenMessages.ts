@@ -1,6 +1,10 @@
 'use client'
 
-import { MessageStatus, useExternalMessageConverter } from '@assistant-ui/react'
+import {
+  CompleteAttachment,
+  MessageStatus,
+  useExternalMessageConverter,
+} from '@assistant-ui/react'
 import { ToolCallContentPart } from '@assistant-ui/react'
 import {
   AssistantMessage,
@@ -34,12 +38,31 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
         role: 'system',
         content: [{ type: 'text', text: message.content }],
         status: message.status,
+        createdAt: message.createdAt,
       }
     case 'user':
       return {
         role: 'user',
         content: contentToParts(message.content),
+        attachments: message.attachments?.map(
+          (attachment, idx) =>
+            ({
+              id: idx.toString(),
+              type: 'image',
+              name: attachment,
+              content: [
+                {
+                  type: 'image',
+                  image: attachment,
+                },
+              ],
+              // contentType: attachment.contentType ?? "unknown/unknown",
+              contentType: 'image/png',
+              status: { type: 'complete' },
+            } satisfies CompleteAttachment),
+        ),
         status: message.status,
+        createdAt: message.createdAt,
       }
     case 'assistant':
       return {
@@ -58,6 +81,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
           ) ?? []),
         ],
         status: message.status,
+        createdAt: message.createdAt,
       }
     case 'tool':
       return {
@@ -75,6 +99,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
           ) ?? []),
         ],
         status: message.status,
+        createdAt: message.createdAt,
       }
   }
 }

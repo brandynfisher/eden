@@ -88,7 +88,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
 
       if (streamClosePromise) {
         streamClosePromise.then(() => {
-          fastify.log.info('Task change stream closed')
+          fastify.log.info('Thread change stream closed')
           done()
           return
         })

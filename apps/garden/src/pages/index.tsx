@@ -20,12 +20,12 @@ const highlightItemsConfig =
           description:
             'Inspired by vintage poster designs and created with vibrant colors. This model accentuates symmetry, sacred symbols and is great for poster art and album covers.',
         },
-        {
-          conceptId: '65c9c50fca4d4960374760bc', //PlanTA aleflo
-          creationId: '65cb128c4186294ff1c90ee8',
-          description:
-            'This concept is great for creating beautiful high quality immersive imageries enriched with glowing green leaves, liquids and alien-looking plants',
-        },
+        // {
+        //   conceptId: '65c9c50fca4d4960374760bc', //PlanTA aleflo
+        //   creationId: '65cb128c4186294ff1c90ee8',
+        //   description:
+        //     'This concept is great for creating beautiful high quality immersive imageries enriched with glowing green leaves, liquids and alien-looking plants',
+        // },
       ]
     : [
         {

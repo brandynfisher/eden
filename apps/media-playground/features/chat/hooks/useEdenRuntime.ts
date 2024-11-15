@@ -2,14 +2,15 @@ import {
   EdenMessage,
   convertEdenMessages,
 } from '@/features/chat/convertEdenMessages'
+import edenImageAttachmentAdapter from '@/features/chat/edenImageAttachmentAdapter'
 import { useEdenMessages } from '@/features/chat/hooks/useEdenMessages'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import {
+  CompositeAttachmentAdapter,
   TextContentPart,
   useExternalMessageConverter,
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
-import { SimpleImageAttachmentAdapter } from '@assistant-ui/react'
 import { useEffect, useState } from 'react'
 
 export const useEdenRuntime = ({
@@ -63,11 +64,15 @@ export const useEdenRuntime = ({
 
   return useExternalStoreRuntime({
     isRunning,
+    //@todo: fix this type issue
     //@ts-expect-error: Type error: Type 'ThreadMessage[]' is not assignable to type 'EdenMessage[]'
     messages: threadMessages,
     setMessages,
     adapters: {
-      attachments: new SimpleImageAttachmentAdapter(),
+      attachments: new CompositeAttachmentAdapter([
+        edenImageAttachmentAdapter,
+        // new SimpleTextAttachmentAdapter(),
+      ]),
       threadList: {
         threadId,
         threads: threads?.map(thread => ({
