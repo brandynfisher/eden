@@ -1,17 +1,8 @@
 import MyAttachment from '@/features/chat/components/attachment'
-import {
-  BranchPicker,
-  UserActionBar,
-  UserMessage,
-  useMessage,
-} from '@assistant-ui/react'
+import { BranchPicker, UserActionBar, UserMessage } from '@assistant-ui/react'
 import type { FC } from 'react'
 
 const MyUserMessage: FC = () => {
-  const message = useMessage()
-
-  console.log({ message })
-
   return (
     <UserMessage.Root>
       <UserMessage.Attachments components={{ Attachment: MyAttachment }} />

@@ -144,7 +144,6 @@ export function EdenRuntimeProvider({
               } else {
                 throw new Error('no updatedFields.messages found')
               }
-              // @todo: don't send full update but rather incremental one and then add all messages
               // @todo: we will need the backend to communicate status type and reason eventually otherwise i have to guess whenever it may be done
               // @todo: alternatively fastify has to produce this based on the thread `busy` flag or something
             }

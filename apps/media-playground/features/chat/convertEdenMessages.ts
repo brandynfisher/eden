@@ -1,5 +1,6 @@
 'use client'
 
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import {
   CompleteAttachment,
   MessageStatus,
@@ -53,7 +54,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
               content: [
                 {
                   type: 'image',
-                  image: attachment,
+                  image: getCloudfrontOriginalUrl(attachment),
                 },
               ],
               // contentType: attachment.contentType ?? "unknown/unknown",

@@ -141,6 +141,7 @@ const Header: FC = () => {
 }
 
 const Chat: FC = () => {
+  // @todo: agent should be passed in based on parms
   const assistant: AssistantV2 = {
     _id: '67170abeb539c335ad24067a',
     name: 'Eve',

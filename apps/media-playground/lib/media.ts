@@ -33,6 +33,13 @@ export function getCloudfrontOriginalUrl(filename?: string) {
     }
   }
 
+  const s3Prefix = `edenartlab-`
+  if (filename.startsWith(`https://${s3Prefix}`)) {
+    // remove potentially existing url prefix, only keep pathname of filename - can be any url
+    const pathname = filename.replace(/^https?:\/\/[^/]+\//, '')
+    return `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL}/${pathname}`
+  }
+
   // any other full url should be returned as is (maybe legacy or whatever)
   if (filename.startsWith('https://')) {
     return filename

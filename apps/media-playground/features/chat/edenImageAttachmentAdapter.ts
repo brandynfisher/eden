@@ -1,6 +1,7 @@
 'use client'
 
 import { uploadFileToS3 } from '@/lib/files'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { AttachmentAdapter } from '@assistant-ui/react'
 import { INTERNAL } from '@assistant-ui/react'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
@@ -52,6 +53,7 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
     )
 
     console.log({ asset })
+    // @todo: when progress is possible, return cloudfront url as name after upload
 
     return {
       id: generateId(),
@@ -68,13 +70,14 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
     return {
       ...{
         ...attachment,
-        name: (attachment.file as File & { fileUrl: string }).fileUrl,
+        name: getCloudfrontOriginalUrl(
+          (attachment.file as File & { fileUrl: string }).fileUrl,
+        ),
       },
       content: [
         {
           type: 'image',
           image: await getFileDataURL(attachment.file),
-          // image: (attachment.file).fileUrl,
         },
       ],
       status: { type: 'complete' },

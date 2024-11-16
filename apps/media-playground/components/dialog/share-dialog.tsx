@@ -92,7 +92,7 @@ const ShareDialog = () => {
             onClick={() => {
               navigator.share({
                 title: 'Share',
-                text: 'Check out this on Eden',
+                text: 'Check this on Eden',
                 url: shareModal.shareUrl,
               })
             }}

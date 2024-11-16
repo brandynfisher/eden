@@ -12,6 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Long, cn, toBigInt } from '@/lib/utils'
 import { TaskV2, TaskV2Args } from '@edenlabs/eden-sdk'
 import { InfoIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
@@ -104,11 +105,12 @@ const ParameterTable = ({ taskId, args, className }: Props) => {
                           className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
                           key={`${inputImageUrl}_${index}`}
                           item={{
-                            url: inputImageUrl,
-                            thumbnail: inputImageUrl,
+                            url: getCloudfrontOriginalUrl(inputImageUrl),
+                            thumbnail: getCloudfrontOriginalUrl(inputImageUrl),
                             width: 72,
                             height: 72,
                           }}
+                          unoptimized={true}
                         />
                       ))}
                   </LightboxGallery>

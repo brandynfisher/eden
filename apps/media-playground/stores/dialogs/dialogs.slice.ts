@@ -117,7 +117,7 @@ const dialogsSlice = createSlice({
         if (navigator && navigator.share) {
           navigator.share({
             title: 'Share',
-            text: 'Check out this on Eden',
+            text: 'Check this on Eden',
             url: action.payload.shareUrl,
           })
           return

@@ -1,6 +1,7 @@
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { makeAssistantToolUI } from '@assistant-ui/react'
 import { TaskV2Result } from '@edenlabs/eden-sdk'
@@ -33,8 +34,8 @@ export const TaskResultTool = makeAssistantToolUI<TaskResultToolArgs, string>({
                     <LightboxGalleryItem
                       className="w-full h-full"
                       item={{
-                        url: result.url,
-                        thumbnail: result.url,
+                        url: getCloudfrontOriginalUrl(result.url),
+                        thumbnail: getCloudfrontOriginalUrl(result.url),
                         width: result.mediaAttributes?.width,
                         height: result.mediaAttributes?.height,
                         duration: result.mediaAttributes?.duration || undefined,
