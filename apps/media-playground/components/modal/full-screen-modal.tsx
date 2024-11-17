@@ -10,12 +10,15 @@ import {
 import { cn } from '@/lib/utils'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { useRouter } from 'next/navigation'
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, ReactElement } from 'react'
 
 type Props = {
   title?: string
   description?: string
   className?: string
+  components?: {
+    OverlayComponent?: () => ReactElement | null
+  }
 } & PropsWithChildren
 
 const FullScreenModal = ({
@@ -23,6 +26,7 @@ const FullScreenModal = ({
   description,
   children,
   className,
+  components: { OverlayComponent } = {},
 }: Props) => {
   const router = useRouter()
 
@@ -32,6 +36,7 @@ const FullScreenModal = ({
 
   return (
     <Dialog defaultOpen={true} open={true} onOpenChange={handleOpenChange}>
+      {OverlayComponent ? <OverlayComponent /> : null}
       <DialogContentScrollable
         className={cn([
           `w-full md:w-[calc(100dvw_-_32px)] h-fit overflow-x-hidden`,

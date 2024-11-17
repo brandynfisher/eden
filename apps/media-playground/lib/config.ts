@@ -58,7 +58,6 @@ export const siteConfig: SiteConfig = {
     '/',
     '/sign-in',
     '/sign-up',
-    '/concierge',
     '/(api|trpc)',
     '/creators',
     '/creations',

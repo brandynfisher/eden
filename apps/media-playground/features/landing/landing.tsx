@@ -18,7 +18,7 @@ const Landing = () => {
           text={'Train custom models'}
         />
         <LinkCard
-          href={'/explore'}
+          href={'/creations'}
           title={'Explore'}
           text={'Browse creations'}
         />

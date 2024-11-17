@@ -15,7 +15,13 @@ import {
   updateDocInPage,
 } from '@/lib/query/cache-updates'
 import { FeedV2CursorResponse } from '@edenlabs/eden-sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  FetchNextPageOptions,
+  InfiniteData,
+  InfiniteQueryObserverResult,
+  useInfiniteQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
@@ -27,12 +33,22 @@ type Props = {
   render: (
     item: RowItem,
     onUpdate: (item: RowItem) => void,
+    index: number,
   ) => React.JSX.Element
   query: Record<string, unknown>
   queryKey: unknown[]
   minCols?: number
   maxCols?: number
   limit?: number
+  onItemsLoaded?: (items: RowItem[]) => void
+  onFetchNextPage?: (
+    options?: FetchNextPageOptions | undefined,
+  ) => Promise<
+    InfiniteQueryObserverResult<
+      InfiniteData<FeedV2CursorResponse, unknown>,
+      Error
+    >
+  >
 }
 
 export const MasonrySkeleton = () => {
@@ -57,6 +73,8 @@ const MasonryVirtualizerVertical = ({
   minCols = 1,
   maxCols = 5,
   limit = DEFAULT_PAGE_LIMIT,
+  onItemsLoaded, // Callback for passing items to parent
+  onFetchNextPage, // Callback for external fetch triggers
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
@@ -172,8 +190,22 @@ const MasonryVirtualizerVertical = ({
   // console.log({queryKey, query})
 
   const allRows = useMemo(() => {
-    return data?.pages?.flatMap(d => d.docs) || []
+    return data?.pages.flatMap(d => d.docs) || []
   }, [data])
+
+  // Call `onItemsLoaded` after rendering
+  useEffect(() => {
+    if (onItemsLoaded) {
+      onItemsLoaded(allRows)
+    }
+  }, [allRows, onItemsLoaded])
+
+  // Expose fetchNextPage for external calls
+  useEffect(() => {
+    if (onFetchNextPage) {
+      onFetchNextPage(fetchNextPage)
+    }
+  }, [fetchNextPage, onFetchNextPage])
 
   const rowVirtualizer = useWindowVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,
@@ -243,7 +275,7 @@ const MasonryVirtualizerVertical = ({
               )}
             </div>
           ) : item ? (
-            render(item, onUpdate)
+            render(item, onUpdate, virtualItem.index)
           ) : (
             <div>Missing data</div>
           )}
