@@ -19,28 +19,34 @@ import { UseFormReturn } from 'react-hook-form'
 
 type MaskingCanvasProps = {
   form: UseFormReturn
+  // value: string,
+  onChange: (fileUrl: string) => void
   parameter: GeneratorParameterV2
   inputImageFieldName: string
   width?: number
   height?: number
+  strokeColor?: string
 }
 
 type Stroke = {
   points: { x: number; y: number }[]
   lineWidth: number
   lineOpacity: number
+  color: string
   isErasing?: boolean
 }
 
 const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   form,
+  // value,
+  onChange,
   parameter,
   inputImageFieldName,
   width = 512,
   height = 512,
 }) => {
   // @todo: implement zoom/pan for finer control
-
+  const strokeColor = '#ffffff'
   const baseImage = form.watch(inputImageFieldName)
 
   console.log('maskingCanvas', parameter.name, parameter.default, baseImage)
@@ -100,25 +106,28 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           overlayCanvasRef.current.width,
           overlayCanvasRef.current.height,
         )
-        history.forEach(({ points, lineWidth, lineOpacity, isErasing }) => {
-          ctx.lineWidth = lineWidth
-          ctx.lineCap = 'round'
-          ctx.lineJoin = 'round'
-          ctx.globalAlpha = lineOpacity
-          ctx.globalCompositeOperation = isErasing
-            ? 'destination-out'
-            : 'source-over'
-          ctx.beginPath()
-          points.forEach((point, index) => {
-            if (index === 0) {
-              ctx.moveTo(point.x, point.y)
-            } else {
-              ctx.lineTo(point.x, point.y)
-            }
-          })
-          ctx.stroke()
-          ctx.closePath()
-        })
+        history.forEach(
+          ({ points, lineWidth, lineOpacity, color, isErasing }) => {
+            ctx.lineWidth = lineWidth
+            ctx.lineCap = 'round'
+            ctx.lineJoin = 'round'
+            ctx.globalAlpha = lineOpacity
+            ctx.strokeStyle = color
+            ctx.globalCompositeOperation = isErasing
+              ? 'destination-out'
+              : 'source-over'
+            ctx.beginPath()
+            points.forEach((point, index) => {
+              if (index === 0) {
+                ctx.moveTo(point.x, point.y)
+              } else {
+                ctx.lineTo(point.x, point.y)
+              }
+            })
+            ctx.stroke()
+            ctx.closePath()
+          },
+        )
       }
     }
   }
@@ -133,6 +142,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           points: [{ x: offsetX, y: offsetY }],
           lineWidth,
           lineOpacity,
+          color: strokeColor,
           isErasing,
         },
       ])
@@ -195,13 +205,53 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     }
   }
 
-  const saveMask = () => {
-    if (overlayCanvasRef.current) {
-      const link = document.createElement('a')
-      link.href = overlayCanvasRef.current.toDataURL()
-      link.download = `mask_${Date.now()}.png`
-      link.click()
+  const exportCanvasToDataUrl = (overlayCanvas: HTMLCanvasElement) => {
+    const blackBackgroundCanvas = document.createElement('canvas')
+    blackBackgroundCanvas.width = overlayCanvas.width
+    blackBackgroundCanvas.height = overlayCanvas.height
+    const ctx = blackBackgroundCanvas.getContext('2d')
+
+    if (ctx) {
+      // Fill the canvas with black background
+      ctx.fillStyle = '#000000'
+      ctx.fillRect(
+        0,
+        0,
+        blackBackgroundCanvas.width,
+        blackBackgroundCanvas.height,
+      )
+
+      // Draw the overlay canvas on top
+      ctx.drawImage(overlayCanvas, 0, 0)
+
+      return blackBackgroundCanvas.toDataURL()
     }
+  }
+
+  const saveMask = () => {
+    if (!overlayCanvasRef.current) return
+
+    // Save the resulting image
+    const link = document.createElement('a')
+    const dataUrl = exportCanvasToDataUrl(overlayCanvasRef.current)
+
+    if (!dataUrl) return
+
+    link.href = dataUrl
+    link.download = `mask_${Date.now()}.png`
+    link.click()
+  }
+
+  const useMask = () => {
+    if (!overlayCanvasRef.current) return
+
+    const dataUrl = exportCanvasToDataUrl(overlayCanvasRef.current)
+
+    if (!dataUrl) return
+
+    console.log({ dataUrl })
+
+    onChange(dataUrl)
   }
 
   const toggleInvert = () => {
@@ -302,8 +352,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
 
             <Button
               type="button"
+              className={isInverted ? 'bg-purple-900' : 'bg-secondary'}
               size={'sm'}
-              variant={isInverted ? 'default' : 'outline'}
+              variant={'outline'}
               onClick={toggleInvert}
               title="Invert mask colors (does not change output)"
             >
@@ -311,8 +362,10 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
             </Button>
             <Button
               type="button"
+              className={isErasing ? 'bg-purple-900' : 'bg-secondary'}
               size={'sm'}
-              variant={isErasing ? 'default' : 'outline'}
+              variant={'outline'}
+              disabled={!history.length}
               onClick={toggleEraser}
               title="Toggle Eraser"
             >
@@ -373,6 +426,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           </div>
         </>
       )}
+      <Button type="button" disabled={!history.length} onClick={useMask}>
+        Use mask
+      </Button>
     </div>
   )
 }
