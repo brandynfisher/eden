@@ -113,7 +113,6 @@ const TaskStatusIndicator = () => {
             </div>
           </Link>
         </DropdownMenuItem>
-
         <DropdownMenuSeparator />
         <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh_-_240px)] md:max-h-[calc(100dvh_-_120px)]">
           {allTasks.length === 0 ? (
@@ -123,39 +122,24 @@ const TaskStatusIndicator = () => {
           ) : (
             allTasks.map(task => (
               <div key={task._id}>
-                <DropdownMenuItem className="px-2 py-2 hover:bg-muted rounded cursor-pointer">
-                  <div className="flex flex-col w-full">
-                    <div className="flex items-center gap-2 mb-1">
-                      {task.status === TaskV2Status.Running ||
-                      task.status === TaskV2Status.Pending ? (
-                        <span
-                          className={
-                            'text-blue-500 mr-1 h-5 w-5 loading loading-ring'
-                          }
-                        />
-                      ) : null}
-                      {task.status === TaskV2Status.Completed ? (
-                        <CircleCheckIcon className="text-green-500 h-4 w-4" />
-                      ) : null}
-                      {task.status === TaskV2Status.Cancelled ? (
-                        <BanIcon className="text-yellow-500 h-4 w-4" />
-                      ) : null}
-                      {task.status === TaskV2Status.Failed ? (
-                        <TriangleAlertIcon className="text-red-500 h-4 w-4" />
-                      ) : null}
-                      <div className="text-xs text-accent-foreground">
-                        {task.workflow || 'No workflow'}
-                      </div>
-                      <div
-                        className="text-xs text-muted-foreground/50 ml-auto"
-                        title={new Date(task.createdAt).toLocaleString()}
-                      >
-                        <TimeAgo date={task.createdAt} locale="en-short" />
-                      </div>
-                    </div>
-                    <div className={'h-10 flex gap-2 items-center'}>
-                      {task.status === TaskV2Status.Completed
-                        ? task.result.map(result => (
+                {task.status === TaskV2Status.Completed ? (
+                  <Link href={`/create/${task.output_type}/${task.workflow}`}>
+                    <DropdownMenuItem className="px-2 py-2 hover:bg-muted rounded cursor-pointer">
+                      <div className="flex flex-col w-full">
+                        <div className="flex items-center gap-2 mb-1">
+                          <CircleCheckIcon className="text-green-500 h-4 w-4" />
+                          <div className="text-xs text-accent-foreground">
+                            {task.workflow || 'No workflow'}
+                          </div>
+                          <div
+                            className="text-xs text-muted-foreground/50 ml-auto"
+                            title={new Date(task.createdAt).toLocaleString()}
+                          >
+                            <TimeAgo date={task.createdAt} locale="en-short" />
+                          </div>
+                        </div>
+                        <div className={'h-10 flex gap-2 items-center'}>
+                          {task.result.map(result => (
                             <Image
                               key={result.filename}
                               className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
@@ -165,14 +149,50 @@ const TaskStatusIndicator = () => {
                               width={48}
                               height={48}
                             />
-                          ))
-                        : null}
-                      <div className="text-xs line-clamp-2 text-muted-foreground">
-                        {task.args.prompt || '-'}
+                          ))}
+                          <div className="text-xs line-clamp-2 text-muted-foreground">
+                            {task.args.prompt || '-'}
+                          </div>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  </Link>
+                ) : (
+                  <DropdownMenuItem className="px-2 py-2 hover:bg-muted rounded cursor-pointer">
+                    <div className="flex flex-col w-full">
+                      <div className="flex items-center gap-2 mb-1">
+                        {task.status === TaskV2Status.Running ||
+                        task.status === TaskV2Status.Pending ? (
+                          <span
+                            className={
+                              'text-blue-500 mr-1 h-5 w-5 loading loading-ring'
+                            }
+                          />
+                        ) : null}
+                        {task.status === TaskV2Status.Cancelled ? (
+                          <BanIcon className="text-yellow-500 h-4 w-4" />
+                        ) : null}
+                        {task.status === TaskV2Status.Failed ? (
+                          <TriangleAlertIcon className="text-red-500 h-4 w-4" />
+                        ) : null}
+                        <div className="text-xs text-accent-foreground">
+                          {task.workflow || 'No workflow'}
+                        </div>
+                        <div
+                          className="text-xs text-muted-foreground/50 ml-auto"
+                          title={new Date(task.createdAt).toLocaleString()}
+                        >
+                          <TimeAgo date={task.createdAt} locale="en-short" />
+                        </div>
+                      </div>
+                      <div className={'h-10 flex gap-2 items-center'}>
+                        <div className="text-xs line-clamp-2 text-muted-foreground">
+                          {task.args.prompt || '-'}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </DropdownMenuItem>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
               </div>
             ))

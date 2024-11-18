@@ -61,6 +61,7 @@ export const IntermediateOutputsDialog = ({ result }: Props) => {
                           key={`${mediaResult.url}_${index}`}
                           forceRender={false}
                           unoptimized={true}
+                          allowDownload={true}
                           item={{
                             url: mediaResult.url,
                             thumbnail: mediaResult.url,

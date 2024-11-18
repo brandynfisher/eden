@@ -26,6 +26,7 @@ type GalleryItem = {
 type LightboxGalleryItemProps = {
   item: GalleryItem
   unoptimized?: boolean
+  allowDownload?: boolean
   forceRender?: boolean
   className?: string
   sizeOnLoad?: boolean
@@ -35,6 +36,7 @@ export const LightboxGalleryItem = ({
   sizeOnLoad,
   item,
   unoptimized,
+  allowDownload,
   forceRender,
   className,
 }: LightboxGalleryItemProps) => {
@@ -130,6 +132,7 @@ export const LightboxGalleryItem = ({
                       : 'pointer-events-none',
                     className,
                   ])}
+                  allowDownload={allowDownload}
                   videoUrl={getCloudfrontUrl(item.url) || ''}
                   width={width}
                   height={height}
