@@ -140,6 +140,7 @@ type Props = {
   allowedFileTypes?: string[]
   maxFiles?: number
   allowMultiple?: boolean
+  className?: string
 }
 
 const FileUploader = ({
@@ -148,6 +149,7 @@ const FileUploader = ({
   maxFiles = 1,
   allowMultiple = false,
   onChange,
+  className,
 }: Props) => {
   // Separate existing file URLs into an array
   const existingUrls = useMemo(
@@ -376,7 +378,7 @@ const FileUploader = ({
   }
 
   return (
-    <div className="flex-grow">
+    <div className={cn(['flex-grow', className])}>
       <div>
         {existingFiles.length + filesToUpload.length < (maxFiles || 1) ? (
           <label

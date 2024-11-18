@@ -6,8 +6,16 @@ import SliderInput from '@/components/form/input/slider-input'
 import StringArrayInput from '@/components/form/input/string-array-input'
 import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
+import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
+import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
 import { SwitchNoButton } from '@/components/ui/custom/switch-no-button'
+import {
+  Dialog,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   FormControl,
   FormField,
@@ -19,6 +27,7 @@ import { Input } from '@/components/ui/input'
 import MaskingCanvas from '@/features/generators/masking-canvas'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
+import { PaintbrushIcon } from 'lucide-react'
 import { ReactNode, Suspense } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
@@ -29,6 +38,8 @@ type Props = {
   icon?: ReactNode
   className?: string
 }
+
+const maskPainterParameterNames = ['mask_image', 'control_input']
 
 const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
   const { name, label } = parameter
@@ -106,6 +117,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   'flex flex-row items-center justify-between rounded-lg p-4',
                   className,
                 ])}
+                data-test-id={parameter.name}
               >
                 <FormItemHead
                   icon={icon}
@@ -130,6 +142,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                 className={`mt-0 !p-4 ${
                   parameter.required ? '!pt-4' : '!pt-3'
                 }`}
+                data-test-id={parameter.name}
               >
                 {parameter.required ? (
                   <FormLabel className="sr-only">{label}</FormLabel>
@@ -185,7 +198,10 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             )
           case 'string[]':
             return (
-              <FormItem className="mt-0 !p-4 !pt-2">
+              <FormItem
+                className="mt-0 !p-4 !pt-2"
+                data-test-id={parameter.name}
+              >
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -217,7 +233,10 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           case 'lora':
             parsedValue = typeof value !== 'string' ? '' : value
             return (
-              <FormItem className="mt-0 !p-4 !pt-2">
+              <FormItem
+                className="mt-0 !p-4 !pt-2"
+                data-test-id={parameter.name}
+              >
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -245,7 +264,10 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           case 'image[]|video[]':
           case 'video[]|image[]':
             return (
-              <FormItem className="mt-0 !p-4 !pt-2">
+              <FormItem
+                className="mt-0 !p-4 !pt-2"
+                data-test-id={parameter.name}
+              >
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -282,7 +304,10 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           case 'image|video':
           case 'video|image':
             return (
-              <FormItem className="mt-0 !p-4 !pt-2">
+              <FormItem
+                className="mt-0 !p-4 !pt-2"
+                data-test-id={parameter.name}
+              >
                 <FormItemHead
                   label={label}
                   description={parameter.description}
@@ -295,17 +320,45 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                     value={value === null ? '' : value || ''}
                   />
                 </FormControl>
-                <FileUploader
-                  value={value === null ? '' : value || ''}
-                  onChange={onChange}
-                  allowedFileTypes={parameter.type.split('|')}
-                  maxFiles={1}
-                  allowMultiple={false}
-                />
-                {/* //@todo: MaskPainter Inpaint - enable this by changing name */}
-                {parameter.name === 'mask_image_NOTYETNOTYETNOTYET' ? (
-                  <MaskingCanvas baseImageFieldName={'image'} form={form} />
-                ) : null}
+                <div className="flex md:flex-col gap-2 items-center w-full">
+                  <FileUploader
+                    value={value === null ? '' : value || ''}
+                    onChange={onChange}
+                    allowedFileTypes={parameter.type.split('|')}
+                    maxFiles={1}
+                    allowMultiple={false}
+                    className={'w-full'}
+                  />
+                  {/* //@todo: use a dialog / modal */}
+                  {/* //@todo: pass onChange to be called on save/submit */}
+                  {/* //@todo: default (preset) or editing: pass mask image param to be used as default? */}
+                  {maskPainterParameterNames.includes(parameter.name) ? (
+                    <>
+                      <div className="font-bold">or</div>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant={'outline'}>
+                            <PaintbrushIcon className="h-5 w-5 mr-2" />
+                            Draw Mask Image
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContentOverlayBlur>
+                          <DialogTitle>
+                            Mask Painter: {parameter.name}
+                          </DialogTitle>
+                          <DialogDescription>
+                            Draw a masking image
+                          </DialogDescription>
+                          <MaskingCanvas
+                            parameter={parameter}
+                            inputImageFieldName={'image'}
+                            form={form}
+                          />
+                        </DialogContentOverlayBlur>
+                      </Dialog>
+                    </>
+                  ) : null}
+                </div>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
             )
