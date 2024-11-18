@@ -353,6 +353,8 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                             parameter={parameter}
                             inputImageFieldName={'image'}
                             form={form}
+                            // value={value === null ? '' : value || ''}
+                            onChange={onChange}
                           />
                         </DialogContentOverlayBlur>
                       </Dialog>
