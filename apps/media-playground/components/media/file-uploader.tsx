@@ -425,7 +425,7 @@ const FileUploader = ({
       </div>
 
       {filesToUpload.length || existingFiles.length ? (
-        <div className="bg-card p-2 mt-4 rounded-lg">
+        <div className="bg-card p-2 rounded-lg">
           <div className="font-medium mb-2 text-muted-foreground text-sm flex gap-2 flex-wrap justify-between">
             <div>
               Uploaded {existingFiles.length + filesToUpload.length}{' '}

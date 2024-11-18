@@ -26,7 +26,8 @@ type MaskingCanvasProps = {
 }
 
 type Stroke = {
-  imageDataUrl: string
+  points: { x: number; y: number }[]
+  lineWidth: number
   lineOpacity: number
   isErasing?: boolean
 }
@@ -99,16 +100,24 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           overlayCanvasRef.current.width,
           overlayCanvasRef.current.height,
         )
-        history.forEach(({ imageDataUrl, lineOpacity, isErasing }) => {
-          const img = new Image()
-          img.src = imageDataUrl
-          img.onload = () => {
-            ctx.globalAlpha = lineOpacity
-            ctx.globalCompositeOperation = isErasing
-              ? 'destination-out'
-              : 'source-over'
-            ctx.drawImage(img, 0, 0)
-          }
+        history.forEach(({ points, lineWidth, lineOpacity, isErasing }) => {
+          ctx.lineWidth = lineWidth
+          ctx.lineCap = 'round'
+          ctx.lineJoin = 'round'
+          ctx.globalAlpha = lineOpacity
+          ctx.globalCompositeOperation = isErasing
+            ? 'destination-out'
+            : 'source-over'
+          ctx.beginPath()
+          points.forEach((point, index) => {
+            if (index === 0) {
+              ctx.moveTo(point.x, point.y)
+            } else {
+              ctx.lineTo(point.x, point.y)
+            }
+          })
+          ctx.stroke()
+          ctx.closePath()
         })
       }
     }
@@ -118,50 +127,34 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     if (overlayCanvasRef.current) {
       setIsDrawing(true)
       const { offsetX, offsetY } = e.nativeEvent
-      const ctx = overlayCanvasRef.current.getContext('2d')
-      if (ctx) {
-        ctx.lineWidth = lineWidth
-        ctx.lineCap = 'round'
-        ctx.lineJoin = 'round'
-        ctx.globalAlpha = lineOpacity
-        ctx.globalCompositeOperation = isErasing
-          ? 'destination-out'
-          : 'source-over'
-        ctx.beginPath()
-        ctx.moveTo(offsetX, offsetY)
-      }
+      setHistory(prevHistory => [
+        ...prevHistory,
+        {
+          points: [{ x: offsetX, y: offsetY }],
+          lineWidth,
+          lineOpacity,
+          isErasing,
+        },
+      ])
     }
   }
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing || !overlayCanvasRef.current) return
     const { offsetX, offsetY } = e.nativeEvent
-    const ctx = overlayCanvasRef.current.getContext('2d')
-    if (ctx) {
-      ctx.lineTo(offsetX, offsetY)
-      ctx.stroke()
-    }
+    setHistory(prevHistory => {
+      const newHistory = [...prevHistory]
+      const currentStroke = newHistory[newHistory.length - 1]
+      currentStroke.points.push({ x: offsetX, y: offsetY })
+      return newHistory
+    })
+    redrawHistory()
   }
 
   const endDrawing = () => {
     if (!isDrawing) return
     setIsDrawing(false)
-
-    if (overlayCanvasRef.current) {
-      const ctx = overlayCanvasRef.current.getContext('2d')
-      if (ctx) {
-        ctx.closePath()
-        const currentImageData = overlayCanvasRef.current.toDataURL()
-        setHistory(prevHistory => {
-          const newHistory = [
-            ...prevHistory,
-            { imageDataUrl: currentImageData, lineOpacity, isErasing },
-          ]
-          setRedoStack([])
-          return newHistory
-        })
-      }
-    }
+    setRedoStack([])
   }
 
   const undo = () => {
@@ -170,7 +163,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       const currentData = history[history.length - 1]
       setHistory(newHistory)
       setRedoStack(prevRedoStack => [currentData, ...prevRedoStack])
-      redrawHistoryWithHistory(newHistory)
+      redrawHistory()
     }
   }
 
@@ -180,34 +173,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       setRedoStack(remainingRedoStack)
       setHistory(prevHistory => {
         const newHistory = [...prevHistory, redoStroke]
-        redrawHistoryWithHistory(newHistory)
+        redrawHistory()
         return newHistory
       })
-    }
-  }
-
-  const redrawHistoryWithHistory = (historyToDraw: Stroke[]) => {
-    if (overlayCanvasRef.current) {
-      const ctx = overlayCanvasRef.current.getContext('2d')
-      if (ctx) {
-        ctx.clearRect(
-          0,
-          0,
-          overlayCanvasRef.current.width,
-          overlayCanvasRef.current.height,
-        )
-        historyToDraw.forEach(({ imageDataUrl, lineOpacity, isErasing }) => {
-          const img = new Image()
-          img.src = imageDataUrl
-          img.onload = () => {
-            ctx.globalAlpha = lineOpacity
-            ctx.globalCompositeOperation = isErasing
-              ? 'destination-out'
-              : 'source-over'
-            ctx.drawImage(img, 0, 0)
-          }
-        })
-      }
     }
   }
 
@@ -335,7 +303,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
             <Button
               type="button"
               size={'sm'}
-              variant="outline"
+              variant={isInverted ? 'default' : 'outline'}
               onClick={toggleInvert}
               title="Invert mask colors (does not change output)"
             >
@@ -344,7 +312,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
             <Button
               type="button"
               size={'sm'}
-              variant="outline"
+              variant={isErasing ? 'default' : 'outline'}
               onClick={toggleEraser}
               title="Toggle Eraser"
             >
@@ -389,7 +357,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                 }}
               />
             </FormItem>
-            <FormItem>
+            <FormItem className="hidden">
               <Label>Line Opacity</Label>
               <SliderInput
                 type={'float'}
