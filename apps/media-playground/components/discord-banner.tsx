@@ -1,21 +1,23 @@
 'use client'
 
-import useLocalStorage from '../hooks/use-local-storage'
 import DiscordIcon from '@/components/icons/discord'
 import { Button } from '@/components/ui/button'
+import useLocalStorage from '@/hooks/use-local-storage'
 import { XCircleIcon } from 'lucide-react'
 import React from 'react'
 
 const DiscordBanner: React.FC = () => {
-  const [bannerDismissed, setBannerDismissed, isLoading] = useLocalStorage<
-    number | null
-  >('discordBannerDismissed', null)
+  const [discordBannerDismissedQuery, setDiscordBannerDismissed] =
+    useLocalStorage<string>('discordBannerDismissed', '')
 
   const handleDismiss = () => {
-    setBannerDismissed(Date.now())
+    setDiscordBannerDismissed(Date.now().toString())
   }
 
-  if (isLoading || bannerDismissed) {
+  if (
+    discordBannerDismissedQuery.isLoading ||
+    discordBannerDismissedQuery.data
+  ) {
     return null
   }
 

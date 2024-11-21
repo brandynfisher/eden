@@ -1,51 +1,29 @@
-import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useMemo } from 'react'
 
-const useLocalStorage = <T>(
-  key: string,
-  initialValue: T,
-): [T, (value: T) => void, boolean] => {
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+function useLocalStorage<T>(key: string, defaultValue?: T) {
+  const queryKey = useMemo(() => ['local-storage', key], [key])
 
-  const readValue = (): T => {
-    setIsLoading(true)
-    if (typeof window === 'undefined') {
-      setIsLoading(false)
-      return initialValue
-    }
+  const queryClient = useQueryClient()
 
-    try {
-      const item = window.localStorage.getItem(key)
-      const value = item ? JSON.parse(item) : initialValue
-      setIsLoading(false)
-      return value
-    } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error)
-      setIsLoading(false)
-      return initialValue
-    }
-  }
+  const query = useQuery<T>({
+    queryKey,
+    queryFn: () => {
+      const item = localStorage.getItem(key)
+      return item ? JSON.parse(item) : defaultValue || null
+    },
+    retry: false,
+  })
 
-  const [storedValue, setStoredValue] = useState<T>(readValue)
+  const setValue = useCallback(
+    (value: T) => {
+      localStorage.setItem(key, JSON.stringify(value))
+      queryClient.setQueryData(queryKey, value)
+    },
+    [key, queryClient, queryKey],
+  )
 
-  const setValue = (value: T) => {
-    if (typeof window == 'undefined') {
-      console.warn(
-        `Tried setting localStorage key "${key}" even though environment is not a client`,
-      )
-    }
-
-    try {
-      const newValue = value instanceof Function ? value(storedValue) : value
-
-      window.localStorage.setItem(key, JSON.stringify(newValue))
-
-      setStoredValue(newValue)
-    } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error)
-    }
-  }
-
-  return [storedValue, setValue, isLoading]
+  return [query, setValue] as const
 }
 
 export default useLocalStorage
