@@ -262,6 +262,12 @@ const FileUploader = ({
     onChange(maxFiles === 1 ? updatedUrls[0] : updatedUrls)
   }
 
+  const clearFiles = () => {
+    setFilesToUpload([])
+    setExistingFiles([])
+    onChange(maxFiles === 1 ? '' : [])
+  }
+
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return
@@ -592,11 +598,7 @@ const FileUploader = ({
                 size="sm"
                 variant="ghost"
                 type="button"
-                onClick={e => {
-                  e.stopPropagation()
-                  setFilesToUpload([])
-                  setExistingFiles([])
-                }}
+                onClick={clearFiles}
               >
                 <Trash2Icon className="mr-2 h-4 w-4" />
                 Clear all uploads

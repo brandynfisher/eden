@@ -1,9 +1,11 @@
 import SliderInput from '@/components/form/input/slider-input'
+import LoadingIndicator from '@/components/loading-indicator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { FormItem } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { uploadFileToS3 } from '@/lib/files'
+import axios from 'axios'
 import {
   BlendIcon,
   DownloadIcon,
@@ -19,9 +21,8 @@ import { UseFormReturn } from 'react-hook-form'
 
 type MaskingCanvasProps = {
   form: UseFormReturn
-  // value: string,
   onChange: (fileUrl: string) => void
-  parameter: GeneratorParameterV2
+  // parameter: GeneratorParameterV2;
   inputImageFieldName: string
   width?: number
   height?: number
@@ -38,20 +39,16 @@ type Stroke = {
 
 const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   form,
-  // value,
   onChange,
-  parameter,
   inputImageFieldName,
   width = 512,
   height = 512,
 }) => {
-  // @todo: implement zoom/pan for finer control
   const strokeColor = '#ffffff'
   const baseImage = form.watch(inputImageFieldName)
 
-  console.log('maskingCanvas', parameter.name, parameter.default, baseImage)
-
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [isUploading, setIsUploading] = useState<boolean>(false)
   const [isDrawing, setIsDrawing] = useState<boolean>(false)
   const [isErasing, setIsErasing] = useState<boolean>(false)
   const [history, setHistory] = useState<Stroke[]>([])
@@ -228,6 +225,28 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     }
   }
 
+  const extractMimeType = (dataUrlHeader: string): string => {
+    const mimeMatch = dataUrlHeader.match(/:(.*?);/)
+    return mimeMatch ? mimeMatch[1] : ''
+  }
+
+  const decodeBase64ToUint8Array = (base64String: string): Uint8Array => {
+    const byteString = atob(base64String)
+    const byteStringLength = byteString.length
+    const u8Array = new Uint8Array(byteStringLength)
+    for (let i = 0; i < byteStringLength; i++) {
+      u8Array[i] = byteString.charCodeAt(i)
+    }
+    return u8Array
+  }
+
+  const dataUrlToFile = (dataUrl: string, fileName: string): File => {
+    const [header, base64Data] = dataUrl.split(',')
+    const mimeType = extractMimeType(header)
+    const byteArray = decodeBase64ToUint8Array(base64Data)
+    return new File([byteArray], fileName, { type: mimeType })
+  }
+
   const saveMask = () => {
     if (!overlayCanvasRef.current) return
 
@@ -242,16 +261,32 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     link.click()
   }
 
-  const useMask = () => {
+  const useMask = async () => {
     if (!overlayCanvasRef.current) return
 
     const dataUrl = exportCanvasToDataUrl(overlayCanvasRef.current)
 
     if (!dataUrl) return
 
+    setIsUploading(true)
     console.log({ dataUrl })
 
-    onChange(dataUrl)
+    const file = dataUrlToFile(dataUrl, `mask_${Date.now()}.png`)
+    const cancelSource = axios.CancelToken.source()
+
+    try {
+      const uploadedFile = await uploadFileToS3({
+        file,
+        onUploadProgress: progressEvent => console.log(progressEvent),
+        cancelSource,
+      })
+
+      onChange(uploadedFile.fileUrl)
+    } catch (error) {
+      console.error('Error uploading file:', error)
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const toggleInvert = () => {
@@ -265,7 +300,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   return (
     <div className="w-full max-w-lg mx-auto flex flex-col items-center">
       {!baseImage ? (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="mb-4">
           <AlertDescription className="flex gap-2 items-center">
             <InfoIcon className="h-5 w-5" />
             You need to set a starting image before drawing a mask
@@ -423,12 +458,21 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                 }}
               />
             </FormItem>
+
+            <Button
+              variant="secondary"
+              type="button"
+              disabled={isUploading || !history.length}
+              onClick={useMask}
+            >
+              {isUploading ? (
+                <LoadingIndicator className="w-4 h-4 mr-2" />
+              ) : null}
+              Use mask
+            </Button>
           </div>
         </>
       )}
-      <Button type="button" disabled={!history.length} onClick={useMask}>
-        Use mask
-      </Button>
     </div>
   )
 }

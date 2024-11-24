@@ -22,6 +22,7 @@ import { toast } from 'sonner'
 const imageInputParameterNames = [
   'image',
   'init_image',
+  'mask_image',
   'control_image',
   'dummy_image',
   'person_image',
