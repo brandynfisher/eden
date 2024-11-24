@@ -6,16 +6,8 @@ import SliderInput from '@/components/form/input/slider-input'
 import StringArrayInput from '@/components/form/input/string-array-input'
 import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
-import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
-import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
 import { SwitchNoButton } from '@/components/ui/custom/switch-no-button'
-import {
-  Dialog,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import {
   FormControl,
   FormField,
@@ -24,10 +16,9 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import MaskingCanvas from '@/features/generators/masking-canvas'
+import { MaskingCanvasDialog } from '@/features/generators/masking-canvas-dialog'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
-import { PaintbrushIcon } from 'lucide-react'
 import { ReactNode, Suspense } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
@@ -329,35 +320,15 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                     allowMultiple={false}
                     className={'w-full'}
                   />
-                  {/* //@todo: use a dialog / modal */}
-                  {/* //@todo: pass onChange to be called on save/submit */}
-                  {/* //@todo: default (preset) or editing: pass mask image param to be used as default? */}
+                  {/* // supports mask painter */}
                   {maskPainterParameterNames.includes(parameter.name) ? (
                     <>
                       <div className="font-bold">or</div>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant={'outline'}>
-                            <PaintbrushIcon className="h-5 w-5 mr-2" />
-                            Draw Mask Image
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContentOverlayBlur>
-                          <DialogTitle>
-                            Mask Painter: {parameter.name}
-                          </DialogTitle>
-                          <DialogDescription>
-                            Draw a masking image
-                          </DialogDescription>
-                          <MaskingCanvas
-                            parameter={parameter}
-                            inputImageFieldName={'image'}
-                            form={form}
-                            // value={value === null ? '' : value || ''}
-                            onChange={onChange}
-                          />
-                        </DialogContentOverlayBlur>
-                      </Dialog>
+                      <MaskingCanvasDialog
+                        form={form}
+                        parameter={parameter}
+                        onChange={onChange}
+                      />
                     </>
                   ) : null}
                 </div>

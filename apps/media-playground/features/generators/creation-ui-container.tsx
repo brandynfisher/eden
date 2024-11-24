@@ -5,6 +5,7 @@ import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import CostIndicatorV2 from '@/features/generators/cost-indicator-v2'
 import CreationUIMobile from '@/features/generators/creation-ui-mobile'
@@ -32,15 +33,25 @@ type Props = {
 
 const RUNWAY_TOOL_KEYS = ['runway', 'reel']
 
+const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
+const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
+
 const CreationUIContainer = ({ generator }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const presetResolutions = generator?.resolutions
   const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
+
+  const customParams = [SAMPLE_COUNT_PARAMETER_NAME, ...MASKING_PARAMETER_NAMES]
+
   const sampleCountParameter = generator.parameters?.filter(
-    parameter => parameter.name === 'n_samples',
+    parameter => parameter.name === SAMPLE_COUNT_PARAMETER_NAME,
   )[0]
+
+  const maskingParameters = generator.parameters?.filter(parameter =>
+    MASKING_PARAMETER_NAMES.includes(parameter.name),
+  )
 
   type FormData = z.infer<typeof parameterSchema>
   const defaultValues: FormData | undefined = getDefaultNameValueMap(
@@ -77,6 +88,8 @@ const CreationUIContainer = ({ generator }: Props) => {
     }
 
     // console.log('onSubmit', formData)
+    // return
+
     setIsSubmitting(true)
 
     try {
@@ -122,7 +135,8 @@ const CreationUIContainer = ({ generator }: Props) => {
   const requiredParameters = useMemo(
     () =>
       generator.parameters?.filter(
-        parameter => parameter.required && parameter.name !== 'n_samples',
+        parameter =>
+          parameter.required && !customParams.includes(parameter.name),
       ),
     [generator.parameters],
   )
@@ -135,7 +149,8 @@ const CreationUIContainer = ({ generator }: Props) => {
   const optionalParameters = useMemo(
     () =>
       generator.parameters?.filter(
-        parameter => !parameter.required && parameter.name !== 'n_samples',
+        parameter =>
+          !parameter.required && !customParams.includes(parameter.name),
       ),
     [generator.parameters],
   )
@@ -195,6 +210,41 @@ const CreationUIContainer = ({ generator }: Props) => {
                 )}
               </div>
             ))}
+
+            {maskingParameters && maskingParameters.length > 0 ? (
+              <div className="bg-muted-darker border border-secondary rounded-lg space-y-2 mt-0 !p-4 !pt-2">
+                <div className="text-sm font-medium text-foreground">
+                  Masking
+                </div>
+                <Tabs
+                  defaultValue={'mask_image'}
+                  className="rounded-lg bg-secondary"
+                >
+                  <TabsList className="w-full flex gap-1">
+                    <TabsTrigger value="mask_image" className="w-full">
+                      Use Image
+                    </TabsTrigger>
+                    <TabsTrigger value="masking_prompt" className="w-full">
+                      Use Prompt
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {maskingParameters?.map(parameter => (
+                    <TabsContent
+                      key={parameter.name}
+                      value={parameter.name}
+                      className="mt-0"
+                    >
+                      <ParameterField
+                        form={form}
+                        tool={generator}
+                        parameter={{ ...parameter, required: false }}
+                      />
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </div>
+            ) : null}
 
             {(presetResolutions && presetResolutions.length) ||
             sampleCountParameter ? (

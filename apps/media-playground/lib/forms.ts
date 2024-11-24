@@ -194,13 +194,49 @@ export function createZodParameterSchema(
   }
 }
 
-export function createZodFormSchema(parameters: GeneratorParameterV2[]) {
-  const schemaObj = parameters.reduce((prev, curr) => {
-    prev[curr.name] = createZodParameterSchema(curr)
-    return prev
-  }, {} as Record<string, ZodTypeAny>)
+export function createZodFormSchema(
+  parameters: GeneratorParameterV2[],
+): z.ZodObject<{}, 'strip', z.ZodTypeAny> {
+  // Reduce parameters into a Zod schema object
+  const schemaObj = parameters.reduce<Record<string, ZodTypeAny>>(
+    (prev, curr) => {
+      if (curr.name === 'mask_image' || curr.name === 'masking_prompt') {
+        curr.required = false
+      }
 
-  return z.object(schemaObj)
+      prev[curr.name] = createZodParameterSchema(curr)
+
+      return prev
+    },
+    {},
+  )
+
+  let schema = z.object(schemaObj)
+
+  // Masking Tool: Add custom validation logic for mask_image and masking_prompt
+  if ('mask_image' in schemaObj && 'masking_prompt' in schemaObj) {
+    //@ts-expect-error: refine returns ZodEffect<ZodType> which confused things
+    schema = schema.superRefine((data, ctx) => {
+      if (!data.mask_image?.trim() && !data.masking_prompt?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Either image or prompt or both must have a value',
+          path: ['mask_image'],
+        })
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Either image or prompt or both must have a value',
+          path: ['masking_prompt'],
+        })
+        return z.NEVER
+      }
+      if (data.mask_image && data.masking_prompt) {
+        // Add any additional complex validation logic if necessary
+      }
+    })
+  }
+
+  return schema
 }
 
 export function getDefaultNameValueMap(parameters?: GeneratorParameterV2[]) {
