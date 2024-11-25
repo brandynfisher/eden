@@ -77,6 +77,10 @@ export const LightboxGalleryItem = ({
     >
       {({ ref, open }) => (
         <div
+          draggable
+          onDragStart={e => {
+            e.dataTransfer.setData('text/plain', item.url || '')
+          }}
           className={cn([
             `rounded-md overflow-hidden`,
             isLoaded ? 'flex max-w-full max-h-full ' : 'w-full h-full',
