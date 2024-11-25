@@ -94,7 +94,7 @@ const CreationUIContainer = ({ generator }: Props) => {
 
     try {
       const response = await axios.post('/api/tasks/create', {
-        workflow: generator.key,
+        tool: generator.key,
         args: formData,
       })
 
@@ -342,7 +342,7 @@ const CreationUIContainer = ({ generator }: Props) => {
             </div>
           ) : null}
 
-          <CostIndicatorV2 formula={generator.costEstimate} />
+          <CostIndicatorV2 formula={generator.cost_estimate} />
 
           <Button
             type="button"

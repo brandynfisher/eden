@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 export const generatorsListQueryKey = ['generators']
 
 export const useGeneratorsListQuery = (query?: {
-  outputType?: GeneratorOutputTypeV2[]
+  output_type?: GeneratorOutputTypeV2[]
 }) => {
   const {
     data,
@@ -18,12 +18,18 @@ export const useGeneratorsListQuery = (query?: {
     isSuccess,
     status,
   } = useQuery({
-    queryKey: [...generatorsListQueryKey, query?.outputType],
+    queryKey: [...generatorsListQueryKey, query?.output_type],
     queryFn: () =>
       fetcher<{
         generators: GeneratorV2[]
       }>(
-        `/api/generators?hideParams=true${query?.outputType ? `&outputType=${query.outputType.map(outputType => outputType).join(',')}` : ''}`,
+        `/api/generators?hideParams=true${
+          query?.output_type
+            ? `&output_type=${query.output_type
+                .map(outputType => outputType)
+                .join(',')}`
+            : ''
+        }`,
       ),
   })
 

@@ -8,7 +8,7 @@ const baseSegment = 'train'
 
 const PageLayout = ({ children }: PropsWithChildren) => {
   const { generators } = useGeneratorsListQuery({
-    outputType: ['lora'],
+    output_type: ['lora'],
   })
 
   if (!generators) {
@@ -24,7 +24,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
         {
           title: 'Lora',
           links: generators
-            .filter(generator => generator.outputType === 'lora')
+            .filter(generator => generator.output_type === 'lora')
             .map(generator => ({
               label: generator.name,
               private: generator.private,

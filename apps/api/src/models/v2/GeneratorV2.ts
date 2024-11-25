@@ -11,8 +11,8 @@ export type GeneratorV2Schema = {
   description?: string
   private?: boolean
   parameters?: GeneratorParameterV2[]
-  outputType: GeneratorOutputTypeV2
-  costEstimate?: string
+  output_type: GeneratorOutputTypeV2
+  cost_estimate?: string
   resolutions?: string[]
   thumbnail?: string
   order?: number
@@ -42,7 +42,7 @@ export const generatorV2Schema = new Schema<GeneratorV2Document>(
       type: [Schema.Types.Mixed],
       default: [],
     },
-    outputType: {
+    output_type: {
       type: String,
     },
     thumbnail: {
@@ -64,10 +64,10 @@ export const generatorV2Schema = new Schema<GeneratorV2Document>(
 )
 
 generatorV2Schema.index({ createdAt: -1 })
-generatorV2Schema.index({ outputType: -1, createdAt: -1 })
+generatorV2Schema.index({ output_type: -1, createdAt: -1 })
 generatorV2Schema.index({ key: -1, private: -1, createdAt: -1 })
 
 export const GeneratorV2 = model<GeneratorV2Document>(
-  'tools',
+  'tools2',
   generatorV2Schema,
 )

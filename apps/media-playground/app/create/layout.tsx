@@ -8,7 +8,7 @@ const baseSegment = 'create'
 
 const PageLayout = ({ children }: PropsWithChildren) => {
   const { generators } = useGeneratorsListQuery({
-    outputType: ['image', 'video', 'audio'],
+    output_type: ['image', 'video', 'audio'],
   })
 
   if (!generators) {
@@ -24,7 +24,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
         {
           title: 'Image',
           links: generators
-            .filter(generator => generator.outputType === 'image')
+            .filter(generator => generator.output_type === 'image')
             .map(generator => ({
               label: generator.name,
               private: generator.private,
@@ -35,7 +35,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
         {
           title: 'Video',
           links: generators
-            .filter(generator => generator.outputType === 'video')
+            .filter(generator => generator.output_type === 'video')
             .map(generator => ({
               label: generator.name,
               private: generator.private,
@@ -46,7 +46,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
         {
           title: 'Audio',
           links: generators
-            .filter(generator => generator.outputType === 'audio')
+            .filter(generator => generator.output_type === 'audio')
             .map(generator => ({
               label: generator.name,
               private: generator.private,

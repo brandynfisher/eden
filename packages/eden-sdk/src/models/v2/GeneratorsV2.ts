@@ -74,8 +74,8 @@ export type GeneratorV2 = {
   description?: string
   private?: boolean
   parameters?: GeneratorParameterV2[]
-  outputType: GeneratorOutputTypeV2
-  costEstimate?: string
+  output_type: GeneratorOutputTypeV2
+  cost_estimate?: string
   resolutions?: string[]
   thumbnail?: string
   order?: number

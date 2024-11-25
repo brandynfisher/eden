@@ -14,7 +14,7 @@ import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 export interface TasksV2CreateArguments extends WebAPICallOptions {
-  workflow: string
+  tool: string
   args?: any
 }
 
@@ -25,7 +25,7 @@ export interface TasksV2ListArguments
   status?: string | string[]
   type?: 'concepts' | 'creations'
   output_type?: GeneratorOutputTypeV2
-  workflow?: string
+  tool?: string
   minDate?: boolean
 }
 
@@ -196,7 +196,7 @@ export type TaskV2Result = {
 export type TaskV2 = {
   _id: string
   user: Creator
-  workflow: string
+  tool: string
   output_type?: GeneratorOutputTypeV2
   model?: string
   name?: string

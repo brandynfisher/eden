@@ -11,14 +11,14 @@ export async function GET(request: NextRequest) {
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
 
-    const query: { hideParams?: boolean; outputType?: string } = {}
+    const query: { hideParams?: boolean; output_type?: string } = {}
 
     if (searchParams.has('hideParams')) {
       query.hideParams = searchParams.get('hideParams') === 'true'
     }
 
-    if (searchParams.has('outputType')) {
-      query.outputType = searchParams.get('outputType') || ''
+    if (searchParams.has('output_type')) {
+      query.output_type = searchParams.get('output_type') || ''
     }
 
     const res = await eden.generators.listV2(query)

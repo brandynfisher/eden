@@ -14,7 +14,7 @@ export type FeedFilterQueryParams = {
     collection?: string | string[]
     creation?: string | string[]
     generator?: string | string[]
-    outputType?: string | string[]
+    output_type?: string | string[]
     concept?: string | string[]
     public?: boolean
     visibility?: 'all' | 'public' | 'private'

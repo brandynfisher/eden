@@ -42,7 +42,7 @@ const calculateCost = (
   try {
     return Parser.evaluate(formula, config)
   } catch (e) {
-    console.error('Could not parse costEstimate')
+    console.error('Could not parse cost_estimate')
     return Infinity
   }
 }

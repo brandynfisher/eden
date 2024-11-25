@@ -12,7 +12,7 @@ import paginate from 'mongoose-paginate-v2'
 
 export interface TaskV2Schema {
   user: UserDocument
-  workflow: string
+  tool: string
   args: TaskV2Args
   output_type: GeneratorOutputTypeV2
   result: TaskV2Result[]
@@ -26,7 +26,7 @@ export interface TaskV2Schema {
 
 export interface TaskV2Input {
   user: ObjectId
-  workflow: string
+  tool: string
   args: TaskV2Args
   output_type: GeneratorOutputTypeV2
   result: TaskV2Result[]
@@ -44,7 +44,7 @@ export const taskSchema = new Schema<TaskV2Document>(
       type: Schema.Types.ObjectId,
       ref: 'users',
     },
-    workflow: {
+    tool: {
       type: Schema.Types.String,
       required: true,
     },
@@ -84,7 +84,7 @@ taskSchema.index({ handler_id: -1 })
 taskSchema.index({
   user: 1,
   status: 1,
-  workflow: 1,
+  tool: 1,
   output_type: 1,
   createdAt: -1,
 })

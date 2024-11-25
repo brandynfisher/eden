@@ -183,7 +183,7 @@ export type CreationV2 = TaskV2Result & {
   task: ObjectId
   args: TaskV2Args
   output_type: GeneratorOutputTypeV2
-  workflow: string
+  tool: string
   createdAt: Date
   updatedAt: Date
   deleted: boolean

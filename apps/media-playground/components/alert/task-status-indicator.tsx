@@ -144,7 +144,7 @@ const TaskStatusIndicator = () => {
                         <TriangleAlertIcon className="text-red-500 h-4 w-4" />
                       ) : null}
                       <div className="text-xs text-accent-foreground">
-                        {task.workflow || 'No workflow'}
+                        {task.tool || 'No tool'}
                       </div>
                       <div
                         className="text-xs text-muted-foreground/50 ml-auto"

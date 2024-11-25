@@ -35,9 +35,9 @@ const GridSection = ({ generators, priority }: Props) => {
               description={generator.description}
               image={getMediaUrl(generator.thumbnail || '')}
               link={`/${
-                generator.outputType === 'lora'
+                generator.output_type === 'lora'
                   ? 'train'
-                  : `create/${generator.outputType}`
+                  : `create/${generator.output_type}`
               }/${generator.key}`}
               isPrivate={generator.private}
               priority={priority}
@@ -52,16 +52,16 @@ const GridSection = ({ generators, priority }: Props) => {
 }
 
 type GeneratorsGridProps = {
-  outputType: GeneratorOutputTypeV2[]
+  output_type: GeneratorOutputTypeV2[]
   showFeatured?: boolean
 }
 
-const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
-  const { generators } = useGeneratorsListQuery({ outputType })
+const GeneratorsGrid = ({ output_type, showFeatured }: GeneratorsGridProps) => {
+  const { generators } = useGeneratorsListQuery({ output_type })
 
   const [accordionStateQuery, setAccordionState] = useLocalStorage<string[]>(
     'generatorsGridAccordionState',
-    ['featured', ...outputType],
+    ['featured', ...output_type],
   )
 
   const handleAccordionChange = (value: string[]) => {
@@ -76,7 +76,7 @@ const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
     <Accordion
       type="multiple"
       defaultValue={
-        outputType.length === 1 ? [outputType[0]] : accordionStateQuery.data
+        output_type.length === 1 ? [output_type[0]] : accordionStateQuery.data
       }
       onValueChange={handleAccordionChange}
     >
@@ -96,7 +96,7 @@ const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
           </AccordionContent>
         </AccordionItem>
       ) : null}
-      {outputType?.map(type => (
+      {output_type?.map(type => (
         <AccordionItem key={type} value={type}>
           <AccordionTrigger className="capitalize bg-primary-foreground/40 hover:bg-primary-foreground/60 px-4">
             <TypographyH4 className="capitalize">{type}</TypographyH4>
@@ -104,7 +104,7 @@ const GeneratorsGrid = ({ outputType, showFeatured }: GeneratorsGridProps) => {
           <AccordionContent className="my-4">
             <GridSection
               title={type}
-              generators={generators?.filter(gen => gen.outputType === type)}
+              generators={generators?.filter(gen => gen.output_type === type)}
             />
           </AccordionContent>
         </AccordionItem>

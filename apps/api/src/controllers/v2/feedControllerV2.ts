@@ -255,7 +255,7 @@ const handleArguments = async ({
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
     generator?: string[] | ObjectId[] | string | ObjectId
-    outputType?: string[]
+    output_type?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
     praiseCount?: { $gt: 0 }
@@ -367,11 +367,11 @@ const handleArguments = async ({
             return []
           }
 
-          if (field === 'outputType') {
-            if (!customFilterOptions['outputType']) {
-              customFilterOptions['outputType'] = [value]
+          if (field === 'output_type') {
+            if (!customFilterOptions['output_type']) {
+              customFilterOptions['output_type'] = [value]
             } else {
-              customFilterOptions['outputType'].push(value)
+              customFilterOptions['output_type'].push(value)
             }
             return []
           }
@@ -434,7 +434,7 @@ const handleArguments = async ({
   for (const [fieldName, fieldValues] of Object.entries(customFilterOptions)) {
     if (fieldValues === undefined) continue
 
-    if (fieldName === 'outputType') {
+    if (fieldName === 'output_type') {
       customFilterMap['mediaAttributes.type'] = {
         // @ts-ignore
         $in: Array.isArray(fieldValues) ? fieldValues : [fieldValues],

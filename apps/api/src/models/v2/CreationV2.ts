@@ -14,7 +14,7 @@ export interface CreationV2Schema extends BaseTaskResult {
   user: ObjectId
   task: ObjectId
   args: TaskV2Args
-  workflow: string
+  tool: string
   createdAt: Date
   updatedAt: Date
   public?: boolean
@@ -24,7 +24,7 @@ export interface CreationV2Input extends BaseTaskResult {
   user: ObjectId
   task: ObjectId
   args: TaskV2Args
-  workflow: string
+  tool: string
 }
 
 export interface CreationV2Document
@@ -43,7 +43,7 @@ export const creationSchema = new Schema<CreationV2Document>(
       ref: 'tasks',
       required: true,
     },
-    workflow: {
+    tool: {
       type: String,
       required: true,
     },

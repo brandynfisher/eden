@@ -8,7 +8,7 @@ const TrainPage = () => {
     <div className="flex flex-col gap-4 pt-4">
       <TypographyH3>Train Models</TypographyH3>
       <Suspense fallback={<LoadingIndicator />}>
-        <GeneratorsGrid outputType={['lora']} />
+        <GeneratorsGrid output_type={['lora']} />
       </Suspense>
     </div>
   )

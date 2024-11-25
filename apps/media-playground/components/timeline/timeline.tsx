@@ -41,14 +41,14 @@ const Timeline = ({ generator }: Props) => {
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
-      workflow:
-        generator.outputType === 'lora'
+      tool:
+        generator.output_type === 'lora'
           ? generator.key
           : !showAllToolResults
           ? generator.key
           : undefined,
     }),
-    [showAllToolResults, generator.outputType, generator.key],
+    [showAllToolResults, generator.output_type, generator.key],
   )
 
   // Define the query key to match what TaskStatusProvider uses
@@ -56,7 +56,7 @@ const Timeline = ({ generator }: Props) => {
     () => [
       [
         'tasks',
-        generator.outputType === 'lora'
+        generator.output_type === 'lora'
           ? generator.key
           : !showAllToolResults
           ? generator.key
@@ -64,7 +64,7 @@ const Timeline = ({ generator }: Props) => {
       ].filter(Boolean),
       query,
     ],
-    [showAllToolResults, generator.outputType, generator.key, query],
+    [showAllToolResults, generator.output_type, generator.key, query],
   )
 
   // Subscribe to task updates via TaskStatusProvider
@@ -119,7 +119,7 @@ const Timeline = ({ generator }: Props) => {
 
   return (
     <div className="mb-8">
-      {generator.outputType !== 'lora' ? (
+      {generator.output_type !== 'lora' ? (
         <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 my-2 bg-muted-darker">
           <div className="flex items-center justify-between gap-2">
             <label className="text-sm" htmlFor={'show-all-tool-results'}>

@@ -63,12 +63,12 @@ export const createTask = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { workflow, args } = request.body as TasksV2CreateArguments
-  const generator = await GeneratorV2.findOne({ key: workflow })
+  const { tool, args } = request.body as TasksV2CreateArguments
+  const generator = await GeneratorV2.findOne({ key: tool })
 
   if (!generator) {
     return reply.status(404).send({
-      message: `Generator ${workflow} not available`,
+      message: `Generator ${tool} not available`,
     })
   }
 
@@ -81,7 +81,7 @@ export const createTask = async (
 
   const rateLimitCheckResult = await taskRateLimitCheck(
     request,
-    generator.outputType,
+    generator.output_type,
   )
   if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
     if (server.Sentry) {
@@ -97,7 +97,7 @@ export const createTask = async (
   const modalRequest = {
     endpoint: `${server.config.EDEN_COMPUTE_API_URL}/create`,
     data: {
-      workflow,
+      tool,
       args,
       user: userId,
     },
@@ -160,7 +160,7 @@ export const listTasks = async (
   const { userId } = request.user
   const {
     // type,
-    workflow,
+    tool,
     status,
     taskId,
     limit = 25,
@@ -177,13 +177,13 @@ export const listTasks = async (
   }
 
   const isModelTaskQuery =
-    workflow && (workflow === 'lora_trainer' || workflow === 'flux_trainer')
+    tool && (tool === 'lora_trainer' || tool === 'flux_trainer')
   const typeQuery = !isModelTaskQuery
     ? {
-        workflow: { $nin: ['lora_trainer', 'flux_trainer', 'chat'] },
+        tool: { $nin: ['lora_trainer', 'flux_trainer', 'chat'] },
       }
     : {
-        workflow: { $nin: ['chat'] },
+        tool: { $nin: ['chat'] },
       }
 
   const tasksRepository = new TaskV2Repository(TaskV2Model)
@@ -192,7 +192,7 @@ export const listTasks = async (
     user?: string
     status?: string | string[]
     taskId?: string | string[]
-    workflow?: string | { $nin: string[] }
+    tool?: string | { $nin: string[] }
     createdAt?: { $gte: Date }
   } = {
     user: user._id.toString(),
@@ -207,8 +207,8 @@ export const listTasks = async (
     query.taskId = taskId
   }
 
-  if (workflow) {
-    query.workflow = workflow
+  if (tool) {
+    query.tool = tool
   }
 
   if (minDate) {
@@ -573,7 +573,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
         return
       }
 
-      if (task.workflow === 'chat') {
+      if (task.tool === 'chat') {
         return
       }
 
@@ -1004,7 +1004,7 @@ export const publishTaskResult = async (
     creation.public = false
 
     creation.args = taskDocument.args
-    creation.workflow = taskDocument.workflow
+    creation.tool = taskDocument.tool
     creation.mediaAttributes = {
       ...taskResult.mediaAttributes,
       type: taskDocument.output_type,

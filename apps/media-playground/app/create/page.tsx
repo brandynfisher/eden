@@ -4,7 +4,7 @@ const CreatePage = () => {
   return (
     <div className="flex flex-col gap-4 pt-4">
       <GeneratorsGrid
-        outputType={['image', 'video', 'audio']}
+        output_type={['image', 'video', 'audio']}
         showFeatured={true}
       />
     </div>

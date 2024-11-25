@@ -23,7 +23,7 @@ const args = {
 }
 
 const input = {
-  workflow: "txt2img",
+  tool: "txt2img",
   args
 }
 

@@ -193,12 +193,12 @@ export const createCursorPaginationRoute = (
     }
   }
 
-  if (query.outputType) {
-    if (typeof query.outputType === 'string') {
-      filters.push({ outputType: query.outputType })
-    } else if (Array.isArray(query.outputType) && query.outputType.length) {
-      query.outputType.map(id => {
-        filters.push({ outputType: id })
+  if (query.output_type) {
+    if (typeof query.output_type === 'string') {
+      filters.push({ output_type: query.output_type })
+    } else if (Array.isArray(query.output_type) && query.output_type.length) {
+      query.output_type.map(id => {
+        filters.push({ output_type: id })
       })
     }
   }

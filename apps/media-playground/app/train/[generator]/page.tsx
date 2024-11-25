@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 type Props = {
   params: {
     generator: GeneratorV2['key']
-    outputType: GeneratorV2['outputType']
+    output_type: GeneratorV2['output_type']
   }
 }
 

@@ -149,7 +149,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                         <TaskStatusBadge
                           status={item.status}
                           hideText={true}
-                          outputType={item.output_type}
+                          output_type={item.output_type}
                         />
                         {item.status === 'pending'
                           ? 'Waiting to start...'
@@ -187,7 +187,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                 )
               ) : (
                 <div className="text-warning">
-                  Unhandled result: {item.workflow} - {item._id}
+                  Unhandled result: {item.tool} - {item._id}
                 </div>
               )
             ) : null}

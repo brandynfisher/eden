@@ -173,7 +173,7 @@ const CreationActionsContent = ({
         <DropdownMenuItem asChild disabled={!isSignedIn}>
           <Link
             className="cursor-pointer"
-            href={`/create/${creationData.mediaAttributes?.type}/${creationData.workflow}?creation=${creationData._id}`}
+            href={`/create/${creationData.mediaAttributes?.type}/${creationData.tool}?creation=${creationData._id}`}
             scroll={false}
             shallow={true}
           >

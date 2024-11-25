@@ -51,7 +51,7 @@ const SimpleGeneratorForm = ({
     setIsSubmitting(true)
     try {
       const response = await axios.post('/api/tasks/create', {
-        workflow: generator.key,
+        tool: generator.key,
         args: finalData,
       })
 
@@ -100,7 +100,7 @@ const SimpleGeneratorForm = ({
             })
           : null}
         <div className="flex gap-2 items-center justify-end">
-          <CostIndicatorV2 formula={generator.costEstimate} />
+          <CostIndicatorV2 formula={generator.cost_estimate} />
           <Button
             type="button"
             className=" w-[72px]"

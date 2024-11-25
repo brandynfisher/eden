@@ -44,7 +44,7 @@ export const sendMessage = async function* (params: {
   const response: AxiosResponse<ThreadsCreateResponse> = await axios.post(
     '/api/tasks/create',
     {
-      workflow: 'chat',
+      tool: 'chat',
       args: {
         agent_id: params.agentId,
         thread_id: params.threadId,
