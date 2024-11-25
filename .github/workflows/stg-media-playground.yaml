@@ -80,7 +80,6 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/create"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
   notify:
-    if: always()
     needs: [build-and-push-to-ghcr]
     runs-on: ubuntu-latest
 
