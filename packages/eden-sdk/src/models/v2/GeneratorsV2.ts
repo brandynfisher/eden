@@ -79,7 +79,7 @@ export type GeneratorV2 = {
   resolutions?: string[]
   thumbnail?: string
   order?: number
-  baseModel?: BaseModelName
+  base_model?: BaseModelName
 }
 
 export type GeneratorParameterType =

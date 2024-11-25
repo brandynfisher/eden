@@ -16,7 +16,7 @@ export type GeneratorV2Schema = {
   resolutions?: string[]
   thumbnail?: string
   order?: number
-  baseModel?: BaseModelName
+  base_model?: BaseModelName
 }
 
 export interface GeneratorV2Document extends GeneratorV2Schema {}
@@ -54,7 +54,7 @@ export const generatorV2Schema = new Schema<GeneratorV2Document>(
     order: {
       type: Number,
     },
-    baseModel: {
+    base_model: {
       type: String,
     },
   },

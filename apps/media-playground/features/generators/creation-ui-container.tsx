@@ -169,14 +169,14 @@ const CreationUIContainer = ({ generator }: Props) => {
           <TypographyH4 className="text-sm md:text-lg pl-8 md:pl-12 lg:pl-0">
             {generator.name}
           </TypographyH4>
-          {generator.baseModel || generator.private ? (
+          {generator.base_model || generator.private ? (
             <div className="flex-shrink-0">
-              {generator.baseModel ? (
+              {generator.base_model ? (
                 <Badge
                   variant="outline"
                   className="ml-2 border-muted-foreground"
                 >
-                  {generator.baseModel}
+                  {generator.base_model}
                 </Badge>
               ) : null}
               {generator.private ? (

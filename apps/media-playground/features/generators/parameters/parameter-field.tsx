@@ -242,7 +242,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                 </FormControl>
                 <Suspense fallback={<LoadingIndicator />}>
                   <ModelSelector
-                    baseModel={tool.baseModel}
+                    base_model={tool.base_model}
                     value={parsedValue}
                     onChange={onChange}
                   />
