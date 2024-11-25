@@ -10,10 +10,14 @@ import {
   BlendIcon,
   DownloadIcon,
   EraserIcon,
+  FullscreenIcon,
   InfoIcon,
+  MoveIcon,
   RedoIcon,
   TrashIcon,
   UndoIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
 } from 'lucide-react'
 import NextImage from 'next/image'
 import React, { useEffect, useRef, useState } from 'react'
@@ -35,6 +39,18 @@ type Stroke = {
   lineOpacity: number
   color: string
   isErasing?: boolean
+}
+
+const getTouchPos = (
+  canvas: HTMLCanvasElement,
+  touchEvent: React.TouchEvent<HTMLCanvasElement>,
+) => {
+  const rect = canvas.getBoundingClientRect()
+  const touch = touchEvent.touches[0]
+  return {
+    x: touch.clientX - rect.left,
+    y: touch.clientY - rect.top,
+  }
 }
 
 const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
@@ -61,6 +77,12 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     height: number
   } | null>(null)
   const [isInverted, setIsInverted] = useState<boolean>(false)
+  const [scale, setScale] = useState<number>(1)
+  // const [translate, setTranslate] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(
+    null,
+  )
+  const [isPanning, setIsPanning] = useState<boolean>(false)
 
   useEffect(() => {
     if (baseImage) {
@@ -129,14 +151,47 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     }
   }
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  function getPointPos(
+    e:
+      | React.MouseEvent<HTMLCanvasElement>
+      | React.TouchEvent<HTMLCanvasElement>,
+  ) {
+    if (overlayCanvasRef.current && 'touches' in e) {
+      // e is a TouchEvent
+      const touchEvent = e as React.TouchEvent<HTMLCanvasElement>
+      const { x, y } = getTouchPos(overlayCanvasRef.current, touchEvent)
+
+      console.log({ x, y })
+
+      return {
+        x,
+        y,
+      }
+    } else {
+      // e is a MouseEvent
+      const mouseEvent = e as React.MouseEvent<HTMLCanvasElement>
+      const { offsetY, offsetX } = mouseEvent.nativeEvent
+      console.log({ x: offsetX, y: offsetY })
+      // Do something with the mouse event
+      return {
+        x: offsetX,
+        y: offsetY,
+      }
+    }
+  }
+
+  const startDrawing = (
+    e:
+      | React.MouseEvent<HTMLCanvasElement>
+      | React.TouchEvent<HTMLCanvasElement>,
+  ) => {
     if (overlayCanvasRef.current) {
+      const points = getPointPos(e)
       setIsDrawing(true)
-      const { offsetX, offsetY } = e.nativeEvent
       setHistory(prevHistory => [
         ...prevHistory,
         {
-          points: [{ x: offsetX, y: offsetY }],
+          points: [points],
           lineWidth,
           lineOpacity,
           color: strokeColor,
@@ -146,13 +201,17 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     }
   }
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (
+    e:
+      | React.MouseEvent<HTMLCanvasElement>
+      | React.TouchEvent<HTMLCanvasElement>,
+  ) => {
     if (!isDrawing || !overlayCanvasRef.current) return
-    const { offsetX, offsetY } = e.nativeEvent
+    const points = getPointPos(e)
     setHistory(prevHistory => {
       const newHistory = [...prevHistory]
       const currentStroke = newHistory[newHistory.length - 1]
-      currentStroke.points.push({ x: offsetX, y: offsetY })
+      currentStroke.points.push(points)
       return newHistory
     })
     redrawHistory()
@@ -162,6 +221,55 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     if (!isDrawing) return
     setIsDrawing(false)
     setRedoStack([])
+  }
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (e.touches.length === 1) {
+      startDrawing(e)
+    } else if (e.touches.length === 2) {
+      setIsPanning(true)
+      setLastTouchDistance(getDistanceBetweenTouches(e))
+    }
+  }
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (e.touches.length === 1 && isDrawing) {
+      draw(e)
+    } else if (e.touches.length === 2 && isPanning) {
+      handlePinchZoom(e)
+    }
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (e.touches.length === 0) {
+      endDrawing()
+      setIsPanning(false)
+      setLastTouchDistance(null)
+    }
+  }
+
+  const getDistanceBetweenTouches = (
+    e: React.TouchEvent<HTMLCanvasElement>,
+  ) => {
+    const touch1 = e.touches.item(0)
+    const touch2 = e.touches.item(1)
+
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2),
+    )
+  }
+
+  const handlePinchZoom = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    const newDistance = getDistanceBetweenTouches(e)
+    if (lastTouchDistance) {
+      const scaleChange = newDistance / lastTouchDistance
+      setScale(prevScale => Math.min(Math.max(prevScale * scaleChange, 0.5), 4))
+    }
+    setLastTouchDistance(newDistance)
   }
 
   const undo = () => {
@@ -321,6 +429,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                     ? `${imageDimensions.width} / ${imageDimensions.height}`
                     : '1',
                   opacity: imageOpacity,
+                  scale: scale,
                 }}
               />
             )}
@@ -329,6 +438,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               className={`relative z-10 w-full h-full ${
                 isInverted ? 'invert' : ''
               }`}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={endDrawing}
@@ -339,6 +451,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                 aspectRatio: imageDimensions
                   ? `${imageDimensions.width} / ${imageDimensions.height}`
                   : '1',
+                scale: scale,
               }}
             />
 
@@ -406,6 +519,56 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
             >
               <EraserIcon className="h-4 w-4" />
             </Button>
+
+            <div>
+              <Button
+                disabled={scale >= 4}
+                variant="outline"
+                type="button"
+                size={'sm'}
+                onClick={() =>
+                  setScale(prevScale =>
+                    Math.min(Math.max(prevScale * 1.1, 0.5), 4),
+                  )
+                }
+                title="Zoom In"
+              >
+                <ZoomInIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                disabled={scale <= 0.5}
+                variant="outline"
+                type="button"
+                size={'sm'}
+                onClick={() =>
+                  setScale(prevScale =>
+                    Math.min(Math.max(prevScale * 0.9, 0.5), 4),
+                  )
+                }
+                title="Zoom Out"
+              >
+                <ZoomOutIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                size={'sm'}
+                onClick={() => setScale(1)}
+                title="Zoom Reset"
+              >
+                <FullscreenIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                // className={isTranslating ? 'bg-purple-900' : 'bg-secondary'}
+                variant="outline"
+                type="button"
+                size={'sm'}
+                title="Move viewport"
+              >
+                <MoveIcon className="h-4 w-4" />
+              </Button>
+            </div>
+
             <Button
               className="ml-auto flex items-center"
               type="button"
