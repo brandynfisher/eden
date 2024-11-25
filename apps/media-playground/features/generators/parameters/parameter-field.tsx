@@ -311,7 +311,18 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                     value={value === null ? '' : value || ''}
                   />
                 </FormControl>
-                <div className="flex md:flex-col gap-2 items-center w-full">
+                <div className="flex flex-col gap-2 items-center w-full">
+                  {/* // supports mask painter */}
+                  {maskPainterParameterNames.includes(parameter.name) ? (
+                    <>
+                      <MaskingCanvasDialog
+                        form={form}
+                        parameter={parameter}
+                        onChange={onChange}
+                      />
+                      <div className="font-bold">or</div>
+                    </>
+                  ) : null}
                   <FileUploader
                     value={value === null ? '' : value || ''}
                     onChange={onChange}
@@ -320,17 +331,6 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                     allowMultiple={false}
                     className={'w-full'}
                   />
-                  {/* // supports mask painter */}
-                  {maskPainterParameterNames.includes(parameter.name) ? (
-                    <>
-                      <div className="font-bold">or</div>
-                      <MaskingCanvasDialog
-                        form={form}
-                        parameter={parameter}
-                        onChange={onChange}
-                      />
-                    </>
-                  ) : null}
                 </div>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
