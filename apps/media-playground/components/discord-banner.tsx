@@ -22,9 +22,12 @@ const DiscordBanner: React.FC = () => {
   }
 
   return (
-    <div className="w-full p-4 bg-[#5865F2] shadow-lg">
-      <p className="text-xl font-semibold">Join the Eden community!</p>
-      <p className="text-sm font-medium mt-2">
+    <div className="w-full p-4 bg-[#5865F2] relative">
+      <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-t from-black/20 to-transparent"></div>
+      <p className="text-lg md:text-xl font-semibold">
+        Join the Eden community!
+      </p>
+      <p className="text-xs md:text-sm font-medium mt-2">
         Connect with fellow AI artists on our Discord server. Share your
         creations, get inspired by others, and help us shape Eden.art!
       </p>
