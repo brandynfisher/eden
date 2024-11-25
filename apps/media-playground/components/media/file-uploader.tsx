@@ -410,7 +410,7 @@ const FileUploader = ({
                     .join(' or ')}
                 </div>
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground hidden md:block">
                 Click here or drop files to upload
               </div>
             </div>

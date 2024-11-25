@@ -29,9 +29,9 @@ export const MaskingCanvasDialog = ({ form, parameter, onChange }: Props) => {
   return (
     <Dialog open={isOpen} onOpenChange={open => setIsOpen(open)}>
       <DialogTrigger asChild>
-        <Button variant={'outline'}>
+        <Button variant={'outline'} className="w-full">
           <PaintbrushIcon className="h-5 w-5 mr-2" />
-          Draw Mask Image
+          Draw a mask
         </Button>
       </DialogTrigger>
       <DialogContentOverlayBlur>
