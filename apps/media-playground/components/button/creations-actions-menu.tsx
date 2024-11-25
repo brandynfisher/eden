@@ -16,6 +16,7 @@ import {
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
+import { generateFilename } from '@/utils/slug.util'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { SizeIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
@@ -209,14 +210,11 @@ const CreationActionsContent = ({
             <DownloadActionItem
               type="creation"
               originalFileUrl={creationData.url || ''}
-              saveAsFileName={`${creationData.user.username}${
-                creationData.args.prompt
-                  ? `_${creationData.args.prompt
-                      .substring(0, 64)
-                      .trim()
-                      .replace(/\s+/g, '-')}`
-                  : ``
-              }_${creationData._id}`}
+              saveAsFileName={generateFilename(
+                creationData.user.username,
+                creationData.args.prompt?.substring(0, 64).trim(),
+                creationData._id,
+              )}
             />
           </DropdownMenuGroup>
         </>
