@@ -11,6 +11,7 @@ import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
+import { generateFilename } from '@/utils/slug.util'
 import { ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { ComponentIcon, ExternalLinkIcon, Share2Icon } from 'lucide-react'
@@ -139,7 +140,9 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
             <DownloadActionItem
               type="model"
               originalFileUrl={modelData.checkpoint}
-              saveAsFileName={modelData.slug.replaceAll('/', '_')}
+              saveAsFileName={generateFilename(
+                modelData.slug.replaceAll('/', '_'),
+              )}
             />
           </DropdownMenuGroup>
         </>
