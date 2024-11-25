@@ -13,6 +13,7 @@ import {
   CollectionsV2UpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 import { UpdateQuery, UpdateWriteOpResult } from 'mongoose'
 
 export const getUserCollectionsLight = async (
@@ -24,15 +25,13 @@ export const getUserCollectionsLight = async (
   const collectionsRepository = new CollectionV2Repository(CollectionV2)
   const collections = await collectionsRepository.query(
     {
-      user: currentUserId,
+      $or: [{ user: currentUserId }, { contributors: currentUserId }],
       deleted: false,
     },
     {
-      select: '_id name creations public',
+      select: '_id name creations public contributors',
     },
   )
-
-  // console.log(collections.docs)
 
   return reply.status(200).send({ collections: collections.docs })
 }
@@ -56,8 +55,13 @@ export const getCollection = async (
   const currentUserId = request.user ? request.user.userId : undefined
   const isOwnCollection =
     currentUserId && collection.user.toString() === currentUserId.toString()
+  const isContributor = currentUserId
+    ? collection.contributors?.filter(
+        contributor => contributor.toString() === currentUserId?.toString(),
+      )[0]
+    : false
 
-  if (!isOwnCollection && !collection.public) {
+  if (!isOwnCollection && !isContributor && !collection.public) {
     return reply.status(401).send({
       error: 'User not authorized to view this collection',
     })
@@ -253,6 +257,10 @@ export const addCreationsToCollection = async (
 
   const collection = await CollectionV2.findOne({
     _id: collectionId,
+    $or: [
+      { user: new ObjectId(currentUserId.toString()) },
+      { contributors: new ObjectId(currentUserId.toString()) },
+    ],
   })
 
   if (!collection || collection.deleted) {
@@ -262,9 +270,16 @@ export const addCreationsToCollection = async (
   }
 
   if (collection.user.toString() !== currentUserId.toString()) {
-    return reply.status(401).send({
-      error: 'User not authorized to update this collection',
-    })
+    const isContributor = currentUserId
+      ? collection.contributors?.filter(
+          contributor => contributor.toString() === currentUserId?.toString(),
+        )[0]
+      : false
+    if (!isContributor) {
+      return reply.status(401).send({
+        error: 'User not authorized to update this collection',
+      })
+    }
   }
 
   const creationsToAdd = await CreationV2.find({
@@ -331,6 +346,10 @@ export const removeCreationsFromCollection = async (
 
   const collection = await CollectionV2.findOne({
     _id: collectionId,
+    $or: [
+      { user: new ObjectId(currentUserId.toString()) },
+      { contributors: new ObjectId(currentUserId.toString()) },
+    ],
   })
 
   if (!collection || collection.deleted) {
@@ -340,9 +359,16 @@ export const removeCreationsFromCollection = async (
   }
 
   if (collection.user.toString() !== currentUserId.toString()) {
-    return reply.status(401).send({
-      error: 'User not authorized to update this collection',
-    })
+    const isContributor = currentUserId
+      ? collection.contributors?.filter(
+          contributor => contributor.toString() === currentUserId?.toString(),
+        )[0]
+      : false
+    if (!isContributor) {
+      return reply.status(401).send({
+        error: 'User not authorized to update this collection',
+      })
+    }
   }
 
   const shouldUpdateCoverCreation =
