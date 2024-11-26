@@ -668,9 +668,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               <Label>Line Opacity</Label>
               <SliderInput
                 type={'float'}
-                min={0.1}
+                min={0.05}
                 max={1}
-                step={0.1}
+                step={0.05}
                 value={lineOpacity}
                 onChange={(newVal: number | undefined) => {
                   setLineOpacity(newVal || 1)
