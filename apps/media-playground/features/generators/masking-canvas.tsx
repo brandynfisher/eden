@@ -74,7 +74,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   const [isMoving, setIsMoving] = useState<boolean>(false)
   const [history, setHistory] = useState<Stroke[]>([])
   const [redoStack, setRedoStack] = useState<Stroke[]>([])
-  const [lineWidth, setLineWidth] = useState<number>(32)
+  const [lineWidth, setLineWidth] = useState<number>(64)
   const [lineOpacity, setLineOpacity] = useState<number>(1)
   const [imageOpacity, setImageOpacity] = useState<number>(0.5)
   const [canvasOpacity, setCanvasOpacity] = useState<number>(0.75)
@@ -100,6 +100,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       img.onload = () => {
         console.log('onload', { width: img.width, height: img.height })
         setImageDimensions({ width: img.width, height: img.height })
+        setLineWidth(32 * (img.width / width))
       }
     }
   }, [baseImage])
@@ -294,17 +295,14 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   }
 
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
     handleMouseDown(e)
   }
 
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
     handleMouseMove(e)
   }
 
-  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
+  const handleTouchEnd = () => {
     handleMouseUp()
   }
 
@@ -350,29 +348,6 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     }
   }
 
-  // const exportCanvasToDataUrl = (overlayCanvas: HTMLCanvasElement) => {
-  //   const blackBackgroundCanvas = document.createElement('canvas')
-  //   blackBackgroundCanvas.width = overlayCanvas.width
-  //   blackBackgroundCanvas.height = overlayCanvas.height
-  //   const ctx = blackBackgroundCanvas.getContext('2d')
-  //
-  //   if (ctx) {
-  //     // Fill the canvas with black background
-  //     ctx.fillStyle = '#000000'
-  //     ctx.fillRect(
-  //       0,
-  //       0,
-  //       blackBackgroundCanvas.width,
-  //       blackBackgroundCanvas.height,
-  //     )
-  //
-  //     // Draw the overlay canvas on top
-  //     ctx.drawImage(overlayCanvas, 0, 0)
-  //
-  //     return blackBackgroundCanvas.toDataURL()
-  //   }
-  // }
-
   const extractMimeType = (dataUrlHeader: string): string => {
     const mimeMatch = dataUrlHeader.match(/:(.*?);/)
     return mimeMatch ? mimeMatch[1] : ''
@@ -394,48 +369,6 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     const byteArray = decodeBase64ToUint8Array(base64Data)
     return new File([byteArray], fileName, { type: mimeType })
   }
-  //
-  // const saveMask = () => {
-  //   if (!overlayCanvasRef.current) return
-  //
-  //   // Save the resulting image
-  //   const link = document.createElement('a')
-  //   const dataUrl = exportCanvasToDataUrl(overlayCanvasRef.current)
-  //
-  //   if (!dataUrl) return
-  //
-  //   link.href = dataUrl
-  //   link.download = `mask_${Date.now()}.png`
-  //   link.click()
-  // }
-  //
-  // const useMask = async () => {
-  //   if (!overlayCanvasRef.current) return
-  //
-  //   const dataUrl = exportCanvasToDataUrl(overlayCanvasRef.current)
-  //
-  //   if (!dataUrl) return
-  //
-  //   setIsUploading(true)
-  //   console.log({ dataUrl })
-  //
-  //   const file = dataUrlToFile(dataUrl, `mask_${Date.now()}.png`)
-  //   const cancelSource = axios.CancelToken.source()
-  //
-  //   try {
-  //     const uploadedFile = await uploadFileToS3({
-  //       file,
-  //       onUploadProgress: progressEvent => console.log(progressEvent),
-  //       cancelSource,
-  //     })
-  //
-  //     onChange(uploadedFile.fileUrl)
-  //   } catch (error) {
-  //     console.error('Error uploading file:', error)
-  //   } finally {
-  //     setIsUploading(false)
-  //   }
-  // }
 
   const exportCanvasToDataUrl = (overlayCanvas: HTMLCanvasElement) => {
     // Create an off-screen canvas with the original dimensions (width and height props)
@@ -533,7 +466,6 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                 }
                 opacity={0.4}
                 canvasRef={overlayCanvasRef}
-                scale={scale}
               />
             ) : null}
             {baseImage && (
@@ -749,7 +681,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               <SliderInput
                 type={'int'}
                 min={1}
-                max={256}
+                max={420}
                 step={1}
                 value={lineWidth}
                 onChange={(newVal: number | undefined) => {
