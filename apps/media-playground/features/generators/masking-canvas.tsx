@@ -20,6 +20,7 @@ import {
   RedoIcon,
   TrashIcon,
   UndoIcon,
+  UploadCloudIcon,
   ZoomInIcon,
   ZoomOutIcon,
 } from 'lucide-react'
@@ -710,8 +711,10 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               onClick={useMask}
             >
               {isUploading ? (
-                <LoadingIndicator className="w-4 h-4 mr-2" />
-              ) : null}
+                <LoadingIndicator className="h-4 w-4 mr-2" />
+              ) : (
+                <UploadCloudIcon className="h-4 w-4 mr-2 " />
+              )}
               Use mask
             </Button>
           </div>
