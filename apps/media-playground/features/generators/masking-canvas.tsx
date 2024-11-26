@@ -627,10 +627,10 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                   type={'float'}
                   min={0}
                   max={1}
-                  step={0.1}
+                  step={0.05}
                   value={imageOpacity}
                   onChange={(newVal: number | undefined) => {
-                    setImageOpacity(newVal || 1)
+                    setImageOpacity(newVal === undefined ? 1 : newVal)
                   }}
                 />
               </FormItem>
@@ -641,10 +641,10 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                   type={'float'}
                   min={0}
                   max={1}
-                  step={0.1}
+                  step={0.05}
                   value={canvasOpacity}
                   onChange={(newVal: number | undefined) => {
-                    setCanvasOpacity(newVal || 1)
+                    setCanvasOpacity(newVal === undefined ? 1 : newVal)
                   }}
                 />
               </FormItem>
@@ -656,7 +656,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                 hideNumberInput={true}
                 type={'int'}
                 min={1}
-                max={100}
+                max={256}
                 step={1}
                 value={lineWidth}
                 onChange={(newVal: number | undefined) => {
