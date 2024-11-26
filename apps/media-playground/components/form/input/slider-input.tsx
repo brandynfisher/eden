@@ -10,6 +10,7 @@ type Props = {
   onChange: (newVal: number | undefined) => void
   value: number
   unit?: string
+  hideNumberInput?: boolean
 }
 
 const SliderInputRangeLabel = ({
@@ -39,6 +40,7 @@ const SliderInput = ({
   onChange,
   value,
   unit,
+  hideNumberInput = false,
 }: Props) => {
   return (
     <div className="flex items-center">
@@ -67,7 +69,10 @@ const SliderInput = ({
         />
       </div>
       <Input
-        className="ml-2 w-28 h-8 rounded-md relative font-mono"
+        className={cn([
+          'ml-2 w-28 h-8 rounded-md relative font-mono',
+          hideNumberInput ? 'hidden' : '',
+        ])}
         type="number"
         min={min || 0}
         max={max || 1}

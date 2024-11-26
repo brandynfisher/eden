@@ -1,9 +1,12 @@
+'use client'
+
 import SliderInput from '@/components/form/input/slider-input'
 import LoadingIndicator from '@/components/loading-indicator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { FormItem } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
+import MaskingCanvasCursor from '@/features/generators/masking-canvas-cursor'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import axios from 'axios'
@@ -71,9 +74,10 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   const [isMoving, setIsMoving] = useState<boolean>(false)
   const [history, setHistory] = useState<Stroke[]>([])
   const [redoStack, setRedoStack] = useState<Stroke[]>([])
-  const [lineWidth, setLineWidth] = useState<number>(15)
+  const [lineWidth, setLineWidth] = useState<number>(32)
   const [lineOpacity, setLineOpacity] = useState<number>(1)
   const [imageOpacity, setImageOpacity] = useState<number>(0.5)
+  const [canvasOpacity, setCanvasOpacity] = useState<number>(0.75)
   const [imageDimensions, setImageDimensions] = useState<{
     width: number
     height: number
@@ -431,6 +435,13 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       ) : (
         <>
           <div className="relative w-full rounded-md overflow-hidden border border-purple-600 mb-2">
+            {overlayCanvasRef ? (
+              <MaskingCanvasCursor
+                size={lineWidth}
+                opacity={0.4}
+                canvasRef={overlayCanvasRef}
+              />
+            ) : null}
             {baseImage && (
               <NextImage
                 src={baseImage}
@@ -449,6 +460,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               />
             )}
             <canvas
+              data-custom-cursor={true}
               ref={overlayCanvasRef}
               className={cn([
                 'relative z-10 w-full h-full',
@@ -471,6 +483,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                   : '1',
                 scale: scale,
                 transform: `translate(${translate.x}px, ${translate.y}px)`,
+                opacity: canvasOpacity,
               }}
             />
 
@@ -606,22 +619,41 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
             </Button>
           </div>
           <div className="w-full mt-4">
-            <FormItem className="mb-4">
-              <Label>Image Opacity</Label>
-              <SliderInput
-                type={'float'}
-                min={0.1}
-                max={1}
-                step={0.1}
-                value={imageOpacity}
-                onChange={(newVal: number | undefined) => {
-                  setImageOpacity(newVal || 1)
-                }}
-              />
-            </FormItem>
+            <div className="flex gap-2 mb-4">
+              <FormItem className="w-full">
+                <Label>Image Opacity</Label>
+                <SliderInput
+                  hideNumberInput={true}
+                  type={'float'}
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  value={imageOpacity}
+                  onChange={(newVal: number | undefined) => {
+                    setImageOpacity(newVal || 1)
+                  }}
+                />
+              </FormItem>
+              <FormItem className="w-full">
+                <Label>Canvas Opacity</Label>
+                <SliderInput
+                  hideNumberInput={true}
+                  type={'float'}
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  value={canvasOpacity}
+                  onChange={(newVal: number | undefined) => {
+                    setCanvasOpacity(newVal || 1)
+                  }}
+                />
+              </FormItem>
+            </div>
+
             <FormItem className="mb-4">
               <Label>Line Width</Label>
               <SliderInput
+                hideNumberInput={true}
                 type={'int'}
                 min={1}
                 max={100}
