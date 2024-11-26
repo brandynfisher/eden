@@ -23,7 +23,6 @@ const MaskingCanvasCursor: React.FC<CustomCursorProps> = ({
         const parentRect =
           canvasRef.current.parentElement?.getBoundingClientRect()
 
-        console.log({ rect, parentRect })
         setPosition({
           x: e.clientX - (parentRect?.left || rect.left),
           y: e.clientY - (parentRect?.top || rect.top),
@@ -91,7 +90,7 @@ const MaskingCanvasCursor: React.FC<CustomCursorProps> = ({
         transition: 'opacity 0.2s ease, transform 0.1s ease',
         zIndex: 50,
       }}
-      className="custom-cursor"
+      className="custom-cursor select-none"
     />
   )
 }
