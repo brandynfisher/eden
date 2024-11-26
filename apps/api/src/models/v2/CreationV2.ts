@@ -8,7 +8,7 @@ import mongooseDelete, {
 } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-type BaseTaskResult = Omit<TaskV2Result, 'creation' | 'model'>
+type BaseTaskResult = Omit<TaskV2Result['output'], 'creation' | 'model'>
 
 export interface CreationV2Schema extends BaseTaskResult {
   user: ObjectId

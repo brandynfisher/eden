@@ -182,16 +182,18 @@ export type MediaResult = {
 }
 
 export type TaskV2Result = {
-  mediaAttributes?: MediaAttributes & { type: GeneratorOutputTypeV2 }
-  metadata?: string | null
-  published?: boolean
-  model?: ModelV2
-  creation?: CreationV2
-  intermediateOutputs?: {
-    inpaint_preview?: MediaResult[]
-    controlnet_signal?: MediaResult[]
-  }
-} & MediaResult
+  output: {
+    mediaAttributes?: MediaAttributes & { type: GeneratorOutputTypeV2 }
+    metadata?: string | null
+    published?: boolean
+    model?: ModelV2
+    creation?: CreationV2
+    intermediateOutputs?: {
+      inpaint_preview?: MediaResult[]
+      controlnet_signal?: MediaResult[]
+    }
+  } & MediaResult
+}
 
 export type TaskV2 = {
   _id: string

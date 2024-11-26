@@ -307,19 +307,22 @@ const injectUrlsToTaskV2Result = (
   taskResult: TaskV2Result,
   isModelResult: boolean,
 ): TaskV2Result => {
-  if (!taskResult.filename) {
+  if (!taskResult.output.filename) {
     return taskResult
   }
 
   const thumbnailName = isModelResult
-    ? taskResult.thumbnail || ''
-    : taskResult.filename
+    ? taskResult.output.thumbnail || ''
+    : taskResult.output.filename
   const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
 
   return {
     ...taskResult,
-    url: s3Url(server, taskResult.filename),
-    thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+    output: {
+      ...taskResult.output,
+      url: s3Url(server, taskResult.output.filename),
+      thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+    },
   }
 }
 
@@ -328,22 +331,24 @@ const injectResultUrls = (
   result: TaskV2Result,
   isModelResult: boolean,
 ): TaskV2Result => {
-  if (!result.filename) {
+  if (!result.output.filename) {
     return result
   }
 
-  const thumbnailName = isModelResult ? result.thumbnail || '' : result.filename
+  const thumbnailName = isModelResult
+    ? result.output.thumbnail || ''
+    : result.output.filename
   const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
 
   const enrichedResult = {
     ...result,
-    url: s3Url(server, result.filename),
+    url: s3Url(server, result.output.filename),
     thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
   }
 
-  if (result.intermediateOutputs) {
-    enrichedResult.intermediateOutputs = Object.fromEntries(
-      Object.entries(result.intermediateOutputs).map(
+  if (result.output.intermediateOutputs) {
+    enrichedResult.output.intermediateOutputs = Object.fromEntries(
+      Object.entries(result.output.intermediateOutputs).map(
         ([key, partialResults]) => {
           // console.log(key, partialResults)
           if (Array.isArray(partialResults)) {
@@ -352,7 +357,7 @@ const injectResultUrls = (
               partialResults.map(partialResult =>
                 injectUrlsToTaskV2Result(
                   server,
-                  partialResult as TaskV2Result,
+                  { output: partialResult } as TaskV2Result,
                   isModelResult,
                 ),
               ),
@@ -962,9 +967,9 @@ export const publishTaskResult = async (
 
     const taskResultIndex = taskDocument.result.findIndex(val => {
       return (
-        val.filename === resultFilename ||
-        val.filename === s3Url(server, resultFilename) ||
-        val.url === resultFilename
+        val.output.filename === resultFilename ||
+        val.output.filename === s3Url(server, resultFilename) ||
+        val.output.url === resultFilename
       )
     })
 
@@ -1006,20 +1011,21 @@ export const publishTaskResult = async (
     creation.args = taskDocument.args
     creation.tool = taskDocument.tool
     creation.mediaAttributes = {
-      ...taskResult.mediaAttributes,
+      ...taskResult.output.mediaAttributes,
       type: taskDocument.output_type,
-      mimeType: taskResult.mediaAttributes?.mimeType || 'image/jpeg',
+      mimeType: taskResult.output.mediaAttributes?.mimeType || 'image/jpeg',
     }
 
     // Generate BlurHash if Applicable
     try {
-      const isModelResult = taskDocument.result[0].filename.endsWith('.tar')
+      const isModelResult =
+        taskDocument.result[0].output.filename.endsWith('.tar')
 
       if (!isModelResult) {
         const IMAGE_SIZE = 384
         const thumbnailUrl = s3ThumbnailUrl(
           server,
-          taskResult.filename,
+          taskResult.output.filename,
           IMAGE_SIZE,
         )
         server.log.info(`Fetching thumbnail from URL: ${thumbnailUrl}`)
@@ -1031,8 +1037,8 @@ export const publishTaskResult = async (
         const buffer = Buffer.from(response.data)
 
         const aspectRatio =
-          (taskResult.mediaAttributes?.width || IMAGE_SIZE) /
-          (taskResult.mediaAttributes?.height || IMAGE_SIZE)
+          (taskResult.output.mediaAttributes?.width || IMAGE_SIZE) /
+          (taskResult.output.mediaAttributes?.height || IMAGE_SIZE)
         const { width, height } = calculateMaxDimensions(
           aspectRatio,
           IMAGE_SIZE,
@@ -1064,9 +1070,9 @@ export const publishTaskResult = async (
       )
     }
 
-    creation.metadata = taskResult.metadata
+    creation.metadata = taskResult.output.metadata
 
-    if (!taskResult.filename && !taskResult.url) {
+    if (!taskResult.output.filename && !taskResult.output.url) {
       server.log.error(
         `Missing filename and URL for result: ${resultFilename} in task ID: ${taskId}`,
       )
@@ -1074,9 +1080,10 @@ export const publishTaskResult = async (
         message: `Invalid result data`,
       })
     }
-    creation.url = taskResult.filename || taskResult.url
+    creation.url = taskResult.output.filename || taskResult.output.url
 
-    const thumbnailSource = taskResult.filename || taskResult.thumbnail || ''
+    const thumbnailSource =
+      taskResult.output.filename || taskResult.output.thumbnail || ''
     creation.thumbnail = changeExtension(thumbnailSource, ImageFormats.WEBP)
 
     server.log.info('Saving Creation object to the database...')
@@ -1086,8 +1093,11 @@ export const publishTaskResult = async (
     server.log.info('Updating task result to mark as published...')
     taskDocument.result[taskResultIndex] = {
       ...taskResult,
-      creation: savedCreation._id,
-      published: true,
+      output: {
+        ...taskResult.output,
+        creation: savedCreation._id,
+        published: true,
+      },
     }
 
     await taskDocument.save()
