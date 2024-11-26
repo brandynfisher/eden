@@ -45,17 +45,17 @@ type Stroke = {
   isErasing?: boolean
 }
 
-const getTouchPos = (
-  canvas: HTMLCanvasElement,
-  touchEvent: React.TouchEvent<HTMLCanvasElement>,
-) => {
-  const rect = canvas.getBoundingClientRect()
-  const touch = touchEvent.touches[0]
-  return {
-    x: touch.clientX - rect.left,
-    y: touch.clientY - rect.top,
-  }
-}
+// const getTouchPos = (
+//   canvas: HTMLCanvasElement,
+//   touchEvent: React.TouchEvent<HTMLCanvasElement>,
+// ) => {
+//   const rect = canvas.getBoundingClientRect()
+//   const touch = touchEvent.touches[0]
+//   return {
+//     x: touch.clientX - rect.left,
+//     y: touch.clientY - rect.top,
+//   }
+// }
 
 const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   form,
@@ -98,6 +98,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       const img = new Image()
       img.src = baseImage
       img.onload = () => {
+        console.log('onload', { width: img.width, height: img.height })
         setImageDimensions({ width: img.width, height: img.height })
       }
     }
@@ -107,11 +108,21 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     const handleResize = () => {
       if (overlayCanvasRef.current && imageDimensions) {
         const overlayCanvas = overlayCanvasRef.current
-        const newWidth = overlayCanvas.parentElement?.offsetWidth || width
-        const newHeight =
-          (newWidth / imageDimensions.width) * imageDimensions.height
-        overlayCanvas.width = newWidth
-        overlayCanvas.height = newHeight
+
+        // Set internal canvas resolution to match image dimensions
+        overlayCanvas.width = imageDimensions.width ?? width
+        overlayCanvas.height = imageDimensions.height ?? height
+
+        // Use CSS to control the canvas display size to match image aspect ratio
+        const aspectRatio = imageDimensions.width / imageDimensions.height
+        const parentWidth = overlayCanvas.parentElement?.clientWidth || width
+        const displayWidth = Math.min(parentWidth, imageDimensions.width)
+        const displayHeight = displayWidth / aspectRatio
+
+        // Set CSS size to control the display size
+        overlayCanvas.style.width = `${displayWidth}px`
+        overlayCanvas.style.height = `${displayHeight}px`
+
         redrawHistory()
       }
     }
@@ -134,6 +145,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           overlayCanvasRef.current.width,
           overlayCanvasRef.current.height,
         )
+
         history.forEach(
           ({ points, lineWidth, lineOpacity, color, isErasing }) => {
             ctx.lineWidth = lineWidth
@@ -145,6 +157,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               ? 'destination-out'
               : 'source-over'
             ctx.beginPath()
+
             points.forEach((point, index) => {
               if (index === 0) {
                 ctx.moveTo(point.x, point.y)
@@ -152,6 +165,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                 ctx.lineTo(point.x, point.y)
               }
             })
+
             ctx.stroke()
             ctx.closePath()
           },
@@ -165,23 +179,31 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       | React.MouseEvent<HTMLCanvasElement>
       | React.TouchEvent<HTMLCanvasElement>,
   ) {
-    if (overlayCanvasRef.current && 'touches' in e) {
-      // e is a TouchEvent
-      const touchEvent = e as React.TouchEvent<HTMLCanvasElement>
-      const { x, y } = getTouchPos(overlayCanvasRef.current, touchEvent)
+    if (!overlayCanvasRef.current) return { x: 0, y: 0 }
 
-      return {
-        x,
-        y,
-      }
+    const canvas = overlayCanvasRef.current
+    const rect = canvas.getBoundingClientRect()
+
+    let x, y
+    if ('touches' in e) {
+      // Touch event
+      const touch = e.touches[0]
+      x = touch.clientX - rect.left
+      y = touch.clientY - rect.top
     } else {
-      // e is a MouseEvent
-      const mouseEvent = e as React.MouseEvent<HTMLCanvasElement>
-      const { offsetY, offsetX } = mouseEvent.nativeEvent
-      return {
-        x: offsetX,
-        y: offsetY,
-      }
+      // Mouse event
+      x = e.clientX - rect.left
+      y = e.clientY - rect.top
+    }
+
+    // Calculate scaling factor to map displayed canvas size to actual canvas resolution
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+
+    // Scale the position according to the resolution
+    return {
+      x: x * scaleX,
+      y: y * scaleY,
     }
   }
 
@@ -328,28 +350,28 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     }
   }
 
-  const exportCanvasToDataUrl = (overlayCanvas: HTMLCanvasElement) => {
-    const blackBackgroundCanvas = document.createElement('canvas')
-    blackBackgroundCanvas.width = overlayCanvas.width
-    blackBackgroundCanvas.height = overlayCanvas.height
-    const ctx = blackBackgroundCanvas.getContext('2d')
-
-    if (ctx) {
-      // Fill the canvas with black background
-      ctx.fillStyle = '#000000'
-      ctx.fillRect(
-        0,
-        0,
-        blackBackgroundCanvas.width,
-        blackBackgroundCanvas.height,
-      )
-
-      // Draw the overlay canvas on top
-      ctx.drawImage(overlayCanvas, 0, 0)
-
-      return blackBackgroundCanvas.toDataURL()
-    }
-  }
+  // const exportCanvasToDataUrl = (overlayCanvas: HTMLCanvasElement) => {
+  //   const blackBackgroundCanvas = document.createElement('canvas')
+  //   blackBackgroundCanvas.width = overlayCanvas.width
+  //   blackBackgroundCanvas.height = overlayCanvas.height
+  //   const ctx = blackBackgroundCanvas.getContext('2d')
+  //
+  //   if (ctx) {
+  //     // Fill the canvas with black background
+  //     ctx.fillStyle = '#000000'
+  //     ctx.fillRect(
+  //       0,
+  //       0,
+  //       blackBackgroundCanvas.width,
+  //       blackBackgroundCanvas.height,
+  //     )
+  //
+  //     // Draw the overlay canvas on top
+  //     ctx.drawImage(overlayCanvas, 0, 0)
+  //
+  //     return blackBackgroundCanvas.toDataURL()
+  //   }
+  // }
 
   const extractMimeType = (dataUrlHeader: string): string => {
     const mimeMatch = dataUrlHeader.match(/:(.*?);/)
@@ -371,6 +393,76 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     const mimeType = extractMimeType(header)
     const byteArray = decodeBase64ToUint8Array(base64Data)
     return new File([byteArray], fileName, { type: mimeType })
+  }
+  //
+  // const saveMask = () => {
+  //   if (!overlayCanvasRef.current) return
+  //
+  //   // Save the resulting image
+  //   const link = document.createElement('a')
+  //   const dataUrl = exportCanvasToDataUrl(overlayCanvasRef.current)
+  //
+  //   if (!dataUrl) return
+  //
+  //   link.href = dataUrl
+  //   link.download = `mask_${Date.now()}.png`
+  //   link.click()
+  // }
+  //
+  // const useMask = async () => {
+  //   if (!overlayCanvasRef.current) return
+  //
+  //   const dataUrl = exportCanvasToDataUrl(overlayCanvasRef.current)
+  //
+  //   if (!dataUrl) return
+  //
+  //   setIsUploading(true)
+  //   console.log({ dataUrl })
+  //
+  //   const file = dataUrlToFile(dataUrl, `mask_${Date.now()}.png`)
+  //   const cancelSource = axios.CancelToken.source()
+  //
+  //   try {
+  //     const uploadedFile = await uploadFileToS3({
+  //       file,
+  //       onUploadProgress: progressEvent => console.log(progressEvent),
+  //       cancelSource,
+  //     })
+  //
+  //     onChange(uploadedFile.fileUrl)
+  //   } catch (error) {
+  //     console.error('Error uploading file:', error)
+  //   } finally {
+  //     setIsUploading(false)
+  //   }
+  // }
+
+  const exportCanvasToDataUrl = (overlayCanvas: HTMLCanvasElement) => {
+    // Create an off-screen canvas with the original dimensions (width and height props)
+    const offScreenCanvas = document.createElement('canvas')
+    offScreenCanvas.width = imageDimensions?.width ?? width
+    offScreenCanvas.height = imageDimensions?.height ?? height
+    const offCtx = offScreenCanvas.getContext('2d')
+
+    if (offCtx) {
+      // Fill the off-screen canvas with a black background
+      offCtx.fillStyle = '#000000'
+      offCtx.fillRect(0, 0, offScreenCanvas.width, offScreenCanvas.height)
+
+      // Draw the overlay canvas onto the off-screen canvas
+      offCtx.drawImage(
+        overlayCanvas,
+        0,
+        0,
+        imageDimensions?.width ?? width,
+        imageDimensions?.height ?? height,
+      )
+
+      const dataUrl = offScreenCanvas.toDataURL()
+      offScreenCanvas.remove()
+      // Return the data URL of the resized mask
+      return dataUrl
+    }
   }
 
   const saveMask = () => {
@@ -395,8 +487,6 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     if (!dataUrl) return
 
     setIsUploading(true)
-    console.log({ dataUrl })
-
     const file = dataUrlToFile(dataUrl, `mask_${Date.now()}.png`)
     const cancelSource = axios.CancelToken.source()
 
@@ -434,12 +524,16 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
         </Alert>
       ) : (
         <>
-          <div className="relative w-full rounded-md overflow-hidden border border-purple-600 mb-2">
+          <div className="relative w-full rounded-md overflow-hidden border border-purple-600 mb-2 select-none">
             {overlayCanvasRef ? (
               <MaskingCanvasCursor
-                size={lineWidth}
+                size={
+                  (lineWidth / ((imageDimensions?.width ?? width) / width)) *
+                  scale
+                }
                 opacity={0.4}
                 canvasRef={overlayCanvasRef}
+                scale={scale}
               />
             ) : null}
             {baseImage && (
@@ -448,7 +542,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                 alt="Base Image"
                 width={imageDimensions?.width || width}
                 height={imageDimensions?.height || height}
-                className="absolute top-0 left-0 w-full h-full"
+                className="absolute top-0 left-0 w-full h-full select-none"
                 style={{
                   aspectRatio: imageDimensions
                     ? `${imageDimensions.width} / ${imageDimensions.height}`
@@ -463,7 +557,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               data-custom-cursor={true}
               ref={overlayCanvasRef}
               className={cn([
-                'relative z-10 w-full h-full',
+                'relative z-10 w-full h-full select-none',
                 'cursor-crosshair',
                 isInverted ? 'invert' : '',
                 isMoving ? 'cursor-move' : '',
@@ -475,8 +569,8 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
-              width={width}
-              height={height}
+              width={imageDimensions?.width ?? width}
+              height={imageDimensions?.height ?? height}
               style={{
                 aspectRatio: imageDimensions
                   ? `${imageDimensions.width} / ${imageDimensions.height}`
@@ -653,7 +747,6 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
             <FormItem className="mb-4">
               <Label>Line Width</Label>
               <SliderInput
-                hideNumberInput={true}
                 type={'int'}
                 min={1}
                 max={256}
