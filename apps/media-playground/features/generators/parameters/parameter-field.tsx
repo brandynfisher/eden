@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { MaskingCanvasDialog } from '@/features/generators/masking-canvas-dialog'
+import { fileInputRegexes } from '@/lib/forms'
 import { cn } from '@/lib/utils'
 import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
 import { ReactNode, Suspense } from 'react'
@@ -40,15 +41,11 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
       name={name}
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value, name } = field
-        let parsedValue: number | string | ''
-        // console.log({ field })
-        switch (parameter.type) {
-          case 'int':
-            parsedValue = Number(value)
-            if (isNaN(parsedValue)) {
-              parsedValue = ''
-            }
 
+        // handle number input
+        if (parameter.type === 'int') {
+          if (parameter.name === 'seed') {
+            const parsedValue = +value ? +value : undefined
             return (
               <FormItemWrap
                 name={name}
@@ -57,78 +54,97 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                 errorMessage={fieldState.error?.message}
                 className={className}
               >
-                {parameter.name === 'seed' ? (
-                  <Input
-                    type="number"
-                    onChange={e =>
-                      // @todo: handle as big number
-                      onChange(
-                        e.target.value ? parseInt(e.target.value) : undefined,
-                      )
-                    }
-                    onBlur={onBlur}
-                    value={parsedValue}
-                  />
-                ) : (
-                  <SliderInput
-                    type={parameter.type}
-                    min={parameter.minimum || 0}
-                    max={parameter.maximum || 1}
-                    step={parameter.step ? parameter.step : 1}
-                    value={value}
-                    onChange={onChange}
-                  />
-                )}
+                <Input
+                  type="number"
+                  onChange={e =>
+                    // @todo: handle as big number
+                    onChange(
+                      e.target.value ? parseInt(e.target.value) : undefined,
+                    )
+                  }
+                  onBlur={onBlur}
+                  value={parsedValue}
+                />
               </FormItemWrap>
             )
-          case 'float':
-            return (
-              <FormItemWrap
-                name={name}
+          }
+
+          return (
+            <FormItemWrap
+              name={name}
+              label={label}
+              description={parameter.description}
+              errorMessage={fieldState.error?.message}
+              className={className}
+            >
+              <SliderInput
+                type="int"
+                min={parameter.minimum || 0}
+                max={parameter.maximum || 1}
+                step={parameter.step || 1}
+                value={value}
+                onChange={onChange}
+              />
+            </FormItemWrap>
+          )
+        }
+
+        if (parameter.type === 'float') {
+          return (
+            <FormItemWrap
+              name={name}
+              label={label}
+              description={parameter.description}
+              errorMessage={fieldState.error?.message}
+              className={className}
+            >
+              <SliderInput
+                type="float"
+                min={parameter.minimum || 0}
+                max={parameter.maximum || 1}
+                step={parameter.step || 0.05}
+                value={value}
+                onChange={onChange}
+              />
+            </FormItemWrap>
+          )
+        }
+
+        // handle boolean input
+        if (parameter.type === 'bool') {
+          return (
+            <FormItem
+              className={cn([
+                'flex flex-row items-center justify-between rounded-lg p-4',
+                className,
+              ])}
+              data-test-id={parameter.name}
+            >
+              <FormItemHead
+                icon={icon}
                 label={label}
                 description={parameter.description}
-                errorMessage={fieldState.error?.message}
-              >
-                <SliderInput
-                  type={parameter.type}
-                  min={parameter.minimum || 0}
-                  max={parameter.maximum || 1}
-                  step={parameter.step ? parameter.step : 0.05}
-                  value={value}
-                  onChange={newVal => {
-                    onChange(newVal)
-                  }}
+              />
+              <FormControl id={name} className="ml-4">
+                <SwitchNoButton
+                  className="!mt-0 data-[state=unchecked]:!bg-gray-400 data-[state=unchecked]:dark:!bg-gray-700"
+                  checked={value}
+                  onCheckedChange={onChange}
                 />
-              </FormItemWrap>
-            )
-          case 'bool':
+              </FormControl>
+              <FormMessage>{fieldState.error?.message}</FormMessage>
+            </FormItem>
+          )
+        }
+
+        // handle string input
+        if (parameter.type === 'string') {
+          if (
+            name === 'prompt' ||
+            name === 'negative_prompt' ||
+            name === 'text_input'
+          ) {
             return (
-              <FormItem
-                className={cn([
-                  'flex flex-row items-center justify-between rounded-lg p-4',
-                  className,
-                ])}
-                data-test-id={parameter.name}
-              >
-                <FormItemHead
-                  icon={icon}
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name} className="ml-4">
-                  <SwitchNoButton
-                    className="!mt-0 data-[state=unchecked]:!bg-gray-400 data-[state=unchecked]:dark:!bg-gray-700"
-                    checked={value}
-                    onCheckedChange={checked => onChange(checked)}
-                  />
-                </FormControl>
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
-          case 'string':
-            return name === 'prompt' ||
-              name === 'negative_prompt' ||
-              name === 'text_input' ? (
               <FormItem
                 className={`mt-0 !p-4 ${
                   parameter.required ? '!pt-4' : '!pt-3'
@@ -159,198 +175,185 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                 </FormControl>
                 <FormMessage>{fieldState.error?.message}</FormMessage>
               </FormItem>
-            ) : (
-              <FormItemWrap
-                name={name}
-                label={label}
-                description={parameter.description}
-                errorMessage={fieldState.error?.message}
-              >
-                {parameter.choices && parameter.choices.length ? (
-                  <SelectInput
-                    placeholder={label}
-                    label={label}
-                    onChange={onChange}
-                    value={value}
-                    options={parameter.choices}
-                    optionLabels={parameter.choices_labels || undefined}
-                  />
-                ) : (
-                  <>
-                    <Input
-                      type="text"
-                      onChange={onChange}
-                      onBlur={onBlur}
-                      value={value || ''}
-                    />
-                  </>
-                )}
-              </FormItemWrap>
             )
-          case 'string[]':
-            return (
-              <FormItem
-                className="mt-0 !p-4 !pt-2"
-                data-test-id={parameter.name}
-              >
-                <FormItemHead
+          }
+
+          return (
+            <FormItemWrap
+              name={name}
+              label={label}
+              description={parameter.description}
+              errorMessage={fieldState.error?.message}
+            >
+              {parameter.choices && parameter.choices.length ? (
+                <SelectInput
+                  placeholder={label}
                   label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
-                  <Input
-                    className={'hidden'}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value || ''}
-                  />
-                </FormControl>
-                <StringArrayInput
-                  minLength={
-                    parameter.required
-                      ? parameter.min_length !== undefined &&
-                        parameter.min_length !== null
-                        ? parameter.min_length
-                        : 0
-                      : 1
-                  }
-                  maxLength={parameter.max_length || 256}
                   onChange={onChange}
-                  value={value === null ? [] : value || ['']}
+                  value={value}
+                  options={parameter.choices}
+                  optionLabels={parameter.choices_labels || undefined}
                 />
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
-          case 'lora':
-            parsedValue = typeof value !== 'string' ? '' : value
-            return (
-              <FormItem
-                className="mt-0 !p-4 !pt-2"
-                data-test-id={parameter.name}
-              >
-                <FormItemHead
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
+              ) : (
+                <>
                   <Input
-                    className={'hidden'}
+                    type="text"
                     onChange={onChange}
                     onBlur={onBlur}
-                    value={parsedValue}
+                    value={value || ''}
                   />
-                </FormControl>
-                <Suspense fallback={<LoadingIndicator />}>
-                  <ModelSelector
-                    baseModel={tool.baseModel}
-                    value={parsedValue}
-                    onChange={onChange}
-                  />
-                </Suspense>
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
-          case 'image[]':
-          case 'video[]':
-          case 'image[]|video[]':
-          case 'video[]|image[]':
-            return (
-              <FormItem
-                className="mt-0 !p-4 !pt-2"
-                data-test-id={parameter.name}
-              >
-                <FormItemHead
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
-                  <Input
-                    className={'hidden'}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value || ''}
-                  />
-                </FormControl>
-                <FileUploader
-                  value={value === null ? [] : value || []}
-                  onChange={onChange}
-                  allowedFileTypes={parameter.type
-                    .replaceAll('[]', '')
-                    .split('|')}
-                  maxFiles={
-                    parameter.max_length === null ||
-                    parameter.max_length === undefined
-                      ? parameter.type.includes('video')
-                        ? 128
-                        : 256
-                      : parameter.max_length || 1
-                  }
-                  allowMultiple={parameter.max_length !== 1}
-                />
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
-          case 'image':
-          case 'video':
-          case 'image|video':
-          case 'video|image':
-            return (
-              <FormItem
-                className="mt-0 !p-4 !pt-2"
-                data-test-id={parameter.name}
-              >
-                <FormItemHead
-                  label={label}
-                  description={parameter.description}
-                />
-                <FormControl id={name}>
-                  <Input
-                    className={'hidden'}
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value === null ? '' : value || ''}
-                  />
-                </FormControl>
-                <div className="flex flex-col gap-2 items-center w-full">
-                  {/* // supports mask painter */}
-                  {maskPainterParameterNames.includes(parameter.name) ? (
-                    <>
-                      <MaskingCanvasDialog
-                        form={form}
-                        parameter={parameter}
-                        onChange={onChange}
-                      />
-                      <div className="font-bold">or</div>
-                    </>
-                  ) : null}
-                  <FileUploader
-                    value={value === null ? '' : value || ''}
-                    onChange={onChange}
-                    allowedFileTypes={parameter.type.split('|')}
-                    maxFiles={1}
-                    allowMultiple={false}
-                    className={'w-full'}
-                  />
-                </div>
-                <FormMessage>{fieldState.error?.message}</FormMessage>
-              </FormItem>
-            )
-          default:
-            return (
-              <FormItemWrap
-                name={name}
-                label={label}
-                description={parameter.description}
-                errorMessage={fieldState.error?.message}
-              >
+                </>
+              )}
+            </FormItemWrap>
+          )
+        }
+
+        // handle string array input
+        if (parameter.type === 'string[]') {
+          return (
+            <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
+              <FormItemHead label={label} description={parameter.description} />
+              <FormControl id={name}>
                 <Input
+                  className={'hidden'}
                   onChange={onChange}
                   onBlur={onBlur}
-                  value={value === null ? '' : value}
+                  value={value === null ? '' : value || ''}
                 />
-              </FormItemWrap>
-            )
+              </FormControl>
+              <StringArrayInput
+                minLength={
+                  parameter.required
+                    ? parameter.min_length !== undefined &&
+                      parameter.min_length !== null
+                      ? parameter.min_length
+                      : 0
+                    : 1
+                }
+                maxLength={parameter.max_length || 256}
+                onChange={onChange}
+                value={value === null ? [] : value || ['']}
+              />
+              <FormMessage>{fieldState.error?.message}</FormMessage>
+            </FormItem>
+          )
         }
+
+        // handle lora input
+        if (parameter.type === 'lora') {
+          const parsedValue = typeof value !== 'string' ? '' : value
+          return (
+            <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
+              <FormItemHead label={label} description={parameter.description} />
+              <FormControl id={name}>
+                <Input
+                  className={'hidden'}
+                  onChange={onChange}
+                  onBlur={onBlur}
+                  value={parsedValue}
+                />
+              </FormControl>
+              <Suspense fallback={<LoadingIndicator />}>
+                <ModelSelector
+                  baseModel={tool.baseModel}
+                  value={parsedValue}
+                  onChange={onChange}
+                />
+              </Suspense>
+              <FormMessage>{fieldState.error?.message}</FormMessage>
+            </FormItem>
+          )
+        }
+
+        // handle file url input
+        if (fileInputRegexes.fileUrlRegex.test(parameter.type)) {
+          return (
+            <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
+              <FormItemHead label={label} description={parameter.description} />
+              <FormControl id={name}>
+                <Input
+                  className={'hidden'}
+                  onChange={onChange}
+                  onBlur={onBlur}
+                  value={value === null ? '' : value || ''}
+                />
+              </FormControl>
+              <div className="flex md:flex-col gap-2 items-center w-full">
+                <FileUploader
+                  value={value === null ? '' : value || ''}
+                  onChange={onChange}
+                  allowedFileTypes={parameter.type.split('|')}
+                  maxFiles={1}
+                  allowMultiple={false}
+                  enableDropFromTimeline={!tool.key.includes('trainer')}
+                  className={'w-full'}
+                />
+                {/* // supports mask painter */}
+                {maskPainterParameterNames.includes(parameter.name) ? (
+                  <>
+                    <div className="font-bold">or</div>
+                    <MaskingCanvasDialog
+                      form={form}
+                      parameter={parameter}
+                      onChange={onChange}
+                    />
+                  </>
+                ) : null}
+              </div>
+              <FormMessage>{fieldState.error?.message}</FormMessage>
+            </FormItem>
+          )
+        }
+
+        // handle file url array Input
+        if (fileInputRegexes.fileUrlArrayRegex.test(parameter.type)) {
+          return (
+            <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
+              <FormItemHead label={label} description={parameter.description} />
+              <FormControl id={name}>
+                <Input
+                  className={'hidden'}
+                  onChange={onChange}
+                  onBlur={onBlur}
+                  value={value === null ? '' : value || ''}
+                />
+              </FormControl>
+              <FileUploader
+                value={value ?? []}
+                onChange={onChange}
+                allowedFileTypes={parameter.type
+                  .replaceAll('[]', '')
+                  .split('|')}
+                maxFiles={
+                  parameter.max_length === null ||
+                  parameter.max_length === undefined
+                    ? parameter.type.includes('video')
+                      ? 128
+                      : 256
+                    : parameter.max_length || 1
+                }
+                allowMultiple={parameter.max_length !== 1}
+                enableDropFromTimeline={!tool.key.includes('trainer')}
+              />
+              <FormMessage>{fieldState.error?.message}</FormMessage>
+            </FormItem>
+          )
+        }
+
+        return (
+          <FormItemWrap
+            name={name}
+            label={label}
+            description={parameter.description}
+            errorMessage={fieldState.error?.message}
+          >
+            <Input
+              onChange={onChange}
+              onBlur={onBlur}
+              value={value === null ? '' : value}
+            />
+          </FormItemWrap>
+        )
       }}
     />
   )
