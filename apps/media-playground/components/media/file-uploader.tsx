@@ -141,6 +141,7 @@ type Props = {
   maxFiles?: number
   allowMultiple?: boolean
   className?: string
+  enableDropFromTimeline?: boolean
 }
 
 const FileUploader = ({
@@ -148,6 +149,7 @@ const FileUploader = ({
   allowedFileTypes = ['image', 'video'], // default types
   maxFiles = 1,
   allowMultiple = false,
+  enableDropFromTimeline = true,
   onChange,
   className,
 }: Props) => {
@@ -361,11 +363,8 @@ const FileUploader = ({
     [existingFiles, filesToUpload, maxFiles, onChange],
   )
 
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    multiple: allowMultiple,
-    maxFiles: allowMultiple ? maxFiles : 1,
-    accept: supportedFileTypes
+  const acceptedFiles: Record<string, string[]> = useMemo(() => {
+    return supportedFileTypes
       .filter(type => allowedFileTypes?.includes(type.type))
       .reduce(
         (acc, type) => ({
@@ -373,7 +372,14 @@ const FileUploader = ({
           ...type.allowedMimeTypes.reduce((a, m) => ({ ...a, [m]: [] }), {}),
         }),
         {},
-      ),
+      )
+  }, [allowedFileTypes])
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    multiple: allowMultiple,
+    maxFiles: allowMultiple ? maxFiles : 1,
+    accept: acceptedFiles,
   })
 
   const handleMove = (activeIndex: number, overIndex: number) => {
@@ -383,8 +389,35 @@ const FileUploader = ({
     onChange(maxFiles === 1 ? newUrls[0] : newUrls)
   }
 
+  const handleDropFromTimeline = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+
+    if (!enableDropFromTimeline) return
+
+    const url = e.dataTransfer.getData('text/plain')
+    if (!url) return
+    if (existingFiles.find(f => f.url === url)) return
+
+    const mimeType = urlToMimeType(url)
+    if (!acceptedFiles[mimeType]) return
+
+    setExistingFiles(prev => [
+      ...prev,
+      {
+        url,
+        type: getFileTypeByMimeType(mimeType),
+        name: url.split('/').pop() || 'file',
+      },
+    ])
+    onChange(maxFiles === 1 ? url : [...existingFiles.map(f => f.url), url])
+  }
+
   return (
-    <div {...getRootProps()} className={cn(['flex-grow', className])}>
+    <div
+      {...getRootProps()}
+      onDrop={handleDropFromTimeline}
+      className={cn(['flex-grow', className])}
+    >
       <div>
         {existingFiles.length + filesToUpload.length < (maxFiles || 1) ? (
           <label

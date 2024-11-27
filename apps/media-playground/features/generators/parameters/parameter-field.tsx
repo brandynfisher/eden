@@ -285,6 +285,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                         : 256
                       : parameter.max_length || 1
                   }
+                  enableDropFromTimeline={!tool.key.includes('trainer')}
                   allowMultiple={parameter.max_length !== 1}
                 />
                 <FormMessage>{fieldState.error?.message}</FormMessage>
@@ -329,6 +330,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                     allowedFileTypes={parameter.type.split('|')}
                     maxFiles={1}
                     allowMultiple={false}
+                    enableDropFromTimeline={!tool.key.includes('trainer')}
                     className={'w-full'}
                   />
                 </div>
