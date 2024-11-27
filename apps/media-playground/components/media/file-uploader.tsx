@@ -384,11 +384,10 @@ const FileUploader = ({
   }
 
   return (
-    <div className={cn(['flex-grow', className])}>
+    <div {...getRootProps()} className={cn(['flex-grow', className])}>
       <div>
         {existingFiles.length + filesToUpload.length < (maxFiles || 1) ? (
           <label
-            {...getRootProps()}
             className={cn(
               'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card hover:brightness-110',
               allowedFileTypes?.includes('video') ? VideoColor.borderColor : '',
@@ -431,7 +430,12 @@ const FileUploader = ({
       </div>
 
       {filesToUpload.length || existingFiles.length ? (
-        <div className="bg-card p-2 rounded-lg">
+        <div
+          className="bg-card p-2 rounded-lg mt-4"
+          onClick={e => {
+            e.stopPropagation()
+          }}
+        >
           <div className="font-medium mb-2 text-muted-foreground text-sm flex gap-2 flex-wrap justify-between">
             <div>
               Uploaded {existingFiles.length + filesToUpload.length}{' '}
@@ -512,7 +516,10 @@ const FileUploader = ({
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeFile(file.url)}
+                        onClick={e => {
+                          e.stopPropagation()
+                          removeFile(file.url)
+                        }}
                         className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
                       >
                         <X size={20} />
