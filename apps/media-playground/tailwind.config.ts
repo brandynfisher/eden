@@ -1,4 +1,3 @@
-import assistantUiTailwindPlugin from '@assistant-ui/react/tailwindcss'
 import { Config } from 'tailwindcss'
 import plugin from 'tailwindcss/plugin'
 
@@ -111,20 +110,6 @@ const config = {
       },
     },
   },
-  plugins: [
-    require('tailwindcss-animate'),
-    assistantUiTailwindPlugin({ shadcn: true }),
-    plugin(({ matchUtilities, theme }) => {
-      matchUtilities(
-        {
-          'text-shadow': value => ({
-            textShadow: value,
-          }),
-        },
-        { values: theme('textShadow') },
-      )
-    }),
-  ],
   safelist: [
     'bg-blue-400',
     'from-blue-400',
@@ -146,6 +131,21 @@ const config = {
     'from-gray-400',
     'via-gray-400',
     'to-gray-400',
+    { pattern: /aui-/ }, // assistant ui classes
+  ],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@assistant-ui/react/tailwindcss'),
+    plugin(({ matchUtilities, theme }) => {
+      matchUtilities(
+        {
+          'text-shadow': value => ({
+            textShadow: value,
+          }),
+        },
+        { values: theme('textShadow') },
+      )
+    }),
   ],
 } satisfies Config
 
