@@ -576,7 +576,7 @@ const FileUploader = ({
                           {file.type.startsWith('image') ? (
                             <LightboxGalleryItem
                               sizeOnLoad={true}
-                              className="relative rounded-lg hover:brightness-105 h-[64px] w-auto"
+                              className="relative rounded-lg hover:brightness-105 h-16 aspect-square"
                               item={{
                                 url: file.url,
                                 thumbnail: file.url, // assuming URL is accessible
@@ -590,12 +590,12 @@ const FileUploader = ({
                               width={72}
                               height={72}
                               onLoad={() => URL.revokeObjectURL(file.url)}
-                              className="object-contain h-[64px] w-auto hover:brightness-105"
+                              className="object-contain h-16 aspect-square hover:brightness-105"
                             />
                           ) : file.type === 'archive' ? (
                             <FolderArchive
-                              size={40}
-                              className={`${ArchiveColor.fillColor} w-[72px]`}
+                              size={64}
+                              className={`${ArchiveColor.fillColor}`}
                             />
                           ) : (
                             <PreviewVideoPlayer
@@ -603,7 +603,7 @@ const FileUploader = ({
                               width={72}
                               height={72}
                               onLoad={() => URL.revokeObjectURL(file.url)}
-                              className="object-contain h-[64px] w-auto hover:brightness-105"
+                              className="object-contain h-16 aspect-square hover:brightness-105"
                             />
                           )}
                         </div>
