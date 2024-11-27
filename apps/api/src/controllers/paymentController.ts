@@ -13,6 +13,9 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import Stripe from 'stripe'
 
 interface StripeDataObject {
+  eventId: string
+  eventType: string
+  eventData: Stripe.Event.Data
   userId: string
   customerId: string
   sessionId: string
@@ -95,11 +98,32 @@ const handleTopUp = async (
   reply: FastifyReply,
   metadata: TopUpMetadata,
   user: UserDocument,
+  stripeEventData: StripeDataObject,
 ) => {
+  const { eventId, eventType, eventData } = stripeEventData
+
   const mannaAmount = metadata.manna
   if (!mannaAmount) {
     return reply.status(400).send({
       message: 'No manna amount found',
+    })
+  }
+
+  if (!eventId) {
+    return reply.status(400).send({
+      message: 'No eventId found in payload',
+    })
+  }
+
+  if (!eventType) {
+    return reply.status(400).send({
+      message: 'No eventType found in payload',
+    })
+  }
+
+  if (!eventData) {
+    return reply.status(400).send({
+      message: 'No eventData found in payload',
     })
   }
 
@@ -132,6 +156,7 @@ const handleNewSubscription = async (
   reply: FastifyReply,
   metadata: SubscriptionMetadata,
   user: UserDocument,
+  stripeEventData: StripeDataObject,
   proration?: number,
 ) => {
   const subscriptionTier = parseInt(metadata.subscriptionTier)
@@ -170,18 +195,28 @@ const handleNewSubscription = async (
             })
           }
 
+          try {
+            const transaction = new Transaction({
+              stripeEventId: stripeEventData.eventId,
+              stripeEventType: stripeEventData.eventType,
+              stripeEventData: stripeEventData.eventData,
+              type: 'credit_stripe',
+              manna: manna._id,
+              amount: mannaAmountInt,
+            })
+            await transaction.save()
+          } catch (e) {
+            return reply.status(500).send({
+              message: 'Error inserting transaction, manna not updated',
+            })
+          }
+
           if (!manna.subscriptionBalance) {
             manna.subscriptionBalance = mannaAmountInt
           } else {
             manna.subscriptionBalance += mannaAmountInt
           }
           await manna.save()
-
-          const transaction = new Transaction({
-            manna: manna._id,
-            amount: mannaAmountInt,
-          })
-          await transaction.save()
         }
       } catch (error) {
         return reply.status(500).send({
@@ -214,18 +249,41 @@ type GenericStripeEventDataObject = {
 const handleSubscriptionUpdated = async (
   server: FastifyInstance,
   reply: FastifyReply,
-  {
+  stripeEventData: StripeDataObject,
+  rawStripeEventDataObject: Stripe.Event.Data.Object,
+  previousAttributes?: Stripe.Event.Data.PreviousAttributes,
+) => {
+  const {
     customerId,
     productId,
     current_period_end,
     current_period_start,
-  }: StripeDataObject,
-  rawStripeEventDataObject: Stripe.Event.Data.Object,
-  previousAttributes?: Stripe.Event.Data.PreviousAttributes,
-) => {
+    eventId,
+    eventType,
+    eventData,
+  } = stripeEventData
+
   if (!server.stripe) {
     return reply.status(500).send({
       message: 'Stripe is not configured',
+    })
+  }
+
+  if (!eventId) {
+    return reply.status(400).send({
+      message: 'No eventId found in payload',
+    })
+  }
+
+  if (!eventType) {
+    return reply.status(400).send({
+      message: 'No eventType found in payload',
+    })
+  }
+
+  if (!eventData) {
+    return reply.status(400).send({
+      message: 'No eventData found in payload',
     })
   }
 
@@ -277,7 +335,14 @@ const handleSubscriptionUpdated = async (
 
     const proration = secondsLeftInCurrentPeriod / totalSecondsInCurrentPeriod
 
-    await handleNewSubscription(server, reply, metadata, user, proration)
+    await handleNewSubscription(
+      server,
+      reply,
+      metadata,
+      user,
+      stripeEventData,
+      proration,
+    )
   } else {
     // nothing to do here, report acknowledgement
 
@@ -345,12 +410,33 @@ const handleSubscriptionDeleted = async (
 const handleRenewal = async (
   server: FastifyInstance,
   reply: FastifyReply,
-  { customerId, renewalPriceId }: StripeDataObject,
+  stripeEventData: StripeDataObject,
 ) => {
+  const { customerId, renewalPriceId, eventId, eventType, eventData } =
+    stripeEventData
+
   console.log('Handling renewal')
   if (!server.stripe) {
     return reply.status(500).send({
       message: 'Stripe is not configured',
+    })
+  }
+
+  if (!eventId) {
+    return reply.status(400).send({
+      message: 'No eventId found in payload',
+    })
+  }
+
+  if (!eventType) {
+    return reply.status(400).send({
+      message: 'No eventType found in payload',
+    })
+  }
+
+  if (!eventData) {
+    return reply.status(400).send({
+      message: 'No eventData found in payload',
     })
   }
 
@@ -429,12 +515,35 @@ const handleRenewal = async (
   console.log('New amount', newAmount)
   if (newAmount > 0) {
     manna.subscriptionBalance = newAmount
+
+    try {
+      const existingTransaction = await Transaction.exists({
+        stripeEventType: eventType,
+        stripeEventId: eventId,
+      })
+
+      if (existingTransaction !== null) {
+        return reply.status(500).send({
+          message: `Error inserting transaction, eventId already exists: ${eventId} | ${eventType}`,
+        })
+      }
+
+      const transaction = new Transaction({
+        stripeEventId: eventId,
+        stripeEventType: eventType,
+        stripeEventData: eventData,
+        type: 'credit_stripe',
+        manna: manna._id,
+        amount: newAmount - (manna.subscriptionBalance || 0),
+      })
+      await transaction.save()
+    } catch (e) {
+      return reply.status(500).send({
+        message: 'Error inserting transaction, manna not updated',
+      })
+    }
+
     await manna.save()
-    const transaction = new Transaction({
-      manna: manna._id,
-      amount: newAmount - (manna.subscriptionBalance || 0),
-    })
-    await transaction.save()
   }
 
   return reply.status(200).send({})
@@ -443,12 +552,32 @@ const handleRenewal = async (
 const handlePaymentSuccess = async (
   server: FastifyInstance,
   reply: FastifyReply,
-  { userId, sessionId }: StripeDataObject,
+  stripeEventData: StripeDataObject,
   rawStripeEventDataObject: Stripe.Event.Data.Object,
 ) => {
+  const { userId, sessionId, eventId, eventType, eventData } = stripeEventData
+
   if (!server.stripe) {
     return reply.status(500).send({
       message: 'Stripe is not configured',
+    })
+  }
+
+  if (!eventId) {
+    return reply.status(400).send({
+      message: 'No eventId found in payload',
+    })
+  }
+
+  if (!eventType) {
+    return reply.status(400).send({
+      message: 'No eventType found in payload',
+    })
+  }
+
+  if (!eventData) {
+    return reply.status(400).send({
+      message: 'No eventData found in payload',
     })
   }
 
@@ -492,9 +621,16 @@ const handlePaymentSuccess = async (
       reply,
       metadata as SubscriptionMetadata,
       user,
+      stripeEventData,
     )
   } else {
-    await handleTopUp(server, reply, metadata as TopUpMetadata, user)
+    await handleTopUp(
+      server,
+      reply,
+      metadata as TopUpMetadata,
+      user,
+      stripeEventData,
+    )
   }
 
   const sessionMetaData =
@@ -683,6 +819,9 @@ export const handlePaymentEvent = async (
   const billing_reason = dataObject.billing_reason
 
   const stripeDataObject: StripeDataObject = {
+    eventId: event.id,
+    eventType: event.type,
+    eventData: event.data,
     userId,
     customerId,
     sessionId,

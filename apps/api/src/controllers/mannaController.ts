@@ -46,6 +46,7 @@ export const modifyManna = async (
   const transaction = new Transaction({
     manna: newManna._id,
     amount,
+    type: 'admin_modify',
   })
   await transaction.save()
 
@@ -275,6 +276,7 @@ const handleMannaVoucher = async (
   const transaction = new Transaction({
     manna: mannaId,
     amount: voucher.amount,
+    type: 'credit_voucher',
   })
   await transaction.save()
 
