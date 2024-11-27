@@ -462,6 +462,10 @@ const FileUploader = ({
 
     if (colors.length === 0) return ''
 
+    if (colors.length === 1) {
+      return `bg-${colors[0]}`
+    }
+
     const gradientClasses = ['bg-gradient-to-r']
 
     for (let i = 0; i < colors.length; i++) {
