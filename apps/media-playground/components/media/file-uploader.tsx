@@ -390,8 +390,6 @@ const FileUploader = ({
   }
 
   const handleDropFromTimeline = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-
     if (!enableDropFromTimeline) return
 
     const url = e.dataTransfer.getData('text/plain')
@@ -415,7 +413,14 @@ const FileUploader = ({
   return (
     <div
       {...getRootProps()}
-      onDrop={handleDropFromTimeline}
+      onDrop={e => {
+        e.preventDefault()
+        if (e.dataTransfer.getData('text/plain')) {
+          handleDropFromTimeline(e)
+        } else {
+          onDrop(Array.from(e.dataTransfer.files))
+        }
+      }}
       className={cn(['flex-grow', className])}
     >
       <div>
