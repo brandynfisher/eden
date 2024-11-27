@@ -125,6 +125,23 @@ const config = {
       )
     }),
   ],
+  safelist: [
+    'from-blue-400',
+    'via-blue-400',
+    'to-blue-400',
+    'from-purple-600',
+    'via-purple-600',
+    'to-purple-600',
+    'from-yellow-400',
+    'via-yellow-400',
+    'to-yellow-400',
+    'from-green-400',
+    'via-green-400',
+    'to-green-400',
+    'from-gray-400',
+    'via-gray-400',
+    'to-gray-400',
+  ],
 } satisfies Config
 
 export default config

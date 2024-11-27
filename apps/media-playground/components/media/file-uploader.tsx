@@ -43,6 +43,12 @@ interface FileUploadProgress {
   source: CancelTokenSource | null
 }
 
+const ArchiveColor = {
+  bgColor: 'blue-400',
+  fillColor: 'text-blue-400',
+  borderColor: 'border-blue-400',
+}
+
 const ImageColor = {
   bgColor: 'purple-600',
   fillColor: 'text-purple-600',
@@ -96,6 +102,18 @@ const getFileIconAndColor = (fileType: FileType) => {
     }
   }
 
+  if (fileType === 'archive') {
+    return {
+      icon: (
+        <FolderArchive
+          size={40}
+          className={`${ArchiveColor.fillColor} w-[72px]`}
+        />
+      ),
+      color: ArchiveColor.bgColor,
+    }
+  }
+
   return {
     icon: (
       <FolderArchive size={40} className={`${OtherColor.fillColor} w-[72px]`} />
@@ -121,6 +139,14 @@ const supportedFileTypes: SupportedFileType[] = [
       'video/webm',
       'video/quicktime',
       'image/gif',
+    ],
+  },
+  {
+    type: 'archive',
+    allowedMimeTypes: [
+      'application/zip',
+      'application/x-tar',
+      'application/x-gzip',
     ],
   },
 ]
@@ -207,6 +233,13 @@ const FileUploader = ({
         return 'video/quicktime'
       case 'gif':
         return 'image/gif'
+      case 'zip':
+        return 'application/zip'
+      case 'tar':
+        return 'application/x-tar'
+      case 'gz':
+      case 'tgz':
+        return 'application/x-gzip'
       default:
         return 'image/jpeg'
     }
@@ -383,23 +416,55 @@ const FileUploader = ({
     onChange(maxFiles === 1 ? newUrls[0] : newUrls)
   }
 
+  const gradientClasses = useMemo(() => {
+    if (!allowedFileTypes?.length) return ''
+
+    const colors = []
+    if (allowedFileTypes.includes('image')) {
+      colors.push(ImageColor.bgColor)
+    }
+    if (allowedFileTypes.includes('video')) {
+      colors.push(VideoColor.bgColor)
+    }
+    if (allowedFileTypes.includes('archive')) {
+      colors.push(ArchiveColor.bgColor)
+    }
+    if (allowedFileTypes.includes('audio')) {
+      colors.push(AudioColor.bgColor)
+    }
+
+    if (colors.length === 0) return ''
+
+    const gradientClasses = ['bg-gradient-to-r']
+
+    for (let i = 0; i < colors.length; i++) {
+      if (i === 0) {
+        gradientClasses.push(`from-${colors[i]}`)
+      } else if (i === colors.length - 1) {
+        gradientClasses.push(`to-${colors[i]}`)
+      } else {
+        gradientClasses.push(`via-${colors[i]}`)
+      }
+    }
+
+    return gradientClasses.join(' ')
+  }, [])
+
   return (
     <div className={cn(['flex-grow', className])}>
       <div>
         {existingFiles.length + filesToUpload.length < (maxFiles || 1) ? (
           <label
             {...getRootProps()}
-            className={cn(
-              'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card hover:brightness-110',
-              allowedFileTypes?.includes('video') ? VideoColor.borderColor : '',
-              allowedFileTypes?.includes('image') ? ImageColor.borderColor : '',
-              allowedFileTypes?.includes('video') &&
-                allowedFileTypes?.includes('image')
-                ? 'border-l-purple-600 border-t-purple-600 border-r-green-400 border-b-green-400'
-                : '',
-            )}
+            className="relative flex flex-col items-center justify-center w-full cursor-pointer hover:brightness-110"
           >
-            <div className="text-center">
+            <div
+              className={cn(
+                'absolute w-[calc(100%+1px)] h-[calc(100%+1px)] rounded-lg top-[-0.5px] left-[-0.5px]',
+                gradientClasses,
+              )}
+            ></div>
+            <div className="text-center z-10 bg-card w-full h-full p-2 rounded-lg">
               <div className="flex items-center justify-center">
                 <UploadCloudIcon className="mr-2 h-4 w-4" />
                 <div className="text-sm text-muted-foreground font-semibold">
@@ -474,6 +539,19 @@ const FileUploader = ({
                                 width: 72,
                                 height: 72,
                               }}
+                            />
+                          ) : file.type.startsWith('video') ? (
+                            <PreviewVideoPlayer
+                              src={file.url}
+                              width={72}
+                              height={72}
+                              onLoad={() => URL.revokeObjectURL(file.url)}
+                              className="object-contain h-[64px] w-auto hover:brightness-105"
+                            />
+                          ) : file.type === 'archive' ? (
+                            <FolderArchive
+                              size={40}
+                              className={`${ArchiveColor.fillColor} w-[72px]`}
                             />
                           ) : (
                             <PreviewVideoPlayer
