@@ -10,6 +10,16 @@ import {
   z,
 } from 'zod'
 
+export const fileInputRegexes = {
+  numberRegex: /^(int(\[\])?|float(\[\])?)$/,
+  boolRegex: /^bool(\[\])?$/,
+  stringRegex: /^(string|lora)$/,
+  stringArrayRegex: /^(string\[\]|lora\[\])$/,
+  fileUrlRegex: /^(image|video)(\|(image|video))*$/,
+  fileUrlArrayRegex:
+    /^(video\[\]|image\[\]|archive)(\|(video\[\]|image\[\]|archive))*$/,
+}
+
 function defaultHelper<T extends ZodTypeAny>(
   schema: T,
   defaultValue: string | number | null | undefined,
@@ -164,34 +174,31 @@ function createStringArraySchema(
 export function createZodParameterSchema(
   parameter: GeneratorParameterV2,
 ): ZodTypeAny {
-  switch (parameter.type) {
-    case 'int':
-    case 'int[]':
-    case 'float':
-    case 'float[]':
-      return createNumberSchema(parameter)
-    case 'bool':
-    case 'bool[]':
-      return createBoolSchema(parameter)
-    case 'string':
-    case 'lora':
-      return createStringSchema(parameter)
-    case 'string[]':
-    case 'lora[]':
-      return createStringArraySchema(parameter)
-    case 'video':
-    case 'image':
-    case 'image|video':
-    case 'video|image':
-      return createFileUrlSchema(parameter)
-    case 'video[]':
-    case 'image[]':
-    case 'image[]|video[]':
-    case 'video[]|image[]':
-      return createFileUrlArraySchema(parameter)
-    default:
-      throw new Error(`${parameter.type} not supported.`)
+  if (fileInputRegexes.numberRegex.test(parameter.type)) {
+    return createNumberSchema(parameter)
   }
+
+  if (fileInputRegexes.boolRegex.test(parameter.type)) {
+    return createBoolSchema(parameter)
+  }
+
+  if (fileInputRegexes.stringRegex.test(parameter.type)) {
+    return createStringSchema(parameter)
+  }
+
+  if (fileInputRegexes.fileUrlRegex.test(parameter.type)) {
+    return createFileUrlSchema(parameter)
+  }
+
+  if (fileInputRegexes.fileUrlArrayRegex.test(parameter.type)) {
+    return createFileUrlArraySchema(parameter)
+  }
+
+  if (fileInputRegexes.stringArrayRegex.test(parameter.type)) {
+    return createStringArraySchema(parameter)
+  }
+
+  throw new Error(`${parameter.type} not supported.`)
 }
 
 export function createZodFormSchema(
