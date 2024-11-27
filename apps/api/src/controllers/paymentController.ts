@@ -196,6 +196,17 @@ const handleNewSubscription = async (
           }
 
           try {
+            const existingTransaction = await Transaction.exists({
+              stripeEventType: stripeEventData.eventType,
+              stripeEventId: stripeEventData.eventId,
+            })
+
+            if (existingTransaction !== null) {
+              return reply.status(500).send({
+                message: `Error inserting transaction, eventId already exists: ${stripeEventData.eventId} | ${stripeEventData.eventType}`,
+              })
+            }
+
             const transaction = new Transaction({
               stripeEventId: stripeEventData.eventId,
               stripeEventType: stripeEventData.eventType,
@@ -457,7 +468,11 @@ const handleRenewal = async (
     })
   }
 
-  if (!product.metadata) {
+  if (
+    !product.metadata ||
+    !product.metadata.subscriptionTier ||
+    !product.metadata.manna
+  ) {
     return reply.status(400).send({
       message: 'No metadata found',
     })
@@ -841,8 +856,6 @@ export const handlePaymentEvent = async (
       if (billing_reason !== 'subscription_cycle') {
         return
       }
-      console.log(dataObject)
-      console.log(stripeDataObject)
       await handleRenewal(server, reply, stripeDataObject)
       return
 

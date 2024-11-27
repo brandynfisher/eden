@@ -277,6 +277,8 @@ const handleMannaVoucher = async (
     manna: mannaId,
     amount: voucher.amount,
     type: 'credit_voucher',
+    voucher: voucher._id,
+    code: voucher.code,
   })
   await transaction.save()
 
