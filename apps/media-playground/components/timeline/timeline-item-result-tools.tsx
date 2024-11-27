@@ -9,6 +9,7 @@ import {
   TaskV2,
   TaskV2Result,
   TasksV2PublishResponse,
+  TasksV2ResultOutput,
 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
@@ -21,6 +22,7 @@ type Props = {
   task: TaskV2
   result: TaskV2Result
   index: number
+  output: TasksV2ResultOutput
   queryKey: QueryKey
   className?: string
 }
@@ -29,6 +31,7 @@ const TimelineItemResultTools = ({
   task,
   result,
   index,
+  output,
   queryKey,
   className,
 }: Props) => {
@@ -107,7 +110,7 @@ const TimelineItemResultTools = ({
                 : () =>
                     publishTaskResult(
                       task._id,
-                      result.filename || result.url || '',
+                      output.filename || output.url || '',
                     )
             }
             disabled={isPublishing}
@@ -160,6 +163,7 @@ const TimelineItemResultTools = ({
               task={task}
               result={result}
               index={index}
+              output={output}
               className="ml-auto"
               // queryKey={queryKey}
             />

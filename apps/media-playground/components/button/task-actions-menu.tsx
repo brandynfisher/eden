@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 import { generateFilename } from '@/utils/slug.util'
-import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
+import { TaskV2, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { FileSlidersIcon } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
@@ -14,10 +14,11 @@ type Props = {
   task: TaskV2
   result?: TaskV2Result
   index?: number
+  output?: TasksV2ResultOutput
   className?: string
 }
 
-const TaskActionsMenu = ({ task, result, index, className }: Props) => {
+const TaskActionsMenu = ({ task, result, output, index, className }: Props) => {
   return (
     <ActionsDropdown className={className}>
       <DropdownMenuGroup>
@@ -35,7 +36,7 @@ const TaskActionsMenu = ({ task, result, index, className }: Props) => {
         {result ? (
           <DownloadActionItem
             type={'creation'}
-            originalFileUrl={result.url || ''}
+            originalFileUrl={output?.url || ''}
             saveAsFileName={generateFilename(
               task.user.username,
               task.args.prompt?.substring(0, 64).trim(),

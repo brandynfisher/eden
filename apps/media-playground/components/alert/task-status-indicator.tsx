@@ -155,16 +155,20 @@ const TaskStatusIndicator = () => {
                     </div>
                     <div className={'h-10 flex gap-2 items-center'}>
                       {task.status === TaskV2Status.Completed
-                        ? task.result.map(({ output }) => (
-                            <Image
-                              key={output.filename}
-                              className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
-                              loader={customImageLoader}
-                              src={output.filename || ''}
-                              alt={task.args.prompt || ''}
-                              width={48}
-                              height={48}
-                            />
+                        ? task.result.map(result => (
+                            <>
+                              {result.output.map(output => (
+                                <Image
+                                  key={output.filename}
+                                  className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
+                                  loader={customImageLoader}
+                                  src={output.filename || ''}
+                                  alt={task.args.prompt || ''}
+                                  width={48}
+                                  height={48}
+                                />
+                              ))}
+                            </>
                           ))
                         : null}
                       <div className="text-xs line-clamp-2 text-muted-foreground">

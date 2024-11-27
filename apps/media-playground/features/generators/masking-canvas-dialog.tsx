@@ -39,9 +39,7 @@ export const MaskingCanvasDialog = ({ form, parameter, onChange }: Props) => {
         <DialogDescription>Draw a masking image</DialogDescription>
         <MaskingCanvas
           form={form}
-          // parameter={parameter}
           inputImageFieldName={'image'}
-          // value={value === null ? '' : value || ''}
           onChange={handleOnChange}
         />
       </DialogContentOverlayBlur>

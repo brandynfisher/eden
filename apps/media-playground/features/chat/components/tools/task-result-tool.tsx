@@ -31,16 +31,20 @@ export const TaskResultTool = makeAssistantToolUI<TaskResultToolArgs, string>({
             {resultsArray
               ? resultsArray.map((result, index) => (
                   <div key={index}>
-                    <LightboxGalleryItem
-                      className="w-full h-full"
-                      item={{
-                        url: getCloudfrontOriginalUrl(result.url),
-                        thumbnail: getCloudfrontOriginalUrl(result.url),
-                        width: result.mediaAttributes?.width,
-                        height: result.mediaAttributes?.height,
-                        duration: result.mediaAttributes?.duration || undefined,
-                      }}
-                    />
+                    {result.output.map(output => (
+                      <LightboxGalleryItem
+                        key={output.filename}
+                        className="w-full h-full"
+                        item={{
+                          url: getCloudfrontOriginalUrl(output.url),
+                          thumbnail: getCloudfrontOriginalUrl(output.url),
+                          width: output.mediaAttributes?.width,
+                          height: output.mediaAttributes?.height,
+                          duration:
+                            output.mediaAttributes?.duration || undefined,
+                        }}
+                      />
+                    ))}
                   </div>
                 ))
               : null}

@@ -5,7 +5,7 @@ import LightboxGallery, {
 import { IntermediateOutputsDialog } from '@/components/timeline/intermediate-outputs-dialog'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { cn } from '@/lib/utils'
-import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
+import { MediaOutput, TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import React from 'react'
 
@@ -16,12 +16,14 @@ type Props = {
   queryKey: QueryKey
 }
 
-export const MediaResult = ({
+export const MediaResultOutput = ({
   task,
   result,
+  output,
 }: {
   task: TaskV2
   result: TaskV2Result
+  output: MediaOutput
 }) => {
   return (
     <div
@@ -40,7 +42,7 @@ export const MediaResult = ({
       ])}
       style={{
         aspectRatio:
-          result?.mediaAttributes?.aspectRatio ||
+          output?.mediaAttributes?.aspectRatio ||
           (task.output_type === 'audio' ? 3 : 1),
         // height: '-webkit-fill-available',
       }}
@@ -55,18 +57,18 @@ export const MediaResult = ({
       ) : null}
       {task.output_type === 'audio' ? (
         <div className="flex w-full h-full items-center justify-center">
-          <audio src={result.url || result.filename} controls={true} />
+          <audio src={output.url || output.filename} controls={true} />
         </div>
       ) : (
         <LightboxGallery>
           <LightboxGalleryItem
             className="w-full h-full"
             item={{
-              url: result.url || result.filename,
-              thumbnail: result.thumbnail || result.filename,
-              width: result.mediaAttributes?.width,
-              height: result.mediaAttributes?.height,
-              duration: result.mediaAttributes?.duration || undefined,
+              url: output.url || output.filename,
+              thumbnail: output.thumbnail || output.filename,
+              width: output.mediaAttributes?.width,
+              height: output.mediaAttributes?.height,
+              duration: output.mediaAttributes?.duration || undefined,
             }}
           />
         </LightboxGallery>
@@ -77,28 +79,36 @@ export const MediaResult = ({
 
 const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
   return (
-    <div className="p-2 bg-secondary rounded-md">
-      <div
-        className={cn([
-          'relative',
-          (result?.mediaAttributes?.aspectRatio || 1) < 1 &&
-          (task.args.n_samples || 1) === 1
-            ? 'max-h-[60vh] flex justify-center'
-            : '',
-        ])}
-      >
-        <MediaResult task={task} result={result} />
-        {result.intermediateOutputs ? (
-          <IntermediateOutputsDialog result={result} />
-        ) : null}
-      </div>
-      <TimelineItemResultTools
-        task={task}
-        result={result}
-        index={index}
-        queryKey={queryKey}
-      />
-    </div>
+    <>
+      {result.output.map(output => (
+        <div key={output.filename} className="p-2 bg-secondary rounded-md">
+          <div
+            className={cn([
+              'relative',
+              (output?.mediaAttributes?.aspectRatio || 1) < 1 &&
+              (task.args.n_samples || 1) === 1
+                ? 'max-h-[60vh] flex justify-center'
+                : '',
+            ])}
+          >
+            <MediaResultOutput task={task} result={result} output={output} />
+
+            {result.intermediateOutputs ? (
+              <IntermediateOutputsDialog
+                intermediateOutputs={result.intermediateOutputs}
+              />
+            ) : null}
+          </div>
+          <TimelineItemResultTools
+            task={task}
+            result={result}
+            output={output}
+            index={index}
+            queryKey={queryKey}
+          />
+        </div>
+      ))}
+    </>
   )
 }
 
