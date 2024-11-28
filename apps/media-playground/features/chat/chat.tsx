@@ -64,7 +64,6 @@ const TopLeft: FC = () => {
         )}
         tooltip="New Thread"
         side="right"
-        disabled={true} //@todo: temporary disabled until backend supports this
       >
         <div className="flex items-center gap-2 text-sm font-semibold">
           <span>New Thread</span>
@@ -140,15 +139,11 @@ const Header: FC = () => {
   )
 }
 
-const Chat: FC = () => {
-  // @todo: agent should be passed in based on parms
-  const assistant: AssistantV2 = {
-    _id: '67170abeb539c335ad24067a',
-    name: 'Eve',
-    image: 'app/assistant/eve_512.png',
-    welcomeText: 'What do you want to create today?',
-  }
+type Props = {
+  assistant: AssistantV2
+}
 
+const Chat: FC<Props> = ({ assistant }) => {
   const sideStyle = 'bg-muted/40 px-3 py-2'
   const topStyle = 'border-b'
   const leftStyle = 'border-r hidden md:block'
