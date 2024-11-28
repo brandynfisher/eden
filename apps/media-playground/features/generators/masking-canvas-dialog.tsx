@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
+import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
 import {
   Dialog,
   DialogDescription,
@@ -34,7 +34,7 @@ export const MaskingCanvasDialog = ({ form, parameter, onChange }: Props) => {
           Draw a mask
         </Button>
       </DialogTrigger>
-      <DialogContentOverlayBlur>
+      <DialogContentScrollable className="p-4">
         <DialogTitle>Mask Painter: {parameter.name}</DialogTitle>
         <DialogDescription>Draw a masking image</DialogDescription>
         <MaskingCanvas
@@ -42,7 +42,7 @@ export const MaskingCanvasDialog = ({ form, parameter, onChange }: Props) => {
           inputImageFieldName={'image'}
           onChange={handleOnChange}
         />
-      </DialogContentOverlayBlur>
+      </DialogContentScrollable>
     </Dialog>
   )
 }

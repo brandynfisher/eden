@@ -19,12 +19,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ai-sdk/provider@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@ai-sdk/provider@npm:1.0.0"
+"@ai-sdk/provider@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@ai-sdk/provider@npm:1.0.1"
   dependencies:
     json-schema: "npm:^0.4.0"
-  checksum: 10c0/242fddc273dca49f50f0cd1c553ed6f76ab9f4edc1828b36098870725102dab1fcba317517998fe0a4cd018833a466c96df3b5e5049f5e8fd14690142b96fd6a
+  checksum: 10c0/660ae83bbb8cf25577595806b7601b8f25e3a2b0ce592f83928ca3cae96eb6967cff29a2e13e67f4d7001a23070ca7756d35f8d05283046d3e887bd7438057a3
   languageName: node
   linkType: hard
 
@@ -123,9 +123,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@assistant-ui/react-markdown@npm:^0.7.0":
-  version: 0.7.2
-  resolution: "@assistant-ui/react-markdown@npm:0.7.2"
+"@assistant-ui/react-markdown@npm:^0.7.3":
+  version: 0.7.3
+  resolution: "@assistant-ui/react-markdown@npm:0.7.3"
   dependencies:
     "@radix-ui/react-primitive": "npm:^2.0.0"
     "@radix-ui/react-use-callback-ref": "npm:^1.1.0"
@@ -133,7 +133,7 @@ __metadata:
     lucide-react: "npm:^0.460.0"
     react-markdown: "npm:^9.0.1"
   peerDependencies:
-    "@assistant-ui/react": ^0.7.6
+    "@assistant-ui/react": ^0.7.8
     "@types/react": "*"
     react: ^18 || ^19 || ^19.0.0-rc
     tailwindcss: ^3.4.4
@@ -142,16 +142,16 @@ __metadata:
       optional: true
     tailwindcss:
       optional: true
-  checksum: 10c0/fbb577900f5e896ad41bc0a007cdf0c236590763f383eba545e3e7a98c9b486349097b30eb99034edac4dd71a2d7e18ffca36421472ab05b184c8bd6486e7714
+  checksum: 10c0/dd6551ed528ff02a1f222451f03babbbf0e370bf3aba6e7e640ef639e3946369eb4d9f32deccbaca4abed3a072012a0edc0b7e5669151348cde66d4847dc4c49
   languageName: node
   linkType: hard
 
-"@assistant-ui/react-syntax-highlighter@npm:^0.7.0":
-  version: 0.7.2
-  resolution: "@assistant-ui/react-syntax-highlighter@npm:0.7.2"
+"@assistant-ui/react-syntax-highlighter@npm:^0.7.3":
+  version: 0.7.3
+  resolution: "@assistant-ui/react-syntax-highlighter@npm:0.7.3"
   peerDependencies:
-    "@assistant-ui/react": ^0.7.6
-    "@assistant-ui/react-markdown": ^0.7.2
+    "@assistant-ui/react": ^0.7.8
+    "@assistant-ui/react-markdown": ^0.7.3
     "@types/react": "*"
     "@types/react-syntax-highlighter": "*"
     react: ^18 || ^19 || ^19.0.0-rc
@@ -161,15 +161,15 @@ __metadata:
       optional: true
     "@types/react-syntax-highlighter":
       optional: true
-  checksum: 10c0/2451c56d2bd77c629bc62ba9e36f439adae225f0408b240d9c31319b7d9636e057eb28fde0753af59f826d29b97bc6d48d14d7d249a23d3ccfa72a4efb27266e
+  checksum: 10c0/6919d4bf85920ca9659d1a17395ebd2ff24efc9626fd264a8730ca29ec0119df29be6953a24e972252536003777a56f88642b971e521dfc5920d16c040021ea8
   languageName: node
   linkType: hard
 
-"@assistant-ui/react@npm:^0.7.1":
-  version: 0.7.7
-  resolution: "@assistant-ui/react@npm:0.7.7"
+"@assistant-ui/react@npm:^0.7.8":
+  version: 0.7.8
+  resolution: "@assistant-ui/react@npm:0.7.8"
   dependencies:
-    "@ai-sdk/provider": "npm:^1.0.0"
+    "@ai-sdk/provider": "npm:^1.0.1"
     "@radix-ui/primitive": "npm:^1.1.0"
     "@radix-ui/react-avatar": "npm:^1.1.1"
     "@radix-ui/react-compose-refs": "npm:^1.1.0"
@@ -204,7 +204,7 @@ __metadata:
       optional: true
     tailwindcss:
       optional: true
-  checksum: 10c0/d951150a82fd00a17001f3700b92c4401b9e6d55d11deb16b32d2a3ceaae8361b5378c24ea7db9588c5902f1410867f4681e90d491d1c5131bb9cce62ef736d6
+  checksum: 10c0/8ff2e66327dcd9cbdcfed7865df2e9af1a524c1303ab37e2175299b502393c496d6b6ff61e15aecbba04c12f56d776e863f1ca8da4f3633d1ca0feca60cb59fe
   languageName: node
   linkType: hard
 
@@ -19824,9 +19824,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "media-playground@workspace:apps/media-playground"
   dependencies:
-    "@assistant-ui/react": "npm:^0.7.1"
-    "@assistant-ui/react-markdown": "npm:^0.7.0"
-    "@assistant-ui/react-syntax-highlighter": "npm:^0.7.0"
+    "@assistant-ui/react": "npm:^0.7.8"
+    "@assistant-ui/react-markdown": "npm:^0.7.3"
+    "@assistant-ui/react-syntax-highlighter": "npm:^0.7.3"
     "@chromatic-com/storybook": "npm:^1.3.3"
     "@clerk/nextjs": "npm:^6.0.2"
     "@clerk/themes": "npm:^2.1.39"
