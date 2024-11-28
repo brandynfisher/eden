@@ -15,14 +15,14 @@ export const fileInputRegexes = {
   boolRegex: /^bool(\[\])?$/,
   stringRegex: /^(string|lora)$/,
   stringArrayRegex: /^(string\[\]|lora\[\])$/,
-  fileUrlRegex: /^(image|video)(\|(image|video))*$/,
+  fileUrlRegex: /^(image|video|audio)(\|(image|video|audio))*$/,
   fileUrlArrayRegex:
-    /^(video\[\]|image\[\]|archive)(\|(video\[\]|image\[\]|archive))*$/,
+    /^(video\[\]|image\[\]|audio\[\]|archive)(\|(video\[\]|image\[\]|audio\[\]|archive))*$/,
 }
 
 function defaultHelper<T extends ZodTypeAny>(
   schema: T,
-  defaultValue: string | number | null | undefined,
+  defaultValue: string | number | null | undefined | boolean,
 ): (T & ZodDefault<T>) | T {
   if (defaultValue !== undefined && defaultValue !== null) {
     return schema.default(defaultValue) as T & ZodDefault<T>

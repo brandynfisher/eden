@@ -113,7 +113,7 @@ export type GeneratorParameterV2 = {
   tip: string | null
   type: GeneratorParameterType
   required: boolean
-  default: string | number | null | undefined
+  default: string | number | null | undefined | boolean
   minimum: number | null | undefined
   maximum: number | null | undefined
   min_length: number | null | undefined
