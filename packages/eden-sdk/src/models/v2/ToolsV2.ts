@@ -94,27 +94,29 @@ export type ToolParameterTypeValue =
   | 'bool'
   | 'lora'
 
-export type ToolParameterArrayType = {
-  type: 'array'
-  items: { type: ToolParameterTypeValue } | ToolParameterUnionType
+export type ToolParameterSingleType = {
+  type: ToolParameterTypeValue
 }
 
-export type ToolParameterUnionType =
-  | { type: ToolParameterTypeValue }
-  | ToolParameterArrayType
+export type ToolParameterArrayType = {
+  type: 'array'
+  items: ToolParameterSingleType | ToolParameterUnionType
+}
+
+export type ToolParameterUnionType = {
+  anyOf: (ToolParameterSingleType | ToolParameterArrayType)[]
+}
 
 export type ToolParameterV2 = {
   name: string
   label: string
   description: string
   tip: string | null
-  type?: ToolParameterTypeValue
-  items?: (
-    | { type: ToolParameterTypeValue }
-    | { anyOf: ToolParameterUnionType }
-    | ToolParameterArrayType
-  )[]
-  anyOf?: ToolParameterUnionType[]
+  schema: {
+    type?: ToolParameterTypeValue
+    items?: ToolParameterSingleType | ToolParameterUnionType
+    anyOf?: (ToolParameterSingleType | ToolParameterArrayType)[]
+  }
   required: boolean
   default: string | number | null | undefined
   minimum?: number | null
