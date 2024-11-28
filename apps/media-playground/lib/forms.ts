@@ -13,7 +13,7 @@ import {
 
 function defaultHelper<T extends ZodTypeAny>(
   schema: T,
-  defaultValue: string | number | null | undefined,
+  defaultValue: string | number | null | undefined | boolean,
 ): (T & ZodDefault<T>) | T {
   if (defaultValue !== undefined && defaultValue !== null) {
     return schema.default(defaultValue) as T & ZodDefault<T>
@@ -90,6 +90,17 @@ function createStringSchema(
   return schema
 }
 
+function createFileUrlSchema(
+  parameter: ToolParameterV2,
+): ZodString | ZodOptional<ZodString> | ZodDefault<ZodString> {
+  let schema: ZodString = z.string()
+
+  schema = defaultHelper(schema, parameter.default)
+  schema = optionalHelper(schema, !parameter.required)
+
+  return schema
+}
+
 function createArraySchema(
   parameter: ToolParameterV2,
   itemSchema: ZodTypeAny,
@@ -144,6 +155,11 @@ export function createZodParameterSchema(
         return createBoolSchema(parameter)
       case 'str':
         return createStringSchema(parameter)
+      case 'image':
+      case 'video':
+      case 'audio':
+      case 'archive':
+        return createFileUrlSchema(parameter)
       case 'array':
         if (parameter.schema.items) {
           return createArraySchema(

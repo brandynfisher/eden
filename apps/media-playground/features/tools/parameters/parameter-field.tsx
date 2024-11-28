@@ -17,9 +17,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { MaskingCanvasDialog } from '@/features/tools/masking-canvas-dialog'
-import { fileInputRegexes } from '@/lib/forms'
+// import { fileInputRegexes } from '@/lib/forms'
 import { cn } from '@/lib/utils'
-import { ToolParameterV2, ToolV2 } from '@edenlabs/eden-sdk'
+import {
+  ToolParameterTypeValue,
+  ToolParameterV2,
+  ToolV2,
+} from '@edenlabs/eden-sdk'
 import { ReactNode, Suspense } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
@@ -33,6 +37,25 @@ type Props = {
 
 const maskPainterParameterNames = ['mask_image', 'control_input']
 
+const isSchemaType = (
+  parameter: ToolParameterV2,
+  type: ToolParameterTypeValue,
+) => parameter.schema.type === type
+const isSchemaArrayType = (parameter: ToolParameterV2) =>
+  parameter.schema.type === 'array'
+const getSchemaArrayItemType = (parameter: ToolParameterV2) => {
+  if (parameter.schema.items && 'type' in parameter.schema.items) {
+    return parameter.schema.items.type
+  }
+  if (parameter.schema.items && 'anyOf' in parameter.schema.items) {
+    return 'anyOf'
+  }
+}
+const isSchemaAnyOfType = (parameter: ToolParameterV2) =>
+  Array.isArray(parameter.schema.anyOf)
+const getSchemaAnyOfTypes = (parameter: ToolParameterV2) =>
+  parameter.schema.anyOf?.map(item => item.type)
+
 const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
   const { name, label } = parameter
 
@@ -43,7 +66,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
         const { onChange, onBlur, value, name } = field
 
         // handle number input
-        if (parameter.type === 'int') {
+        if (isSchemaType(parameter, 'int')) {
           if (parameter.name === 'seed') {
             const parsedValue = +value ? +value : undefined
             return (
@@ -89,7 +112,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           )
         }
 
-        if (parameter.type === 'float') {
+        if (isSchemaType(parameter, 'float')) {
           return (
             <FormItemWrap
               name={name}
@@ -111,7 +134,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
         }
 
         // handle boolean input
-        if (parameter.type === 'bool') {
+        if (isSchemaType(parameter, 'bool')) {
           return (
             <FormItem
               className={cn([
@@ -138,7 +161,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
         }
 
         // handle string input
-        if (parameter.type === 'string') {
+        if (isSchemaType(parameter, 'str')) {
           if (
             name === 'prompt' ||
             name === 'negative_prompt' ||
@@ -208,39 +231,8 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           )
         }
 
-        // handle string array input
-        if (parameter.type === 'string[]') {
-          return (
-            <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
-              <FormItemHead label={label} description={parameter.description} />
-              <FormControl id={name}>
-                <Input
-                  className={'hidden'}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  value={value === null ? '' : value || ''}
-                />
-              </FormControl>
-              <StringArrayInput
-                minLength={
-                  parameter.required
-                    ? parameter.min_length !== undefined &&
-                      parameter.min_length !== null
-                      ? parameter.min_length
-                      : 0
-                    : 1
-                }
-                maxLength={parameter.max_length || 256}
-                onChange={onChange}
-                value={value === null ? [] : value || ['']}
-              />
-              <FormMessage>{fieldState.error?.message}</FormMessage>
-            </FormItem>
-          )
-        }
-
         // handle lora input
-        if (parameter.type === 'lora') {
+        if (isSchemaType(parameter, 'lora')) {
           const parsedValue = typeof value !== 'string' ? '' : value
           return (
             <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
@@ -265,79 +257,142 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           )
         }
 
-        // handle file url input
-        if (fileInputRegexes.fileUrlRegex.test(parameter.type)) {
-          return (
-            <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
-              <FormItemHead label={label} description={parameter.description} />
-              <FormControl id={name}>
-                <Input
-                  className={'hidden'}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  value={value === null ? '' : value || ''}
+        if (isSchemaAnyOfType(parameter)) {
+          const types = getSchemaAnyOfTypes(parameter)
+          if (
+            types?.includes('image') ||
+            types?.includes('video') ||
+            types?.includes('archive')
+          ) {
+            return (
+              <FormItem
+                className="mt-0 !p-4 !pt-2"
+                data-test-id={parameter.name}
+              >
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
                 />
-              </FormControl>
-              <div className="flex md:flex-col gap-2 items-center w-full">
-                {/* // supports mask painter */}
-                {maskPainterParameterNames.includes(parameter.name) ? (
-                  <>
-                    <MaskingCanvasDialog
-                      form={form}
-                      parameter={parameter}
-                      onChange={onChange}
-                    />
-                    <div className="font-bold">or</div>
-                  </>
-                ) : null}
-                <FileUploader
-                  value={value === null ? '' : value || ''}
-                  onChange={onChange}
-                  allowedFileTypes={parameter.type.split('|')}
-                  maxFiles={1}
-                  allowMultiple={false}
-                  enableDropFromTimeline={!tool.key.includes('trainer')}
-                  className={'w-full'}
-                />
-              </div>
-              <FormMessage>{fieldState.error?.message}</FormMessage>
-            </FormItem>
-          )
+                <FormControl id={name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value || ''}
+                  />
+                </FormControl>
+                <div className="flex md:flex-col gap-2 items-center w-full">
+                  {/* // supports mask painter */}
+                  {maskPainterParameterNames.includes(parameter.name) ? (
+                    <>
+                      <MaskingCanvasDialog
+                        form={form}
+                        parameter={parameter}
+                        onChange={onChange}
+                      />
+                      <div className="font-bold">or</div>
+                    </>
+                  ) : null}
+                  <FileUploader
+                    value={value === null ? '' : value || ''}
+                    onChange={onChange}
+                    allowedFileTypes={types}
+                    maxFiles={1}
+                    allowMultiple={false}
+                    enableDropFromTimeline={!tool.key.includes('trainer')}
+                    className={'w-full'}
+                  />
+                </div>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          }
         }
 
-        // handle file url array Input
-        if (fileInputRegexes.fileUrlArrayRegex.test(parameter.type)) {
-          return (
-            <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
-              <FormItemHead label={label} description={parameter.description} />
-              <FormControl id={name}>
-                <Input
-                  className={'hidden'}
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  value={value === null ? '' : value || ''}
+        // handle array input
+        if (isSchemaArrayType(parameter)) {
+          const arrayItemType = getSchemaArrayItemType(parameter)
+          // handle string array input
+          if (arrayItemType === 'str') {
+            return (
+              <FormItem
+                className="mt-0 !p-4 !pt-2"
+                data-test-id={parameter.name}
+              >
+                <FormItemHead
+                  label={label}
+                  description={parameter.description}
                 />
-              </FormControl>
-              <FileUploader
-                value={value ?? []}
-                onChange={onChange}
-                allowedFileTypes={parameter.type
-                  .replaceAll('[]', '')
-                  .split('|')}
-                maxFiles={
-                  parameter.max_length === null ||
-                  parameter.max_length === undefined
-                    ? parameter.type.includes('video')
-                      ? 128
-                      : 256
-                    : parameter.max_length || 1
-                }
-                allowMultiple={parameter.max_length !== 1}
-                enableDropFromTimeline={!tool.key.includes('trainer')}
-              />
-              <FormMessage>{fieldState.error?.message}</FormMessage>
-            </FormItem>
-          )
+                <FormControl id={name}>
+                  <Input
+                    className={'hidden'}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    value={value === null ? '' : value || ''}
+                  />
+                </FormControl>
+                <StringArrayInput
+                  minLength={
+                    parameter.required
+                      ? parameter.min_length !== undefined &&
+                        parameter.min_length !== null
+                        ? parameter.min_length
+                        : 0
+                      : 1
+                  }
+                  maxLength={parameter.max_length || 256}
+                  onChange={onChange}
+                  value={value === null ? [] : value || ['']}
+                />
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )
+          }
+
+          // Handle array of images or videos, or a single archive
+          if (parameter.schema.items && 'anyOf' in parameter.schema.items) {
+            const types = parameter.schema.items.anyOf.map(type => type.type)
+
+            if (
+              types?.includes('image') ||
+              types?.includes('video') ||
+              types?.includes('archive')
+            ) {
+              return (
+                <FormItem
+                  className="mt-0 !p-4 !pt-2"
+                  data-test-id={parameter.name}
+                >
+                  <FormItemHead
+                    label={label}
+                    description={parameter.description}
+                  />
+                  <FormControl id={name}>
+                    <Input
+                      className={'hidden'}
+                      onChange={onChange}
+                      onBlur={onBlur}
+                      value={value === null ? '' : value || ''}
+                    />
+                  </FormControl>
+                  <FileUploader
+                    value={value ?? []}
+                    onChange={onChange}
+                    allowedFileTypes={types}
+                    maxFiles={
+                      parameter.max_length === null ||
+                      parameter.max_length === undefined
+                        ? 256
+                        : parameter.max_length || 1
+                    }
+                    allowMultiple={true}
+                    enableDropFromTimeline={!tool.key.includes('trainer')}
+                  />
+                  <FormMessage>{fieldState.error?.message}</FormMessage>
+                </FormItem>
+              )
+            }
+          }
         }
 
         return (

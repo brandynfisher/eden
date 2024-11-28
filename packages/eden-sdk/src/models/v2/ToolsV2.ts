@@ -93,6 +93,7 @@ export type ToolParameterTypeValue =
   | 'float'
   | 'bool'
   | 'lora'
+  | 'archive'
 
 export type ToolParameterSingleType = {
   type: ToolParameterTypeValue
@@ -118,7 +119,7 @@ export type ToolParameterV2 = {
     anyOf?: (ToolParameterSingleType | ToolParameterArrayType)[]
   }
   required: boolean
-  default: string | number | null | undefined
+  default: string | number | null | undefined | boolean
   minimum?: number | null
   maximum?: number | null
   min_length?: number | null
