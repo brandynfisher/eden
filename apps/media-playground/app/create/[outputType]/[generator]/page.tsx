@@ -1,6 +1,6 @@
-import Workspace from '@/features/generators/workspace'
+import Workspace from '@/features/tools/workspace'
 import { fetcher } from '@/lib/fetcher'
-import { GeneratorV2, GeneratorsGetResponseV2 } from '@edenlabs/eden-sdk'
+import { ToolV2, ToolsGetResponseV2 } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
 import { cookies } from 'next/headers'
@@ -9,15 +9,15 @@ import { cache } from 'react'
 
 type Props = {
   params: {
-    generator: GeneratorV2['key']
-    output_type: GeneratorV2['output_type']
+    generator: ToolV2['key']
+    output_type: ToolV2['output_type']
   }
 }
 
 const getGenerator = async (id: string) => {
   try {
-    const response = await fetcher<GeneratorsGetResponseV2>(
-      `${process.env.NEXT_PUBLIC_HOST}/api/generators/${id}`,
+    const response = await fetcher<ToolsGetResponseV2>(
+      `${process.env.NEXT_PUBLIC_HOST}/api/tools/${id}`,
       {
         credentials: 'include',
         headers: { Cookie: cookies().toString() },

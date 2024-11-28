@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
-import CostIndicatorV2 from '@/features/generators/cost-indicator-v2'
-import ParameterField from '@/features/generators/parameters/parameter-field'
-import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
+import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
+import ParameterField from '@/features/tools/parameters/parameter-field'
+import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2 } from 'lucide-react'
@@ -20,7 +20,7 @@ const SimpleGeneratorForm = ({
   initValues,
   onSubmitSuccess,
 }: {
-  generator: GeneratorV2
+  generator: ToolV2
   exposedParameters: string[]
   initValues: { [key: string]: string | number }
   onSubmitSuccess: () => void
@@ -130,7 +130,7 @@ const QuickCreateForm = ({
   initValues: { [key: string]: string | number }
   onSubmitSuccess: () => void
 }) => {
-  const { generator } = useGeneratorQuery({ key: toolKey })
+  const { generator } = useToolQuery({ key: toolKey })
 
   if (!generator) {
     return null

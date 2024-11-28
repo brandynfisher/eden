@@ -2,9 +2,9 @@ import { calculateMaxDimensions } from '../../lib/eden2'
 import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
-import { GeneratorV2 } from '../../models/v2/GeneratorV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import { ThreadDocument } from '../../models/v2/Thread'
+import { ToolV2 } from '../../models/v2/ToolV2'
 import {
   ImageFormats,
   changeExtension,
@@ -65,11 +65,11 @@ export const createTask = async (
 ) => {
   const { userId } = request.user
   const { tool, args } = request.body as TasksV2CreateArguments
-  const generator = await GeneratorV2.findOne({ key: tool })
+  const toolDocument = await ToolV2.findOne({ key: tool })
 
-  if (!generator) {
+  if (!toolDocument) {
     return reply.status(404).send({
-      message: `Generator ${tool} not available`,
+      message: `Tool ${tool} not available`,
     })
   }
 
@@ -82,7 +82,7 @@ export const createTask = async (
 
   const rateLimitCheckResult = await taskRateLimitCheck(
     request,
-    generator.output_type,
+    toolDocument.output_type,
   )
   if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
     if (server.Sentry) {

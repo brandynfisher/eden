@@ -1,17 +1,13 @@
 import { env } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { EdenClient, GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { EdenClient, ToolParameterV2 } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
-function replaceNullWithUndefined(
-  arr: GeneratorParameterV2[],
-): GeneratorParameterV2[] {
+function replaceNullWithUndefined(arr: ToolParameterV2[]): ToolParameterV2[] {
   return arr.map(item => {
-    const newItem: GeneratorParameterV2 = { ...item }
+    const newItem: ToolParameterV2 = { ...item }
 
-    for (const key of Object.keys(newItem) as Array<
-      keyof GeneratorParameterV2
-    >) {
+    for (const key of Object.keys(newItem) as Array<keyof ToolParameterV2>) {
       if (newItem[key] === null || newItem[key] === 'random') {
         switch (key) {
           case 'default':
@@ -31,9 +27,7 @@ function replaceNullWithUndefined(
   })
 }
 
-function prepareParameters(
-  arr: GeneratorParameterV2[],
-): GeneratorParameterV2[] {
+function prepareParameters(arr: ToolParameterV2[]): ToolParameterV2[] {
   const filterHidden = arr.filter(param => param.hide_from_ui === false)
   return replaceNullWithUndefined(filterHidden)
 }

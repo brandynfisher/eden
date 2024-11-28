@@ -1,17 +1,17 @@
 import {
   BaseModelName,
-  GeneratorOutputTypeV2,
-  GeneratorParameterV2,
+  ToolOutputTypeV2,
+  ToolParameterV2,
 } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 
-export type GeneratorV2Schema = {
+export type ToolV2Schema = {
   key: string
   name: string
   description?: string
   private?: boolean
-  parameters?: GeneratorParameterV2[]
-  output_type: GeneratorOutputTypeV2
+  parameters?: ToolParameterV2[]
+  output_type: ToolOutputTypeV2
   cost_estimate?: string
   resolutions?: string[]
   thumbnail?: string
@@ -19,9 +19,9 @@ export type GeneratorV2Schema = {
   base_model?: BaseModelName
 }
 
-export interface GeneratorV2Document extends GeneratorV2Schema {}
+export interface ToolV2Document extends ToolV2Schema {}
 
-export const generatorV2Schema = new Schema<GeneratorV2Document>(
+export const ToolV2Schema = new Schema<ToolV2Document>(
   {
     key: {
       type: String,
@@ -63,11 +63,8 @@ export const generatorV2Schema = new Schema<GeneratorV2Document>(
   },
 )
 
-generatorV2Schema.index({ createdAt: -1 })
-generatorV2Schema.index({ output_type: -1, createdAt: -1 })
-generatorV2Schema.index({ key: -1, private: -1, createdAt: -1 })
+ToolV2Schema.index({ createdAt: -1 })
+ToolV2Schema.index({ output_type: -1, createdAt: -1 })
+ToolV2Schema.index({ key: -1, private: -1, createdAt: -1 })
 
-export const GeneratorV2 = model<GeneratorV2Document>(
-  'tools2',
-  generatorV2Schema,
-)
+export const ToolV2 = model<ToolV2Document>('tools2', ToolV2Schema)

@@ -7,16 +7,16 @@ import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import CostIndicatorV2 from '@/features/generators/cost-indicator-v2'
-import CreationUIMobile from '@/features/generators/creation-ui-mobile'
-import ParameterField from '@/features/generators/parameters/parameter-field'
-import ParameterGroupCollapse from '@/features/generators/parameters/parameter-group-collapse'
-import { groupParameters } from '@/features/generators/utils/parameters'
+import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
+import CreationUIMobile from '@/features/tools/creation-ui-mobile'
+import ParameterField from '@/features/tools/parameters/parameter-field'
+import ParameterGroupCollapse from '@/features/tools/parameters/parameter-group-collapse'
+import { groupParameters } from '@/features/tools/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useToolPreset } from '@/hooks/use-tool-preset'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { cn } from '@/lib/utils'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Settings2Icon } from 'lucide-react'
@@ -28,7 +28,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 type Props = {
-  generator: GeneratorV2
+  tool: ToolV2
 }
 
 const RUNWAY_TOOL_KEYS = ['runway', 'reel']
@@ -36,26 +36,26 @@ const RUNWAY_TOOL_KEYS = ['runway', 'reel']
 const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
 const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
-const CreationUIContainer = ({ generator }: Props) => {
+const CreationUIContainer = ({ tool }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const presetResolutions = generator?.resolutions
-  const parameterSchema = createZodFormSchema(generator.parameters || []) // create form schema
+  const presetResolutions = tool?.resolutions
+  const parameterSchema = createZodFormSchema(tool.parameters || []) // create form schema
 
   const customParams = [SAMPLE_COUNT_PARAMETER_NAME, ...MASKING_PARAMETER_NAMES]
 
-  const sampleCountParameter = generator.parameters?.filter(
+  const sampleCountParameter = tool.parameters?.filter(
     parameter => parameter.name === SAMPLE_COUNT_PARAMETER_NAME,
   )[0]
 
-  const maskingParameters = generator.parameters?.filter(parameter =>
+  const maskingParameters = tool.parameters?.filter(parameter =>
     MASKING_PARAMETER_NAMES.includes(parameter.name),
   )
 
   type FormData = z.infer<typeof parameterSchema>
   const defaultValues: FormData | undefined = getDefaultNameValueMap(
-    generator.parameters,
+    tool.parameters,
   )
 
   useEffect(() => {
@@ -94,7 +94,7 @@ const CreationUIContainer = ({ generator }: Props) => {
 
     try {
       const response = await axios.post('/api/tasks/create', {
-        tool: generator.key,
+        tool: tool.key,
         args: formData,
       })
 
@@ -102,7 +102,7 @@ const CreationUIContainer = ({ generator }: Props) => {
 
       toast.success(`Task submitted`, {
         description: (
-          <code className="text-xs text-foreground">Tool: {generator.key}</code>
+          <code className="text-xs text-foreground">Tool: {tool.key}</code>
         ),
         dismissible: true,
         richColors: true,
@@ -134,11 +134,11 @@ const CreationUIContainer = ({ generator }: Props) => {
 
   const requiredParameters = useMemo(
     () =>
-      generator.parameters?.filter(
+      tool.parameters?.filter(
         parameter =>
           parameter.required && !customParams.includes(parameter.name),
       ),
-    [generator.parameters],
+    [tool.parameters],
   )
 
   const groupedRequiredParameters = useMemo(
@@ -148,11 +148,11 @@ const CreationUIContainer = ({ generator }: Props) => {
 
   const optionalParameters = useMemo(
     () =>
-      generator.parameters?.filter(
+      tool.parameters?.filter(
         parameter =>
           !parameter.required && !customParams.includes(parameter.name),
       ),
-    [generator.parameters],
+    [tool.parameters],
   )
 
   const groupedOptionalParameters = useMemo(
@@ -160,26 +160,26 @@ const CreationUIContainer = ({ generator }: Props) => {
     [optionalParameters],
   )
 
-  const isRunwayPoweredTool = RUNWAY_TOOL_KEYS.includes(generator.key)
+  const isRunwayPoweredTool = RUNWAY_TOOL_KEYS.includes(tool.key)
 
   const formContent = (
     <Form {...form}>
       <form className="w-full">
         <div className="flex items-center lg:justify-between p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
           <TypographyH4 className="text-sm md:text-lg pl-8 md:pl-12 lg:pl-0">
-            {generator.name}
+            {tool.name}
           </TypographyH4>
-          {generator.base_model || generator.private ? (
+          {tool.base_model || tool.private ? (
             <div className="flex-shrink-0">
-              {generator.base_model ? (
+              {tool.base_model ? (
                 <Badge
                   variant="outline"
                   className="ml-2 border-muted-foreground"
                 >
-                  {generator.base_model}
+                  {tool.base_model}
                 </Badge>
               ) : null}
-              {generator.private ? (
+              {tool.private ? (
                 <Badge variant="destructive" className="ml-2">
                   private
                 </Badge>
@@ -190,7 +190,7 @@ const CreationUIContainer = ({ generator }: Props) => {
 
         <div className="max-h-[calc(100dvh_-_264px)] overflow-y-auto p-2 py-4">
           <div
-            data-test-id="generator-form-settings-required"
+            data-test-id="tool-form-settings-required"
             className="flex flex-col gap-2"
           >
             {groupedRequiredParameters?.map((element, index) => (
@@ -198,12 +198,12 @@ const CreationUIContainer = ({ generator }: Props) => {
                 {element.type === 'standalone' && element.parameter ? (
                   <ParameterField
                     form={form}
-                    tool={generator}
+                    tool={tool}
                     parameter={element.parameter}
                   />
                 ) : (
                   <ParameterGroupCollapse
-                    tool={generator}
+                    tool={tool}
                     group={element}
                     form={form}
                   />
@@ -237,7 +237,7 @@ const CreationUIContainer = ({ generator }: Props) => {
                     >
                       <ParameterField
                         form={form}
-                        tool={generator}
+                        tool={tool}
                         parameter={{ ...parameter, required: false }}
                       />
                     </TabsContent>
@@ -292,7 +292,7 @@ const CreationUIContainer = ({ generator }: Props) => {
           </div>
           {optionalParameters?.length ? (
             <div
-              data-test-id="generator-form-settings-optional"
+              data-test-id="tool-form-settings-optional"
               className={cn([showSettings ? 'mt-2' : 'overflow-hidden'])}
             >
               <div
@@ -306,12 +306,12 @@ const CreationUIContainer = ({ generator }: Props) => {
                     {element.type === 'standalone' && element.parameter ? (
                       <ParameterField
                         form={form}
-                        tool={generator}
+                        tool={tool}
                         parameter={element.parameter}
                       />
                     ) : (
                       <ParameterGroupCollapse
-                        tool={generator}
+                        tool={tool}
                         group={element}
                         form={form}
                       />
@@ -342,7 +342,7 @@ const CreationUIContainer = ({ generator }: Props) => {
             </div>
           ) : null}
 
-          <CostIndicatorV2 formula={generator.cost_estimate} />
+          <CostIndicatorV2 formula={tool.cost_estimate} />
 
           <Button
             type="button"
@@ -366,7 +366,7 @@ const CreationUIContainer = ({ generator }: Props) => {
     <>
       {/*  // Desktop: hidden on smaller screens */}
       <div
-        data-test-id="generator-form"
+        data-test-id="tool-form"
         className={cn([
           'flex flex-col items-start overflow-y-auto bg-muted-darker rounded-md',
           'hidden lg:flex',
@@ -376,7 +376,7 @@ const CreationUIContainer = ({ generator }: Props) => {
       </div>
 
       {/* // Mobile: hidden on larger screens */}
-      <CreationUIMobile generator={generator}>{formContent}</CreationUIMobile>
+      <CreationUIMobile tool={tool}>{formContent}</CreationUIMobile>
     </>
   )
 }

@@ -21,22 +21,20 @@ export async function GET(request: NextRequest) {
       query.output_type = searchParams.get('output_type') || ''
     }
 
-    const res = await eden.generators.listV2(query)
+    const res = await eden.tools.list(query)
 
-    if (!res || !res.generators) {
+    if (!res || !res.tools) {
       return new NextResponse(JSON.stringify({ message: 'No tools found' }), {
         status: 404,
       })
     }
 
     if (env.NEXT_PUBLIC_APP_ENV === 'production') {
-      const publicGenerators = res?.generators?.filter(
-        generator => !generator.private,
-      )
-      return NextResponse.json({ generators: publicGenerators })
+      const publicTools = res?.tools?.filter(tool => !tool.private)
+      return NextResponse.json({ tools: publicTools })
     }
 
-    return NextResponse.json({ generators: res?.generators })
+    return NextResponse.json({ tools: res?.tools })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

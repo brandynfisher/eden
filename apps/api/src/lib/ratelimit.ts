@@ -1,9 +1,9 @@
 import { TaskV2 } from '../models/v2/TaskV2'
 import {
   FeatureFlag,
-  GeneratorOutputTypeV2,
   SubscriptionTier,
   TaskV2Status,
+  ToolOutputTypeV2,
 } from '@edenlabs/eden-sdk'
 import { FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -99,7 +99,7 @@ type TaskRateLimitCheckResult = {
 const getMaximumTasks = (
   map: Record<SubscriptionTier, TaskRateLimit>,
   subscriptionTier: SubscriptionTier | undefined,
-  output_type: GeneratorOutputTypeV2,
+  output_type: ToolOutputTypeV2,
 ): number => {
   const tier = subscriptionTier || SubscriptionTier.Free
   const type = output_type === 'image' ? 'image' : 'video'
@@ -111,13 +111,13 @@ const getTasksCount = async (
   userId: ObjectId | undefined,
   since: Date,
   status: TaskV2Status[] = [],
-  output_type: GeneratorOutputTypeV2 | undefined,
+  output_type: ToolOutputTypeV2 | undefined,
 ) => {
   const query: {
     user?: ObjectId
     status?: { $in: TaskV2Status[] }
     createdAt?: { $gte: Date }
-    output_type?: GeneratorOutputTypeV2
+    output_type?: ToolOutputTypeV2
   } = {
     user: userId,
     createdAt: { $gte: since },
@@ -165,7 +165,7 @@ const getUserLimitTier = (
 
 export const taskRateLimitCheck = async (
   request: FastifyRequest,
-  output_type: GeneratorOutputTypeV2,
+  output_type: ToolOutputTypeV2,
 ): Promise<TaskRateLimitCheckResult> => {
   const { userId, subscriptionTier } = request.user
   const type = output_type === 'image' ? 'image' : 'video'

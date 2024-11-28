@@ -1,13 +1,13 @@
 'use client'
 
 import SecondaryNavLayout from '@/components/layout/secondary-nav-layout'
-import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
+import { useToolsListQuery } from '@/hooks/query/use-tools-list-query'
 import { PropsWithChildren } from 'react'
 
 const baseSegment = 'train'
 
 const PageLayout = ({ children }: PropsWithChildren) => {
-  const { generators } = useGeneratorsListQuery({
+  const { generators } = useToolsListQuery({
     output_type: ['lora'],
   })
 

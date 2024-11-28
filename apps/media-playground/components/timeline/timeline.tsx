@@ -11,7 +11,7 @@ import {
   updateDocInPage,
 } from '@/lib/query/cache-updates'
 import { useTaskStatus } from '@/providers/task-status-provider'
-import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
+import { TaskV2, TasksV2ListArguments, ToolV2 } from '@edenlabs/eden-sdk'
 import { QueryKey, useQueryClient } from '@tanstack/react-query'
 import { Suspense, useEffect, useMemo, useState } from 'react'
 
@@ -28,10 +28,10 @@ export const ListSkeleton = () => {
 }
 
 type Props = {
-  generator: GeneratorV2
+  tool: ToolV2
 }
 
-const Timeline = ({ generator }: Props) => {
+const Timeline = ({ tool }: Props) => {
   const [showAllToolResults, setShowAllToolResults] = useState(true)
   const queryClient = useQueryClient()
   const { subscribeToTaskUpdates } = useTaskStatus()
@@ -42,13 +42,13 @@ const Timeline = ({ generator }: Props) => {
       limit: 35,
       sort: ['createdAt;-1'],
       tool:
-        generator.output_type === 'lora'
-          ? generator.key
+        tool.output_type === 'lora'
+          ? tool.key
           : !showAllToolResults
-          ? generator.key
+          ? tool.key
           : undefined,
     }),
-    [showAllToolResults, generator.output_type, generator.key],
+    [showAllToolResults, tool.output_type, tool.key],
   )
 
   // Define the query key to match what TaskStatusProvider uses
@@ -56,15 +56,15 @@ const Timeline = ({ generator }: Props) => {
     () => [
       [
         'tasks',
-        generator.output_type === 'lora'
-          ? generator.key
+        tool.output_type === 'lora'
+          ? tool.key
           : !showAllToolResults
-          ? generator.key
+          ? tool.key
           : undefined,
       ].filter(Boolean),
       query,
     ],
-    [showAllToolResults, generator.output_type, generator.key, query],
+    [showAllToolResults, tool.output_type, tool.key, query],
   )
 
   // Subscribe to task updates via TaskStatusProvider
@@ -119,7 +119,7 @@ const Timeline = ({ generator }: Props) => {
 
   return (
     <div className="mb-8">
-      {generator.output_type !== 'lora' ? (
+      {tool.output_type !== 'lora' ? (
         <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 my-2 bg-muted-darker">
           <div className="flex items-center justify-between gap-2">
             <label className="text-sm" htmlFor={'show-all-tool-results'}>

@@ -8,7 +8,7 @@ import {
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCostConfig, useCostCalculation } from '@/hooks/use-cost-calculation'
 import { cn } from '@/lib/utils'
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { ToolParameterV2 } from '@edenlabs/eden-sdk'
 import { CoinsIcon } from 'lucide-react'
 import React, { Suspense } from 'react'
 import { useFormContext } from 'react-hook-form'
@@ -17,7 +17,7 @@ const regex = /\b[^\d\W]+(\.[^\d\W]+)*\b/g // match words that may contain perio
 
 type CostValueProps = {
   formula?: string
-  parameterNames: GeneratorParameterV2['name'][]
+  parameterNames: ToolParameterV2['name'][]
 }
 
 const CostValue: React.FC<CostValueProps> = ({ formula, parameterNames }) => {

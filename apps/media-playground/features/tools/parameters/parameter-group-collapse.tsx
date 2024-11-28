@@ -4,9 +4,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import ParameterField from '@/features/generators/parameters/parameter-field'
+import ParameterField from '@/features/tools/parameters/parameter-field'
 import { cn } from '@/lib/utils'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { ChevronDownIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useWatch } from 'react-hook-form'
@@ -14,7 +14,7 @@ import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   group: ParameterGroup
-  tool: GeneratorV2
+  tool: ToolV2
   form: UseFormReturn
 }
 

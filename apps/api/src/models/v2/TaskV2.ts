@@ -1,9 +1,9 @@
 import { UserDocument } from '../Creator'
 import {
-  GeneratorOutputTypeV2,
   TaskV2Args,
   TaskV2Result,
   TaskV2Status,
+  ToolOutputTypeV2,
 } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
@@ -14,7 +14,7 @@ export interface TaskV2Schema {
   user: UserDocument
   tool: string
   args: TaskV2Args
-  output_type: GeneratorOutputTypeV2
+  output_type: ToolOutputTypeV2
   result: TaskV2Result[]
   status: TaskV2Status
   // cost: number
@@ -28,7 +28,7 @@ export interface TaskV2Input {
   user: ObjectId
   tool: string
   args: TaskV2Args
-  output_type: GeneratorOutputTypeV2
+  output_type: ToolOutputTypeV2
   result: TaskV2Result[]
   status?: TaskV2Status
   // cost: number

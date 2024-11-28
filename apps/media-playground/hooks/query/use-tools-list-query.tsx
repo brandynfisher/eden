@@ -1,11 +1,11 @@
 import { fetcher } from '@/lib/fetcher'
-import { GeneratorOutputTypeV2, GeneratorV2 } from '@edenlabs/eden-sdk'
+import { ToolOutputTypeV2, ToolV2 } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 
-export const generatorsListQueryKey = ['generators']
+export const toolsListQueryKey = ['tools']
 
-export const useGeneratorsListQuery = (query?: {
-  output_type?: GeneratorOutputTypeV2[]
+export const useToolsListQuery = (query?: {
+  output_type?: ToolOutputTypeV2[]
 }) => {
   const {
     data,
@@ -18,12 +18,12 @@ export const useGeneratorsListQuery = (query?: {
     isSuccess,
     status,
   } = useQuery({
-    queryKey: [...generatorsListQueryKey, query?.output_type],
+    queryKey: [...toolsListQueryKey, query?.output_type],
     queryFn: () =>
       fetcher<{
-        generators: GeneratorV2[]
+        tools: ToolV2[]
       }>(
-        `/api/generators?hideParams=true${
+        `/api/tools?hideParams=true${
           query?.output_type
             ? `&output_type=${query.output_type
                 .map(outputType => outputType)
@@ -34,7 +34,7 @@ export const useGeneratorsListQuery = (query?: {
   })
 
   return {
-    generators: data?.generators as GeneratorV2[] | undefined,
+    tools: data?.tools as ToolV2[] | undefined,
     error,
     isError,
     isPending,

@@ -8,8 +8,8 @@ import {
 import { Creator } from '../Creators'
 import { MediaAttributes } from '../Media'
 import { CreationV2 } from './CreationsV2'
-import { GeneratorOutputTypeV2 } from './GeneratorsV2'
 import { ModelV2 } from './ModelsV2'
+import { ToolOutputTypeV2 } from './ToolsV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -24,7 +24,7 @@ export interface TasksV2ListArguments
   taskId?: string | string[]
   status?: string | string[]
   type?: 'concepts' | 'creations'
-  output_type?: GeneratorOutputTypeV2
+  output_type?: ToolOutputTypeV2
   tool?: string
   minDate?: boolean
 }
@@ -182,7 +182,7 @@ export type MediaOutput = {
 }
 
 export type TasksV2ResultOutput = MediaOutput & {
-  mediaAttributes?: MediaAttributes & { type: GeneratorOutputTypeV2 }
+  mediaAttributes?: MediaAttributes & { type: ToolOutputTypeV2 }
 }
 
 export type TaskV2Result = {
@@ -201,7 +201,7 @@ export type TaskV2 = {
   _id: string
   user: Creator
   tool: string
-  output_type?: GeneratorOutputTypeV2
+  output_type?: ToolOutputTypeV2
   model?: string
   name?: string
   args: TaskV2Args

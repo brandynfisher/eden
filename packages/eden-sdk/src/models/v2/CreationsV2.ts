@@ -7,8 +7,8 @@ import {
 } from '../../types'
 import { ReactionType } from '../Creations'
 import { Creator } from '../Creators'
-import { GeneratorOutputTypeV2 } from './GeneratorsV2'
 import { MediaOutput, TaskV2Args } from './TasksV2'
+import { ToolOutputTypeV2 } from './ToolsV2'
 import { AxiosRequestConfig } from 'axios'
 import { ObjectId } from 'mongodb'
 
@@ -182,7 +182,7 @@ export type CreationV2 = MediaOutput & {
   user: Creator
   task: ObjectId
   args: TaskV2Args
-  output_type: GeneratorOutputTypeV2
+  output_type: ToolOutputTypeV2
   tool: string
   createdAt: Date
   updatedAt: Date

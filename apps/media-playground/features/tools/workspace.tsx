@@ -2,29 +2,29 @@
 
 import Timeline from '@/components/timeline/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
-import CreationUiContainer from '@/features/generators/creation-ui-container'
-import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import CreationUiContainer from '@/features/tools/creation-ui-container'
+import { useToolQuery } from '@/hooks/query/use-tool-query'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
 
 type Props = {
-  generatorKey: GeneratorV2['key']
-  generatorSSRData?: GeneratorV2
+  toolKey: ToolV2['key']
+  toolSSRData?: ToolV2
 }
 
-const Workspace = ({ generatorKey, generatorSSRData }: Props) => {
-  const { generator: generatorClientData } = useGeneratorQuery({
-    key: generatorKey,
-    initialData: generatorSSRData
+const Workspace = ({ toolKey, toolSSRData }: Props) => {
+  const { tool: toolClientData } = useToolQuery({
+    key: toolKey,
+    initialData: toolSSRData
       ? {
-          generator: generatorSSRData,
+          tool: toolSSRData,
         }
       : undefined,
   })
 
-  const generator = generatorClientData || generatorSSRData
+  const tool = toolClientData || toolSSRData
 
-  if (!generator) {
+  if (!tool) {
     return null
   }
 
@@ -32,13 +32,13 @@ const Workspace = ({ generatorKey, generatorSSRData }: Props) => {
     <div data-test-id="workspace" className="flex flex-col lg:flex-row">
       <div className="lg:pr-4 lg:sticky lg:top-[120px] lg:h-screen min-w-[324px] w-full lg:max-w-[420px] lg:pt-4">
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
-          <CreationUiContainer generator={generator} />
+          <CreationUiContainer tool={tool} />
         </Suspense>
       </div>
 
       <div className="mb-8 lg:pt-4 flex flex-col gap-y-4 w-full">
         <Suspense>
-          <Timeline generator={generator} />
+          <Timeline tool={tool} />
         </Suspense>
       </div>
     </div>

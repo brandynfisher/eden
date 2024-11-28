@@ -86,7 +86,7 @@ type CustomFilters = {
       | { $in?: string[] | ObjectId[] | undefined }
     )[]
   }
-  generator?:
+  tool?:
     | string
     | ObjectId
     | ObjectId[]
@@ -254,7 +254,7 @@ const handleArguments = async ({
   let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
-    generator?: string[] | ObjectId[] | string | ObjectId
+    tool?: string[] | ObjectId[] | string | ObjectId
     output_type?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
@@ -357,12 +357,12 @@ const handleArguments = async ({
             return []
           }
 
-          if (field === 'generator') {
-            if (!customFilterOptions['generator']) {
-              customFilterOptions['generator'] = [value]
+          if (field === 'tool') {
+            if (!customFilterOptions['tool']) {
+              customFilterOptions['tool'] = [value]
             } else {
               // @ts-ignore
-              customFilterOptions['generator'].push(value)
+              customFilterOptions['tool'].push(value)
             }
             return []
           }
@@ -439,9 +439,9 @@ const handleArguments = async ({
         // @ts-ignore
         $in: Array.isArray(fieldValues) ? fieldValues : [fieldValues],
       }
-    } else if (fieldName === 'generator') {
+    } else if (fieldName === 'tool') {
       // @ts-ignore
-      customFilterMap['generator'] = {
+      customFilterMap['tool'] = {
         $in: Array.isArray(fieldValues)
           ? // @ts-ignore
             fieldValues.map(val => new ObjectId(val))

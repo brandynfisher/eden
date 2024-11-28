@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { FormItem } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
-import MaskingCanvasCursor from '@/features/generators/masking-canvas-cursor'
+import MaskingCanvasCursor from '@/features/tools/masking-canvas-cursor'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import axios from 'axios'
@@ -31,7 +31,7 @@ import { UseFormReturn } from 'react-hook-form'
 type MaskingCanvasProps = {
   form: UseFormReturn
   onChange: (fileUrl: string) => void
-  // parameter: GeneratorParameterV2;
+  // parameter: ToolParameterV2;
   inputImageFieldName: string
   width?: number
   height?: number

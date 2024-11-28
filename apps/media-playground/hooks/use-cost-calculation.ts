@@ -1,11 +1,11 @@
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { ToolParameterV2 } from '@edenlabs/eden-sdk'
 import { Parser } from 'expr-eval'
 
 export const getCostConfig = ({
   parameterNames,
   parameterValues,
 }: {
-  parameterNames: GeneratorParameterV2['name'][]
+  parameterNames: ToolParameterV2['name'][]
   parameterValues: string[] | number[]
 }) => {
   const nameValueMap: Map<string, number> = parameterNames.reduce(

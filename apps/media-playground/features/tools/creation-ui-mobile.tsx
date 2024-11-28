@@ -7,17 +7,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { ArrowLeftIcon, PlusIcon } from 'lucide-react'
 import * as React from 'react'
 import { PropsWithChildren, useState } from 'react'
 
 type Props = {
-  generator: GeneratorV2
+  tool: ToolV2
 } & PropsWithChildren
 
-const CreationUiMobile = ({ generator, children }: Props) => {
+const CreationUiMobile = ({ tool, children }: Props) => {
   const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
 
   return (
@@ -28,12 +28,12 @@ const CreationUiMobile = ({ generator, children }: Props) => {
             <PlusIcon className="h-4 w-4 mr-1" />
             Create
           </Button>
-          <div className="text-sm text-muted-foreground">{generator.name}</div>
+          <div className="text-sm text-muted-foreground">{tool.name}</div>
         </div>
       </DialogTrigger>
       <DialogContentOverlayBlur className="p-0 rounded-md overflow-hidden bg-muted-darker">
         <VisuallyHidden>
-          <DialogTitle>{generator.name}</DialogTitle>
+          <DialogTitle>{tool.name}</DialogTitle>
           <DialogDescription>Creation UI</DialogDescription>
         </VisuallyHidden>
 

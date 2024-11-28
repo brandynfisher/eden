@@ -1,12 +1,12 @@
 import LoadingIndicator from '@/components/loading-indicator'
-import Workspace from '@/features/generators/workspace'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import Workspace from '@/features/tools/workspace'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { Suspense } from 'react'
 
 type Props = {
   params: {
-    generator: GeneratorV2['key']
-    output_type: GeneratorV2['output_type']
+    generator: ToolV2['key']
+    output_type: ToolV2['output_type']
   }
 }
 

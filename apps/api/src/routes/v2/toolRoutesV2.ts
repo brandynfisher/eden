@@ -1,26 +1,23 @@
-import {
-  getGenerator,
-  listGenerators,
-} from '../../controllers/v2/generatorControllerV2'
+import { getTool, listTools } from '../../controllers/v2/toolControllerV2'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
-const generatorRoutesV2: FastifyPluginAsync = async server => {
-  server.get('/v2/generators/:generatorKey', {
+const toolRoutesV2: FastifyPluginAsync = async server => {
+  server.get('/v2/tools/:toolKey', {
     schema: {
-      tags: ['Generators'],
-      description: 'Get a generator',
+      tags: ['Tools'],
+      description: 'Get a Tool',
       security: [
         {
           apiKey: [],
         },
       ],
       params: Type.Object({
-        generatorKey: Type.String(),
+        toolKey: Type.String(),
       }),
       response: {
         200: Type.Object({
-          generator: Type.Object({
+          tool: Type.Object({
             key: Type.String(),
             name: Type.String(),
             private: Type.Optional(Type.Boolean()),
@@ -36,13 +33,13 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    handler: (request, reply) => getGenerator(server, request, reply),
+    handler: (request, reply) => getTool(server, request, reply),
   })
 
-  server.get('/v2/generators', {
+  server.get('/v2/tools', {
     schema: {
-      tags: ['Generators'],
-      description: 'List generators',
+      tags: ['Tools'],
+      description: 'List Tools',
       security: [
         {
           apiKey: [],
@@ -53,7 +50,7 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
       },
       response: {
         200: Type.Object({
-          generators: Type.Array(
+          tools: Type.Array(
             Type.Object({
               key: Type.String(),
               name: Type.String(),
@@ -71,8 +68,8 @@ const generatorRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    handler: (request, reply) => listGenerators(server, request, reply),
+    handler: (request, reply) => listTools(server, request, reply),
   })
 }
 
-export default generatorRoutesV2
+export default toolRoutesV2

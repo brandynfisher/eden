@@ -8,14 +8,14 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
+import { useToolsListQuery } from '@/hooks/query/use-tools-list-query'
 import useLocalStorage from '@/hooks/use-local-storage'
 import { siteConfig } from '@/lib/config'
-import { GeneratorOutputTypeV2, GeneratorV2 } from '@edenlabs/eden-sdk'
+import { ToolOutputTypeV2, ToolV2 } from '@edenlabs/eden-sdk'
 
 type Props = {
   title: string
-  generators?: GeneratorV2[]
+  generators?: ToolV2[]
   priority?: boolean
 }
 
@@ -51,13 +51,13 @@ const GridSection = ({ generators, priority }: Props) => {
   )
 }
 
-type GeneratorsGridProps = {
-  output_type: GeneratorOutputTypeV2[]
+type ToolsGridProps = {
+  output_type: ToolOutputTypeV2[]
   showFeatured?: boolean
 }
 
-const GeneratorsGrid = ({ output_type, showFeatured }: GeneratorsGridProps) => {
-  const { generators } = useGeneratorsListQuery({ output_type })
+const ToolsGrid = ({ output_type, showFeatured }: ToolsGridProps) => {
+  const { tools } = useToolsListQuery({ output_type })
 
   const [accordionStateQuery, setAccordionState] = useLocalStorage<string[]>(
     'generatorsGridAccordionState',
@@ -88,8 +88,8 @@ const GeneratorsGrid = ({ output_type, showFeatured }: GeneratorsGridProps) => {
           <AccordionContent className="my-4">
             <GridSection
               title="Featured"
-              generators={generators?.filter(gen =>
-                siteConfig.featured.tools.includes(gen.key),
+              generators={tools?.filter(tool =>
+                siteConfig.featured.tools.includes(tool.key),
               )}
               priority={true}
             />
@@ -104,7 +104,7 @@ const GeneratorsGrid = ({ output_type, showFeatured }: GeneratorsGridProps) => {
           <AccordionContent className="my-4">
             <GridSection
               title={type}
-              generators={generators?.filter(gen => gen.output_type === type)}
+              generators={tools?.filter(tool => tool.output_type === type)}
             />
           </AccordionContent>
         </AccordionItem>
@@ -113,4 +113,4 @@ const GeneratorsGrid = ({ output_type, showFeatured }: GeneratorsGridProps) => {
   )
 }
 
-export default GeneratorsGrid
+export default ToolsGrid

@@ -6,15 +6,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import MaskingCanvas from '@/features/generators/masking-canvas'
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import MaskingCanvas from '@/features/tools/masking-canvas'
+import { ToolParameterV2 } from '@edenlabs/eden-sdk'
 import { PaintbrushIcon } from 'lucide-react'
 import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
   form: UseFormReturn
-  parameter: GeneratorParameterV2
+  parameter: ToolParameterV2
   onChange: (value: string) => void
 }
 

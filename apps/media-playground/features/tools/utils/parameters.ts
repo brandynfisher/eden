@@ -1,17 +1,17 @@
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { ToolParameterV2 } from '@edenlabs/eden-sdk'
 
 export type ParameterGroup = {
   type: 'dependencyGroup' | 'standalone'
-  parameter?: GeneratorParameterV2
-  toggle?: GeneratorParameterV2
-  groupParameters?: GeneratorParameterV2[]
+  parameter?: ToolParameterV2
+  toggle?: ToolParameterV2
+  groupParameters?: ToolParameterV2[]
 }
 
 /**
  * Groups the given parameters with their toggle based on their visibility conditions.
  */
 export function groupParameters(
-  parameters: GeneratorParameterV2[],
+  parameters: ToolParameterV2[],
 ): ParameterGroup[] {
   const orderedElements: ParameterGroup[] = []
   parameters.forEach(parameter => {

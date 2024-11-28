@@ -1,4 +1,4 @@
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { ToolParameterV2 } from '@edenlabs/eden-sdk'
 import {
   ZodArray,
   ZodBoolean,
@@ -41,7 +41,7 @@ function optionalHelper<T extends ZodTypeAny>(
 }
 
 function createNumberSchema(
-  parameter: GeneratorParameterV2,
+  parameter: ToolParameterV2,
 ): ZodNumber | ZodOptional<ZodNumber> | ZodDefault<ZodNumber> {
   let schema: z.ZodNumber = z.number()
 
@@ -65,7 +65,7 @@ function createNumberSchema(
 }
 
 function createBoolSchema(
-  parameter: GeneratorParameterV2,
+  parameter: ToolParameterV2,
 ): ZodBoolean | ZodOptional<ZodBoolean> | ZodDefault<ZodBoolean> {
   let schema: ZodBoolean = z.boolean()
 
@@ -76,7 +76,7 @@ function createBoolSchema(
 }
 
 function createStringSchema(
-  parameter: GeneratorParameterV2,
+  parameter: ToolParameterV2,
 ): ZodString | ZodOptional<ZodString> | ZodDefault<ZodString> {
   let schema: ZodString = z.string()
 
@@ -100,7 +100,7 @@ function createStringSchema(
 }
 
 function createFileUrlSchema(
-  parameter: GeneratorParameterV2,
+  parameter: ToolParameterV2,
 ): ZodString | ZodOptional<ZodString> | ZodDefault<ZodString> {
   let schema: ZodString = z.string()
 
@@ -111,7 +111,7 @@ function createFileUrlSchema(
 }
 
 function createFileUrlArraySchema(
-  parameter: GeneratorParameterV2,
+  parameter: ToolParameterV2,
 ):
   | ZodArray<ZodString>
   | ZodOptional<ZodArray<ZodString>>
@@ -138,7 +138,7 @@ function createFileUrlArraySchema(
 }
 
 function createStringArraySchema(
-  parameter: GeneratorParameterV2,
+  parameter: ToolParameterV2,
 ):
   | ZodArray<ZodString>
   | ZodOptional<ZodArray<ZodString>>
@@ -172,7 +172,7 @@ function createStringArraySchema(
 }
 
 export function createZodParameterSchema(
-  parameter: GeneratorParameterV2,
+  parameter: ToolParameterV2,
 ): ZodTypeAny {
   if (fileInputRegexes.numberRegex.test(parameter.type)) {
     return createNumberSchema(parameter)
@@ -202,7 +202,7 @@ export function createZodParameterSchema(
 }
 
 export function createZodFormSchema(
-  parameters: GeneratorParameterV2[],
+  parameters: ToolParameterV2[],
 ): z.ZodObject<{}, 'strip', z.ZodTypeAny> {
   // Reduce parameters into a Zod schema object
   const schemaObj = parameters.reduce<Record<string, ZodTypeAny>>(
@@ -246,7 +246,7 @@ export function createZodFormSchema(
   return schema
 }
 
-export function getDefaultNameValueMap(parameters?: GeneratorParameterV2[]) {
+export function getDefaultNameValueMap(parameters?: ToolParameterV2[]) {
   return (parameters || []).reduce((accum, currParameter) => {
     return {
       ...accum,

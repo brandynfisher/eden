@@ -1,14 +1,14 @@
 import { fetcher } from '@/lib/fetcher'
-import { GeneratorV2, GeneratorsGetResponseV2 } from '@edenlabs/eden-sdk'
+import { ToolV2, ToolsGetResponseV2 } from '@edenlabs/eden-sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Props = {
-  key: GeneratorV2['key']
-  initialData?: GeneratorsGetResponseV2
+  key: ToolV2['key']
+  initialData?: ToolsGetResponseV2
 }
 
-export const useGeneratorQuery = ({ key, initialData }: Props) => {
-  const queryKey = ['generators', key]
+export const useToolQuery = ({ key, initialData }: Props) => {
+  const queryKey = ['tools', key]
 
   const {
     data,
@@ -24,13 +24,13 @@ export const useGeneratorQuery = ({ key, initialData }: Props) => {
     staleTime: 100000,
     initialData,
     queryKey,
-    queryFn: () => fetcher<GeneratorsGetResponseV2>(`/api/generators/${key}`),
+    queryFn: () => fetcher<ToolsGetResponseV2>(`/api/tools/${key}`),
   })
 
   const queryClient = useQueryClient()
 
   return {
-    generator: data?.generator as GeneratorV2 | undefined,
+    tool: data?.tool as ToolV2 | undefined,
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     queryKey,
     error,

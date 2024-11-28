@@ -16,16 +16,16 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { MaskingCanvasDialog } from '@/features/generators/masking-canvas-dialog'
+import { MaskingCanvasDialog } from '@/features/tools/masking-canvas-dialog'
 import { fileInputRegexes } from '@/lib/forms'
 import { cn } from '@/lib/utils'
-import { GeneratorParameterV2, GeneratorV2 } from '@edenlabs/eden-sdk'
+import { ToolParameterV2, ToolV2 } from '@edenlabs/eden-sdk'
 import { ReactNode, Suspense } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 type Props = {
-  parameter: GeneratorParameterV2
-  tool: GeneratorV2
+  parameter: ToolParameterV2
+  tool: ToolV2
   form: UseFormReturn
   icon?: ReactNode
   className?: string
