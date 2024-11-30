@@ -54,7 +54,7 @@ const toolRoutesV2: FastifyPluginAsync = async server => {
             Type.Object({
               key: Type.String(),
               name: Type.String(),
-              private: Type.Boolean(),
+              private: Type.Optional(Type.Boolean()),
               description: Type.Optional(Type.String()),
               output_type: Type.String(),
               cost_estimate: Type.Optional(Type.String()),

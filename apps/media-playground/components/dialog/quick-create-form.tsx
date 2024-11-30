@@ -15,25 +15,25 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const SimpleGeneratorForm = ({
-  generator,
+  tool,
   exposedParameters,
   initValues,
   onSubmitSuccess,
 }: {
-  generator: ToolV2
+  tool: ToolV2
   exposedParameters: string[]
   initValues: { [key: string]: string | number }
   onSubmitSuccess: () => void
 }) => {
   const { verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const parameters = generator?.parameters?.filter(param =>
+  const parameters = tool?.parameters?.filter(param =>
     exposedParameters.includes(param.name),
   )
   const parameterSchema = createZodFormSchema(parameters || [])
   type FormData = z.infer<typeof parameterSchema>
   const defaultValues: FormData | undefined = getDefaultNameValueMap(
-    generator?.parameters,
+    tool?.parameters,
   )
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
@@ -51,7 +51,7 @@ const SimpleGeneratorForm = ({
     setIsSubmitting(true)
     try {
       const response = await axios.post('/api/tasks/create', {
-        tool: generator.key,
+        tool: tool.key,
         args: finalData,
       })
 
@@ -59,7 +59,7 @@ const SimpleGeneratorForm = ({
 
       toast.success(`Task submitted`, {
         description: (
-          <code className="text-xs text-foreground">Tool: {generator.key}</code>
+          <code className="text-xs text-foreground">Tool: {tool.key}</code>
         ),
         dismissible: true,
         richColors: true,
@@ -86,21 +86,21 @@ const SimpleGeneratorForm = ({
   return (
     <Form {...form}>
       <form className="w-full">
-        {generator && parameters && parameters.length
+        {tool && parameters && parameters.length
           ? parameters.map(param => {
               return (
                 <ParameterField
                   form={form}
                   className={'bg-muted rounded-md mb-4'}
                   key={param.name}
-                  tool={generator}
+                  tool={tool}
                   parameter={param}
                 />
               )
             })
           : null}
         <div className="flex gap-2 items-center justify-end">
-          <CostIndicatorV2 formula={generator.cost_estimate} />
+          <CostIndicatorV2 formula={tool.cost_estimate} />
           <Button
             type="button"
             className=" w-[72px]"
@@ -130,19 +130,19 @@ const QuickCreateForm = ({
   initValues: { [key: string]: string | number }
   onSubmitSuccess: () => void
 }) => {
-  const { generator } = useToolQuery({ key: toolKey })
+  const { tool } = useToolQuery({ key: toolKey })
 
-  if (!generator) {
+  if (!tool) {
     return null
   }
 
   return (
     <div className="p-4 bg-muted-darker rounded-b-md">
       <div className="text-xs text-muted-foreground mb-4">
-        {generator.description}
+        {tool.description}
       </div>
       <SimpleGeneratorForm
-        generator={generator}
+        tool={tool}
         exposedParameters={exposedParameters}
         initValues={initValues}
         onSubmitSuccess={onSubmitSuccess}

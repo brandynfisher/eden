@@ -59,6 +59,9 @@ const getSchemaAnyOfTypes = (parameter: ToolParameterV2) =>
 
 const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
   const { name, label } = parameter
+
+  console.log(name, label)
+
   return (
     <FormField
       name={name}
