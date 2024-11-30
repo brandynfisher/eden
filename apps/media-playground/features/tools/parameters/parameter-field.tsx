@@ -58,7 +58,6 @@ const getSchemaAnyOfTypes = (parameter: ToolParameterV2) =>
 
 const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
   const { name, label } = parameter
-
   return (
     <FormField
       name={name}
@@ -78,6 +77,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                 className={className}
               >
                 <Input
+                  id={name}
                   type="number"
                   onChange={e =>
                     // @todo: handle as big number

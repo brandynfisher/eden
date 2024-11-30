@@ -1,6 +1,6 @@
 'use client'
 
-import GeneratorCard from '@/components/card/generator-card'
+import ToolCard from '@/components/card/tool-card'
 import {
   Accordion,
   AccordionContent,
@@ -29,7 +29,7 @@ const GridSection = ({ generators, priority }: Props) => {
       {generators && generators.length ? (
         <>
           {generators.map(generator => (
-            <GeneratorCard
+            <ToolCard
               key={generator.key}
               title={generator.name}
               description={generator.description}

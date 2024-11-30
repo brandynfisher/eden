@@ -7,11 +7,11 @@ import { PropsWithChildren } from 'react'
 const baseSegment = 'train'
 
 const PageLayout = ({ children }: PropsWithChildren) => {
-  const { generators } = useToolsListQuery({
+  const { tools } = useToolsListQuery({
     output_type: ['lora'],
   })
 
-  if (!generators) {
+  if (!tools) {
     return null
   }
 
@@ -23,13 +23,13 @@ const PageLayout = ({ children }: PropsWithChildren) => {
       navigation={[
         {
           title: 'Lora',
-          links: generators
-            .filter(generator => generator.output_type === 'lora')
-            .map(generator => ({
-              label: generator.name,
-              private: generator.private,
-              segments: [baseSegment, generator.key],
-              description: generator.description,
+          links: tools
+            .filter(tool => tool.output_type === 'lora')
+            .map(tool => ({
+              label: tool.name,
+              private: tool.private,
+              segments: [baseSegment, tool.key],
+              description: tool.description,
             })),
         },
       ]}

@@ -17,6 +17,13 @@ export interface ThreadsCreateArguments extends WebAPICallOptions {
   attachments?: string[]
 }
 
+export interface ThreadsMessageArguments extends WebAPICallOptions {
+  threadId?: string
+  agentId?: string
+  content: string
+  attachments?: string[]
+}
+
 export interface ThreadsListArguments
   extends WebAPICallOptions,
     ListQueryParams {}
@@ -33,6 +40,18 @@ export const threadsCreateRequestConfig = (
   return {
     method: 'POST',
     url: 'v2/threads/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const threadsMessageRequestConfig = (
+  args: ThreadsCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/threads/message',
     data: {
       ...args,
     },
@@ -62,6 +81,15 @@ export const threadsGetRequestConfig = (
 // Responses
 
 export type ThreadsCreateResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { threadId?: Thread['_id']; success: boolean }
+  )
+
+export type ThreadsMessageResponse = WebAPICallResult &
   (
     | {
         error?: string

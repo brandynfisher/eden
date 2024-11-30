@@ -70,6 +70,7 @@ export type FeedCursorRouteQueryParams = {
     collection?: string | string[]
     creation?: string | string[]
     generator?: string | string[]
+    tool?: string | string[]
     outputType?: string | string[]
     output_type?: string | string[]
     concept?: string | string[]

@@ -15,7 +15,7 @@ type Props = {
   priority?: boolean
 }
 
-const GeneratorCard = ({
+const ToolCard = ({
   title,
   image,
   link,
@@ -71,4 +71,4 @@ const GeneratorCard = ({
   )
 }
 
-export default GeneratorCard
+export default ToolCard

@@ -9,12 +9,12 @@ import { cache } from 'react'
 
 type Props = {
   params: {
-    generator: ToolV2['key']
+    tool: ToolV2['key']
     output_type: ToolV2['output_type']
   }
 }
 
-const getGenerator = async (id: string) => {
+const getTool = async (id: string) => {
   try {
     const response = await fetcher<ToolsGetResponseV2>(
       `${process.env.NEXT_PUBLIC_HOST}/api/tools/${id}`,
@@ -30,17 +30,17 @@ const getGenerator = async (id: string) => {
   }
 }
 
-const getGeneratorCached = cache(getGenerator)
+const getToolCached = cache(getTool)
 
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
   // read route params
-  const { generator } = params
+  const { tool } = params
 
   // fetch data
-  const response = await getGeneratorCached(generator || '')
+  const response = await getToolCached(tool || '')
 
   if (!response) {
     return {}
@@ -49,8 +49,8 @@ export async function generateMetadata(
   // optionally access and extend (rather than replace) parent metadata
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
 
-  const title = `${response.generator?.key} | Eden Create`
-  const description = response.generator?.description
+  const title = `${response.tool?.key} | Eden Create`
+  const description = response.tool?.description
   const media: { images?: string[]; videos?: string[] } = {}
 
   // if (response.generator?.mediaAttributes?.type === MediaType.Video) {
@@ -82,16 +82,16 @@ export async function generateMetadata(
   }
 }
 
-const GeneratorPage = async ({ params }: Props) => {
-  const { generator } = params
+const ToolPage = async ({ params }: Props) => {
+  const { tool } = params
 
-  if (!generator) {
+  if (!tool) {
     return notFound()
   }
 
-  const response = await getGeneratorCached(generator || '')
+  const response = await getToolCached(tool || '')
 
-  if (!response || !response.generator) {
+  if (!response || !response.tool) {
     return notFound()
   }
 
@@ -99,12 +99,7 @@ const GeneratorPage = async ({ params }: Props) => {
     return <div>error response: {String(response.error)}</div>
   }
 
-  return (
-    <Workspace
-      generatorKey={generator}
-      generatorSSRData={response?.generator}
-    />
-  )
+  return <Workspace toolKey={tool} toolSSRData={response?.tool} />
 }
 
-export default GeneratorPage
+export default ToolPage

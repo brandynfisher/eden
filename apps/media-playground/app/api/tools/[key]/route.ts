@@ -41,20 +41,20 @@ export async function GET(
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
 
-    const res = await eden.generators.getV2({ generatorKey: params.key })
+    const res = await eden.tools.get({ toolKey: params.key })
 
-    if (env.NEXT_PUBLIC_APP_ENV === 'production' && res.generator?.private) {
+    if (env.NEXT_PUBLIC_APP_ENV === 'production' && res.tool?.private) {
       return new NextResponse(JSON.stringify({ message: 'Tool not found' }), {
         status: 404,
       })
     }
 
-    const transformedParameters = res.generator?.parameters
-      ? prepareParameters(res.generator?.parameters)
+    const transformedParameters = res.tool?.parameters
+      ? prepareParameters(res.tool?.parameters)
       : []
 
     return NextResponse.json({
-      generator: { ...res.generator, parameters: transformedParameters },
+      tool: { ...res.tool, parameters: transformedParameters },
     })
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)

@@ -13,7 +13,7 @@ export type FeedFilterQueryParams = {
     character?: string | string[]
     collection?: string | string[]
     creation?: string | string[]
-    generator?: string | string[]
+    tool?: string | string[]
     output_type?: string | string[]
     concept?: string | string[]
     public?: boolean

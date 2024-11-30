@@ -250,6 +250,8 @@ import {
   ThreadsGetResponse,
   ThreadsListArguments,
   ThreadsListResponse,
+  ThreadsMessageArguments,
+  ThreadsMessageResponse,
   ToolsGetArgumentsV2,
   ToolsGetResponseV2,
   ToolsListArgumentsV2,
@@ -276,6 +278,7 @@ import {
   threadsCreateRequestConfig,
   threadsGetRequestConfig,
   threadsListRequestConfig,
+  threadsMessageRequestConfig,
   toolsGetRequestConfigV2,
   toolsListRequestConfigV2,
 } from './models/v2'
@@ -763,6 +766,10 @@ export abstract class Methods {
     list: bindApiCall<ThreadsListArguments, ThreadsListResponse>(
       this,
       threadsListRequestConfig,
+    ),
+    message: bindApiCall<ThreadsMessageArguments, ThreadsMessageResponse>(
+      this,
+      threadsMessageRequestConfig,
     ),
   }
 

@@ -86,12 +86,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (!requestJson.args) {
-    return new NextResponse(
-      JSON.stringify({ message: 'Missing generator args' }),
-      {
-        status: 400,
-      },
-    )
+    return new NextResponse(JSON.stringify({ message: 'Missing tool args' }), {
+      status: 400,
+    })
   }
 
   try {

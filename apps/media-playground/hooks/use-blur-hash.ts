@@ -1,6 +1,6 @@
+import { decodeBlurHash } from '@/lib/fast-blurhash'
 import { calculateMaxDimensions } from '@/lib/media'
 import { createCanvas } from 'canvas'
-import { decodeBlurHash } from 'fast-blurhash'
 import { useEffect, useState } from 'react'
 
 export function useBlurDataUrl(

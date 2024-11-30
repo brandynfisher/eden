@@ -421,8 +421,6 @@ describe('forms', () => {
         fileArrayParamMixed: ['image1', 'video1'],
       })
 
-      console.log(parsed.error)
-
       const parsedSuccess = parsed as SafeParseSuccess<Params>
 
       expect(parsedSuccess.success).toBe(true)

@@ -5,21 +5,21 @@ import { Suspense } from 'react'
 
 type Props = {
   params: {
-    generator: ToolV2['key']
+    tool: ToolV2['key']
     output_type: ToolV2['output_type']
   }
 }
 
-const TrainGeneratorPage = ({ params }: Props) => {
-  const { generator } = params
+const TrainToolPage = ({ params }: Props) => {
+  const { tool } = params
 
   return (
     <div>
       <Suspense fallback={<LoadingIndicator className="p-4" />}>
-        <Workspace generatorKey={generator} />
+        <Workspace toolKey={tool} />
       </Suspense>
     </div>
   )
 }
 
-export default TrainGeneratorPage
+export default TrainToolPage

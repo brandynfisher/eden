@@ -9,6 +9,7 @@ import axios, { AxiosResponse } from 'axios'
 export const createThread = async () => {
   // const client = createClient();
   // return client.threads.create();
+  alert('createThread: Not Implemented')
   console.log('createThread')
   return {
     thread_id: '1234567890',
@@ -42,7 +43,7 @@ export const sendMessage = async function* (params: {
   const userMessage = params.messages[params.messages.length - 1] as UserMessage
 
   const response: AxiosResponse<ThreadsCreateResponse> = await axios.post(
-    '/api/tasks/create',
+    '/api/chat',
     {
       tool: 'chat',
       args: {
