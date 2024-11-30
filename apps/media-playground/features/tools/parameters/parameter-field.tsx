@@ -4,6 +4,7 @@ import ModelSelector from '@/components/form/input/model-selector'
 import SelectInput from '@/components/form/input/select-input'
 import SliderInput from '@/components/form/input/slider-input'
 import StringArrayInput from '@/components/form/input/string-array-input'
+import { TextInput } from '@/components/form/input/text-input'
 import LoadingIndicator from '@/components/loading-indicator'
 import FileUploader from '@/components/media/file-uploader'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
@@ -218,9 +219,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   optionLabels={parameter.choices_labels || undefined}
                 />
               ) : (
-                <Input
-                  id={name}
-                  type="text"
+                <TextInput
                   onChange={onChange}
                   onBlur={onBlur}
                   value={value || ''}
