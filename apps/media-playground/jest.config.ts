@@ -47,9 +47,7 @@ const config: Config = {
   //   ]
   // },
   transformIgnorePatterns: [
-    // 'node_modules/(?!(react-photoswipe-gallery|photoswipe)/)', // Include problematic modules
     '<rootDir>/../../node_modules/(?!(react-photoswipe-gallery|photoswipe|react-truncate-inside)/)', // Include problematic modules
-    // 'node_modules/(?!(react-photoswipe-gallery|photoswipe)/)', // Include problematic modules
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'node'],
 }

@@ -2,7 +2,6 @@ import ParameterField from './parameter-field'
 import { Form } from '@/components/ui/form'
 import { ToolParameterV2, ToolV2 } from '@edenlabs/eden-sdk'
 import { describe, expect, it, test } from '@jest/globals'
-import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useForm } from 'react-hook-form'
 
@@ -143,7 +142,7 @@ describe('ParameterField Component', () => {
 
     render(<TestWrapper parameter={parameter} tool={toolMock} />)
 
-    const uploader = screen.getByText(/Upload/i)
+    const uploader = screen.getByLabelText(/Sample Media/i)
     expect(uploader).toBeInTheDocument()
   })
 

@@ -272,7 +272,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   description={parameter.description}
                 />
                 <FormControl id={name}>
-                  <Input
+                  <TextInput
                     className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
@@ -322,7 +322,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   description={parameter.description}
                 />
                 <FormControl id={name}>
-                  <Input
+                  <TextInput
                     className={'hidden'}
                     onChange={onChange}
                     onBlur={onBlur}
