@@ -86,13 +86,14 @@ describe('ParameterField Component', () => {
 
     render(<TestWrapper parameter={parameter} tool={toolMock} />)
 
-    const switchInput = screen.getByRole('checkbox')
+    // const switchInput = screen.getByRole('checkbox')
+    const switchInput = screen.getByLabelText(/Sample Bool/i)
     expect(switchInput).toBeInTheDocument()
   })
 
   it('renders a text input for str parameter type', () => {
     const parameter: ToolParameterV2 = {
-      name: 'sample_str',
+      name: 'string',
       label: 'Sample String',
       schema: { type: 'str' },
       description: 'A string parameter',
@@ -105,6 +106,7 @@ describe('ParameterField Component', () => {
 
     const textInput = screen.getByLabelText(/Sample String/i)
     expect(textInput).toBeInTheDocument()
+    expect(textInput).toBeInstanceOf(HTMLInputElement)
     expect(textInput).toHaveAttribute('type', 'text')
   })
 
@@ -123,6 +125,7 @@ describe('ParameterField Component', () => {
 
     const textarea = screen.getByPlaceholderText(/A prompt parameter/i)
     expect(textarea).toBeInTheDocument()
+    expect(textarea).toBeInstanceOf(HTMLTextAreaElement)
   })
 
   it('renders a file uploader for image/video/archive parameter type', () => {

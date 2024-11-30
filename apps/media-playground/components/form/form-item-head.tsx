@@ -20,7 +20,7 @@ const FormItemHead = ({ icon, label, description }: Props) => {
   return (
     <div className="space-y-0.5 flex items-center">
       <FormLabel
-        id={formItemId}
+        id={`${formItemId}-label`}
         className="flex items-center text-sm first-letter:uppercase mr-2 cursor-pointer"
       >
         {icon}

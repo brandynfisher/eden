@@ -54,7 +54,7 @@ const SliderInput = ({
         />
         <div className="flex-1 relative">
           <SliderWithTooltip
-            aria-labelledby={formItemId} // Associate label using ARIA
+            aria-labelledby={`${formItemId}-label`} // Associate label using ARIA
             className="flex-1"
             defaultValue={[value]}
             value={[value]}

@@ -218,14 +218,13 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   optionLabels={parameter.choices_labels || undefined}
                 />
               ) : (
-                <>
-                  <Input
-                    type="text"
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value || ''}
-                  />
-                </>
+                <Input
+                  id={name}
+                  type="text"
+                  onChange={onChange}
+                  onBlur={onBlur}
+                  value={value || ''}
+                />
               )}
             </FormItemWrap>
           )
