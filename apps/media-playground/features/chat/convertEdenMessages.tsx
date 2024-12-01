@@ -69,7 +69,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
       return {
         role: 'assistant',
         content: [
-          ...contentToParts(message.content),
+          ...contentToParts(message, message.content),
           ...(message.tool_calls?.map(
             (chunk): ToolCallContentPart => ({
               type: 'tool-call',
