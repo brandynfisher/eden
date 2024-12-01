@@ -59,8 +59,6 @@ const getSchemaAnyOfTypes = (parameter: ToolParameterV2) =>
 const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
   const { name, label } = parameter
 
-  console.log(name, label)
-
   return (
     <FormField
       name={name}
@@ -104,7 +102,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
               className={className}
             >
               <SliderInput
-                type="int"
+                type="integer"
                 min={parameter.minimum || 0}
                 max={parameter.maximum || 1}
                 step={parameter.step || 1}
