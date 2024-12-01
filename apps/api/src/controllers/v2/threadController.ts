@@ -30,11 +30,13 @@ export const createThreadMessage = async (
   const modalRequest = {
     endpoint: `${server.config.EDEN_COMPUTE_API_URL}/chat`,
     data: {
-      thread_id,
       agent_id,
-      content,
-      attachments,
-      user: userId,
+      thread_id,
+      user_message: {
+        content,
+        attachments,
+      },
+      user_id: userId,
     },
   }
 

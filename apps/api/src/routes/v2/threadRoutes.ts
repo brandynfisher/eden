@@ -72,7 +72,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => listThreads(server, request, reply),
   })
 
-  server.get('/v2/threads/:threadId', {
+  server.get('/v2/threads/:thread_id', {
     schema: {
       tags: ['Threads'],
       description: 'Get a thread',
@@ -82,7 +82,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         },
       ],
       params: {
-        threadId: Type.String(),
+        thread_id: Type.String(),
       },
       response: {
         200: Type.Object({

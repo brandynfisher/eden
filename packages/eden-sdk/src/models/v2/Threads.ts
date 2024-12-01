@@ -47,7 +47,7 @@ export const threadsCreateRequestConfig = (
 }
 
 export const threadsMessageRequestConfig = (
-  args: ThreadsCreateArguments,
+  args: ThreadsMessageArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'POST',

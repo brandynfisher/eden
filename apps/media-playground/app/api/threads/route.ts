@@ -31,7 +31,8 @@ async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
         )
       }
 
-      if (response && !response.task) {
+      if (response && !response.thread_id) {
+        console.log(response)
         return new NextResponse(
           JSON.stringify({
             message: response.message || `Could not send message`,
