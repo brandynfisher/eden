@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
 type Props = {
-  type: 'float' | 'int'
+  type: 'float' | 'integer'
   min: number
   max: number
   step: number
@@ -85,7 +85,7 @@ const SliderInput = ({
         onChange={e =>
           onChange(
             e.target.value
-              ? type === 'int'
+              ? type === 'integer'
                 ? parseInt(e.target.value)
                 : parseFloat(e.target.value)
               : undefined,

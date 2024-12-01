@@ -680,7 +680,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
             <FormItem className="mb-4">
               <Label>Line Width</Label>
               <SliderInput
-                type={'int'}
+                type={'integer'}
                 min={1}
                 max={420}
                 step={1}

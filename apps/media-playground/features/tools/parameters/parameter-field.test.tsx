@@ -39,7 +39,7 @@ describe('ParameterField Component', () => {
     const parameter: ToolParameterV2 = {
       name: 'sample_int',
       label: 'Sample Int',
-      schema: { type: 'int' },
+      schema: { type: 'integer' },
       description: 'An integer parameter',
       required: false,
       tip: 'tip',
@@ -76,7 +76,7 @@ describe('ParameterField Component', () => {
     const parameter: ToolParameterV2 = {
       name: 'sample_bool',
       label: 'Sample Bool',
-      schema: { type: 'bool' },
+      schema: { type: 'boolean' },
       description: 'A boolean parameter',
       required: false,
       tip: 'tip',
@@ -94,7 +94,7 @@ describe('ParameterField Component', () => {
     const parameter: ToolParameterV2 = {
       name: 'string',
       label: 'Sample String',
-      schema: { type: 'str' },
+      schema: { type: 'string' },
       description: 'A string parameter',
       required: false,
       tip: 'tip',
@@ -113,7 +113,7 @@ describe('ParameterField Component', () => {
     const parameter: ToolParameterV2 = {
       name: 'prompt',
       label: 'Prompt',
-      schema: { type: 'str' },
+      schema: { type: 'string' },
       description: 'A prompt parameter',
       required: false,
       tip: 'tip',
@@ -152,7 +152,7 @@ describe('ParameterField Component', () => {
       label: 'Sample String Array',
       schema: {
         type: 'array',
-        items: { type: 'str' },
+        items: { type: 'string' },
       },
       description: 'An array of strings',
       required: false,
@@ -170,7 +170,7 @@ describe('ParameterField Component', () => {
     const parameter: ToolParameterV2 = {
       name: 'sample_str',
       label: 'Sample String',
-      schema: { type: 'str' },
+      schema: { type: 'string' },
       description: 'A string parameter',
       required: false,
       tip: 'tip',

@@ -88,10 +88,10 @@ export type ToolParameterTypeValue =
   | 'image'
   | 'model'
   | 'audio'
-  | 'str'
-  | 'int'
+  | 'string'
+  | 'integer'
   | 'float'
-  | 'bool'
+  | 'boolean'
   | 'lora'
   | 'archive'
 

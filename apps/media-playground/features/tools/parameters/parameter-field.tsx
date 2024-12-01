@@ -68,7 +68,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
         const { onChange, onBlur, value, name } = field
 
         // handle number input
-        if (isSchemaType(parameter, 'int')) {
+        if (isSchemaType(parameter, 'integer')) {
           if (parameter.name === 'seed') {
             const parsedValue = +value ? +value : undefined
             return (
@@ -137,7 +137,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
         }
 
         // handle boolean input
-        if (isSchemaType(parameter, 'bool')) {
+        if (isSchemaType(parameter, 'boolean')) {
           return (
             <FormItem
               className={cn([
@@ -164,7 +164,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
         }
 
         // handle string input
-        if (isSchemaType(parameter, 'str')) {
+        if (isSchemaType(parameter, 'string')) {
           if (
             name === 'prompt' ||
             name === 'negative_prompt' ||
@@ -313,7 +313,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
         if (isSchemaArrayType(parameter)) {
           const arrayItemType = getSchemaArrayItemType(parameter)
           // handle string array input
-          if (arrayItemType === 'str') {
+          if (arrayItemType === 'string') {
             return (
               <FormItem
                 className="mt-0 !p-4 !pt-2"

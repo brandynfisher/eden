@@ -16,7 +16,9 @@ export function groupParameters(
   const orderedElements: ParameterGroup[] = []
   parameters.forEach(parameter => {
     const isToggle =
-      parameter.name.startsWith('use_') && parameter.type === 'bool'
+      parameter.name.startsWith('use_') &&
+      parameter.schema?.type &&
+      parameter.schema?.type === 'boolean'
 
     if (isToggle) {
       orderedElements.push({

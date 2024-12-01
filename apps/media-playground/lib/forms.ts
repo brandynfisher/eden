@@ -44,7 +44,7 @@ function createNumberSchema(
     schema = schema.max(parameter.maximum)
   }
 
-  if (parameter.schema.type === 'int') {
+  if (parameter.schema.type === 'integer') {
     //@ts-expect-error: refine returns ZodEffect<ZodType> which confused things
     schema = schema.refine(Number.isInteger, 'Must be an integer')
   }
@@ -148,12 +148,12 @@ export function createZodParameterSchema(
 ): ZodTypeAny {
   if (parameter.schema.type) {
     switch (parameter.schema.type) {
-      case 'int':
+      case 'integer':
       case 'float':
         return createNumberSchema(parameter)
-      case 'bool':
+      case 'boolean':
         return createBoolSchema(parameter)
-      case 'str':
+      case 'string':
         return createStringSchema(parameter)
       case 'image':
       case 'video':

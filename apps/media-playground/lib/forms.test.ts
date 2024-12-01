@@ -16,7 +16,7 @@ describe('forms', () => {
         description: 'A number parameter',
         tip: null,
         schema: {
-          type: 'int',
+          type: 'integer',
         },
         required: true,
         default: null,
@@ -42,7 +42,7 @@ describe('forms', () => {
         description: 'A boolean parameter',
         tip: null,
         schema: {
-          type: 'bool',
+          type: 'boolean',
         },
         required: false,
         default: true,
@@ -69,7 +69,7 @@ describe('forms', () => {
         description: 'A string parameter',
         tip: null,
         schema: {
-          type: 'str',
+          type: 'string',
         },
         required: true,
         default: null,
@@ -97,7 +97,7 @@ describe('forms', () => {
         schema: {
           type: 'array',
           items: {
-            type: 'str',
+            type: 'string',
           },
         },
         required: true,
@@ -315,7 +315,7 @@ describe('forms', () => {
           description: 'First parameter',
           tip: null,
           schema: {
-            type: 'int',
+            type: 'integer',
           },
           required: true,
           default: 5,
@@ -333,7 +333,7 @@ describe('forms', () => {
           description: 'Second parameter',
           tip: null,
           schema: {
-            type: 'str',
+            type: 'string',
           },
           required: false,
           default: 'default',
@@ -444,7 +444,7 @@ describe('forms', () => {
           description: 'First parameter',
           tip: null,
           schema: {
-            type: 'int',
+            type: 'integer',
           },
           required: true,
           default: 5,
@@ -462,7 +462,7 @@ describe('forms', () => {
           description: 'Second parameter',
           tip: null,
           schema: {
-            type: 'str',
+            type: 'string',
           },
           required: false,
           default: 'default',
