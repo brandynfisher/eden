@@ -5,14 +5,14 @@ import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
-  // @todo: abstract this away in SDK
-  // @todo: always return threadId
+  // // @todo: abstract this away in SDK
+  // // @todo: always return threadId
   console.log('sendMessage', args)
-
-  if (!args.threadId) {
-    console.log('sendMessage - no thread: should create thread', args.threadId)
-  } else {
-    console.log('sendMessage: existing thread', args.threadId)
+  //
+  if (!args.thread_id) {
+    console.log('sendMessage - no thread: should create thread')
+    // } else {
+    console.log('sendMessage: existing thread')
   }
 
   return eden.threads
@@ -76,16 +76,30 @@ export async function POST(request: NextRequest) {
 
   const requestJson = await request.json()
 
+  console.log({ requestJson })
+
   if (!requestJson) {
     return new NextResponse(JSON.stringify({ message: 'No data passed' }), {
       status: 400,
     })
   }
 
-  if (!requestJson.args) {
-    return new NextResponse(JSON.stringify({ message: 'Missing tool args' }), {
+  if (!requestJson.agent_id) {
+    return new NextResponse(JSON.stringify({ message: 'No agent_id passed' }), {
       status: 400,
     })
+  }
+
+  if (
+    !requestJson.content &&
+    !(requestJson.attachments && requestJson.attachments.length)
+  ) {
+    return new NextResponse(
+      JSON.stringify({ message: 'Neither content nor attachments passed' }),
+      {
+        status: 400,
+      },
+    )
   }
 
   try {
@@ -94,8 +108,10 @@ export async function POST(request: NextRequest) {
       token: authToken,
     })
 
-    const messageResponse = await sendMessage(requestJson.args, eden)
+    const messageResponse = await sendMessage(requestJson, eden)
     const messageJson = await messageResponse.json()
+
+    console.log('messageJson', messageJson)
 
     if (messageJson.status !== 200) {
       return new NextResponse(

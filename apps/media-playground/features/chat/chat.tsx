@@ -53,7 +53,10 @@ const ButtonWithTooltip: FC<ButtonWithTooltipProps> = ({
 }
 
 const TopLeft: FC = () => {
-  const isNewSelected = useThreadList(t => t.newThread === t.mainThreadId)
+  const isNewSelected = useThreadList(t => {
+    console.log(t, t.newThread, t.mainThreadId)
+    return t.mainThreadId === 'DEFAULT_THREAD_ID'
+  })
   return (
     <ThreadListPrimitive.New asChild>
       <ButtonWithTooltip

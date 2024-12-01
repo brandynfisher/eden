@@ -2,7 +2,7 @@ import ParameterTable from '@/components/timeline/parameter-table'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
 import { INTERNAL } from '@assistant-ui/react'
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronUpIcon, WrenchIcon } from 'lucide-react'
 import { useState } from 'react'
 
 const { TooltipIconButton } = INTERNAL
@@ -23,7 +23,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
         ])}
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
-        <CheckIcon className="size-4" />
+        <WrenchIcon className="size-4" />
         <p>
           Used tool: <span className="font-bold">{toolName}</span>
         </p>

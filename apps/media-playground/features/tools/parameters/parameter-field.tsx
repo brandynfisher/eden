@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { MaskingCanvasDialog } from '@/features/tools/masking-canvas-dialog'
-// import { fileInputRegexes } from '@/lib/forms'
 import { cn } from '@/lib/utils'
 import {
   ToolParameterTypeValue,
@@ -403,7 +402,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             description={parameter.description}
             errorMessage={fieldState.error?.message}
           >
-            <Input
+            <TextInput
               onChange={onChange}
               onBlur={onBlur}
               value={value === null ? '' : value}

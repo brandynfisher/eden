@@ -32,42 +32,29 @@ export const getThread = async (threadId: string) => {
   return response.data.thread
 }
 
-export const sendMessage = async function* (params: {
-  threadId: string
+export const sendMessage = async function (params: {
+  threadId?: string
   agentId: string
   messages: EdenMessage[]
   abortSignal: AbortSignal | undefined
-}): AsyncGenerator<{ data: EdenMessage }, void, unknown> {
+}): Promise<AxiosResponse<ThreadsCreateResponse>> {
   console.log('sendMessage', params)
 
-  const userMessage = params.messages[params.messages.length - 1] as UserMessage
+  const { threadId, agentId, messages, abortSignal } = params
+  const userMessage = messages[messages.length - 1] as UserMessage
 
   const response: AxiosResponse<ThreadsCreateResponse> = await axios.post(
-    '/api/chat',
+    '/api/threads',
     {
-      tool: 'chat',
-      args: {
-        agent_id: params.agentId,
-        thread_id: params.threadId,
-        content: userMessage.content,
-        attachments: userMessage.attachments,
-      },
+      agent_id: agentId,
+      thread_id: threadId,
+      content: userMessage.content,
+      attachments: userMessage.attachments,
     },
     {
-      signal: params.abortSignal,
+      signal: abortSignal,
     },
   )
 
-  if (response.status !== 200) {
-    const errorMessage: EdenMessage = {
-      role: 'assistant',
-      content: `Failed response!`,
-      status: { type: 'incomplete', reason: 'error' },
-    }
-
-    yield {
-      data: errorMessage,
-    }
-    return
-  }
+  return response
 }

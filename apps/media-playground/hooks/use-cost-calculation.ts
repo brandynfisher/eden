@@ -6,7 +6,7 @@ export const getCostConfig = ({
   parameterValues,
 }: {
   parameterNames: ToolParameterV2['name'][]
-  parameterValues: string[] | number[]
+  parameterValues: string[] | number[] | string[][]
 }) => {
   const nameValueMap: Map<string, number> = parameterNames.reduce(
     (acc, key, i) => {
@@ -42,7 +42,7 @@ const calculateCost = (
   try {
     return Parser.evaluate(formula, config)
   } catch (e) {
-    console.error('Could not parse cost_estimate', e)
+    // console.error('Could not parse cost_estimate', e)
     return Infinity
   }
 }

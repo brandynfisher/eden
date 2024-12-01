@@ -1,5 +1,7 @@
 'use client'
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Separator } from '@/components/ui/separator'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import {
   CompleteAttachment,
@@ -22,11 +24,34 @@ export type EdenMessage = { status?: MessageStatus } & (
 )
 
 const contentToParts = (
+  message: EdenMessage,
   content:
     | UserMessage['content']
     | AssistantMessage['content']
     | SystemMessage['content'],
 ) => {
+  if (message.role === 'assistant') {
+    if (
+      message.status?.type === 'incomplete' &&
+      message.status?.reason === 'error'
+    ) {
+      return [
+        {
+          type: 'ui' as const,
+          display: (
+            <Alert variant="destructive">
+              <AlertTitle>Failed response!</AlertTitle>
+              <AlertDescription className="flex flex-col gap-2">
+                <Separator />
+                <div>{content}</div>
+              </AlertDescription>
+            </Alert>
+          ),
+        },
+      ]
+    }
+  }
+
   return [{ type: 'text' as const, text: content }]
 }
 
@@ -44,7 +69,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
     case 'user':
       return {
         role: 'user',
-        content: contentToParts(message.content),
+        content: contentToParts(message, message.content),
         attachments: message.attachments?.map(
           (attachment, idx) =>
             ({

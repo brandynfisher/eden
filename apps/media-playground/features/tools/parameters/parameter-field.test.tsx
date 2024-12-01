@@ -1,7 +1,7 @@
 import ParameterField from './parameter-field'
 import { Form } from '@/components/ui/form'
 import { ToolParameterV2, ToolV2 } from '@edenlabs/eden-sdk'
-import { describe, expect, it, test } from '@jest/globals'
+import { describe, expect, it } from '@jest/globals'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useForm } from 'react-hook-form'
 
@@ -35,7 +35,7 @@ describe('ParameterField Component', () => {
     base_model: 'sdxl',
   }
 
-  test('renders a number input for int parameter type', () => {
+  it('renders a number input for int parameter type', () => {
     const parameter: ToolParameterV2 = {
       name: 'sample_int',
       label: 'Sample Int',

@@ -1,6 +1,6 @@
 'use client'
 
-import { createThread, getThread, sendMessage } from '@/features/chat/chatApi'
+import { getThread, sendMessage } from '@/features/chat/chatApi'
 import { EdenMessage } from '@/features/chat/convertEdenMessages'
 import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
@@ -38,8 +38,8 @@ export function EdenRuntimeProvider({
   const runtime = useEdenRuntime({
     threadId: threadIdRef.current,
     onSwitchToNewThread: async () => {
-      const { thread_id } = await createThread()
-      threadIdRef.current = thread_id
+      // const { thread_id } = await createThread()
+      threadIdRef.current = undefined
     },
     onSwitchToThread: async threadId => {
       const thread = await getThread(threadId)
@@ -51,21 +51,37 @@ export function EdenRuntimeProvider({
     //@ts-expect-error Type error: Type '(messages: EdenMessage[]) => Promise<AsyncGenerator<{ data: EdenMessage; } | { data: { role: string; status: { type: string; reason: string; }; content: string; }; }, void, undefined>>' is not assignable to type '(messages: EdenMessage[]) => Promise<AsyncGenerator<{ data: EdenMessage; }, any, unknown>>
     stream: async messages => {
       return (async function* () {
-        if (!threadIdRef.current) {
-          const { thread_id } = await createThread()
-          threadIdRef.current = thread_id
-        }
+        // if (!threadIdRef.current) {
+        //   const { thread_id } = await createThread()
+        //   threadIdRef.current = thread_id
+        // }
 
+        const isNewThread = !threadIdRef.current
         const threadId = threadIdRef.current
-
+        console.log({ isNewThread, threadId })
         try {
-          // Initiate message sending
-          yield* sendMessage({
+          const sendMessageResponse = await sendMessage({
             threadId,
             agentId,
             messages,
             abortSignal: abortController.current.signal,
           })
+          console.log({ sendMessageResponse })
+
+          if (
+            sendMessageResponse.status !== 200 ||
+            !sendMessageResponse.data.threadId
+          ) {
+            const errorMessage: EdenMessage = {
+              role: 'assistant',
+              content: JSON.stringify(sendMessageResponse?.data?.message),
+              status: { type: 'incomplete', reason: 'error' },
+            }
+            yield {
+              data: errorMessage,
+            }
+            return
+          }
 
           const timeoutDuration = TIMEOUT_DURATION_MS
           const pollingInterval = MESSAGE_POLLING_INTERVAL_MS

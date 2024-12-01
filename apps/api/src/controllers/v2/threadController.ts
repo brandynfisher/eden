@@ -17,7 +17,7 @@ export const createThreadMessage = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { threadId, agentId, content, attachments } =
+  const { thread_id, agent_id, content, attachments } =
     request.body as ThreadsCreateArguments
 
   const userDocument = await User.findById(userId)
@@ -28,15 +28,12 @@ export const createThreadMessage = async (
   }
 
   const modalRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/create`,
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/chat`,
     data: {
-      tool: 'chat',
-      args: {
-        thread_id: threadId,
-        agent_id: agentId,
-        content,
-        attachments,
-      },
+      thread_id,
+      agent_id,
+      content,
+      attachments,
       user: userId,
     },
   }
@@ -65,16 +62,14 @@ export const createThreadMessage = async (
       })
     }
 
-    console.log('send', { success: true })
-
-    return reply.status(200).send({ success: true })
+    return reply.status(200).send(modalResponse.data)
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage =
       error && error.response && error.response.data
         ? error.response.data
         : 'Unknown Error'
-
+    console.log(e)
     server.log.error({
       message: 'Failed to create thread/message',
       error: errorMessage,
@@ -139,7 +134,7 @@ export const getThread = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { threadId } = request.params as ThreadsGetArguments
+  const { thread_id } = request.params as ThreadsGetArguments
 
   const user = await User.findById(userId)
   if (!user) {
@@ -150,7 +145,7 @@ export const getThread = async (
 
   try {
     const thread = await ThreadModel.findOne({
-      _id: new ObjectId(threadId),
+      _id: new ObjectId(thread_id),
       user: userId,
     }).populate({
       path: 'user',

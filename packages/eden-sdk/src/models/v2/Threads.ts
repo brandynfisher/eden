@@ -11,15 +11,15 @@ import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 export interface ThreadsCreateArguments extends WebAPICallOptions {
-  threadId?: string
-  agentId?: string
+  thread_id?: string
+  agent_id?: string
   content: string
   attachments?: string[]
 }
 
 export interface ThreadsMessageArguments extends WebAPICallOptions {
-  threadId?: string
-  agentId?: string
+  thread_id?: string
+  agent_id?: string
   content: string
   attachments?: string[]
 }
@@ -29,7 +29,7 @@ export interface ThreadsListArguments
     ListQueryParams {}
 
 export interface ThreadsGetArguments extends WebAPICallOptions {
-  threadId: string
+  thread_id: string
 }
 
 // Requests
@@ -51,7 +51,7 @@ export const threadsMessageRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'v2/threads/message',
+    url: 'v2/threads',
     data: {
       ...args,
     },
@@ -74,7 +74,7 @@ export const threadsGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `v2/threads/${args.threadId}`,
+    url: `v2/threads/${args.thread_id}`,
   }
 }
 
@@ -86,7 +86,7 @@ export type ThreadsCreateResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { threadId?: Thread['_id']; success: boolean }
+    | { thread_id?: Thread['_id']; success: boolean }
   )
 
 export type ThreadsMessageResponse = WebAPICallResult &
@@ -95,7 +95,7 @@ export type ThreadsMessageResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { threadId?: Thread['_id']; success: boolean }
+    | { thread_id?: Thread['_id']; success: boolean }
   )
 
 export type ThreadsListResponse = WebAPICallResult &
@@ -175,6 +175,7 @@ export type Thread = {
   _id: string
   user: Creator
   name: string
+  label: string
   messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
   createdAt: Date
   updatedAt: Date
