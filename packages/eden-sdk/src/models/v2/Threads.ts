@@ -6,7 +6,7 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
-import { TaskV2Args } from './TasksV2'
+import { TaskV2Args, TaskV2Result } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -128,7 +128,8 @@ export type UserMessage = Message & {
 export type ToolCall = {
   id: string
   name: string
-  input: TaskV2Args
+  args: TaskV2Args
+  result?: TaskV2Result[]
 }
 
 export type ThreadMessage = {
@@ -165,18 +166,19 @@ export type SystemMessage = Message & {
   content: string
 }
 
-export type ToolMessage = Message & {
-  role: 'tool'
-  content?: string
-  tool_results: ToolResults[]
-}
+// export type ToolMessage = Message & {
+//   role: 'tool'
+//   content?: string
+//   tool_results: ToolResults[]
+// }
 
 export type Thread = {
   _id: string
   user: Creator
   name: string
   label: string
-  messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
+  // messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
+  messages: (UserMessage | AssistantMessage | SystemMessage)[]
   createdAt: Date
   updatedAt: Date
 }

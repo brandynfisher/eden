@@ -11,7 +11,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
   toolCallId,
   toolName,
   args,
-  result,
+  // result,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true)
   return (
@@ -35,16 +35,16 @@ export const ToolFallback: ToolCallContentPartComponent = ({
       {!isCollapsed && (
         <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none">
           <ParameterTable taskId={toolCallId} args={args} />
-          {result !== undefined && (
-            <div className="border-t border-dashed px-4 pt-2">
-              <p className="font-semibold">Result:</p>
-              <pre className="text-sm whitespace-pre-wrap">
-                {typeof result === 'string'
-                  ? result
-                  : JSON.stringify(result, null, 2)}
-              </pre>
-            </div>
-          )}
+          {/*{result !== undefined && (*/}
+          {/*  <div className="border-t border-dashed px-4 pt-2">*/}
+          {/*    <p className="font-semibold">Result:</p>*/}
+          {/*    <pre className="text-sm whitespace-pre-wrap">*/}
+          {/*      {typeof result === 'string'*/}
+          {/*        ? result*/}
+          {/*        : JSON.stringify(result, null, 2)}*/}
+          {/*    </pre>*/}
+          {/*  </div>*/}
+          {/*)}*/}
         </div>
       )}
     </div>

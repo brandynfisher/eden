@@ -20,6 +20,7 @@ async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
       ...args,
     })
     .then(response => {
+      console.log({ response })
       if (!response || response.message) {
         return new NextResponse(
           JSON.stringify({

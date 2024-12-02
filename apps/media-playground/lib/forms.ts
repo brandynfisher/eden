@@ -159,6 +159,7 @@ export function createZodParameterSchema(
       case 'video':
       case 'audio':
       case 'archive':
+      case 'lora':
         return createFileUrlSchema(parameter)
       case 'array':
         if (parameter.schema.items) {

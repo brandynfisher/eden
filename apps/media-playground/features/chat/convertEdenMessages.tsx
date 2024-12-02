@@ -11,8 +11,7 @@ import {
 import { ToolCallContentPart } from '@assistant-ui/react'
 import {
   AssistantMessage,
-  SystemMessage,
-  ToolMessage,
+  SystemMessage, // ToolMessage,
   UserMessage,
 } from '@edenlabs/eden-sdk'
 
@@ -20,8 +19,8 @@ export type EdenMessage = { status?: MessageStatus } & (
   | UserMessage
   | SystemMessage
   | AssistantMessage
-  | ToolMessage
 )
+// | ToolMessage
 
 const contentToParts = (
   message: EdenMessage,
@@ -91,6 +90,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
         createdAt: message.createdAt,
       }
     case 'assistant':
+      console.log(message.tool_calls)
       return {
         role: 'assistant',
         content: [
@@ -99,28 +99,11 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
             (chunk): ToolCallContentPart => ({
               type: 'tool-call',
               toolCallId: chunk.id,
-              toolName: chunk.name,
-              args: chunk.input,
-              argsText: JSON.stringify(chunk.input, null, 2),
-              // result: chunk.input
-            }),
-          ) ?? []),
-        ],
-        status: message.status,
-        createdAt: message.createdAt,
-      }
-    case 'tool':
-      return {
-        role: 'assistant',
-        content: [
-          ...(message.tool_results?.map(
-            (chunk): ToolCallContentPart => ({
-              type: 'tool-call',
-              toolCallId: chunk.id,
               toolName: 'task_result',
-              args: {},
-              argsText: chunk.name,
-              result: chunk.result,
+              args: chunk.args,
+              argsText: JSON.stringify(chunk.args, null, 2),
+              //@ts-expect-error TS2339: Property tool does not exist on type ToolCall
+              result: { tool: chunk.tool, result: chunk.result },
             }),
           ) ?? []),
         ],

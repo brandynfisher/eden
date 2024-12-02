@@ -1,35 +1,51 @@
 import LightboxGallery, {
   LightboxGalleryItem,
 } from '@/components/media/lightbox-gallery'
+import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { makeAssistantToolUI } from '@assistant-ui/react'
-import { TaskV2Result } from '@edenlabs/eden-sdk'
+import { TaskV2Result, ToolV2 } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 type TaskResultToolArgs = {
+  // result: {
+  tool: ToolV2['key']
   result: TaskV2Result[]
+  // }
 }
 
-export const TaskResultTool = makeAssistantToolUI<TaskResultToolArgs, string>({
+export const TaskResultTool = makeAssistantToolUI<
+  TaskResultToolArgs,
+  TaskResultToolArgs
+>({
   toolName: 'task_result',
-  // render: ({ toolCallId, toolName, args, argsText, status, result }) => {
-  render: ({ result }) => {
-    const resultsArray = result
-      ? (JSON.parse(result) as TaskV2Result[])
-      : undefined
+  render: ({ toolCallId, toolName, args, argsText, status, result }) => {
+    // render: ({ result }) => {
+    console.log(toolCallId, toolName, args, argsText, status, result)
+    const { tool, result: toolResults } = result as TaskResultToolArgs
 
     return (
       <div className="relative mb-2">
+        <ToolFallback
+          type="tool-call"
+          result={result}
+          toolCallId={toolCallId}
+          toolName={tool}
+          args={args}
+          argsText={argsText}
+          status={status}
+          addResult={() => console.log('adding result')}
+        />
         <LightboxGallery>
           <div
             className={cn([
-              resultsArray && resultsArray.length > 1 && 'grid',
+              toolResults && toolResults.length > 1 && 'grid',
               'grid-cols-2 gap-4',
             ])}
           >
-            {resultsArray
-              ? resultsArray.map((result, index) => (
+            {toolResults
+              ? toolResults.map((result, index) => (
                   <div key={index}>
                     {result.output.map(output => (
                       <LightboxGalleryItem
