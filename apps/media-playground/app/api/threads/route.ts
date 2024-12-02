@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
   // // @todo: abstract this away in SDK
   // // @todo: always return threadId
-  console.log('sendMessage', args)
+  console.log('route:sendMessage', args)
   //
   if (!args.thread_id) {
     console.log('sendMessage - no thread: should create thread')
@@ -32,7 +32,7 @@ async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
         )
       }
 
-      if (response && !response.thread_id) {
+      if (response && !args.thread_id && !response.thread_id) {
         console.log(response)
         return new NextResponse(
           JSON.stringify({
@@ -44,7 +44,7 @@ async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
         )
       }
 
-      return NextResponse.json(response.task)
+      return NextResponse.json(response)
     })
     .catch(error => {
       // console.log(error.response.data)
@@ -112,21 +112,26 @@ export async function POST(request: NextRequest) {
 
     const messageResponse = await sendMessage(requestJson, eden)
     const messageJson = await messageResponse.json()
+    console.log({
+      requestJson,
+      messageJson,
+      thread_id: requestJson.thread_id ?? messageJson.thread_id,
+    })
+    //
+    // if (messageJson.status !== 200) {
+    //   return new NextResponse(
+    //     JSON.stringify({
+    //       message: messageJson.message || 'Error sending message',
+    //     }),
+    //     {
+    //       status: messageJson.status,
+    //     },
+    //   )
+    // }
 
-    console.log('messageJson', messageJson)
-
-    if (messageJson.status !== 200) {
-      return new NextResponse(
-        JSON.stringify({
-          message: messageJson.message || 'Error sending message',
-        }),
-        {
-          status: messageJson.status,
-        },
-      )
-    }
-
-    return NextResponse.json(messageJson)
+    return NextResponse.json({
+      thread_id: requestJson.thread_id ?? messageJson.thread_id,
+    })
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response && error.response.data) {

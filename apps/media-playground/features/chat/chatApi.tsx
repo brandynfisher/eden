@@ -1,7 +1,7 @@
 import { EdenMessage } from '@/features/chat/convertEdenMessages'
 import {
-  ThreadsCreateResponse,
   ThreadsGetResponse,
+  ThreadsMessageResponse,
   UserMessage,
 } from '@edenlabs/eden-sdk'
 import axios, { AxiosResponse } from 'axios'
@@ -37,13 +37,13 @@ export const sendMessage = async function (params: {
   agentId: string
   messages: EdenMessage[]
   abortSignal: AbortSignal | undefined
-}): Promise<AxiosResponse<ThreadsCreateResponse>> {
+}): Promise<AxiosResponse<ThreadsMessageResponse>> {
   console.log('sendMessage', params)
 
   const { threadId, agentId, messages, abortSignal } = params
   const userMessage = messages[messages.length - 1] as UserMessage
 
-  const response: AxiosResponse<ThreadsCreateResponse> = await axios.post(
+  const response: AxiosResponse<ThreadsMessageResponse> = await axios.post(
     '/api/threads',
     {
       agent_id: agentId,

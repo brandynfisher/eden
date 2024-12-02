@@ -70,7 +70,7 @@ export function EdenRuntimeProvider({
 
           if (
             sendMessageResponse.status !== 200 ||
-            !sendMessageResponse.data.threadId
+            !sendMessageResponse.data.thread_id
           ) {
             const errorMessage: EdenMessage = {
               role: 'assistant',
@@ -127,33 +127,38 @@ export function EdenRuntimeProvider({
                 | undefined
               if (newMessages) {
                 if (Array.isArray(newMessages)) {
-                  // console.log('edenRuntimeProvider', {newMessages})
+                  console.log('edenRuntimeProvider yield', newMessages)
                   yield* newMessages.map((msg: EdenMessage) => {
+                    console.log('')
+
                     // console.log('edenRuntimeProvider - yield newMessage', msg.role, msg.content)
+                    const assistantMessage = msg as AssistantMessage
+                    const isFinalAssistantMessage =
+                      assistantMessage.tool_calls?.length &&
+                      assistantMessage.tool_calls.filter(call => !call.result)
+                        .length === 0
 
-                    if (msg.role === 'tool') {
-                      const toolResultMessage: EdenMessage = {
-                        role: 'tool',
-                        tool_results: msg.tool_results,
-                      }
-                      return { data: toolResultMessage }
-                    } else {
-                      const assistantMessage = msg as AssistantMessage
-                      const formattedMsg: AssistantMessage & {
-                        status: MessageStatus
-                      } = {
-                        role: 'assistant',
-                        status: assistantMessage.tool_calls?.length
-                          ? { type: 'incomplete', reason: 'tool-calls' }
-                          : { type: 'complete', reason: 'stop' },
-                        content: assistantMessage.content,
-                        tool_calls: assistantMessage.tool_calls,
-                      }
+                    console.log({ isFinalAssistantMessage, assistantMessage })
 
-                      return { data: formattedMsg as EdenMessage }
+                    const formattedMsg: AssistantMessage & {
+                      status: MessageStatus
+                    } = {
+                      role: 'assistant',
+                      status: isFinalAssistantMessage
+                        ? { type: 'incomplete', reason: 'tool-calls' }
+                        : { type: 'complete', reason: 'stop' },
+                      content: assistantMessage.content,
+                      tool_calls: assistantMessage.tool_calls,
                     }
+
+                    return { data: formattedMsg as EdenMessage }
                   })
-                  // console.log('resetting websocketMessageRef', 'old', websocketMessageRef.current )
+
+                  console.log(
+                    'resetting websocketMessageRef',
+                    'old',
+                    websocketMessageRef.current,
+                  )
                   websocketMessageRef.current = null
                   break
                 }

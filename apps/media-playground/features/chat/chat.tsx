@@ -54,7 +54,7 @@ const ButtonWithTooltip: FC<ButtonWithTooltipProps> = ({
 
 const TopLeft: FC = () => {
   const isNewSelected = useThreadList(t => {
-    console.log(t, t.newThread, t.mainThreadId)
+    // console.log(t, t.newThread, t.mainThreadId)
     return t.mainThreadId === 'DEFAULT_THREAD_ID'
   })
   return (

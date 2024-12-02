@@ -20,9 +20,9 @@ export const TaskResultTool = makeAssistantToolUI<
   TaskResultToolArgs
 >({
   toolName: 'task_result',
-  render: ({ toolCallId, toolName, args, argsText, status, result }) => {
+  render: ({ args, argsText, status, result }) => {
     // render: ({ result }) => {
-    console.log(toolCallId, toolName, args, argsText, status, result)
+    // console.log(toolCallId, toolName, args, argsText, status, result)
     const { tool, result: toolResults } = result as TaskResultToolArgs
 
     return (
@@ -30,7 +30,7 @@ export const TaskResultTool = makeAssistantToolUI<
         <ToolFallback
           type="tool-call"
           result={result}
-          toolCallId={toolCallId}
+          toolCallId={tool}
           toolName={tool}
           args={args}
           argsText={argsText}
@@ -52,8 +52,8 @@ export const TaskResultTool = makeAssistantToolUI<
                         key={output.filename}
                         className="w-full h-full"
                         item={{
-                          url: getCloudfrontOriginalUrl(output.url),
-                          thumbnail: getCloudfrontOriginalUrl(output.url),
+                          url: getCloudfrontOriginalUrl(output.filename),
+                          thumbnail: getCloudfrontOriginalUrl(output.filename),
                           width: output.mediaAttributes?.width,
                           height: output.mediaAttributes?.height,
                           duration:
