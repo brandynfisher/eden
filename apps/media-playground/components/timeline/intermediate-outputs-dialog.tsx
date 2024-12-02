@@ -1,6 +1,4 @@
-import LightboxGallery, {
-  LightboxGalleryItem,
-} from '@/components/media/lightbox-gallery'
+import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
 import {
@@ -20,6 +18,9 @@ type Props = {
 }
 
 export const IntermediateOutputsDialog = ({ result }: Props) => {
+  const [open, setOpen] = React.useState(false)
+  const [disableEsc, setDisableEsc] = React.useState(false)
+
   const totalArrayElements =
     result && result.intermediateOutputs
       ? Object.values(result.intermediateOutputs).reduce(
@@ -28,8 +29,53 @@ export const IntermediateOutputsDialog = ({ result }: Props) => {
         )
       : 0
 
+  const slides = result.intermediateOutputs
+    ? Object.entries(result.intermediateOutputs).flatMap(output =>
+        output[1].map(mediaResult => ({
+          url: mediaResult.url || '',
+          thumbnail: mediaResult.url || '',
+          width: mediaResult.mediaAttributes?.width,
+          height: mediaResult.mediaAttributes?.height,
+          title: output[0],
+        })),
+      )
+    : []
+
+  React.useEffect(() => {
+    window.addEventListener('lightbox-open', () => {
+      setDisableEsc(true)
+    })
+
+    window.addEventListener('lightbox-close', () => {
+      setDisableEsc(false)
+    })
+
+    return () => {
+      window.removeEventListener('lightbox-open', () => {})
+      window.removeEventListener('lightbox-close', () => {})
+    }
+  }, [])
+
+  React.useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        document.body.style.pointerEvents = ''
+      }, 0)
+
+      return () => clearTimeout(timer)
+    } else {
+      document.body.style.pointerEvents = 'auto'
+    }
+  }, [open])
+
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={open => {
+        if (disableEsc) return
+        setOpen(open)
+      }}
+    >
       <DialogTrigger asChild>
         <div
           title="View Intermediate Outputs"
@@ -48,31 +94,16 @@ export const IntermediateOutputsDialog = ({ result }: Props) => {
         </DialogHeader>
         <LightboxGallery>
           <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-            {result && result.intermediateOutputs
-              ? Object.entries(result.intermediateOutputs).map(output => (
-                  <div key={output[0]}>
-                    <div className="text-sm bg-secondary p-2 rounded-t-md">
-                      {output[0]}
-                    </div>
-                    <div className="relative flex justify-center bg-muted-darker p-2 rounded-b-md">
-                      {output[1].map((mediaResult, index) => (
-                        <LightboxGalleryItem
-                          className={'h-[calc(60vh_-_72.4px)]'}
-                          key={`${mediaResult.url}_${index}`}
-                          forceRender={false}
-                          unoptimized={true}
-                          item={{
-                            url: mediaResult.url,
-                            thumbnail: mediaResult.url,
-                            width: mediaResult.mediaAttributes?.width,
-                            height: mediaResult.mediaAttributes?.height,
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))
-              : null}
+            {slides.map((slide, index) => (
+              <div key={`${slide.url}_${index}`}>
+                <div className="text-sm bg-secondary p-2 rounded-t-md">
+                  {slide.title}
+                </div>
+                <div className="relative flex justify-center bg-muted-darker p-2 rounded-b-md">
+                  <LightboxTrigger slide={slide} startIndex={index} />
+                </div>
+              </div>
+            ))}
           </div>
         </LightboxGallery>
         <DialogClose asChild>

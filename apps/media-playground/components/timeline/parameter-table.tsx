@@ -1,6 +1,4 @@
-import LightboxGallery, {
-  LightboxGalleryItem,
-} from '@/components/media/lightbox-gallery'
+import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import {
   Table,
@@ -93,25 +91,22 @@ const ParameterTable = ({ taskId, args, className }: Props) => {
             <TableCell className="py-2 w-2/3 md:w-auto truncate">
               {imageInputParameterNames.includes(taskArg[0]) ? (
                 <div className="flex gap-2">
-                  <LightboxGallery sizeOnLoad={true}>
-                    {(
-                      (Array.isArray(taskArg[1])
-                        ? taskArg[1]
-                        : [taskArg[1]]) as string[]
-                    )
+                  <LightboxGallery>
+                    {[taskArg[1] as string]
+                      .flat()
                       .filter(Boolean)
                       .map((inputImageUrl, index) => (
-                        <LightboxGalleryItem
-                          sizeOnLoad={true}
+                        <LightboxTrigger
                           className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
                           key={`${inputImageUrl}_${index}`}
-                          item={{
+                          slide={{
                             url: getCloudfrontOriginalUrl(inputImageUrl),
                             thumbnail: getCloudfrontOriginalUrl(inputImageUrl),
-                            width: 72,
-                            height: 72,
                           }}
-                          unoptimized={true}
+                          startIndex={index}
+                          imageProps={{
+                            unoptimized: true,
+                          }}
                         />
                       ))}
                   </LightboxGallery>

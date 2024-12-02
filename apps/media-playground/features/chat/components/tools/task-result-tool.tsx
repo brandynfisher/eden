@@ -1,6 +1,4 @@
-import LightboxGallery, {
-  LightboxGalleryItem,
-} from '@/components/media/lightbox-gallery'
+import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { makeAssistantToolUI } from '@assistant-ui/react'
@@ -31,9 +29,9 @@ export const TaskResultTool = makeAssistantToolUI<TaskResultToolArgs, string>({
             {resultsArray
               ? resultsArray.map((result, index) => (
                   <div key={index}>
-                    <LightboxGalleryItem
+                    <LightboxTrigger
                       className="w-full h-full"
-                      item={{
+                      slide={{
                         url: getCloudfrontOriginalUrl(result.url),
                         thumbnail: getCloudfrontOriginalUrl(result.url),
                         width: result.mediaAttributes?.width,
