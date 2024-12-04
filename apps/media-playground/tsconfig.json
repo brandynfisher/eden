@@ -2,8 +2,7 @@
   "extends": "@edenlabs/tsconfig/garden.json",
   "compilerOptions": {
     "target": "ESNext",
-    //    "module": "ESNext",
-    "module": "commonjs",
+    "module": "ESNext",
     "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
