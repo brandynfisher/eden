@@ -99,7 +99,10 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
 
             // Apply updates to cached document
             const updatedFields = data.updateDescription.updatedFields
+
+            //@ts-expect-error TS2769: No overload matches this call.
             Object.entries(updatedFields).forEach(([key, value]) => {
+              //@ts-expect-error TS2769: No overload matches this call.
               _.set(cachedDoc, key, value) // Use lodash's set method for dot-notated keys
             })
 
@@ -109,14 +112,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
               'updatedFields:',
               JSON.stringify(updatedFields, null, 2),
             )
-            // Extract the modified `messages` array
-            // const modifiedMessages = Object.keys(updatedFields)
-            //   .filter((key) => key.startsWith('messages.'))
-            //   .map((key) => {
-            //     const path = key.replace(/^messages\./, ''); // Strip "messages."
-            //     return { path, value: updatedFields[key] as ThreadMessage };
-            //   });
-
+            //@ts-expect-error TS2769: No overload matches this call.
             const modifiedMessages = extractModifiedMessages(updatedFields)
 
             const updatedMessages: ThreadMessage[] = []

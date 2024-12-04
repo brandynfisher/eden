@@ -1,11 +1,9 @@
 import ParameterTable from '@/components/timeline/parameter-table'
+import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
-import { INTERNAL } from '@assistant-ui/react'
 import { ChevronDownIcon, ChevronUpIcon, WrenchIcon } from 'lucide-react'
 import { useState } from 'react'
-
-const { TooltipIconButton } = INTERNAL
 
 export const ToolFallback: ToolCallContentPartComponent = ({
   toolCallId,

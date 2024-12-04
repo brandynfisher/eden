@@ -3,11 +3,9 @@
 import { uploadFileToS3 } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { AttachmentAdapter } from '@assistant-ui/react'
-import { INTERNAL } from '@assistant-ui/react'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 import { toast } from 'sonner'
-
-const { generateId } = INTERNAL
+import { v4 as uuidv4 } from 'uuid'
 
 const getFileDataURL = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -56,7 +54,7 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
     // @todo: when progress is possible, return cloudfront url as name after upload
 
     return {
-      id: generateId(),
+      id: uuidv4(),
       file,
       type: 'image',
       name: file.name,

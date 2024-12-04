@@ -29,7 +29,6 @@ const contentToParts = (
     | AssistantMessage['content']
     | SystemMessage['content'],
 ) => {
-  console.log(message, content)
   if (message.role === 'assistant') {
     if (
       message.status?.type === 'incomplete' &&
@@ -61,6 +60,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
   switch (message.role) {
     case 'system':
       return {
+        id: message.id,
         role: 'system',
         content: [{ type: 'text', text: message.content }],
         status: message.status,
@@ -68,6 +68,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
       }
     case 'user':
       return {
+        id: message.id,
         role: 'user',
         content: contentToParts(message, message.content),
         attachments: message.attachments?.map(
@@ -93,6 +94,7 @@ export const convertEdenMessages: useExternalMessageConverter.Callback<
     case 'assistant':
       console.log('convertEdenMessage', 'assistant', message)
       return {
+        id: message.id,
         role: 'assistant',
         content: [
           ...contentToParts(message, message.content),

@@ -111,6 +111,7 @@ export type ThreadsGetResponse = WebAPICallResult & {
 // Types
 
 export type Message = {
+  id: string
   role: 'user' | 'assistant' | 'tool' | 'system'
   createdAt?: Date
 }

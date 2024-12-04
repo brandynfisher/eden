@@ -12,6 +12,7 @@ import {
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
 import { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 
 export const useEdenRuntime = ({
   threadId,
@@ -97,6 +98,7 @@ export const useEdenRuntime = ({
     onNew: msg => {
       return handleSendMessage([
         {
+          id: uuidv4(),
           role: 'user',
           content:
             msg.content && msg.content.length
