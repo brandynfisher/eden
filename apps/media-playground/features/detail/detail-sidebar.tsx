@@ -100,13 +100,13 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <div className="h-9 flex items-center justify-between font-bold">
             Tool
           </div>
-          {item && (item as CreationV2).workflow ? (
+          {item && (item as CreationV2).tool ? (
             <Link
               href={`/create/${(item as CreationV2).mediaAttributes?.type}/${
-                (item as CreationV2).workflow
+                (item as CreationV2).tool
               }`}
             >
-              {(item as CreationV2).workflow}
+              {(item as CreationV2).tool}
             </Link>
           ) : (
             <Skeleton className="h-5 w-[125px]" />
@@ -158,7 +158,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               <Button size="sm" variant="outline" asChild>
                 <Link
                   href={`/create/image/${
-                    (item as CreationV2).workflow
+                    (item as CreationV2).tool
                   }?lora=${lora}`}
                   className="ml-auto mr-2"
                   scroll={false}

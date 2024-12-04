@@ -7,8 +7,8 @@ import {
 } from '../../types'
 import { ReactionType } from '../Creations'
 import { Creator } from '../Creators'
-import { GeneratorOutputTypeV2 } from './GeneratorsV2'
-import { TaskV2Args, TaskV2Result } from './TasksV2'
+import { MediaOutput, TaskV2Args } from './TasksV2'
+import { ToolOutputTypeV2 } from './ToolsV2'
 import { AxiosRequestConfig } from 'axios'
 import { ObjectId } from 'mongodb'
 
@@ -177,13 +177,13 @@ export type CreationsV2DeleteResponse = WebAPICallResult & {
 }
 
 // Types
-export type CreationV2 = TaskV2Result & {
+export type CreationV2 = MediaOutput & {
   _id: string
   user: Creator
   task: ObjectId
   args: TaskV2Args
-  output_type: GeneratorOutputTypeV2
-  workflow: string
+  output_type: ToolOutputTypeV2
+  tool: string
   createdAt: Date
   updatedAt: Date
   deleted: boolean

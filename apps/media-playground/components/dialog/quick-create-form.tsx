@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
-import CostIndicatorV2 from '@/features/generators/cost-indicator-v2'
-import ParameterField from '@/features/generators/parameters/parameter-field'
-import { useGeneratorQuery } from '@/hooks/query/use-generator-query'
+import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
+import ParameterField from '@/features/tools/parameters/parameter-field'
+import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2 } from 'lucide-react'
@@ -15,25 +15,25 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const SimpleGeneratorForm = ({
-  generator,
+  tool,
   exposedParameters,
   initValues,
   onSubmitSuccess,
 }: {
-  generator: GeneratorV2
+  tool: ToolV2
   exposedParameters: string[]
   initValues: { [key: string]: string | number }
   onSubmitSuccess: () => void
 }) => {
   const { verifyAuth, refetchMe } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const parameters = generator?.parameters?.filter(param =>
+  const parameters = tool?.parameters?.filter(param =>
     exposedParameters.includes(param.name),
   )
   const parameterSchema = createZodFormSchema(parameters || [])
   type FormData = z.infer<typeof parameterSchema>
   const defaultValues: FormData | undefined = getDefaultNameValueMap(
-    generator?.parameters,
+    tool?.parameters,
   )
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
@@ -51,7 +51,7 @@ const SimpleGeneratorForm = ({
     setIsSubmitting(true)
     try {
       const response = await axios.post('/api/tasks/create', {
-        workflow: generator.key,
+        tool: tool.key,
         args: finalData,
       })
 
@@ -59,7 +59,7 @@ const SimpleGeneratorForm = ({
 
       toast.success(`Task submitted`, {
         description: (
-          <code className="text-xs text-foreground">Tool: {generator.key}</code>
+          <code className="text-xs text-foreground">Tool: {tool.key}</code>
         ),
         dismissible: true,
         richColors: true,
@@ -86,21 +86,21 @@ const SimpleGeneratorForm = ({
   return (
     <Form {...form}>
       <form className="w-full">
-        {generator && parameters && parameters.length
+        {tool && parameters && parameters.length
           ? parameters.map(param => {
               return (
                 <ParameterField
                   form={form}
                   className={'bg-muted rounded-md mb-4'}
                   key={param.name}
-                  tool={generator}
+                  tool={tool}
                   parameter={param}
                 />
               )
             })
           : null}
         <div className="flex gap-2 items-center justify-end">
-          <CostIndicatorV2 formula={generator.costEstimate} />
+          <CostIndicatorV2 formula={tool.cost_estimate} />
           <Button
             type="button"
             className=" w-[72px]"
@@ -130,19 +130,19 @@ const QuickCreateForm = ({
   initValues: { [key: string]: string | number }
   onSubmitSuccess: () => void
 }) => {
-  const { generator } = useGeneratorQuery({ key: toolKey })
+  const { tool } = useToolQuery({ key: toolKey })
 
-  if (!generator) {
+  if (!tool) {
     return null
   }
 
   return (
     <div className="p-4 bg-muted-darker rounded-b-md">
       <div className="text-xs text-muted-foreground mb-4">
-        {generator.description}
+        {tool.description}
       </div>
       <SimpleGeneratorForm
-        generator={generator}
+        tool={tool}
         exposedParameters={exposedParameters}
         initValues={initValues}
         onSubmitSuccess={onSubmitSuccess}

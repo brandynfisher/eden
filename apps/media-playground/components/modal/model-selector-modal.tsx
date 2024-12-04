@@ -23,7 +23,7 @@ type Props = {
   className?: string
   trigger?: ReactNode
   currentValue: string
-  baseModel?: BaseModelName
+  base_model?: BaseModelName
   onChange: (id: string) => void
 } & PropsWithChildren
 
@@ -31,7 +31,7 @@ const ModelSelectorModal = ({
   title,
   description,
   className,
-  baseModel,
+  base_model,
   onChange,
 }: Props) => {
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -69,7 +69,7 @@ const ModelSelectorModal = ({
         <DialogHeader className="mt-4">
           <div className="flex gap-4 items-center">
             <DialogTitle className="py-2">{title}</DialogTitle>
-            <Badge variant="secondary">{baseModel}</Badge>
+            <Badge variant="secondary">{base_model}</Badge>
           </div>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
@@ -77,7 +77,7 @@ const ModelSelectorModal = ({
           fallback={<Skeleton className="h-10 pt-0.5 w-[270px] mb-4" />}
         >
           <ModelSelectorModalContent
-            baseModel={baseModel}
+            base_model={base_model}
             onChange={handleOnChange}
           />
         </Suspense>

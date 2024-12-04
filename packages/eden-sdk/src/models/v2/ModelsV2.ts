@@ -6,8 +6,8 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
-import { BaseModelName } from './GeneratorsV2'
 import { TaskV2Args } from './TasksV2'
+import { BaseModelName } from './ToolsV2'
 import { AxiosRequestConfig } from 'axios'
 import { ObjectId } from 'mongodb'
 

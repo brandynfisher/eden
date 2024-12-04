@@ -144,7 +144,7 @@ const TaskStatusIndicator = () => {
                         <TriangleAlertIcon className="text-red-500 h-4 w-4" />
                       ) : null}
                       <div className="text-xs text-accent-foreground">
-                        {task.workflow || 'No workflow'}
+                        {task.tool || 'No tool'}
                       </div>
                       <div
                         className="text-xs text-muted-foreground/50 ml-auto"
@@ -156,15 +156,19 @@ const TaskStatusIndicator = () => {
                     <div className={'h-10 flex gap-2 items-center'}>
                       {task.status === TaskV2Status.Completed
                         ? task.result.map(result => (
-                            <Image
-                              key={result.filename}
-                              className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
-                              loader={customImageLoader}
-                              src={result.filename || ''}
-                              alt={task.args.prompt || ''}
-                              width={48}
-                              height={48}
-                            />
+                            <>
+                              {result.output.map(output => (
+                                <Image
+                                  key={output.filename}
+                                  className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
+                                  loader={customImageLoader}
+                                  src={output.filename || ''}
+                                  alt={task.args.prompt || ''}
+                                  width={48}
+                                  height={48}
+                                />
+                              ))}
+                            </>
                           ))
                         : null}
                       <div className="text-xs line-clamp-2 text-muted-foreground">

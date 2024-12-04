@@ -86,7 +86,7 @@ type CustomFilters = {
       | { $in?: string[] | ObjectId[] | undefined }
     )[]
   }
-  generator?:
+  tool?:
     | string
     | ObjectId
     | ObjectId[]
@@ -254,8 +254,8 @@ const handleArguments = async ({
   let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
-    generator?: string[] | ObjectId[] | string | ObjectId
-    outputType?: string[]
+    tool?: string[] | ObjectId[] | string | ObjectId
+    output_type?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
     praiseCount?: { $gt: 0 }
@@ -357,21 +357,21 @@ const handleArguments = async ({
             return []
           }
 
-          if (field === 'generator') {
-            if (!customFilterOptions['generator']) {
-              customFilterOptions['generator'] = [value]
+          if (field === 'tool') {
+            if (!customFilterOptions['tool']) {
+              customFilterOptions['tool'] = [value]
             } else {
               // @ts-ignore
-              customFilterOptions['generator'].push(value)
+              customFilterOptions['tool'].push(value)
             }
             return []
           }
 
-          if (field === 'outputType') {
-            if (!customFilterOptions['outputType']) {
-              customFilterOptions['outputType'] = [value]
+          if (field === 'output_type') {
+            if (!customFilterOptions['output_type']) {
+              customFilterOptions['output_type'] = [value]
             } else {
-              customFilterOptions['outputType'].push(value)
+              customFilterOptions['output_type'].push(value)
             }
             return []
           }
@@ -434,14 +434,14 @@ const handleArguments = async ({
   for (const [fieldName, fieldValues] of Object.entries(customFilterOptions)) {
     if (fieldValues === undefined) continue
 
-    if (fieldName === 'outputType') {
+    if (fieldName === 'output_type') {
       customFilterMap['mediaAttributes.type'] = {
         // @ts-ignore
         $in: Array.isArray(fieldValues) ? fieldValues : [fieldValues],
       }
-    } else if (fieldName === 'generator') {
+    } else if (fieldName === 'tool') {
       // @ts-ignore
-      customFilterMap['generator'] = {
+      customFilterMap['tool'] = {
         $in: Array.isArray(fieldValues)
           ? // @ts-ignore
             fieldValues.map(val => new ObjectId(val))

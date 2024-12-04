@@ -16,17 +16,16 @@ import { ImageIcon, XIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
-  result: TaskV2Result
+  intermediateOutputs: TaskV2Result['intermediateOutputs']
 }
 
-export const IntermediateOutputsDialog = ({ result }: Props) => {
-  const totalArrayElements =
-    result && result.intermediateOutputs
-      ? Object.values(result.intermediateOutputs).reduce(
-          (acc, arr) => acc + arr.length,
-          0,
-        )
-      : 0
+export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
+  const totalArrayElements = intermediateOutputs
+    ? Object.values(intermediateOutputs).reduce(
+        (acc, arr) => acc + arr.length,
+        0,
+      )
+    : 0
 
   return (
     <Dialog>
@@ -48,8 +47,8 @@ export const IntermediateOutputsDialog = ({ result }: Props) => {
         </DialogHeader>
         <LightboxGallery>
           <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-            {result && result.intermediateOutputs
-              ? Object.entries(result.intermediateOutputs).map(output => (
+            {intermediateOutputs
+              ? Object.entries(intermediateOutputs).map(output => (
                   <div key={output[0]}>
                     <div className="text-sm bg-secondary p-2 rounded-t-md">
                       {output[0]}

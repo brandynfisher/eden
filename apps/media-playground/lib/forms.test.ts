@@ -3,19 +3,21 @@ import {
   createZodParameterSchema,
   getDefaultNameValueMap,
 } from './forms'
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { ToolParameterV2 } from '@edenlabs/eden-sdk'
 import { describe, expect, it } from '@jest/globals'
 import { SafeParseSuccess } from 'zod'
 
 describe('forms', () => {
   describe('createZodParameterSchema', () => {
     it('creates a number schema with a minimum and maximum', () => {
-      const parameter: GeneratorParameterV2 = {
+      const parameter: ToolParameterV2 = {
         name: 'numberParam',
         label: 'Number Parameter',
         description: 'A number parameter',
         tip: null,
-        type: 'int',
+        schema: {
+          type: 'integer',
+        },
         required: true,
         default: null,
         minimum: 1,
@@ -34,12 +36,14 @@ describe('forms', () => {
     })
 
     it('creates a boolean schema with default value', () => {
-      const parameter: GeneratorParameterV2 = {
+      const parameter: ToolParameterV2 = {
         name: 'boolParam',
         label: 'Boolean Parameter',
         description: 'A boolean parameter',
         tip: null,
-        type: 'bool',
+        schema: {
+          type: 'boolean',
+        },
         required: false,
         default: true,
         minimum: null,
@@ -59,12 +63,14 @@ describe('forms', () => {
     })
 
     it('creates a string schema with min and max length', () => {
-      const parameter: GeneratorParameterV2 = {
+      const parameter: ToolParameterV2 = {
         name: 'stringParam',
         label: 'String Parameter',
         description: 'A string parameter',
         tip: null,
-        type: 'string',
+        schema: {
+          type: 'string',
+        },
         required: true,
         default: null,
         minimum: null,
@@ -82,13 +88,48 @@ describe('forms', () => {
       expect(schema.safeParse('abcdef').success).toBe(false)
     })
 
-    it('creates a file schema for type image|video', () => {
-      const parameter: GeneratorParameterV2 = {
+    it('creates a string array schema with min and max length', () => {
+      const parameter: ToolParameterV2 = {
+        name: 'stringParam',
+        label: 'String Parameter',
+        description: 'A string parameter',
+        tip: null,
+        schema: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+        required: true,
+        default: null,
+        minimum: null,
+        maximum: null,
+        min_length: 3,
+        max_length: 5,
+        step: null,
+        choices: null,
+        choices_labels: null,
+      }
+
+      const schema = createZodParameterSchema(parameter)
+      expect(schema.safeParse(['abc', '456', 'bcdsa']).success).toBe(true)
+      expect(schema.safeParse(['abc']).success).toBe(false)
+      expect(
+        schema.safeParse(['abc', '456', 'bcdsa', '1fqfw', '2412', 'twetewet'])
+          .success,
+      ).toBe(false)
+      expect(schema.safeParse('abcdef').success).toBe(false)
+    })
+
+    it('creates a file schema for type image', () => {
+      const parameter: ToolParameterV2 = {
         name: 'fileParam',
         label: 'File Parameter',
         description: 'A file parameter',
         tip: null,
-        type: 'image|video',
+        schema: {
+          type: 'image',
+        },
         required: true,
         default: null,
         minimum: null,
@@ -106,13 +147,44 @@ describe('forms', () => {
       expect(schema.safeParse(['file1', 'file2']).success).toBe(false)
     })
 
-    it('creates a file array schema for type image[]', () => {
-      const parameter: GeneratorParameterV2 = {
+    it('creates a file schema for union type image + video', () => {
+      const parameter: ToolParameterV2 = {
+        name: 'fileParam',
+        label: 'File Parameter',
+        description: 'A file parameter',
+        tip: null,
+        schema: {
+          anyOf: [{ type: 'image' }, { type: 'video' }],
+        },
+        required: true,
+        default: null,
+        minimum: null,
+        maximum: null,
+        min_length: null,
+        max_length: null,
+        step: null,
+        choices: null,
+        choices_labels: null,
+      }
+
+      const schema = createZodParameterSchema(parameter)
+      expect(schema.safeParse('file1').success).toBe(true)
+      expect(schema.safeParse('file1').data).toBe('file1')
+      expect(schema.safeParse(['file1', 'file2']).success).toBe(false)
+    })
+
+    it('creates a file array schema for type image', () => {
+      const parameter: ToolParameterV2 = {
         name: 'fileArrayParam',
         label: 'File Array Parameter',
         description: 'A file array parameter',
         tip: null,
-        type: 'image[]',
+        schema: {
+          type: 'array',
+          items: {
+            type: 'image',
+          },
+        },
         required: true,
         default: null,
         minimum: null,
@@ -140,13 +212,18 @@ describe('forms', () => {
       ).toBe(false)
     })
 
-    it('creates a file array schema for type image[]|video[]', () => {
-      const parameter: GeneratorParameterV2 = {
+    it('creates a file array schema for type image or video', () => {
+      const parameter: ToolParameterV2 = {
         name: 'fileArrayParamMixed',
         label: 'File Array Parameter Mixed',
         description: 'A file array parameter mixed',
         tip: null,
-        type: 'image[]|video[]',
+        schema: {
+          type: 'array',
+          items: {
+            anyOf: [{ type: 'image' }, { type: 'video' }],
+          },
+        },
         required: true,
         default: null,
         minimum: null,
@@ -174,13 +251,44 @@ describe('forms', () => {
     })
 
     it('throws an error for unsupported parameter types', () => {
-      const parameter: GeneratorParameterV2 = {
+      const parameter: ToolParameterV2 = {
         name: 'unsupportedParam',
         label: 'Unsupported Parameter',
         description: 'An unsupported parameter',
         tip: null,
-        //@ts-expect-error TS2322: Type 'unsupported' is not assignable to type GeneratorParameterType
-        type: 'unsupported',
+        schema: {
+          //@ts-expect-error TS2322: Type 'unsupported' is not assignable to type GeneratorParameterType
+          type: 'unsupported',
+        },
+        required: true,
+        default: null,
+        minimum: null,
+        maximum: null,
+        min_length: null,
+        max_length: null,
+        step: null,
+        choices: null,
+        choices_labels: null,
+      }
+
+      expect(() => createZodParameterSchema(parameter)).toThrow(
+        'unsupported not supported.',
+      )
+    })
+
+    it('throws an error for unsupported items in array parameter types', () => {
+      const parameter: ToolParameterV2 = {
+        name: 'unsupportedArrayParam',
+        label: 'Unsupported Parameter',
+        description: 'An unsupported parameter',
+        tip: null,
+        schema: {
+          type: 'array',
+          items: {
+            //@ts-expect-error TS2322: Type 'unsupported' is not assignable to type GeneratorParameterType
+            type: 'unsupported',
+          },
+        },
         required: true,
         default: null,
         minimum: null,
@@ -200,13 +308,15 @@ describe('forms', () => {
 
   describe('createZodFormSchema', () => {
     it('creates a form schema with multiple parameters', () => {
-      const parameters: GeneratorParameterV2[] = [
+      const parameters: ToolParameterV2[] = [
         {
           name: 'param1',
           label: 'Parameter 1',
           description: 'First parameter',
           tip: null,
-          type: 'int',
+          schema: {
+            type: 'integer',
+          },
           required: true,
           default: 5,
           minimum: 1,
@@ -222,7 +332,9 @@ describe('forms', () => {
           label: 'Parameter 2',
           description: 'Second parameter',
           tip: null,
-          type: 'string',
+          schema: {
+            type: 'string',
+          },
           required: false,
           default: 'default',
           minimum: null,
@@ -235,10 +347,12 @@ describe('forms', () => {
         },
         {
           name: 'fileParam',
-          label: 'File Parameter',
-          description: 'A file parameter',
+          label: 'File Parameter Mixed',
+          description: 'A mixed file parameter',
           tip: null,
-          type: 'image|video',
+          schema: {
+            anyOf: [{ type: 'image' }, { type: 'video' }],
+          },
           required: true,
           default: null,
           minimum: null,
@@ -254,7 +368,10 @@ describe('forms', () => {
           label: 'File Array Parameter',
           description: 'A file array parameter',
           tip: null,
-          type: 'image[]',
+          schema: {
+            type: 'array',
+            items: { type: 'image' },
+          },
           required: true,
           default: null,
           minimum: null,
@@ -270,7 +387,12 @@ describe('forms', () => {
           label: 'File Array Parameter Mixed',
           description: 'A file array parameter mixed',
           tip: null,
-          type: 'image[]|video[]',
+          schema: {
+            type: 'array',
+            items: {
+              anyOf: [{ type: 'image' }, { type: 'video' }],
+            },
+          },
           required: true,
           default: null,
           minimum: null,
@@ -315,13 +437,15 @@ describe('forms', () => {
 
   describe('getDefaultNameValueMap', () => {
     it('returns a default name-value map for given parameters', () => {
-      const parameters: GeneratorParameterV2[] = [
+      const parameters: ToolParameterV2[] = [
         {
           name: 'param1',
           label: 'Parameter 1',
           description: 'First parameter',
           tip: null,
-          type: 'int',
+          schema: {
+            type: 'integer',
+          },
           required: true,
           default: 5,
           minimum: 1,
@@ -337,7 +461,9 @@ describe('forms', () => {
           label: 'Parameter 2',
           description: 'Second parameter',
           tip: null,
-          type: 'string',
+          schema: {
+            type: 'string',
+          },
           required: false,
           default: 'default',
           minimum: null,

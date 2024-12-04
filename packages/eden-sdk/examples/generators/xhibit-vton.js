@@ -10,7 +10,7 @@ const eden = require('../init_eden.js')
 // }
 
 const task = {
-  workflow: 'xhibit/vton',
+  tool: 'xhibit/vton',
   args: {
     prompt: 'a professional photo of <concept> as a fashion model, runway, cat walk',
     look_image: 'https://i.pinimg.com/236x/e4/af/3f/e4af3fefdf4777cef1d584e379b12791.jpg',

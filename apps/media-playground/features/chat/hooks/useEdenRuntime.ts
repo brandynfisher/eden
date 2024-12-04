@@ -1,8 +1,8 @@
+import edenImageAttachmentAdapter from '@/features/chat/eden-image-attachment-adapter'
 import {
   EdenMessage,
-  convertEdenMessages,
-} from '@/features/chat/convertEdenMessages'
-import edenImageAttachmentAdapter from '@/features/chat/edenImageAttachmentAdapter'
+  edenMessageConverter,
+} from '@/features/chat/eden-message-converter'
 import { useEdenMessages } from '@/features/chat/hooks/useEdenMessages'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import {
@@ -12,6 +12,7 @@ import {
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
 import { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 
 export const useEdenRuntime = ({
   threadId,
@@ -55,7 +56,7 @@ export const useEdenRuntime = ({
   }
 
   const threadMessages = useExternalMessageConverter({
-    callback: convertEdenMessages,
+    callback: edenMessageConverter,
     messages,
     isRunning,
   })
@@ -97,6 +98,7 @@ export const useEdenRuntime = ({
     onNew: msg => {
       return handleSendMessage([
         {
+          id: uuidv4(),
           role: 'user',
           content:
             msg.content && msg.content.length
