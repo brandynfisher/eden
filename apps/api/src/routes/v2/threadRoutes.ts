@@ -12,7 +12,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/threads', {
     schema: {
       tags: ['Threads'],
-      description: 'Add a thread message',
+      description: 'Add a thread message ',
       security: [
         {
           apiKey: [],
