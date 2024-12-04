@@ -1,8 +1,8 @@
+import edenImageAttachmentAdapter from '@/features/chat/eden-image-attachment-adapter'
 import {
   EdenMessage,
-  convertEdenMessages,
-} from '@/features/chat/convertEdenMessages'
-import edenImageAttachmentAdapter from '@/features/chat/edenImageAttachmentAdapter'
+  edenMessageConverter,
+} from '@/features/chat/eden-message-converter'
 import { useEdenMessages } from '@/features/chat/hooks/useEdenMessages'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import {
@@ -56,7 +56,7 @@ export const useEdenRuntime = ({
   }
 
   const threadMessages = useExternalMessageConverter({
-    callback: convertEdenMessages,
+    callback: edenMessageConverter,
     messages,
     isRunning,
   })

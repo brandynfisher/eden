@@ -10,7 +10,8 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
-  testEnvironment: 'jest-environment-jsdom',
+  // testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: 'jsdom',
 
   // ESM and TypeScript support
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
@@ -21,6 +22,7 @@ const config: Config = {
 
   // Module resolution
   moduleNameMapper: {
+    '^@/hooks$': '<rootDir>/@/hooks/$1',
     '^@/(.*)$': '<rootDir>/$1',
 
     // Handle module imports for specific libraries
@@ -39,11 +41,16 @@ const config: Config = {
     },
   },
 
+  // Transform configurations
   transform: {
-    // Use ts-jest for TypeScript files
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.[tj]sx?$': [
+      'ts-jest',
+      {
+        // useESM: true,
+        tsconfig: '<rootDir>/tsconfig.json',
+      },
+    ],
   },
-
   // Ignore transformations for certain node_modules
   transformIgnorePatterns: [
     '<rootDir>/../../node_modules/(?!(react-photoswipe-gallery|photoswipe|react-truncate-inside|@clerk/nextjs)/)',

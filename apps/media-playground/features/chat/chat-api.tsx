@@ -1,4 +1,4 @@
-import { EdenMessage } from '@/features/chat/convertEdenMessages'
+import { EdenMessage } from '@/features/chat/eden-message-converter'
 import {
   ThreadsGetResponse,
   ThreadsMessageResponse,

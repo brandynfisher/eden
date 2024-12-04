@@ -54,7 +54,7 @@ const contentToParts = (
   return [{ type: 'text' as const, text: content }]
 }
 
-export const convertEdenMessages: useExternalMessageConverter.Callback<
+export const edenMessageConverter: useExternalMessageConverter.Callback<
   EdenMessage
 > = message => {
   switch (message.role) {
