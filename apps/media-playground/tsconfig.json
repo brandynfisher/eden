@@ -3,12 +3,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["node", "jest", "@testing-library/jest-dom"],
+    "types": ["node"],
     "plugins": [
       {
         "name": "next"

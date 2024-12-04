@@ -37,7 +37,7 @@ const config: Config = {
   // Global test configurations
   globals: {
     'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.json',
+      tsconfig: '<rootDir>/tsconfig.test.json',
     },
   },
 
@@ -47,7 +47,7 @@ const config: Config = {
       'ts-jest',
       {
         // useESM: true,
-        tsconfig: '<rootDir>/tsconfig.json',
+        tsconfig: '<rootDir>/tsconfig.test.json',
       },
     ],
   },
