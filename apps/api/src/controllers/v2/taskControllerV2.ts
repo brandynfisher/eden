@@ -242,7 +242,7 @@ export const listTasks = async (
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
     path: 'result.creation',
-    model: 'creations2',
+    model: 'creations3',
   })
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
@@ -583,7 +583,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
       if (metaData?._id?.toString() === task.user.toString()) {
         await tasksRepository.model.populate(task, {
           path: 'result.creation',
-          model: 'creations2',
+          model: 'creations3',
         })
 
         await tasksRepository.model.populate(task, {

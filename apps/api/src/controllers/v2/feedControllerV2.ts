@@ -154,7 +154,7 @@ const creationsLookup = (
   return [
     {
       $lookup: {
-        from: 'creations2',
+        from: 'creations3',
         localField: localField,
         foreignField: foreignField,
         pipeline: lookupPipeline,
@@ -577,7 +577,7 @@ const userLookup: PipelineStage[] = [
 const creationLookup: PipelineStage[] = [
   {
     $lookup: {
-      from: 'creations2',
+      from: 'creations3',
       localField: 'coverCreation',
       foreignField: '_id',
       as: 'coverCreation',

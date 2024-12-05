@@ -118,6 +118,6 @@ creationSchema.plugin(mongooseDelete, {
 })
 
 export const CreationV2 = model<CreationV2Document>(
-  'creations2',
+  'creations3',
   creationSchema,
 ) as SoftDeleteModel<CreationV2Document>
