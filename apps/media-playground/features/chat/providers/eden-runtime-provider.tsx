@@ -7,6 +7,7 @@ import {
 import { getThread, sendMessage } from '@/features/chat/chat-api'
 import { EdenMessage } from '@/features/chat/eden-message-converter'
 import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
+import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider } from '@assistant-ui/react'
 import { AssistantMessage } from '@edenlabs/eden-sdk'
@@ -21,6 +22,7 @@ export function EdenRuntimeProvider({
 }: Readonly<{
   children: ReactNode
 }>) {
+  const { invalidate } = useThreadListQuery()
   const threadIdRef = useRef<string | undefined>()
   const abortController = useRef<AbortController>(new AbortController())
   const messageEmitterRef = useRef(new MessageEmitter())
@@ -77,6 +79,11 @@ export function EdenRuntimeProvider({
             },
           }
           return
+        }
+
+        if (!threadIdRef.current) {
+          await invalidate()
+          threadIdRef.current = sendMessageResponse.data.thread_id as string
         }
 
         const messageIterable = createAsyncIterableFromEmitter(

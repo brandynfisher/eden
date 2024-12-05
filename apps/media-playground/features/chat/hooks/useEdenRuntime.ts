@@ -11,7 +11,7 @@ import {
   useExternalMessageConverter,
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
 export const useEdenRuntime = ({
@@ -31,18 +31,6 @@ export const useEdenRuntime = ({
 
   const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
   const { threads } = useThreadListQuery()
-
-  useEffect(() => {
-    if (onSwitchToThread && !threadId && threads?.length) {
-      const selectInitialThread = async (threadId: string) => {
-        const { messages } = await onSwitchToThread(threadId)
-        setMessages(messages)
-        setIsRunning(false)
-      }
-      selectInitialThread(threads[0]._id)
-    }
-  }, [threadId, threads, onSwitchToThread])
-  // console.log('useEdenRuntime', { threadId, threads, messages })
 
   const handleSendMessage = async (messages: EdenMessage[]) => {
     try {

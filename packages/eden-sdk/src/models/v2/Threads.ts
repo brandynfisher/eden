@@ -176,6 +176,7 @@ export type SystemMessage = Message & {
 export type Thread = {
   _id: string
   user: Creator
+  title?: string
   name: string
   label: string
   // messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]

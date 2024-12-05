@@ -25,7 +25,9 @@ const threadRoutes: FastifyPluginAsync = async server => {
         attachments: Type.Optional(Type.Array(Type.String())),
       },
       response: {
-        200: Type.Any(),
+        200: Type.Object({
+          thread_id: Type.String(),
+        }),
         400: {
           // error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),

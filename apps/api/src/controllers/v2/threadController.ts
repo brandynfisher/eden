@@ -64,7 +64,7 @@ export const createThreadMessage = async (
       })
     }
 
-    return reply.status(200).send(modalResponse.data)
+    return reply.status(200).send({ thread_id: modalResponse.data.thread_id })
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage =
@@ -102,7 +102,7 @@ export const listThreads = async (
     }
 
     const queryOptions: QueryOptions = {
-      select: '_id name createdAt updatedAt user',
+      select: '_id title name createdAt updatedAt user',
       limit,
       page,
       sort: {

@@ -5,22 +5,17 @@ import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
-  // // @todo: abstract this away in SDK
-  // // @todo: always return threadId
-  console.log('route:sendMessage', args)
+  // console.log('route:sendMessage', args)
   //
-  if (!args.thread_id) {
-    console.log('sendMessage - no thread: should create thread')
-    // } else {
-    console.log('sendMessage: existing thread')
-  }
+  // if (!args.thread_id) {
+  //   console.log('sendMessage - no thread: should create thread')
+  // } else {
+  //   console.log('sendMessage: existing thread')
+  // }
 
   return eden.threads
-    .message({
-      ...args,
-    })
+    .message(args)
     .then(response => {
-      console.log({ response })
       if (!response || response.message) {
         return new NextResponse(
           JSON.stringify({
@@ -32,8 +27,7 @@ async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
         )
       }
 
-      if (response && !args.thread_id && !response.thread_id) {
-        console.log(response)
+      if (response && !response.thread_id) {
         return new NextResponse(
           JSON.stringify({
             message: response.message || `Could not send message`,
@@ -78,8 +72,6 @@ export async function POST(request: NextRequest) {
 
   const requestJson = await request.json()
 
-  console.log({ requestJson })
-
   if (!requestJson) {
     return new NextResponse(JSON.stringify({ message: 'No data passed' }), {
       status: 400,
@@ -112,22 +104,6 @@ export async function POST(request: NextRequest) {
 
     const messageResponse = await sendMessage(requestJson, eden)
     const messageJson = await messageResponse.json()
-    console.log({
-      requestJson,
-      messageJson,
-      thread_id: requestJson.thread_id ?? messageJson.thread_id,
-    })
-    //
-    // if (messageJson.status !== 200) {
-    //   return new NextResponse(
-    //     JSON.stringify({
-    //       message: messageJson.message || 'Error sending message',
-    //     }),
-    //     {
-    //       status: messageJson.status,
-    //     },
-    //   )
-    // }
 
     return NextResponse.json({
       thread_id: requestJson.thread_id ?? messageJson.thread_id,

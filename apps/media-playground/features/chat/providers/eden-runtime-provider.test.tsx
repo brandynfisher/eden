@@ -4,8 +4,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import React from 'react'
 
-// import * as useThreadListQueryModule from '@/hooks/query/use-thread-list-query';
-
 // Mock dependencies
 jest.mock('@/hooks/use-websocket-message', () => ({
   useWebSocketMessage: jest.fn(),
@@ -17,13 +15,11 @@ jest.mock('@/hooks/query/use-thread-list-query', () => ({
   __esModule: true,
   useThreadListQuery: jest.fn(),
 }))
-// const mockedUseThreadListQuery = jest.mocked(useThreadListQueryModule.useThreadListQuery);
-
 const useThreadListQueryModule = jest.requireMock(
   '@/hooks/query/use-thread-list-query',
 )
-// @ts-ignore
 const mockedUseThreadListQuery = jest.mocked(
+  // @ts-ignore
   useThreadListQueryModule.useThreadListQuery,
 )
 // import { useWebSocketMessage } from '@/hooks/use-websocket-message'
