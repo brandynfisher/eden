@@ -6,11 +6,12 @@ import { ChevronDownIcon, ChevronUpIcon, WrenchIcon } from 'lucide-react'
 import { useState } from 'react'
 
 export const ToolFallback: ToolCallContentPartComponent = ({
-  toolCallId,
   toolName,
   args,
   // result,
 }) => {
+  delete args.seed
+
   const [isCollapsed, setIsCollapsed] = useState(true)
   return (
     <div className="mt-1 mb-3 flex w-full flex-col">
@@ -23,7 +24,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
       >
         <WrenchIcon className="size-4" />
         <p>
-          Used tool: <span className="font-bold">{toolName}</span>
+          Tool: <span className="font-bold">{toolName}</span>
         </p>
         <div className="flex-grow" />
         <TooltipIconButton tooltip={isCollapsed ? 'Expand' : 'Collapse'}>
@@ -32,7 +33,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
       </div>
       {!isCollapsed && (
         <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none">
-          <ParameterTable taskId={toolCallId} args={args} />
+          <ParameterTable args={args} hideHeader={true} />
           {/*{result !== undefined && (*/}
           {/*  <div className="border-t border-dashed px-4 pt-2">*/}
           {/*    <p className="font-semibold">Result:</p>*/}
