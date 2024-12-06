@@ -100,7 +100,7 @@ export const createTask = async (
     data: {
       tool,
       args,
-      user: userId,
+      user_id: userId,
     },
   }
 

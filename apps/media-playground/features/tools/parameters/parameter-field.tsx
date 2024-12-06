@@ -362,8 +362,6 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             )
           }
 
-          console.log('array', arrayItemType, parameter.schema)
-
           // Handle array of images or videos, or a single archive
           if (
             arrayItemType === 'image' ||

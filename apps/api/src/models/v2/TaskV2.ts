@@ -93,4 +93,4 @@ taskSchema.index({ cost: 1, status: 1, createdAt: -1 })
 taskSchema.plugin(paginate)
 taskSchema.plugin(aggregatePaginate)
 
-export const TaskV2 = model<TaskV2Document>('tasks2', taskSchema)
+export const TaskV2 = model<TaskV2Document>('tasks3', taskSchema)
