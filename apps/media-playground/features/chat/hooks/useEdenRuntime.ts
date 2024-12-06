@@ -58,10 +58,7 @@ export const useEdenRuntime = ({
     messages: threadMessages,
     setMessages,
     adapters: {
-      attachments: new CompositeAttachmentAdapter([
-        edenImageAttachmentAdapter,
-        // new SimpleTextAttachmentAdapter(),
-      ]),
+      attachments: new CompositeAttachmentAdapter([edenImageAttachmentAdapter]),
       threadList: {
         threadId,
         threads: threads?.map(thread => ({

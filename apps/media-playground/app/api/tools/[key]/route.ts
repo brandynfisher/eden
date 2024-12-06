@@ -29,8 +29,9 @@ function replaceNullWithUndefined(arr: ToolParameterV2[]): ToolParameterV2[] {
 
 function prepareParameters(arr: ToolParameterV2[]): ToolParameterV2[] {
   const filterHidden = arr.filter(
-    param => param.hide_from_ui === undefined || param.hide_from_ui,
+    param => param.hide_from_ui === undefined || !param.hide_from_ui,
   )
+
   return replaceNullWithUndefined(filterHidden)
 }
 

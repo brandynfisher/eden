@@ -156,7 +156,7 @@ const Chat: FC<Props> = ({ assistant }) => {
       <div className={cn(sideStyle, leftStyle, topStyle)}>
         <TopLeft />
       </div>
-      <div className={cn(sideStyle, leftStyle)}>
+      <div className={cn(sideStyle, leftStyle, 'overflow-y-auto')}>
         <MainLeft />
       </div>
       <div className={cn(sideStyle, topStyle)}>
