@@ -27,10 +27,12 @@ import {
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
+import { downloadZip } from '@/utils/downloader.util'
 import { CollectionV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import {
+  DownloadIcon,
   Edit2Icon,
   LockIcon,
   LockOpenIcon,
@@ -62,6 +64,7 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
   const dispatch = useAppDispatch()
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
 
   const { collection: collectionClientData, invalidate } = useCollectionQuery({
     key: id,
@@ -154,6 +157,44 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
     )
   }
 
+  const onDownloadCollection = async () => {
+    setIsDownloading(true)
+
+    const toastId = toast.loading(`Preparing download...`, {
+      description: `${collection?.creations.length} files`,
+      dismissible: true,
+      richColors: true,
+    })
+
+    try {
+      await downloadZip({
+        url: `/api/collections/${id}/download`,
+        data: {},
+        method: 'POST',
+      })
+    } catch (error) {
+      console.error('Error downloading ZIP:', error)
+
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Server responded with:', error.response.data)
+      } else {
+        console.error(
+          'An unexpected error occurred:',
+          (error as unknown as { message?: string }).message || '',
+        )
+      }
+
+      toast.error('Failed to download collection', {
+        description: `Collection: ${collection?.name} failed to download`,
+        dismissible: true,
+        richColors: true,
+      })
+    } finally {
+      toast.dismiss(toastId)
+      setIsDownloading(false)
+    }
+  }
+
   return (
     <>
       <div className="relative p-6 bg-muted-darker rounded-md mx-4 mt-4">
@@ -193,7 +234,16 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
           {collection?.creations.length} creations
         </p>
       </div>
-      <div className="p-4">
+      <div className="p-4 space-y-4">
+        <Button
+          className="flex items-center gap-x-2"
+          variant="outline"
+          onClick={onDownloadCollection}
+          disabled={isDownloading}
+        >
+          <DownloadIcon size={16} />
+          Download Collection
+        </Button>
         <CreationsFeed
           query={{ collection: collection?._id }}
           maxCols={7}

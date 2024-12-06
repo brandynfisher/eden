@@ -1,10 +1,12 @@
+import { UserDocument } from '../../models/Creator'
 import {
   CollectionV2,
   CollectionV2Document,
 } from '../../models/v2/CollectionV2'
-import { CreationV2 } from '../../models/v2/CreationV2'
+import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
 import { s3ThumbnailUrl } from '../../plugins/s3Plugin'
 import CollectionV2Repository from '../../repositories/CollectionV2Repository'
+import { downloadZip } from '../../utils/downloader'
 import {
   CollectionsV2AddCreationsArguments,
   CollectionsV2CreateArguments,
@@ -13,7 +15,7 @@ import {
   CollectionsV2UpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { UpdateQuery, UpdateWriteOpResult } from 'mongoose'
+import mongoose, { UpdateQuery, UpdateWriteOpResult } from 'mongoose'
 
 export const getUserCollectionsLight = async (
   request: FastifyRequest,
@@ -378,4 +380,68 @@ export const removeCreationsFromCollection = async (
   return reply.status(200).send({
     collectionId,
   })
+}
+
+export const getCollectionDownloadZip = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { collectionId } = request.params as { collectionId: string }
+
+  const collection: {
+    creations: {
+      _id: CreationV2Document['_id']
+      url: CreationV2Document['url']
+      user: {
+        username: UserDocument['username']
+      }
+    }[]
+  }[] = await CollectionV2.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(collectionId) },
+    },
+    {
+      $lookup: {
+        from: 'creations2',
+        localField: 'creations',
+        foreignField: '_id',
+        as: 'creations',
+      },
+    },
+    {
+      $unwind: '$creations',
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'creations.user',
+        foreignField: '_id',
+        as: 'creations.user',
+      },
+    },
+    {
+      $unwind: '$creations.user',
+    },
+    {
+      $group: {
+        _id: '$_id',
+        creations: { $push: '$creations' },
+      },
+    },
+  ]).exec()
+
+  if (!collection || !collection.length) {
+    return reply.status(404).send({
+      error: 'Collection not found',
+    })
+  }
+
+  const files = collection[0].creations.map(creation => ({
+    url: creation.url || '',
+    fileName: `${creation.user.username}_${creation._id}`,
+    fileExtension: creation.url?.split('.').pop() || '',
+  }))
+
+  await downloadZip(files, reply, server)
 }
