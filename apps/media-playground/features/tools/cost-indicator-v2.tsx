@@ -50,7 +50,7 @@ type Props = {
 }
 
 const CostIndicatorV2: React.FC<Props> = ({ formula }) => {
-  console.log({ formula })
+  // console.log({ formula })
 
   const costParameterNames = formula
     ? Array.from(
@@ -62,7 +62,7 @@ const CostIndicatorV2: React.FC<Props> = ({ formula }) => {
       )
     : []
 
-  console.log(costParameterNames)
+  // console.log(costParameterNames)
 
   return (
     <TooltipProvider delayDuration={125}>

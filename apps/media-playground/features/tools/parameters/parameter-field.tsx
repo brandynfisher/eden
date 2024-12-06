@@ -21,6 +21,7 @@ import { MaskingCanvasDialog } from '@/features/tools/masking-canvas-dialog'
 import { cn } from '@/lib/utils'
 import {
   ToolParameterTypeValue,
+  ToolParameterUnionType,
   ToolParameterV2,
   ToolV2,
 } from '@edenlabs/eden-sdk'
@@ -41,6 +42,11 @@ const isSchemaType = (
   parameter: ToolParameterV2,
   type: ToolParameterTypeValue,
 ) => parameter.schema.type === type
+const getSchemaType = (parameter: ToolParameterV2) => {
+  if ('type' in parameter.schema) {
+    return parameter.schema.type
+  }
+}
 const isSchemaArrayType = (parameter: ToolParameterV2) =>
   parameter.schema.type === 'array'
 const getSchemaArrayItemType = (parameter: ToolParameterV2) => {
@@ -255,11 +261,20 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           )
         }
 
-        if (isSchemaAnyOfType(parameter)) {
-          const types = getSchemaAnyOfTypes(parameter)
+        if (
+          isSchemaAnyOfType(parameter) ||
+          isSchemaType(parameter, 'video') ||
+          isSchemaType(parameter, 'image') ||
+          isSchemaType(parameter, 'audio') ||
+          isSchemaType(parameter, 'archive')
+        ) {
+          const types = getSchemaAnyOfTypes(parameter) || [
+            getSchemaType(parameter) || 'image',
+          ]
           if (
             types?.includes('image') ||
             types?.includes('video') ||
+            types?.includes('audio') ||
             types?.includes('archive')
           ) {
             return (
@@ -347,13 +362,27 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             )
           }
 
+          console.log('array', arrayItemType, parameter.schema)
+
           // Handle array of images or videos, or a single archive
-          if (parameter.schema.items && 'anyOf' in parameter.schema.items) {
-            const types = parameter.schema.items.anyOf.map(type => type.type)
+          if (
+            arrayItemType === 'image' ||
+            arrayItemType === 'video' ||
+            arrayItemType === 'audio' ||
+            arrayItemType === 'archive' ||
+            arrayItemType === 'anyOf'
+          ) {
+            const types =
+              arrayItemType === 'anyOf'
+                ? (
+                    parameter.schema?.items as ToolParameterUnionType
+                  )?.anyOf.map(type => type.type)
+                : [arrayItemType]
 
             if (
               types?.includes('image') ||
               types?.includes('video') ||
+              types?.includes('audio') ||
               types?.includes('archive')
             ) {
               return (
@@ -400,11 +429,14 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             description={parameter.description}
             errorMessage={fieldState.error?.message}
           >
-            <TextInput
-              onChange={onChange}
-              onBlur={onBlur}
-              value={value === null ? '' : value}
-            />
+            <>
+              {JSON.stringify(parameter.schema)}
+              <TextInput
+                onChange={onChange}
+                onBlur={onBlur}
+                value={value === null ? '' : value}
+              />
+            </>
           </FormItemWrap>
         )
       }}

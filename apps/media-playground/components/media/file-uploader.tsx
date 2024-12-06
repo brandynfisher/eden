@@ -446,7 +446,7 @@ const FileUploader = ({
   const gradientClasses = useMemo(() => {
     if (!allowedFileTypes?.length) return ''
 
-    const colors = []
+    const colors: string[] = []
     if (allowedFileTypes.includes('image')) {
       colors.push(ImageColor.bgColor)
     }
@@ -466,17 +466,13 @@ const FileUploader = ({
       return `bg-${colors[0]}`
     }
 
+    // Generate a gradient if there are multiple colors
     const gradientClasses = ['bg-gradient-to-r']
-
-    for (let i = 0; i < colors.length; i++) {
-      if (i === 0) {
-        gradientClasses.push(`from-${colors[i]}`)
-      } else if (i === colors.length - 1) {
-        gradientClasses.push(`to-${colors[i]}`)
-      } else {
-        gradientClasses.push(`via-${colors[i]}`)
-      }
-    }
+    colors.forEach((color, i) => {
+      if (i === 0) gradientClasses.push(`from-${color}`)
+      else if (i === colors.length - 1) gradientClasses.push(`to-${color}`)
+      else gradientClasses.push(`via-${color}`)
+    })
 
     return gradientClasses.join(' ')
   }, [allowedFileTypes])
@@ -499,7 +495,7 @@ const FileUploader = ({
           <label className="relative flex flex-col items-center justify-center w-full cursor-pointer hover:brightness-110">
             <div
               className={cn(
-                'absolute w-[calc(100%+1px)] h-[calc(100%+1px)] rounded-lg top-[-0.5px] left-[-0.5px]',
+                'absolute w-[calc(100%+2px)] h-[calc(100%+2px)] rounded-lg',
                 gradientClasses,
               )}
             ></div>

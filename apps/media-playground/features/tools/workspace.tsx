@@ -21,7 +21,7 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
         }
       : undefined,
   })
-  console.log({ toolKey, toolSSRData, toolClientData })
+  // console.log({ toolKey, toolSSRData, toolClientData })
 
   const tool = toolClientData || toolSSRData
 
