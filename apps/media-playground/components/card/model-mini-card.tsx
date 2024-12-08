@@ -60,7 +60,7 @@ const ModelMiniCard = ({ modelId, children, className }: Props) => {
               <div className="flex">
                 {model.name}
                 <Badge className="ml-2 h-4 px-2" variant="outline">
-                  {model.args.concept_mode}
+                  {model.task.args.concept_mode}
                 </Badge>
               </div>
             </Link>
@@ -75,7 +75,6 @@ const ModelMiniCard = ({ modelId, children, className }: Props) => {
                   {model.user.username}
                 </Link>
               </div>
-              {/*<div>{model.args.sd_model_version}</div>*/}
             </div>
           </div>
           {children}

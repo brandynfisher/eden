@@ -755,7 +755,7 @@ export const getModelsFeedCursorV2 = async (
   const { userId: authUserId } = request.user || {}
   // const currentDate = new Date()
 
-  console.log({ query, authUserId })
+  // console.log({ query, authUserId })
 
   const {
     filters,
@@ -821,7 +821,7 @@ export const getModelsFeedCursorV2 = async (
     ...lateLookupStages,
   ].filter(Boolean)
 
-  console.log(JSON.stringify(feedPipeline, null, 2))
+  // console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await ModelV2.aggregate(feedPipeline)
 
