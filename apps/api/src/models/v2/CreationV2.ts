@@ -40,7 +40,7 @@ export const creationSchema = new Schema<CreationV2Document>(
     },
     task: {
       type: Schema.Types.ObjectId,
-      ref: 'tasks',
+      ref: 'tasks3',
       required: true,
     },
     tool: {
@@ -53,11 +53,13 @@ export const creationSchema = new Schema<CreationV2Document>(
     },
     url: {
       type: String,
-      maxlength: 1000,
     },
     thumbnail: {
       type: String,
-      maxlength: 1000,
+    },
+    filename: {
+      type: String,
+      required: true,
     },
     metadata: {
       type: Schema.Types.Mixed,

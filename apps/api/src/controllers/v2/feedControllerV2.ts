@@ -735,8 +735,8 @@ export const getCreationsFeedCursorV2 = async (
 
     feed.docs.forEach(doc => {
       if (doc) {
-        doc.url = s3Url(server, doc.url || '')
-        doc.thumbnail = s3ThumbnailUrl(server, doc.thumbnail || '', 1024)
+        doc.url = s3Url(server, doc.filename || '')
+        doc.thumbnail = s3ThumbnailUrl(server, doc.filename || '', 1024)
       }
     })
 
