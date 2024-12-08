@@ -192,7 +192,6 @@ export type TaskV2Result = {
     controlnet_signal?: MediaOutput[]
   }
   metadata?: string | null
-  published?: boolean
   model?: ModelV2
   creation?: CreationV2
 }
