@@ -205,7 +205,7 @@ const CreationActionsContent = ({
               originalFileUrl={creationData.url || ''}
               saveAsFileName={generateFilename(
                 creationData.user.username,
-                creationData.args.prompt?.substring(0, 64).trim(),
+                creationData.task.args.prompt?.substring(0, 64).trim(),
                 creationData._id,
               )}
             />
