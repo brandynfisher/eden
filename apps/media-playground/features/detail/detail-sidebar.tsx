@@ -33,7 +33,7 @@ type Props = {
 
 const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { user: creator } = item || {}
-  const { prompt, text_input, lora, ...remainingArgs } = item?.args || {}
+  const { prompt, text_input, lora, ...remainingArgs } = item?.task.args || {}
   const { TimeAgo } = useTimeAgo()
   const { user } = useAuthState()
 

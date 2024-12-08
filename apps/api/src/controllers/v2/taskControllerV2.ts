@@ -1019,7 +1019,6 @@ export const publishTaskResult = async (
     creation.user = new ObjectId(userId)
     creation.public = false
 
-    creation.args = taskDocument.args
     creation.tool = taskDocument.tool
     creation.mediaAttributes = {
       ...taskResultOutput.mediaAttributes,
@@ -1104,7 +1103,6 @@ export const publishTaskResult = async (
     taskDocument.result[taskResultIndex] = {
       ...taskResult,
       creation: savedCreation._id,
-      published: true,
     }
 
     await taskDocument.save()

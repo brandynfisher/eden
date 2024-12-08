@@ -37,7 +37,7 @@ const MultiSelectToolbar = ({ queryKey }: Props) => {
           item._id,
           item.tool,
           item.user.username,
-          item.args.prompt?.substring(0, 64).trim(),
+          item.task.args.prompt?.substring(0, 64).trim(),
         ),
       }
     })
