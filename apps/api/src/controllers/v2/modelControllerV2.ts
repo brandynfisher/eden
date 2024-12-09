@@ -66,27 +66,18 @@ export const getModel = async (
       select: '_id userId username userImage',
     })
 
-  console.log({ model })
-
-  // nothing found or it was deleted and the user is not the owner
-  if (
-    !model ||
-    (request.user?.userId &&
-      model.deleted &&
-      model.user._id.toString() !== request.user?.userId.toString())
-  ) {
+  if (!model) {
     return reply.status(404).send({
       message: 'Model not found',
     })
   }
 
-  if (model.user._id.toString() !== request.user?.userId.toString()) {
-    if (!model.public) {
-      console.error('User not authorized to view this')
-      return reply.status(401).send({
-        message: 'User not authorized to view this',
-      })
-    }
+  const isOwner = model.user._id.toString() === request.user?.userId.toString()
+
+  if (!isOwner && !model.public) {
+    return reply.status(401).send({
+      message: 'User not authorized to view this',
+    })
   }
 
   model.thumbnail = s3ThumbnailUrl(server, model.thumbnail || '', 1024)

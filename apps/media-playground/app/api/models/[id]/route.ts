@@ -5,6 +5,7 @@ import {
   ModelsV2PatchArguments,
   ModelsV2PatchResponse,
 } from '@edenlabs/eden-sdk'
+import { AxiosError } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
@@ -40,7 +41,7 @@ export async function GET(
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
-      status: 500,
+      status: (error as AxiosError).response?.status ?? 500,
     })
   }
 }

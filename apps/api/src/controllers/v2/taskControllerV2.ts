@@ -3,6 +3,7 @@ import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/Creator'
 import { CreationV2 } from '../../models/v2/CreationV2'
 import { GeneratorV2 } from '../../models/v2/GeneratorV2'
+import { ModelV2 } from '../../models/v2/ModelV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import { ThreadDocument } from '../../models/v2/Thread'
 import {
@@ -105,6 +106,16 @@ export const createTask = async (
 
   server.log.info('> modal::request::create')
   server.log.info(modalRequest)
+
+  if (args.lora) {
+    const lora = await ModelV2.findById(args.lora)
+    const isOwner = lora?.user.toString() === userId.toString()
+    if (!isOwner && !lora?.public) {
+      args.use_lora = false
+      delete args.lora
+      delete args.lora_strength
+    }
+  }
 
   try {
     const modalResponse = await axios.post(

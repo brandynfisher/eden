@@ -6,9 +6,15 @@ type Props = {
   key: ModelV2['_id']
   initialData?: ModelsV2GetResponse
   enabled?: boolean
+  retry?: number | boolean
 }
 
-export const useModelQuery = ({ key, initialData, enabled = true }: Props) => {
+export const useModelQuery = ({
+  key,
+  initialData,
+  enabled = true,
+  retry,
+}: Props) => {
   const queryKey = ['models', key]
 
   const {
@@ -26,6 +32,7 @@ export const useModelQuery = ({ key, initialData, enabled = true }: Props) => {
     initialData,
     queryKey,
     queryFn: () => fetcher<ModelsV2GetResponse>(`/api/models/${key}`),
+    retry,
   })
 
   const queryClient = useQueryClient()
