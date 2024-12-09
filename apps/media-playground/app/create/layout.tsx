@@ -1,17 +1,17 @@
 'use client'
 
 import SecondaryNavLayout from '@/components/layout/secondary-nav-layout'
-import { useGeneratorsListQuery } from '@/hooks/query/use-generators-list-query'
+import { useToolsListQuery } from '@/hooks/query/use-tools-list-query'
 import { PropsWithChildren } from 'react'
 
 const baseSegment = 'create'
 
 const PageLayout = ({ children }: PropsWithChildren) => {
-  const { generators } = useGeneratorsListQuery({
-    outputType: ['image', 'video', 'audio'],
+  const { tools } = useToolsListQuery({
+    output_type: ['image', 'video', 'audio'],
   })
 
-  if (!generators) {
+  if (!tools) {
     return null
   }
 
@@ -23,35 +23,35 @@ const PageLayout = ({ children }: PropsWithChildren) => {
       navigation={[
         {
           title: 'Image',
-          links: generators
-            .filter(generator => generator.outputType === 'image')
-            .map(generator => ({
-              label: generator.name,
-              private: generator.private,
-              segments: [baseSegment, 'image', generator.key],
-              description: generator.description,
+          links: tools
+            .filter(tool => tool.output_type === 'image')
+            .map(tool => ({
+              label: tool.name,
+              private: tool.private,
+              segments: [baseSegment, 'image', tool.key],
+              description: tool.description,
             })),
         },
         {
           title: 'Video',
-          links: generators
-            .filter(generator => generator.outputType === 'video')
-            .map(generator => ({
-              label: generator.name,
-              private: generator.private,
-              segments: [baseSegment, 'video', generator.key],
-              description: generator.description,
+          links: tools
+            .filter(tool => tool.output_type === 'video')
+            .map(tool => ({
+              label: tool.name,
+              private: tool.private,
+              segments: [baseSegment, 'video', tool.key],
+              description: tool.description,
             })),
         },
         {
           title: 'Audio',
-          links: generators
-            .filter(generator => generator.outputType === 'audio')
-            .map(generator => ({
-              label: generator.name,
-              private: generator.private,
-              segments: [baseSegment, 'audio', generator.key],
-              description: generator.description,
+          links: tools
+            .filter(tool => tool.output_type === 'audio')
+            .map(tool => ({
+              label: tool.name,
+              private: tool.private,
+              segments: [baseSegment, 'audio', tool.key],
+              description: tool.description,
             })),
         },
       ]}

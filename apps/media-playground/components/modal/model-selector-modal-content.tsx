@@ -7,16 +7,16 @@ import { BaseModelName, ModelV2 } from '@edenlabs/eden-sdk'
 import { Suspense, useState } from 'react'
 
 type Props = {
-  baseModel?: BaseModelName
+  base_model?: BaseModelName
   onChange: (item: ModelV2) => void
 }
 
-const ModelSelectorModalContent = ({ baseModel, onChange }: Props) => {
+const ModelSelectorModalContent = ({ base_model, onChange }: Props) => {
   const { user } = useAuthState()
   const [showUserModelsOnly, setShowUserModelsOnly] = useState(true)
 
   const baseQuery = {
-    base_model: baseModel,
+    base_model: base_model,
   }
 
   return (

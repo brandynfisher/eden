@@ -1,10 +1,10 @@
-import GeneratorsGrid from '@/features/generators/generators-grid'
+import ToolsGrid from '@/features/tools/tools-grid'
 
 const CreatePage = () => {
   return (
     <div className="flex flex-col gap-4 pt-4">
-      <GeneratorsGrid
-        outputType={['image', 'video', 'audio']}
+      <ToolsGrid
+        output_type={['image', 'video', 'audio']}
         showFeatured={true}
       />
     </div>

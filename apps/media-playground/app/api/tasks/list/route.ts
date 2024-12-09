@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   }
 
   const paginationParams = extractPaginationParams(request.nextUrl.searchParams)
-  const workflow = request.nextUrl.searchParams.get('workflow') || undefined
+  const tool = request.nextUrl.searchParams.get('tool') || undefined
   const minDate = !!request.nextUrl.searchParams.get('minDate') || undefined
 
   try {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     })
     const res = await eden.tasks.listV2({
       ...paginationParams,
-      workflow,
+      tool,
       minDate,
     })
     return NextResponse.json(res)

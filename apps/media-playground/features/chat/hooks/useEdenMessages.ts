@@ -1,23 +1,16 @@
-import { INTERNAL } from '@assistant-ui/react'
 import { useCallback, useState } from 'react'
 
-const { generateId } = INTERNAL
-
-export const useEdenMessages = <TMessage>({
+export const useEdenMessages = <TMessage extends { id: string }>({
   stream,
 }: {
   stream: (messages: TMessage[]) => Promise<AsyncGenerator<{ data: TMessage }>>
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
 
-  // console.log('useEdenMessages', messages)
-
   const sendMessage = useCallback(
     async (newMessages: TMessage[]) => {
+      console.log('useEdenMessages - sendMessage - newMessages', newMessages)
       const optimisticMessages = [...messages, ...newMessages]
-
-      // console.log('useEdenMessages - sendMessage - messages', messages)
-      // console.log('useEdenMessages - sendMessage - newMessages', newMessages)
 
       if (newMessages.length > 0) {
         setMessages(optimisticMessages)
@@ -25,14 +18,20 @@ export const useEdenMessages = <TMessage>({
 
       const response = await stream(newMessages)
 
-      const completeMessages: TMessage[] = []
-      // let partialMessages: Map<string, TMessage> = new Map();
       for await (const message of response) {
-        // console.log('useEdenMessages - sendMessage - stream response', message)
-        completeMessages.push({ ...message.data, id: generateId() })
+        setMessages(currentMessages => {
+          const index = currentMessages.findIndex(m => m.id === message.data.id)
+          if (index !== -1) {
+            // Update existing message
+            const updatedMessages = [...currentMessages]
+            updatedMessages[index] = message.data
+            return updatedMessages
+          } else {
+            // Add new message
+            return [...currentMessages, message.data]
+          }
+        })
       }
-
-      setMessages(currentMessages => [...currentMessages, ...completeMessages])
     },
     [messages, stream],
   )

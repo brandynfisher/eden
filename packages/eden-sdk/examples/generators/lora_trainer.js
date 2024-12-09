@@ -1,7 +1,7 @@
 const eden = require('../init_eden.js')
 
 const task = {
-  workflow: 'lora_trainer',
+  tool: 'lora_trainer',
   args: {
     'name': 'Verdelis',
     'lora_training_urls': [

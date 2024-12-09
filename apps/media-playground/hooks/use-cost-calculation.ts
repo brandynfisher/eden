@@ -1,12 +1,12 @@
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { ToolParameterV2 } from '@edenlabs/eden-sdk'
 import { Parser } from 'expr-eval'
 
 export const getCostConfig = ({
   parameterNames,
   parameterValues,
 }: {
-  parameterNames: GeneratorParameterV2['name'][]
-  parameterValues: string[] | number[]
+  parameterNames: ToolParameterV2['name'][]
+  parameterValues: string[] | number[] | string[][]
 }) => {
   const nameValueMap: Map<string, number> = parameterNames.reduce(
     (acc, key, i) => {
@@ -42,7 +42,7 @@ const calculateCost = (
   try {
     return Parser.evaluate(formula, config)
   } catch (e) {
-    console.error('Could not parse costEstimate')
+    // console.error('Could not parse cost_estimate', e)
     return Infinity
   }
 }

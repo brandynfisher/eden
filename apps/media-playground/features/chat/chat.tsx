@@ -53,7 +53,10 @@ const ButtonWithTooltip: FC<ButtonWithTooltipProps> = ({
 }
 
 const TopLeft: FC = () => {
-  const isNewSelected = useThreadList(t => t.newThread === t.mainThreadId)
+  const isNewSelected = useThreadList(t => {
+    // console.log(t, t.newThread, t.mainThreadId)
+    return t.mainThreadId === 'DEFAULT_THREAD_ID'
+  })
   return (
     <ThreadListPrimitive.New asChild>
       <ButtonWithTooltip
@@ -78,7 +81,7 @@ const ThreadListItem: FC = () => {
   return (
     <ThreadListItemPrimitive.Root className="hover:text-primary data-[active]:bg-muted data-[active]:text-primary hover:bg-muted-darker flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
       <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate">
-        <ThreadListItemPrimitive.Title fallback="n/a" />
+        <ThreadListItemPrimitive.Title fallback="Untitled" />
       </ThreadListItemPrimitive.Trigger>
       <ThreadListItemPrimitive.Archive asChild>
         <ButtonWithTooltip
@@ -153,7 +156,7 @@ const Chat: FC<Props> = ({ assistant }) => {
       <div className={cn(sideStyle, leftStyle, topStyle)}>
         <TopLeft />
       </div>
-      <div className={cn(sideStyle, leftStyle)}>
+      <div className={cn(sideStyle, leftStyle, 'overflow-y-auto')}>
         <MainLeft />
       </div>
       <div className={cn(sideStyle, topStyle)}>

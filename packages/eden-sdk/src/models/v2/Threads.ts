@@ -6,13 +6,20 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
-import { TaskV2Args } from './TasksV2'
+import { TaskV2Args, TaskV2Result } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 export interface ThreadsCreateArguments extends WebAPICallOptions {
-  threadId?: string
-  agentId?: string
+  thread_id?: string
+  agent_id?: string
+  content: string
+  attachments?: string[]
+}
+
+export interface ThreadsMessageArguments extends WebAPICallOptions {
+  thread_id?: string
+  agent_id?: string
   content: string
   attachments?: string[]
 }
@@ -22,7 +29,7 @@ export interface ThreadsListArguments
     ListQueryParams {}
 
 export interface ThreadsGetArguments extends WebAPICallOptions {
-  threadId: string
+  thread_id: string
 }
 
 // Requests
@@ -33,6 +40,18 @@ export const threadsCreateRequestConfig = (
   return {
     method: 'POST',
     url: 'v2/threads/create',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const threadsMessageRequestConfig = (
+  args: ThreadsMessageArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/threads',
     data: {
       ...args,
     },
@@ -55,7 +74,7 @@ export const threadsGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `v2/threads/${args.threadId}`,
+    url: `v2/threads/${args.thread_id}`,
   }
 }
 
@@ -67,7 +86,16 @@ export type ThreadsCreateResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { threadId?: Thread['_id']; success: boolean }
+    | { thread_id?: Thread['_id']; success: boolean }
+  )
+
+export type ThreadsMessageResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { thread_id?: Thread['_id']; success: boolean }
   )
 
 export type ThreadsListResponse = WebAPICallResult &
@@ -83,6 +111,7 @@ export type ThreadsGetResponse = WebAPICallResult & {
 // Types
 
 export type Message = {
+  id: string
   role: 'user' | 'assistant' | 'tool' | 'system'
   createdAt?: Date
 }
@@ -100,7 +129,8 @@ export type UserMessage = Message & {
 export type ToolCall = {
   id: string
   name: string
-  input: TaskV2Args
+  args: TaskV2Args
+  result?: TaskV2Result[]
 }
 
 export type ThreadMessage = {
@@ -137,17 +167,20 @@ export type SystemMessage = Message & {
   content: string
 }
 
-export type ToolMessage = Message & {
-  role: 'tool'
-  content?: string
-  tool_results: ToolResults[]
-}
+// export type ToolMessage = Message & {
+//   role: 'tool'
+//   content?: string
+//   tool_results: ToolResults[]
+// }
 
 export type Thread = {
   _id: string
   user: Creator
+  title?: string
   name: string
-  messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
+  label: string
+  // messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
+  messages: (UserMessage | AssistantMessage | SystemMessage)[]
   createdAt: Date
   updatedAt: Date
 }

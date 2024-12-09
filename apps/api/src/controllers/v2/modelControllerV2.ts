@@ -60,10 +60,13 @@ export const getModel = async (
   const model = await ModelV2.findOneWithDeleted({
     _id: modelId,
   })
-    .select('-args.lora_training_urls')
     .populate({
       path: 'user',
       select: '_id userId username userImage',
+    })
+    .populate({
+      path: 'task',
+      select: '_id args -args.lora_training_urls',
     })
 
   if (!model) {

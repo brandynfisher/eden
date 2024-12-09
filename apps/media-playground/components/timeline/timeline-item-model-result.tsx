@@ -14,24 +14,29 @@ type Props = {
 
 const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
   return (
-    <div className="p-2 bg-secondary rounded-md ">
-      <div className="max-h-[60vh] aspect-square rounded-md overflow-hidden">
-        <Image
-          loader={customImageLoader}
-          src={result.thumbnail || ''}
-          alt={task.args.name || ''}
-          width={1024}
-          height={1024}
-          className="w-full h-full"
-        />
-      </div>
-      <TimelineItemResultTools
-        result={result}
-        task={task}
-        index={index}
-        queryKey={queryKey}
-      />
-    </div>
+    <>
+      {result.output.map(output => (
+        <div key={output.filename} className="p-2 bg-secondary rounded-md ">
+          <div className="max-h-[60vh] aspect-square rounded-md overflow-hidden">
+            <Image
+              loader={customImageLoader}
+              src={output.thumbnail || ''}
+              alt={task.args.name || ''}
+              width={1024}
+              height={1024}
+              className="w-full h-full"
+            />
+          </div>
+          <TimelineItemResultTools
+            result={result}
+            output={output}
+            task={task}
+            index={index}
+            queryKey={queryKey}
+          />
+        </div>
+      ))}
+    </>
   )
 }
 

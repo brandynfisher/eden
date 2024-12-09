@@ -176,22 +176,22 @@ export const createCursorPaginationRoute = (
     filters.push({ base_model: query.base_model })
   }
 
-  if (query.generator) {
-    if (typeof query.generator === 'string') {
-      filters.push({ generator: query.generator })
-    } else if (Array.isArray(query.generator) && query.generator.length) {
-      query.generator.map(id => {
-        filters.push({ generator: id })
+  if (query.tool) {
+    if (typeof query.tool === 'string') {
+      filters.push({ tool: query.tool })
+    } else if (Array.isArray(query.tool) && query.tool.length) {
+      query.tool.map(id => {
+        filters.push({ tool: id })
       })
     }
   }
 
-  if (query.outputType) {
-    if (typeof query.outputType === 'string') {
-      filters.push({ outputType: query.outputType })
-    } else if (Array.isArray(query.outputType) && query.outputType.length) {
-      query.outputType.map(id => {
-        filters.push({ outputType: id })
+  if (query.output_type) {
+    if (typeof query.output_type === 'string') {
+      filters.push({ output_type: query.output_type })
+    } else if (Array.isArray(query.output_type) && query.output_type.length) {
+      query.output_type.map(id => {
+        filters.push({ output_type: id })
       })
     }
   }

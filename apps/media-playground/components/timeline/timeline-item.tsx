@@ -1,5 +1,6 @@
 import TaskStatusBadge from '@/components/badge/task-status-badge'
 import TaskActionsMenu from '@/components/button/task-actions-menu'
+import ErrorBoundary from '@/components/error-boundary'
 import ParameterTableCollapsible from '@/components/timeline/parameter-table-collapsible'
 import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
 import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
@@ -149,7 +150,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                         <TaskStatusBadge
                           status={item.status}
                           hideText={true}
-                          outputType={item.output_type}
+                          output_type={item.output_type}
                         />
                         {item.status === 'pending'
                           ? 'Waiting to start...'
@@ -163,34 +164,36 @@ const TimelineItem = ({ item, queryKey }: Props) => {
           ) : null}
 
           <Suspense>
-            {item.status === 'completed' ? (
-              item.result && Array.isArray(item.result) ? (
-                item.result.map((result, index) =>
-                  result.model === undefined ? (
-                    <TimelineItemMediaResult
-                      queryKey={queryKey}
-                      key={`${item._id}_${index}`}
-                      index={index}
-                      task={item}
-                      result={result}
-                    />
-                  ) : (
-                    // api populates a model property with full model document
-                    <TimelineItemModelResult
-                      queryKey={queryKey}
-                      key={`${item._id}_${index}`}
-                      index={index}
-                      result={result}
-                      task={item}
-                    />
-                  ),
+            <ErrorBoundary>
+              {item.status === 'completed' ? (
+                item.result && Array.isArray(item.result) ? (
+                  item.result.map((result, index) =>
+                    result.model === undefined ? (
+                      <TimelineItemMediaResult
+                        queryKey={queryKey}
+                        key={`${item._id}_${index}`}
+                        index={index}
+                        task={item}
+                        result={result}
+                      />
+                    ) : (
+                      // api populates a model property with full model document
+                      <TimelineItemModelResult
+                        queryKey={queryKey}
+                        key={`${item._id}_${index}`}
+                        index={index}
+                        result={result}
+                        task={item}
+                      />
+                    ),
+                  )
+                ) : (
+                  <div className="text-warning">
+                    Unhandled result: {item.tool} - {item._id}
+                  </div>
                 )
-              ) : (
-                <div className="text-warning">
-                  Unhandled result: {item.workflow} - {item._id}
-                </div>
-              )
-            ) : null}
+              ) : null}
+            </ErrorBoundary>
           </Suspense>
         </div>
       </div>

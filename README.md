@@ -37,7 +37,7 @@
 ### Run stripe event forwarding
 ```
 stripe login
-stripe listen --forward-to localhost:5050/payment/event
+stripe listen --forward-to localhost:5050/payments/event
 stripe trigger payment_intent.succeeded
 ```
 

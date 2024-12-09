@@ -1,4 +1,4 @@
-import { FormDescription, FormLabel } from '@/components/ui/form'
+import { FormDescription, FormLabel, useFormField } from '@/components/ui/form'
 import {
   Tooltip,
   TooltipContent,
@@ -15,9 +15,14 @@ type Props = {
 }
 
 const FormItemHead = ({ icon, label, description }: Props) => {
+  const { formItemId } = useFormField()
+
   return (
     <div className="space-y-0.5 flex items-center">
-      <FormLabel className="flex items-center text-sm first-letter:uppercase mr-2 cursor-pointer">
+      <FormLabel
+        id={`${formItemId}-label`}
+        className="flex items-center text-sm first-letter:uppercase mr-2 cursor-pointer"
+      >
         {icon}
         {label}
       </FormLabel>

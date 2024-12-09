@@ -20,12 +20,6 @@ export const useWebSocketMessage = ({
     if (abortSignal?.aborted) return
 
     if (lastMessageJson?.event === eventType) {
-      // console.log(
-      //   'useWebSocketMessage',
-      //   lastMessageJson?.event,
-      //   lastMessageJson?.data,
-      //   lastMessageJson?.event === eventType,
-      // )
       setMessage(lastMessageJson)
     }
   }, [lastMessageJson, eventType, abortSignal])

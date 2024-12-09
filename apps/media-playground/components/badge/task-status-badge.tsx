@@ -1,14 +1,14 @@
 import LoadingIndicator from '@/components/loading-indicator'
 import { cn } from '@/lib/utils'
-import { GeneratorOutputTypeV2, TaskV2Status } from '@edenlabs/eden-sdk'
+import { TaskV2Status, ToolOutputTypeV2 } from '@edenlabs/eden-sdk'
 import { BanIcon, HourglassIcon, TriangleAlertIcon } from 'lucide-react'
 
 type Props = {
-  outputType?: GeneratorOutputTypeV2
+  output_type?: ToolOutputTypeV2
   status: TaskV2Status
   hideText?: boolean
 }
-const TaskStatusBadge = ({ outputType, status, hideText }: Props) => {
+const TaskStatusBadge = ({ output_type, status, hideText }: Props) => {
   return (
     <div className="flex items-center gap-2">
       {status === 'pending' ? <HourglassIcon className="h-4 w-4" /> : null}
@@ -16,9 +16,9 @@ const TaskStatusBadge = ({ outputType, status, hideText }: Props) => {
         <LoadingIndicator
           className={cn([
             'h-6 w-6 opacity-75',
-            outputType === 'video'
+            output_type === 'video'
               ? 'text-green-400'
-              : outputType === 'image'
+              : output_type === 'image'
               ? 'text-purple-600'
               : 'text-blue-600',
           ])}
