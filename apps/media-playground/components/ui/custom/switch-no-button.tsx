@@ -1,5 +1,6 @@
 'use client'
 
+import { useFormField } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
 import * as React from 'react'
 
@@ -14,6 +15,8 @@ const SwitchNoButton = React.forwardRef<HTMLDivElement, SwitchProps>(
     { checked = false, onCheckedChange, disabled, className, ...props },
     ref,
   ) => {
+    const { formItemId } = useFormField()
+
     const handleClick = () => {
       if (!disabled && onCheckedChange) {
         onCheckedChange(!checked)
@@ -22,6 +25,7 @@ const SwitchNoButton = React.forwardRef<HTMLDivElement, SwitchProps>(
 
     return (
       <div
+        aria-labelledby={`${formItemId}-label`}
         ref={ref}
         role="switch"
         aria-checked={checked}

@@ -1,9 +1,9 @@
 import { UserDocument } from '../Creator'
 import {
-  GeneratorOutputTypeV2,
   TaskV2Args,
   TaskV2Result,
   TaskV2Status,
+  ToolOutputTypeV2,
 } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
@@ -12,9 +12,9 @@ import paginate from 'mongoose-paginate-v2'
 
 export interface TaskV2Schema {
   user: UserDocument
-  workflow: string
+  tool: string
   args: TaskV2Args
-  output_type: GeneratorOutputTypeV2
+  output_type: ToolOutputTypeV2
   result: TaskV2Result[]
   status: TaskV2Status
   // cost: number
@@ -26,9 +26,9 @@ export interface TaskV2Schema {
 
 export interface TaskV2Input {
   user: ObjectId
-  workflow: string
+  tool: string
   args: TaskV2Args
-  output_type: GeneratorOutputTypeV2
+  output_type: ToolOutputTypeV2
   result: TaskV2Result[]
   status?: TaskV2Status
   // cost: number
@@ -44,7 +44,7 @@ export const taskSchema = new Schema<TaskV2Document>(
       type: Schema.Types.ObjectId,
       ref: 'users',
     },
-    workflow: {
+    tool: {
       type: Schema.Types.String,
       required: true,
     },
@@ -84,7 +84,7 @@ taskSchema.index({ handler_id: -1 })
 taskSchema.index({
   user: 1,
   status: 1,
-  workflow: 1,
+  tool: 1,
   output_type: 1,
   createdAt: -1,
 })
@@ -93,4 +93,4 @@ taskSchema.index({ cost: 1, status: 1, createdAt: -1 })
 taskSchema.plugin(paginate)
 taskSchema.plugin(aggregatePaginate)
 
-export const TaskV2 = model<TaskV2Document>('tasks2', taskSchema)
+export const TaskV2 = model<TaskV2Document>('tasks3', taskSchema)

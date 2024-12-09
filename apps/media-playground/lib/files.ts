@@ -1,4 +1,5 @@
 import { FileType, MimeType } from '@/types/Media'
+import { downloadZip } from '@/utils/downloader.util'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 
 type UploadOptions = {
@@ -237,41 +238,11 @@ export const downloadFiles = async (
       }
     })
 
-    const response = await axios.post(
-      '/api/media/download/bulk',
-      { files: requestPayload },
-      {
-        responseType: 'blob', // Important to receive the response as a Blob
-      },
-    )
-
-    const contentType = response.headers['content-type']
-    const contentDisposition = response.headers['content-disposition']
-
-    if (contentType !== 'application/zip') {
-      console.error('Unexpected content type:', contentType)
-      return false
-    }
-
-    // **6. Extract the Filename from Content-Disposition**
-    let fileName = 'eden_downloads.zip' // Default filename
-    if (contentDisposition) {
-      const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
-      if (fileNameMatch && fileNameMatch[1]) {
-        fileName = fileNameMatch[1]
-      }
-    }
-
-    const blob = new Blob([response.data], { type: 'application/zip' })
-
-    const link = document.createElement('a')
-    const url = window.URL.createObjectURL(blob)
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url) // Clean up the URL object
+    await downloadZip({
+      url: `/api/media/download/bulk`,
+      data: { files: requestPayload },
+      method: 'POST',
+    })
 
     return true
   } catch (error) {
@@ -291,5 +262,11 @@ export const downloadFiles = async (
 }
 
 export const getFileTypeByMimeType = (mimeType?: MimeType | string) => {
-  return mimeType ? (mimeType.split('/')[0] as FileType) : 'other'
+  const type = mimeType?.split('/')[0] || 'other'
+
+  if (type === 'application') {
+    return 'archive'
+  }
+
+  return type as FileType
 }

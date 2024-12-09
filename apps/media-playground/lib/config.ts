@@ -53,7 +53,7 @@ export const siteConfig: SiteConfig = {
   },
   ogImage: `${env.NEXT_PUBLIC_HOST}/logo_badge_square.png`,
   mediaErrorUrl:
-    'https://edenartlab-prod-data.s3-accelerate.amazonaws.com/7c31e443f964e9d0e99c2fd45bf0b042999045e224aa7e38cb91049dc8340c93.jpeg',
+    'https://d14i3advvh2bvd.cloudfront.net/7c31e443f964e9d0e99c2fd45bf0b042999045e224aa7e38cb91049dc8340c93.jpeg',
   publicRoutes: [
     '/',
     '/sign-in',

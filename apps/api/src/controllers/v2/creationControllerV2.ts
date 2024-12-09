@@ -23,6 +23,10 @@ export const getCreation = async (
     //   select: '_id name user conceptName creationCount thumbnail',
     // })
     .populate({
+      path: 'task',
+      select: '_id args',
+    })
+    .populate({
       path: 'user',
       select: '_id userId username userImage',
     })) as CreationV2Document & {
@@ -45,8 +49,8 @@ export const getCreation = async (
     }
   }
 
-  creation.url = s3Url(server, creation.url || '')
-  creation.thumbnail = s3ThumbnailUrl(server, creation.thumbnail || '', 1024)
+  creation.url = s3Url(server, creation.filename || '')
+  creation.thumbnail = s3ThumbnailUrl(server, creation.filename || '', 1024)
 
   return reply.status(200).send({ creation })
 }
@@ -96,9 +100,13 @@ export const creationUpdate = async (
     path: 'user',
     select: '_id username userId userImage',
   })
+  await creation.populate({
+    path: 'task',
+    select: '_id args',
+  })
 
-  creation.url = s3Url(server, creation.url || '')
-  creation.thumbnail = s3ThumbnailUrl(server, creation.thumbnail || '', 1024)
+  creation.url = s3Url(server, creation.filename || '')
+  creation.thumbnail = s3ThumbnailUrl(server, creation.filename || '', 1024)
 
   return reply.status(200).send({
     creation,
@@ -171,6 +179,11 @@ export const creationBulkUpdate = async (
       await creation.populate({
         path: 'user',
         select: '_id username userId userImage',
+      })
+
+      await creation.populate({
+        path: 'task',
+        select: '_id args',
       })
 
       // Record the successful update

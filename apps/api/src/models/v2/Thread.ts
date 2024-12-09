@@ -57,6 +57,6 @@ threadSchema.plugin(mongooseDelete, {
 })
 
 export const Thread = model<ThreadDocument>(
-  'threads',
+  'threads2',
   threadSchema,
 ) as SoftDeleteModel<ThreadDocument>

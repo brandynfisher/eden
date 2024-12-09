@@ -86,7 +86,7 @@ type CustomFilters = {
       | { $in?: string[] | ObjectId[] | undefined }
     )[]
   }
-  generator?:
+  tool?:
     | string
     | ObjectId
     | ObjectId[]
@@ -154,7 +154,7 @@ const creationsLookup = (
   return [
     {
       $lookup: {
-        from: 'creations2',
+        from: 'creations3',
         localField: localField,
         foreignField: foreignField,
         pipeline: lookupPipeline,
@@ -254,8 +254,8 @@ const handleArguments = async ({
   let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
-    generator?: string[] | ObjectId[] | string | ObjectId
-    outputType?: string[]
+    tool?: string[] | ObjectId[] | string | ObjectId
+    output_type?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
     praiseCount?: { $gt: 0 }
@@ -357,21 +357,21 @@ const handleArguments = async ({
             return []
           }
 
-          if (field === 'generator') {
-            if (!customFilterOptions['generator']) {
-              customFilterOptions['generator'] = [value]
+          if (field === 'tool') {
+            if (!customFilterOptions['tool']) {
+              customFilterOptions['tool'] = [value]
             } else {
               // @ts-ignore
-              customFilterOptions['generator'].push(value)
+              customFilterOptions['tool'].push(value)
             }
             return []
           }
 
-          if (field === 'outputType') {
-            if (!customFilterOptions['outputType']) {
-              customFilterOptions['outputType'] = [value]
+          if (field === 'output_type') {
+            if (!customFilterOptions['output_type']) {
+              customFilterOptions['output_type'] = [value]
             } else {
-              customFilterOptions['outputType'].push(value)
+              customFilterOptions['output_type'].push(value)
             }
             return []
           }
@@ -434,14 +434,14 @@ const handleArguments = async ({
   for (const [fieldName, fieldValues] of Object.entries(customFilterOptions)) {
     if (fieldValues === undefined) continue
 
-    if (fieldName === 'outputType') {
+    if (fieldName === 'output_type') {
       customFilterMap['mediaAttributes.type'] = {
         // @ts-ignore
         $in: Array.isArray(fieldValues) ? fieldValues : [fieldValues],
       }
-    } else if (fieldName === 'generator') {
+    } else if (fieldName === 'tool') {
       // @ts-ignore
-      customFilterMap['generator'] = {
+      customFilterMap['tool'] = {
         $in: Array.isArray(fieldValues)
           ? // @ts-ignore
             fieldValues.map(val => new ObjectId(val))
@@ -577,7 +577,7 @@ const userLookup: PipelineStage[] = [
 const creationLookup: PipelineStage[] = [
   {
     $lookup: {
-      from: 'creations2',
+      from: 'creations3',
       localField: 'coverCreation',
       foreignField: '_id',
       as: 'coverCreation',
@@ -735,8 +735,8 @@ export const getCreationsFeedCursorV2 = async (
 
     feed.docs.forEach(doc => {
       if (doc) {
-        doc.url = s3Url(server, doc.url || '')
-        doc.thumbnail = s3ThumbnailUrl(server, doc.thumbnail || '', 1024)
+        doc.url = s3Url(server, doc.filename || '')
+        doc.thumbnail = s3ThumbnailUrl(server, doc.filename || '', 1024)
       }
     })
 
@@ -755,7 +755,7 @@ export const getModelsFeedCursorV2 = async (
   const { userId: authUserId } = request.user || {}
   // const currentDate = new Date()
 
-  console.log({ query, authUserId })
+  // console.log({ query, authUserId })
 
   const {
     filters,
@@ -821,7 +821,7 @@ export const getModelsFeedCursorV2 = async (
     ...lateLookupStages,
   ].filter(Boolean)
 
-  console.log(JSON.stringify(feedPipeline, null, 2))
+  // console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await ModelV2.aggregate(feedPipeline)
 

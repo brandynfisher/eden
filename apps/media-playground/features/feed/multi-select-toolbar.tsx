@@ -35,9 +35,9 @@ const MultiSelectToolbar = ({ queryKey }: Props) => {
         url: getCloudfrontOriginalUrl(item.url),
         fileName: generateFilename(
           item._id,
-          item.workflow,
+          item.tool,
           item.user.username,
-          item.args.prompt?.substring(0, 64).trim(),
+          item.task.args.prompt?.substring(0, 64).trim(),
         ),
       }
     })

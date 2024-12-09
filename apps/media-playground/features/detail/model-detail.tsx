@@ -70,13 +70,6 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
             : 'lg:h-[calc(100vh_-_64px)] lg:w-[calc(100dvw_-_16px)]',
         ])}
       >
-        {model?.deleted ? (
-          <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
-            <div className="p-1 bg-destructive/50 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
-              deleted
-            </div>
-          </div>
-        ) : null}
         {model ? (
           <ModelMediaPreview model={model} isModal={isModal} />
         ) : (

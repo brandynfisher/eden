@@ -48,9 +48,10 @@ export async function generateMetadata(
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `${response.creation?.workflow} by ${response.creation?.user.username} | Eden Create`
+  const title = `${response.creation?.tool} by ${response.creation?.user.username} | Eden Create`
   const baseDescription = ``
-  const description = response.creation?.args.prompt || baseDescription
+  console.log(response.creation)
+  const description = response.creation?.task.args.prompt || baseDescription
 
   // Initialize OpenGraph metadata
   const og: OpenGraph = {

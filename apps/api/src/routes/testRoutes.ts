@@ -15,7 +15,7 @@ const triggerEventEmitter = (
   const update = {
     _id: '6686c950dbb95f860bf4118e',
     user: '652bfd262ea937e07378268c',
-    workflow: 'txt2img',
+    tool: 'txt2img',
     args: {
       prompt: 'TEST UPDATE',
     },

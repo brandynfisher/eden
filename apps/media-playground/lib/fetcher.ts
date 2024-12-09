@@ -1,3 +1,4 @@
+import { NotFoundError, ServerError, UnauthorizedError } from '@/lib/errors'
 import {
   CursorPaginatedFeedQuery,
   CursorPaginatedRouteQueryParams,
@@ -11,22 +12,14 @@ import axios, { AxiosError } from 'axios'
 export const fetcher = async <T>(
   ...args: Parameters<typeof fetch>
 ): Promise<T> => {
-  // console.log('fetcher', ...args)
   const response = await fetch(...args)
 
-  if (!response.ok) {
-    console.log(
-      response.url,
-      response.status,
-      response.statusText,
-      response.headers,
-    )
-    throw new Error('Network response was not ok')
-  }
+  if (response.ok) return response.json()
 
-  // console.log({ response })
+  if (response.status === 401) throw new UnauthorizedError(response.statusText)
+  if (response.status === 404) throw new NotFoundError(response.statusText)
 
-  return response.json()
+  throw new ServerError('Network response was not ok')
 }
 
 export const handleAxiosServerError = (error: AxiosError | unknown) => {
@@ -183,22 +176,22 @@ export const createCursorPaginationRoute = (
     filters.push({ base_model: query.base_model })
   }
 
-  if (query.generator) {
-    if (typeof query.generator === 'string') {
-      filters.push({ generator: query.generator })
-    } else if (Array.isArray(query.generator) && query.generator.length) {
-      query.generator.map(id => {
-        filters.push({ generator: id })
+  if (query.tool) {
+    if (typeof query.tool === 'string') {
+      filters.push({ tool: query.tool })
+    } else if (Array.isArray(query.tool) && query.tool.length) {
+      query.tool.map(id => {
+        filters.push({ tool: id })
       })
     }
   }
 
-  if (query.outputType) {
-    if (typeof query.outputType === 'string') {
-      filters.push({ outputType: query.outputType })
-    } else if (Array.isArray(query.outputType) && query.outputType.length) {
-      query.outputType.map(id => {
-        filters.push({ outputType: id })
+  if (query.output_type) {
+    if (typeof query.output_type === 'string') {
+      filters.push({ output_type: query.output_type })
+    } else if (Array.isArray(query.output_type) && query.output_type.length) {
+      query.output_type.map(id => {
+        filters.push({ output_type: id })
       })
     }
   }

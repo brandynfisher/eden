@@ -60,7 +60,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
           <Separator orientation="vertical" className="ml-2 h-9" />
           <div>
             <div className="text-popover-foreground text-xs md:text-sm text-end text-nowrap">
-              {item.workflow}
+              {item.tool}
             </div>
             <div className="text-muted-foreground/50 text-xs text-end text-nowrap">
               <TimeAgo
@@ -78,7 +78,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
               <ModelMiniCard modelId={item.args.lora} className="bg-popover">
                 <Button size="sm" variant="outline" asChild>
                   <Link
-                    href={`/create/image/${item.workflow}?lora=${item.args.lora}`}
+                    href={`/create/image/${item.tool}?lora=${item.args.lora}`}
                     className="ml-auto mr-2"
                     scroll={false}
                     shallow={true}

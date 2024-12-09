@@ -75,10 +75,6 @@ const MasonryVirtualizerVertical = ({
 
   const onUpdate = useCallback(
     (updatedItem: RowItem) => {
-      // console.log(
-      //   'onUpdate - somehow update/invalidate/refetch or whatever it will be',
-      // )
-
       try {
         queryClient.setQueryData(
           queryKey,

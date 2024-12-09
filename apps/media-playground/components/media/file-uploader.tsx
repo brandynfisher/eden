@@ -40,6 +40,12 @@ interface FileUploadProgress {
   source: CancelTokenSource | null
 }
 
+const ArchiveColor = {
+  bgColor: 'blue-400',
+  fillColor: 'text-blue-400',
+  borderColor: 'border-blue-400',
+}
+
 const ImageColor = {
   bgColor: 'purple-600',
   fillColor: 'text-purple-600',
@@ -93,6 +99,18 @@ const getFileIconAndColor = (fileType: FileType) => {
     }
   }
 
+  if (fileType === 'archive') {
+    return {
+      icon: (
+        <FolderArchive
+          size={40}
+          className={`${ArchiveColor.fillColor} w-[72px]`}
+        />
+      ),
+      color: ArchiveColor.bgColor,
+    }
+  }
+
   return {
     icon: (
       <FolderArchive size={40} className={`${OtherColor.fillColor} w-[72px]`} />
@@ -120,6 +138,14 @@ const supportedFileTypes: SupportedFileType[] = [
       'image/gif',
     ],
   },
+  {
+    type: 'archive',
+    allowedMimeTypes: [
+      'application/zip',
+      'application/x-tar',
+      'application/x-gzip',
+    ],
+  },
 ]
 
 export type FileWithPreview = {
@@ -138,6 +164,7 @@ type Props = {
   maxFiles?: number
   allowMultiple?: boolean
   className?: string
+  enableDropFromTimeline?: boolean
 }
 
 const FileUploader = ({
@@ -145,6 +172,7 @@ const FileUploader = ({
   allowedFileTypes = ['image', 'video'], // default types
   maxFiles = 1,
   allowMultiple = false,
+  enableDropFromTimeline = true,
   onChange,
   className,
 }: Props) => {
@@ -204,6 +232,13 @@ const FileUploader = ({
         return 'video/quicktime'
       case 'gif':
         return 'image/gif'
+      case 'zip':
+        return 'application/zip'
+      case 'tar':
+        return 'application/x-tar'
+      case 'gz':
+      case 'tgz':
+        return 'application/x-gzip'
       default:
         return 'image/jpeg'
     }
@@ -358,11 +393,8 @@ const FileUploader = ({
     [existingFiles, filesToUpload, maxFiles, onChange],
   )
 
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    multiple: allowMultiple,
-    maxFiles: allowMultiple ? maxFiles : 1,
-    accept: supportedFileTypes
+  const acceptedFiles: Record<string, string[]> = useMemo(() => {
+    return supportedFileTypes
       .filter(type => allowedFileTypes?.includes(type.type))
       .reduce(
         (acc, type) => ({
@@ -370,7 +402,14 @@ const FileUploader = ({
           ...type.allowedMimeTypes.reduce((a, m) => ({ ...a, [m]: [] }), {}),
         }),
         {},
-      ),
+      )
+  }, [allowedFileTypes])
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    multiple: allowMultiple,
+    maxFiles: allowMultiple ? maxFiles : 1,
+    accept: acceptedFiles,
   })
 
   const handleMove = (activeIndex: number, overIndex: number) => {
@@ -380,23 +419,84 @@ const FileUploader = ({
     onChange(maxFiles === 1 ? newUrls[0] : newUrls)
   }
 
+  const handleDropFromTimeline = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!enableDropFromTimeline) return
+
+    const url = e.dataTransfer.getData('text/plain')
+    if (!url) return
+    if (existingFiles.find(f => f.url === url)) return
+
+    const mimeType = urlToMimeType(url)
+    if (!acceptedFiles[mimeType]) return
+
+    setExistingFiles(prev => [
+      ...prev,
+      {
+        url,
+        type: getFileTypeByMimeType(mimeType),
+        name: url.split('/').pop() || 'file',
+      },
+    ])
+    onChange(maxFiles === 1 ? url : [...existingFiles.map(f => f.url), url])
+  }
+
+  const gradientClasses = useMemo(() => {
+    if (!allowedFileTypes?.length) return ''
+
+    const colors: string[] = []
+    if (allowedFileTypes.includes('image')) {
+      colors.push(ImageColor.bgColor)
+    }
+    if (allowedFileTypes.includes('video')) {
+      colors.push(VideoColor.bgColor)
+    }
+    if (allowedFileTypes.includes('archive')) {
+      colors.push(ArchiveColor.bgColor)
+    }
+    if (allowedFileTypes.includes('audio')) {
+      colors.push(AudioColor.bgColor)
+    }
+
+    if (colors.length === 0) return ''
+
+    if (colors.length === 1) {
+      return `bg-${colors[0]}`
+    }
+
+    // Generate a gradient if there are multiple colors
+    const gradientClasses = ['bg-gradient-to-r']
+    colors.forEach((color, i) => {
+      if (i === 0) gradientClasses.push(`from-${color}`)
+      else if (i === colors.length - 1) gradientClasses.push(`to-${color}`)
+      else gradientClasses.push(`via-${color}`)
+    })
+
+    return gradientClasses.join(' ')
+  }, [allowedFileTypes])
+
   return (
-    <div className={cn(['flex-grow', className])}>
+    <div
+      {...getRootProps()}
+      onDrop={e => {
+        e.preventDefault()
+        if (e.dataTransfer.getData('text/plain')) {
+          handleDropFromTimeline(e)
+        } else {
+          onDrop(Array.from(e.dataTransfer.files))
+        }
+      }}
+      className={cn(['flex-grow', className])}
+    >
       <div>
         {existingFiles.length + filesToUpload.length < (maxFiles || 1) ? (
-          <label
-            {...getRootProps()}
-            className={cn(
-              'relative flex flex-col items-center justify-center w-full p-2 border rounded-lg cursor-pointer bg-card hover:brightness-110',
-              allowedFileTypes?.includes('video') ? VideoColor.borderColor : '',
-              allowedFileTypes?.includes('image') ? ImageColor.borderColor : '',
-              allowedFileTypes?.includes('video') &&
-                allowedFileTypes?.includes('image')
-                ? 'border-l-purple-600 border-t-purple-600 border-r-green-400 border-b-green-400'
-                : '',
-            )}
-          >
-            <div className="text-center">
+          <label className="relative flex flex-col items-center justify-center w-full cursor-pointer hover:brightness-110">
+            <div
+              className={cn(
+                'absolute w-[calc(100%+2px)] h-[calc(100%+2px)] rounded-lg',
+                gradientClasses,
+              )}
+            ></div>
+            <div className="text-center z-10 bg-card w-full h-full p-2 rounded-lg">
               <div className="flex items-center justify-center">
                 <UploadCloudIcon className="mr-2 h-4 w-4" />
                 <div className="text-sm text-muted-foreground font-semibold">
@@ -428,7 +528,12 @@ const FileUploader = ({
       </div>
 
       {filesToUpload.length || existingFiles.length ? (
-        <div className="bg-card p-2 rounded-lg">
+        <div
+          className="bg-card p-2 rounded-lg mt-4"
+          onClick={e => {
+            e.stopPropagation()
+          }}
+        >
           <div className="font-medium mb-2 text-muted-foreground text-sm flex gap-2 flex-wrap justify-between">
             <div>
               Uploaded {existingFiles.length + filesToUpload.length}{' '}
@@ -507,7 +612,10 @@ const FileUploader = ({
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeFile(file.url)}
+                        onClick={e => {
+                          e.stopPropagation()
+                          removeFile(file.url)
+                        }}
                         className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
                       >
                         <X size={20} />

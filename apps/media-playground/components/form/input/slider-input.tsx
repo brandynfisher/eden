@@ -1,9 +1,10 @@
 import { SliderWithTooltip } from '@/components/ui/custom/slider-with-tooltip'
+import { useFormField } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
 type Props = {
-  type: 'float' | 'int'
+  type: 'float' | 'integer'
   min: number
   max: number
   step: number
@@ -42,6 +43,8 @@ const SliderInput = ({
   unit,
   hideNumberInput = false,
 }: Props) => {
+  const { formItemId } = useFormField()
+
   return (
     <div className="flex items-center">
       <div className="relative flex items-center w-full">
@@ -51,6 +54,7 @@ const SliderInput = ({
         />
         <div className="flex-1 relative">
           <SliderWithTooltip
+            aria-labelledby={`${formItemId}-label`} // Associate label using ARIA
             className="flex-1"
             defaultValue={[value]}
             value={[value]}
@@ -81,7 +85,7 @@ const SliderInput = ({
         onChange={e =>
           onChange(
             e.target.value
-              ? type === 'int'
+              ? type === 'integer'
                 ? parseInt(e.target.value)
                 : parseFloat(e.target.value)
               : undefined,

@@ -14,23 +14,22 @@ import { ImageIcon, XIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
-  result: TaskV2Result
+  intermediateOutputs: TaskV2Result['intermediateOutputs']
 }
 
-export const IntermediateOutputsDialog = ({ result }: Props) => {
+export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
   const [open, setOpen] = React.useState(false)
   const [disableEsc, setDisableEsc] = React.useState(false)
 
-  const totalArrayElements =
-    result && result.intermediateOutputs
-      ? Object.values(result.intermediateOutputs).reduce(
-          (acc, arr) => acc + arr.length,
-          0,
-        )
-      : 0
+  const totalArrayElements = intermediateOutputs
+    ? Object.values(intermediateOutputs).reduce(
+        (acc, arr) => acc + arr.length,
+        0,
+      )
+    : 0
 
-  const slides = result.intermediateOutputs
-    ? Object.entries(result.intermediateOutputs).flatMap(output =>
+  const slides = intermediateOutputs
+    ? Object.entries(intermediateOutputs).flatMap(output =>
         output[1].map(mediaResult => ({
           url: mediaResult.url || '',
           thumbnail: mediaResult.url || '',
