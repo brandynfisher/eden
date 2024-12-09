@@ -1,9 +1,6 @@
 'use client'
 
-import LightboxGallery, {
-  LightboxGalleryItem,
-} from '@/components/media/lightbox-gallery'
-import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
+import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
 import {
   Sortable,
@@ -553,8 +550,8 @@ const FileUploader = ({
                 handleMove(activeIndex, overIndex)
               }
             >
-              <LightboxGallery sizeOnLoad={true}>
-                {existingFiles.map(file => (
+              <LightboxGallery>
+                {existingFiles.map((file, index) => (
                   <SortableItem key={file.url} value={file.url} asChild>
                     <div className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group">
                       <div className="flex items-center pl-2 h-20">
@@ -569,39 +566,24 @@ const FileUploader = ({
                           </SortableDragHandle>
                         )}
                         <div className="relative text-white rounded-lg overflow-hidden shrink-0 mr-2 cursor-zoom-in">
-                          {file.type.startsWith('image') ? (
-                            <LightboxGalleryItem
-                              sizeOnLoad={true}
-                              className="relative rounded-lg hover:brightness-105 h-16 aspect-square"
-                              item={{
-                                url: file.url,
-                                thumbnail: file.url, // assuming URL is accessible
-                                width: 72,
-                                height: 72,
-                              }}
-                            />
-                          ) : file.type.startsWith('video') ? (
-                            <PreviewVideoPlayer
-                              src={file.url}
-                              width={72}
-                              height={72}
-                              onLoad={() => URL.revokeObjectURL(file.url)}
-                              className="object-contain h-16 aspect-square hover:brightness-105"
-                            />
-                          ) : file.type === 'archive' ? (
-                            <FolderArchive
-                              size={64}
-                              className={`${ArchiveColor.fillColor}`}
-                            />
-                          ) : (
-                            <PreviewVideoPlayer
-                              src={file.url}
-                              width={72}
-                              height={72}
-                              onLoad={() => URL.revokeObjectURL(file.url)}
-                              className="object-contain h-16 aspect-square hover:brightness-105"
-                            />
-                          )}
+                          <LightboxTrigger
+                            className="hover:brightness-105 h-16 w-auto"
+                            slide={{
+                              url: file.url,
+                              thumbnail: file.url,
+                            }}
+                            startIndex={index}
+                            imageProps={{
+                              className:
+                                'relative rounded-lg hover:brightness-105 h-16 w-auto',
+                            }}
+                            videoProps={{
+                              className:
+                                'object-contain h-16 w-auto hover:brightness-105',
+                              controls: false,
+                              onLoad: () => URL.revokeObjectURL(file.url),
+                            }}
+                          />
                         </div>
                         <div className="space-y-1 max-w-[96px] md:max-w-[110px] lg:max-w-[200px] overflow-hidden">
                           <div className="text-sm text-muted-foreground">
