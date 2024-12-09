@@ -69,10 +69,6 @@ export const creationSchema = new Schema<CreationV2Document>(
         type: String,
         required: true,
       },
-      type: {
-        type: String,
-        required: true,
-      },
       duration: {
         type: Number,
       },

@@ -30,30 +30,30 @@ const TimelineItemResultTools = ({
       className={cn([`relative text-sm mt-2`, className])}
     >
       <div className="flex flex-wrap gap-2">
-        {result.model ? (
+        {output.model ? (
           <PrivacyToggle
             queryKey={queryKey}
             type={'model'}
-            item={result.model}
+            item={output.model}
           />
         ) : null}
-        {result.creation ? (
+        {output.creation ? (
           <PrivacyToggle
             queryKey={queryKey}
             type={'creation'}
-            item={result.creation}
+            item={output.creation}
           />
         ) : null}
         <Suspense>
-          {task.output_type === 'lora' && result.model ? (
+          {task.output_type === 'lora' && output.model ? (
             <ModelActionsMenu
-              model={result.model}
+              model={output.model}
               className="ml-auto"
               queryKey={queryKey}
             />
-          ) : result.creation ? (
+          ) : output.creation ? (
             <CreationActionsMenu
-              creation={result.creation}
+              creation={output.creation}
               className="ml-auto"
               queryKey={queryKey}
             />

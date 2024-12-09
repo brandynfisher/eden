@@ -1,5 +1,4 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
-import { CreationPresetLink } from '@/components/button/creation-preset-link'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
@@ -10,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { cn } from '@/lib/utils'
+import { getFileTypeByMimeType } from '@/lib/files'
 import {
   updateAddToCollectionModal,
   updateQuickAnimateModal,
@@ -25,6 +24,7 @@ import { QueryKey } from '@tanstack/react-query'
 import {
   BookmarkPlusIcon,
   ExternalLinkIcon,
+  FileSlidersIcon,
   FilmIcon,
   PictureInPicture2Icon,
   PictureInPictureIcon,
@@ -48,9 +48,21 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
   }
 
   return (
-    <div className={cn(['', className])}>
-      <CreationPresetLink creation={creation} hideLabel={true} />
-      <ActionsDropdown onOpenChange={setIsOpen}>
+    // <div className={cn(['', className])}>
+    //   {/*<CreationPresetLink creation={creation} hideLabel={true} />*/}
+    //   <ActionsDropdown onOpenChange={setIsOpen}>
+    //     {isOpen && (
+    //       <CreationActionsContent
+    //         creation={creation}
+    //         queryKey={queryKey}
+    //         userId={user?._id}
+    //         isOpen={isOpen}
+    //       />
+    //     )}
+    //   </ActionsDropdown>
+    // </div>
+    <>
+      <ActionsDropdown className={className} onOpenChange={setIsOpen}>
         {isOpen && (
           <CreationActionsContent
             creation={creation}
@@ -60,7 +72,7 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
           />
         )}
       </ActionsDropdown>
-    </div>
+    </>
   )
 }
 
@@ -90,6 +102,8 @@ const CreationActionsContent = ({
 
   const creationData = creationResponse || creation
 
+  console.log({ creationData })
+
   const handleAddToCollectionClick = () => {
     dispatch(
       updateAddToCollectionModal({
@@ -117,6 +131,9 @@ const CreationActionsContent = ({
       }),
     )
   }
+
+  const fileType =
+    getFileTypeByMimeType(creationData.mediaAttributes?.mimeType) || 'image'
 
   return (
     <>
@@ -148,7 +165,7 @@ const CreationActionsContent = ({
           <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {creationData.mediaAttributes?.type === 'image' ? (
+        {fileType === 'image' ? (
           <>
             <DropdownMenuItem
               disabled={!isSignedIn}
@@ -173,7 +190,16 @@ const CreationActionsContent = ({
           </>
         ) : null}
         <DropdownMenuItem asChild disabled={!isSignedIn}>
-          <CreationPresetLink creation={creationData} />
+          <Link
+            className="cursor-pointer flex items-center"
+            href={`/create/${fileType}/${creation.tool}?creation=${creation._id}`}
+            scroll={false}
+            shallow={true}
+          >
+            <FileSlidersIcon className="mr-2 h-4 w-4" />
+            Use as Preset
+            {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>
       {creationData.user._id === userId && (

@@ -24,6 +24,7 @@ const imageInputParameterNames = [
   'mask_image',
   'prompt_image',
   'control_image',
+  'control_input',
   'dummy_image',
   'person_image',
   'style_image',

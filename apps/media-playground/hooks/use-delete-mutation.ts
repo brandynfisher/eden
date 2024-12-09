@@ -1,4 +1,3 @@
-// hooks/use-delete-mutation.ts
 import { fetcher } from '@/lib/fetcher'
 import {
   isCreationData,
@@ -113,32 +112,35 @@ export function useDeleteMutation({
                     return {
                       ...doc,
                       result: doc.result.map(result => {
-                        if (
-                          type === 'creation' &&
-                          result.creation &&
-                          ids.includes(result.creation._id)
-                        ) {
-                          return {
-                            ...result,
-                            creation: {
-                              ...result.creation,
-                              deleted: true,
-                            },
+                        result.output = result.output.map(output => {
+                          if (
+                            type === 'creation' &&
+                            output.creation &&
+                            ids.includes(output.creation._id)
+                          ) {
+                            return {
+                              ...output,
+                              creation: {
+                                ...output.creation,
+                                deleted: true,
+                              },
+                            }
                           }
-                        }
-                        if (
-                          type === 'model' &&
-                          result.model &&
-                          ids.includes(result.model._id)
-                        ) {
-                          return {
-                            ...result,
-                            model: {
-                              ...result.model,
-                              deleted: true,
-                            },
+                          if (
+                            type === 'model' &&
+                            output.model &&
+                            ids.includes(output.model._id)
+                          ) {
+                            return {
+                              ...output,
+                              model: {
+                                ...output.model,
+                                deleted: true,
+                              },
+                            }
                           }
-                        }
+                          return output
+                        })
                         return result
                       }),
                     }
@@ -148,32 +150,35 @@ export function useDeleteMutation({
               return page
             }),
           }
-        } else if (
-          type === 'creation' &&
-          isCreationData(previousData) &&
-          ids.includes(previousData._id)
-        ) {
-          newData =
-            ids.reduce<CreationV2 | undefined>((acc, id) => {
-              if (previousData._id === id) {
-                acc = { ...previousData, deleted: true }
-              }
-              return acc
-            }, undefined) || previousData
-        } else if (
-          type === 'model' &&
-          isModelData(previousData) &&
-          ids.includes(previousData._id)
-        ) {
-          newData =
-            ids.reduce<ModelV2 | undefined>((acc, id) => {
-              if (previousData._id === id) {
-                acc = { ...previousData, deleted: true }
-              }
-              return acc
-            }, undefined) || previousData
         } else {
-          newData = previousData
+          // Handle non-infinite data changes if applicable
+          if (
+            type === 'creation' &&
+            isCreationData(previousData) &&
+            ids.includes(previousData._id)
+          ) {
+            newData =
+              ids.reduce<CreationV2 | undefined>((acc, id) => {
+                if (previousData._id === id) {
+                  acc = { ...previousData, deleted: true }
+                }
+                return acc
+              }, undefined) || previousData
+          } else if (
+            type === 'model' &&
+            isModelData(previousData) &&
+            ids.includes(previousData._id)
+          ) {
+            newData =
+              ids.reduce<ModelV2 | undefined>((acc, id) => {
+                if (previousData._id === id) {
+                  acc = { ...previousData, deleted: true }
+                }
+                return acc
+              }, undefined) || previousData
+          } else {
+            newData = previousData
+          }
         }
 
         queryClient.setQueryData(queryKey, newData)

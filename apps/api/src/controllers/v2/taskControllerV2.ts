@@ -1,16 +1,9 @@
-import { calculateMaxDimensions } from '../../lib/eden2'
 import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/Creator'
-import { CreationV2 } from '../../models/v2/CreationV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import { ThreadDocument } from '../../models/v2/Thread'
 import { ToolV2 } from '../../models/v2/ToolV2'
-import {
-  ImageFormats,
-  changeExtension,
-  s3ThumbnailUrl,
-  s3Url,
-} from '../../plugins/s3Plugin'
+import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
 import { verifyToken } from '@clerk/clerk-sdk-node'
@@ -23,15 +16,12 @@ import {
   TasksV2CreateArguments,
   TasksV2GetArguments,
   TasksV2ListArguments,
-  TasksV2PublishArguments,
   ThreadMessage,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { encode } from 'blurhash'
 import { on } from 'events'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-import sharp from 'sharp'
 import { v4 as uuidv4 } from 'uuid'
 import WebSocket from 'ws'
 
@@ -241,24 +231,35 @@ export const listTasks = async (
   const paginatedResponse = await tasksRepository.query(query, queryOptions)
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
-    path: 'result.creation',
+    path: 'result.output.creation',
     model: 'creations3',
   })
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
-    path: 'result.creation.user',
+    path: 'result.output.creation.task',
+    model: 'tasks3',
+    select: '_id args',
+  })
+
+  await tasksRepository.model.populate(paginatedResponse.docs, {
+    path: 'result.output.creation.user',
     model: 'users',
     select: '_id username userId userImage',
   })
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
-    path: 'result.model',
+    path: 'result.output.model',
     model: 'models',
-    select: '-args.lora_training_urls',
   })
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
-    path: 'result.model.user',
+    path: 'result.output.model.task',
+    model: 'tasks3',
+    select: '_id args',
+  })
+
+  await tasksRepository.model.populate(paginatedResponse.docs, {
+    path: 'result.output.model.user',
     model: 'users',
     select: '_id username userId userImage',
   })
@@ -390,6 +391,39 @@ export const getTask = async (
     .select('-args.lora_training_urls')
     .populate({
       path: 'user',
+      select: '_id username userId userImage',
+    })
+    .populate({
+      path: 'result.output.creation',
+      model: 'creations3',
+    })
+    .populate({
+      path: 'result.output.creation.task',
+      model: 'tasks3',
+      select: '_id args',
+    })
+    .populate({
+      path: 'result.output.creation.user',
+      model: 'users',
+      select: '_id username userId userImage',
+    })
+    .populate({
+      path: 'result.output.model',
+      model: 'models',
+    })
+    .populate({
+      path: 'result.output.model.task',
+      model: 'tasks3',
+      select: '_id args',
+    })
+    .populate({
+      path: 'result.output.model.user',
+      model: 'users',
+      select: '_id username userId userImage',
+    })
+    .populate({
+      path: 'result.output.model.user',
+      model: 'users',
       select: '_id username userId userImage',
     })
 
@@ -595,13 +629,18 @@ export const subscribeWebSocketUpdates = function wsHandler(
         await tasksRepository.model.populate(task, {
           path: 'result.model',
           model: 'models',
-          select: '-args.lora_training_urls',
         })
 
         await tasksRepository.model.populate(task, {
           path: 'result.model.user',
           model: 'users',
           select: '_id username userId userImage',
+        })
+
+        await tasksRepository.model.populate(task, {
+          path: 'result.output.model.task',
+          model: 'tasks3',
+          select: '_id args',
         })
 
         await tasksRepository.model.populate(task, {
@@ -898,233 +937,233 @@ export const cancelTask = async (
   }
 }
 
-export const publishTaskResult = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  try {
-    if (!request.user) {
-      server.log.warn('Invalid or missing user information in request.')
-      return reply.status(400).send({
-        message: `Invalid or missing user information`,
-      })
-    }
-
-    const { userId } = request.user
-
-    if (!request.body || typeof request.body !== 'object') {
-      server.log.warn('Invalid or missing request body.')
-      return reply.status(400).send({
-        message: `Invalid or missing request body`,
-      })
-    }
-
-    const { taskId, resultFilename } = request.body as TasksV2PublishArguments
-
-    if (!taskId) {
-      server.log.warn('taskId is missing or not a string.')
-      return reply.status(400).send({
-        message: `taskId is missing or invalid`,
-      })
-    }
-
-    if (!resultFilename) {
-      server.log.warn('resultFilename is missing or not a string.')
-      return reply.status(400).send({
-        message: `resultFilename is missing or invalid`,
-      })
-    }
-
-    const userDocument = await User.findById(userId)
-    if (!userDocument) {
-      server.log.warn(`User not found with ID: ${userId}`)
-      return reply.status(404).send({
-        message: `User not found`,
-      })
-    }
-
-    const taskDocument = await TaskV2Model.findById(taskId)
-    if (!taskDocument) {
-      server.log.warn(`Task not found with ID: ${taskId}`)
-      return reply.status(404).send({
-        message: `Task not found`,
-      })
-    }
-
-    if (!Array.isArray(taskDocument.result)) {
-      server.log.error(
-        `Invalid taskDocument.result structure for task ID: ${taskId}`,
-      )
-      return reply.status(500).send({
-        message: `Invalid task result structure`,
-      })
-    }
-
-    let outputIndex = -1
-
-    const taskResultIndex = taskDocument.result.findIndex(result => {
-      outputIndex = result.output.findIndex(
-        output =>
-          output.filename === resultFilename ||
-          output.filename === s3Url(server, resultFilename) ||
-          output.url === resultFilename,
-      )
-
-      return outputIndex !== -1
-    })
-
-    if (taskResultIndex === -1) {
-      server.log.warn(
-        `Task result not found for filename: ${resultFilename} in task ID: ${taskId}`,
-      )
-      return reply.status(404).send({
-        message: `Task result not found`,
-      })
-    }
-
-    if (outputIndex === -1) {
-      server.log.warn(
-        `Task result output not found for filename: ${resultFilename} in task ID: ${taskId}`,
-      )
-      return reply.status(404).send({
-        message: `Task output not found`,
-      })
-    }
-
-    const taskResult = taskDocument.result[taskResultIndex]
-    const taskResultOutput = taskResult.output[outputIndex]
-
-    // Check for Existing Creation**
-    const existingCreation = await CreationV2.exists({
-      url: resultFilename,
-      task: taskId,
-    })
-
-    if (existingCreation) {
-      server.log.warn(
-        `Creation already exists for URL: ${resultFilename} and task ID: ${taskId}`,
-      )
-      return reply.status(409).send({
-        message: `Creation already exists`,
-      })
-    }
-
-    // server.log.info('Initializing Creation object...')
-    // server.log.info({ taskId, resultFilename, taskResult })
-
-    const creation = new CreationV2()
-
-    creation.task = new ObjectId(taskId)
-    creation.user = new ObjectId(userId)
-    creation.public = false
-
-    creation.tool = taskDocument.tool
-    creation.mediaAttributes = {
-      ...taskResultOutput.mediaAttributes,
-      type: taskDocument.output_type,
-      mimeType: taskResultOutput.mediaAttributes?.mimeType || 'image/jpeg',
-    }
-
-    // Generate BlurHash if Applicable
-    try {
-      const isModelResult = taskResultOutput.filename.endsWith('.tar')
-
-      if (!isModelResult) {
-        const IMAGE_SIZE = 384
-        const thumbnailUrl = s3ThumbnailUrl(
-          server,
-          taskResultOutput.filename,
-          IMAGE_SIZE,
-        )
-        server.log.info(`Fetching thumbnail from URL: ${thumbnailUrl}`)
-
-        const response = await axios.get(thumbnailUrl, {
-          responseType: 'arraybuffer',
-          timeout: 5000, // Timeout after 5 seconds
-        })
-        const buffer = Buffer.from(response.data)
-
-        const aspectRatio =
-          (taskResultOutput.mediaAttributes?.width || IMAGE_SIZE) /
-          (taskResultOutput.mediaAttributes?.height || IMAGE_SIZE)
-        const { width, height } = calculateMaxDimensions(
-          aspectRatio,
-          IMAGE_SIZE,
-        )
-
-        const image = await sharp(buffer)
-          .resize(width, height)
-          .raw()
-          .ensureAlpha()
-          .toBuffer()
-
-        const blurhash = encode(
-          new Uint8ClampedArray(image.buffer),
-          width,
-          height,
-          4,
-          4,
-        )
-
-        creation.mediaAttributes.blur = blurhash
-        server.log.info(
-          `BlurHash generated successfully for result: ${resultFilename}`,
-        )
-      }
-    } catch (e) {
-      server.log.error(
-        `Error creating blurhash for result: ${resultFilename}`,
-        e,
-      )
-    }
-
-    creation.metadata = taskResult.metadata
-
-    if (!taskResultOutput.filename && !taskResultOutput.url) {
-      server.log.error(
-        `Missing filename and URL for result: ${resultFilename} in task ID: ${taskId}`,
-      )
-      return reply.status(500).send({
-        message: `Invalid result data`,
-      })
-    }
-    creation.url = taskResultOutput.filename || taskResultOutput.url
-
-    const thumbnailSource =
-      taskResultOutput.filename || taskResultOutput.thumbnail || ''
-    creation.thumbnail = changeExtension(thumbnailSource, ImageFormats.WEBP)
-
-    server.log.info('Saving Creation object to the database...')
-    const savedCreation = await creation.save()
-    server.log.info(`Creation saved with ID: ${savedCreation._id}`)
-
-    server.log.info('Updating task result to mark as published...')
-    taskDocument.result[taskResultIndex] = {
-      ...taskResult,
-      creation: savedCreation._id,
-    }
-
-    await taskDocument.save()
-    server.log.info(`Task document updated successfully for task ID: ${taskId}`)
-
-    if (savedCreation) {
-      savedCreation.url = s3Url(server, savedCreation.url || '')
-      savedCreation.thumbnail = s3ThumbnailUrl(
-        server,
-        savedCreation.thumbnail || '',
-        1024,
-      )
-    }
-
-    return reply.status(200).send({ creation: savedCreation })
-  } catch (error) {
-    server.log.error(
-      'An unexpected error occurred in publishTaskResult:',
-      error,
-    )
-    return reply.status(500).send({
-      message: `An unexpected error occurred.`,
-    })
-  }
-}
+// export const publishTaskResult = async (
+//   server: FastifyInstance,
+//   request: FastifyRequest,
+//   reply: FastifyReply,
+// ) => {
+//   try {
+//     if (!request.user) {
+//       server.log.warn('Invalid or missing user information in request.')
+//       return reply.status(400).send({
+//         message: `Invalid or missing user information`,
+//       })
+//     }
+//
+//     const { userId } = request.user
+//
+//     if (!request.body || typeof request.body !== 'object') {
+//       server.log.warn('Invalid or missing request body.')
+//       return reply.status(400).send({
+//         message: `Invalid or missing request body`,
+//       })
+//     }
+//
+//     const { taskId, resultFilename } = request.body as TasksV2PublishArguments
+//
+//     if (!taskId) {
+//       server.log.warn('taskId is missing or not a string.')
+//       return reply.status(400).send({
+//         message: `taskId is missing or invalid`,
+//       })
+//     }
+//
+//     if (!resultFilename) {
+//       server.log.warn('resultFilename is missing or not a string.')
+//       return reply.status(400).send({
+//         message: `resultFilename is missing or invalid`,
+//       })
+//     }
+//
+//     const userDocument = await User.findById(userId)
+//     if (!userDocument) {
+//       server.log.warn(`User not found with ID: ${userId}`)
+//       return reply.status(404).send({
+//         message: `User not found`,
+//       })
+//     }
+//
+//     const taskDocument = await TaskV2Model.findById(taskId)
+//     if (!taskDocument) {
+//       server.log.warn(`Task not found with ID: ${taskId}`)
+//       return reply.status(404).send({
+//         message: `Task not found`,
+//       })
+//     }
+//
+//     if (!Array.isArray(taskDocument.result)) {
+//       server.log.error(
+//         `Invalid taskDocument.result structure for task ID: ${taskId}`,
+//       )
+//       return reply.status(500).send({
+//         message: `Invalid task result structure`,
+//       })
+//     }
+//
+//     let outputIndex = -1
+//
+//     const taskResultIndex = taskDocument.result.findIndex(result => {
+//       outputIndex = result.output.findIndex(
+//         output =>
+//           output.filename === resultFilename ||
+//           output.filename === s3Url(server, resultFilename) ||
+//           output.url === resultFilename,
+//       )
+//
+//       return outputIndex !== -1
+//     })
+//
+//     if (taskResultIndex === -1) {
+//       server.log.warn(
+//         `Task result not found for filename: ${resultFilename} in task ID: ${taskId}`,
+//       )
+//       return reply.status(404).send({
+//         message: `Task result not found`,
+//       })
+//     }
+//
+//     if (outputIndex === -1) {
+//       server.log.warn(
+//         `Task result output not found for filename: ${resultFilename} in task ID: ${taskId}`,
+//       )
+//       return reply.status(404).send({
+//         message: `Task output not found`,
+//       })
+//     }
+//
+//     const taskResult = taskDocument.result[taskResultIndex]
+//     const taskResultOutput = taskResult.output[outputIndex]
+//
+//     // Check for Existing Creation**
+//     const existingCreation = await CreationV2.exists({
+//       url: resultFilename,
+//       task: taskId,
+//     })
+//
+//     if (existingCreation) {
+//       server.log.warn(
+//         `Creation already exists for URL: ${resultFilename} and task ID: ${taskId}`,
+//       )
+//       return reply.status(409).send({
+//         message: `Creation already exists`,
+//       })
+//     }
+//
+//     // server.log.info('Initializing Creation object...')
+//     // server.log.info({ taskId, resultFilename, taskResult })
+//
+//     const creation = new CreationV2()
+//
+//     creation.task = new ObjectId(taskId)
+//     creation.user = new ObjectId(userId)
+//     creation.public = false
+//
+//     creation.tool = taskDocument.tool
+//     creation.mediaAttributes = {
+//       ...taskResultOutput.mediaAttributes,
+//       type: taskDocument.output_type,
+//       mimeType: taskResultOutput.mediaAttributes?.mimeType || 'image/jpeg',
+//     }
+//
+//     // Generate BlurHash if Applicable
+//     try {
+//       const isModelResult = taskResultOutput.filename.endsWith('.tar')
+//
+//       if (!isModelResult) {
+//         const IMAGE_SIZE = 384
+//         const thumbnailUrl = s3ThumbnailUrl(
+//           server,
+//           taskResultOutput.filename,
+//           IMAGE_SIZE,
+//         )
+//         server.log.info(`Fetching thumbnail from URL: ${thumbnailUrl}`)
+//
+//         const response = await axios.get(thumbnailUrl, {
+//           responseType: 'arraybuffer',
+//           timeout: 5000, // Timeout after 5 seconds
+//         })
+//         const buffer = Buffer.from(response.data)
+//
+//         const aspectRatio =
+//           (taskResultOutput.mediaAttributes?.width || IMAGE_SIZE) /
+//           (taskResultOutput.mediaAttributes?.height || IMAGE_SIZE)
+//         const { width, height } = calculateMaxDimensions(
+//           aspectRatio,
+//           IMAGE_SIZE,
+//         )
+//
+//         const image = await sharp(buffer)
+//           .resize(width, height)
+//           .raw()
+//           .ensureAlpha()
+//           .toBuffer()
+//
+//         const blurhash = encode(
+//           new Uint8ClampedArray(image.buffer),
+//           width,
+//           height,
+//           4,
+//           4,
+//         )
+//
+//         creation.mediaAttributes.blur = blurhash
+//         server.log.info(
+//           `BlurHash generated successfully for result: ${resultFilename}`,
+//         )
+//       }
+//     } catch (e) {
+//       server.log.error(
+//         `Error creating blurhash for result: ${resultFilename}`,
+//         e,
+//       )
+//     }
+//
+//     creation.metadata = taskResult.metadata
+//
+//     if (!taskResultOutput.filename && !taskResultOutput.url) {
+//       server.log.error(
+//         `Missing filename and URL for result: ${resultFilename} in task ID: ${taskId}`,
+//       )
+//       return reply.status(500).send({
+//         message: `Invalid result data`,
+//       })
+//     }
+//     creation.url = taskResultOutput.filename || taskResultOutput.url
+//
+//     const thumbnailSource =
+//       taskResultOutput.filename || taskResultOutput.thumbnail || ''
+//     creation.thumbnail = changeExtension(thumbnailSource, ImageFormats.WEBP)
+//
+//     server.log.info('Saving Creation object to the database...')
+//     const savedCreation = await creation.save()
+//     server.log.info(`Creation saved with ID: ${savedCreation._id}`)
+//
+//     server.log.info('Updating task result to mark as published...')
+//     taskDocument.result[taskResultIndex] = {
+//       ...taskResult,
+//       creation: savedCreation._id,
+//     }
+//
+//     await taskDocument.save()
+//     server.log.info(`Task document updated successfully for task ID: ${taskId}`)
+//
+//     if (savedCreation) {
+//       savedCreation.url = s3Url(server, savedCreation.url || '')
+//       savedCreation.thumbnail = s3ThumbnailUrl(
+//         server,
+//         savedCreation.thumbnail || '',
+//         1024,
+//       )
+//     }
+//
+//     return reply.status(200).send({ creation: savedCreation })
+//   } catch (error) {
+//     server.log.error(
+//       'An unexpected error occurred in publishTaskResult:',
+//       error,
+//     )
+//     return reply.status(500).send({
+//       message: `An unexpected error occurred.`,
+//     })
+//   }
+// }

@@ -3,8 +3,7 @@ import {
   cancelTask,
   createTask,
   getTask,
-  listTasks,
-  publishTaskResult,
+  listTasks, // publishTaskResult,
   subscribeTaskUpdates,
 } from '../../controllers/v2/taskControllerV2'
 import { isAuthEden2 } from '../../middleware/authMiddleware'
@@ -167,28 +166,28 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
     handler: (request, reply) => cancelTask(server, request, reply),
   })
 
-  server.post('/v2/tasks/publish', {
-    schema: {
-      tags: ['Tasks'],
-      description: 'Publish a task result',
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      body: {
-        taskId: Type.String(),
-        resultFilename: Type.String(),
-      },
-      response: {
-        200: Type.Object({
-          creation: Type.Any(), //@todo: creationV2Type
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => publishTaskResult(server, request, reply),
-  })
+  // server.post('/v2/tasks/publish', {
+  //   schema: {
+  //     tags: ['Tasks'],
+  //     description: 'Publish a task result',
+  //     security: [
+  //       {
+  //         apiKey: [],
+  //       },
+  //     ],
+  //     body: {
+  //       taskId: Type.String(),
+  //       resultFilename: Type.String(),
+  //     },
+  //     response: {
+  //       200: Type.Object({
+  //         creation: Type.Any(), //@todo: creationV2Type
+  //       }),
+  //     },
+  //   },
+  //   preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+  //   handler: (request, reply) => publishTaskResult(server, request, reply),
+  // })
 }
 
 export default taskRoutesV2
