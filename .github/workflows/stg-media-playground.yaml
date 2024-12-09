@@ -68,7 +68,7 @@ jobs:
             "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://staging.api.eden.art/ws/updates"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STG }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN_EDEN2 }}"
-            "NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=670a7250ff7f3809e9b380bf"
+            "NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=671c644206bb24851e319a76"
             "NEXT_PUBLIC_DISCORD_CLIENT_ID=1001489981694554243"
             "NEXT_PUBLIC_GOOGLE_GTM_ID=GTM-MR2LV55Z"
             "NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID=G-W4718WCZQK"
@@ -80,13 +80,12 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/create"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
   notify:
-    if: always()
     needs: [build-and-push-to-ghcr]
     runs-on: ubuntu-latest
+    if: ${{ always() }}
 
     steps:
       - name: Discord Webhook Trigger
         uses: sarisia/actions-status-discord@v1
-        if: always()
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}

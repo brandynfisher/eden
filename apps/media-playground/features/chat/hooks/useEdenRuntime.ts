@@ -1,8 +1,8 @@
+import edenImageAttachmentAdapter from '@/features/chat/eden-image-attachment-adapter'
 import {
   EdenMessage,
-  convertEdenMessages,
-} from '@/features/chat/convertEdenMessages'
-import edenImageAttachmentAdapter from '@/features/chat/edenImageAttachmentAdapter'
+  edenMessageConverter,
+} from '@/features/chat/eden-message-converter'
 import { useEdenMessages } from '@/features/chat/hooks/useEdenMessages'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import {
@@ -11,7 +11,8 @@ import {
   useExternalMessageConverter,
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 
 export const useEdenRuntime = ({
   threadId,
@@ -31,18 +32,6 @@ export const useEdenRuntime = ({
   const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
   const { threads } = useThreadListQuery()
 
-  useEffect(() => {
-    if (onSwitchToThread && !threadId && threads?.length) {
-      const selectInitialThread = async (threadId: string) => {
-        const { messages } = await onSwitchToThread(threadId)
-        setMessages(messages)
-        setIsRunning(false)
-      }
-      selectInitialThread(threads[0]._id)
-    }
-  }, [threadId, threads, onSwitchToThread])
-  // console.log('useEdenRuntime', { threadId, threads, messages })
-
   const handleSendMessage = async (messages: EdenMessage[]) => {
     try {
       setIsRunning(true)
@@ -55,7 +44,7 @@ export const useEdenRuntime = ({
   }
 
   const threadMessages = useExternalMessageConverter({
-    callback: convertEdenMessages,
+    callback: edenMessageConverter,
     messages,
     isRunning,
   })
@@ -69,10 +58,7 @@ export const useEdenRuntime = ({
     messages: threadMessages,
     setMessages,
     adapters: {
-      attachments: new CompositeAttachmentAdapter([
-        edenImageAttachmentAdapter,
-        // new SimpleTextAttachmentAdapter(),
-      ]),
+      attachments: new CompositeAttachmentAdapter([edenImageAttachmentAdapter]),
       threadList: {
         threadId,
         threads: threads?.map(thread => ({
@@ -97,6 +83,7 @@ export const useEdenRuntime = ({
     onNew: msg => {
       return handleSendMessage([
         {
+          id: uuidv4(),
           role: 'user',
           content:
             msg.content && msg.content.length

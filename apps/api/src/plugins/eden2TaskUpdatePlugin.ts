@@ -3,7 +3,7 @@ import { TaskV2Document } from '../models/v2/TaskV2'
 import { FastifyPluginAsync } from 'fastify'
 import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
 
-const WATCHED_COLLECTION = 'tasks2'
+const WATCHED_COLLECTION = 'tasks3'
 export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
   try {
     const task2Collection =

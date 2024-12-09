@@ -23,7 +23,7 @@ export interface FeedCreationsV2BaseArguments extends WebAPICallOptions {
   collectionId?: string | string[]
   conceptId?: string | string[]
   generatorId?: string | string[]
-  outputType?: string | string[]
+  output_type?: string | string[]
   isPrivate?: string
   name?: string
   maxDate?: string

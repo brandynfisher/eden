@@ -79,13 +79,12 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
   notify:
-    if: always()
     needs: [build-and-push-to-ghcr]
     runs-on: ubuntu-latest
+    if: ${{ always() }}
 
     steps:
       - name: Discord Webhook Trigger
         uses: sarisia/actions-status-discord@v1
-        if: always()
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}

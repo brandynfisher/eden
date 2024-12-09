@@ -49,7 +49,7 @@ export const useChatModelAdapter = (): ChatModelAdapter => {
       const response: AxiosResponse<ThreadsCreateResponse> = await axios.post(
         '/api/tasks/create',
         {
-          workflow: 'chat',
+          tool: 'chat',
           args: {
             agent_id: agentId,
             thread_id: threadId,

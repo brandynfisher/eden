@@ -262,5 +262,11 @@ export const downloadFiles = async (
 }
 
 export const getFileTypeByMimeType = (mimeType?: MimeType | string) => {
-  return mimeType ? (mimeType.split('/')[0] as FileType) : 'other'
+  const type = mimeType?.split('/')[0] || 'other'
+
+  if (type === 'application') {
+    return 'archive'
+  }
+
+  return type as FileType
 }

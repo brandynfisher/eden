@@ -1,5 +1,6 @@
 'use client'
 
+import TextClampMore from '@/components/text/text-clamp-more'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -198,29 +199,41 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
   return (
     <>
       <div className="relative p-6 bg-muted-darker rounded-md mx-4 mt-4">
-        {user?._id === collection?.user._id && (
-          <div className="absolute right-6 flex gap-x-2">
-            <Button variant="outline" size="icon" onClick={onShareCollection}>
-              <Share2Icon size={18} />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              <Edit2Icon size={18} />
-            </Button>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={onDeleteCollection}
-            >
-              <TrashIcon size={18} />
-            </Button>
-          </div>
-        )}
-        <h1 className="text-2xl font-semibold">{collection?.name}</h1>
-        <p className="text-sm mt-2 text-gray-200">{collection?.description}</p>
+        <div className="flex gap-2 flex-wrap w-full">
+          <h1 className="text-2xl font-semibold mr-auto flex gap-2 items-center">
+            {collection?.name}
+            {!collection?.public ? <LockIcon size={18} /> : null}
+          </h1>
+          {user?._id === collection?.user._id && (
+            <div className="flex gap-x-2">
+              <Button variant="outline" size="icon" onClick={onShareCollection}>
+                <Share2Icon size={18} />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                <Edit2Icon size={18} />
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={onDeleteCollection}
+              >
+                <TrashIcon size={18} />
+              </Button>
+            </div>
+          )}
+        </div>
+        <div className="min-w-0">
+          {collection?.description ? (
+            <TextClampMore
+              text={collection?.description}
+              className="text-sm break-words"
+            />
+          ) : null}
+        </div>
         <div className="flex items-center gap-x-2 mt-2 text-sm text-gray-300">
           Curated by{' '}
           <span>

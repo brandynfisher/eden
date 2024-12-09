@@ -52,25 +52,6 @@ const QuickAnimateDialog = () => {
         </Suspense>
       ),
     },
-    {
-      key: 'img2vid',
-      title: 'Animate',
-      content: (
-        <Suspense fallback={<FormSkeleton />}>
-          <QuickCreateForm
-            toolKey={'img2vid'}
-            exposedParameters={['num_frames']}
-            initValues={{
-              image:
-                getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '',
-            }}
-            onSubmitSuccess={() =>
-              dispatch(updateQuickAnimateModal({ isOpen: false }))
-            }
-          />
-        </Suspense>
-      ),
-    },
   ]
 
   return (

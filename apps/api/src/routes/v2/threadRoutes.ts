@@ -9,23 +9,25 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const threadRoutes: FastifyPluginAsync = async server => {
-  server.post('/v2/threads/create', {
+  server.post('/v2/threads', {
     schema: {
       tags: ['Threads'],
-      description: 'Create a thread',
+      description: 'Add a thread message ',
       security: [
         {
           apiKey: [],
         },
       ],
       body: {
-        threadId: Type.Optional(Type.String()),
-        agentId: Type.String(),
-        content: Type.String(),
+        thread_id: Type.Optional(Type.String()),
+        agent_id: Type.String(),
+        content: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),
       },
       response: {
-        200: Type.Any(),
+        200: Type.Object({
+          thread_id: Type.String(),
+        }),
         400: {
           // error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
@@ -72,7 +74,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => listThreads(server, request, reply),
   })
 
-  server.get('/v2/threads/:threadId', {
+  server.get('/v2/threads/:thread_id', {
     schema: {
       tags: ['Threads'],
       description: 'Get a thread',
@@ -82,7 +84,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         },
       ],
       params: {
-        threadId: Type.String(),
+        thread_id: Type.String(),
       },
       response: {
         200: Type.Object({

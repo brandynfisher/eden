@@ -1,4 +1,5 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
+import { CreationPresetLink } from '@/components/button/creation-preset-link'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
@@ -9,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { cn } from '@/lib/utils'
 import {
   updateAddToCollectionModal,
   updateQuickAnimateModal,
@@ -16,13 +18,13 @@ import {
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
+import { generateFilename } from '@/utils/slug.util'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { SizeIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
 import {
   BookmarkPlusIcon,
   ExternalLinkIcon,
-  FileSlidersIcon,
   FilmIcon,
   PictureInPicture2Icon,
   PictureInPictureIcon,
@@ -46,8 +48,9 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
   }
 
   return (
-    <>
-      <ActionsDropdown className={className} onOpenChange={setIsOpen}>
+    <div className={cn(['', className])}>
+      <CreationPresetLink creation={creation} hideLabel={true} />
+      <ActionsDropdown onOpenChange={setIsOpen}>
         {isOpen && (
           <CreationActionsContent
             creation={creation}
@@ -57,7 +60,7 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
           />
         )}
       </ActionsDropdown>
-    </>
+    </div>
   )
 }
 
@@ -170,16 +173,7 @@ const CreationActionsContent = ({
           </>
         ) : null}
         <DropdownMenuItem asChild disabled={!isSignedIn}>
-          <Link
-            className="cursor-pointer"
-            href={`/create/${creationData.mediaAttributes?.type}/${creationData.workflow}?creation=${creationData._id}`}
-            scroll={false}
-            shallow={true}
-          >
-            <FileSlidersIcon className="mr-2 h-4 w-4" />
-            Use as Preset
-            {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
-          </Link>
+          <CreationPresetLink creation={creationData} />
         </DropdownMenuItem>
       </DropdownMenuGroup>
       {creationData.user._id === userId && (
@@ -209,14 +203,11 @@ const CreationActionsContent = ({
             <DownloadActionItem
               type="creation"
               originalFileUrl={creationData.url || ''}
-              saveAsFileName={`${creationData.user.username}${
-                creationData.args.prompt
-                  ? `_${creationData.args.prompt
-                      .substring(0, 64)
-                      .trim()
-                      .replace(/\s+/g, '-')}`
-                  : ``
-              }_${creationData._id}`}
+              saveAsFileName={generateFilename(
+                creationData.user.username,
+                creationData.task.args.prompt?.substring(0, 64).trim(),
+                creationData._id,
+              )}
             />
           </DropdownMenuGroup>
         </>

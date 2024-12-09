@@ -1,26 +1,17 @@
 import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
 import TaskActionsMenu from '@/components/button/task-actions-menu'
-import LoadingIndicator from '@/components/loading-indicator'
-import { Button } from '@/components/ui/button'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { cn } from '@/lib/utils'
-import {
-  TaskV2,
-  TaskV2Result,
-  TasksV2PublishResponse,
-} from '@edenlabs/eden-sdk'
+import { TaskV2, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import axios, { AxiosError, AxiosResponse } from 'axios'
-import { BookHeartIcon } from 'lucide-react'
-import Link from 'next/link'
-import React, { Suspense, useState } from 'react'
-import { toast } from 'sonner'
+import React, { Suspense } from 'react'
 
 type Props = {
   task: TaskV2
   result: TaskV2Result
   index: number
+  output: TasksV2ResultOutput
   queryKey: QueryKey
   className?: string
 }
@@ -29,119 +20,30 @@ const TimelineItemResultTools = ({
   task,
   result,
   index,
+  output,
   queryKey,
   className,
 }: Props) => {
-  const [isPublishing, setIsPublishing] = useState(false)
-  const publishTaskResult = async (taskId: string, originalFileUrl: string) => {
-    setIsPublishing(true)
-    const publishToast = toast(
-      <div className="flex gap-2 items-center justify-center">
-        <LoadingIndicator className="h-6" />
-        Saving creation...
-      </div>,
-      { dismissible: true },
-    )
-
-    try {
-      const response: AxiosResponse<TasksV2PublishResponse> = await axios.post(
-        `/api/tasks/publish`,
-        {
-          taskId,
-          resultFilename: originalFileUrl,
-        },
-      )
-
-      const responseData = response.data
-
-      // console.log({ responseData })
-
-      toast.success(`Saved`, {
-        id: publishToast,
-        description: 'Creation was added to your profile',
-        action: {
-          label: (
-            <Link href={`/creations/${responseData?.creation?._id}`}>Show</Link>
-          ),
-          onClick: () =>
-            console.log(`/creations/${responseData?.creation?._id}`),
-        },
-        dismissible: true,
-        richColors: true,
-      })
-    } catch (e: unknown) {
-      toast.error(`Failed to save`, {
-        id: publishToast,
-        description: JSON.stringify(
-          (e as AxiosError<{ message: string }>)?.response?.data?.message,
-        ),
-        dismissible: true,
-        richColors: true,
-      })
-    } finally {
-      setIsPublishing(false)
-    }
-  }
-
   return (
     <div
       data-test-id="timeline-item-result-tools"
       className={cn([`relative text-sm mt-2`, className])}
     >
       <div className="flex flex-wrap gap-2">
-        {task.output_type !== 'lora' && !result.published ? (
-          <Button
-            variant={result.published ? 'ghost' : 'outline'}
-            size="sm"
-            title={
-              result.published
-                ? 'Creation was saved'
-                : `Save creation to profile`
-            }
-            className={`px-2 flex gap-2 items-center justify-center ${
-              result.published ? 'cursor-default' : ''
-            }`}
-            onClick={
-              result.published
-                ? undefined
-                : () =>
-                    publishTaskResult(
-                      task._id,
-                      result.filename || result.url || '',
-                    )
-            }
-            disabled={isPublishing}
-          >
-            {!result.published ? (
-              <>
-                <BookHeartIcon size={20} />
-                Save
-              </>
-            ) : isPublishing ? (
-              <>
-                <LoadingIndicator className="h-4 w-4" />
-                Saving
-              </>
-            ) : null}
-          </Button>
-        ) : (
-          <>
-            {result.model ? (
-              <PrivacyToggle
-                queryKey={queryKey}
-                type={'model'}
-                item={result.model}
-              />
-            ) : null}
-            {result.creation ? (
-              <PrivacyToggle
-                queryKey={queryKey}
-                type={'creation'}
-                item={result.creation}
-              />
-            ) : null}
-          </>
-        )}
+        {result.model ? (
+          <PrivacyToggle
+            queryKey={queryKey}
+            type={'model'}
+            item={result.model}
+          />
+        ) : null}
+        {result.creation ? (
+          <PrivacyToggle
+            queryKey={queryKey}
+            type={'creation'}
+            item={result.creation}
+          />
+        ) : null}
         <Suspense>
           {task.output_type === 'lora' && result.model ? (
             <ModelActionsMenu
@@ -160,6 +62,7 @@ const TimelineItemResultTools = ({
               task={task}
               result={result}
               index={index}
+              output={output}
               className="ml-auto"
               // queryKey={queryKey}
             />

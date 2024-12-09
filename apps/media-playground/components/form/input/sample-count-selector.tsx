@@ -5,11 +5,11 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
-import { GeneratorParameterV2 } from '@edenlabs/eden-sdk'
+import { ToolParameterV2 } from '@edenlabs/eden-sdk'
 import { LayoutGridIcon } from 'lucide-react'
 
 type Props = {
-  parameter: GeneratorParameterV2
+  parameter: ToolParameterV2
 }
 
 const SampleCountSelector = ({ parameter }: Props) => {

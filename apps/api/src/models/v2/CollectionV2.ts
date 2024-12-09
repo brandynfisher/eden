@@ -43,7 +43,7 @@ export const collectionSchema = new Schema<CollectionV2Document>(
     creations: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'creations2',
+        ref: 'creations3',
         default: [],
       },
     ],
@@ -56,7 +56,7 @@ export const collectionSchema = new Schema<CollectionV2Document>(
     ],
     coverCreation: {
       type: Schema.Types.ObjectId,
-      ref: 'creations2',
+      ref: 'creations3',
     },
     deleted: {
       type: Boolean,
