@@ -40,7 +40,7 @@ export const getCreation = async (
     })
   }
 
-  console.log({ creation })
+  // console.log({ creation })
 
   if (!creation.public) {
     if (creation.user._id.toString() !== request.user?.userId.toString()) {
