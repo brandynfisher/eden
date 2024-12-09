@@ -59,9 +59,11 @@ const ModelMiniCard = ({ modelId, children, className }: Props) => {
             <Link href={`/models/${model._id}`} prefetch={false}>
               <div className="flex">
                 {model.name}
-                <Badge className="ml-2 h-4 px-2" variant="outline">
-                  {model.task.args.concept_mode}
-                </Badge>
+                {model.args.concept_mode ? (
+                  <Badge className="ml-2 h-4 px-2" variant="outline">
+                    {model.args.concept_mode}
+                  </Badge>
+                ) : null}
               </div>
             </Link>
             <div className="text-muted-foreground flex gap-2">

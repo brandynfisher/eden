@@ -6,7 +6,7 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
-import { TaskV2 } from './TasksV2'
+import { TaskV2, TaskV2Args } from './TasksV2'
 import { BaseModelName } from './ToolsV2'
 import { AxiosRequestConfig } from 'axios'
 
@@ -85,6 +85,7 @@ export type ModelV2 = {
   name: string
   user: Creator
   task: TaskV2
+  args: TaskV2Args
   thumbnail: string
   slug: string
   checkpoint: string

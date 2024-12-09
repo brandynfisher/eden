@@ -43,9 +43,12 @@ const ModelSelectorModal = ({
       description: (
         <div className="text-xs text-foreground">
           <div>
-            {model.name} - {model.task.args.concept_mode}
+            {model.name} -{' '}
+            {model.args.concept_mode ? model.args.concept_mode : null}
           </div>
-          <div>{model.task.args.sd_model_version}</div>
+          {model.args.sd_model_version ? (
+            <div>{model.args.sd_model_version}</div>
+          ) : null}
         </div>
       ),
       dismissible: true,
