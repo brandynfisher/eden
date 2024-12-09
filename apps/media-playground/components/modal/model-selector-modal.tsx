@@ -59,7 +59,7 @@ const ModelSelectorModal = ({
   return (
     <Dialog>
       <DialogTrigger ref={triggerRef} asChild>
-        <Button type="button" variant="outline" className="!mt-0">
+        <Button type="button" variant="outline" className="mt-2">
           Select model
         </Button>
       </DialogTrigger>

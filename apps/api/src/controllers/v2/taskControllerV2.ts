@@ -107,6 +107,16 @@ export const createTask = async (
   server.log.info('> modal::request::create')
   server.log.info(modalRequest)
 
+  if (args.lora) {
+    const lora = await ModelV2.findById(args.lora)
+    const isOwner = lora?.user.toString() === userId.toString()
+    if (!isOwner && !lora?.public) {
+      args.use_lora = false
+      delete args.lora
+      delete args.lora_strength
+    }
+  }
+
   try {
     const modalResponse = await axios.post(
       modalRequest.endpoint,
