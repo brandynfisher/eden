@@ -182,7 +182,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <AccordionContent>
             {item && remainingArgs ? (
               <ParameterTable
-                taskId={item.task.toString()}
+                taskId={item.task._id.toString()}
                 args={remainingArgs}
               />
             ) : (
