@@ -1,4 +1,3 @@
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import {
   createAgent,
   deleteAgent,
@@ -6,6 +5,7 @@ import {
   updateAgent,
 } from '../controllers/agentController'
 import { isAuthEden2 } from '../middleware/authMiddleware'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -52,6 +52,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         instructions: Type.String(),
         tools: Type.Optional(Type.Array(Type.String())),
         discordId: Type.Optional(Type.String()),
+        modelId: Type.Optional(Type.String()),
       }),
       response: {
         200: {
@@ -87,6 +88,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         tools: Type.Optional(Type.Array(Type.String())),
         discordId: Type.Optional(Type.String()),
         public: Type.Optional(Type.Boolean()),
+        modelId: Type.Optional(Type.String()),
       }),
       response: {
         200: Type.Object({

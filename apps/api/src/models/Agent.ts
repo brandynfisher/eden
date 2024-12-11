@@ -1,4 +1,5 @@
 import { UserDocument } from './Creator'
+import { ModelV2Document } from './v2/ModelV2'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import mongooseDelete, {
@@ -17,6 +18,7 @@ export interface AgentSchema {
   instructions: string
   tools?: string[]
   discordId?: string
+  model?: ModelV2Document
   createdAt: Date
   updatedAt: Date
   public?: boolean
@@ -68,6 +70,11 @@ export const agentSchema = new Schema<AgentDocument>(
     discordId: {
       type: String,
       maxlength: 64,
+    },
+    model: {
+      type: Schema.Types.ObjectId,
+      ref: 'models',
+      required: false,
     },
     deleted: {
       type: Boolean,
