@@ -3,7 +3,7 @@ import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import { IntermediateOutputsDialog } from '@/components/timeline/intermediate-outputs-dialog'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { cn } from '@/lib/utils'
-import { MediaOutput, TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
+import { TaskV2, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import React from 'react'
 
@@ -16,12 +16,10 @@ type Props = {
 
 export const MediaResultOutput = ({
   task,
-  result,
   output,
 }: {
   task: TaskV2
-  result: TaskV2Result
-  output: MediaOutput
+  output: TasksV2ResultOutput
 }) => {
   return (
     <div
@@ -45,8 +43,8 @@ export const MediaResultOutput = ({
         // height: '-webkit-fill-available',
       }}
     >
-      {!result.creation?.public ? <PrivateIcon /> : null}
-      {result.creation === null || result.creation?.deleted ? (
+      {!output.creation?.public ? <PrivateIcon /> : null}
+      {output.creation === null || output.creation?.deleted ? (
         <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
           <div className="p-1 px-2 border border-destructive/50 bg-destructive/20 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
             deleted
@@ -94,7 +92,7 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
                 : '',
             ])}
           >
-            <MediaResultOutput task={task} result={result} output={output} />
+            <MediaResultOutput task={task} output={output} />
 
             {result.intermediateOutputs ? (
               <IntermediateOutputsDialog

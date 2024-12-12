@@ -66,7 +66,7 @@ export const getModel = async (
     })
     .populate({
       path: 'task',
-      select: '_id args -args.lora_training_urls',
+      select: '_id args',
     })
 
   if (!model) {

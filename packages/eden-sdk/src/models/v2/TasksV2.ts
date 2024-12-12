@@ -183,6 +183,8 @@ export type MediaOutput = {
 
 export type TasksV2ResultOutput = MediaOutput & {
   mediaAttributes?: MediaAttributes & { type: ToolOutputTypeV2 }
+  model?: ModelV2
+  creation?: CreationV2
 }
 
 export type TaskV2Result = {
@@ -192,8 +194,6 @@ export type TaskV2Result = {
     controlnet_signal?: MediaOutput[]
   }
   metadata?: string | null
-  model?: ModelV2
-  creation?: CreationV2
 }
 
 export type TaskV2 = {

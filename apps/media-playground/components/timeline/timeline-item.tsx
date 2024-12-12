@@ -168,23 +168,25 @@ const TimelineItem = ({ item, queryKey }: Props) => {
               {item.status === 'completed' ? (
                 item.result && Array.isArray(item.result) ? (
                   item.result.map((result, index) =>
-                    result.model === undefined ? (
-                      <TimelineItemMediaResult
-                        queryKey={queryKey}
-                        key={`${item._id}_${index}`}
-                        index={index}
-                        task={item}
-                        result={result}
-                      />
-                    ) : (
-                      // api populates a model property with full model document
-                      <TimelineItemModelResult
-                        queryKey={queryKey}
-                        key={`${item._id}_${index}`}
-                        index={index}
-                        result={result}
-                        task={item}
-                      />
+                    result.output.map(output =>
+                      output.model === undefined ? (
+                        <TimelineItemMediaResult
+                          queryKey={queryKey}
+                          key={`${item._id}_${index}`}
+                          index={index}
+                          task={item}
+                          result={result}
+                        />
+                      ) : (
+                        // api populates a model property with full model document
+                        <TimelineItemModelResult
+                          queryKey={queryKey}
+                          key={`${item._id}_${index}`}
+                          index={index}
+                          result={result}
+                          task={item}
+                        />
+                      ),
                     ),
                   )
                 ) : (

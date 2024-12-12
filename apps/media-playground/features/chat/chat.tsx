@@ -23,8 +23,8 @@ import {
   useThreadList,
 } from '@assistant-ui/react'
 import { TooltipContentProps } from '@radix-ui/react-tooltip'
-import { ArchiveIcon, DeleteIcon, EditIcon, MenuIcon } from 'lucide-react'
-import { FC } from 'react'
+import { EditIcon, MenuIcon } from 'lucide-react'
+import { FC, useEffect } from 'react'
 
 type ButtonWithTooltipProps = ButtonProps & {
   tooltip: string
@@ -83,26 +83,26 @@ const ThreadListItem: FC = () => {
       <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate">
         <ThreadListItemPrimitive.Title fallback="Untitled" />
       </ThreadListItemPrimitive.Trigger>
-      <ThreadListItemPrimitive.Archive asChild>
-        <ButtonWithTooltip
-          variant="ghost"
-          className="hover:text-foreground/60 ml-auto h-auto p-0"
-          tooltip="Archive"
-          disabled={true}
-        >
-          <ArchiveIcon className="size-4" />
-        </ButtonWithTooltip>
-      </ThreadListItemPrimitive.Archive>
-      <ThreadListItemPrimitive.Delete asChild>
-        <ButtonWithTooltip
-          variant="ghost"
-          className="hover:text-foreground/60 ml-auto h-auto p-0"
-          tooltip="Delete"
-          disabled={true}
-        >
-          <DeleteIcon className="size-4" />
-        </ButtonWithTooltip>
-      </ThreadListItemPrimitive.Delete>
+      {/*<ThreadListItemPrimitive.Archive asChild>*/}
+      {/*  <ButtonWithTooltip*/}
+      {/*    variant="ghost"*/}
+      {/*    className="hover:text-foreground/60 ml-auto h-auto p-0"*/}
+      {/*    tooltip="Archive"*/}
+      {/*    disabled={true}*/}
+      {/*  >*/}
+      {/*    <ArchiveIcon className="size-4" />*/}
+      {/*  </ButtonWithTooltip>*/}
+      {/*</ThreadListItemPrimitive.Archive>*/}
+      {/*<ThreadListItemPrimitive.Delete asChild>*/}
+      {/*  <ButtonWithTooltip*/}
+      {/*    variant="ghost"*/}
+      {/*    className="hover:text-foreground/60 ml-auto h-auto p-0"*/}
+      {/*    tooltip="Delete"*/}
+      {/*    disabled={true}*/}
+      {/*  >*/}
+      {/*    <DeleteIcon className="size-4" />*/}
+      {/*  </ButtonWithTooltip>*/}
+      {/*</ThreadListItemPrimitive.Delete>*/}
     </ThreadListItemPrimitive.Root>
   )
 }
@@ -147,6 +147,13 @@ type Props = {
 }
 
 const Chat: FC<Props> = ({ assistant }) => {
+  useEffect(() => {
+    document.body.classList.add('overflow-hidden')
+    return () => {
+      document.body.classList.remove('overflow-hidden')
+    }
+  }, [])
+
   const sideStyle = 'bg-muted/40 px-3 py-2'
   const topStyle = 'border-b'
   const leftStyle = 'border-r hidden md:block'
