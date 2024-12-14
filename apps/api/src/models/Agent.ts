@@ -44,10 +44,11 @@ const AgentSchema = new Schema<AgentDocument>(
     },
   },
   {
+    discriminatorKey: 'type',
     timestamps: true,
   },
 )
 
 AgentSchema.index({ owner: 1 })
 
-export const Agent = BaseUser.discriminator<AgentDocument>('Agent', AgentSchema)
+export const Agent = BaseUser.discriminator<AgentDocument>('agent', AgentSchema)

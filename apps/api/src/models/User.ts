@@ -77,10 +77,11 @@ const UserSchema = new Schema<UserDocument>(
     },
   },
   {
+    discriminatorKey: 'type',
     timestamps: true,
   },
 )
 
 UserSchema.index({ userId: 1 })
 
-export const User = BaseUser.discriminator<UserDocument>('User', UserSchema)
+export const User = BaseUser.discriminator<UserDocument>('user', UserSchema)

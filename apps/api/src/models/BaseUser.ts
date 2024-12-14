@@ -79,6 +79,7 @@ const BaseUserSchema = new Schema<BaseUserDocument>(
     },
   },
   {
+    discriminatorKey: 'type',
     timestamps: true,
   },
 )
