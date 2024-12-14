@@ -1,21 +1,21 @@
 'use client'
 
-import AssistantCard from '@/components/card/assistant-card'
+import AgentCard from '@/components/card/agent-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import CreateAssistantSheet from '@/features/assistant/create-assistant-sheet'
+import CreateAgentSheet from '@/features/agent/create-agent-sheet'
 import { RowItem } from '@/lib/query/cache-updates'
-import { Agent, FeedAgentsCursorArguments } from '@edenlabs/eden-sdk'
+import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 type Props = {
-  query?: FeedAgentsCursorArguments
+  query?: FeedAgentCursorArguments
   minCols?: number
   maxCols?: number
 }
 
-const AssistantsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
-  const defaultQuery: FeedAgentsCursorArguments = useMemo(
+const AgentsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
+  const defaultQuery: FeedAgentCursorArguments = useMemo(
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
@@ -29,7 +29,7 @@ const AssistantsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
     return { ...defaultQuery, ...queryProp }
   }, [defaultQuery, queryProp])
 
-  const queryKey = useMemo(() => ['assistants', query], [query])
+  const queryKey = useMemo(() => ['agents', query], [query])
 
   const onCreated = async () => {
     await queryClient.invalidateQueries({
@@ -39,20 +39,20 @@ const AssistantsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
 
   return (
     <div className="space-y-4">
-      <CreateAssistantSheet onCreated={onCreated} />
+      <CreateAgentSheet onCreated={onCreated} />
       <MasonryVirtualizerVertical
         key={JSON.stringify(queryKey)}
-        apiEndpoint={'/api/feed/assistants'}
+        apiEndpoint={'/api/feed/agents'}
         queryKey={queryKey}
         query={query}
         minCols={minCols || 2}
         maxCols={maxCols || undefined}
         render={(item: RowItem) => (
-          <AssistantCard assistant={item as Agent} queryKey={queryKey} />
+          <AgentCard agent={item as Agent} queryKey={queryKey} />
         )}
       />
     </div>
   )
 }
 
-export default AssistantsFeed
+export default AgentsFeed

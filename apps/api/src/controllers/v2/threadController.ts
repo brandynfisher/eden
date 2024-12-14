@@ -1,4 +1,4 @@
-import { User } from '../../models/Creator'
+import { User } from '../../models/User'
 import { Thread as ThreadModel } from '../../models/v2/Thread'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import ThreadRepository from '../../repositories/ThreadRepository'

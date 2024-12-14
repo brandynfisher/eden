@@ -161,6 +161,9 @@ export const createCursorPaginationRoute = (
   if (query.name && query.name.length > 0) {
     filters.push({ name: String(query.name) })
   }
+  if (query.owner) {
+    filters.push({ owner: String(query.owner) })
+  }
   if (query.creation) {
     filters.push({ creation: String(query.creation) })
   }

@@ -256,7 +256,7 @@ const reactionsPreAggregatePipeline = (
 const userLookup: PipelineStage[] = [
   {
     $lookup: {
-      from: 'users',
+      from: 'users3',
       localField: 'user',
       foreignField: '_id',
       as: 'user',

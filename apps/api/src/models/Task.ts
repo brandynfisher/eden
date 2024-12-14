@@ -1,8 +1,8 @@
 import { CharacterDocument } from './Character'
 import { ConceptDocument } from './Concept'
 import { CreationDocument } from './Creation'
-import { UserDocument } from './Creator'
 import { GeneratorDocument } from './Generator'
+import { UserDocument } from './User'
 import { TaskAttributes } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
@@ -54,7 +54,7 @@ const task = new Schema<TaskDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
     },
     character: {
       type: Schema.Types.ObjectId,

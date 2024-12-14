@@ -1,7 +1,7 @@
 import { eden2EarlyAccessCheck, isAllowedAccess } from '../lib/authorization'
 import { checkUserFlags } from '../lib/data'
 import { ApiKey } from '../models/ApiKey'
-import { User } from '../models/Creator'
+import { User } from '../models/User'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 

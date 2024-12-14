@@ -1,16 +1,16 @@
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import {
   createAgent,
   deleteAgent,
   getAgent,
   updateAgent,
-} from '../controllers/agentController'
-import { isAuthEden2 } from '../middleware/authMiddleware'
+} from '../../controllers/agentController'
+import { isAuthEden2 } from '../../middleware/authMiddleware'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const agentRoutes: FastifyPluginAsync = async server => {
-  server.get('/agents/:agentId', {
+  server.get('/v2/agents/:agentId', {
     schema: {
       tags: ['Agents'],
       description: 'Get an agent',
@@ -35,7 +35,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => getAgent(server, request, reply),
   })
 
-  server.post('/agents', {
+  server.post('/v2/agents', {
     schema: {
       tags: ['Agents'],
       description: 'Create an agent',
@@ -66,7 +66,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => createAgent(server, request, reply),
   })
 
-  server.patch('/agents/:agentId', {
+  server.patch('/v2/agents/:agentId', {
     schema: {
       tags: ['Agents'],
       description: 'Update an agent',
@@ -101,7 +101,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => updateAgent(server, request, reply),
   })
 
-  server.delete('/agents/:agentId', {
+  server.delete('/v2/agents/:agentId', {
     schema: {
       tags: ['Agents'],
       description: 'Delete an agent',

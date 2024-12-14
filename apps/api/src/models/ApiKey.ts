@@ -1,5 +1,5 @@
 import { CharacterDocument } from './Character'
-import { UserDocument } from './Creator'
+import { UserDocument } from './User'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
@@ -27,7 +27,7 @@ const apiKey = new Schema<ApiKeyDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     character: {

@@ -173,9 +173,9 @@ const AccountDropdown = () => {
         </DropdownMenuItem>
         {hasAssistantAccess() && (
           <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}?tab=assistants`}>
+            <Link href={`/creators/${user?.username}?tab=agents`}>
               <BotIcon className="mr-2 h-4 w-4" />
-              <span>Assistants</span>
+              <span>Agents</span>
             </Link>
           </DropdownMenuItem>
         )}

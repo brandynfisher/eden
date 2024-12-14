@@ -14,16 +14,16 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 
 type Props = {
-  assistant: Agent
+  agent: Agent
   queryKey: QueryKey
   className?: string
 }
 
-const AssistantActionsMenu = ({ assistant, queryKey, className }: Props) => {
+const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
   const { user } = useAuthState()
   const [isOpen, setIsOpen] = useState(false)
 
-  if (!assistant) {
+  if (!agent) {
     return null
   }
 
@@ -33,27 +33,27 @@ const AssistantActionsMenu = ({ assistant, queryKey, className }: Props) => {
         <>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link href={`/assistants/${assistant._id}`}>
+              <Link href={`/assistants/${agent._id}`}>
                 <ExternalLinkIcon className="mr-2 h-4 w-4" />
                 View Details
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          {assistant.user._id === user?._id && (
+          {agent.owner._id === user?._id && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <PrivacyActionItem
-                  type="assistant"
-                  item={assistant}
+                  type="agent"
+                  item={agent}
                   queryKey={queryKey}
                 />
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DeleteActionItem
-                  type="assistant"
-                  item={assistant}
+                  type="agent"
+                  item={agent}
                   queryKey={queryKey}
                 />
               </DropdownMenuGroup>
@@ -65,4 +65,4 @@ const AssistantActionsMenu = ({ assistant, queryKey, className }: Props) => {
   )
 }
 
-export default AssistantActionsMenu
+export default AgentActionsMenu

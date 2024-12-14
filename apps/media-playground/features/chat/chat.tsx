@@ -3,6 +3,7 @@
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { Button, ButtonProps } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
   TooltipContent,
@@ -14,9 +15,9 @@ import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { AssistantV2 } from '@/types/Assistant'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
@@ -143,10 +144,15 @@ const Header: FC = () => {
 }
 
 type Props = {
-  assistant: AssistantV2
+  agentId: string
+  threadId?: string
 }
 
-const Chat: FC<Props> = ({ assistant }) => {
+const Chat: FC<Props> = ({ agentId }) => {
+  const { agent } = useAgentQuery({ key: agentId, enabled: !!agentId })
+
+  console.log(agent)
+
   useEffect(() => {
     document.body.classList.add('overflow-hidden')
     return () => {
@@ -157,6 +163,22 @@ const Chat: FC<Props> = ({ assistant }) => {
   const sideStyle = 'bg-muted/40 px-3 py-2'
   const topStyle = 'border-b'
   const leftStyle = 'border-r hidden md:block'
+
+  if (!agent) {
+    return (
+      <div className="flex flex-col flex-1 p-2 gap-2 max-h-screen h-full ">
+        <Skeleton className={'w-full h-12'} />
+
+        <div className="flex flex-1 gap-2 h-full">
+          <Skeleton className={'w-[360px]'} />
+          <div className="flex flex-col w-full gap-2">
+            <Skeleton className={'w-full h-12'} />
+            <Skeleton className={'mt-auto w-full h-full'} />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="grid h-[calc(100dvh_-_64px)] w-full grid-flow-col grid-rows-[auto_1fr] md:grid-cols-[250px_1fr]">
@@ -191,12 +213,12 @@ const Chat: FC<Props> = ({ assistant }) => {
                 prompt: 'Use the provided logo image to animate it',
               },
             ],
-            message: assistant.welcomeText,
+            message: 'What do you want to create today?',
           }}
           assistantAvatar={{
-            src: getCloudfrontOriginalUrl(assistant.image),
-            fallback: assistant.name,
-            alt: assistant.name,
+            src: getCloudfrontOriginalUrl(agent.userImage),
+            fallback: agent.username,
+            alt: agent.username,
           }}
           assistantMessage={{
             allowReload: false,

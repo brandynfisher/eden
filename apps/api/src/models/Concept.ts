@@ -1,6 +1,6 @@
 import { VisibilitySchema } from '../types/baseSchemas'
-import { UserDocument } from './Creator'
 import { TaskDocument } from './Task'
+import { UserDocument } from './User'
 import { MediaType } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
@@ -60,7 +60,7 @@ const concept = new Schema<ConceptDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     task: {

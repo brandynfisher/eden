@@ -11,7 +11,12 @@ import {
   SubscriptionTier,
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyInstance, FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify'
+import {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+  HookHandlerDoneFunction,
+} from 'fastify'
 
 export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
@@ -164,7 +169,7 @@ export const assistantAccessCheck = (
   const hasAccess = hasFeatureFlag(request, FeatureFlag.AssistantAccess)
 
   if (!hasAccess) {
-    throw new Error('User not whitelisted for "Assistant Access"')
+    throw new Error('User not whitelisted for "Agent Access"')
   }
 
   if (done) done()

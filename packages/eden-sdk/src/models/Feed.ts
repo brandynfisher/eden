@@ -66,6 +66,7 @@ export type FeedCursorRouteQueryParams = {
   filter?: {
     name?: string | string[]
     user?: string | string[]
+    owner?: string | string[]
     character?: string | string[]
     collection?: string | string[]
     creation?: string | string[]

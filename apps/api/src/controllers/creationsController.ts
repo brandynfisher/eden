@@ -1,8 +1,8 @@
 import { Collection } from '../models/Collection'
 import { Creation, CreationDocument } from '../models/Creation'
-import { User } from '../models/Creator'
 import { Rating } from '../models/Rating'
 import { Reaction } from '../models/Reaction'
+import { User } from '../models/User'
 import CreationRepository from '../repositories/CreationRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 import {

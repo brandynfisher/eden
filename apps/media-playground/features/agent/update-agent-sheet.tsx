@@ -19,15 +19,16 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
+import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { PlusIcon } from 'lucide-react'
+import { Edit2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const createAssistantSchema = z.object({
+const updateAgentSchema = z.object({
   name: z.string(),
   key: z.string(),
   image: z.string().optional(),
@@ -36,38 +37,40 @@ const createAssistantSchema = z.object({
   discordId: z.string().optional(),
 })
 
-type CreateAssistantDto = z.infer<typeof createAssistantSchema>
+type UpdateAgentDto = z.infer<typeof updateAgentSchema>
 
-type CreateAssistantSheetProps = {
-  onCreated: () => void
+type UpdateAgentSheetProps = {
+  agent: Agent
+  onUpdate: () => void
 }
 
-const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
+const UpdateAgentSheet = ({ agent, onUpdate }: UpdateAgentSheetProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const form = useForm<CreateAssistantDto>({
-    resolver: zodResolver(createAssistantSchema),
+  const form = useForm<UpdateAgentDto>({
+    resolver: zodResolver(updateAgentSchema),
     defaultValues: {
-      name: '',
-      key: '',
-      description: '',
-      instructions: '',
-      discordId: '',
+      name: agent.name,
+      key: agent.key,
+      image: agent.image,
+      description: agent.description,
+      instructions: agent.instructions,
+      discordId: agent.discordId,
     },
   })
 
-  const onSubmit = async (data: CreateAssistantDto) => {
+  const onSubmit = async (data: UpdateAgentDto) => {
     try {
-      await axios.post('/api/assistants', data)
-      toast.success('Assistant created successfully', {
-        description: `"${data.name}" has been created successfully`,
+      await axios.patch(`/api/agents/${agent._id}`, data)
+      toast.success('Agent updated successfully', {
+        description: `"${data.name}" has been updated successfully`,
         richColors: true,
         dismissible: true,
       })
-      onCreated()
+      onUpdate()
       onOpenChange(false)
     } catch (error) {
-      toast.error('Assistant creation failed', {
+      toast.error('Agent update failed', {
         description:
           // @ts-ignore
           (error as AxiosError).response?.data?.message ||
@@ -86,9 +89,8 @@ const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button className="gap-x-2" type="button" variant="outline">
-          <PlusIcon className="size-4" />
-          <p className="text-sm font-semibold">Create Assistant</p>
+        <Button variant="outline" size="icon">
+          <Edit2Icon size={18} />
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -96,10 +98,8 @@ const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
         className="overflow-y-auto w-full sm:!max-w-2xl"
       >
         <SheetHeader>
-          <SheetTitle>Create an Assistant</SheetTitle>
-          <SheetDescription>
-            Create an assistant to help you with your tasks.
-          </SheetDescription>
+          <SheetTitle>Update Agent</SheetTitle>
+          <SheetDescription>Update your agent</SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form
@@ -167,7 +167,7 @@ const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
                   <FormControl>
                     <Textarea
                       rows={4}
-                      placeholder="Abraham is a helpful assistant"
+                      placeholder="Abraham is a helpful agent"
                       {...field}
                     />
                   </FormControl>
@@ -184,7 +184,7 @@ const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
                   <FormControl>
                     <Textarea
                       rows={4}
-                      placeholder="Instruct your assistant how to act"
+                      placeholder="Instruct your agent how to act"
                       {...field}
                     />
                   </FormControl>
@@ -200,7 +200,7 @@ const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
                   <FormLabel>Discord ID (Optional)</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter the Discord ID of your assistant"
+                      placeholder="Enter the Discord ID of your agent"
                       {...field}
                     />
                   </FormControl>
@@ -215,7 +215,7 @@ const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
                   !form.formState.isValid || form.formState.isSubmitting
                 }
               >
-                Create Assistant
+                Update Agent
               </Button>
             </SheetFooter>
           </form>
@@ -225,4 +225,4 @@ const CreateAssistantSheet = ({ onCreated }: CreateAssistantSheetProps) => {
   )
 }
 
-export default CreateAssistantSheet
+export default UpdateAgentSheet

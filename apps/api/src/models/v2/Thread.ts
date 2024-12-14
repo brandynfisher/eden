@@ -1,4 +1,4 @@
-import { UserDocument } from '../Creator'
+import { UserDocument } from '../User'
 import { ThreadMessage } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
@@ -27,7 +27,7 @@ export const threadSchema = new Schema<ThreadDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     messages: {

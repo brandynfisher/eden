@@ -1,6 +1,6 @@
 import { randomId } from '../lib/util'
 import { ApiKey, ApiKeyInput } from '../models/ApiKey'
-import { User } from '../models/Creator'
+import { User } from '../models/User'
 import ApiKeyRepository from '../repositories/ApiKeyRepository'
 import {
   ApiKeysCreateArguments,

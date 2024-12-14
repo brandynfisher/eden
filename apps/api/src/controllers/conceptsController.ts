@@ -1,7 +1,7 @@
 import { conceptExportPermissionCheck } from '../lib/authorization'
 import { Concept, ConceptDocument } from '../models/Concept'
-import { User } from '../models/Creator'
 import { Reaction } from '../models/Reaction'
+import { User } from '../models/User'
 import ConceptRepository from '../repositories/ConceptRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 import {

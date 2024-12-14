@@ -38,7 +38,7 @@ type PreviousData =
   | undefined
 
 type MutationOptions = {
-  type: 'creation' | 'model' | 'collection' | 'assistant'
+  type: 'creation' | 'model' | 'collection' | 'agent'
   queryKey: QueryKey
   onSuccessMessage?: string
 }
@@ -68,7 +68,7 @@ export function useDeleteMutation({
           : { [`${type}Ids`]: ids, deleted: true }
 
       let method = 'PATCH'
-      if (type === 'collection' || type === 'assistant') {
+      if (type === 'collection' || type === 'agent') {
         method = 'DELETE'
       }
 

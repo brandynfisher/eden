@@ -1,5 +1,5 @@
 import { taskRateLimitCheck } from '../../lib/ratelimit'
-import { User } from '../../models/Creator'
+import { User } from '../../models/User'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import { ThreadDocument } from '../../models/v2/Thread'
 import { ToolV2 } from '../../models/v2/ToolV2'
@@ -243,7 +243,7 @@ export const listTasks = async (
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
     path: 'result.output.creation.user',
-    model: 'users',
+    model: 'users3',
     select: '_id username userId userImage',
   })
 
@@ -260,7 +260,7 @@ export const listTasks = async (
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
     path: 'result.output.model.user',
-    model: 'users',
+    model: 'users3',
     select: '_id username userId userImage',
   })
 
@@ -404,7 +404,7 @@ export const getTask = async (
     })
     .populate({
       path: 'result.output.creation.user',
-      model: 'users',
+      model: 'users3',
       select: '_id username userId userImage',
     })
     .populate({
@@ -418,12 +418,12 @@ export const getTask = async (
     })
     .populate({
       path: 'result.output.model.user',
-      model: 'users',
+      model: 'users3',
       select: '_id username userId userImage',
     })
     .populate({
       path: 'result.output.model.user',
-      model: 'users',
+      model: 'users3',
       select: '_id username userId userImage',
     })
 
@@ -622,7 +622,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
 
         await tasksRepository.model.populate(task, {
           path: 'result.creation.user',
-          model: 'users',
+          model: 'users3',
           select: '_id username userId userImage',
         })
 
@@ -633,7 +633,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
 
         await tasksRepository.model.populate(task, {
           path: 'result.model.user',
-          model: 'users',
+          model: 'users3',
           select: '_id username userId userImage',
         })
 

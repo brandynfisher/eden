@@ -3,17 +3,27 @@ import { Creator } from 'src/models/Creators'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 // Types
-export type Agent = {
+export type Agent = Omit<
+  Creator,
+  | 'userId'
+  | 'subscriptionTier'
+  | 'highestMonthlySubscriptionTier'
+  | 'email'
+  | 'normalizedEmail'
+  | 'stripeCustomerId'
+> & {
   _id: string
-  user: Creator
+  owner: Creator
   name: string
-  key: string
   description: string
   image: string
   blurhash: string
   instructions: string
   tools?: string[]
   discordId?: string
+  discordUsername?: string
+  telegramId?: string
+  telegramUsername?: string
   createdAt: Date
   updatedAt: Date
   public?: boolean
@@ -56,7 +66,7 @@ export const agentGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `agents/${args.agentId}`,
+    url: `v2/agents/${args.agentId}`,
   }
 }
 
@@ -65,7 +75,7 @@ export const agentsCreateRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'agents',
+    url: 'v2/agents',
     data: args,
   }
 }
@@ -75,7 +85,7 @@ export const agentsUpdateRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'PATCH',
-    url: `agents/${args.agentId}`,
+    url: `v2/agents/${args.agentId}`,
     data: args,
   }
 }
@@ -85,7 +95,7 @@ export const agentsDeleteRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'DELETE',
-    url: `agents/${args.agentId}`,
+    url: `v2/agents/${args.agentId}`,
   }
 }
 

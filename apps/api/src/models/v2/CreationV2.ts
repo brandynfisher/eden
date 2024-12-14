@@ -35,7 +35,7 @@ export const creationSchema = new Schema<CreationV2Document>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     task: {
