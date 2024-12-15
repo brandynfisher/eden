@@ -1,3 +1,4 @@
+import EdenFeedbackAdapter from '@/features/chat/eden-feedback-adapter'
 import edenImageAttachmentAdapter from '@/features/chat/eden-image-attachment-adapter'
 import {
   EdenMessage,
@@ -49,7 +50,7 @@ export const useEdenRuntime = ({
     isRunning,
   })
 
-  console.log({ threads, threadIds: threads?.map(thread => thread._id) })
+  // console.log({ threads, threadIds: threads?.map(thread => thread._id) })
 
   return useExternalStoreRuntime({
     isRunning,
@@ -58,6 +59,7 @@ export const useEdenRuntime = ({
     messages: threadMessages,
     setMessages,
     adapters: {
+      feedback: EdenFeedbackAdapter,
       attachments: new CompositeAttachmentAdapter([edenImageAttachmentAdapter]),
       threadList: {
         threadId,

@@ -29,7 +29,20 @@ export type Agent = Omit<
   public?: boolean
 }
 
+export type AgentClientType = 'discord' | 'telegram' | 'twitter' | 'farcaster'
+export type AgentDeployCommand = 'deploy' | 'stop'
+export type AgentDeployCredentials = {
+  CLIENT_DISCORD_TOKEN: string
+}
+
 // Arguments
+export interface AgentDeployArguments extends WebAPICallResult {
+  agent_key: Agent['username']
+  platform: AgentClientType
+  command: AgentDeployCommand
+  credentials: AgentDeployCredentials
+}
+
 export interface AgentGetArguments extends WebAPICallOptions {
   agentId: string
 }

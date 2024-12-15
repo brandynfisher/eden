@@ -102,7 +102,7 @@ export const listThreads = async (
     }
 
     const queryOptions: QueryOptions = {
-      select: '_id title name createdAt updatedAt user',
+      select: '_id title name createdAt updatedAt user agent',
       limit,
       page,
       sort: {
@@ -113,6 +113,11 @@ export const listThreads = async (
 
     const threadsRepository = new ThreadRepository(ThreadModel)
     const paginatedResponse = await threadsRepository.query(query, queryOptions)
+
+    await threadsRepository.model.populate(paginatedResponse.docs, {
+      path: 'agent',
+      select: '_id username userImage',
+    })
 
     return reply.status(200).send(paginatedResponse)
   } catch (e) {
