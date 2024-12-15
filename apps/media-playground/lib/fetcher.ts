@@ -125,8 +125,6 @@ export const createCursorPaginationRoute = (
   const basePath = baseUrl
   const params: CursorPaginatedFeedQuery = {}
 
-  // console.log(query)
-
   if (query.limit) {
     params.limit = query.limit
   }
@@ -209,7 +207,7 @@ export const createCursorPaginationRoute = (
   if (query.visibility && query.visibility !== 'all') {
     filters.push({ public: query.visibility === 'private' })
   } else if (typeof query.isPrivate !== 'undefined') {
-    filters.push({ public: query.isPrivate })
+    filters.push({ public: !query.isPrivate })
   }
 
   // if (query.orderBy) {
@@ -221,6 +219,11 @@ export const createCursorPaginationRoute = (
   //   filters.push({ praiseCount: true })
   // }
   // }
+
+  // console.log(query, filters, params)
+  if (query.sort) {
+    params.sort = query.sort
+  }
 
   let queryStringArray: string[] = []
 

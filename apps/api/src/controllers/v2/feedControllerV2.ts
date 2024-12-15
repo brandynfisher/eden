@@ -379,7 +379,7 @@ const handleArguments = async ({
 
           if (field === 'public') {
             if (!usesLikedFilter && isUserRequestingOwnProfileFeed) {
-              return [field, value === 'false']
+              return [field, value === 'true']
             }
             return []
           }

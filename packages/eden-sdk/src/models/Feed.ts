@@ -64,6 +64,8 @@ export type CursorPaginatedRouteQueryParams = {
 export type FeedCursorRouteQueryParams = {
   sort?: string | string[]
   filter?: {
+    sort?: string | string[]
+    limit?: number
     name?: string | string[]
     user?: string | string[]
     owner?: string | string[]
