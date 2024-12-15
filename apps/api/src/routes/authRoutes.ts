@@ -1,12 +1,12 @@
-import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
-
 import {
+  claimDailyLoginBonus,
   disconnectDiscord,
   discordOAuth,
 } from '../controllers/auth/authController'
 import { receiveUserUpdate } from '../controllers/auth/clerkController'
-import { isAuth } from '../middleware/authMiddleware'
+import { isAuth, isAuthEden2 } from '../middleware/authMiddleware'
+import { Type } from '@sinclair/typebox'
+import { FastifyPluginAsync } from 'fastify'
 
 const authRoutes: FastifyPluginAsync = async server => {
   server.post('/auth/clerk/update', {
@@ -41,6 +41,21 @@ const authRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => disconnectDiscord(request, reply),
+  })
+  server.post('/auth/daily-login', {
+    schema: {
+      tags: ['Auth'],
+      description: 'Set daily login bonus',
+      hide: true,
+      response: {
+        200: Type.Object({
+          claimed: Type.Number(),
+          lastDailyLogin: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) => claimDailyLoginBonus(request, reply),
   })
 }
 

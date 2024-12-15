@@ -21,7 +21,7 @@ export const createNewUser = async (input: UserInput) => {
   // Give them free Manna
   const newManna = new Manna({
     user: newUser._id,
-    balance: 200,
+    balance: 20,
   })
   await newManna.save()
   return newUser
@@ -107,6 +107,8 @@ export const discordOAuth = async (
       }),
     )
 
+    await Manna.findOneAndUpdate({ user: user._id }, { $inc: { balance: 50 } })
+
     return reply.redirect(`${server.config.FRONTEND_URL}/account`)
   } catch (error) {
     console.error(error)
@@ -134,4 +136,48 @@ export const disconnectDiscord = async (
   await user.save()
 
   return reply.status(200).send({})
+}
+
+export const claimDailyLoginBonus = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const user = await User.findById(request.user.userId)
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  const userManna = await Manna.findOne({ user: user._id })
+
+  if (!userManna) {
+    return reply.status(400).send({
+      message: 'User manna not found',
+    })
+  }
+
+  const now = Date.now()
+  const lastDailyLogin = user.lastDailyLoginBonus
+
+  const oneDayInMs = 24 * 60 * 60 * 1000
+  const claimAmount = 10
+
+  if (!lastDailyLogin || now - lastDailyLogin.getTime() >= oneDayInMs) {
+    user.lastDailyLoginBonus = new Date()
+    await user.save()
+
+    userManna.balance += claimAmount
+    await userManna.save()
+
+    return reply.status(200).send({
+      claimed: claimAmount,
+    })
+  }
+
+  return reply.status(200).send({
+    claimed: 0,
+    lastDailyLogin: user.lastDailyLoginBonus,
+  })
 }

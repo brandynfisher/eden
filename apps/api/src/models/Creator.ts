@@ -28,6 +28,7 @@ export interface UserSchema {
   deleted?: boolean
   createdAt?: Date
   updatedAt?: Date
+  lastDailyLoginBonus?: Date
 }
 
 export interface UserInput {
@@ -131,6 +132,10 @@ const user = new Schema<UserDocument>(
     deleted: {
       type: Boolean,
       default: false,
+    },
+    lastDailyLoginBonus: {
+      type: Date,
+      default: new Date(),
     },
   },
   {
