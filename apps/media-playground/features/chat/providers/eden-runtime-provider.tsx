@@ -14,12 +14,13 @@ import { AssistantMessage } from '@edenlabs/eden-sdk'
 import { ReactNode, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-const agentId = '67170abeb539c335ad24067a'
 const TIMEOUT_DURATION_MS = 5 * 60 * 1000
 
 export function EdenRuntimeProvider({
+  agentId,
   children,
 }: Readonly<{
+  agentId: string
   children: ReactNode
 }>) {
   const { invalidate } = useThreadListQuery()
@@ -33,6 +34,7 @@ export function EdenRuntimeProvider({
   })
 
   useEffect(() => {
+    ``
     if (websocketMessage) {
       const newMessages = websocketMessage.data.newMessages as
         | EdenMessage[]

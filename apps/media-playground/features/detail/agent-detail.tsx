@@ -1,5 +1,6 @@
 'use client'
 
+import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import UserAvatarLink from '@/components/user/user-avatar-link'
@@ -14,9 +15,12 @@ import {
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
 import { AvatarFallback } from '@radix-ui/react-avatar'
+import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
 import { Share2Icon, TrashIcon } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import React from 'react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -100,16 +104,33 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
             </Button>
           </div>
         )}
-        {agent.userImage && (
-          <div className="mb-4">
-            <Avatar className="size-20">
-              <AvatarImage src={agent.userImage} />
+        <div className="flex gap-4 items-center mb-4">
+          <Avatar className="size-24">
+            {agent.userImage ? (
+              <AvatarImage
+                className={'object-cover object-top'}
+                src={agent.userImage}
+              />
+            ) : (
               <AvatarFallback>{agent.name[0]}</AvatarFallback>
-            </Avatar>
-          </div>
-        )}
-        <h1 className="text-2xl font-semibold">{agent?.name}</h1>
-        <p className="text-sm mt-2 text-gray-200">{agent?.description}</p>
+            )}
+          </Avatar>
+        </div>
+
+        <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
+          <h1 className="text-2xl font-semibold">{agent?.name}</h1>
+          <Button variant="secondary" size="sm" asChild>
+            <Link href={`/chat/${agent._id}`}>
+              <ChatBubbleIcon className="mr-2 h-4 w-4" />
+              Start Chat
+            </Link>
+          </Button>
+        </div>
+
+        <TextClampMore
+          text={agent?.description}
+          className="text-sm break-words  mt-2 text-gray-200"
+        />
         <div className="flex items-center gap-x-2 mt-2 text-sm text-gray-300">
           by{' '}
           <span>
