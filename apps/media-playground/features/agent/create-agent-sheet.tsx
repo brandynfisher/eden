@@ -30,8 +30,14 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const createAssistantSchema = z.object({
-  name: z.string().min(1).max(100),
-  key: z.string().min(1).max(100),
+  name: z.string().min(1).max(42),
+  key: z
+    .string()
+    .min(1)
+    .max(42)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+      message: 'Key must only contain lowercase letters, numbers, and dashes.',
+    }),
   image: z.string().optional(),
   description: z.string().min(1).max(1000),
   instructions: z.string().min(1),
@@ -133,7 +139,7 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
                   <FormControl>
                     <Input
                       type={'text'}
-                      pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                      // pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
                       placeholder="helpful-agent-1"
                       {...field}
                     />
@@ -225,12 +231,7 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
             />
 
             <SheetFooter>
-              <Button
-                type="submit"
-                disabled={
-                  !form.formState.isValid || form.formState.isSubmitting
-                }
-              >
+              <Button type="submit" disabled={form.formState.isSubmitting}>
                 <PlusIcon className="h-4 w-4 mr-1" />
                 Create Agent
               </Button>
