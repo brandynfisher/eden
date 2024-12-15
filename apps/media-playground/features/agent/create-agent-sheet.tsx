@@ -1,8 +1,10 @@
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
+import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -18,7 +20,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Textarea } from '@/components/ui/textarea'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { PlusIcon } from 'lucide-react'
@@ -29,11 +30,11 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const createAssistantSchema = z.object({
-  name: z.string(),
-  key: z.string(),
+  name: z.string().min(1).max(100),
+  key: z.string().min(1).max(100),
   image: z.string().optional(),
-  description: z.string(),
-  instructions: z.string(),
+  description: z.string().min(1).max(1000),
+  instructions: z.string().min(1),
   discordId: z.string().optional(),
 })
 
@@ -48,13 +49,7 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
 
   const form = useForm<CreateAssistantDto>({
     resolver: zodResolver(createAssistantSchema),
-    defaultValues: {
-      name: '',
-      key: '',
-      description: '',
-      instructions: '',
-      discordId: '',
-    },
+    defaultValues: {},
   })
 
   const onSubmit = async (data: CreateAssistantDto) => {
@@ -112,10 +107,19 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
               name="name"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Name (Friendly Name)</FormLabel>
+                  <FormLabel>Display Name*</FormLabel>
                   <FormControl>
-                    <Input placeholder="Abraham" {...field} />
+                    <Input
+                      type={'text'}
+                      placeholder="My helpful Agent"
+                      {...field}
+                    />
                   </FormControl>
+                  <FormMessage />
+                  <FormDescription>
+                    Friendly Name of your agent. This will be displayed to
+                    users.
+                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -125,10 +129,21 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
               name="key"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Key (Unique Key)</FormLabel>
+                  <FormLabel>Name*</FormLabel>
                   <FormControl>
-                    <Input placeholder="Abraham" {...field} />
+                    <Input
+                      type={'text'}
+                      pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                      placeholder="helpful-agent-1"
+                      {...field}
+                    />
                   </FormControl>
+                  <FormMessage />
+                  <FormDescription>
+                    Unique name of your agent. This will be used in URLs and in
+                    the API.
+                    <p>Lowercase letters, numbers, and dashes only.</p>
+                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -138,7 +153,7 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
               name="image"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Photo</FormLabel>
+                  <FormLabel>Profile Image</FormLabel>
                   <FormControl>
                     <Input
                       className={'hidden'}
@@ -164,14 +179,14 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
               name="description"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Description*</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={4}
+                    <AutosizeTextarea
                       placeholder="Abraham is a helpful agent"
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -181,14 +196,14 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
               name="instructions"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Instructions</FormLabel>
+                  <FormLabel>Instructions*</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={4}
+                    <AutosizeTextarea
                       placeholder="Instruct your agent how to act"
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

@@ -236,7 +236,9 @@ const handleArguments = async ({
   const filterUserIds = filterMap
     ? filterMap
         ?.filter(
-          item => item.name === 'user' && item.value === authUserId?.toString(),
+          item =>
+            (item.name === 'user' && item.value === authUserId?.toString()) ||
+            (item.name === 'owner' && item.value === authUserId?.toString()),
         )
         .map(item => item.value)
     : undefined
