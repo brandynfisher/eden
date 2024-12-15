@@ -16,7 +16,6 @@ const Header = () => {
       <header className="sticky z-50 top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
         <HeaderNav />
         <div className="ml-auto flex items-center gap-2 h-10">
-          {/*<SearchForm />*/}
           <Suspense fallback={<LoadingIndicator />}>
             <ErrorBoundary>
               <TaskStatusIndicator />
