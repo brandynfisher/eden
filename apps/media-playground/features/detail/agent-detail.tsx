@@ -4,6 +4,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import UpdateAgentSheet from '@/features/agent/update-agent-sheet'
+import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
@@ -118,6 +119,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
             />
           </span>
         </div>
+        <CreationsFeed query={{ user: agent._id }} />
       </div>
     </>
   )

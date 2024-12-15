@@ -49,7 +49,7 @@ export const useEdenRuntime = ({
     isRunning,
   })
 
-  // console.log({ messages })
+  console.log({ threads, threadIds: threads?.map(thread => thread._id) })
 
   return useExternalStoreRuntime({
     isRunning,

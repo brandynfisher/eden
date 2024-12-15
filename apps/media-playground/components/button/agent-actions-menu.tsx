@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent } from '@edenlabs/eden-sdk'
+import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
 import { ExternalLinkIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -33,7 +34,13 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
         <>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link href={`/assistants/${agent._id}`}>
+              <Link href={`/chat/${agent._id}`}>
+                <ChatBubbleIcon className="mr-2 h-4 w-4" />
+                Chat
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/agents/${agent._id}`}>
                 <ExternalLinkIcon className="mr-2 h-4 w-4" />
                 View Details
               </Link>
