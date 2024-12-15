@@ -209,7 +209,7 @@ const handleArguments = async ({
 }) => {
   const { filter, sort } = query || {}
 
-  console.log({ filter, sort, authUserId })
+  // console.log({ filter, sort, authUserId })
   const filterMap: FilterItem[] = []
   if (filter) {
     (Array.isArray(filter) ? filter : [filter]).map(filterGroup => {
@@ -990,12 +990,11 @@ export const getAgentsFeedCursor = async (
   const { query } = request
   const { userId: authUserId } = request.user || {}
 
-  const ownerQuery = query as { filter: string }
+  const ownerQuery = query as { filter: string | string[] }
   if (ownerQuery.filter) {
-    ownerQuery.filter = (ownerQuery.filter as string).replaceAll(
-      'user;',
-      'owner;',
-    )
+    ownerQuery.filter = (
+      Array.isArray(ownerQuery.filter) ? ownerQuery.filter : [ownerQuery.filter]
+    ).map(fil => (fil as string).replaceAll('user;', 'owner;'))
   }
 
   const { filters, sortOptions, customFilterOptions } = await handleArguments({
