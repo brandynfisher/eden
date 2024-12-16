@@ -88,25 +88,12 @@ const CreationUIContainer = ({ tool }: Props) => {
     return calculateCost(tool.cost_estimate || '', formValues)
   }, [tool.cost_estimate, formValues])
 
+  const hasEnoughBalance = useMemo(() => {
+    return cost <= balance
+  }, [cost, balance])
+
   async function onSubmit(formData: FormData) {
     if (!(await verifyAuth())) {
-      return
-    }
-
-    if (cost > balance) {
-      toast.error('You do not have enough credits to run this tool', {
-        richColors: true,
-        dismissible: true,
-        actionButtonStyle: {
-          marginLeft: '8px',
-        },
-        action: {
-          label: 'Buy Manna',
-          onClick: () => {
-            router.push('/settings/subscription')
-          },
-        },
-      })
       return
     }
 
@@ -367,12 +354,25 @@ const CreationUIContainer = ({ tool }: Props) => {
 
           <CostIndicatorV2 cost={cost} />
 
+          {!hasEnoughBalance && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                router.push('/settings/subscription')
+              }}
+            >
+              Buy More Manna
+            </Button>
+          )}
+
           <Button
             type="button"
             size="sm"
             className="w-[72px]"
             onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !hasEnoughBalance}
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

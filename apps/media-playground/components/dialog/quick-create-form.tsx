@@ -5,6 +5,8 @@ import ParameterField from '@/features/tools/parameters/parameter-field'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
+import { closeAllQuickCreateModals } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -29,6 +31,8 @@ const SimpleGeneratorForm = ({
 }) => {
   const router = useRouter()
 
+  const dispatch = useAppDispatch()
+
   const { verifyAuth, refetchMe, balance } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -50,28 +54,15 @@ const SimpleGeneratorForm = ({
     return calculateCost(tool.cost_estimate || '', formValues)
   }, [tool.cost_estimate, formValues])
 
+  const hasEnoughBalance = useMemo(() => {
+    return cost <= balance
+  }, [cost, balance])
+
   async function onSubmit(formData: FormData) {
     const finalData = { ...defaultValues, ...formData, ...initValues }
     // console.log('onSubmit', finalData)
 
     if (!(await verifyAuth())) {
-      return
-    }
-
-    if (cost > balance) {
-      toast.error('You do not have enough credits to run this tool', {
-        richColors: true,
-        dismissible: true,
-        actionButtonStyle: {
-          marginLeft: '8px',
-        },
-        action: {
-          label: 'Buy Manna',
-          onClick: () => {
-            router.push('/settings/subscription')
-          },
-        },
-      })
       return
     }
 
@@ -128,11 +119,27 @@ const SimpleGeneratorForm = ({
           : null}
         <div className="flex gap-2 items-center justify-end">
           <CostIndicatorV2 cost={cost} />
+
+          {!hasEnoughBalance && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                dispatch(closeAllQuickCreateModals())
+                router.push('/settings/subscription')
+              }}
+            >
+              Buy More Manna
+            </Button>
+          )}
+
           <Button
             type="button"
-            className=" w-[72px]"
+            size="sm"
+            className="w-[72px]"
             onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !hasEnoughBalance}
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
