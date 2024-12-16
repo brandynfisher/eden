@@ -19,7 +19,7 @@ const EvePage = () => {
         </div>
       }
     >
-      <Chat agentId={'6759e59379e00297cd8fe6dc'} />
+      <Chat agentId={'675fd3af79e00297cdac1324'} />
     </Suspense>
   )
 }
