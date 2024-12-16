@@ -579,6 +579,7 @@ const FileUploader = ({
                                 width: 72,
                                 height: 72,
                               }}
+                              unoptimized={true}
                             />
                           ) : file.type.startsWith('video') ? (
                             <PreviewVideoPlayer

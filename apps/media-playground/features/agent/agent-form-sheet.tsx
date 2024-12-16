@@ -20,16 +20,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { PlusIcon } from 'lucide-react'
+import { Edit2Icon, PlusIcon } from 'lucide-react'
 import { useState } from 'react'
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const createAssistantSchema = z.object({
+export const agentSchema = z.object({
   name: z.string().min(1).max(42),
   key: z
     .string()
@@ -44,39 +45,64 @@ const createAssistantSchema = z.object({
   discordId: z.string().optional(),
 })
 
-type CreateAssistantDto = z.infer<typeof createAssistantSchema>
+type AgentFormDto = z.infer<typeof agentSchema>
 
-type CreateAssistantSheetProps = {
-  onCreated: () => void
+type AgentSheetProps = {
+  mode: 'create' | 'update'
+  agent?: Agent
+  onAction: () => void
 }
 
-const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
+const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const form = useForm<CreateAssistantDto>({
-    resolver: zodResolver(createAssistantSchema),
-    defaultValues: {},
+  const isUpdateMode = mode === 'update'
+
+  const form = useForm<AgentFormDto>({
+    resolver: zodResolver(agentSchema),
+    defaultValues: isUpdateMode
+      ? {
+          name: agent?.name,
+          key: agent?.username,
+          image: agent?.userImage,
+          description: agent?.description,
+          instructions: agent?.instructions,
+          discordId: agent?.discordId ?? '',
+        }
+      : {},
   })
 
-  const onSubmit = async (data: CreateAssistantDto) => {
+  const handleSubmit = async (data: AgentFormDto) => {
     try {
-      await axios.post('/api/agents', data)
-      toast.success('Agent created successfully', {
-        description: `"${data.name}" has been created successfully`,
-        richColors: true,
-        dismissible: true,
-      })
-      onCreated()
+      if (isUpdateMode) {
+        await axios.patch(`/api/agents/${agent?._id}`, data)
+        toast.success('Agent updated successfully', {
+          description: `"${data.name}" has been updated successfully`,
+          richColors: true,
+          dismissible: true,
+        })
+      } else {
+        await axios.post('/api/agents', data)
+        toast.success('Agent created successfully', {
+          description: `"${data.name}" has been created successfully`,
+          richColors: true,
+          dismissible: true,
+        })
+      }
+      onAction()
       onOpenChange(false)
     } catch (error) {
-      toast.error('Agent creation failed', {
-        description:
-          // @ts-ignore
-          (error as AxiosError).response?.data?.message ||
-          'Unknown Error has occurred',
-        richColors: true,
-        dismissible: true,
-      })
+      toast.error(
+        `${isUpdateMode ? 'Agent update' : 'Agent creation'} failed`,
+        {
+          description:
+            // @ts-ignore
+            (error as AxiosError).response?.data?.message ||
+            'Unknown Error has occurred',
+          richColors: true,
+          dismissible: true,
+        },
+      )
     }
   }
 
@@ -88,9 +114,19 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button className="gap-x-2" type="button" variant="outline">
-          <PlusIcon className="size-4" />
-          <p className="text-sm font-semibold">Create Agent</p>
+        <Button
+          variant="outline"
+          size="icon"
+          className={isUpdateMode ? '' : 'gap-x-2'}
+        >
+          {isUpdateMode ? (
+            <Edit2Icon size={18} />
+          ) : (
+            <>
+              <PlusIcon className="size-4" />
+              <p className="text-sm font-semibold">Create Agent</p>
+            </>
+          )}
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -98,16 +134,21 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
         className="overflow-y-auto w-full sm:!max-w-2xl"
       >
         <SheetHeader>
-          <SheetTitle>Create an Agent</SheetTitle>
+          <SheetTitle>
+            {isUpdateMode ? 'Update Agent' : 'Create an Agent'}
+          </SheetTitle>
           <SheetDescription>
-            Create an agent to help you with your tasks.
+            {isUpdateMode
+              ? 'Update your agent'
+              : 'Create an agent to help you with your tasks.'}
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form
             className="w-full space-y-4 py-4"
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(handleSubmit)}
           >
+            {/** Name Field */}
             <FormField
               control={form.control}
               name="name"
@@ -116,20 +157,23 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
                   <FormLabel>Display Name*</FormLabel>
                   <FormControl>
                     <Input
-                      type={'text'}
+                      type="text"
                       placeholder="My helpful Agent"
                       {...field}
                     />
                   </FormControl>
                   <FormMessage />
-                  <FormDescription>
-                    Friendly Name of your agent. This will be displayed to
-                    users.
-                  </FormDescription>
+                  {!isUpdateMode && (
+                    <FormDescription>
+                      Friendly Name of your agent. This will be displayed to
+                      users.
+                    </FormDescription>
+                  )}
                 </FormItem>
               )}
             />
 
+            {/** Key Field */}
             <FormField
               control={form.control}
               name="key"
@@ -138,22 +182,24 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
                   <FormLabel>Name*</FormLabel>
                   <FormControl>
                     <Input
-                      type={'text'}
-                      // pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                      type="text"
                       placeholder="helpful-agent-1"
                       {...field}
                     />
                   </FormControl>
                   <FormMessage />
-                  <FormDescription>
-                    Unique name of your agent. This will be used in URLs and in
-                    the API.
-                    <p>Lowercase letters, numbers, and dashes only.</p>
-                  </FormDescription>
+                  {!isUpdateMode && (
+                    <FormDescription>
+                      Unique name of your agent. This will be used in URLs and
+                      in the API.
+                      <p>Lowercase letters, numbers, and dashes only.</p>
+                    </FormDescription>
+                  )}
                 </FormItem>
               )}
             />
 
+            {/** Image Field */}
             <FormField
               control={form.control}
               name="image"
@@ -180,6 +226,7 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
               )}
             />
 
+            {/** Description Field */}
             <FormField
               control={form.control}
               name="description"
@@ -197,6 +244,7 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
               )}
             />
 
+            {/** Instructions Field */}
             <FormField
               control={form.control}
               name="instructions"
@@ -214,6 +262,7 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
               )}
             />
 
+            {/** Discord ID Field */}
             <FormField
               control={form.control}
               name="discordId"
@@ -226,14 +275,13 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
-
             <SheetFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                <PlusIcon className="h-4 w-4 mr-1" />
-                Create Agent
+                {isUpdateMode ? 'Update Agent' : 'Create Agent'}
               </Button>
             </SheetFooter>
           </form>
@@ -243,4 +291,4 @@ const CreateAgentSheet = ({ onCreated }: CreateAssistantSheetProps) => {
   )
 }
 
-export default CreateAgentSheet
+export default AgentFormSheet

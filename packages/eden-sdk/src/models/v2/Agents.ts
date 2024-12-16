@@ -15,9 +15,9 @@ export type Agent = Omit<
   _id: string
   owner: Creator
   name: string
+  username: string
   description: string
-  image: string
-  blurhash: string
+  userImage: string
   instructions: string
   tools?: string[]
   discordId?: string

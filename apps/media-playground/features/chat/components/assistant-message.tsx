@@ -15,7 +15,7 @@ const MyAssistantMessageAvatar: FC = () => {
   return (
     <Avatar className="w-10 h-10 md:w-12 md:h-12 col-start-1 row-span-full row-start-1 mr-4">
       <AvatarImage
-        className={'object-cover object-top'}
+        className={'object-cover'}
         src={getCloudfrontOriginalUrl(avatar.src)}
       />
       <AvatarFallback delayMs={250} className="w-10 h-10 md:w-12 md:h-12">

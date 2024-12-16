@@ -4,7 +4,7 @@ import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import UserAvatarLink from '@/components/user/user-avatar-link'
-import UpdateAgentSheet from '@/features/agent/update-agent-sheet'
+import AgentFormSheet from '@/features/agent/agent-form-sheet'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -98,7 +98,11 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
             <Button variant="outline" size="icon" onClick={onShareAgent}>
               <Share2Icon size={18} />
             </Button>
-            <UpdateAgentSheet agent={agent} onUpdate={onUpdateAgent} />
+            <AgentFormSheet
+              mode={'update'}
+              agent={agent}
+              onAction={onUpdateAgent}
+            />
             <Button variant="destructive" size="icon" onClick={onDeleteAgent}>
               <TrashIcon size={18} />
             </Button>
@@ -107,10 +111,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
         <div className="flex gap-4 items-center mb-4">
           <Avatar className="size-24">
             {agent.userImage ? (
-              <AvatarImage
-                className={'object-cover object-top'}
-                src={agent.userImage}
-              />
+              <AvatarImage className={'object-cover'} src={agent.userImage} />
             ) : (
               <AvatarFallback>{agent.name[0]}</AvatarFallback>
             )}

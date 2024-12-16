@@ -12,7 +12,7 @@ import { PropsWithChildren } from 'react'
 const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
   return (
     <Link
-      className="relative flex items-center gap-2 text-lg font-semibold md:text-base"
+      className="relative flex items-center gap-2 text-lg font-semibold md:text-base mr-2"
       {...rest}
     >
       <EdenLogoBw />

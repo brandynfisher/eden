@@ -2,7 +2,7 @@
 
 import AgentCard from '@/components/card/agent-card'
 import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
-import CreateAgentSheet from '@/features/agent/create-agent-sheet'
+import AgentFormSheet from '@/features/agent/agent-form-sheet'
 import { RowItem } from '@/lib/query/cache-updates'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
@@ -39,7 +39,7 @@ const AgentsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
 
   return (
     <div className="space-y-4">
-      <CreateAgentSheet onCreated={onCreated} />
+      <AgentFormSheet mode={'create'} onAction={onCreated} />
       <MasonryVirtualizerVertical
         key={JSON.stringify(queryKey)}
         apiEndpoint={'/api/feed/agents'}
