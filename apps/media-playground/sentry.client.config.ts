@@ -26,17 +26,17 @@ Sentry.init({
       maskAllText: false,
       blockAllMedia: false,
     }),
-    Sentry.feedbackIntegration({
-      // Additional SDK configuration goes in here, for example:
-      colorScheme: 'system',
-      triggerLabel: 'Feedback',
-      triggerAriaLabel: 'Feedback / Bugs',
-      formTitle: 'Give feedback or report bugs',
-      submitTitle: 'Send report',
-      nameLabel: 'Username',
-      namePlaceholder: 'Your Eden username',
-      messagePlaceholder:
-        'Report bugs or share feedback: What happened? What did you expect?',
-    }),
+    // Sentry.feedbackIntegration({
+    //   // Additional SDK configuration goes in here, for example:
+    //   // triggerLabel: 'Feedback',
+    //   triggerAriaLabel: 'Feedback / Bugs',
+    //   colorScheme: 'system',
+    //   formTitle: 'Give feedback or report bugs',
+    //   submitTitle: 'Send report',
+    //   nameLabel: 'Username',
+    //   namePlaceholder: 'Your Eden username',
+    //   messagePlaceholder:
+    //     'Report bugs or share feedback: What happened? What did you expect?',
+    // }),
   ],
 })

@@ -154,10 +154,15 @@ export const getThread = async (
     const thread = await ThreadModel.findOne({
       _id: new ObjectId(thread_id),
       user: userId,
-    }).populate({
-      path: 'user',
-      select: '_id username userId userImage',
     })
+      .populate({
+        path: 'user',
+        select: '_id username userId userImage',
+      })
+      .populate({
+        path: 'agent',
+        select: '_id username userImage',
+      })
 
     // console.log(thread)
 

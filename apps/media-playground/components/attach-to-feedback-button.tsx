@@ -14,7 +14,18 @@ const AttachToFeedbackButton: FC<Props> = ({ className }) => {
   const [feedback, setFeedback] = useState()
   useEffect(() => {
     // @ts-ignore
-    setFeedback(Sentry.getFeedback())
+    setFeedback(
+      Sentry.getFeedback({
+        triggerAriaLabel: 'Feedback / Bugs',
+        colorScheme: 'system',
+        formTitle: 'Give feedback or report bugs',
+        submitTitle: 'Send report',
+        nameLabel: 'Username',
+        namePlaceholder: 'Your Eden username',
+        messagePlaceholder:
+          'Report bugs or share feedback: What happened? What did you expect?',
+      }),
+    )
   }, [])
 
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -36,7 +47,7 @@ const AttachToFeedbackButton: FC<Props> = ({ className }) => {
       ref={buttonRef}
       className={cn(['text-sm', className])}
     >
-      <MessageCircleWarningIcon className="w-5 h-5 mr-2 md:mr-0 lg:mr-0" />
+      <MessageCircleWarningIcon className="w-5 h-5 mr-2 md:mr-0 lg:mr-2" />
       <div className="block md:hidden lg:block">Feedback</div>
     </Button>
   )
