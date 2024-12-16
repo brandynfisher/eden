@@ -16,6 +16,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useToolPreset } from '@/hooks/use-tool-preset'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { cn } from '@/lib/utils'
+import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -37,7 +38,7 @@ const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
 const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
 const CreationUIContainer = ({ tool }: Props) => {
-  const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
+  const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const presetResolutions = tool?.resolutions
@@ -82,8 +83,30 @@ const CreationUIContainer = ({ tool }: Props) => {
     }
   }, [presetValues])
 
+  const formValues = form.watch()
+  const cost = useMemo(() => {
+    return calculateCost(tool.cost_estimate || '', formValues)
+  }, [tool.cost_estimate, formValues])
+
   async function onSubmit(formData: FormData) {
     if (!(await verifyAuth())) {
+      return
+    }
+
+    if (cost > balance) {
+      toast.error('You do not have enough credits to run this tool', {
+        richColors: true,
+        dismissible: true,
+        actionButtonStyle: {
+          marginLeft: '8px',
+        },
+        action: {
+          label: 'Buy Manna',
+          onClick: () => {
+            router.push('/settings/subscription')
+          },
+        },
+      })
       return
     }
 
@@ -342,7 +365,7 @@ const CreationUIContainer = ({ tool }: Props) => {
             </div>
           ) : null}
 
-          <CostIndicatorV2 formula={tool.cost_estimate} />
+          <CostIndicatorV2 cost={cost} />
 
           <Button
             type="button"

@@ -5,11 +5,13 @@ import ParameterField from '@/features/tools/parameters/parameter-field'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
+import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -25,8 +27,11 @@ const SimpleGeneratorForm = ({
   initValues: { [key: string]: string | number }
   onSubmitSuccess: () => void
 }) => {
-  const { verifyAuth, refetchMe } = useAuthState()
+  const router = useRouter()
+
+  const { verifyAuth, refetchMe, balance } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
   const parameters = tool?.parameters?.filter(param =>
     exposedParameters.includes(param.name),
   )
@@ -40,11 +45,33 @@ const SimpleGeneratorForm = ({
     defaultValues: { ...defaultValues, ...initValues },
   })
 
+  const formValues = form.watch()
+  const cost = useMemo(() => {
+    return calculateCost(tool.cost_estimate || '', formValues)
+  }, [tool.cost_estimate, formValues])
+
   async function onSubmit(formData: FormData) {
     const finalData = { ...defaultValues, ...formData, ...initValues }
     // console.log('onSubmit', finalData)
 
     if (!(await verifyAuth())) {
+      return
+    }
+
+    if (cost > balance) {
+      toast.error('You do not have enough credits to run this tool', {
+        richColors: true,
+        dismissible: true,
+        actionButtonStyle: {
+          marginLeft: '8px',
+        },
+        action: {
+          label: 'Buy Manna',
+          onClick: () => {
+            router.push('/settings/subscription')
+          },
+        },
+      })
       return
     }
 
@@ -100,7 +127,7 @@ const SimpleGeneratorForm = ({
             })
           : null}
         <div className="flex gap-2 items-center justify-end">
-          <CostIndicatorV2 formula={tool.cost_estimate} />
+          <CostIndicatorV2 cost={cost} />
           <Button
             type="button"
             className=" w-[72px]"
