@@ -13,8 +13,8 @@ type Props = {
 const AttachToFeedbackButton: FC<Props> = ({ className }) => {
   const [feedback, setFeedback] = useState()
   useEffect(() => {
-    // @ts-ignore
     setFeedback(
+      // @ts-ignore
       Sentry.getFeedback({
         triggerAriaLabel: 'Feedback / Bugs',
         colorScheme: 'system',

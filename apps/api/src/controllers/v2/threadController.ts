@@ -187,3 +187,50 @@ export const getThread = async (
     return reply.status(500).send({ error: errorMessage })
   }
 }
+
+export const addThreadMessageReaction = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { thread_id } = request.params as ThreadsGetArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  try {
+    const thread = await ThreadModel.findOne({
+      _id: new ObjectId(thread_id),
+      user: userId,
+    })
+
+    console.log(thread)
+
+    if (!thread) {
+      return reply.status(404).send({
+        message: 'Thread not found',
+      })
+    }
+
+    // @todo: add reaction to message
+
+    return reply.status(200).send({ thread })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({
+      message: 'Failed to add thread message reaction',
+      error: errorMessage,
+    })
+    return reply.status(500).send({ error: errorMessage })
+  }
+}
