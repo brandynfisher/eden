@@ -217,7 +217,7 @@ export const addThreadMessageReaction = async (
       })
     }
 
-    // @todo: add reaction to message
+    // @todo: add reaction to message (use update / $set with msg id filter to not rewrite the whole document)
 
     return reply.status(200).send({ thread })
   } catch (e) {

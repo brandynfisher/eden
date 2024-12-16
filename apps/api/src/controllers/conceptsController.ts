@@ -1,4 +1,3 @@
-import { conceptExportPermissionCheck } from '../lib/authorization'
 import { Concept, ConceptDocument } from '../models/Concept'
 import { Reaction } from '../models/Reaction'
 import { User } from '../models/User'
@@ -149,15 +148,6 @@ export const listConcepts = async (
     return rest
   })
 
-  const hasConceptExportPermission = conceptExportPermissionCheck(request)
-  if (!hasConceptExportPermission) {
-    conceptsWithPublicName = conceptsWithPublicName.map(concept => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { uri, ...rest } = concept
-      return rest
-    })
-  }
-
   const response = {
     ...concepts,
     docs: conceptsWithPublicName,
@@ -208,11 +198,6 @@ export const getConcept = async (
     conceptObject.task.config !== undefined
   ) {
     delete conceptObject.task.config.lora_training_urls
-  }
-
-  const hasConceptExportPermission = conceptExportPermissionCheck(request)
-  if (!hasConceptExportPermission) {
-    delete conceptObject.uri
   }
 
   return reply.status(200).send({ concept: conceptObject })
@@ -400,12 +385,6 @@ export const conceptExportToHF = async (
   if (!user) {
     return reply.status(404).send({
       message: 'User not found',
-    })
-  }
-
-  if (!conceptExportPermissionCheck(request)) {
-    return reply.status(401).send({
-      message: 'You do not have permission to export concepts',
     })
   }
 

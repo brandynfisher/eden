@@ -1,4 +1,3 @@
-import { conceptExportPermissionCheck } from '../lib/authorization'
 import { getSimilarCreationIds } from '../lib/similar'
 import { Character, CharacterDocument } from '../models/Character'
 import { Collection } from '../models/Collection'
@@ -694,7 +693,6 @@ export const getConceptsFeed = async (
     populate: { path: 'generator', select: 'generatorName output' },
   })
 
-  const hasConceptExportPermission = conceptExportPermissionCheck(request)
   // @ts-ignore
   concepts.docs = concepts.docs.map(concept => {
     // @ts-ignore
@@ -714,9 +712,6 @@ export const getConceptsFeed = async (
       delete conceptWithoutTrainingImages.task.config.lora_training_urls
     }
 
-    if (!hasConceptExportPermission) {
-      delete conceptWithoutTrainingImages.uri
-    }
     return conceptWithoutTrainingImages
   })
 

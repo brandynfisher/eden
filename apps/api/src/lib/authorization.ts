@@ -124,16 +124,6 @@ export const conceptPrivacyPermissionCheck = (request: FastifyRequest) => {
   return false
 }
 
-export const conceptExportPermissionCheck = (
-  request: FastifyRequest,
-): boolean => {
-  if (hasMinimumSubscriptionTier(request, SubscriptionTier.Pro)) {
-    return true
-  }
-
-  return false
-}
-
 export const isAllowedAccess = (server: FastifyInstance, userId: string) => {
   // Access control is only relevant for staging atm
   if (!server.config.ENV_API || server.config.ENV_API !== 'stg') {
