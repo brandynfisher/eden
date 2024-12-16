@@ -29,6 +29,7 @@ export interface UserSchema {
   createdAt?: Date
   updatedAt?: Date
   lastDailyLoginBonus?: Date
+  discordLinkBonusClaimed?: boolean
 }
 
 export interface UserInput {
@@ -136,6 +137,10 @@ const user = new Schema<UserDocument>(
     lastDailyLoginBonus: {
       type: Date,
       default: new Date(),
+    },
+    discordLinkBonusClaimed: {
+      type: Boolean,
+      default: false,
     },
   },
   {

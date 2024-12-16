@@ -5,7 +5,10 @@ import { Manna } from '../../models/Manna'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-export const createNewUser = async (input: UserInput) => {
+export const createNewUser = async (
+  server: FastifyInstance,
+  input: UserInput,
+) => {
   const newUser = new User(input)
   await newUser.save()
 
@@ -21,7 +24,7 @@ export const createNewUser = async (input: UserInput) => {
   // Give them free Manna
   const newManna = new Manna({
     user: newUser._id,
-    balance: 20,
+    balance: server.config.MANNA_BONUS_SIGNUP,
   })
   await newManna.save()
   return newUser
@@ -93,6 +96,15 @@ export const discordOAuth = async (
     })
 
     user.discordId = discordId
+
+    if (!user.discordLinkBonusClaimed) {
+      await Manna.findOneAndUpdate(
+        { user: user._id },
+        { $inc: { balance: server.config.MANNA_BONUS_DISCORD_LINK } },
+      )
+      user.discordLinkBonusClaimed = true
+    }
+
     await user.save()
 
     // Give delegated creations to the user
@@ -139,6 +151,7 @@ export const disconnectDiscord = async (
 }
 
 export const claimDailyLoginBonus = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -162,7 +175,7 @@ export const claimDailyLoginBonus = async (
   const lastDailyLogin = user.lastDailyLoginBonus
 
   const oneDayInMs = 24 * 60 * 60 * 1000
-  const claimAmount = 10
+  const claimAmount = server.config.MANNA_BONUS_DAILY_LOGIN
 
   if (!lastDailyLogin || now - lastDailyLogin.getTime() >= oneDayInMs) {
     user.lastDailyLoginBonus = new Date()

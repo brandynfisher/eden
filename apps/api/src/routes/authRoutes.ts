@@ -55,7 +55,7 @@ const authRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => claimDailyLoginBonus(request, reply),
+    handler: (request, reply) => claimDailyLoginBonus(server, request, reply),
   })
 }
 
