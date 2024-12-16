@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify'
 import _ from 'lodash'
 import { ChangeStreamDocument } from 'mongodb'
 
-const WATCHED_COLLECTION = 'threads2'
+const WATCHED_COLLECTION = 'threads3'
 
 /**
  * Recursively build a usable nested structure from dot-notated updatedFields
