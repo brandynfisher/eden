@@ -2,6 +2,7 @@
 
 import LoadingIndicator from '@/components/loading-indicator'
 import { ListSkeleton } from '@/components/timeline/timeline'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { useElementSize } from '@/hooks/use-element-size'
 import { fetcher } from '@/lib/fetcher'
 import {
@@ -29,6 +30,8 @@ const ListVirtualizerVertical = ({
   query,
   queryKey,
 }: Props) => {
+  const { user } = useAuthState()
+
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
   const MASONRY_COLUMN_COUNT = 1
@@ -65,6 +68,7 @@ const ListVirtualizerVertical = ({
       return lastPage && lastPage.nextPage ? lastPage.nextPage : undefined
     },
     initialPageParam: 1,
+    enabled: !!user,
   })
 
   const allRows = useMemo(() => {
@@ -163,7 +167,11 @@ const ListVirtualizerVertical = ({
           position: 'relative',
         }}
       >
-        {!allRows.length ? (
+        {!user ? (
+          <div className="p-4 text-center bg-accent rounded-md">
+            Please sign in to view your tasks.
+          </div>
+        ) : !allRows.length ? (
           <div className="w-full flex flex-col gap-y-8">
             {status === 'pending' ? (
               <ListSkeleton />
