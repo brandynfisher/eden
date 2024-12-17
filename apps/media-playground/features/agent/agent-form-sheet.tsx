@@ -116,7 +116,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          size="icon"
+          size={isUpdateMode ? 'icon' : ''}
           className={isUpdateMode ? '' : 'gap-x-2'}
         >
           {isUpdateMode ? (
