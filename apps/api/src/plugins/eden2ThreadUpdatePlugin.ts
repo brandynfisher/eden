@@ -51,23 +51,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
     const threadCollection =
       fastify.mongoose.connection.db.collection(WATCHED_COLLECTION)
 
-    // const changeStream = threadCollection.watch(
-    //   [
-    //     {
-    //       $match: {
-    //         'fullDocument.updatedAt': {
-    //           $gt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    //         },
-    //         $or: [
-    //           { 'updateDescription.updatedFields.messages': { $exists: true } },
-    //           { operationType: 'insert' }
-    //         ]
-    //       },
-    //     },
-    //   ],
-    //   { fullDocument: 'updateLookup' },
-    // )
-
     const changeStream = threadCollection.watch(
       [
         {
@@ -90,13 +73,13 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             const cachedDoc = data.fullDocument
 
             if (!cachedDoc) {
-              fastify.log.error('No cached document found')
+              fastify.log.error('insert: No fullDocument found')
               return
             }
 
             if (!cachedDoc.user) {
               fastify.log.error(
-                `No user field found for thread ${cachedDoc._id}`,
+                `insert: No user field found for thread ${cachedDoc._id}`,
               )
               return
             }
@@ -106,13 +89,13 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             const cachedDoc = data.fullDocument
 
             if (!cachedDoc) {
-              fastify.log.error('No cached document found')
+              fastify.log.error('update: No fullDocument found')
               return
             }
 
             if (!cachedDoc.user) {
               fastify.log.error(
-                `No user field found for thread ${cachedDoc._id}`,
+                `update: No user field found for thread ${cachedDoc._id}`,
               )
               return
             }
@@ -121,7 +104,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             const updatedFields = data.updateDescription.updatedFields
 
             if (!updatedFields) {
-              fastify.log.error('No updated fields found')
+              fastify.log.error('update: No updated fields found')
               return
             }
 
@@ -132,7 +115,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             // cachedDocuments.set(docId, cachedDoc);
 
             console.log(
-              'updatedFields:',
+              'update: updatedFields:',
               JSON.stringify(
                 { thread: cachedDoc?._id, ...updatedFields },
                 null,
@@ -155,7 +138,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             })
 
             if (!updatedMessages.length) {
-              console.log('No messages updated')
+              console.log('update: No messages updated')
               return
             }
 
@@ -167,12 +150,12 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             })
 
             console.log(
-              'filteredModifiedMessages',
+              'update: filteredModifiedMessages',
               JSON.stringify(filteredModifiedMessages, null, 2),
             )
 
             if (!filteredModifiedMessages.length) {
-              console.log('No non-user messages updated')
+              console.log('update: No non-user messages updated')
               return
             }
 
