@@ -347,9 +347,9 @@ const injectResultUrls = (
     })
   }
 
-  if (result.intermediateOutputs) {
-    result.intermediateOutputs = Object.fromEntries(
-      Object.entries(result.intermediateOutputs).map(
+  if (result.intermediate_outputs) {
+    result.intermediate_outputs = Object.fromEntries(
+      Object.entries(result.intermediate_outputs).map(
         ([key, partialResults]) => {
           // console.log(key, partialResults)
           if (Array.isArray(partialResults)) {

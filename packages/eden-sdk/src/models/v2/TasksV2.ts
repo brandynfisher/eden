@@ -189,7 +189,7 @@ export type TasksV2ResultOutput = MediaOutput & {
 
 export type TaskV2Result = {
   output: TasksV2ResultOutput[]
-  intermediateOutputs?: {
+  intermediate_outputs?: {
     inpaint_preview?: MediaOutput[]
     controlnet_signal?: MediaOutput[]
   }
