@@ -5,7 +5,7 @@ import {
   creationUpdate,
   getCreation,
 } from '../../controllers/v2/creationControllerV2'
-import { isAuthEden2, maybeAuthEden2 } from '../../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -69,7 +69,7 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [request => maybeAuthEden2(server, request)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCreation(server, request, reply),
   })
 
@@ -95,7 +95,7 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async (request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => creationUpdate(server, request, reply),
   })
 
@@ -126,7 +126,7 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async (request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => creationBulkUpdate(request, reply),
   })
 }

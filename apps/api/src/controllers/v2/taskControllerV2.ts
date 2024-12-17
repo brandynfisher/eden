@@ -695,6 +695,13 @@ export const subscribeWebSocketUpdates = function wsHandler(
       // console.log(metaData)
       // const threadsRepository = new ThreadRepository(ThreadModel)
 
+      if (!thread.user) {
+        this.log.error(
+          `Thread ${thread._id} has no user field, skipping update message`,
+        )
+        return
+      }
+
       // socket message is only sent to the intended recipient
       if (metaData?._id?.toString() === thread.user.toString()) {
         // console.log('sending ws even', {

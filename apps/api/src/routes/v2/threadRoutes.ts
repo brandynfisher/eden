@@ -4,7 +4,7 @@ import {
   getThread,
   listThreads,
 } from '../../controllers/v2/threadController'
-import { isAuthEden2 } from '../../middleware/authMiddleware'
+import { isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -47,7 +47,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createThreadMessage(server, request, reply),
   })
 
@@ -87,7 +87,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) =>
       addThreadMessageReaction(server, request, reply),
   })
@@ -112,7 +112,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listThreads(server, request, reply),
   })
 
@@ -134,7 +134,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getThread(server, request, reply),
   })
 }

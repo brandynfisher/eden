@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import * as Sentry from '@sentry/nextjs'
+import { feedbackIntegration } from '@sentry/nextjs'
 import { MessageCircleWarningIcon } from 'lucide-react'
 import { FC, useEffect, useRef, useState } from 'react'
 
@@ -11,31 +12,24 @@ type Props = {
 }
 
 const AttachToFeedbackButton: FC<Props> = ({ className }) => {
-  const [feedback, setFeedback] = useState()
+  const [feedback, setFeedback] =
+    useState<ReturnType<typeof feedbackIntegration>>()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
   useEffect(() => {
-    setFeedback(
-      // @ts-ignore
-      Sentry.getFeedback({
-        triggerAriaLabel: 'Feedback / Bugs',
-        colorScheme: 'system',
-        formTitle: 'Give feedback or report bugs',
-        submitTitle: 'Send report',
-        nameLabel: 'Username',
-        namePlaceholder: 'Your Eden username',
-        messagePlaceholder:
-          'Report bugs or share feedback: What happened? What did you expect?',
-      }),
-    )
+    setFeedback(Sentry.getFeedback())
   }, [])
 
-  const buttonRef = useRef<HTMLButtonElement>(null)
   useEffect(() => {
+    let unsubscribe: () => void
+
     if (feedback && buttonRef && buttonRef.current) {
-      //@ts-ignore
-      const unsubscribe = feedback.attachTo(buttonRef.current)
-      return unsubscribe
+      unsubscribe = feedback.attachTo(buttonRef.current)
     }
-    return () => {}
+
+    return () => {
+      unsubscribe && unsubscribe()
+    }
   }, [feedback])
 
   return (

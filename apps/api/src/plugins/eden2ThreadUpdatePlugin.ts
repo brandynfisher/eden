@@ -110,7 +110,11 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
 
             console.log(
               'updatedFields:',
-              JSON.stringify(updatedFields, null, 2),
+              JSON.stringify(
+                { thread: cachedDoc?._id, ...updatedFields },
+                null,
+                2,
+              ),
             )
             //@ts-expect-error TS2769: No overload matches this call.
             const modifiedMessages = extractModifiedMessages(updatedFields)
@@ -146,7 +150,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             )
 
             if (!filteredModifiedMessages.length) {
-              console.log('No non user messages updated')
+              console.log('No non-user messages updated')
               return
             }
 
