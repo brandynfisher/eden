@@ -27,11 +27,11 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     description: {
       type: String,
-      maxlength: 1000,
+      maxlength: 20000,
     },
     instructions: {
       type: String,
-      maxlength: 1000,
+      maxlength: 20000,
       required: true,
     },
     tools: {
