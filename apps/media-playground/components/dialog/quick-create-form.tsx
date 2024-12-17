@@ -40,6 +40,8 @@ const SimpleGeneratorForm = ({
     defaultValues: { ...defaultValues, ...initValues },
   })
 
+  console.log(parameters, exposedParameters, form, defaultValues, initValues)
+
   async function onSubmit(formData: FormData) {
     const finalData = { ...defaultValues, ...formData, ...initValues }
     // console.log('onSubmit', finalData)
