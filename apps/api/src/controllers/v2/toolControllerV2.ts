@@ -45,7 +45,7 @@ export const listTools = async (
         'parameters.tip': 0,
       }
 
-  const tools = await ToolV2.find({}, projection)
+  const tools = await ToolV2.find({}, projection).sort({ order: 1 })
 
   return reply.status(200).send({ tools })
 }

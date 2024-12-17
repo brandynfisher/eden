@@ -108,6 +108,7 @@ export const listThreads = async (
       sort: {
         ...sort,
         updatedAt: -1,
+        createdAt: -1,
       },
     }
 

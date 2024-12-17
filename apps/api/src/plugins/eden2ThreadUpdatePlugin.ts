@@ -87,22 +87,45 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
         // console.log(data.operationType, data)
         try {
           if (data.operationType === 'insert') {
-            // Handle insert event as usual
-            await handleThreadUpdateStreamEvent(
-              fastify,
-              data.fullDocument,
-              undefined,
-            )
-          } else if (data.operationType === 'update') {
-            // const docId = data.documentKey._id.toString();
             const cachedDoc = data.fullDocument
+
+            if (!cachedDoc) {
+              fastify.log.error('No cached document found')
+              return
+            }
+
+            if (!cachedDoc.user) {
+              fastify.log.error(
+                `No user field found for thread ${cachedDoc._id}`,
+              )
+              return
+            }
+
+            await handleThreadUpdateStreamEvent(fastify, cachedDoc, undefined)
+          } else if (data.operationType === 'update') {
+            const cachedDoc = data.fullDocument
+
+            if (!cachedDoc) {
+              fastify.log.error('No cached document found')
+              return
+            }
+
+            if (!cachedDoc.user) {
+              fastify.log.error(
+                `No user field found for thread ${cachedDoc._id}`,
+              )
+              return
+            }
 
             // Apply updates to cached document
             const updatedFields = data.updateDescription.updatedFields
 
-            //@ts-expect-error TS2769: No overload matches this call.
+            if (!updatedFields) {
+              fastify.log.error('No updated fields found')
+              return
+            }
+
             Object.entries(updatedFields).forEach(([key, value]) => {
-              //@ts-expect-error TS2769: No overload matches this call.
               _.set(cachedDoc, key, value) // Use lodash's set method for dot-notated keys
             })
 
@@ -116,7 +139,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
                 2,
               ),
             )
-            //@ts-expect-error TS2769: No overload matches this call.
             const modifiedMessages = extractModifiedMessages(updatedFields)
 
             const updatedMessages: ThreadMessage[] = []
