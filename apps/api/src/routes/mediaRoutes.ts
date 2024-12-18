@@ -6,7 +6,7 @@ import {
   uploadMediaRequestCloudinary,
   uploadS3MediaRequest,
 } from '../controllers/mediaController'
-import { isAuth, isAuthEden2 } from '../middleware/authMiddleware'
+import { isAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -122,7 +122,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
         ),
       }),
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (req, reply) => getMediaDownloadZip(server, req, reply),
   })
 

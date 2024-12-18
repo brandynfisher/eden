@@ -1,5 +1,4 @@
 import adminRoutes from './adminRoutes'
-import agentRoutes from './agentRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
 import characterRoutes from './characterRoutes'
@@ -67,7 +66,6 @@ export const cursorPaginationProperties = () => {
 
 export const routes = [
   adminRoutes,
-  agentRoutes,
   characterRoutes,
   authRoutes,
   mannaRoutes,

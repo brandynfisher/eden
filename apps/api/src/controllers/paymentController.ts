@@ -1,8 +1,8 @@
 import { trackCheckoutBegin, trackCheckoutComplete } from '../lib/analytics'
 import { getAdminHeaders } from '../lib/util'
-import { User, UserDocument } from '../models/Creator'
 import { Manna } from '../models/Manna'
 import { Transaction } from '../models/Transaction'
+import { User, UserDocument } from '../models/User'
 import {
   PaymentsCreateArguments,
   PaymentsSubscriptionArguments,

@@ -11,7 +11,12 @@ import {
   SubscriptionTier,
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
-import { FastifyInstance, FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify'
+import {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+  HookHandlerDoneFunction,
+} from 'fastify'
 
 export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
@@ -119,16 +124,6 @@ export const conceptPrivacyPermissionCheck = (request: FastifyRequest) => {
   return false
 }
 
-export const conceptExportPermissionCheck = (
-  request: FastifyRequest,
-): boolean => {
-  if (hasMinimumSubscriptionTier(request, SubscriptionTier.Pro)) {
-    return true
-  }
-
-  return false
-}
-
 export const isAllowedAccess = (server: FastifyInstance, userId: string) => {
   // Access control is only relevant for staging atm
   if (!server.config.ENV_API || server.config.ENV_API !== 'stg') {
@@ -164,7 +159,7 @@ export const assistantAccessCheck = (
   const hasAccess = hasFeatureFlag(request, FeatureFlag.AssistantAccess)
 
   if (!hasAccess) {
-    throw new Error('User not whitelisted for "Assistant Access"')
+    throw new Error('User not whitelisted for "Agent Access"')
   }
 
   if (done) done()

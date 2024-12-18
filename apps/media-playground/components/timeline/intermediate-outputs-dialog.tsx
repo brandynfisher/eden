@@ -9,12 +9,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { TaskV2Result } from '@edenlabs/eden-sdk'
 import { ImageIcon, XIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
-  intermediateOutputs: TaskV2Result['intermediateOutputs']
+  intermediateOutputs: TaskV2Result['intermediate_outputs']
 }
 
 export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {

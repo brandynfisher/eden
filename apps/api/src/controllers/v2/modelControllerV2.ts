@@ -1,4 +1,4 @@
-import { User } from '../../models/Creator'
+import { User } from '../../models/User'
 import { ModelV2 } from '../../models/v2/ModelV2'
 import { s3ThumbnailUrl } from '../../plugins/s3Plugin'
 import ModelV2Repository from '../../repositories/ModelV2Repository'

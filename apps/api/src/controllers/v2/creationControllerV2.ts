@@ -42,14 +42,14 @@ export const getCreation = async (
 
   // console.log({ creation })
 
-  if (!creation.public) {
-    if (creation.user._id.toString() !== request.user?.userId.toString()) {
-      console.error('User not authorized to view this')
-      return reply.status(401).send({
-        message: 'User not authorized to view this',
-      })
-    }
-  }
+  // if (!creation.public) {
+  //   if (creation.user._id.toString() !== request.user?.userId.toString()) {
+  //     console.error('User not authorized to view this')
+  //     return reply.status(401).send({
+  //       message: 'User not authorized to view this',
+  //     })
+  //   }
+  // }
 
   creation.url = s3Url(server, creation.filename || '')
   creation.thumbnail = s3ThumbnailUrl(server, creation.filename || '', 1024)

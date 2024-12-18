@@ -1,4 +1,4 @@
-import { UserDocument } from './Creator'
+import { UserDocument } from './User'
 import { Document, Schema, model } from 'mongoose'
 
 export interface MannaVoucherSchema {

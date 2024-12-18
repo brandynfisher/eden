@@ -33,8 +33,6 @@ const CreationsFeed = ({
 
   const queryKey = useMemo(() => ['creations', query], [query])
 
-  // console.log({ query, queryKey })
-
   return (
     <MasonryVirtualizerVertical
       key={JSON.stringify(queryKey)}

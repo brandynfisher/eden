@@ -33,7 +33,7 @@ type PreviousData =
   | undefined
 
 type MutationOptions = {
-  type: 'creation' | 'model' | 'collection' | 'assistant'
+  type: 'creation' | 'model' | 'collection' | 'agent'
   queryKey: QueryKey
   onSuccessMessage?: string
 }

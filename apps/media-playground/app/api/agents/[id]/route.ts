@@ -38,12 +38,9 @@ export async function GET(
     })
 
     if (!res) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Assistant not found' }),
-        {
-          status: 404,
-        },
-      )
+      return new NextResponse(JSON.stringify({ message: 'Agent not found' }), {
+        status: 404,
+      })
     }
 
     return NextResponse.json(res)
@@ -106,7 +103,7 @@ export async function PATCH(
 
     if (!res) {
       return new NextResponse(
-        JSON.stringify({ message: 'Assistant update error' }),
+        JSON.stringify({ message: 'Agent update error' }),
         {
           status: 500,
         },

@@ -94,9 +94,9 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
           >
             <MediaResultOutput task={task} output={output} />
 
-            {result.intermediateOutputs ? (
+            {result.intermediate_outputs ? (
               <IntermediateOutputsDialog
-                intermediateOutputs={result.intermediateOutputs}
+                intermediateOutputs={result.intermediate_outputs}
               />
             ) : null}
           </div>
