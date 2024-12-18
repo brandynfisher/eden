@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { TaskV2Result } from '@edenlabs/eden-sdk'
 import { ImageIcon, XIcon } from 'lucide-react'
 import React from 'react'
@@ -55,18 +56,27 @@ export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
                     </div>
                     <div className="relative flex justify-center bg-muted-darker p-2 rounded-b-md">
                       {output[1].map((mediaResult, index) => (
-                        <LightboxGalleryItem
-                          className={'h-[calc(60vh_-_72.4px)]'}
-                          key={`${mediaResult.url}_${index}`}
-                          forceRender={false}
-                          unoptimized={true}
-                          item={{
-                            url: mediaResult.url,
-                            thumbnail: mediaResult.url,
-                            width: mediaResult.mediaAttributes?.width,
-                            height: mediaResult.mediaAttributes?.height,
-                          }}
-                        />
+                        <div key={`${mediaResult.url}_${index}`}>
+                          {getFileTypeByMimeType(
+                            mediaResult.mediaAttributes?.mimeType,
+                          ) === 'audio' ? (
+                            <div className="flex w-full h-full items-center justify-center min-h-64">
+                              <audio src={mediaResult.url} controls={true} />
+                            </div>
+                          ) : (
+                            <LightboxGalleryItem
+                              className={'h-[calc(60vh_-_72.4px)]'}
+                              forceRender={false}
+                              unoptimized={true}
+                              item={{
+                                url: mediaResult.url,
+                                thumbnail: mediaResult.url,
+                                width: mediaResult.mediaAttributes?.width,
+                                height: mediaResult.mediaAttributes?.height,
+                              }}
+                            />
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>

@@ -192,6 +192,11 @@ export type TaskV2Result = {
   intermediate_outputs?: {
     inpaint_preview?: MediaOutput[]
     controlnet_signal?: MediaOutput[]
+    // audio_stems
+    isolated_bass?: MediaOutput[]
+    isolated_drums?: MediaOutput[]
+    isolated_other?: MediaOutput[]
+    isolated_vocals?: MediaOutput[]
   }
   metadata?: string | null
 }
