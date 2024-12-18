@@ -552,7 +552,7 @@ const FileUploader = ({
             >
               <LightboxGallery>
                 {existingFiles.map((file, index) => (
-                  <SortableItem key={file.url} value={file.url} asChild>
+                  <SortableItem key={index} value={file.url} asChild>
                     <div className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group">
                       <div className="flex items-center pl-2 h-20">
                         {allowMultiple && (
@@ -626,9 +626,9 @@ const FileUploader = ({
               </LightboxGallery>
             </Sortable>
 
-            {filesToUpload.map(fileUploadProgress => (
+            {filesToUpload.map((fileUploadProgress, index) => (
               <div
-                key={fileUploadProgress.File.lastModified}
+                key={index}
                 className="flex justify-between gap-2 rounded-lg overflow-hidden border border-border group h-20"
               >
                 <div className="flex items-center w-full pr-2">
