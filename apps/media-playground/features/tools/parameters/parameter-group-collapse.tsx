@@ -35,6 +35,11 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
   }, [isWatchedActive])
 
   const handleOpenChange = (newOpenState: boolean) => {
+    // console.log({newOpenState, isWatchedActive, toggleName})
+    if (newOpenState && isWatchedActive === false) {
+      form.setValue(toggleName, true)
+    }
+
     setIsOpen(newOpenState)
   }
 
