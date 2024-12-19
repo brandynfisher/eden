@@ -1,4 +1,5 @@
 import agentRoutes from './agentRoutes'
+import authRoutesV2 from './authRoutesV2'
 import collectionRoutesV2 from './collectionRoutesV2'
 import creationRoutesV2 from './creationRoutesV2'
 import creatorRoutesV2 from './creatorRoutesV2'
@@ -9,6 +10,7 @@ import threadRoutes from './threadRoutes'
 import toolRoutesV2 from './toolRoutesV2'
 
 export const routes = [
+  authRoutesV2,
   creatorRoutesV2,
   toolRoutesV2,
   taskRoutesV2,

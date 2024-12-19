@@ -48,6 +48,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         instructions: Type.String(),
         tools: Type.Optional(Type.Array(Type.String())),
         discordId: Type.Optional(Type.String()),
+        modelId: Type.Optional(Type.String()),
       }),
       response: {
         200: {
@@ -80,6 +81,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         tools: Type.Optional(Type.Array(Type.String())),
         discordId: Type.Optional(Type.String()),
         public: Type.Optional(Type.Boolean()),
+        modelId: Type.Optional(Type.String()),
       }),
       response: {
         200: Type.Object({

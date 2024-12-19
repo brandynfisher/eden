@@ -2,8 +2,11 @@
 
 import LoadingIndicator from '@/components/loading-indicator'
 import { ListSkeleton } from '@/components/timeline/timeline'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { useElementSize } from '@/hooks/use-element-size'
 import { fetcher } from '@/lib/fetcher'
+import { useClerk } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 import {
   TaskV2,
   TasksV2ListResponse,
@@ -29,6 +32,9 @@ const ListVirtualizerVertical = ({
   query,
   queryKey,
 }: Props) => {
+  const { openSignIn } = useClerk()
+  const { user } = useAuthState()
+
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
   const MASONRY_COLUMN_COUNT = 1
@@ -65,6 +71,7 @@ const ListVirtualizerVertical = ({
       return lastPage && lastPage.nextPage ? lastPage.nextPage : undefined
     },
     initialPageParam: 1,
+    enabled: !!user,
   })
 
   const allRows = useMemo(() => {
@@ -117,7 +124,7 @@ const ListVirtualizerVertical = ({
 
       return (
         <div
-          key={`${apiEndpoint}_${virtualItem.index}`}
+          key={`${item?._id || virtualItem.index}`}
           ref={rowVirtualizer.measureElement}
           data-index={virtualItem.index}
           style={{
@@ -163,7 +170,18 @@ const ListVirtualizerVertical = ({
           position: 'relative',
         }}
       >
-        {!allRows.length ? (
+        {!user ? (
+          <div className="p-4 text-center bg-accent rounded-md">
+            Please{' '}
+            <button
+              className="underline"
+              onClick={() => openSignIn({ appearance: { baseTheme: dark } })}
+            >
+              sign in
+            </button>{' '}
+            to view your tasks.
+          </div>
+        ) : !allRows.length ? (
           <div className="w-full flex flex-col gap-y-8">
             {status === 'pending' ? (
               <ListSkeleton />

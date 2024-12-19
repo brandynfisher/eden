@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   }
 
   const requestJson = await request.json()
-  const { name, key, description, image, instructions, discordId } =
+  const { name, key, description, image, instructions, discordId, modelId } =
     requestJson as AgentsCreateArguments
 
   try {
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       image,
       instructions,
       discordId,
+      modelId,
     })
 
     if (!res) {

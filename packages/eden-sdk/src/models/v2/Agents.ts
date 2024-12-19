@@ -1,5 +1,6 @@
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
+import { ModelV2 } from 'src/models/v2'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 // Types
@@ -21,6 +22,7 @@ export type Agent = Omit<
   instructions: string
   tools?: string[]
   discordId?: string
+  model?: ModelV2
   discordUsername?: string
   telegramId?: string
   telegramUsername?: string
@@ -55,6 +57,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   instructions?: string
   tools?: string[]
   discordId?: string
+  modelId?: string
 }
 
 export interface AgentsUpdateArguments extends WebAPICallOptions {
@@ -67,6 +70,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   tools?: string[]
   discordId?: string
   public?: boolean
+  modelId?: string
 }
 
 export interface AgentsDeleteArguments extends WebAPICallOptions {

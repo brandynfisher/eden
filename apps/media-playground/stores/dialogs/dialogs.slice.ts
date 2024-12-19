@@ -63,6 +63,10 @@ const dialogsSlice = createSlice({
   name: 'dialogs',
   initialState,
   reducers: {
+    closeAllQuickCreateModals(state) {
+      state.quickAnimateModal.isOpen = false
+      state.quickUpscaleModal.isOpen = false
+    },
     updateQuickAnimateModal(
       state,
       action: { payload: { isOpen: boolean; creation?: CreationV2 } },
@@ -162,6 +166,7 @@ export const {
   updateAddToCollectionModal,
   toggleCreateCollectionModal,
   updateDeleteDialog,
+  closeAllQuickCreateModals,
 } = dialogsSlice.actions
 
 export default dialogsSlice.reducer

@@ -226,6 +226,8 @@ export type Creator = {
   featureFlags?: FeatureFlag[]
   subscriptionTier?: SubscriptionTier
   stripeCustomerId?: string
+  lastDailyLoginBonus?: Date
+  discordLinkBonusClaimed?: boolean
   discordId?: string
   createdAt: string
   updatedAt: string

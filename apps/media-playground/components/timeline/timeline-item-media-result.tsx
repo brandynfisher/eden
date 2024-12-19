@@ -1,7 +1,5 @@
 import PrivateIcon from '@/components/icons/private-icon'
-import LightboxGallery, {
-  LightboxGalleryItem,
-} from '@/components/media/lightbox-gallery'
+import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import { IntermediateOutputsDialog } from '@/components/timeline/intermediate-outputs-dialog'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { cn } from '@/lib/utils'
@@ -60,14 +58,18 @@ export const MediaResultOutput = ({
         </div>
       ) : (
         <LightboxGallery>
-          <LightboxGalleryItem
-            className="w-full h-full"
-            item={{
+          <LightboxTrigger
+            slide={{
               url: output.url || output.filename,
               thumbnail: output.thumbnail || output.filename,
               width: output.mediaAttributes?.width,
               height: output.mediaAttributes?.height,
               duration: output.mediaAttributes?.duration || undefined,
+            }}
+            videoProps={{
+              poster: output.thumbnail || output.filename,
+            }}
+            imageProps={{
               blurhash: output.mediaAttributes?.blurhash,
             }}
           />

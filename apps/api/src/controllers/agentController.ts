@@ -1,4 +1,5 @@
 import { Agent, AgentDocument } from '../models/Agent'
+import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
@@ -55,10 +56,22 @@ export const createAgent = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { name, key, description, image, instructions, tools, discordId } =
-    request.body as AgentsCreateArguments
+  const {
+    name,
+    key,
+    description,
+    image,
+    instructions,
+    tools,
+    discordId,
+    modelId,
+  } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
+
+  if (modelId) {
+    await verifyModelAccess(reply, modelId, currentUserId.toString())
+  }
 
   const imageFilename = image.split('/').pop()
 
@@ -72,6 +85,7 @@ export const createAgent = async (
     instructions,
     tools,
     discordId,
+    model: modelId,
   })
 
   try {
@@ -109,6 +123,7 @@ export const updateAgent = async (
     tools,
     discordId,
     public: isPublic,
+    modelId,
   } = request.body as AgentsUpdateArguments
 
   if (!agentId) {
@@ -125,6 +140,13 @@ export const updateAgent = async (
     tools,
     discordId,
     public: isPublic,
+  }
+
+  if (!modelId) {
+    updateData.$unset = { model: 1 }
+  } else if (modelId) {
+    await verifyModelAccess(reply, modelId, currentUserId.toString())
+    updateData.model = modelId
   }
 
   if (image) {
@@ -196,4 +218,25 @@ export const deleteAgent = async (
   await agent.delete()
 
   return reply.status(200).send()
+}
+
+const verifyModelAccess = async (
+  reply: FastifyReply,
+  modelId: string,
+  currentUserId: string,
+) => {
+  const model = await ModelV2.findById(modelId)
+
+  if (!model || model.deleted) {
+    return reply.status(404).send({
+      error: 'Model not found',
+    })
+  }
+
+  const isOwnModel = model.user.toString() === currentUserId.toString()
+  if (!isOwnModel && !model.public) {
+    return reply.status(401).send({
+      error: 'You are not authorized to use this model',
+    })
+  }
 }

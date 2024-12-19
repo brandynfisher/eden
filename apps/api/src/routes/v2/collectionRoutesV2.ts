@@ -3,6 +3,7 @@ import {
   createCollection,
   deleteCollection,
   getCollection,
+  getCollectionDownloadZip,
   getUserCollectionsLight,
   removeCreationsFromCollection,
   updateCollection,
@@ -76,6 +77,24 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => createCollection(request, reply),
+  })
+
+  server.post('/v2/collections/:collectionId/download', {
+    schema: {
+      tags: ['Collections'],
+      description: 'Download a collection',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        collectionId: Type.String(),
+      },
+    },
+    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    handler: (request, reply) =>
+      getCollectionDownloadZip(server, request, reply),
   })
 
   server.patch('/v2/collections/:collectionId', {

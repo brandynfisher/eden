@@ -86,7 +86,7 @@ export const receiveUserUpdate = async (
         return reply.status(500).send('Webhook Error: Duplicate E-Mail address')
       }
 
-      await createNewUser({
+      await createNewUser(server, {
         userId: evt.data.id,
         username: evt.data.username,
         userImage: evt.data.image_url,

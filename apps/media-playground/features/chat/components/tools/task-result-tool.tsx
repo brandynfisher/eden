@@ -1,6 +1,4 @@
-import LightboxGallery, {
-  LightboxGalleryItem,
-} from '@/components/media/lightbox-gallery'
+import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -48,16 +46,18 @@ export const TaskResultTool = makeAssistantToolUI<
               ? toolResults.map((result, index) => (
                   <div key={index}>
                     {result.output.map(output => (
-                      <LightboxGalleryItem
+                      <LightboxTrigger
                         key={output.filename}
                         className="w-full h-full"
-                        item={{
+                        slide={{
                           url: getCloudfrontOriginalUrl(output.filename),
                           thumbnail: getCloudfrontOriginalUrl(output.filename),
                           width: output.mediaAttributes?.width,
                           height: output.mediaAttributes?.height,
                           duration:
                             output.mediaAttributes?.duration || undefined,
+                        }}
+                        imageProps={{
                           blurhash: output.mediaAttributes?.blurhash,
                         }}
                       />

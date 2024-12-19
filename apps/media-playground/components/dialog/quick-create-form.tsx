@@ -5,11 +5,15 @@ import ParameterField from '@/features/tools/parameters/parameter-field'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
+import { closeAllQuickCreateModals } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
+import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -25,8 +29,13 @@ const SimpleGeneratorForm = ({
   initValues: { [key: string]: string | number }
   onSubmitSuccess: () => void
 }) => {
-  const { verifyAuth, refetchMe } = useAuthState()
+  const router = useRouter()
+
+  const dispatch = useAppDispatch()
+
+  const { verifyAuth, refetchMe, balance } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
   const parameters = tool?.parameters?.filter(param =>
     exposedParameters.includes(param.name),
   )
@@ -39,6 +48,15 @@ const SimpleGeneratorForm = ({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
     defaultValues: { ...defaultValues, ...initValues },
   })
+
+  const formValues = form.watch()
+  const cost = useMemo(() => {
+    return calculateCost(tool.cost_estimate || '', formValues)
+  }, [tool.cost_estimate, formValues])
+
+  const hasEnoughBalance = useMemo(() => {
+    return cost <= balance
+  }, [cost, balance])
 
   async function onSubmit(formData: FormData) {
     const finalData = { ...defaultValues, ...formData, ...initValues }
@@ -100,12 +118,28 @@ const SimpleGeneratorForm = ({
             })
           : null}
         <div className="flex gap-2 items-center justify-end">
-          <CostIndicatorV2 formula={tool.cost_estimate} />
+          <CostIndicatorV2 cost={cost} />
+
+          {!hasEnoughBalance && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                dispatch(closeAllQuickCreateModals())
+                router.push('/settings/subscription')
+              }}
+            >
+              Buy More Manna
+            </Button>
+          )}
+
           <Button
             type="button"
-            className=" w-[72px]"
+            size="sm"
+            className="w-[72px]"
             onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !hasEnoughBalance}
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

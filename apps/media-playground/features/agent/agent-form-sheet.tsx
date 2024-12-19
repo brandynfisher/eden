@@ -1,4 +1,6 @@
+import ModelMiniCard from '@/components/card/model-mini-card'
 import FileUploader from '@/components/media/file-uploader'
+import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -23,7 +25,7 @@ import {
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Edit2Icon, PlusIcon } from 'lucide-react'
+import { Edit2Icon, PlusIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
@@ -43,6 +45,7 @@ export const agentSchema = z.object({
   description: z.string().min(1).max(1000),
   instructions: z.string().min(1),
   discordId: z.string().optional(),
+  modelId: z.string().optional(),
 })
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -68,6 +71,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
           description: agent?.description,
           instructions: agent?.instructions,
           discordId: agent?.discordId ?? '',
+          modelId: agent?.model,
         }
       : {},
   })
@@ -258,6 +262,50 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/** Model Field */}
+            <FormField
+              control={form.control}
+              name="modelId"
+              render={({ field }) => (
+                <FormItem className="p-2 bg-secondary rounded-lg">
+                  <FormLabel>LoRa (Optional)</FormLabel>
+                  <div>
+                    {field.value && (
+                      <div className="relative mb-2">
+                        <ModelMiniCard modelId={field.value}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="absolute h-[calc(100%-16px)] top-2 right-2 hover:bg-destructive hover:text-destructive-foreground"
+                            size="icon"
+                            onClick={e => {
+                              e.stopPropagation()
+                              field.onChange('')
+                            }}
+                          >
+                            <XIcon className="size-4" />
+                          </Button>
+                        </ModelMiniCard>
+                      </div>
+                    )}
+                    <ModelSelectorModal
+                      className="p-4 md:p-8 w-full"
+                      title="Select model"
+                      description="Pick a model to use as a lora"
+                      base_model="flux-dev"
+                      currentValue={field.value || ''}
+                      onChange={field.onChange}
+                      trigger={
+                        <Button type="button" variant="outline">
+                          {field.value ? 'Change LoRa' : 'Select LoRa'}
+                        </Button>
+                      }
+                    />
+                  </div>
                 </FormItem>
               )}
             />
