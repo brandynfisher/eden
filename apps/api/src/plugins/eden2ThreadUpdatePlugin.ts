@@ -114,14 +114,14 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
 
             // cachedDocuments.set(docId, cachedDoc);
 
-            console.log(
-              'update: updatedFields:',
-              JSON.stringify(
-                { thread: cachedDoc?._id, ...updatedFields },
-                null,
-                2,
-              ),
-            )
+            // console.log(
+            //   'update: updatedFields:',
+            //   JSON.stringify(
+            //     { thread: cachedDoc?._id, ...updatedFields },
+            //     null,
+            //     2,
+            //   ),
+            // )
             const modifiedMessages = extractModifiedMessages(updatedFields)
 
             const updatedMessages: ThreadMessage[] = []
@@ -149,10 +149,10 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
               return msg.role !== 'user'
             })
 
-            console.log(
-              'update: filteredModifiedMessages',
-              JSON.stringify(filteredModifiedMessages, null, 2),
-            )
+            // console.log(
+            //   'update: filteredModifiedMessages',
+            //   JSON.stringify(filteredModifiedMessages, null, 2),
+            // )
 
             if (!filteredModifiedMessages.length) {
               console.log('update: No non-user messages updated')

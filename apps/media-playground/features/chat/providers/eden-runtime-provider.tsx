@@ -57,6 +57,9 @@ export function EdenRuntimeProvider({
         messages: thread.messages,
       }
     },
+    onRename: async (threadId, newTitle) => {
+      console.log('rename', threadId, newTitle)
+    },
     stream: async messages => {
       return (async function* () {
         const messageEmitter = messageEmitterRef.current

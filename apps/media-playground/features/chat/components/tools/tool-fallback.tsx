@@ -36,9 +36,10 @@ export const ToolFallback: ToolCallContentPartComponent = ({
         <WrenchIcon className="size-4" />
         <div className="flex items-center gap-2">
           <div>
-            Tool: <span className="font-bold">{toolName}</span>
+            <span className="font-bold">{toolName}</span>
           </div>
-          {toolStatus === TaskV2Status.Running ? (
+          {toolStatus === TaskV2Status.Running ||
+          toolStatus === TaskV2Status.Pending ? (
             <span
               className={'text-blue-500 mr-1 h-5 w-5 loading loading-ring'}
             />

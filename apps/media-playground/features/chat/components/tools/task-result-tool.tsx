@@ -1,5 +1,6 @@
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { makeAssistantToolUI } from '@assistant-ui/react'
@@ -46,21 +47,35 @@ export const TaskResultTool = makeAssistantToolUI<
               ? toolResults.map((result, index) => (
                   <div className="relative" key={index}>
                     {result.output.map(output => (
-                      <LightboxTrigger
-                        key={output.filename}
-                        className="w-full h-full"
-                        slide={{
-                          url: getCloudfrontOriginalUrl(output.filename),
-                          thumbnail: getCloudfrontOriginalUrl(output.filename),
-                          width: output.mediaAttributes?.width,
-                          height: output.mediaAttributes?.height,
-                          duration:
-                            output.mediaAttributes?.duration || undefined,
-                        }}
-                        imageProps={{
-                          blurhash: output.mediaAttributes?.blurhash,
-                        }}
-                      />
+                      <div key={output.filename}>
+                        {getFileTypeByMimeType(
+                          output.mediaAttributes?.mimeType,
+                        ) === 'audio' ? (
+                          <audio controls>
+                            <source
+                              src={getCloudfrontOriginalUrl(output.filename)}
+                              type={output.mediaAttributes?.mimeType}
+                            />
+                          </audio>
+                        ) : (
+                          <LightboxTrigger
+                            className="w-full h-full"
+                            slide={{
+                              url: getCloudfrontOriginalUrl(output.filename),
+                              thumbnail: getCloudfrontOriginalUrl(
+                                output.filename,
+                              ),
+                              width: output.mediaAttributes?.width,
+                              height: output.mediaAttributes?.height,
+                              duration:
+                                output.mediaAttributes?.duration || undefined,
+                            }}
+                            imageProps={{
+                              blurhash: output.mediaAttributes?.blurhash,
+                            }}
+                          />
+                        )}
+                      </div>
                     ))}
                   </div>
                 ))

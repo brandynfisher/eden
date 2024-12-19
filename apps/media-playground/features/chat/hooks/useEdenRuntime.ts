@@ -20,6 +20,7 @@ export const useEdenRuntime = ({
   stream,
   onSwitchToNewThread,
   onSwitchToThread,
+  onRename,
 }: {
   threadId?: string | undefined
   stream: (
@@ -27,6 +28,7 @@ export const useEdenRuntime = ({
   ) => Promise<AsyncGenerator<{ data: EdenMessage }>>
   onSwitchToNewThread?: () => Promise<void> | void
   onSwitchToThread?: (threadId: string) => Promise<{ messages: EdenMessage[] }>
+  onRename?: (threadId: string, newTitle: string) => Promise<void>
 }) => {
   const [isRunning, setIsRunning] = useState(false)
 
@@ -50,8 +52,7 @@ export const useEdenRuntime = ({
     isRunning,
   })
 
-  console.log({ threadId, threadMessages })
-
+  // console.log({ threadId, threadMessages })
   // console.log({ threads, threadIds: threads?.map(thread => thread._id) })
 
   return useExternalStoreRuntime({
@@ -81,6 +82,12 @@ export const useEdenRuntime = ({
           : async threadId => {
               const { messages } = await onSwitchToThread(threadId)
               setMessages(messages)
+            },
+        onRename: !onRename
+          ? undefined
+          : async (threadId, newTitle) => {
+              await onRename(threadId, newTitle)
+              // update optimistically or trigger thread list query invalidation
             },
       },
     },

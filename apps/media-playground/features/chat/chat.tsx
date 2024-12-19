@@ -27,7 +27,7 @@ import {
   useThreadList,
 } from '@assistant-ui/react'
 import { TooltipContentProps } from '@radix-ui/react-tooltip'
-import { EditIcon, MenuIcon } from 'lucide-react'
+import { Edit3Icon, EditIcon, MenuIcon } from 'lucide-react'
 import Link from 'next/link'
 import { FC, useEffect } from 'react'
 
@@ -83,11 +83,35 @@ const TopLeft: FC = () => {
 }
 
 const ThreadListItem: FC = () => {
+  // const threadListRuntime = useAssistantRuntime().threadList
+  // const thread = useThread()
+  // console.log(thread)
+  // console.log(threadListRuntime.getThreadListItemById(threadListItem.metadata.threadId))
+
+  // console.log(thread, threadList,)
+  //
+  // const handleRenameClick = async () => {
+  //   const threadDing = threadListRuntime.getThreadListItemById(thread.metadata.threadId)
+  //   await threadDing.rename('New Title')
+  // }
+
   return (
-    <ThreadListItemPrimitive.Root className="hover:text-primary data-[active]:bg-muted data-[active]:text-primary hover:bg-muted-darker flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
+    <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary hover:bg-muted-darker flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
       <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate">
         <ThreadListItemPrimitive.Title fallback="Untitled" />
       </ThreadListItemPrimitive.Trigger>
+      {/*{isActiveThread ? (*/}
+      <ButtonWithTooltip
+        variant="ghost"
+        className="hover:text-foreground/60 ml-auto h-auto p-0"
+        tooltip="Change thread title"
+        // onClick={handleRenameClick}
+        disabled={true}
+      >
+        <Edit3Icon className="size-4 hidden group-hover:flex [@media(pointer:coarse)]:flex" />
+      </ButtonWithTooltip>
+      {/*)*/}
+      {/*: null }*/}
       {/*<ThreadListItemPrimitive.Archive asChild>*/}
       {/*  <ButtonWithTooltip*/}
       {/*    variant="ghost"*/}
