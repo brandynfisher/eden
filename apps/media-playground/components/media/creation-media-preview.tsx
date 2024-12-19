@@ -40,7 +40,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
               className: isModal
                 ? 'max-h-[calc(100dvh_-_130px)]'
                 : 'max-h-[calc(100dvh_-_230px)]',
-              blur: creation.mediaAttributes?.blur,
+              blurhash: creation.mediaAttributes?.blurhash,
             }}
             videoProps={{
               className: isModal

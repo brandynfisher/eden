@@ -57,6 +57,9 @@ export const TaskResultTool = makeAssistantToolUI<
                           duration:
                             output.mediaAttributes?.duration || undefined,
                         }}
+                        imageProps={{
+                          blurhash: output.mediaAttributes?.blurhash,
+                        }}
                       />
                     ))}
                   </div>

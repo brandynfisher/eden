@@ -34,7 +34,6 @@ export function EdenRuntimeProvider({
   })
 
   useEffect(() => {
-    ``
     if (websocketMessage) {
       const newMessages = websocketMessage.data.newMessages as
         | EdenMessage[]

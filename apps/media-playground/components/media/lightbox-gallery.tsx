@@ -20,7 +20,7 @@ type GalleryItem = {
   width?: number
   height?: number
   duration?: number
-  blur?: string
+  blurhash?: string
 }
 
 type LightboxGalleryItemProps = {
@@ -42,7 +42,7 @@ export const LightboxGalleryItem = ({
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
   const width = item.width || 1024
   const height = item.height || 1024
-  const blurDataUrl = useBlurDataUrl(item.blur, item.width, item.height)
+  const blurDataUrl = useBlurDataUrl(item.blurhash, item.width, item.height)
   const [isLoaded, setIsLoaded] = useState(false)
 
   return (

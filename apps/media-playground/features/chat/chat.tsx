@@ -3,6 +3,7 @@
 import AlertDestructive from '@/components/alert/alert-destructive'
 import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button, ButtonProps } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import {
@@ -27,6 +28,7 @@ import {
 } from '@assistant-ui/react'
 import { TooltipContentProps } from '@radix-ui/react-tooltip'
 import { EditIcon, MenuIcon } from 'lucide-react'
+import Link from 'next/link'
 import { FC, useEffect } from 'react'
 
 type ButtonWithTooltipProps = ButtonProps & {
@@ -156,8 +158,6 @@ const Chat: FC<Props> = ({ agentId }) => {
     enabled: !!agentId,
   })
 
-  console.log(agent)
-
   useEffect(() => {
     document.body.classList.add('overflow-hidden')
     return () => {
@@ -178,8 +178,26 @@ const Chat: FC<Props> = ({ agentId }) => {
         <div className={cn(sideStyle, leftStyle, 'overflow-y-auto')}>
           <MainLeft />
         </div>
-        <div className={cn(sideStyle, topStyle)}>
+        <div className={cn(sideStyle, topStyle, 'flex')}>
           <Header />
+          {agent ? (
+            <Link
+              className="ml-auto md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
+              title="View Agent profile"
+              href={`/agents/${agent?._id}`}
+            >
+              <Avatar className="w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1">
+                <AvatarImage
+                  className={'object-cover'}
+                  src={getCloudfrontOriginalUrl(agent?.userImage)}
+                />
+                <AvatarFallback delayMs={250} className="w-6 h-6 md:w-8 md:h-8">
+                  {agent?.name}
+                </AvatarFallback>
+              </Avatar>
+              {agent?.name}
+            </Link>
+          ) : null}
         </div>
         <div className="bg-background overflow-hidden">
           {agent ? (
@@ -208,8 +226,8 @@ const Chat: FC<Props> = ({ agentId }) => {
               }}
               assistantAvatar={{
                 src: getCloudfrontOriginalUrl(agent.userImage),
-                fallback: agent.username,
-                alt: agent.username,
+                fallback: agent.name,
+                alt: agent.name,
               }}
               assistantMessage={{
                 allowReload: false,

@@ -121,7 +121,7 @@ const CreationCard = ({
                 width: creation.mediaAttributes?.width,
                 height: creation.mediaAttributes?.height,
                 type: fileType,
-                blur: creation.mediaAttributes?.blur,
+                blurhash: creation.mediaAttributes?.blurhash,
               }}
             />
           )}

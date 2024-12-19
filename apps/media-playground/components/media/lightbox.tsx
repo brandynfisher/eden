@@ -178,19 +178,19 @@ LightboxTrigger.displayName = 'LightboxTrigger'
 type LightboxImageTriggerProps = {
   src?: string
   alt?: string
-  blur?: string
+  blurhash?: string
 } & Omit<ImageProps, 'src' | 'alt'>
 
 export function LightboxImageTrigger({
   src = siteConfig.mediaErrorUrl,
   alt = '',
-  blur,
+  blurhash,
   className,
   ...props
 }: LightboxImageTriggerProps) {
   const width = props?.width ? +props.width : 1024
   const height = props?.height ? +props.height : 1024
-  const blurDataUrl = useBlurDataUrl(blur, width, height)
+  const blurDataUrl = useBlurDataUrl(blurhash, width, height)
 
   return (
     <NextImage

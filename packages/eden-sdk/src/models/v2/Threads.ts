@@ -177,7 +177,7 @@ export type SystemMessage = Message & {
 export type Thread = {
   _id: string
   user: Creator
-  agent?: Agent
+  agent: Agent
   title?: string
   name: string
   label: string
