@@ -1,7 +1,6 @@
+import { UserDocument } from './User'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
-
-import { UserDocument } from './Creator'
 
 export interface UserMigrationSchema {
   user: UserDocument
@@ -15,12 +14,12 @@ const userMigration = new Schema<UserMigrationDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     oldUser: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
   },

@@ -6,6 +6,7 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
+import { Agent } from './Agents'
 import { TaskV2Args, TaskV2Result } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
@@ -176,6 +177,7 @@ export type SystemMessage = Message & {
 export type Thread = {
   _id: string
   user: Creator
+  agent?: Agent
   title?: string
   name: string
   label: string

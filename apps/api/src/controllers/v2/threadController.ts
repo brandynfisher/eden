@@ -1,4 +1,4 @@
-import { User } from '../../models/Creator'
+import { User } from '../../models/User'
 import { Thread as ThreadModel } from '../../models/v2/Thread'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import ThreadRepository from '../../repositories/ThreadRepository'
@@ -102,17 +102,23 @@ export const listThreads = async (
     }
 
     const queryOptions: QueryOptions = {
-      select: '_id title name createdAt updatedAt user',
+      select: '_id title name createdAt updatedAt user agent',
       limit,
       page,
       sort: {
         ...sort,
         updatedAt: -1,
+        createdAt: -1,
       },
     }
 
     const threadsRepository = new ThreadRepository(ThreadModel)
     const paginatedResponse = await threadsRepository.query(query, queryOptions)
+
+    await threadsRepository.model.populate(paginatedResponse.docs, {
+      path: 'agent',
+      select: '_id username userImage',
+    })
 
     return reply.status(200).send(paginatedResponse)
   } catch (e) {
@@ -149,10 +155,15 @@ export const getThread = async (
     const thread = await ThreadModel.findOne({
       _id: new ObjectId(thread_id),
       user: userId,
-    }).populate({
-      path: 'user',
-      select: '_id username userId userImage',
     })
+      .populate({
+        path: 'user',
+        select: '_id username userId userImage',
+      })
+      .populate({
+        path: 'agent',
+        select: '_id username userImage',
+      })
 
     // console.log(thread)
 
@@ -172,6 +183,53 @@ export const getThread = async (
 
     server.log.error({
       message: 'Failed to get thread',
+      error: errorMessage,
+    })
+    return reply.status(500).send({ error: errorMessage })
+  }
+}
+
+export const addThreadMessageReaction = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { thread_id } = request.params as ThreadsGetArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  try {
+    const thread = await ThreadModel.findOne({
+      _id: new ObjectId(thread_id),
+      user: userId,
+    })
+
+    console.log(thread)
+
+    if (!thread) {
+      return reply.status(404).send({
+        message: 'Thread not found',
+      })
+    }
+
+    // @todo: add reaction to message (use update / $set with msg id filter to not rewrite the whole document)
+
+    return reply.status(200).send({ thread })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({
+      message: 'Failed to add thread message reaction',
       error: errorMessage,
     })
     return reply.status(500).send({ error: errorMessage })

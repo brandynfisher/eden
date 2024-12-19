@@ -1,5 +1,7 @@
 'use client'
 
+import AlertDestructive from '@/components/alert/alert-destructive'
+import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { Button, ButtonProps } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -14,9 +16,10 @@ import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
+import { EdenRuntimeProvider } from '@/features/chat/providers/eden-runtime-provider'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { AssistantV2 } from '@/types/Assistant'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
@@ -143,10 +146,18 @@ const Header: FC = () => {
 }
 
 type Props = {
-  assistant: AssistantV2
+  agentId: string
+  threadId?: string
 }
 
-const Chat: FC<Props> = ({ assistant }) => {
+const Chat: FC<Props> = ({ agentId }) => {
+  const { agent, isError, error } = useAgentQuery({
+    key: agentId,
+    enabled: !!agentId,
+  })
+
+  console.log(agent)
+
   useEffect(() => {
     document.body.classList.add('overflow-hidden')
     return () => {
@@ -159,66 +170,77 @@ const Chat: FC<Props> = ({ assistant }) => {
   const leftStyle = 'border-r hidden md:block'
 
   return (
-    <div className="grid h-[calc(100dvh_-_64px)] w-full grid-flow-col grid-rows-[auto_1fr] md:grid-cols-[250px_1fr]">
-      <div className={cn(sideStyle, leftStyle, topStyle)}>
-        <TopLeft />
+    <EdenRuntimeProvider agentId={agentId}>
+      <div className="grid h-[calc(100dvh_-_64px)] w-full grid-flow-col grid-rows-[auto_1fr] md:grid-cols-[250px_1fr]">
+        <div className={cn(sideStyle, leftStyle, topStyle)}>
+          <TopLeft />
+        </div>
+        <div className={cn(sideStyle, leftStyle, 'overflow-y-auto')}>
+          <MainLeft />
+        </div>
+        <div className={cn(sideStyle, topStyle)}>
+          <Header />
+        </div>
+        <div className="bg-background overflow-hidden">
+          {agent ? (
+            <Thread
+              components={{
+                ThreadWelcome: MyThreadWelcome,
+                Composer: MyComposer,
+              }}
+              welcome={{
+                suggestions: [
+                  {
+                    text: 'List of tools',
+                    prompt:
+                      'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
+                  },
+                  {
+                    text: 'Make a cat image',
+                    prompt: 'Make an image of a cute little cat with a hat',
+                  },
+                  {
+                    text: 'Animate my logo',
+                    prompt: 'Use the provided logo image to animate it',
+                  },
+                ],
+                message: 'What do you want to create today?',
+              }}
+              assistantAvatar={{
+                src: getCloudfrontOriginalUrl(agent.userImage),
+                fallback: agent.username,
+                alt: agent.username,
+              }}
+              assistantMessage={{
+                allowReload: false,
+                allowSpeak: false,
+                components: {
+                  Text: MarkdownText,
+                  ToolFallback,
+                },
+              }}
+              userMessage={{
+                allowEdit: false,
+              }}
+              branchPicker={{
+                allowBranchPicker: false,
+              }}
+              composer={{
+                allowAttachments: true,
+              }}
+              tools={[TaskResultTool]}
+            />
+          ) : null}
+          {isError ? (
+            <div className="p-4">
+              <AlertDestructive title={'Error loading agent'}>
+                <AlertDescription>{error?.message}</AlertDescription>
+              </AlertDestructive>
+            </div>
+          ) : null}
+        </div>
       </div>
-      <div className={cn(sideStyle, leftStyle, 'overflow-y-auto')}>
-        <MainLeft />
-      </div>
-      <div className={cn(sideStyle, topStyle)}>
-        <Header />
-      </div>
-      <div className="bg-background overflow-hidden">
-        <Thread
-          components={{
-            ThreadWelcome: MyThreadWelcome,
-            Composer: MyComposer,
-          }}
-          welcome={{
-            suggestions: [
-              {
-                text: 'List of tools',
-                prompt:
-                  'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
-              },
-              {
-                text: 'Make a cat image',
-                prompt: 'Make an image of a cute little cat with a hat',
-              },
-              {
-                text: 'Animate my logo',
-                prompt: 'Use the provided logo image to animate it',
-              },
-            ],
-            message: assistant.welcomeText,
-          }}
-          assistantAvatar={{
-            src: getCloudfrontOriginalUrl(assistant.image),
-            fallback: assistant.name,
-            alt: assistant.name,
-          }}
-          assistantMessage={{
-            allowReload: false,
-            allowSpeak: false,
-            components: {
-              Text: MarkdownText,
-              ToolFallback,
-            },
-          }}
-          userMessage={{
-            allowEdit: false,
-          }}
-          branchPicker={{
-            allowBranchPicker: false,
-          }}
-          composer={{
-            allowAttachments: true,
-          }}
-          tools={[TaskResultTool]}
-        />
-      </div>
-    </div>
+    </EdenRuntimeProvider>
   )
 }
 

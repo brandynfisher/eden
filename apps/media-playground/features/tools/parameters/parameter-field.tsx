@@ -428,7 +428,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             errorMessage={fieldState.error?.message}
           >
             <>
-              {JSON.stringify(parameter.schema)}
+              {/*{JSON.stringify(parameter.schema)}*/}
               <TextInput
                 onChange={onChange}
                 onBlur={onBlur}

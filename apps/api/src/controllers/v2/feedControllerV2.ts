@@ -1,5 +1,5 @@
 import { getSimilarCreationIds } from '../../lib/similar'
-import { Agent, AgentDocument } from '../../models/Agent'
+import { Agent } from '../../models/Agent'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
 import {
   CollectionV2,
@@ -14,7 +14,7 @@ import {
 } from '../../plugins/s3Plugin'
 import {
   CursorPaginatedFeedQuery,
-  FeedV2CursorResponse,
+  FeedAgentCursorResponse,
   ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -236,7 +236,9 @@ const handleArguments = async ({
   const filterUserIds = filterMap
     ? filterMap
         ?.filter(
-          item => item.name === 'user' && item.value === authUserId?.toString(),
+          item =>
+            (item.name === 'user' && item.value === authUserId?.toString()) ||
+            (item.name === 'owner' && item.value === authUserId?.toString()),
         )
         .map(item => item.value)
     : undefined
@@ -319,6 +321,7 @@ const handleArguments = async ({
 
           if (
             field === 'user' ||
+            field === 'owner' ||
             field === 'character' ||
             field === 'concept' ||
             field === 'collection'
@@ -378,7 +381,7 @@ const handleArguments = async ({
 
           if (field === 'public') {
             if (!usesLikedFilter && isUserRequestingOwnProfileFeed) {
-              return [field, value === 'false']
+              return [field, value === 'true']
             }
             return []
           }
@@ -555,7 +558,7 @@ const createPipeline = async (
 const userLookup: PipelineStage[] = [
   {
     $lookup: {
-      from: 'users',
+      from: 'users3',
       localField: 'user',
       foreignField: '_id',
       as: 'user',
@@ -572,6 +575,28 @@ const userLookup: PipelineStage[] = [
     },
   },
   { $unwind: '$user' },
+]
+
+const ownerLookup: PipelineStage[] = [
+  {
+    $lookup: {
+      from: 'users3',
+      localField: 'owner',
+      foreignField: '_id',
+      as: 'owner',
+      pipeline: [
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            username: 1,
+            userImage: 1,
+          },
+        },
+      ],
+    },
+  },
+  { $unwind: '$owner' },
 ]
 
 const creationLookup: PipelineStage[] = [
@@ -967,17 +992,24 @@ export const getAgentsFeedCursor = async (
   const { query } = request
   const { userId: authUserId } = request.user || {}
 
+  const ownerQuery = query as { filter: string | string[] }
+  if (ownerQuery.filter) {
+    ownerQuery.filter = (
+      Array.isArray(ownerQuery.filter) ? ownerQuery.filter : [ownerQuery.filter]
+    ).map(fil => (fil as string).replaceAll('user;', 'owner;'))
+  }
+
   const { filters, sortOptions, customFilterOptions } = await handleArguments({
     server,
     reply,
     authUserId,
-    query: query as CursorPaginatedFeedQuery,
+    query: ownerQuery as CursorPaginatedFeedQuery,
   })
 
   const { cursor, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
-  const lateLookupStages = userLookup
+  const lateLookupStages = ownerLookup
 
   const pipeline = await createPipeline({
     limit: limit ?? 100,
@@ -995,7 +1027,7 @@ export const getAgentsFeedCursor = async (
 
   results = await Agent.aggregate(feedPipeline)
 
-  const feed: FeedV2CursorResponse = {
+  const feed: FeedAgentCursorResponse = {
     docs: results,
   }
 
@@ -1008,9 +1040,9 @@ export const getAgentsFeedCursor = async (
         results && results.length && results[results.length - 1].createdAt
     }
 
-    feed.docs?.forEach((doc: AgentDocument) => {
-      if (doc && doc.image) {
-        doc.image = forceCloudfrontUrl(server, doc.image || '')
+    feed.docs?.forEach(doc => {
+      if (doc && doc.userImage) {
+        doc.userImage = forceCloudfrontUrl(server, doc.userImage || '')
       }
     })
 

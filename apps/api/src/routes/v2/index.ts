@@ -1,3 +1,4 @@
+import agentRoutes from './agentRoutes'
 import collectionRoutesV2 from './collectionRoutesV2'
 import creationRoutesV2 from './creationRoutesV2'
 import creatorRoutesV2 from './creatorRoutesV2'
@@ -16,4 +17,5 @@ export const routes = [
   feedRoutesV2,
   collectionRoutesV2,
   threadRoutes,
+  agentRoutes,
 ]

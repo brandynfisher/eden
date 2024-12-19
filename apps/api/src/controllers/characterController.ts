@@ -1,7 +1,7 @@
 import { characterLimitPermissionCheck } from '../lib/authorization'
 import { ApiKey } from '../models/ApiKey'
 import { Character } from '../models/Character'
-import { User } from '../models/Creator'
+import { User } from '../models/User'
 import ApiKeyRepository from '../repositories/ApiKeyRepository'
 import CharacterRepository from '../repositories/CharacterRepository'
 import CreatorRepository from '../repositories/CreatorRepository'

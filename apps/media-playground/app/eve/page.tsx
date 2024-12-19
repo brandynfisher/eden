@@ -1,15 +1,27 @@
+import { Skeleton } from '@/components/ui/skeleton'
 import Chat from '@/features/chat/chat'
-import { AssistantV2 } from '@/types/Assistant'
+import { Suspense } from 'react'
 
 const EvePage = () => {
-  const assistant: AssistantV2 = {
-    _id: '67170abeb539c335ad24067a',
-    name: 'Eve',
-    image: 'app/assistant/eve_512.png',
-    welcomeText: 'What do you want to create today?',
-  }
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col flex-1 p-2 gap-2 max-h-screen h-full ">
+          <Skeleton className={'w-full h-12'} />
 
-  return <Chat assistant={assistant} />
+          <div className="flex flex-1 gap-2 h-full">
+            <Skeleton className={'w-[360px]'} />
+            <div className="flex flex-col w-full gap-2">
+              <Skeleton className={'w-full h-12'} />
+              <Skeleton className={'mt-auto w-full h-full'} />
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <Chat agentId={'675fd3af79e00297cdac1324'} />
+    </Suspense>
+  )
 }
 
 export default EvePage

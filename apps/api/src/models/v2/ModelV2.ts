@@ -41,7 +41,7 @@ export const modelSchema = new Schema<ModelV2Document>(
     },
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     task: {

@@ -1,6 +1,6 @@
 import { VisibilitySchema } from '../types/baseSchemas'
 import { CreationDocument } from './Creation'
-import { UserDocument } from './Creator'
+import { UserDocument } from './User'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -39,13 +39,13 @@ const collection = new Schema<CollectionDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     contributors: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'users3',
         default: [],
       },
     ],

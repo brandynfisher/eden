@@ -1,4 +1,4 @@
-import AssistantActionsMenu from '@/components/button/assistant-actions-menu'
+import AgentActionsMenu from '@/components/button/agent-actions-menu'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
@@ -10,37 +10,37 @@ import Link from 'next/link'
 import React from 'react'
 
 type Props = {
-  assistant: Agent
+  agent: Agent
   queryKey: QueryKey
   onClick?: (item: Agent) => void
 }
 
-const AssistantCard = ({ assistant, queryKey, onClick }: Props) => {
+const AgentCard = ({ agent, queryKey, onClick }: Props) => {
   return (
     <Card className="relative overflow-hidden border-0 z-10 transition-shadow group">
-      {!assistant.public ? <PrivateIcon /> : null}
+      {!agent.public ? <PrivateIcon /> : null}
       {onClick ? (
         <div
           className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover group-hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
-          onClick={() => onClick(assistant)}
+          onClick={() => onClick(agent)}
         >
           <SquareMousePointerIcon className="mr-2 h-4 w-4" />
           Select
         </div>
       ) : null}
       <Link
-        href={`/assistants/${assistant._id}`}
+        href={`/agents/${agent._id}`}
         prefetch={false}
         className="relative w-full block aspect-square"
       >
         <CardImage
           media={{
-            url: assistant.image,
-            thumbnail: assistant.image,
+            url: agent.userImage,
+            thumbnail: agent.userImage,
             width: 512,
             height: 512,
             type: 'image',
-            blur: assistant.blurhash,
+            blur: agent.blurhash,
           }}
           unoptimized={true}
           className="object-cover"
@@ -48,17 +48,13 @@ const AssistantCard = ({ assistant, queryKey, onClick }: Props) => {
       </Link>
       <CardFooter
         actions={[
-          <AssistantActionsMenu
-            key={1}
-            assistant={assistant}
-            queryKey={queryKey}
-          />,
+          <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />,
         ]}
       >
-        <div className="text-xs">{assistant.name}</div>
+        <div className="text-xs">{agent.name}</div>
       </CardFooter>
     </Card>
   )
 }
 
-export default AssistantCard
+export default AgentCard

@@ -1,13 +1,12 @@
+import { CharacterDocument } from './Character'
+import { CreationDocument } from './Creation'
+import { SessionDocument } from './Session'
+import { TaskDocument } from './Task'
+import { UserDocument } from './User'
 import { ChatMessage, SessionEventType } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 import { SoftDeleteDocument } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
-
-import { CharacterDocument } from './Character'
-import { CreationDocument } from './Creation'
-import { UserDocument } from './Creator'
-import { SessionDocument } from './Session'
-import { TaskDocument } from './Task'
 
 export interface SessionEventSchema {
   session: SessionDocument

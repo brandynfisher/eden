@@ -1,15 +1,12 @@
 import { Collection } from '../../models/Collection'
 import { Creation } from '../../models/Creation'
-import { User, UserInput } from '../../models/Creator'
 import { Manna } from '../../models/Manna'
+import { User, UserInput } from '../../models/User'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-export const createNewUser = async (
-  server: FastifyInstance,
-  input: UserInput,
-) => {
-  const newUser = new User(input)
+export const createNewUser = async (input: UserInput) => {
+  const newUser = new User({ ...input, type: 'user' })
   await newUser.save()
 
   // Give them a default collection

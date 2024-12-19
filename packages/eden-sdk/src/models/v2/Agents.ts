@@ -3,23 +3,46 @@ import { Creator } from 'src/models/Creators'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 // Types
-export type Agent = {
+export type Agent = Omit<
+  Creator,
+  | 'userId'
+  | 'subscriptionTier'
+  | 'highestMonthlySubscriptionTier'
+  | 'email'
+  | 'normalizedEmail'
+  | 'stripeCustomerId'
+> & {
   _id: string
-  user: Creator
+  owner: Creator
   name: string
-  key: string
+  username: string
   description: string
-  image: string
-  blurhash: string
+  userImage: string
   instructions: string
   tools?: string[]
   discordId?: string
+  discordUsername?: string
+  telegramId?: string
+  telegramUsername?: string
   createdAt: Date
   updatedAt: Date
   public?: boolean
 }
 
+export type AgentClientType = 'discord' | 'telegram' | 'twitter' | 'farcaster'
+export type AgentDeployCommand = 'deploy' | 'stop'
+export type AgentDeployCredentials = {
+  CLIENT_DISCORD_TOKEN: string
+}
+
 // Arguments
+export interface AgentDeployArguments extends WebAPICallResult {
+  agent_key: Agent['username']
+  platform: AgentClientType
+  command: AgentDeployCommand
+  credentials: AgentDeployCredentials
+}
+
 export interface AgentGetArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -56,7 +79,7 @@ export const agentGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `agents/${args.agentId}`,
+    url: `v2/agents/${args.agentId}`,
   }
 }
 
@@ -65,7 +88,7 @@ export const agentsCreateRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'agents',
+    url: 'v2/agents',
     data: args,
   }
 }
@@ -75,7 +98,7 @@ export const agentsUpdateRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'PATCH',
-    url: `agents/${args.agentId}`,
+    url: `v2/agents/${args.agentId}`,
     data: args,
   }
 }
@@ -85,7 +108,7 @@ export const agentsDeleteRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'DELETE',
-    url: `agents/${args.agentId}`,
+    url: `v2/agents/${args.agentId}`,
   }
 }
 

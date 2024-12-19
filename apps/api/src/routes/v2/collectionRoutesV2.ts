@@ -8,7 +8,7 @@ import {
   removeCreationsFromCollection,
   updateCollection,
 } from '../../controllers/v2/collectionControllerV2'
-import { isAuthEden2, maybeAuthEden2 } from '../../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -28,7 +28,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getUserCollectionsLight(request, reply),
   })
 
@@ -50,7 +50,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [request => maybeAuthEden2(server, request)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCollection(server, request, reply),
   })
 
@@ -75,7 +75,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => createCollection(request, reply),
   })
 
@@ -120,7 +120,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => updateCollection(request, reply),
   })
 
@@ -140,7 +140,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         200: Type.Object({}),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => deleteCollection(request, reply),
   })
 
@@ -165,7 +165,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => addCreationsToCollection(request, reply),
   })
 
@@ -190,7 +190,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => removeCreationsFromCollection(request, reply),
   })
 }

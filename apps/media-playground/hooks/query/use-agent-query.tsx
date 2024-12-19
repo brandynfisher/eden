@@ -8,12 +8,8 @@ type Props = {
   enabled?: boolean
 }
 
-export const useAssistantQuery = ({
-  key,
-  initialData,
-  enabled = true,
-}: Props) => {
-  const queryKey: QueryKey = ['assistants', key]
+export const useAgentQuery = ({ key, initialData, enabled = true }: Props) => {
+  const queryKey: QueryKey = ['agents', key]
 
   const {
     data,
@@ -29,13 +25,13 @@ export const useAssistantQuery = ({
     enabled,
     initialData,
     queryKey,
-    queryFn: () => fetcher<AgentGetResponse>(`/api/assistants/${key}`),
+    queryFn: () => fetcher<AgentGetResponse>(`/api/agents/${key}`),
   })
 
   const queryClient = useQueryClient()
 
   return {
-    assistant: data?.agent as Agent | undefined,
+    agent: data?.agent as Agent | undefined,
     queryKey,
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     error,

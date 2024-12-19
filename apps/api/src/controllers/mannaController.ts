@@ -1,6 +1,5 @@
 import { checkUserFlags } from '../lib/data'
 import { randomId } from '../lib/util'
-import { User, UserDocument } from '../models/Creator'
 import { Manna } from '../models/Manna'
 import {
   MannaVoucher,
@@ -8,6 +7,7 @@ import {
   VoucherAction,
 } from '../models/MannaVoucher'
 import { Transaction } from '../models/Transaction'
+import { User, UserDocument } from '../models/User'
 import { MannaModifyRequestBody } from '../routes/adminRoutes'
 import { FeatureFlag, MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'

@@ -4,7 +4,7 @@ import { Agent, CollectionV2, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 
 type TogglePrivacyProps = {
-  type: 'creation' | 'model' | 'collection' | 'assistant'
+  type: 'creation' | 'model' | 'collection' | 'agent'
   item: ModelV2 | CreationV2 | CollectionV2 | Agent
   queryKey: QueryKey
 }
