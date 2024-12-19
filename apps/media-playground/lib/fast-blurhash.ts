@@ -9,7 +9,8 @@ for (let i = 0; i < 83; i++) {
 const decode83 = (str: string, start: number, end: number): number => {
   let value = 0
   while (start < end) {
-    const charCode = str.charCodeAt(start + 1)
+    const charCode = str.charCodeAt(start)
+    start += 1
     value *= 83
     value += digitLookup[charCode] ?? 0
   }
