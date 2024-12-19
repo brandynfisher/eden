@@ -1,6 +1,7 @@
 import { Collection } from '../../models/Collection'
 import { Creation } from '../../models/Creation'
 import { Manna } from '../../models/Manna'
+import { Transaction } from '../../models/Transaction'
 import { User, UserInput } from '../../models/User'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -98,11 +99,20 @@ export const discordOAuth = async (
     user.discordId = discordId
 
     if (!user.discordLinkBonusClaimed) {
-      await Manna.findOneAndUpdate(
+      const manna = await Manna.findOneAndUpdate(
         { user: user._id },
         { $inc: { balance: server.config.MANNA_BONUS_DISCORD_LINK } },
       )
       user.discordLinkBonusClaimed = true
+
+      if (manna) {
+        const transaction = new Transaction({
+          manna: manna._id,
+          amount: server.config.MANNA_BONUS_DISCORD_LINK,
+          type: 'discord_link_bonus',
+        })
+        await transaction.save()
+      }
     }
 
     await user.save()
@@ -183,6 +193,13 @@ export const claimDailyLoginBonus = async (
 
     userManna.balance += claimAmount
     await userManna.save()
+
+    const transaction = new Transaction({
+      manna: userManna._id,
+      amount: claimAmount,
+      type: 'daily_login_bonus',
+    })
+    await transaction.save()
 
     return reply.status(200).send({
       claimed: claimAmount,
