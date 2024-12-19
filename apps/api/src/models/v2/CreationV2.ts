@@ -81,7 +81,7 @@ export const creationSchema = new Schema<CreationV2Document>(
       aspectRatio: {
         type: Number,
       },
-      blur: {
+      blurhash: {
         type: String,
       },
     },

@@ -40,7 +40,7 @@ const AgentCard = ({ agent, queryKey, onClick }: Props) => {
             width: 512,
             height: 512,
             type: 'image',
-            blur: agent.blurhash,
+            blurhash: agent.blurhash,
           }}
           unoptimized={true}
           className="object-cover"
