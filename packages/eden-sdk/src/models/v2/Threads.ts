@@ -7,7 +7,7 @@ import {
 } from '../../types'
 import { Creator } from '../Creators'
 import { Agent } from './Agents'
-import { TaskV2Args, TaskV2Result } from './TasksV2'
+import { TaskV2Args, TaskV2Result, TaskV2Status } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -23,6 +23,11 @@ export interface ThreadsMessageArguments extends WebAPICallOptions {
   agent_id?: string
   content: string
   attachments?: string[]
+}
+
+export interface ThreadsMessageReactArguments extends WebAPICallOptions {
+  message_id: string
+  reaction: 'thumbs_up' | 'thumbs_down'
 }
 
 export interface ThreadsListArguments
@@ -53,6 +58,18 @@ export const threadsMessageRequestConfig = (
   return {
     method: 'POST',
     url: 'v2/threads',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const threadsMessageReactRequestConfig = (
+  args: ThreadsMessageReactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/threads/react',
     data: {
       ...args,
     },
@@ -99,6 +116,15 @@ export type ThreadsMessageResponse = WebAPICallResult &
     | { thread_id?: Thread['_id']; success: boolean }
   )
 
+export type ThreadsMessageReactResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { success: boolean }
+  )
+
 export type ThreadsListResponse = WebAPICallResult &
   PaginatedResponse<Thread> & {
     error?: string
@@ -114,6 +140,7 @@ export type ThreadsGetResponse = WebAPICallResult & {
 export type Message = {
   id: string
   role: 'user' | 'assistant' | 'tool' | 'system'
+  metadata?: { [key: string]: string | boolean | number }
   createdAt?: Date
 }
 
@@ -123,18 +150,25 @@ export type UserMessage = Message & {
   role: 'user'
   // name: string
   content: string
-  metadata?: { [key: string]: string | boolean | number }
   attachments?: UserMessageAttachments[]
 }
 
 export type ToolCall = {
   id: string
   name: string
+  error?: string
+  status?: TaskV2Status
+  tool?: string
   args: TaskV2Args
   result?: TaskV2Result[]
 }
 
+export type ThreadMessageReaction = {
+  [key: string]: (string | number | boolean | Date | null)[]
+}
+
 export type ThreadMessage = {
+  id: string
   role: 'user' | 'assistant' | 'tool' | 'system'
   content?: string
   tool_results?: {
@@ -143,6 +177,7 @@ export type ThreadMessage = {
     result: string
     error?: string
   }[]
+  reactions?: ThreadMessageReaction
   metadata?: {
     [key: string]: string | number | boolean | Date | null
   }

@@ -6,6 +6,7 @@ import {
   ThreadsCreateArguments,
   ThreadsGetArguments,
   ThreadsListArguments,
+  ThreadsMessageReactArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -195,7 +196,7 @@ export const addThreadMessageReaction = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { thread_id } = request.params as ThreadsGetArguments
+  const { message_id, reaction } = request.body as ThreadsMessageReactArguments
 
   const user = await User.findById(userId)
   if (!user) {
@@ -204,24 +205,100 @@ export const addThreadMessageReaction = async (
     })
   }
 
-  try {
-    const thread = await ThreadModel.findOne({
-      _id: new ObjectId(thread_id),
-      user: userId,
+  if (!message_id) {
+    return reply.status(400).send({
+      message: 'message_id not provided',
     })
+  }
 
-    console.log(thread)
+  if (!reaction) {
+    return reply.status(400).send({
+      message: 'reaction not provided',
+    })
+  }
 
-    if (!thread) {
-      return reply.status(404).send({
-        message: 'Thread not found',
-      })
+  try {
+    const query = {
+      user: userId,
+      'messages.id': new ObjectId(message_id),
     }
 
-    // @todo: add reaction to message (use update / $set with msg id filter to not rewrite the whole document)
+    const thread = await ThreadModel.findOne(query)
 
-    return reply.status(200).send({ thread })
+    if (reaction === 'thumbs_up') {
+      const existingReactions =
+        thread?.messages.find(m => {
+          return m.id.toString() === message_id
+        })?.reactions?.thumbs_up || []
+
+      console.log({ existingReactions })
+
+      if (
+        existingReactions
+          .map(reactingUserId => reactingUserId?.toString())
+          .includes(userId.toString())
+      ) {
+        console.log('already reacted', 'remove', userId.toString())
+        // User already reacted, remove the reaction
+        await ThreadModel.updateOne(
+          query,
+          {
+            $pull: { 'messages.$[msg].reactions.thumbs_up': userId },
+          },
+          {
+            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+          },
+        )
+      } else {
+        console.log('not reacted', 'add', userId.toString())
+        // User has not reacted, add the reaction
+        await ThreadModel.updateOne(
+          query,
+          {
+            $push: { 'messages.$[msg].reactions.thumbs_up': userId },
+          },
+          {
+            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+          },
+        )
+      }
+    } else if (reaction === 'thumbs_down') {
+      const existingReactions =
+        thread?.messages.find(m => m.id.toString() === message_id)?.reactions
+          ?.thumbs_down || []
+
+      if (
+        existingReactions
+          .map(reactingUserId => reactingUserId?.toString())
+          .includes(userId.toString())
+      ) {
+        // User already reacted, remove the reaction
+        await ThreadModel.updateOne(
+          query,
+          {
+            $pull: { 'messages.$[msg].reactions.thumbs_down': userId },
+          },
+          {
+            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+          },
+        )
+      } else {
+        // User has not reacted, add the reaction
+        await ThreadModel.updateOne(
+          query,
+          {
+            $push: { 'messages.$[msg].reactions.thumbs_down': userId },
+          },
+          {
+            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+          },
+        )
+      }
+    }
+
+    return reply.status(200).send({ success: true })
   } catch (e) {
+    console.log(e)
     const error = e as { response?: { data?: string } }
     const errorMessage =
       error && error.response && error.response.data

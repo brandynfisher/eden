@@ -61,14 +61,11 @@ const threadRoutes: FastifyPluginAsync = async server => {
         },
       ],
       body: {
-        thread_id: Type.String(),
         message_id: Type.String(),
         reaction: Type.String(),
       },
       response: {
-        200: Type.Object({
-          thread_id: Type.String(),
-        }),
+        200: Type.Any(),
         400: {
           // error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),

@@ -1,16 +1,27 @@
+import AlertDestructive from '@/components/alert/alert-destructive'
 import ParameterTable from '@/components/timeline/parameter-table'
+import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
+import { TaskResultToolArgs } from '@/features/chat/components/tools/task-result-tool'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
-import { ChevronDownIcon, ChevronUpIcon, WrenchIcon } from 'lucide-react'
-import { useState } from 'react'
+import { TaskV2Status } from '@edenlabs/eden-sdk'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  CircleCheckIcon,
+  TriangleAlertIcon,
+  WrenchIcon,
+} from 'lucide-react'
+import React, { useState } from 'react'
 
 export const ToolFallback: ToolCallContentPartComponent = ({
   toolName,
   args,
-  // result,
+  result,
 }) => {
   delete args.seed
+  const { status: toolStatus, error: toolError } = result as TaskResultToolArgs
 
   const [isCollapsed, setIsCollapsed] = useState(true)
   return (
@@ -23,9 +34,22 @@ export const ToolFallback: ToolCallContentPartComponent = ({
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <WrenchIcon className="size-4" />
-        <p>
-          Tool: <span className="font-bold">{toolName}</span>
-        </p>
+        <div className="flex items-center gap-2">
+          <div>
+            Tool: <span className="font-bold">{toolName}</span>
+          </div>
+          {toolStatus === TaskV2Status.Running ? (
+            <span
+              className={'text-blue-500 mr-1 h-5 w-5 loading loading-ring'}
+            />
+          ) : null}
+          {toolStatus === TaskV2Status.Failed ? (
+            <TriangleAlertIcon className="text-red-500 h-5 w-5" />
+          ) : null}
+          {toolStatus === TaskV2Status.Completed ? (
+            <CircleCheckIcon className="text-green-500 h-5 w-5" />
+          ) : null}
+        </div>
         <div className="flex-grow" />
         <TooltipIconButton tooltip={isCollapsed ? 'Expand' : 'Collapse'}>
           {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
@@ -46,6 +70,15 @@ export const ToolFallback: ToolCallContentPartComponent = ({
           {/*)}*/}
         </div>
       )}
+      {toolStatus === TaskV2Status.Failed ? (
+        <div className="mt-2">
+          <AlertDestructive title="Tool Call failed">
+            <AlertDescription>
+              {toolError?.substring(0, 150)}...
+            </AlertDescription>
+          </AlertDestructive>
+        </div>
+      ) : null}
     </div>
   )
 }

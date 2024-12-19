@@ -62,6 +62,7 @@ export const edenMessageConverter: useExternalMessageConverter.Callback<
       return {
         id: message.id,
         role: 'system',
+        metadata: message.metadata,
         content: [{ type: 'text', text: message.content }],
         status: message.status,
         createdAt: message.createdAt,
@@ -70,6 +71,7 @@ export const edenMessageConverter: useExternalMessageConverter.Callback<
       return {
         id: message.id,
         role: 'user',
+        metadata: message.metadata,
         content: contentToParts(message, message.content),
         attachments: message.attachments?.map(
           (attachment, idx) =>
@@ -92,10 +94,11 @@ export const edenMessageConverter: useExternalMessageConverter.Callback<
         createdAt: message.createdAt,
       }
     case 'assistant':
-      console.log('convertEdenMessage', 'assistant', message)
+      // console.log('convertEdenMessage', 'assistant', message)
       return {
         id: message.id,
         role: 'assistant',
+        metadata: message.metadata,
         content: [
           ...contentToParts(message, message.content),
           ...(message.tool_calls?.map(
@@ -105,8 +108,12 @@ export const edenMessageConverter: useExternalMessageConverter.Callback<
               toolName: 'task_result',
               args: chunk.args,
               argsText: JSON.stringify(chunk.args, null, 2),
-              //@ts-expect-error TS2339: Property tool does not exist on type ToolCall
-              result: { tool: chunk.tool, result: chunk.result },
+              result: {
+                tool: chunk.tool,
+                status: chunk.status,
+                result: chunk.result,
+                error: chunk.error,
+              },
             }),
           ) ?? []),
         ],

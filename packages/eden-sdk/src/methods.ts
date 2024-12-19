@@ -251,6 +251,8 @@ import {
   ThreadsListArguments,
   ThreadsListResponse,
   ThreadsMessageArguments,
+  ThreadsMessageReactArguments,
+  ThreadsMessageReactResponse,
   ThreadsMessageResponse,
   ToolsGetArgumentsV2,
   ToolsGetResponseV2,
@@ -278,6 +280,7 @@ import {
   threadsCreateRequestConfig,
   threadsGetRequestConfig,
   threadsListRequestConfig,
+  threadsMessageReactRequestConfig,
   threadsMessageRequestConfig,
   toolsGetRequestConfigV2,
   toolsListRequestConfigV2,
@@ -771,6 +774,10 @@ export abstract class Methods {
       this,
       threadsMessageRequestConfig,
     ),
+    react: bindApiCall<
+      ThreadsMessageReactArguments,
+      ThreadsMessageReactResponse
+    >(this, threadsMessageReactRequestConfig),
   }
 
   public readonly tasks = {

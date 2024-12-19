@@ -3,13 +3,15 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { makeAssistantToolUI } from '@assistant-ui/react'
-import { TaskV2Result, ToolV2 } from '@edenlabs/eden-sdk'
+import { TaskV2Result, TaskV2Status, ToolV2 } from '@edenlabs/eden-sdk'
 import React from 'react'
 
-type TaskResultToolArgs = {
+export type TaskResultToolArgs = {
   // result: {
   tool: ToolV2['key']
   result: TaskV2Result[]
+  status: TaskV2Status
+  error?: string
   // }
 }
 
@@ -19,8 +21,6 @@ export const TaskResultTool = makeAssistantToolUI<
 >({
   toolName: 'task_result',
   render: ({ args, argsText, status, result }) => {
-    // render: ({ result }) => {
-    // console.log(toolCallId, toolName, args, argsText, status, result)
     const { tool, result: toolResults } = result as TaskResultToolArgs
 
     return (
@@ -33,7 +33,7 @@ export const TaskResultTool = makeAssistantToolUI<
           args={args}
           argsText={argsText}
           status={status}
-          addResult={() => console.log('adding result ')}
+          addResult={() => console.log('adding result', result)}
         />
         <LightboxGallery>
           <div
