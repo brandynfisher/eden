@@ -81,6 +81,7 @@ export async function PATCH(
     instructions,
     tools,
     discordId,
+    modelId,
   } = requestJson as AgentsUpdateArguments
 
   try {
@@ -99,6 +100,7 @@ export async function PATCH(
       instructions,
       tools,
       discordId,
+      modelId,
     })
 
     if (!res) {

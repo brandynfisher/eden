@@ -1,4 +1,5 @@
 import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
+import { ModelV2Document } from './v2/ModelV2'
 import { Schema } from 'mongoose'
 
 export interface AgentSchema extends BaseUserSchema {
@@ -8,6 +9,7 @@ export interface AgentSchema extends BaseUserSchema {
   instructions: string
   tools?: string[]
   discordId?: string
+  model?: ModelV2Document
   public?: boolean
 }
 
@@ -37,6 +39,11 @@ const AgentSchema = new Schema<AgentDocument>(
     tools: {
       type: [String],
       default: [],
+    },
+    model: {
+      type: Schema.Types.ObjectId,
+      ref: 'models',
+      required: false,
     },
     public: {
       type: Boolean,
