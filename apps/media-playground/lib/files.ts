@@ -40,7 +40,11 @@ export const requestSignedUrl = async (
   }
 }
 
-export const uploadFileToS3 = async (options: UploadOptions) => {
+export const uploadFileToS3 = async (
+  options: UploadOptions,
+  maxRetries = 3,
+  retryDelay = 1000,
+) => {
   const { file, onUploadProgress } = options
   const cancelSource = axios.CancelToken.source()
 
@@ -54,24 +58,40 @@ export const uploadFileToS3 = async (options: UploadOptions) => {
     cancelToken: cancelSource.token,
   }
 
-  const response = await axios.put(signedUrl, file, config)
+  let lastError: Error | null = null
 
-  const fileObjURL = URL.createObjectURL(file)
-  const fileMetadata = await getUploadedMediaMetadata(file, fileObjURL)
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await axios.put(signedUrl, file, config)
 
-  // console.log(fileMetadata)
+      if (response.status === 200) {
+        const fileObjURL = URL.createObjectURL(file)
+        const fileMetadata = await getUploadedMediaMetadata(file, fileObjURL)
 
-  const fileWithExtra = Object.assign(file, {
-    fileUrl: signedUrl.split('?')[0],
-    preview: fileObjURL,
-    ...fileMetadata,
-  })
+        return Object.assign(file, {
+          fileUrl: signedUrl.split('?')[0],
+          preview: fileObjURL,
+          ...fileMetadata,
+        })
+      }
 
-  if (response.status !== 200) {
-    throw new Error(`Upload error - status ${response.status}`)
+      throw new Error(`Upload error - status ${response.status}`)
+    } catch (error) {
+      lastError = error as Error
+
+      if (axios.isAxiosError(error) && error.response?.status === 503) {
+        if (attempt < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay))
+          continue
+        }
+      }
+
+      // If it's not a 503 error or we're out of retries, throw the error
+      throw lastError
+    }
   }
 
-  return fileWithExtra
+  throw lastError
 }
 
 export const getUploadedMediaMetadata = async (
