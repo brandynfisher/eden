@@ -1,5 +1,6 @@
 import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/User'
+import { ModelV2 } from '../../models/v2/ModelV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import { ThreadDocument } from '../../models/v2/Thread'
 import { ToolV2 } from '../../models/v2/ToolV2'

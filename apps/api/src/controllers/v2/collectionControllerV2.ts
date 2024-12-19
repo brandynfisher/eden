@@ -1,4 +1,4 @@
-import { UserDocument } from '../../models/Creator'
+import { UserDocument } from '../../models/User'
 import {
   CollectionV2,
   CollectionV2Document,
