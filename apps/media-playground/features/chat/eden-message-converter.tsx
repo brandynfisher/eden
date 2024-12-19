@@ -92,7 +92,7 @@ export const edenMessageConverter: useExternalMessageConverter.Callback<
         createdAt: message.createdAt,
       }
     case 'assistant':
-      // console.log('convertEdenMessage', 'assistant', message)
+      console.log('convertEdenMessage', 'assistant', message)
       return {
         id: message.id,
         role: 'assistant',
@@ -110,7 +110,11 @@ export const edenMessageConverter: useExternalMessageConverter.Callback<
             }),
           ) ?? []),
         ],
-        status: message.status,
+        status: message.status
+          ? message.status
+          : message.tool_calls?.length
+          ? { type: 'incomplete', reason: 'tool-calls' }
+          : { type: 'complete', reason: 'stop' },
         createdAt: message.createdAt,
       }
   }

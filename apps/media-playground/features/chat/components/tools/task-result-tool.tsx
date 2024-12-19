@@ -24,7 +24,7 @@ export const TaskResultTool = makeAssistantToolUI<
     const { tool, result: toolResults } = result as TaskResultToolArgs
 
     return (
-      <div className="relative mb-2">
+      <div className="mb-2">
         <ToolFallback
           type="tool-call"
           result={result}
@@ -44,7 +44,7 @@ export const TaskResultTool = makeAssistantToolUI<
           >
             {toolResults
               ? toolResults.map((result, index) => (
-                  <div key={index}>
+                  <div className="relative" key={index}>
                     {result.output.map(output => (
                       <LightboxTrigger
                         key={output.filename}

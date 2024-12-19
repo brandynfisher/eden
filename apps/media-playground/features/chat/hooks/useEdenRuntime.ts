@@ -50,7 +50,9 @@ export const useEdenRuntime = ({
     isRunning,
   })
 
-  console.log({ threads, threadIds: threads?.map(thread => thread._id) })
+  console.log({ threadId, threadMessages })
+
+  // console.log({ threads, threadIds: threads?.map(thread => thread._id) })
 
   return useExternalStoreRuntime({
     isRunning,

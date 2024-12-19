@@ -50,8 +50,9 @@ export function EdenRuntimeProvider({
       threadIdRef.current = undefined
     },
     onSwitchToThread: async threadId => {
-      const thread = await getThread(threadId)
       threadIdRef.current = threadId
+      const thread = await getThread(threadId)
+      console.log({ threadId, thread })
       return {
         messages: thread.messages,
       }

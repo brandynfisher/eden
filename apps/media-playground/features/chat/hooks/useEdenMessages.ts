@@ -9,7 +9,6 @@ export const useEdenMessages = <TMessage extends { id: string }>({
 
   const sendMessage = useCallback(
     async (newMessages: TMessage[]) => {
-      console.log('useEdenMessages - sendMessage - newMessages', newMessages)
       const optimisticMessages = [...messages, ...newMessages]
 
       if (newMessages.length > 0) {
