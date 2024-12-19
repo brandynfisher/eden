@@ -13,6 +13,8 @@ export interface UserSchema extends BaseUserSchema {
   highestMonthlySubscriptionTier?: SubscriptionTier
   stripeCustomerId?: string
   stripeSubscriptionId?: string
+  lastDailyLoginBonus?: Date
+  discordLinkBonusClaimed?: boolean
 }
 
 export type UserInput = {
@@ -70,6 +72,14 @@ const UserSchema = new Schema<UserDocument>(
     },
     stripeSubscriptionId: {
       type: String,
+    },
+    lastDailyLoginBonus: {
+      type: Date,
+      default: new Date(),
+    },
+    discordLinkBonusClaimed: {
+      type: Boolean,
+      default: false,
     },
     deleted: {
       type: Boolean,

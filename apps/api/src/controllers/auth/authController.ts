@@ -5,7 +5,10 @@ import { User, UserInput } from '../../models/User'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-export const createNewUser = async (input: UserInput) => {
+export const createNewUser = async (
+  server: FastifyInstance,
+  input: UserInput,
+) => {
   const newUser = new User({ ...input, type: 'user' })
   await newUser.save()
 
