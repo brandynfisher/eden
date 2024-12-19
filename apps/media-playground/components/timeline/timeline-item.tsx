@@ -59,7 +59,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
     }
   }, [])
 
-  const num_samples = item.args.n_samples || item.args.num_outputs || false
+  const num_samples = (item.args.n_samples ?? item.args.num_outputs) || false
 
   return (
     <div
