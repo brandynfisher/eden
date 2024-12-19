@@ -164,6 +164,7 @@ export type TaskV2Args = {
   lora?: string | null
   lora_strength?: number
   n_samples?: number
+  num_outputs?: number
   image?: string
   // models
   name?: string

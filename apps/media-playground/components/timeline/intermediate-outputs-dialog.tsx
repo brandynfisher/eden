@@ -73,6 +73,7 @@ export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
                                 thumbnail: mediaResult.url,
                                 width: mediaResult.mediaAttributes?.width,
                                 height: mediaResult.mediaAttributes?.height,
+                                blurhash: mediaResult.mediaAttributes?.blurhash,
                               }}
                             />
                           )}

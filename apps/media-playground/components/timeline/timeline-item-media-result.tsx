@@ -23,6 +23,8 @@ export const MediaResultOutput = ({
   task: TaskV2
   output: TasksV2ResultOutput
 }) => {
+  const num_samples = task.args.n_samples || task.args.num_outputs || false
+
   return (
     <div
       // className="relative bg-accent z-10 rounded-md"
@@ -30,11 +32,10 @@ export const MediaResultOutput = ({
         'relative bg-accent z-10 rounded-md',
         'max-h-[calc(60vh_-_72.4px)]',
         (task.args.width ?? 1024) / (task.args.height ?? 1024) < 1 ||
-        ((task.output_type === 'audio' ? 3 : 1) < 1 &&
-          (task.args.n_samples || 1) === 1)
+        ((task.output_type === 'audio' ? 3 : 1) < 1 && (num_samples || 1) === 1)
           ? 'h-full max-w-full flex justify-center '
           : (task.args.width ?? 1024) / (task.args.height ?? 1024) > 1 &&
-            (task.args.n_samples || 1) === 1
+            (num_samples || 1) === 1
           ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
           : '',
       ])}
@@ -67,6 +68,7 @@ export const MediaResultOutput = ({
               width: output.mediaAttributes?.width,
               height: output.mediaAttributes?.height,
               duration: output.mediaAttributes?.duration || undefined,
+              blurhash: output.mediaAttributes?.blurhash,
             }}
           />
         </LightboxGallery>
@@ -76,6 +78,8 @@ export const MediaResultOutput = ({
 }
 
 const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
+  const num_samples = task.args.n_samples || task.args.num_outputs || false
+
   return (
     <>
       {result.output.map(output => (
@@ -84,7 +88,7 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
             className={cn([
               'relative',
               (output?.mediaAttributes?.aspectRatio || 1) < 1 &&
-              (task.args.n_samples || 1) === 1
+              (num_samples || 1) === 1
                 ? 'max-h-[60vh] flex justify-center'
                 : '',
             ])}

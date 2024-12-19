@@ -59,6 +59,8 @@ const TimelineItem = ({ item, queryKey }: Props) => {
     }
   }, [])
 
+  const num_samples = item.args.n_samples || item.args.num_outputs || false
+
   return (
     <div
       data-test-id="timeline-item"
@@ -70,14 +72,14 @@ const TimelineItem = ({ item, queryKey }: Props) => {
         <div
           className={cn([
             'grid gap-2 auto-cols-fr',
-            !item.args.n_samples || item.args.n_samples === 1
+            !num_samples || num_samples === 1
               ? 'grid-flow-col grid-cols-1'
-              : item.args.n_samples > 2
+              : num_samples > 2
               ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
                 ? 'grid-cols-2 grid-rows-2 md:grid-cols-2 md:grid-rows-2 justify-items-center'
                 : 'grid-flow-col auto-cols-[minmax(0,_1fr)] grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 lg:grid-cols-2 lg:grid-rows-2 xl:grid-cols-4 xl:grid-rows-1 justify-items-center'
               : 'grid-cols-2 justify-items-center',
-            item.args.n_samples === 3
+            num_samples === 3
               ? 'md:!grid-cols-3 xl:!grid-cols-3 md:!grid-rows-1'
               : '',
             item.output_type === 'lora' ? 'flex flex-col gap-0' : '',
@@ -104,7 +106,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
 
           {item.status === 'pending' || item.status === 'running' ? (
             <>
-              {[...Array(item.args.n_samples || 1)].map((_e, i) => (
+              {[...Array(num_samples || 1)].map((_e, i) => (
                 <div
                   key={i}
                   className={cn([
@@ -122,11 +124,11 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                       'max-h-[calc(60vh_-_72.4px)]',
                       (item.args.width ?? 1024) / (item.args.height ?? 1024) ||
                       ((item.output_type === 'audio' ? 3 : 1) < 1 &&
-                        (item.args.n_samples || 1) === 1)
+                        (num_samples || 1) === 1)
                         ? 'h-[calc(60dvh_-_72.4px)] max-h-full flex justify-center max-w-full'
                         : (item.args.width ?? 1024) /
                             (item.args.height ?? 1024) >
-                            1 && (item.args.n_samples || 1) === 1
+                            1 && (num_samples || 1) === 1
                         ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
                         : '',
                     ])}

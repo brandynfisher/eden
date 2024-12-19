@@ -58,6 +58,7 @@ export const TaskResultTool = makeAssistantToolUI<
                           height: output.mediaAttributes?.height,
                           duration:
                             output.mediaAttributes?.duration || undefined,
+                          blurhash: output.mediaAttributes?.blurhash,
                         }}
                       />
                     ))}

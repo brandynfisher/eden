@@ -41,7 +41,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
             item={{
               url: creation.url,
               thumbnail: creation.thumbnail,
-              blur: creation.mediaAttributes?.blur,
+              blurhash: creation.mediaAttributes?.blurhash,
               width: creation.mediaAttributes?.width,
               height: creation.mediaAttributes?.height,
               duration: creation.mediaAttributes?.duration || undefined,
