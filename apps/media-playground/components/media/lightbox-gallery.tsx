@@ -1,7 +1,6 @@
 import 'photoswipe/dist/photoswipe.css'
 
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
-// import LoadingIndicator from '@/components/loading-indicator'
 import VideoResult from '@/components/media/video-result'
 import { useBlurDataUrl } from '@/hooks/use-blur-hash'
 import { useHover } from '@/hooks/use-hover'
