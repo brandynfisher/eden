@@ -23,7 +23,7 @@ interface Media {
   height?: number
   type: FileType
   mimeType?: MimeType
-  blur?: string
+  blurhash?: string
 }
 
 interface MediaVideo extends Media {
