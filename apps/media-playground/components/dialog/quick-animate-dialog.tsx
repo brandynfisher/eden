@@ -40,7 +40,7 @@ const QuickAnimateDialog = () => {
         <Suspense fallback={<FormSkeleton />}>
           <QuickCreateForm
             toolKey={'animate_3D'}
-            exposedParameters={['n_frames']}
+            exposedParameters={['n_seconds']}
             initValues={{
               image:
                 getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '',

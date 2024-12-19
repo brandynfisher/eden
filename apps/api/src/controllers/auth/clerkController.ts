@@ -1,4 +1,4 @@
-import { User, UserDocument } from '../../models/Creator'
+import { User, UserDocument } from '../../models/User'
 import { createNewUser } from './authController'
 import { WebhookEvent } from '@clerk/clerk-sdk-node'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -93,7 +93,6 @@ export const receiveUserUpdate = async (
         email: email,
         normalizedEmail: normalizedEmail,
         isWeb2: false,
-        isClerk: true,
         isAdmin: false,
       })
       return reply.status(200).send({})

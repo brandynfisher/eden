@@ -9,7 +9,7 @@ import React from 'react'
 
 type Props = {
   item: ModelV2 | CreationV2 | CollectionV2 | Agent
-  type: 'creation' | 'model' | 'collection' | 'assistant'
+  type: 'creation' | 'model' | 'collection' | 'agent'
   queryKey: QueryKey
 }
 

@@ -1,3 +1,10 @@
+import { Character } from '../models/Character'
+import { Session } from '../models/Session'
+import { SessionEvent } from '../models/SessionEvent'
+import { User } from '../models/User'
+import CreatorRepository from '../repositories/CreatorRepository'
+import SessionEventRepository from '../repositories/SessionEventRepository'
+import SessionRepository from '../repositories/SessionRepository'
 import {
   ChatResponseEvent,
   InteractionEvent,
@@ -11,14 +18,6 @@ import {
   SessionsListArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-
-import { Character } from '../models/Character'
-import { User } from '../models/Creator'
-import { Session } from '../models/Session'
-import { SessionEvent } from '../models/SessionEvent'
-import CreatorRepository from '../repositories/CreatorRepository'
-import SessionEventRepository from '../repositories/SessionEventRepository'
-import SessionRepository from '../repositories/SessionRepository'
 
 export const createSession = async (
   request: FastifyRequest,

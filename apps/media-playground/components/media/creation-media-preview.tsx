@@ -1,4 +1,5 @@
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import React from 'react'
 
@@ -8,6 +9,9 @@ type Props = {
 }
 
 const CreationMediaPreview = ({ creation, isModal }: Props) => {
+  const fileType =
+    getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
+
   return (
     <div className="relative w-full my-4 flex justify-center items-center">
       {creation?.deleted ? (
@@ -17,7 +21,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
           </div>
         </div>
       ) : null}
-      {creation.mediaAttributes?.type === 'audio' ? (
+      {fileType === 'audio' ? (
         <div className="flex w-full h-full items-center justify-center min-h-64">
           <audio src={creation.url} controls={true} />
         </div>

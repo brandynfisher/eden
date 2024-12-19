@@ -5,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify'
 import _ from 'lodash'
 import { ChangeStreamDocument } from 'mongodb'
 
-const WATCHED_COLLECTION = 'threads2'
+const WATCHED_COLLECTION = 'threads3'
 
 /**
  * Recursively build a usable nested structure from dot-notated updatedFields
@@ -51,23 +51,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
     const threadCollection =
       fastify.mongoose.connection.db.collection(WATCHED_COLLECTION)
 
-    // const changeStream = threadCollection.watch(
-    //   [
-    //     {
-    //       $match: {
-    //         'fullDocument.updatedAt': {
-    //           $gt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    //         },
-    //         $or: [
-    //           { 'updateDescription.updatedFields.messages': { $exists: true } },
-    //           { operationType: 'insert' }
-    //         ]
-    //       },
-    //     },
-    //   ],
-    //   { fullDocument: 'updateLookup' },
-    // )
-
     const changeStream = threadCollection.watch(
       [
         {
@@ -87,32 +70,58 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
         // console.log(data.operationType, data)
         try {
           if (data.operationType === 'insert') {
-            // Handle insert event as usual
-            await handleThreadUpdateStreamEvent(
-              fastify,
-              data.fullDocument,
-              undefined,
-            )
-          } else if (data.operationType === 'update') {
-            // const docId = data.documentKey._id.toString();
             const cachedDoc = data.fullDocument
+
+            if (!cachedDoc) {
+              fastify.log.error('insert: No fullDocument found')
+              return
+            }
+
+            if (!cachedDoc.user) {
+              fastify.log.error(
+                `insert: No user field found for thread ${cachedDoc._id}`,
+              )
+              return
+            }
+
+            await handleThreadUpdateStreamEvent(fastify, cachedDoc, undefined)
+          } else if (data.operationType === 'update') {
+            const cachedDoc = data.fullDocument
+
+            if (!cachedDoc) {
+              fastify.log.error('update: No fullDocument found')
+              return
+            }
+
+            if (!cachedDoc.user) {
+              fastify.log.error(
+                `update: No user field found for thread ${cachedDoc._id}`,
+              )
+              return
+            }
 
             // Apply updates to cached document
             const updatedFields = data.updateDescription.updatedFields
 
-            //@ts-expect-error TS2769: No overload matches this call.
+            if (!updatedFields) {
+              fastify.log.error('update: No updated fields found')
+              return
+            }
+
             Object.entries(updatedFields).forEach(([key, value]) => {
-              //@ts-expect-error TS2769: No overload matches this call.
               _.set(cachedDoc, key, value) // Use lodash's set method for dot-notated keys
             })
 
             // cachedDocuments.set(docId, cachedDoc);
 
             console.log(
-              'updatedFields:',
-              JSON.stringify(updatedFields, null, 2),
+              'update: updatedFields:',
+              JSON.stringify(
+                { thread: cachedDoc?._id, ...updatedFields },
+                null,
+                2,
+              ),
             )
-            //@ts-expect-error TS2769: No overload matches this call.
             const modifiedMessages = extractModifiedMessages(updatedFields)
 
             const updatedMessages: ThreadMessage[] = []
@@ -129,7 +138,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             })
 
             if (!updatedMessages.length) {
-              console.log('No messages updated')
+              console.log('update: No messages updated')
               return
             }
 
@@ -141,12 +150,12 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             })
 
             console.log(
-              'filteredModifiedMessages',
+              'update: filteredModifiedMessages',
               JSON.stringify(filteredModifiedMessages, null, 2),
             )
 
             if (!filteredModifiedMessages.length) {
-              console.log('No non user messages updated')
+              console.log('update: No non-user messages updated')
               return
             }
 

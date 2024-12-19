@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -102,9 +103,9 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           </div>
           {item && (item as CreationV2).tool ? (
             <Link
-              href={`/create/${(item as CreationV2).mediaAttributes?.type}/${
-                (item as CreationV2).tool
-              }`}
+              href={`/create/${getFileTypeByMimeType(
+                (item as CreationV2).mediaAttributes?.mimeType,
+              )}/${(item as CreationV2).tool}`}
             >
               {(item as CreationV2).tool}
             </Link>
@@ -181,7 +182,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <AccordionContent>
             {item && remainingArgs ? (
               <ParameterTable
-                taskId={item.task.toString()}
+                taskId={item.task._id.toString()}
                 args={remainingArgs}
               />
             ) : (

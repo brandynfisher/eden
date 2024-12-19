@@ -1,36 +1,25 @@
-import { UserDocument } from './Creator'
+import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
 import { ModelV2Document } from './v2/ModelV2'
-import { Schema, model } from 'mongoose'
-import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
-import mongooseDelete, {
-  SoftDeleteDocument,
-  SoftDeleteModel,
-} from 'mongoose-delete'
-import paginate from 'mongoose-paginate-v2'
+import { Schema } from 'mongoose'
 
-export interface AgentSchema {
-  user: UserDocument
+export interface AgentSchema extends BaseUserSchema {
+  owner: string
   name: string
-  key: string
-  description: string
-  image: string
-  blurhash: string
+  description?: string
   instructions: string
   tools?: string[]
   discordId?: string
   model?: ModelV2Document
-  createdAt: Date
-  updatedAt: Date
   public?: boolean
 }
 
-export interface AgentDocument extends SoftDeleteDocument, AgentSchema {}
+export interface AgentDocument extends AgentSchema, BaseUserDocument {}
 
-export const agentSchema = new Schema<AgentDocument>(
+const AgentSchema = new Schema<AgentDocument>(
   {
-    user: {
+    owner: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     name: {
@@ -38,47 +27,23 @@ export const agentSchema = new Schema<AgentDocument>(
       required: true,
       maxlength: 80,
     },
-    key: {
-      type: String,
-      required: true,
-      unique: true,
-    },
     description: {
       type: String,
-      maxlength: 1000,
-      required: false,
-    },
-    image: {
-      type: String,
-      maxlength: 1000,
-      required: true,
-    },
-    blurhash: {
-      type: String,
-      maxlength: 1000,
-      default: '',
+      maxlength: 20000,
     },
     instructions: {
       type: String,
-      maxlength: 1000,
+      maxlength: 20000,
       required: true,
     },
     tools: {
       type: [String],
       default: [],
     },
-    discordId: {
-      type: String,
-      maxlength: 64,
-    },
     model: {
       type: Schema.Types.ObjectId,
       ref: 'models',
       required: false,
-    },
-    deleted: {
-      type: Boolean,
-      default: false,
     },
     public: {
       type: Boolean,
@@ -86,23 +51,11 @@ export const agentSchema = new Schema<AgentDocument>(
     },
   },
   {
+    discriminatorKey: 'type',
     timestamps: true,
   },
 )
 
-agentSchema.index({
-  _id: -1,
-  user: 1,
-  public: 1,
-  deleted: 1,
-})
-agentSchema.plugin(paginate)
-agentSchema.plugin(aggregatePaginate)
-agentSchema.plugin(mongooseDelete, {
-  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
-})
+AgentSchema.index({ owner: 1 })
 
-export const Agent = model<AgentDocument>(
-  'agents',
-  agentSchema,
-) as SoftDeleteModel<AgentDocument>
+export const Agent = BaseUser.discriminator<AgentDocument>('agent', AgentSchema)

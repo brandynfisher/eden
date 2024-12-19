@@ -1,8 +1,7 @@
+import { CreationDocument } from './Creation'
+import { UserDocument } from './User'
 import { ObjectId } from 'mongodb'
 import { Document, Schema, model } from 'mongoose'
-
-import { CreationDocument } from './Creation'
-import { UserDocument } from './Creator'
 
 export interface RatingSchema {
   user: UserDocument
@@ -24,7 +23,7 @@ const rating = new Schema<RatingDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     creation: {

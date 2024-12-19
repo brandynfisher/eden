@@ -1,4 +1,4 @@
-import { UserDocument } from '../Creator'
+import { UserDocument } from '../User'
 import { CreationV2Document } from './CreationV2'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -28,7 +28,7 @@ export const collectionSchema = new Schema<CollectionV2Document>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     name: {
@@ -50,7 +50,7 @@ export const collectionSchema = new Schema<CollectionV2Document>(
     contributors: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'users3',
         default: [],
       },
     ],

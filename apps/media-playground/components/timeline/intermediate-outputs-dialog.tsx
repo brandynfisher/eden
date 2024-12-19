@@ -9,12 +9,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { TaskV2Result } from '@edenlabs/eden-sdk'
 import { ImageIcon, XIcon } from 'lucide-react'
 import React from 'react'
 
 type Props = {
-  intermediateOutputs: TaskV2Result['intermediateOutputs']
+  intermediateOutputs: TaskV2Result['intermediate_outputs']
 }
 
 export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
@@ -36,6 +37,9 @@ export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
           width: mediaResult.mediaAttributes?.width,
           height: mediaResult.mediaAttributes?.height,
           title: output[0],
+          fileType: getFileTypeByMimeType(
+            mediaResult.mediaAttributes?.mimeType,
+          ),
         })),
       )
     : []
@@ -99,7 +103,13 @@ export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
                   {slide.title}
                 </div>
                 <div className="relative flex justify-center bg-muted-darker p-2 rounded-b-md">
-                  <LightboxTrigger slide={slide} startIndex={index} />
+                  {slide.fileType === 'audio' ? (
+                    <div className="flex w-full h-full items-center justify-center min-h-64">
+                      <audio src={slide.url} controls={true} />
+                    </div>
+                  ) : (
+                    <LightboxTrigger slide={slide} startIndex={index} />
+                  )}
                 </div>
               </div>
             ))}

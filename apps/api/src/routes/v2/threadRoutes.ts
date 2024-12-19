@@ -1,9 +1,10 @@
 import {
+  addThreadMessageReaction,
   createThreadMessage,
   getThread,
   listThreads,
 } from '../../controllers/v2/threadController'
-import { isAuthEden2 } from '../../middleware/authMiddleware'
+import { isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -46,8 +47,49 @@ const threadRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createThreadMessage(server, request, reply),
+  })
+
+  server.post('/v2/threads/react', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Add a reaction to a thread message ',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        thread_id: Type.String(),
+        message_id: Type.String(),
+        reaction: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          thread_id: Type.String(),
+        }),
+        400: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      addThreadMessageReaction(server, request, reply),
   })
 
   server.get('/v2/threads', {
@@ -70,7 +112,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listThreads(server, request, reply),
   })
 
@@ -92,7 +134,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getThread(server, request, reply),
   })
 }

@@ -1,4 +1,4 @@
-import { UserDocument } from './Creator'
+import { UserDocument } from './User'
 import { Document, Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
@@ -14,12 +14,12 @@ export interface FollowDocument extends FollowSchema, Document {}
 const follow = new Schema<FollowDocument>({
   follower: {
     type: Schema.Types.ObjectId,
-    ref: 'users',
+    ref: 'users3',
     required: true,
   },
   following: {
     type: Schema.Types.ObjectId,
-    ref: 'users',
+    ref: 'users3',
     required: true,
   },
   createdAt: {

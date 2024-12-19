@@ -32,6 +32,7 @@ export const getUserCollectionsLight = async (
     },
     {
       select: '_id name creations public contributors',
+      sort: { createdAt: -1 },
     },
   )
 

@@ -1,5 +1,5 @@
 import { isAllowedAccess } from '../lib/authorization'
-import { User } from '../models/Creator'
+import { User } from '../models/User'
 import { clerkPlugin, createClerkClient, getAuth } from '@clerk/fastify'
 import { clerkClient } from '@clerk/fastify/dist/types/clerkClient'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'

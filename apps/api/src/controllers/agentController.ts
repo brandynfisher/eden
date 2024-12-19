@@ -31,7 +31,7 @@ export const getAgent = async (
 
   const currentUserId = request.user ? request.user.userId : undefined
   const isOwnAgent =
-    currentUserId && agent.user.toString() === currentUserId.toString()
+    currentUserId && agent.owner.toString() === currentUserId.toString()
 
   if (!isOwnAgent && !agent.public) {
     return reply.status(401).send({
@@ -40,17 +40,19 @@ export const getAgent = async (
   }
 
   await agentRepository.model.populate(agent, {
-    path: 'user',
+    path: 'owner',
     select: '_id userId username userImage',
   })
 
-  agent.image = forceCloudfrontUrl(server, agent.image)
+  if (agent.userImage) {
+    agent.userImage = forceCloudfrontUrl(server, agent.userImage)
+  }
 
   return reply.status(200).send({ agent })
 }
 
 export const createAgent = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -71,16 +73,14 @@ export const createAgent = async (
     await verifyModelAccess(reply, modelId, currentUserId.toString())
   }
 
-  const blurhash = await generateBlurhash(server, image)
-
   const imageFilename = image.split('/').pop()
 
   const agent = new Agent({
-    user: currentUserId,
-    name,
-    key,
-    image: imageFilename,
-    blurhash,
+    type: 'agent',
+    owner: currentUserId,
+    username: key,
+    name: name,
+    userImage: imageFilename,
     description,
     instructions,
     tools,
@@ -133,8 +133,8 @@ export const updateAgent = async (
   }
 
   const updateData: UpdateQuery<AgentDocument> = {
-    name,
-    key,
+    username: key,
+    name: name,
     description,
     instructions,
     tools,
@@ -153,7 +153,7 @@ export const updateAgent = async (
     const blurhash = await generateBlurhash(server, image)
     const imageFilename = image.split('/').pop()
 
-    updateData.image = imageFilename
+    updateData.userImage = imageFilename
     updateData.blurhash = blurhash
   }
 
@@ -162,7 +162,7 @@ export const updateAgent = async (
     result = await Agent.updateOne(
       {
         _id: agentId,
-        user: currentUserId,
+        owner: currentUserId,
         deleted: false,
       },
       updateData,
@@ -209,7 +209,7 @@ export const deleteAgent = async (
     })
   }
 
-  if (agent.user.toString() !== currentUserId.toString()) {
+  if (agent.owner.toString() !== currentUserId.toString()) {
     return reply.status(401).send({
       message: 'User not authorized to delete this',
     })

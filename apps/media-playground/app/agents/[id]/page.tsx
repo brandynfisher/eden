@@ -1,4 +1,4 @@
-import AssistantDetail from '@/features/detail/assistant-detail'
+import AgentDetail from '@/features/detail/agent-detail'
 import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
@@ -12,12 +12,10 @@ type Props = {
   params: { id: string }
 }
 
-const getAssistant = async (
-  id: string,
-): Promise<AgentGetResponse | undefined> => {
+const getAgent = async (id: string): Promise<AgentGetResponse | undefined> => {
   try {
     const response = await fetcher<AgentGetResponse>(
-      `${process.env.NEXT_PUBLIC_HOST}/api/assistants/${id}`,
+      `${process.env.NEXT_PUBLIC_HOST}/api/agents/${id}`,
       {
         credentials: 'include',
         headers: { Cookie: cookies().toString() },
@@ -31,37 +29,37 @@ const getAssistant = async (
   }
 }
 
-const getAssistantCached = cache(getAssistant)
+const getAgentCached = cache(getAgent)
 
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const id = params.id
-  const response = await getAssistantCached(id || '')
+  const response = await getAgentCached(id || '')
 
   if (!response) {
     return {}
   }
 
-  const assistant = response.agent
+  const agent = response.agent
 
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `Assistant: ${assistant?.name} | Eden Create`
-  const baseDescription = `Check out this assistant by ${assistant?.user.username}!`
-  const description = assistant?.description
+  const title = `Agent: ${agent?.name} | Eden Create`
+  const baseDescription = `Check out this agent by ${agent?.owner.username}!`
+  const description = agent?.description
 
   // Initialize OpenGraph metadata
   const og: OpenGraph = {
     ...previousOg,
     title,
     description: description,
-    images: assistant?.image
+    images: agent?.userImage
       ? [
           customImageLoader({
-            src: assistant?.image || '',
+            src: agent?.userImage || '',
             width: 1024,
             format: Formats.JPG,
           }),
@@ -74,10 +72,10 @@ export async function generateMetadata(
     ...previousTwitter,
     title,
     description: baseDescription, // Default description for Twitter
-    images: assistant?.image
+    images: agent?.userImage
       ? [
           customImageLoader({
-            src: assistant?.image || '',
+            src: agent?.userImage || '',
             width: 1024,
             format: Formats.JPG,
           }),
@@ -98,12 +96,12 @@ export async function generateMetadata(
   return metadata
 }
 
-const AssistantDetailPage = async ({ params: { id: assistantId } }: Props) => {
-  if (!assistantId) {
+const AgentDetailPage = async ({ params: { id: agentId } }: Props) => {
+  if (!agentId) {
     return notFound()
   }
 
-  const response = await getAssistantCached(assistantId || '')
+  const response = await getAgentCached(agentId || '')
 
   if (!response || !response.agent) {
     return notFound()
@@ -113,7 +111,7 @@ const AssistantDetailPage = async ({ params: { id: assistantId } }: Props) => {
     return <div>error response: {String(response.error)}</div>
   }
 
-  return <AssistantDetail id={assistantId} assistantSSRData={response.agent} />
+  return <AgentDetail id={agentId} agentSSRData={response.agent} />
 }
 
-export default AssistantDetailPage
+export default AgentDetailPage

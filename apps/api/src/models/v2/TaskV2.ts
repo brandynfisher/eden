@@ -1,4 +1,4 @@
-import { UserDocument } from '../Creator'
+import { UserDocument } from '../User'
 import {
   TaskV2Args,
   TaskV2Result,
@@ -42,7 +42,7 @@ export const taskSchema = new Schema<TaskV2Document>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
     },
     tool: {
       type: Schema.Types.String,

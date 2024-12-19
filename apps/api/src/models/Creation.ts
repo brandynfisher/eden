@@ -1,9 +1,9 @@
 import { VisibilitySchema } from '../types/baseSchemas'
 import { CharacterDocument } from './Character'
 import { ConceptDocument } from './Concept'
-import { UserDocument } from './Creator'
 import { GeneratorDocument } from './Generator'
 import { TaskDocument } from './Task'
+import { UserDocument } from './User'
 import {
   CreationAttributes,
   MediaAttributes,
@@ -70,7 +70,7 @@ const creation = new Schema<CreationDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     character: {
@@ -102,7 +102,7 @@ const creation = new Schema<CreationDocument>(
     },
     delegate: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
     },
     uri: {
       type: String,
@@ -184,7 +184,7 @@ creation.pre<CreationDocument>('save', function (next) {
 })
 
 creation.index({ concept: -1 })
-creation.index({ createdAt: -1 })
+creation.index({ character: 1, createdAt: -1 })
 creation.index({ deleted: 1, isPrivate: 1, character: 1, user: 1 })
 creation.index({ uri: 1, deleted: 1, isPrivate: 1 })
 creation.index({ 'embedding.score': -1 })

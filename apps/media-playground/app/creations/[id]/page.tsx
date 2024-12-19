@@ -1,6 +1,7 @@
 import CreationDetail from '@/features/detail/creation-detail'
 import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontUrl } from '@/lib/media'
 import { OpenGraph, OpenGraphVideo, TwitterMetadata } from '@/types/OpenGraph'
 import { CreationsV2GetResponse, MediaType } from '@edenlabs/eden-sdk'
@@ -86,7 +87,9 @@ export async function generateMetadata(
   }
 
   if (
-    response.creation?.mediaAttributes?.type === MediaType.Video &&
+    response.creation &&
+    getFileTypeByMimeType(response.creation?.mediaAttributes?.mimeType) ===
+      MediaType.Video &&
     response.creation.url
   ) {
     const videoUrl = getCloudfrontUrl(response.creation.url)

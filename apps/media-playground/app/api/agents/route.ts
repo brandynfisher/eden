@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     if (!res) {
       return new NextResponse(
-        JSON.stringify({ message: 'Assistant create error' }),
+        JSON.stringify({ message: 'Agent create error' }),
         {
           status: 500,
         },

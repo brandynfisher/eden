@@ -10,7 +10,7 @@ import { ReactNode } from 'react'
 
 type Props = {
   label: string
-  description: string
+  description: string | ReactNode
   icon?: ReactNode
 }
 
