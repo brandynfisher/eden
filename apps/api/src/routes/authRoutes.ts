@@ -4,7 +4,7 @@ import {
   discordOAuth,
 } from '../controllers/auth/authController'
 import { receiveUserUpdate } from '../controllers/auth/clerkController'
-import { isAuth, isAuthEden2 } from '../middleware/authMiddleware'
+import { isAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -54,7 +54,7 @@ const authRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => claimDailyLoginBonus(server, request, reply),
   })
 }

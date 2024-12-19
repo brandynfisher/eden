@@ -92,7 +92,7 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
         collectionId: Type.String(),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) =>
       getCollectionDownloadZip(server, request, reply),
   })
