@@ -16,6 +16,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useToolPreset } from '@/hooks/use-tool-preset'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { cn } from '@/lib/utils'
+import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -37,7 +38,7 @@ const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
 const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
 const CreationUIContainer = ({ tool }: Props) => {
-  const { isSignedIn, verifyAuth, refetchMe } = useAuthState()
+  const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const presetResolutions = tool?.resolutions
@@ -81,6 +82,15 @@ const CreationUIContainer = ({ tool }: Props) => {
       form.reset({ ...defaultValues, lora: '' })
     }
   }, [presetValues])
+
+  const formValues = form.watch()
+  const cost = useMemo(() => {
+    return calculateCost(tool.cost_estimate || '', formValues)
+  }, [tool.cost_estimate, formValues])
+
+  const hasEnoughBalance = useMemo(() => {
+    return cost <= balance
+  }, [cost, balance])
 
   async function onSubmit(formData: FormData) {
     if (!(await verifyAuth())) {
@@ -342,14 +352,27 @@ const CreationUIContainer = ({ tool }: Props) => {
             </div>
           ) : null}
 
-          <CostIndicatorV2 formula={tool.cost_estimate} />
+          <CostIndicatorV2 cost={cost} />
+
+          {!hasEnoughBalance && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                router.push('/settings/subscription')
+              }}
+            >
+              Buy More Manna
+            </Button>
+          )}
 
           <Button
             type="button"
             size="sm"
             className="w-[72px]"
             onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !hasEnoughBalance}
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
