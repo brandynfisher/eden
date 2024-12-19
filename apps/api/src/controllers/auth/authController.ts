@@ -1,11 +1,15 @@
 import { Collection } from '../../models/Collection'
 import { Creation } from '../../models/Creation'
 import { Manna } from '../../models/Manna'
+import { Transaction } from '../../models/Transaction'
 import { User, UserInput } from '../../models/User'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
-export const createNewUser = async (input: UserInput) => {
+export const createNewUser = async (
+  server: FastifyInstance,
+  input: UserInput,
+) => {
   const newUser = new User({ ...input, type: 'user' })
   await newUser.save()
 
@@ -21,7 +25,7 @@ export const createNewUser = async (input: UserInput) => {
   // Give them free Manna
   const newManna = new Manna({
     user: newUser._id,
-    balance: 200,
+    balance: server.config.MANNA_BONUS_SIGNUP,
   })
   await newManna.save()
   return newUser
@@ -93,6 +97,24 @@ export const discordOAuth = async (
     })
 
     user.discordId = discordId
+
+    if (!user.discordLinkBonusClaimed) {
+      const manna = await Manna.findOneAndUpdate(
+        { user: user._id },
+        { $inc: { balance: server.config.MANNA_BONUS_DISCORD_LINK } },
+      )
+      user.discordLinkBonusClaimed = true
+
+      if (manna) {
+        const transaction = new Transaction({
+          manna: manna._id,
+          amount: server.config.MANNA_BONUS_DISCORD_LINK,
+          type: 'discord_link_bonus',
+        })
+        await transaction.save()
+      }
+    }
+
     await user.save()
 
     // Give delegated creations to the user
@@ -106,6 +128,8 @@ export const discordOAuth = async (
         await creation.save()
       }),
     )
+
+    await Manna.findOneAndUpdate({ user: user._id }, { $inc: { balance: 50 } })
 
     return reply.redirect(`${server.config.FRONTEND_URL}/account`)
   } catch (error) {
@@ -134,4 +158,56 @@ export const disconnectDiscord = async (
   await user.save()
 
   return reply.status(200).send({})
+}
+
+export const claimDailyLoginBonus = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const user = await User.findById(request.user.userId)
+
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  const userManna = await Manna.findOne({ user: user._id })
+
+  if (!userManna) {
+    return reply.status(400).send({
+      message: 'User manna not found',
+    })
+  }
+
+  const now = Date.now()
+  const lastDailyLogin = user.lastDailyLoginBonus
+
+  const oneDayInMs = 24 * 60 * 60 * 1000
+  const claimAmount = server.config.MANNA_BONUS_DAILY_LOGIN
+
+  if (!lastDailyLogin || now - lastDailyLogin.getTime() >= oneDayInMs) {
+    user.lastDailyLoginBonus = new Date()
+    await user.save()
+
+    userManna.balance += claimAmount
+    await userManna.save()
+
+    const transaction = new Transaction({
+      manna: userManna._id,
+      amount: claimAmount,
+      type: 'daily_login_bonus',
+    })
+    await transaction.save()
+
+    return reply.status(200).send({
+      claimed: claimAmount,
+    })
+  }
+
+  return reply.status(200).send({
+    claimed: 0,
+    lastDailyLogin: user.lastDailyLoginBonus,
+  })
 }

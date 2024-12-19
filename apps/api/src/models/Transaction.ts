@@ -10,6 +10,8 @@ export type TransactionType =
   | 'credit_stripe'
   | 'credit_voucher'
   | 'admin_modify'
+  | 'daily_login_bonus'
+  | 'discord_link_bonus'
 
 export interface TransactionSchema {
   manna: MannaDocument
