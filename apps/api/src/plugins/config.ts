@@ -64,9 +64,9 @@ const ConfigSchema = Type.Strict(
     CLOUDINARY_API_KEY: Type.String(),
     CLOUDINARY_API_SECRET: Type.String(),
     CLOUDINARY_CLOUD_NAME: Type.String(),
-    MANNA_BONUS_SIGNUP: Type.Optional(Type.Number({ default: 20 })),
-    MANNA_BONUS_DAILY_LOGIN: Type.Optional(Type.Number({ default: 10 })),
-    MANNA_BONUS_DISCORD_LINK: Type.Optional(Type.Number({ default: 50 })),
+    MANNA_BONUS_SIGNUP: Type.Number({ default: 20 }),
+    MANNA_BONUS_DAILY_LOGIN: Type.Number({ default: 10 }),
+    MANNA_BONUS_DISCORD_LINK: Type.Number({ default: 50 }),
   }),
 )
 

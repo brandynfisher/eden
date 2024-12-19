@@ -56,6 +56,9 @@ jobs:
             "EDEN_COMPUTE_API_KEY=${{ secrets.EDEN_COMPUTE_API_KEY }}"
             "EDEN2_FRONTEND_URL=https://beta.eden.art"
             "CLERK_JWT_KEY=${{ secrets.CLERK_JWT_KEY }}"
+            "MANNA_BONUS_SIGNUP=20"
+            "MANNA_BONUS_DAILY_LOGIN=10"
+            "MANNA_BONUS_DISCORD_LINK=50"
   notify:
     needs: [build-and-push-to-ghcr]
     runs-on: ubuntu-latest
