@@ -39,7 +39,8 @@ export const ToolFallback: ToolCallContentPartComponent = ({
           <div>
             <span className="font-bold">{toolName}</span>
           </div>
-          {toolStatus === TaskV2Status.Running ||
+          {toolStatus === null ||
+          toolStatus === TaskV2Status.Running ||
           toolStatus === TaskV2Status.Pending ? (
             <span
               className={'text-blue-500 mr-1 h-5 w-5 loading loading-ring'}

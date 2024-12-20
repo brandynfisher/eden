@@ -141,6 +141,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
             />
           </span>
         </div>
+      </div>
+      <div className="p-4">
         <CreationsFeed query={{ user: agent._id }} />
       </div>
     </>

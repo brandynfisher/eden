@@ -577,6 +577,27 @@ const userLookup: PipelineStage[] = [
   { $unwind: '$user' },
 ]
 
+const taskLookup: PipelineStage[] = [
+  {
+    $lookup: {
+      from: 'tasks3',
+      localField: 'task',
+      foreignField: '_id',
+      as: 'task',
+      pipeline: [
+        {
+          $project: {
+            _id: 1,
+            args: 1,
+            status: 1,
+          },
+        },
+      ],
+    },
+  },
+  { $unwind: '$task' },
+]
+
 const ownerLookup: PipelineStage[] = [
   {
     $lookup: {
@@ -802,7 +823,7 @@ export const getModelsFeedCursorV2 = async (
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
-  const lateLookupStages = [...userLookup]
+  const lateLookupStages = [...taskLookup, ...userLookup]
 
   const pipeline = await createPipeline({
     limit: limit ?? 100,

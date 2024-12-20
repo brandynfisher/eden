@@ -260,7 +260,7 @@ export const listTasks = async (
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
     path: 'result.output.model',
-    model: 'models',
+    model: 'models3',
   })
 
   await tasksRepository.model.populate(paginatedResponse.docs, {
@@ -420,7 +420,7 @@ export const getTask = async (
     })
     .populate({
       path: 'result.output.model',
-      model: 'models',
+      model: 'models3',
     })
     .populate({
       path: 'result.output.model.task',
@@ -639,7 +639,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
 
         await tasksRepository.model.populate(task, {
           path: 'result.model',
-          model: 'models',
+          model: 'models3',
         })
 
         await tasksRepository.model.populate(task, {

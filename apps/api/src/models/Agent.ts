@@ -42,7 +42,7 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     model: {
       type: Schema.Types.ObjectId,
-      ref: 'models',
+      ref: 'models3',
       required: false,
     },
     public: {

@@ -130,7 +130,8 @@ const TaskStatusIndicator = () => {
                   <Link href={`/create/${task.output_type}/${task.tool}`}>
                     <div className="flex flex-col w-full">
                       <div className="flex items-center gap-2 mb-1">
-                        {task.status === TaskV2Status.Running ||
+                        {task.status === null ||
+                        task.status === TaskV2Status.Running ||
                         task.status === TaskV2Status.Pending ? (
                           <span
                             className={

@@ -29,6 +29,8 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
 
   const model = modelClientData || modelSSRData
 
+  console.log({ model })
+
   const [shouldRenderRecentCreations, setShouldRenderRecentCreations] =
     useState(false)
   const observedRef = useRef<HTMLDivElement>(null)

@@ -99,6 +99,7 @@ export const creationSchema = new Schema<CreationV2Document>(
   },
 )
 
+creationSchema.index({ task: 1 })
 creationSchema.index({ createdAt: -1 })
 creationSchema.index({ deleted: -1, createdAt: -1 })
 creationSchema.index({ public: -1, deleted: -1, createdAt: -1 })

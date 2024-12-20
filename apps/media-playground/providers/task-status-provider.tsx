@@ -105,6 +105,7 @@ export const TaskStatusProvider = ({ children }: Props) => {
   const pendingRunningTasks = useMemo(() => {
     return allTasks.filter(
       task =>
+        task.status === null ||
         task.status === TaskV2Status.Pending ||
         task.status === TaskV2Status.Running,
     )

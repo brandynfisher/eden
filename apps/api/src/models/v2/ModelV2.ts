@@ -86,6 +86,6 @@ modelSchema.plugin(mongooseDelete, {
 })
 
 export const ModelV2 = model<ModelV2Document>(
-  'models',
+  'models3',
   modelSchema,
 ) as SoftDeleteModel<ModelV2Document>
