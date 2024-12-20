@@ -631,7 +631,7 @@ const creationLookup: PipelineStage[] = [
         {
           $project: {
             _id: 1,
-            thumbnail: 1,
+            filename: 1,
           },
         },
       ],
@@ -993,7 +993,7 @@ export const getCollectionsFeedCursorV2 = async (
       if (doc && doc.coverCreation) {
         doc.coverCreation.thumbnail = s3ThumbnailUrl(
           server,
-          doc.coverCreation.thumbnail || '',
+          doc.coverCreation.filename || '',
           1024,
         )
       }
