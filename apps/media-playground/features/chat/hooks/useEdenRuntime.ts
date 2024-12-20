@@ -104,5 +104,8 @@ export const useEdenRuntime = ({
         },
       ])
     },
+    metadata: {
+      test: 123,
+    },
   })
 }

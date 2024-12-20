@@ -23,7 +23,8 @@ import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import {
   ThreadListItemPrimitive,
-  ThreadListPrimitive,
+  ThreadListPrimitive, // useAssistantRuntime,
+  // useThread,
   useThreadList,
 } from '@assistant-ui/react'
 import { TooltipContentProps } from '@radix-ui/react-tooltip'
@@ -83,12 +84,13 @@ const TopLeft: FC = () => {
 }
 
 const ThreadListItem: FC = () => {
-  // const threadListRuntime = useAssistantRuntime().threadList
+  // const threadListRuntime = useAssistantRuntime()
+  // console.log(threadListRuntime)
   // const thread = useThread()
   // console.log(thread)
-  // console.log(threadListRuntime.getThreadListItemById(threadListItem.metadata.threadId))
+  // const threadListItem = threadListRuntime.getThreadListItemById(thread.metadata.threadId)
+  // console.log(threadListItem.getState())
 
-  // console.log(thread, threadList,)
   //
   // const handleRenameClick = async () => {
   //   const threadDing = threadListRuntime.getThreadListItemById(thread.metadata.threadId)
