@@ -1,4 +1,5 @@
 import AlertDestructive from '@/components/alert/alert-destructive'
+import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
@@ -75,7 +76,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
         <div className="mt-2">
           <AlertDestructive title="Tool Call failed">
             <AlertDescription>
-              {toolError?.substring(0, 150)}...
+              <TextClampMore text={toolError || 'Unknown Error'} lines={3} />
             </AlertDescription>
           </AlertDestructive>
         </div>

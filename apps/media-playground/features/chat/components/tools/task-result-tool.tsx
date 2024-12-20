@@ -72,6 +72,10 @@ export const TaskResultTool = makeAssistantToolUI<
                             }}
                             imageProps={{
                               blurhash: output.mediaAttributes?.blurhash,
+                              className: 'max-h-[420px]',
+                            }}
+                            videoProps={{
+                              className: 'max-h-[420px]',
                             }}
                           />
                         )}
