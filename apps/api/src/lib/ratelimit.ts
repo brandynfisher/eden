@@ -170,14 +170,6 @@ export const taskRateLimitCheck = async (
   const { userId, subscriptionTier } = request.user
   const type = output_type === 'image' ? 'image' : 'video'
 
-  // const hasEarlyAccess = eden2EarlyAccessCheck(request)
-  // if (!hasEarlyAccess) {
-  //   return {
-  //     status: 'error',
-  //     message: 'Account has no early access permission',
-  //   }
-  // }
-
   const userLimitTier = getUserLimitTier(
     subscriptionTier,
     request.user.featureFlags,

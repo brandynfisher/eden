@@ -13,8 +13,10 @@ import paginate from 'mongoose-paginate-v2'
 export interface ThreadSchema {
   user: UserDocument
   agent: AgentDocument
+  active?: string[]
   name: string
   messages: ThreadMessage[]
+  key?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -35,6 +37,12 @@ export const threadSchema = new Schema<ThreadDocument>(
     agent: {
       type: Schema.Types.ObjectId,
       ref: 'agent',
+    },
+    key: {
+      type: Schema.Types.String,
+    },
+    active: {
+      type: [Schema.Types.String],
     },
     messages: {
       type: [Schema.Types.Mixed],

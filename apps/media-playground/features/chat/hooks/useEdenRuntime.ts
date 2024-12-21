@@ -38,10 +38,13 @@ export const useEdenRuntime = ({
   const handleSendMessage = async (messages: EdenMessage[]) => {
     try {
       setIsRunning(true)
+      console.log('handleSendMessage')
       await sendMessage(messages)
+      console.log('handleSendMessage::done')
     } catch (error) {
       console.error('Error streaming messages:', error)
     } finally {
+      console.log('finally isRunning false')
       setIsRunning(false)
     }
   }
@@ -54,6 +57,8 @@ export const useEdenRuntime = ({
 
   // console.log({ threadId, threadMessages })
   // console.log({ threads, threadIds: threads?.map(thread => thread._id) })
+
+  // console.log({isRunning, threadId, threadMessages})
 
   return useExternalStoreRuntime({
     isRunning,

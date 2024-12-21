@@ -171,16 +171,11 @@ export type ThreadMessage = {
   id: string
   role: 'user' | 'assistant' | 'tool' | 'system'
   content?: string
-  tool_results?: {
-    id: string
-    name: string
-    result: string
-    error?: string
-  }[]
   reactions?: ThreadMessageReaction
   metadata?: {
     [key: string]: string | number | boolean | Date | null
   }
+  tool_calls?: ToolCall[]
   attachments?: string[]
   createdAt: Date
 }
@@ -213,9 +208,10 @@ export type Thread = {
   _id: string
   user: Creator
   agent: Agent
+  key?: string
   title?: string
   name: string
-  label: string
+  active?: string[] //active message.ids
   // messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
   messages: (UserMessage | AssistantMessage | SystemMessage)[]
   createdAt: Date

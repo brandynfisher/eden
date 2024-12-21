@@ -4,7 +4,6 @@ import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { NavLinkProps } from '@/components/navigation/nav-link'
 import NavLinkList from '@/components/navigation/nav-link-list'
 import { Separator } from '@/components/ui/separator'
-import { useAuthState } from '@/hooks/use-auth-state'
 import Link, { LinkProps } from 'next/link'
 import { useSelectedLayoutSegments } from 'next/navigation'
 import { PropsWithChildren } from 'react'
@@ -55,7 +54,6 @@ type Props = {
 
 const HeaderNavLinks = ({ inSheet }: Props) => {
   const segments = useSelectedLayoutSegments()
-  const { isSignedIn, hasAssistantAccess } = useAuthState()
 
   return (
     <>
@@ -79,19 +77,11 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         segments={segments}
         inSheet={inSheet}
       />
-      {isSignedIn && hasAssistantAccess() ? (
-        <>
-          <div className="md:self-stretch md:flex md:items-center">
-            <Separator orientation="vertical" className="hidden md:block" />
-            <Separator orientation="horizontal" className="md:hidden" />
-          </div>
-          <NavLinkList
-            items={navItemsEve}
-            segments={segments}
-            inSheet={inSheet}
-          />
-        </>
-      ) : null}
+      <div className="md:self-stretch md:flex md:items-center">
+        <Separator orientation="vertical" className="hidden md:block" />
+        <Separator orientation="horizontal" className="md:hidden" />
+      </div>
+      <NavLinkList items={navItemsEve} segments={segments} inSheet={inSheet} />
     </>
   )
 }

@@ -14,8 +14,6 @@ export function useAuthState() {
     foreverBalance,
     subscriptionBalance,
     hasMinimumSubscriptionTier,
-    hasEden2EarlyAccess,
-    hasAssistantAccess,
     invalidate,
   } = useMe({ isAuthenticated: !!isSignedIn })
 
@@ -37,8 +35,6 @@ export function useAuthState() {
     foreverBalance,
     subscriptionBalance,
     hasMinimumSubscriptionTier,
-    hasEden2EarlyAccess,
-    hasAssistantAccess,
     isSignedIn,
     refetchMe: invalidate,
   }

@@ -39,10 +39,6 @@ export const registerClerk = async (fastify: FastifyInstance) => {
         featureFlags: user.featureFlags || [],
         isAdmin: user.isAdmin || false,
       }
-      //
-      // if (isEden2 && !eden2EarlyAccessCheck(request)) {
-      //   throw new Error('User not whitelisted for "Eden2 - Early Access"')
-      // }
     })
     fastify.log.info('Successfully registered plugin: Clerk')
   } catch (err) {

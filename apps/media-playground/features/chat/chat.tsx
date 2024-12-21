@@ -23,14 +23,15 @@ import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import {
   ThreadListItemPrimitive,
-  ThreadListPrimitive, // useAssistantRuntime,
-  // useThread,
+  ThreadListPrimitive,
   useThreadList,
 } from '@assistant-ui/react'
 import { TooltipContentProps } from '@radix-ui/react-tooltip'
 import { Edit3Icon, EditIcon, MenuIcon } from 'lucide-react'
 import Link from 'next/link'
 import { FC, useEffect } from 'react'
+
+// import LoadingIndicator from '@/components/loading-indicator'
 
 type ButtonWithTooltipProps = ButtonProps & {
   tooltip: string
@@ -96,11 +97,18 @@ const ThreadListItem: FC = () => {
   //   const threadDing = threadListRuntime.getThreadListItemById(thread.metadata.threadId)
   //   await threadDing.rename('New Title')
   // }
+  // const mainThread = useThreadList(t => t.mainThreadId)
+  // const runtime = useAssistantRuntime()
+  // const { isRunning, metadata } = useThread(t => t); // bind your component to receive updates to a runtime state value
+  // const isMain = useThreadList(t => t.mainThreadId === metadata.threadId)
+  //
+  // console.log({mainThread, isMain, threadId: metadata.threadId, isRunning})
 
   return (
     <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary hover:bg-muted-darker flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
       <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate">
         <ThreadListItemPrimitive.Title fallback="Untitled" />
+        {/*{isMain ? <LoadingIndicator /> : null}*/}
       </ThreadListItemPrimitive.Trigger>
       {/*{isActiveThread ? (*/}
       <ButtonWithTooltip
