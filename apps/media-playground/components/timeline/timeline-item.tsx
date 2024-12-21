@@ -65,10 +65,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
     <div
       data-test-id="timeline-item"
       key={item._id}
-      className={cn([
-        `border border-secondary p-2 rounded-lg overflow-hidden min-h-80`,
-        item.status === TaskV2Status.Failed ? 'flex flex-col' : '',
-      ])}
+      className={cn([`border border-secondary p-2 rounded-lg overflow-hidden`])}
     >
       <ParameterTableCollapsible item={item} />
       <div className="flex items-center justify-center h-full w-full flex-grow">

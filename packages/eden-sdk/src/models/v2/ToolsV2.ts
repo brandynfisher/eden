@@ -67,6 +67,7 @@ export type BaseModelName =
   | 'flux'
   | 'flux-dev'
   | 'flux_dev'
+  | 'JuggernautXL_v6'
 
 export type ToolV2 = {
   key: string

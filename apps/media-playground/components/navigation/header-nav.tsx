@@ -15,7 +15,7 @@ import { MenuIcon } from 'lucide-react'
 
 const HeaderNav = () => {
   return (
-    <>
+    <div className="w-full">
       <DesktopHeaderNav>
         <HeaderNavLinks />
         <AttachToFeedbackButton className="ml-auto" />
@@ -45,7 +45,7 @@ const HeaderNav = () => {
           </MobileHeaderNav>
         </SheetContent>
       </Sheet>
-    </>
+    </div>
   )
 }
 

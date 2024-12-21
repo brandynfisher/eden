@@ -69,9 +69,7 @@ const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
               key={2}
               className="cursor-pointer"
               href={`/create/image/${
-                model.base_model &&
-                (model.base_model === 'flux_dev' ||
-                  model.base_model !== 'flux-dev')
+                model.base_model && model.base_model === 'flux_dev'
                   ? 'flux_dev'
                   : 'txt2img'
               }?lora=${model._id}`}
