@@ -94,6 +94,6 @@ collectionSchema.pre('delete', function (next) {
 })
 
 export const CollectionV2 = model<CollectionV2Document>(
-  'collections2',
+  'collections3',
   collectionSchema,
 ) as SoftDeleteModel<CollectionV2Document>
