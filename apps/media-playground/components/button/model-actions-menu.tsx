@@ -97,7 +97,7 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
           <Link
             className="cursor-pointer"
             href={`/create/image/${
-              model.base_model && model.base_model === 'flux_dev'
+              model.base_model && model.base_model === 'flux-dev'
                 ? 'flux_dev'
                 : 'txt2img'
             }?lora=${model._id}`}

@@ -430,7 +430,7 @@ export const getCollectionDownloadZip = async (
     },
     {
       $lookup: {
-        from: 'creations2',
+        from: 'creations3',
         localField: 'creations',
         foreignField: '_id',
         as: 'creations',
@@ -441,7 +441,7 @@ export const getCollectionDownloadZip = async (
     },
     {
       $lookup: {
-        from: 'users',
+        from: 'users3',
         localField: 'creations.user',
         foreignField: '_id',
         as: 'creations.user',

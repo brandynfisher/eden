@@ -81,7 +81,7 @@ export type FeedCursorRouteQueryParams = {
     visibility?: 'all' | 'public' | 'private'
     maxDate?: string
     minDate?: string
-    base_model?: BaseModelName
+    base_model?: BaseModelName | BaseModelName[]
   }
 }
 

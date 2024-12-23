@@ -173,8 +173,15 @@ export const createCursorPaginationRoute = (
   if (query.minDate) {
     filters.push({ minDate: query.minDate })
   }
+
   if (query.base_model) {
-    filters.push({ base_model: query.base_model })
+    if (typeof query.base_model === 'string') {
+      filters.push({ base_model: query.base_model })
+    } else if (Array.isArray(query.base_model) && query.base_model.length) {
+      query.base_model.map(base_model => {
+        filters.push({ base_model: base_model })
+      })
+    }
   }
 
   if (query.tool) {

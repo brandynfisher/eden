@@ -257,6 +257,7 @@ const handleArguments = async ({
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
     tool?: string[] | ObjectId[] | string | ObjectId
+    base_model?: string[] | string
     output_type?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
@@ -370,6 +371,16 @@ const handleArguments = async ({
             return []
           }
 
+          if (field === 'base_model') {
+            if (!customFilterOptions['base_model']) {
+              customFilterOptions['base_model'] = [value]
+            } else {
+              // @ts-ignore
+              customFilterOptions['base_model'].push(value)
+            }
+            return []
+          }
+
           if (field === 'output_type') {
             if (!customFilterOptions['output_type']) {
               customFilterOptions['output_type'] = [value]
@@ -450,6 +461,13 @@ const handleArguments = async ({
             fieldValues.map(val => new ObjectId(val))
           : // @ts-ignore
             [new ObjectId(fieldValues)],
+      }
+    } else if (fieldName === 'base_model') {
+      // @ts-ignore
+      customFilterMap['base_model'] = {
+        $in: Array.isArray(fieldValues)
+          ? fieldValues.map(val => val)
+          : [fieldValues],
       }
     } else if (
       !usesLikedFilter &&

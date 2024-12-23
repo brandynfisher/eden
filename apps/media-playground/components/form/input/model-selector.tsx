@@ -10,7 +10,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense } from 'react'
 
 type Props = {
-  base_model?: BaseModelName
+  base_model?: BaseModelName | BaseModelName[]
   onChange: (newVal: string | undefined) => void
   value: string
 }

@@ -251,7 +251,11 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
               </FormControl>
               <Suspense fallback={<LoadingIndicator />}>
                 <ModelSelector
-                  base_model={tool.base_model}
+                  base_model={
+                    tool.base_model === 'sdxl'
+                      ? ['sdxl', 'JuggernautXL_v6']
+                      : tool.base_model
+                  }
                   value={parsedValue}
                   onChange={onChange}
                 />

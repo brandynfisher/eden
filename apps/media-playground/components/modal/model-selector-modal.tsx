@@ -25,7 +25,7 @@ type Props = {
   className?: string
   trigger?: ReactNode
   currentValue: string
-  base_model?: BaseModelName
+  base_model?: BaseModelName | BaseModelName[]
   onChange: (id: string) => void
 } & PropsWithChildren
 
@@ -79,7 +79,9 @@ const ModelSelectorModal = ({
         <DialogHeader className="mt-4">
           <div className="flex gap-4 items-center">
             <DialogTitle className="py-2">{title}</DialogTitle>
-            <Badge variant="secondary">{base_model}</Badge>
+            <Badge variant="secondary">
+              {Array.isArray(base_model) ? base_model.join(', ') : base_model}
+            </Badge>
           </div>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
