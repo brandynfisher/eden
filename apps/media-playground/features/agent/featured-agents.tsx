@@ -8,7 +8,7 @@ import { Suspense } from 'react'
 
 export const FeaturedAgents = () => {
   return (
-    <div className="p-2 mt-4 rounded-lg bg-muted-darker pb-2">
+    <div className="p-2 md:p-4 pt-3 mt-4 rounded-lg bg-muted-darker">
       <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
         <div>Agents</div>
         <Link
