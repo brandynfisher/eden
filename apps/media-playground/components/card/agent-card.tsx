@@ -50,18 +50,20 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
               blurhash: agent.blurhash,
             }}
             unoptimized={true}
-            className="object-cover rounded-lg w-[90px] h-[114px]"
+            className="object-cover rounded-lg w-[90px] h-[132px] flex-shrink-0 flex-grow-0"
           />
-          <div className="ml-3 flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold mr-auto">{agent.name}</span>
+          <div className="ml-3 flex flex-col w-full">
+            <div className="flex items-center gap-2 flex-wrap ">
+              <span className="font-semibold text-sm mr-auto">
+                {agent.name}
+              </span>
               <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />
             </div>
-            <div className="text-sm text-accent-foreground line-clamp-2 mt-2">
+            <div className="text-xs text-accent-foreground line-clamp-3 mt-2">
               {agent.description}
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto">
-              by {agent.owner.username}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-auto">
+              by <span className="font-semibold">{agent.owner.username}</span>
             </div>
           </div>
         </div>

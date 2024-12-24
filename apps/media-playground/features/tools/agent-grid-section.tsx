@@ -9,7 +9,7 @@ export const AgentGridSection = ({ agentIds }: Props) => {
   const { agents } = useAgentsListQuery({ _id: agentIds })
 
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
       {agents
         ? agents.map(agent => (
             <AgentCard

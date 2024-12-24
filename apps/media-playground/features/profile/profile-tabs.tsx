@@ -79,7 +79,7 @@ const ProfileTabs = () => {
     {
       key: 'agents',
       title: 'Agents',
-      content: <AgentsFeed query={baseQuery} minCols={1} maxCols={3} />,
+      content: <AgentsFeed query={baseQuery} minCols={1} maxCols={2} />,
     },
   ]
 
