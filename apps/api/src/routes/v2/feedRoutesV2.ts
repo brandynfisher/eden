@@ -4,7 +4,7 @@ import {
   getCreationsFeedCursorV2,
   getModelsFeedCursorV2,
 } from '../../controllers/v2/feedControllerV2'
-import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
+import { maybeAuth } from '../../middleware/authMiddleware'
 import { cursorPaginatedResponse, cursorPaginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -108,7 +108,7 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
         200: cursorPaginatedResponse(Type.Any()),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
     handler: (request, reply) => getAgentsFeedCursor(server, request, reply),
   })
 }
