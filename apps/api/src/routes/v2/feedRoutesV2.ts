@@ -108,7 +108,7 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
         200: cursorPaginatedResponse(Type.Any()),
       },
     },
-    preHandler: [(request, reply) => maybeAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getAgentsFeedCursor(server, request, reply),
   })
 }
