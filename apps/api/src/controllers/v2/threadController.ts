@@ -38,6 +38,7 @@ export const createThreadMessage = async (
         attachments,
       },
       user_id: userId,
+      force_reply: true
     },
   }
 
