@@ -105,7 +105,7 @@ const AttachmentThumb: FC = () => {
   const src = useAttachmentSrc()
 
   return (
-    <div className="flex-shrink-0 max-w-8 h-8">
+    <div className="flex-shrink-0 max-w-10 h-10">
       {isImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={src} className="object-cover h-full rounded-md" />

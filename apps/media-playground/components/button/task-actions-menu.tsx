@@ -19,6 +19,7 @@ type Props = {
 }
 
 const TaskActionsMenu = ({ task, result, output, index, className }: Props) => {
+  console.log('taskactions', task, result, output, index, className)
   return (
     <ActionsDropdown className={className}>
       <DropdownMenuGroup>
@@ -37,10 +38,10 @@ const TaskActionsMenu = ({ task, result, output, index, className }: Props) => {
         {result ? (
           <DownloadActionItem
             type={'creation'}
-            originalFileUrl={output?.url || ''}
+            originalFileUrl={output?.filename || ''}
             saveAsFileName={generateFilename(
               task.user.username,
-              task.args.prompt?.substring(0, 64).trim(),
+              task.args?.prompt?.substring(0, 64).trim(),
               task._id,
               index,
             )}

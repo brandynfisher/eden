@@ -253,10 +253,10 @@ const Chat: FC<Props> = ({ agentId }) => {
                     text: 'Make a cat image',
                     prompt: 'Make an image of a cute little cat with a hat',
                   },
-                  {
-                    text: 'Animate my logo',
-                    prompt: 'Use the provided logo image to animate it',
-                  },
+                  // {
+                  //   text: 'Animate my logo',
+                  //   prompt: 'Use the provided logo image to animate it',
+                  // },
                 ],
                 message: 'What do you want to create today?',
               }}

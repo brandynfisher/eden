@@ -89,6 +89,7 @@ const CreationActionsContent = ({
   userId,
   isOpen,
 }: ContentProps) => {
+  console.log('CreationActionsContent', creation, queryKey, userId, isOpen)
   const dispatch = useAppDispatch()
 
   const { isSignedIn } = useAuthState()
@@ -229,10 +230,10 @@ const CreationActionsContent = ({
           <DropdownMenuGroup>
             <DownloadActionItem
               type="creation"
-              originalFileUrl={creationData.url || ''}
+              originalFileUrl={creationData.filename || ''}
               saveAsFileName={generateFilename(
                 creationData.user.username,
-                creationData.task.args.prompt?.substring(0, 64).trim(),
+                creationData.task.args?.prompt?.substring(0, 64).trim(),
                 creationData._id,
               )}
             />
