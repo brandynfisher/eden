@@ -85,8 +85,9 @@ const TopLeft: FC = () => {
 }
 
 const ThreadListItem: FC = () => {
-  // const threadListRuntime = useAssistantRuntime()
-  // console.log(threadListRuntime)
+  // const threadListRuntime = useAssistantRuntime().threadList
+  // // threadListRuntime.onRename
+  // console.log(threadListRuntime.re)
   // const thread = useThread()
   // console.log(thread)
   // const threadListItem = threadListRuntime.getThreadListItemById(thread.metadata.threadId)
@@ -103,6 +104,7 @@ const ThreadListItem: FC = () => {
   // const isMain = useThreadList(t => t.mainThreadId === metadata.threadId)
   //
   // console.log({mainThread, isMain, threadId: metadata.threadId, isRunning})
+  // const threadListItem = useThreadListItem()
 
   return (
     <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary hover:bg-muted-darker flex items-center gap-2 rounded-lg px-3 py-2 transition-all">

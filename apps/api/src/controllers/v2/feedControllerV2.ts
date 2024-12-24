@@ -60,6 +60,7 @@ type Filters = Record<string, Filter>
 
 interface QueryOptions {
   cursor?: string
+  projection?: Record<string, 1 | -1 | Expression.Meta>
   sortCursor?:
     | { praiseCount: { $lte?: number } }
     | { creationCount: { $lte?: number } }
@@ -108,7 +109,7 @@ type CustomFilters = {
   creationCount?: { $gt?: number }
   followerCount?: { $gt?: number }
   createdAt?: Filter
-  _id?: string | ObjectId | { $in?: string[] }
+  _id?: string | ObjectId | { $in?: string[] | ObjectId[] }
   $or?: { user: { $ne?: ObjectId; $eq?: ObjectId }; public: boolean }[]
 }
 
@@ -258,6 +259,7 @@ const handleArguments = async ({
   const customFilterOptions: {
     tool?: string[] | ObjectId[] | string | ObjectId
     base_model?: string[] | string
+    _id?: string[] | ObjectId[] | string | ObjectId
     output_type?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
@@ -265,7 +267,6 @@ const handleArguments = async ({
     creationCount?: { $gt: 0 }
     followerCount?: { $gt: 0 }
     creation?: ObjectId
-    _id?: { $in?: string[] | ObjectId[] }
     $or?: { user?: { $ne?: ObjectId; $eq?: ObjectId }; public: boolean }[]
   } = {}
 
@@ -381,6 +382,16 @@ const handleArguments = async ({
             return []
           }
 
+          if (field === '_id') {
+            if (!customFilterOptions['_id']) {
+              customFilterOptions['_id'] = [value]
+            } else {
+              // @ts-ignore
+              customFilterOptions['_id'].push(value)
+            }
+            return []
+          }
+
           if (field === 'output_type') {
             if (!customFilterOptions['output_type']) {
               customFilterOptions['output_type'] = [value]
@@ -432,6 +443,7 @@ const handleArguments = async ({
           embeddingDoc.embedding,
         )
         customFilterOptions['_id'] = {
+          // @ts-ignore
           $in: similarCreationIds.map(item => new ObjectId(item)),
         }
       } else {
@@ -485,7 +497,14 @@ const handleArguments = async ({
       //@ts-ignore
       customFilterMap['createdAt'] = fieldValues
     } else if (fieldName === '_id') {
-      customFilterMap['_id'] = fieldValues as ObjectId
+      // @ts-ignore
+      customFilterMap['_id'] = {
+        $in: Array.isArray(fieldValues)
+          ? // @ts-ignore
+            fieldValues.map(val => new ObjectId(val))
+          : // @ts-ignore
+            [new ObjectId(fieldValues)],
+      }
     } else if (fieldName === '$or') {
       // @ts-ignore
       customFilterMap['$or'] = fieldValues
@@ -543,7 +562,8 @@ const handleArguments = async ({
 const createPipeline = async (
   options: QueryOptions = {},
 ): Promise<PipelineStage[]> => {
-  const { cursor, sortCursor, limit, filters = {}, sortOptions } = options
+  const { cursor, sortCursor, limit, filters, projection, sortOptions } =
+    options
   const pipeline: PipelineStage[] = []
 
   if (cursor) {
@@ -552,6 +572,7 @@ const createPipeline = async (
         ? { _id: { $lt: new ObjectId(cursor) } }
         : { _id: { $lt: new ObjectId(cursor) } }
     pipeline.push(
+      //@ts-ignore
       sortCursor !== undefined
         ? { $match: { $and: [sortCursor, idCursor, filters] } }
         : { $match: { ...idCursor, ...filters } },
@@ -566,6 +587,10 @@ const createPipeline = async (
 
   if (limit) {
     pipeline.push({ $limit: limit })
+  }
+
+  if (projection) {
+    pipeline.push({ $project: projection })
   }
 
   // console.log(JSON.stringify(pipeline, null, 2))
@@ -1054,6 +1079,18 @@ export const getAgentsFeedCursor = async (
     limit: limit ?? 100,
     sortOptions: { ...sortOptions, _id: -1 },
     cursor,
+    projection: {
+      _id: 1,
+      owner: 1,
+      name: 1,
+      description: 1,
+      username: 1,
+      userImage: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      public: 1,
+      deleted: 1,
+    },
   })
 
   const feedPipeline = [

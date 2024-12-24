@@ -1,8 +1,8 @@
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
-import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
 import { Card } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { SquareMousePointerIcon } from 'lucide-react'
@@ -13,11 +13,17 @@ type Props = {
   agent: Agent
   queryKey: QueryKey
   onClick?: (item: Agent) => void
+  className?: string
 }
 
-const AgentCard = ({ agent, queryKey, onClick }: Props) => {
+const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
   return (
-    <Card className="relative overflow-hidden border-0 z-10 transition-shadow group">
+    <Card
+      className={cn([
+        'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary',
+        className,
+      ])}
+    >
       {!agent.public ? <PrivateIcon /> : null}
       {onClick ? (
         <div
@@ -29,30 +35,37 @@ const AgentCard = ({ agent, queryKey, onClick }: Props) => {
         </div>
       ) : null}
       <Link
-        href={`/agents/${agent._id}`}
+        href={`/chat/${agent._id}`}
         prefetch={false}
-        className="relative w-full block aspect-square"
+        className="relative w-full block"
       >
-        <CardImage
-          media={{
-            url: agent.userImage,
-            thumbnail: agent.userImage,
-            width: 512,
-            height: 512,
-            type: 'image',
-            blurhash: agent.blurhash,
-          }}
-          unoptimized={true}
-          className="object-cover"
-        />
+        <div className="relative flex p-2">
+          <CardImage
+            media={{
+              url: agent.userImage,
+              thumbnail: agent.userImage,
+              width: 512,
+              height: 512,
+              type: 'image',
+              blurhash: agent.blurhash,
+            }}
+            unoptimized={true}
+            className="object-cover rounded-lg w-[90px] h-[114px]"
+          />
+          <div className="ml-3 flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold mr-auto">{agent.name}</span>
+              <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />
+            </div>
+            <div className="text-sm text-accent-foreground line-clamp-2 mt-2">
+              {agent.description}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto">
+              by {agent.owner.username}
+            </div>
+          </div>
+        </div>
       </Link>
-      <CardFooter
-        actions={[
-          <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />,
-        ]}
-      >
-        <div className="text-xs">{agent.name}</div>
-      </CardFooter>
     </Card>
   )
 }

@@ -11,9 +11,17 @@ import {
   TextContentPart,
   useExternalMessageConverter,
   useExternalStoreRuntime,
+  useThread,
 } from '@assistant-ui/react'
 import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+
+const symbolEdenExtras = Symbol('eden-extras')
+
+export type EdenExtras = {
+  [symbolEdenExtras]: true
+  threadTitle: string
+}
 
 export const useEdenRuntime = ({
   threadId,
@@ -30,6 +38,7 @@ export const useEdenRuntime = ({
   onSwitchToThread?: (threadId: string) => Promise<{ messages: EdenMessage[] }>
   onRename?: (threadId: string, newTitle: string) => Promise<void>
 }) => {
+  // const [threadTitle, setThreadTitle] = useState('')
   const [isRunning, setIsRunning] = useState(false)
 
   const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
@@ -65,6 +74,14 @@ export const useEdenRuntime = ({
     //@todo: fix this type issue
     //@ts-expect-error: Type error: Type 'ThreadMessage[]' is not assignable to type 'EdenMessage[]'
     messages: threadMessages,
+    // extras: useMemo(
+    //   () =>
+    //     ({
+    //       [symbolEdenExtras]: true,
+    //       threadTitle,
+    //     }) satisfies EdenExtras,
+    //   [threadTitle],
+    // ),
     setMessages,
     adapters: {
       feedback: EdenFeedbackAdapter,
@@ -73,7 +90,7 @@ export const useEdenRuntime = ({
         threadId,
         threads: threads?.map(thread => ({
           threadId: thread._id,
-          title: thread.name,
+          title: thread.title,
           state: 'regular',
         })),
         onSwitchToNewThread: !onSwitchToNewThread
@@ -109,8 +126,21 @@ export const useEdenRuntime = ({
         },
       ])
     },
-    metadata: {
-      test: 123,
-    },
+  })
+}
+
+// export function useEdenRuntimeExtras(): EdenExtras;
+// export function useEdenRuntimeExtras<T>(selector: (extras: EdenExtras) => T): T;
+export function useEdenRuntimeExtras<T>(
+  selector: (extras: EdenExtras) => T = extras => extras as T,
+): T {
+  return useThread(t => {
+    const extras = t.extras as EdenExtras
+    if (!extras[symbolEdenExtras])
+      throw new Error(
+        'useEdenRuntimeExtras can only be used inside a Eden runtime',
+      )
+
+    return selector(extras)
   })
 }

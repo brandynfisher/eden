@@ -204,27 +204,30 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
             {collection?.name}
             {!collection?.public ? <LockIcon size={18} /> : null}
           </h1>
-          {user?._id === collection?.user._id && (
-            <div className="flex gap-x-2">
-              <Button variant="outline" size="icon" onClick={onShareCollection}>
-                <Share2Icon size={18} />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsDialogOpen(true)}
-              >
-                <Edit2Icon size={18} />
-              </Button>
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={onDeleteCollection}
-              >
-                <TrashIcon size={18} />
-              </Button>
-            </div>
-          )}
+
+          <div className="flex gap-x-2">
+            <Button variant="outline" size="icon" onClick={onShareCollection}>
+              <Share2Icon size={18} />
+            </Button>
+            {user?._id === collection?.user._id && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  <Edit2Icon size={18} />
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={onDeleteCollection}
+                >
+                  <TrashIcon size={18} />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
         <div className="min-w-0">
           {collection?.description ? (

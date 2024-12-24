@@ -34,7 +34,7 @@ export const useToolsListQuery = (query?: {
   })
 
   return {
-    tools: data?.tools as ToolV2[] | undefined,
+    tools: (data?.tools as ToolV2[]) ?? undefined,
     error,
     isError,
     isPending,

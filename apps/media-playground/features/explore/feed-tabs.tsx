@@ -43,7 +43,7 @@ const FeedTabs = () => {
     {
       key: 'agents',
       title: 'Agents',
-      content: <AgentsFeed minCols={1} maxCols={4} />,
+      content: <AgentsFeed minCols={1} maxCols={3} />,
     },
   ]
 

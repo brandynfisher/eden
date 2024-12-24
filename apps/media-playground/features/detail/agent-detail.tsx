@@ -44,6 +44,17 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   const agent = agentClientData || agentSSRData
 
+  const onShare = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${baseUrl}/agents/${agent}`
+    dispatch(
+      updateShareModal({
+        isOpen: true,
+        shareUrl,
+      }),
+    )
+  }
+
   const onDeleteAgent = async () => {
     const handleDelete = async () => {
       try {
@@ -120,12 +131,17 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
         <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold">{agent?.name}</h1>
-          <Button variant="secondary" size="sm" asChild>
-            <Link href={`/chat/${agent._id}`}>
-              <ChatBubbleIcon className="mr-2 h-4 w-4" />
-              Start Chat
-            </Link>
-          </Button>
+          <div className="flex gap-x-2">
+            <Button variant="secondary" size="sm" asChild>
+              <Link href={`/chat/${agent._id}`}>
+                <ChatBubbleIcon className="mr-2 h-4 w-4" />
+                Start Chat
+              </Link>
+            </Button>
+            <Button variant="outline" size="icon" onClick={onShare}>
+              <Share2Icon size={18} />
+            </Button>
+          </div>
         </div>
 
         <TextClampMore

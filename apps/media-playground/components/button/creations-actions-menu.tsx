@@ -195,6 +195,7 @@ const CreationActionsContent = ({
             href={`/create/${fileType}/${creation.tool}?creation=${creation._id}`}
             scroll={false}
             shallow={true}
+            prefetch={false}
           >
             <FileSlidersIcon className="mr-2 h-4 w-4" />
             Use as Preset

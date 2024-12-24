@@ -204,6 +204,16 @@ export const createCursorPaginationRoute = (
     }
   }
 
+  if (query._id) {
+    if (typeof query._id === 'string') {
+      filters.push({ _id: query._id })
+    } else if (Array.isArray(query._id) && query._id.length) {
+      query._id.map(id => {
+        filters.push({ _id: id })
+      })
+    }
+  }
+
   if (query.visibility && query.visibility !== 'all') {
     filters.push({ public: query.visibility === 'private' })
   } else if (typeof query.isPrivate !== 'undefined') {

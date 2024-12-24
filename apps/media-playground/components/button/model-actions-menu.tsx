@@ -101,6 +101,7 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
                 ? 'flux_dev'
                 : 'txt2img'
             }?lora=${model._id}`}
+            prefetch={false}
           >
             <ComponentIcon className="mr-2 h-4 w-4" />
             Use Model

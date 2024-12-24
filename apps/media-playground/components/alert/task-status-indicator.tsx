@@ -127,7 +127,10 @@ const TaskStatusIndicator = () => {
                   className="px-2 py-2 hover:bg-muted rounded cursor-pointer"
                   asChild
                 >
-                  <Link href={`/create/${task.output_type}/${task.tool}`}>
+                  <Link
+                    href={`/create/${task.output_type}/${task.tool}`}
+                    prefetch={false}
+                  >
                     <div className="flex flex-col w-full">
                       <div className="flex items-center gap-2 mb-1">
                         {task.status === null ||

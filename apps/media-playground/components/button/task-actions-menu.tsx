@@ -27,6 +27,7 @@ const TaskActionsMenu = ({ task, result, output, index, className }: Props) => {
             href={`/create/${task.output_type}/${task.tool}?task=${task._id}`}
             scroll={false}
             shallow={true}
+            prefetch={false}
           >
             <FileSlidersIcon className="mr-2 h-4 w-4" />
             Use as Preset
