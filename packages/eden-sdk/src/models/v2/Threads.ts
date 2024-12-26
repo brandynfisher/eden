@@ -32,7 +32,9 @@ export interface ThreadsMessageReactArguments extends WebAPICallOptions {
 
 export interface ThreadsListArguments
   extends WebAPICallOptions,
-    ListQueryParams {}
+    ListQueryParams {
+  agent_id?: string
+}
 
 export interface ThreadsGetArguments extends WebAPICallOptions {
   thread_id: string

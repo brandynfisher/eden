@@ -38,7 +38,7 @@ export const createThreadMessage = async (
         attachments,
       },
       user_id: userId,
-      force_reply: true
+      force_reply: true,
     },
   }
 
@@ -96,11 +96,17 @@ export const listThreads = async (
     })
   }
 
-  const { limit = 25, page, sort } = request.query as ThreadsListArguments
+  const {
+    limit = 25,
+    page,
+    sort,
+    agent_id,
+  } = request.query as ThreadsListArguments
 
   try {
     const query = {
       user: user._id,
+      agent: agent_id,
     }
 
     const queryOptions: QueryOptions = {

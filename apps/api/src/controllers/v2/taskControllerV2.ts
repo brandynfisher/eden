@@ -44,6 +44,7 @@ export type SocketClientEvent = {
 
 export type SocketMetaData = {
   connectionId: string
+  msgId: number
   isAuthenticated: boolean
   userId: null | string
   _id: null | string
@@ -601,6 +602,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
 ) {
   const metaData: SocketMetaData = {
     connectionId: uuidv4(),
+    msgId: 0,
     isAuthenticated: false,
     userId: null,
     _id: null,
@@ -656,6 +658,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
 
         await tasksRepository.model.populate(task, {
           path: 'user',
+          model: 'users3',
           select: '_id username userId userImage',
         })
 
@@ -663,6 +666,8 @@ export const subscribeWebSocketUpdates = function wsHandler(
         socket.send(
           JSON.stringify({
             event: ServerEventName.TaskUpdate,
+            connectionId: metaData.connectionId,
+            msgId: metaData.msgId,
             data: {
               task:
                 task && task.result && Array.isArray(task.result)
@@ -680,6 +685,8 @@ export const subscribeWebSocketUpdates = function wsHandler(
             },
           }),
         )
+
+        metaData.msgId += 1
       }
     }
 
@@ -723,15 +730,21 @@ export const subscribeWebSocketUpdates = function wsHandler(
         // })
         // @todo: build and emit WS response
         // @todo: handle status etc here?
-
+        this.log.info(
+          `${ServerEventName.ThreadUpdate}: ${metaData.connectionId} - ${metaData.msgId} ${thread._id}`,
+        )
         socket.send(
           JSON.stringify({
             event: ServerEventName.ThreadUpdate,
+            msgId: metaData.msgId,
+            connectionId: metaData.connectionId,
             data: newMessages
-              ? { newMessages: newMessages }
-              : { thread: thread },
+              ? { newMessages: newMessages, thread_id: thread._id }
+              : { thread: thread, thread_id: thread._id },
           }),
         )
+
+        metaData.msgId += 1
       }
     }
 

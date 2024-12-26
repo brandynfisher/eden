@@ -6,6 +6,7 @@ import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button, ButtonProps } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
   TooltipContent,
@@ -85,34 +86,11 @@ const TopLeft: FC = () => {
 }
 
 const ThreadListItem: FC = () => {
-  // const threadListRuntime = useAssistantRuntime().threadList
-  // // threadListRuntime.onRename
-  // console.log(threadListRuntime.re)
-  // const thread = useThread()
-  // console.log(thread)
-  // const threadListItem = threadListRuntime.getThreadListItemById(thread.metadata.threadId)
-  // console.log(threadListItem.getState())
-
-  //
-  // const handleRenameClick = async () => {
-  //   const threadDing = threadListRuntime.getThreadListItemById(thread.metadata.threadId)
-  //   await threadDing.rename('New Title')
-  // }
-  // const mainThread = useThreadList(t => t.mainThreadId)
-  // const runtime = useAssistantRuntime()
-  // const { isRunning, metadata } = useThread(t => t); // bind your component to receive updates to a runtime state value
-  // const isMain = useThreadList(t => t.mainThreadId === metadata.threadId)
-  //
-  // console.log({mainThread, isMain, threadId: metadata.threadId, isRunning})
-  // const threadListItem = useThreadListItem()
-
   return (
     <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary hover:bg-muted-darker flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
       <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate">
         <ThreadListItemPrimitive.Title fallback="Untitled" />
-        {/*{isMain ? <LoadingIndicator /> : null}*/}
       </ThreadListItemPrimitive.Trigger>
-      {/*{isActiveThread ? (*/}
       <ButtonWithTooltip
         variant="ghost"
         className="hover:text-foreground/60 ml-auto h-auto p-0"
@@ -149,9 +127,20 @@ const ThreadListItem: FC = () => {
 }
 
 const MainLeft: FC = () => {
+  const threads = useThreadList().threads
+  const isLoading = threads && threads[0] === 'DEFAULT_THREAD_ID'
+
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium">
-      <ThreadListPrimitive.Items components={{ ThreadListItem }} />
+      {isLoading ? (
+        <>
+          <Skeleton className="w-full h-9" />
+          <Skeleton className="w-full h-9" />
+          <Skeleton className="w-full h-9" />
+        </>
+      ) : (
+        <ThreadListPrimitive.Items components={{ ThreadListItem }} />
+      )}
     </nav>
   )
 }

@@ -19,7 +19,6 @@ type Props = {
 }
 
 const TaskActionsMenu = ({ task, result, output, index, className }: Props) => {
-  console.log('taskactions', task, result, output, index, className)
   return (
     <ActionsDropdown className={className}>
       <DropdownMenuGroup>

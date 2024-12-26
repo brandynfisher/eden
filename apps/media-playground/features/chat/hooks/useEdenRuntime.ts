@@ -24,15 +24,18 @@ export type EdenExtras = {
 }
 
 export const useEdenRuntime = ({
+  agentId,
   threadId,
   stream,
   onSwitchToNewThread,
   onSwitchToThread,
   onRename,
 }: {
-  threadId?: string | undefined
+  agentId?: string
+  threadId?: string
   stream: (
     messages: EdenMessage[],
+    callback?: () => Promise<void>,
   ) => Promise<AsyncGenerator<{ data: EdenMessage }>>
   onSwitchToNewThread?: () => Promise<void> | void
   onSwitchToThread?: (threadId: string) => Promise<{ messages: EdenMessage[] }>
@@ -42,13 +45,16 @@ export const useEdenRuntime = ({
   const [isRunning, setIsRunning] = useState(false)
 
   const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
-  const { threads } = useThreadListQuery()
+  const { threads, invalidate } = useThreadListQuery({ agentId })
 
-  const handleSendMessage = async (messages: EdenMessage[]) => {
+  const handleSendMessage = async (
+    messages: EdenMessage[],
+    callback?: () => Promise<void>,
+  ) => {
     try {
       setIsRunning(true)
       console.log('handleSendMessage')
-      await sendMessage(messages)
+      await sendMessage(messages, callback)
       console.log('handleSendMessage::done')
     } catch (error) {
       console.error('Error streaming messages:', error)
@@ -63,11 +69,6 @@ export const useEdenRuntime = ({
     messages,
     isRunning,
   })
-
-  // console.log({ threadId, threadMessages })
-  // console.log({ threads, threadIds: threads?.map(thread => thread._id) })
-
-  // console.log({isRunning, threadId, threadMessages})
 
   return useExternalStoreRuntime({
     isRunning,
@@ -113,18 +114,25 @@ export const useEdenRuntime = ({
             },
       },
     },
-    onNew: msg => {
-      return handleSendMessage([
-        {
-          id: uuidv4(),
-          role: 'user',
-          content:
-            msg.content && msg.content.length
-              ? (msg.content[0] as TextContentPart).text
-              : '',
-          attachments: msg.attachments.map(attachment => attachment.name),
+    onNew: async msg => {
+      return handleSendMessage(
+        [
+          {
+            id: uuidv4(),
+            role: 'user',
+            content:
+              msg.content && msg.content.length
+                ? (msg.content[0] as TextContentPart).text
+                : '',
+            attachments: msg.attachments.map(attachment => attachment.name),
+          },
+        ],
+        async () => {
+          console.log('callback')
+          await invalidate()
+          console.log('invalidated threadlist')
         },
-      ])
+      )
     },
   })
 }

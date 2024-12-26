@@ -3,19 +3,23 @@ import { useCallback, useState } from 'react'
 export const useEdenMessages = <TMessage extends { id: string }>({
   stream,
 }: {
-  stream: (messages: TMessage[]) => Promise<AsyncGenerator<{ data: TMessage }>>
+  stream: (
+    messages: TMessage[],
+    callback?: () => Promise<void>,
+  ) => Promise<AsyncGenerator<{ data: TMessage }>>
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
 
   const sendMessage = useCallback(
-    async (newMessages: TMessage[]) => {
+    async (newMessages: TMessage[], callback?: () => Promise<void>) => {
       const optimisticMessages = [...messages, ...newMessages]
 
       if (newMessages.length > 0) {
         setMessages(optimisticMessages)
       }
 
-      const response = await stream(newMessages)
+      const response = await stream(newMessages, callback)
+      console.log('useEdenMessages: stream response:', response)
 
       for await (const message of response) {
         setMessages(currentMessages => {

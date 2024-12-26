@@ -89,7 +89,6 @@ const CreationActionsContent = ({
   userId,
   isOpen,
 }: ContentProps) => {
-  console.log('CreationActionsContent', creation, queryKey, userId, isOpen)
   const dispatch = useAppDispatch()
 
   const { isSignedIn } = useAuthState()

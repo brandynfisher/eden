@@ -101,6 +101,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
       querystring: {
         type: 'object',
         properties: {
+          agent_id: Type.Optional(Type.String()),
           ...paginationProperties(),
         },
         required: [],

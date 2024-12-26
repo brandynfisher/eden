@@ -7,7 +7,6 @@ import {
 import { getThread, sendMessage } from '@/features/chat/chat-api'
 import { EdenMessage } from '@/features/chat/eden-message-converter'
 import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
-import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider } from '@assistant-ui/react'
 import { AssistantMessage } from '@edenlabs/eden-sdk'
@@ -23,7 +22,6 @@ export function EdenRuntimeProvider({
   agentId: string
   children: ReactNode
 }>) {
-  const { invalidate } = useThreadListQuery()
   const threadIdRef = useRef<string | undefined>()
   const abortController = useRef<AbortController>(new AbortController())
   const messageEmitterRef = useRef(new MessageEmitter())
@@ -38,13 +36,28 @@ export function EdenRuntimeProvider({
       const newMessages = websocketMessage.data.newMessages as
         | EdenMessage[]
         | undefined
+
       if (newMessages && newMessages.length > 0) {
+        if (
+          threadIdRef.current &&
+          websocketMessage.data.thread_id &&
+          threadIdRef.current !== websocketMessage.data.thread_id
+        ) {
+          console.log(
+            'Message not for current thread, ignoring!!!!',
+            threadIdRef.current,
+            websocketMessage.data,
+          )
+          return
+        }
+
         newMessages.forEach(msg => messageEmitterRef.current.emit(msg))
       }
     }
   }, [websocketMessage])
 
   const runtime = useEdenRuntime({
+    agentId,
     threadId: threadIdRef.current,
     onSwitchToNewThread: async () => {
       threadIdRef.current = undefined
@@ -60,7 +73,7 @@ export function EdenRuntimeProvider({
     onRename: async (threadId, newTitle) => {
       console.log('rename', threadId, newTitle)
     },
-    stream: async messages => {
+    stream: async (messages, callback) => {
       return (async function* () {
         const messageEmitter = messageEmitterRef.current
 
@@ -87,7 +100,7 @@ export function EdenRuntimeProvider({
         }
 
         if (!threadIdRef.current) {
-          await invalidate()
+          callback && (await callback())
           threadIdRef.current = sendMessageResponse.data.thread_id as string
         }
 

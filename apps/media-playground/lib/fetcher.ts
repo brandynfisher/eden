@@ -48,26 +48,6 @@ export const extractPaginationParams = (
   const page = params.get('page')
   if (page) query.page = Number(page)
 
-  // const filterKeys = ['name', 'user', 'character', 'collection', 'creation', 'generator', 'outputType', 'concept', 'isPrivate', 'visibility', 'maxDate', 'minDate']
-  // const filter: Partial<TasksV2ListArguments['filter']> = {}
-
-  // filterKeys.forEach((key) => {
-  //   let value = params.getAll(`filter.${key}`)
-
-  // if (value) {
-  //   if (key === 'isPrivate') {
-  //     filter.isPrivate = value[0] === 'true'
-  //   } else if (key === 'visibility') {
-  //     filter.visibility = value[0] as 'all' | 'public' | 'private'
-  //   } else {
-  //     // @ts-ignore
-  //     filter[key] = value
-  //   }
-  // }
-  // })
-
-  // if (Object.keys(filter).length) feedQuery.filter = filter
-
   return query
 }
 
