@@ -20,5 +20,6 @@ export type SiteConfig = {
   publicRoutes: string[]
   featured: {
     tools: string[]
+    agents: string[]
   }
 }

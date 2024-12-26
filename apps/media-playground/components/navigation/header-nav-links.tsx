@@ -4,6 +4,7 @@ import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { NavLinkProps } from '@/components/navigation/nav-link'
 import NavLinkList from '@/components/navigation/nav-link-list'
 import { Separator } from '@/components/ui/separator'
+import { siteConfig } from '@/lib/config'
 import Link, { LinkProps } from 'next/link'
 import { useSelectedLayoutSegments } from 'next/navigation'
 import { PropsWithChildren } from 'react'
@@ -44,7 +45,7 @@ const navItemsTrain: NavLinkProps[] = [
 const navItemsEve: NavLinkProps[] = [
   {
     label: 'Eve',
-    segments: ['eve'],
+    segments: [`chat/${siteConfig.featured.agents[0]}`],
   },
 ]
 

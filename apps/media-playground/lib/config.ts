@@ -66,5 +66,15 @@ export const siteConfig: SiteConfig = {
   ],
   featured: {
     tools: ['flux_schnell', 'flux_dev', 'texture_flow', 'animate_3D'],
+    agents:
+      process.env.NEXT_PUBLIC_APP_ENV === 'production'
+        ? [
+            '6556e52b78c870d99c459052', // verdelis
+          ]
+        : [
+            '675fd3af79e00297cdac1324', // eve
+            '675f87f379e00297cd9b4396', // oppenheimer
+            '675f880079e00297cd9b45d9', // Eden444
+          ],
   },
 }
