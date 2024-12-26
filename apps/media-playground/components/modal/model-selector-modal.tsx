@@ -113,6 +113,7 @@ const ModelSelectorModal = ({
               minCols={2}
               maxCols={5}
               onClick={handleOnChange}
+              showFooterItems={{ name: true, actions: false }}
             />
           ) : (
             <ModelsFeed
@@ -120,6 +121,7 @@ const ModelSelectorModal = ({
               minCols={2}
               maxCols={5}
               onClick={handleOnChange}
+              showFooterItems={{ name: true, actions: false }}
             />
           )}
         </div>

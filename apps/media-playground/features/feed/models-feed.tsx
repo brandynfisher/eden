@@ -11,9 +11,19 @@ type Props = {
   minCols?: number
   maxCols?: number
   onClick?: (item: ModelV2) => void
+  showFooterItems?: {
+    name: boolean
+    actions: boolean
+  }
 }
 
-const ModelsFeed = ({ query: queryProp, minCols, maxCols, onClick }: Props) => {
+const ModelsFeed = ({
+  query: queryProp,
+  minCols,
+  maxCols,
+  onClick,
+  showFooterItems,
+}: Props) => {
   const defaultQuery: FeedConceptsCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -43,7 +53,7 @@ const ModelsFeed = ({ query: queryProp, minCols, maxCols, onClick }: Props) => {
           model={item as ModelV2}
           creator={(item as ModelV2).user}
           linkHref={`/models/${item._id}`}
-          showFooter={true} // @todo: make this a feed prop
+          showFooterItems={showFooterItems}
         />
       )}
     />
