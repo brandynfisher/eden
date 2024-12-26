@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     })
     const res = await eden.threads.list({
       ...paginationParams,
-      agent_id: agentIdParam,
+      agent_id: agentIdParam ?? undefined,
     })
 
     return NextResponse.json(res)
