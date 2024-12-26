@@ -95,7 +95,12 @@ const configPlugin: FastifyPluginAsync = async server => {
       )
     }
 
-    server.decorate('config', envData as Config)
+    server.decorate('config', {
+      ...envData,
+      MANNA_BONUS_SIGNUP: Number(envData.MANNA_BONUS_SIGNUP),
+      MANNA_BONUS_DAILY_LOGIN: Number(envData.MANNA_BONUS_DAILY_LOGIN),
+      MANNA_BONUS_DISCORD_LINK: Number(envData.MANNA_BONUS_DISCORD_LINK),
+    } as Config)
   } else {
     throw new Error(`ajv or ConfigSchema is not defined`)
   }
