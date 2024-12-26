@@ -739,7 +739,11 @@ export const subscribeWebSocketUpdates = function wsHandler(
             msgId: metaData.msgId,
             connectionId: metaData.connectionId,
             data: newMessages
-              ? { newMessages: newMessages, thread_id: thread._id }
+              ? {
+                  newMessages: newMessages,
+                  thread_id: thread._id,
+                  title: thread.title,
+                }
               : { thread: thread, thread_id: thread._id },
           }),
         )

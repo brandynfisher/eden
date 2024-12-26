@@ -5,7 +5,13 @@ import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button, ButtonProps } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Separator } from '@/components/ui/separator'
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
@@ -27,8 +33,9 @@ import {
   ThreadListPrimitive,
   useThreadList,
 } from '@assistant-ui/react'
+import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { TooltipContentProps } from '@radix-ui/react-tooltip'
-import { Edit3Icon, EditIcon, MenuIcon } from 'lucide-react'
+import { Edit3Icon, EditIcon } from 'lucide-react'
 import Link from 'next/link'
 import { FC, useEffect } from 'react'
 
@@ -149,14 +156,17 @@ const LeftBarSheet: FC = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" className="shrink-0 md:hidden">
-          <MenuIcon className="size-4" />
-          <span className="sr-only">Toggle navigation menu</span>
+        <Button variant="outline" className="shrink-0 md:hidden gap-2">
+          View Threads
+          <ChatBubbleIcon className="size-4" />
+          <span className="sr-only">Toggle thread list menu</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="flex flex-col">
+        <SheetTitle className="sr-only">Thread List</SheetTitle>
         <div className="mt-6 flex flex-col gap-1">
           <TopLeft />
+          <Separator orientation="horizontal" className="my-2" />
           <MainLeft />
         </div>
       </SheetContent>

@@ -15,6 +15,7 @@ export interface ThreadSchema {
   agent: AgentDocument
   active?: string[]
   name: string
+  title?: string
   messages: ThreadMessage[]
   key?: string
   createdAt: Date
@@ -37,6 +38,9 @@ export const threadSchema = new Schema<ThreadDocument>(
     agent: {
       type: Schema.Types.ObjectId,
       ref: 'agent',
+    },
+    title: {
+      type: Schema.Types.String,
     },
     key: {
       type: Schema.Types.String,

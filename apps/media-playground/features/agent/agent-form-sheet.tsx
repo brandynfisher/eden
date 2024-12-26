@@ -42,8 +42,8 @@ export const agentSchema = z.object({
       message: 'Key must only contain lowercase letters, numbers, and dashes.',
     }),
   image: z.string().optional(),
-  description: z.string().min(1).max(1000),
-  instructions: z.string().min(1),
+  description: z.string().min(1).max(10000),
+  instructions: z.string().min(1).max(10000),
   discordId: z.string().optional(),
   modelId: z.string().optional(),
 })
