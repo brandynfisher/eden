@@ -188,8 +188,10 @@ export const claimDailyLoginBonus = async (
   const claimAmount = server.config.MANNA_BONUS_DAILY_LOGIN
 
   if (!lastDailyLogin || now - lastDailyLogin.getTime() >= oneDayInMs) {
-    user.lastDailyLoginBonus = new Date()
-    await user.save()
+    await User.updateOne(
+      { _id: user._id },
+      { $set: { lastDailyLoginBonus: new Date() } },
+    )
 
     userManna.balance += claimAmount
     await userManna.save()
