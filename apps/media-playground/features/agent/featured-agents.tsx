@@ -2,6 +2,7 @@
 
 import { Skeleton } from '@/components/ui/skeleton'
 import { AgentGridSection } from '@/features/tools/agent-grid-section'
+import { siteConfig } from '@/lib/config'
 import { ChevronRightIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -31,14 +32,7 @@ export const FeaturedAgents = () => {
           </div>
         }
       >
-        {/* //@todo: configurable set per ENV prod/stage OR DB identifier for feature list (better) */}
-        <AgentGridSection
-          agentIds={[
-            '675fd3af79e00297cdac1324', // eve
-            '675f87f379e00297cd9b4396', // oppenheimer
-            '675f880079e00297cd9b45d9', // Eden444
-          ]}
-        />
+        <AgentGridSection agentIds={siteConfig.featured.agents} />
       </Suspense>
     </div>
   )
