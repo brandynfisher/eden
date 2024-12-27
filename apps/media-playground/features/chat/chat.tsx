@@ -39,8 +39,6 @@ import { Edit3Icon, EditIcon } from 'lucide-react'
 import Link from 'next/link'
 import { FC, useEffect } from 'react'
 
-// import LoadingIndicator from '@/components/loading-indicator'
-
 type ButtonWithTooltipProps = ButtonProps & {
   tooltip: string
   side?: TooltipContentProps['side']
@@ -68,17 +66,19 @@ const ButtonWithTooltip: FC<ButtonWithTooltipProps> = ({
 }
 
 const TopLeft: FC = () => {
-  const isNewSelected = useThreadList(t => {
-    // console.log(t, t.newThread, t.mainThreadId)
-    return t.mainThreadId === 'DEFAULT_THREAD_ID'
-  })
+  const threads = useThreadList().threads
+  const isLoading = threads && threads[0] === 'DEFAULT_THREAD_ID'
+  const isNewSelected = useThreadList(
+    t => t.mainThreadId === 'DEFAULT_THREAD_ID',
+  )
+
   return (
     <ThreadListPrimitive.New asChild>
       <ButtonWithTooltip
         variant="ghost"
         className={cn(
           'flex w-full justify-between px-3',
-          isNewSelected && 'bg-aui-muted',
+          !isLoading && isNewSelected && 'bg-aui-muted',
         )}
         tooltip="New Thread"
         side="right"
@@ -139,6 +139,7 @@ const MainLeft: FC = () => {
 
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium">
+      <div className="mb-1 text-muted-foreground">Recent</div>
       {isLoading ? (
         <>
           <Skeleton className="w-full h-9" />
@@ -187,7 +188,7 @@ type Props = {
   threadId?: string
 }
 
-const Chat: FC<Props> = ({ agentId }) => {
+const Chat: FC<Props> = ({ agentId, threadId }) => {
   const { agent, isError, error } = useAgentQuery({
     key: agentId,
     enabled: !!agentId,
@@ -205,7 +206,7 @@ const Chat: FC<Props> = ({ agentId }) => {
   const leftStyle = 'border-r hidden md:block'
 
   return (
-    <EdenRuntimeProvider agentId={agentId}>
+    <EdenRuntimeProvider agentId={agentId} threadId={threadId}>
       <div className="grid h-[calc(100dvh_-_64px)] w-full grid-flow-col grid-rows-[auto_1fr] md:grid-cols-[250px_1fr]">
         <div className={cn(sideStyle, leftStyle, topStyle)}>
           <TopLeft />

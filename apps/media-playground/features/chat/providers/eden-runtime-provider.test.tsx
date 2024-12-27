@@ -52,7 +52,7 @@ describe('EdenRuntimeProvider', () => {
 
     const { getByText } = render(
       <QueryClientProvider client={queryClient}>
-        <EdenRuntimeProvider>
+        <EdenRuntimeProvider agentId={'123'}>
           <div>Test Child</div>
         </EdenRuntimeProvider>
       </QueryClientProvider>,

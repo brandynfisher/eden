@@ -11,7 +11,7 @@ import {
   ThreadWelcome,
   useThread,
 } from '@assistant-ui/react'
-import type { FC } from 'react'
+import { FC } from 'react'
 
 const ThreadFollowupSuggestions: FC = () => {
   const suggestions = useThread(t => t.suggestions)

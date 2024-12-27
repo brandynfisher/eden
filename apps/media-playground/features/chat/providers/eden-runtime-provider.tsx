@@ -17,15 +17,16 @@ const TIMEOUT_DURATION_MS = 5 * 60 * 1000
 
 export function EdenRuntimeProvider({
   agentId,
+  threadId,
   children,
 }: Readonly<{
   agentId: string
+  threadId?: string
   children: ReactNode
 }>) {
   const threadIdRef = useRef<string | undefined>()
   const abortController = useRef<AbortController>(new AbortController())
   const messageEmitterRef = useRef(new MessageEmitter())
-
   const websocketMessage = useWebSocketMessage({
     eventType: 'thread-update',
     abortSignal: abortController.current.signal,
@@ -61,11 +62,13 @@ export function EdenRuntimeProvider({
     threadId: threadIdRef.current,
     onSwitchToNewThread: async () => {
       threadIdRef.current = undefined
+      window.history.pushState(null, '', `/chat/${agentId}`)
     },
-    onSwitchToThread: async threadId => {
-      threadIdRef.current = threadId
-      const thread = await getThread(threadId)
-      console.log({ threadId, thread })
+    onSwitchToThread: async newThreadId => {
+      threadIdRef.current = newThreadId
+      window.history.pushState(null, '', `/chat/${agentId}/${newThreadId}`)
+      const thread = await getThread(newThreadId)
+      console.log({ newThreadId, thread })
       return {
         messages: thread.messages,
       }
@@ -139,6 +142,14 @@ export function EdenRuntimeProvider({
       })()
     },
   })
+
+  useEffect(() => {
+    if (threadId) {
+      runtime.switchToThread(threadId)
+    } else {
+      runtime.switchToNewThread()
+    }
+  }, [runtime, threadId])
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
