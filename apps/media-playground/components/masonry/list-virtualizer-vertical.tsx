@@ -124,7 +124,7 @@ const ListVirtualizerVertical = ({
 
       return (
         <div
-          key={`${item?._id || virtualItem.index}`}
+          key={`${item?._id || `${apiEndpoint}`}_${virtualItem.index}`}
           ref={rowVirtualizer.measureElement}
           data-index={virtualItem.index}
           style={{

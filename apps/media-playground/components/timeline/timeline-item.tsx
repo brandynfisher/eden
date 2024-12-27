@@ -106,7 +106,14 @@ const TimelineItem = ({ item, queryKey }: Props) => {
 
           {item.status === 'pending' || item.status === 'running' ? (
             <>
-              {[...Array(num_samples || 1)].map((_e, i) => (
+              {[
+                ...Array(
+                  (num_samples || 1) -
+                    (item.result && Array.isArray(item.result)
+                      ? item.result.length
+                      : 0),
+                ),
+              ].map((_e, i) => (
                 <div
                   key={i}
                   className={cn([
@@ -167,9 +174,8 @@ const TimelineItem = ({ item, queryKey }: Props) => {
 
           <Suspense>
             <ErrorBoundary>
-              {item.status === 'completed' ? (
-                item.result && Array.isArray(item.result) ? (
-                  item.result.map((result, index) =>
+              {item.result && Array.isArray(item.result) && item.result.length
+                ? item.result.map((result, index) =>
                     result.output.map(output =>
                       output.model === undefined ? (
                         <TimelineItemMediaResult
@@ -191,12 +197,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                       ),
                     ),
                   )
-                ) : (
-                  <div className="text-warning">
-                    Unhandled result: {item.tool} - {item._id}
-                  </div>
-                )
-              ) : null}
+                : null}
             </ErrorBoundary>
           </Suspense>
         </div>
