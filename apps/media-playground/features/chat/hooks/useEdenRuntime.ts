@@ -35,7 +35,7 @@ export const useEdenRuntime = ({
   threadId?: string
   stream: (
     messages: EdenMessage[],
-    callback?: () => Promise<void>,
+    callback?: (thread_id?: string) => Promise<void>,
   ) => Promise<AsyncGenerator<{ data: EdenMessage }>>
   onSwitchToNewThread?: () => Promise<void> | void
   onSwitchToThread?: (threadId: string) => Promise<{ messages: EdenMessage[] }>
@@ -49,7 +49,7 @@ export const useEdenRuntime = ({
 
   const handleSendMessage = async (
     messages: EdenMessage[],
-    callback?: () => Promise<void>,
+    callback?: (thread_id?: string) => Promise<void>,
   ) => {
     try {
       setIsRunning(true)
@@ -127,10 +127,13 @@ export const useEdenRuntime = ({
             attachments: msg.attachments.map(attachment => attachment.name),
           },
         ],
-        async () => {
-          console.log('callback')
-          await invalidate()
-          console.log('invalidated threadlist')
+        async (newThreadId?: string) => {
+          console.log('callback', agentId, threadId, newThreadId)
+          window.history.pushState(null, '', `/chat/${agentId}/${newThreadId}`)
+          setTimeout(async () => {
+            console.log('invalidated threadlist')
+            await invalidate()
+          }, 2000)
         },
       )
     },

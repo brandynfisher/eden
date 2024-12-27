@@ -5,7 +5,7 @@ export const useEdenMessages = <TMessage extends { id: string }>({
 }: {
   stream: (
     messages: TMessage[],
-    callback?: () => Promise<void>,
+    callback?: (thread_id?: string) => Promise<void>,
   ) => Promise<AsyncGenerator<{ data: TMessage }>>
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
