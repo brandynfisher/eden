@@ -176,11 +176,11 @@ const TimelineItem = ({ item, queryKey }: Props) => {
             <ErrorBoundary>
               {item.result && Array.isArray(item.result) && item.result.length
                 ? item.result.map((result, index) =>
-                    result.output.map(output =>
+                    result.output.map((output, outputIndex) =>
                       output.model === undefined ? (
                         <TimelineItemMediaResult
                           queryKey={queryKey}
-                          key={`${item._id}_${index}`}
+                          key={`${item._id}_${index}_${outputIndex}`}
                           index={index}
                           task={item}
                           result={result}
@@ -189,7 +189,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                         // api populates a model property with full model document
                         <TimelineItemModelResult
                           queryKey={queryKey}
-                          key={`${item._id}_${index}`}
+                          key={`${item._id}_${index}_${outputIndex}`}
                           index={index}
                           result={result}
                           task={item}
