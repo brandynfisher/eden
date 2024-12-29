@@ -41,8 +41,6 @@ const extractModifiedMessages = (
   updatedFields: Record<string, any>,
 ): Record<number, any> => {
   const nested = reconstructNestedObject(updatedFields)
-
-  // Return only the updated `messages` entries
   return nested.messages || {}
 }
 
@@ -109,31 +107,17 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             }
 
             Object.entries(updatedFields).forEach(([key, value]) => {
-              _.set(cachedDoc, key, value) // Use lodash's set method for dot-notated keys
+              _.set(cachedDoc, key, value)
             })
 
-            // cachedDocuments.set(docId, cachedDoc);
-
-            // console.log(
-            //   'update: updatedFields:',
-            //   JSON.stringify(
-            //     { thread: cachedDoc?._id, ...updatedFields },
-            //     null,
-            //     2,
-            //   ),
-            // )
             const modifiedMessages = extractModifiedMessages(updatedFields)
 
             const updatedMessages: ThreadMessage[] = []
             // Merge updated parts into the cached document or `fullDocument`
             Object.entries(modifiedMessages).forEach(([index, updates]) => {
               const messageIndex = parseInt(index, 10)
-
-              // Apply the updates to the cached or existing message
               const existingMessage = cachedDoc?.messages[messageIndex] || {}
               const fullUpdatedMessage = _.merge(existingMessage, updates)
-              // console.log({fullUpdatedMessage})
-              // cachedDoc?.messages[messageIndex] = _.merge(existingMessage, updates)
               updatedMessages.push(fullUpdatedMessage)
             })
 
@@ -142,17 +126,9 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
               return
             }
 
-            // Optional: Log or process only the modified portions of `messages`
-            // console.log('modifiedMessages', JSON.stringify(modifiedMessages, null, 2))
-
             const filteredModifiedMessages = updatedMessages.filter(msg => {
               return msg.role !== 'user'
             })
-
-            // console.log(
-            //   'update: filteredModifiedMessages',
-            //   JSON.stringify(filteredModifiedMessages, null, 2),
-            // )
 
             if (!filteredModifiedMessages.length) {
               console.log('update: No non-user messages updated')

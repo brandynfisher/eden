@@ -10,7 +10,6 @@ import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider } from '@assistant-ui/react'
 import { AssistantMessage } from '@edenlabs/eden-sdk'
-import { useRouter } from 'next/navigation'
 import { ReactNode, useEffect, useRef } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -25,7 +24,6 @@ export function EdenRuntimeProvider({
   threadId?: string
   children: ReactNode
 }>) {
-  const router = useRouter()
   const threadIdRef = useRef<string | undefined>()
   const abortController = useRef<AbortController>(new AbortController())
   const messageEmitterRef = useRef(new MessageEmitter())
@@ -63,18 +61,15 @@ export function EdenRuntimeProvider({
     agentId,
     threadId: threadIdRef.current,
     onSwitchToNewThread: async () => {
+      abortController.current.abort()
+      abortController.current = new AbortController()
       threadIdRef.current = undefined
-      router.push(`/chat/${agentId}`)
-
-      // console.log('onSwitchToNewThread', threadId, threadIdRef.current)
-      // window.history.pushState(null, '', `/chat/${agentId}`)
+      window.history.pushState(null, '', `/chat/${agentId}`)
     },
     onSwitchToThread: async newThreadId => {
       threadIdRef.current = newThreadId
-      // console.log('onSwitchToThread', {threadId, newThreadId, refId: threadIdRef.current})
       window.history.pushState(null, '', `/chat/${agentId}/${newThreadId}`)
       const thread = await getThread(newThreadId)
-      // console.log({ newThreadId, thread })
       return {
         messages: thread.messages,
       }
@@ -108,22 +103,22 @@ export function EdenRuntimeProvider({
           return
         }
 
+        // If new thread
         if (!threadIdRef.current) {
           threadIdRef.current = sendMessageResponse.data.thread_id as string
           callback &&
             (await callback(sendMessageResponse.data.thread_id as string))
         }
 
-        const messageIterable = createAsyncIterableFromEmitter(
-          messageEmitter,
-          TIMEOUT_DURATION_MS,
-        )
+        // Now create our async-iterator with the AbortSignal
+        const messageIterable = createAsyncIterableFromEmitter(messageEmitter, {
+          timeout: TIMEOUT_DURATION_MS,
+          signal: abortController.current.signal,
+        })
 
         try {
           for await (const message of messageIterable) {
             const assistantMessage = message as AssistantMessage
-
-            console.log('yielding', message)
             yield {
               data: {
                 id: assistantMessage.id,

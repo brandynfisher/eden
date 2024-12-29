@@ -2,7 +2,13 @@ import { EdenMessage } from '@/features/chat/eden-message-converter'
 
 export function createAsyncIterableFromEmitter(
   emitter: MessageEmitter,
-  timeout: number,
+  {
+    timeout,
+    signal,
+  }: {
+    timeout: number
+    signal?: AbortSignal
+  },
 ): AsyncIterable<EdenMessage> {
   return {
     [Symbol.asyncIterator]() {
@@ -12,6 +18,7 @@ export function createAsyncIterableFromEmitter(
       let done = false
 
       const onMessage = (message: EdenMessage) => {
+        if (done) return
         if (resolveNext) {
           resolveNext({ value: message, done: false })
           resolveNext = null
@@ -22,43 +29,58 @@ export function createAsyncIterableFromEmitter(
 
       emitter.on(onMessage)
 
+      // Clean up function
+      const cleanup = () => {
+        done = true
+        emitter.off(onMessage)
+        clearTimeout(timeoutId) // <--- make sure you clear the timeout here!
+        if (resolveNext) {
+          resolveNext({ value: undefined, done: true })
+          resolveNext = null
+        }
+      }
+
+      // Set a timeout to end iteration automatically
+      const timeoutId = setTimeout(() => {
+        cleanup()
+      }, timeout)
+
+      // Check for an AbortSignal
+      if (signal) {
+        if (signal.aborted) {
+          // If the signal is already aborted
+          cleanup()
+        } else {
+          signal.addEventListener('abort', () => {
+            cleanup()
+          })
+        }
+      }
+
       const iterator = {
-        next(): Promise<IteratorResult<EdenMessage>> {
+        async next(): Promise<IteratorResult<EdenMessage>> {
           if (done) {
-            return Promise.resolve({ value: undefined, done: true })
+            return { value: undefined, done: true }
           }
           if (messageQueue.length > 0) {
-            const message = messageQueue.shift()!
-            return Promise.resolve({ value: message, done: false })
+            return { value: messageQueue.shift()!, done: false }
           }
           return new Promise<IteratorResult<EdenMessage>>(resolve => {
             resolveNext = resolve
           })
         },
-        return(): Promise<IteratorResult<EdenMessage>> {
-          done = true
-          emitter.off(onMessage)
-          return Promise.resolve({ value: undefined, done: true })
+        async return(): Promise<IteratorResult<EdenMessage>> {
+          cleanup()
+          return { value: undefined, done: true }
         },
-        throw(error: Error): Promise<IteratorResult<EdenMessage>> {
-          done = true
-          emitter.off(onMessage)
+        async throw(error: Error): Promise<IteratorResult<EdenMessage>> {
+          cleanup()
           return Promise.reject(error)
         },
         [Symbol.asyncIterator]() {
           return this
         },
       }
-
-      // Implement timeout logic
-      setTimeout(() => {
-        done = true
-        if (resolveNext) {
-          resolveNext({ value: undefined, done: true })
-          resolveNext = null
-        }
-        emitter.off(onMessage)
-      }, timeout)
 
       return iterator
     },

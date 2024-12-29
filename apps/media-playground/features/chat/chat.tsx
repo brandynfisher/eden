@@ -4,7 +4,7 @@ import AlertDestructive from '@/components/alert/alert-destructive'
 import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button, ButtonProps } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
@@ -13,12 +13,6 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { MyComposer } from '@/features/chat/components/composer'
 import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
@@ -34,36 +28,9 @@ import {
   useThreadList,
 } from '@assistant-ui/react'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
-import { TooltipContentProps } from '@radix-ui/react-tooltip'
-import { Edit3Icon, EditIcon } from 'lucide-react'
+import { EditIcon } from 'lucide-react'
 import Link from 'next/link'
 import { FC, useEffect } from 'react'
-
-type ButtonWithTooltipProps = ButtonProps & {
-  tooltip: string
-  side?: TooltipContentProps['side']
-}
-
-const ButtonWithTooltip: FC<ButtonWithTooltipProps> = ({
-  children,
-  tooltip,
-  side = 'top',
-  ...rest
-}) => {
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button {...rest}>
-            {children}
-            <span className="sr-only">{tooltip}</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side={side}>{tooltip}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
-}
 
 const TopLeft: FC = () => {
   const threads = useThreadList().threads
@@ -74,39 +41,38 @@ const TopLeft: FC = () => {
 
   return (
     <ThreadListPrimitive.New asChild>
-      <ButtonWithTooltip
+      <Button
         variant="ghost"
         className={cn(
           'flex w-full justify-between px-3',
           !isLoading && isNewSelected && 'bg-aui-muted',
         )}
-        tooltip="New Thread"
-        side="right"
       >
         <div className="flex items-center gap-2 text-sm font-semibold">
           <span>New Thread</span>
         </div>
         <EditIcon className="size-4" />
-      </ButtonWithTooltip>
+      </Button>
     </ThreadListPrimitive.New>
   )
 }
 
 const ThreadListItem: FC = () => {
   return (
-    <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary hover:bg-muted-darker flex items-center gap-2 rounded-lg px-3 py-2 transition-all">
-      <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate">
+    <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all pr-3">
+      <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate px-3 py-2 w-full">
         <ThreadListItemPrimitive.Title fallback="Untitled" />
       </ThreadListItemPrimitive.Trigger>
-      <ButtonWithTooltip
-        variant="ghost"
-        className="hover:text-foreground/60 ml-auto h-auto p-0"
-        tooltip="Change thread title"
-        // onClick={handleRenameClick}
-        disabled={true}
-      >
-        <Edit3Icon className="size-4 hidden group-hover:flex [@media(pointer:coarse)]:flex" />
-      </ButtonWithTooltip>
+
+      {/*<ButtonWithTooltip*/}
+      {/*  variant="ghost"*/}
+      {/*  className="hover:text-foreground/60 ml-auto h-auto p-0"*/}
+      {/*  tooltip="Change thread title"*/}
+      {/*  // onClick={handleRenameClick}*/}
+      {/*  disabled={true}*/}
+      {/*>*/}
+      {/*  <Edit3Icon className="size-4 hidden group-hover:flex [@media(pointer:coarse)]:flex" />*/}
+      {/*</ButtonWithTooltip>*/}
       {/*)*/}
       {/*: null }*/}
       {/*<ThreadListItemPrimitive.Archive asChild>*/}
@@ -138,7 +104,7 @@ const MainLeft: FC = () => {
   const isLoading = threads && threads[0] === 'DEFAULT_THREAD_ID'
 
   return (
-    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium">
+    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
       <div className="mb-1 text-muted-foreground">Recent</div>
       {isLoading ? (
         <>
@@ -163,9 +129,9 @@ const LeftBarSheet: FC = () => {
           <span className="sr-only">Toggle thread list menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="flex flex-col">
+      <SheetContent side="left" className="flex flex-col max-h-full">
         <SheetTitle className="sr-only">Thread List</SheetTitle>
-        <div className="mt-6 flex flex-col gap-1">
+        <div className="mt-6 flex flex-col gap-1 max-h-full">
           <TopLeft />
           <Separator orientation="horizontal" className="my-2" />
           <MainLeft />
@@ -236,55 +202,49 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
           ) : null}
         </div>
         <div className="bg-background overflow-hidden">
-          {agent ? (
-            <Thread
-              components={{
-                ThreadWelcome: MyThreadWelcome,
-                Composer: MyComposer,
-              }}
-              welcome={{
-                suggestions: [
-                  {
-                    text: 'List of tools',
-                    prompt:
-                      'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
-                  },
-                  {
-                    text: 'Make a cat image',
-                    prompt: 'Make an image of a cute little cat with a hat',
-                  },
-                  // {
-                  //   text: 'Animate my logo',
-                  //   prompt: 'Use the provided logo image to animate it',
-                  // },
-                ],
-                message: 'What do you want to create today?',
-              }}
-              assistantAvatar={{
-                src: getCloudfrontOriginalUrl(agent.userImage),
-                fallback: agent.name,
-                alt: agent.name,
-              }}
-              assistantMessage={{
-                allowReload: false,
-                allowSpeak: false,
-                components: {
-                  Text: MarkdownText,
-                  ToolFallback,
+          <Thread
+            components={{
+              ThreadWelcome: MyThreadWelcome,
+              Composer: MyComposer,
+            }}
+            welcome={{
+              suggestions: [
+                {
+                  text: 'List of tools',
+                  prompt:
+                    'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
                 },
-              }}
-              userMessage={{
-                allowEdit: false,
-              }}
-              branchPicker={{
-                allowBranchPicker: false,
-              }}
-              composer={{
-                allowAttachments: true,
-              }}
-              tools={[TaskResultTool]}
-            />
-          ) : null}
+                {
+                  text: 'Make a cat image',
+                  prompt: 'Make an image of a cute little cat with a hat',
+                },
+              ],
+              message: 'What do you want to create today?',
+            }}
+            assistantAvatar={{
+              src: getCloudfrontOriginalUrl(agent?.userImage),
+              fallback: agent?.name,
+              alt: agent?.name,
+            }}
+            assistantMessage={{
+              allowReload: false,
+              allowSpeak: false,
+              components: {
+                Text: MarkdownText,
+                ToolFallback,
+              },
+            }}
+            userMessage={{
+              allowEdit: false,
+            }}
+            branchPicker={{
+              allowBranchPicker: false,
+            }}
+            composer={{
+              allowAttachments: true,
+            }}
+            tools={[TaskResultTool]}
+          />
           {isError ? (
             <div className="p-4">
               <AlertDestructive title={'Error loading agent'}>
