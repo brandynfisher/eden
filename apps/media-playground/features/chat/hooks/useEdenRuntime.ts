@@ -129,7 +129,12 @@ export const useEdenRuntime = ({
         ],
         async (newThreadId?: string) => {
           console.log('callback', agentId, threadId, newThreadId)
-          window.history.pushState(null, '', `/chat/${agentId}/${newThreadId}`)
+          if (typeof window !== 'undefined')
+            window.history.pushState(
+              null,
+              '',
+              `/chat/${agentId}/${newThreadId}`,
+            )
           // router.push(`/chat/${agentId}/${newThreadId}`)
           setTimeout(async () => {
             console.log('invalidated threadlist')

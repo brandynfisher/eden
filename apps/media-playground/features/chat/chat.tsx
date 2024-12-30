@@ -27,6 +27,7 @@ import {
   ThreadListPrimitive,
   useThreadList,
 } from '@assistant-ui/react'
+import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { EditIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -46,7 +47,7 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
         variant="ghost"
         onClick={onItemClick}
         className={cn(
-          'flex w-full justify-between px-3',
+          'flex w-full justify-between px-3 mb-1',
           !isLoading && isNewSelected && 'bg-aui-muted',
         )}
       >
@@ -124,9 +125,34 @@ const LeftBarSheet: FC = () => {
   )
 }
 
+const AgentLink: FC<{ agent?: Agent }> = ({ agent }) => {
+  if (!agent) {
+    return null
+  }
+
+  return (
+    <Link
+      className="ml-auto md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
+      title="View Agent profile"
+      href={`/agents/${agent?._id}`}
+    >
+      <Avatar className="w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1">
+        <AvatarImage
+          className={'object-cover'}
+          src={getCloudfrontOriginalUrl(agent?.userImage)}
+        />
+        <AvatarFallback delayMs={250} className="w-6 h-6 md:w-8 md:h-8">
+          {agent?.name}
+        </AvatarFallback>
+      </Avatar>
+      {agent?.name}
+    </Link>
+  )
+}
+
 const Header: FC = () => {
   return (
-    <header className="flex gap-2">
+    <header className="flex gap-2 md:hidden">
       <LeftBarSheet />
     </header>
   )
@@ -150,46 +176,44 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
     }
   }, [])
 
-  const sideStyle = 'bg-muted/40 px-3 py-2'
-  const topStyle = 'border-b'
-  const leftStyle = 'border-r hidden md:block'
+  // const sideStyle = 'bg-muted/40 px-3 py-2'
+  // const topStyle = 'border-b'
+  // const leftStyle = 'border-r hidden md:block'
 
   return (
     <EdenRuntimeProvider agentId={agentId} threadId={threadId}>
-      <div className="grid h-[calc(100dvh_-_64px)] w-full grid-flow-col grid-rows-[auto_1fr] md:grid-cols-[250px_1fr]">
-        {/* Left side on large screens */}
-        <div className={cn(sideStyle, leftStyle, topStyle)}>
-          <TopLeft />
-        </div>
-        <div className={cn(sideStyle, leftStyle, 'overflow-y-auto')}>
-          <MainLeft />
-        </div>
-
-        {/* Header (contains the sheet button on mobile) */}
-        <div className={cn(sideStyle, topStyle, 'flex')}>
+      <div
+        // On mobile: 2 rows (header + content).
+        // On md+: 2 columns (sidebar + content).
+        className="
+        grid
+        h-[calc(100dvh_-_64px)]
+        w-full
+        grid-rows-[auto_1fr]
+        md:grid-rows-1
+        md:grid-cols-[250px_1fr]
+      "
+      >
+        {/* MOBILE-ONLY HEADER */}
+        <div className="bg-muted/40 border-b px-3 py-2 md:hidden flex items-center gap-2">
           <Header />
-          {agent ? (
-            <Link
-              className="ml-auto md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
-              title="View Agent profile"
-              href={`/agents/${agent?._id}`}
-            >
-              <Avatar className="w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1">
-                <AvatarImage
-                  className={'object-cover'}
-                  src={getCloudfrontOriginalUrl(agent?.userImage)}
-                />
-                <AvatarFallback delayMs={250} className="w-6 h-6 md:w-8 md:h-8">
-                  {agent?.name}
-                </AvatarFallback>
-              </Avatar>
-              {agent?.name}
-            </Link>
-          ) : null}
+          <AgentLink agent={agent} />
         </div>
 
-        {/* Main content */}
-        <div className="bg-background overflow-hidden">
+        {/* DESKTOP-ONLY SIDEBAR */}
+        <aside className="hidden bg-muted/40 border-r px-3 py-2 md:flex md:flex-col">
+          <div className="border-b mb-2">
+            <TopLeft />
+          </div>
+          <div className="ml-2">
+            <AgentLink agent={agent} />
+          </div>
+          <Separator orientation="horizontal" className="my-2" />
+          <MainLeft />
+        </aside>
+
+        {/* MAIN CONTENT (occupies the entire space on mobile, column 2 on md) */}
+        <main className="bg-background overflow-hidden">
           <Thread
             components={{
               ThreadWelcome: MyThreadWelcome,
@@ -241,8 +265,95 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
               </AlertDestructive>
             </div>
           ) : null}
-        </div>
+        </main>
       </div>
+      {/*<div className="grid h-[calc(100dvh_-_64px)] w-full grid-flow-col grid-rows-[auto_1fr] md:grid-cols-[250px_1fr]">*/}
+      {/*  /!* Left side on large screens *!/*/}
+      {/*  <div className={cn(sideStyle, leftStyle, topStyle)}>*/}
+      {/*    <TopLeft />*/}
+      {/*  </div>*/}
+      {/*  <div className={cn(sideStyle, leftStyle, 'overflow-y-auto')}>*/}
+      {/*    <MainLeft />*/}
+      {/*  </div>*/}
+
+      {/*  /!* Header (contains the sheet button on mobile) *!/*/}
+      {/*  <div className={cn(sideStyle, topStyle, 'flex')}>*/}
+      {/*    <Header />*/}
+      {/*    {agent ? (*/}
+      {/*      <Link*/}
+      {/*        className="ml-auto md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"*/}
+      {/*        title="View Agent profile"*/}
+      {/*        href={`/agents/${agent?._id}`}*/}
+      {/*      >*/}
+      {/*        <Avatar className="w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1">*/}
+      {/*          <AvatarImage*/}
+      {/*            className={'object-cover'}*/}
+      {/*            src={getCloudfrontOriginalUrl(agent?.userImage)}*/}
+      {/*          />*/}
+      {/*          <AvatarFallback delayMs={250} className="w-6 h-6 md:w-8 md:h-8">*/}
+      {/*            {agent?.name}*/}
+      {/*          </AvatarFallback>*/}
+      {/*        </Avatar>*/}
+      {/*        {agent?.name}*/}
+      {/*      </Link>*/}
+      {/*    ) : null}*/}
+      {/*  </div>*/}
+
+      {/*  /!* Main content *!/*/}
+      {/*  <div className="bg-background overflow-hidden">*/}
+      {/*    <Thread*/}
+      {/*      components={{*/}
+      {/*        ThreadWelcome: MyThreadWelcome,*/}
+      {/*        Composer: MyComposer,*/}
+      {/*      }}*/}
+      {/*      welcome={{*/}
+      {/*        suggestions: [*/}
+      {/*          {*/}
+      {/*            text: 'List of tools',*/}
+      {/*            prompt:*/}
+      {/*              'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',*/}
+      {/*          },*/}
+      {/*          {*/}
+      {/*            text: 'Make a cat image',*/}
+      {/*            prompt: 'Make an image of a cute little cat with a hat',*/}
+      {/*          },*/}
+      {/*        ],*/}
+      {/*        message: 'What do you want to create today?',*/}
+      {/*      }}*/}
+      {/*      assistantAvatar={{*/}
+      {/*        src: getCloudfrontOriginalUrl(agent?.userImage),*/}
+      {/*        fallback: agent?.name,*/}
+      {/*        alt: agent?.name,*/}
+      {/*      }}*/}
+      {/*      assistantMessage={{*/}
+      {/*        allowReload: false,*/}
+      {/*        allowSpeak: false,*/}
+      {/*        components: {*/}
+      {/*          Text: MarkdownText,*/}
+      {/*          ToolFallback,*/}
+      {/*        },*/}
+      {/*      }}*/}
+      {/*      userMessage={{*/}
+      {/*        allowEdit: false,*/}
+      {/*      }}*/}
+      {/*      branchPicker={{*/}
+      {/*        allowBranchPicker: false,*/}
+      {/*      }}*/}
+      {/*      composer={{*/}
+      {/*        allowAttachments: true,*/}
+      {/*      }}*/}
+      {/*      tools={[TaskResultTool]}*/}
+      {/*    />*/}
+
+      {/*    {isError ? (*/}
+      {/*      <div className="p-4">*/}
+      {/*        <AlertDestructive title={'Error loading agent'}>*/}
+      {/*          <AlertDescription>{error?.message}</AlertDescription>*/}
+      {/*        </AlertDestructive>*/}
+      {/*      </div>*/}
+      {/*    ) : null}*/}
+      {/*  </div>*/}
+      {/*</div>*/}
     </EdenRuntimeProvider>
   )
 }

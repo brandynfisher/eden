@@ -66,12 +66,14 @@ export function EdenRuntimeProvider({
       abortController.current.abort()
       abortController.current = new AbortController()
       threadIdRef.current = undefined
-      window.history.pushState(null, '', `/chat/${agentId}`)
+      if (typeof window !== 'undefined')
+        window.history.pushState(null, '', `/chat/${agentId}`)
     },
     onSwitchToThread: async newThreadId => {
       setIsLoadingThread(true)
       threadIdRef.current = newThreadId
-      window.history.pushState(null, '', `/chat/${agentId}/${newThreadId}`)
+      if (typeof window !== 'undefined')
+        window.history.pushState(null, '', `/chat/${agentId}/${newThreadId}`)
       const thread = await getThread(newThreadId)
       setIsLoadingThread(false)
       return {
