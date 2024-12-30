@@ -202,13 +202,14 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
 
         {/* DESKTOP-ONLY SIDEBAR */}
         <aside className="hidden bg-muted/40 border-r px-3 py-2 md:flex md:flex-col">
-          <div className="border-b mb-2">
-            <TopLeft />
-          </div>
           <div className="ml-2">
             <AgentLink agent={agent} />
           </div>
-          <Separator orientation="horizontal" className="my-2" />
+          <Separator orientation="horizontal" className="my-2 mb-1" />
+
+          <div className="border-b mb-2">
+            <TopLeft />
+          </div>
           <MainLeft />
         </aside>
 
