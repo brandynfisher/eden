@@ -20,7 +20,7 @@ export type Agent = Omit<
   description: string
   userImage: string
   instructions: string
-  tools?: string[]
+  tools?: { [key: string]: string[] }
   discordId?: string
   model?: ModelV2
   discordUsername?: string
@@ -55,7 +55,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   description?: string
   image: string
   instructions?: string
-  tools?: string[]
+  tools?: { [key: string]: string[] }
   discordId?: string
   modelId?: string
 }
@@ -67,7 +67,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   description?: string
   image?: string
   instructions?: string
-  tools?: string[]
+  tools?: { [key: string]: string[] }
   discordId?: string
   public?: boolean
   modelId?: string

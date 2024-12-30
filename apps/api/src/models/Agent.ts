@@ -37,8 +37,8 @@ const AgentSchema = new Schema<AgentDocument>(
       required: true,
     },
     tools: {
-      type: [String],
-      default: [],
+      type: Schema.Types.Mixed,
+      default: {},
     },
     model: {
       type: Schema.Types.ObjectId,

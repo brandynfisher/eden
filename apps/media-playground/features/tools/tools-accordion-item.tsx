@@ -7,7 +7,7 @@ import TypographyH5 from '@/components/ui/typography/TypographyH5'
 import ToolsGridSection from '@/features/tools/tools-grid-section'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 
-// we'll keep GridSection separate
+// we'll keep ToolsGridSection separate
 
 type ToolsAccordionItemProps = {
   label: string

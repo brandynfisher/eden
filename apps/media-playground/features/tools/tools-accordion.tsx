@@ -47,27 +47,29 @@ const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
         <div className="p-2 rounded-lg bg-secondary">
           <div className="mb-2">Tools</div>
 
-          {/* FEATURED */}
-          {showFeatured && (
-            <ToolsAccordionItem
-              label="Featured"
-              value="featured"
-              tools={tools?.filter(tool =>
-                siteConfig.featured.tools.includes(tool.key),
-              )}
-              priority
-            />
-          )}
+          <div className="rounded-md overflow-hidden">
+            {/* FEATURED */}
+            {showFeatured && (
+              <ToolsAccordionItem
+                label="Featured"
+                value="featured"
+                tools={tools?.filter(tool =>
+                  siteConfig.featured.tools.includes(tool.key),
+                )}
+                priority
+              />
+            )}
 
-          {/* REGULAR TOOLS */}
-          {output_type.map(type => (
-            <ToolsAccordionItem
-              key={type}
-              label={type}
-              value={type}
-              tools={eden2Tools?.filter(tool => tool.output_type === type)}
-            />
-          ))}
+            {/* REGULAR TOOLS */}
+            {output_type.map(type => (
+              <ToolsAccordionItem
+                key={type}
+                label={type}
+                value={type}
+                tools={eden2Tools?.filter(tool => tool.output_type === type)}
+              />
+            ))}
+          </div>
         </div>
       </Accordion>
 

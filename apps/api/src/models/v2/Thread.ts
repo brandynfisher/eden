@@ -65,6 +65,7 @@ threadSchema.index({ user: -1, 'message.id': -1 })
 threadSchema.index({ agent: -1, updatedAt: -1, createdAt: -1 })
 threadSchema.index({
   user: 1,
+  agent: 1,
   updatedAt: -1,
   createdAt: -1,
 })

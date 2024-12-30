@@ -38,8 +38,9 @@ export const agentSchema = z.object({
     .string()
     .min(1)
     .max(42)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
-      message: 'Key must only contain lowercase letters, numbers, and dashes.',
+    .regex(/^[a-z0-9_]+(?:-[a-z0-9_]+)*$/, {
+      message:
+        'Key must only contain lowercase letters, numbers, underscores and dashes.',
     }),
   image: z.string().optional(),
   description: z.string().min(1).max(10000),

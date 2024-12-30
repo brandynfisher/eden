@@ -11,7 +11,7 @@ export const getMediaUrl = (mediaFileName: string) => {
   return `https://d14i3advvh2bvd.cloudfront.net/${mediaFileName}`
 }
 
-const GridSection = ({ generators, priority }: GridSectionProps) => {
+const ToolsGridSection = ({ generators, priority }: GridSectionProps) => {
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {generators && generators.length ? (
@@ -39,4 +39,4 @@ const GridSection = ({ generators, priority }: GridSectionProps) => {
   )
 }
 
-export default GridSection
+export default ToolsGridSection
