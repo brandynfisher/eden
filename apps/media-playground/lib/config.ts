@@ -69,7 +69,10 @@ export const siteConfig: SiteConfig = {
     agents:
       process.env.NEXT_PUBLIC_APP_ENV === 'production'
         ? [
+            '657aa5cd35eb16a8136493e5', // eve
+            '657926f90a0f725740a93b77', // abraham
             '6556e52b78c870d99c459052', // verdelis
+            '657aa5b70a0f725740bf7c10', // banny
           ]
         : [
             '675fd3af79e00297cdac1324', // eve
