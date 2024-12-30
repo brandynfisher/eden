@@ -629,23 +629,29 @@ export const subscribeWebSocketUpdates = function wsHandler(
       // socket message is only sent to the intended recipient
       if (metaData?._id?.toString() === task.user.toString()) {
         await tasksRepository.model.populate(task, {
-          path: 'result.creation',
+          path: 'result.output.creation',
           model: 'creations3',
         })
 
         await tasksRepository.model.populate(task, {
-          path: 'result.creation.user',
+          path: 'result.output.creation.task',
+          model: 'tasks3',
+          select: '_id args',
+        })
+
+        await tasksRepository.model.populate(task, {
+          path: 'result.output.creation.user',
           model: 'users3',
           select: '_id username userId userImage',
         })
 
         await tasksRepository.model.populate(task, {
-          path: 'result.model',
+          path: 'result.output.model',
           model: 'models3',
         })
 
         await tasksRepository.model.populate(task, {
-          path: 'result.model.user',
+          path: 'result.output.model.user',
           model: 'users3',
           select: '_id username userId userImage',
         })
