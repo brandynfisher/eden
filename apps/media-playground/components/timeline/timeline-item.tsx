@@ -1,9 +1,11 @@
+import AlertDestructive from '@/components/alert/alert-destructive'
 import TaskStatusBadge from '@/components/badge/task-status-badge'
 import TaskActionsMenu from '@/components/button/task-actions-menu'
 import ErrorBoundary from '@/components/error-boundary'
 import ParameterTableCollapsible from '@/components/timeline/parameter-table-collapsible'
 import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
 import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
+import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
@@ -176,25 +178,31 @@ const TimelineItem = ({ item, queryKey }: Props) => {
             <ErrorBoundary>
               {item.result && Array.isArray(item.result) && item.result.length
                 ? item.result.map((result, index) =>
-                    result.output.map((output, outputIndex) =>
-                      output.model === undefined ? (
-                        <TimelineItemMediaResult
-                          queryKey={queryKey}
-                          key={`${item._id}_${index}_${outputIndex}`}
-                          index={index}
-                          task={item}
-                          result={result}
-                        />
-                      ) : (
-                        // api populates a model property with full model document
-                        <TimelineItemModelResult
-                          queryKey={queryKey}
-                          key={`${item._id}_${index}_${outputIndex}`}
-                          index={index}
-                          result={result}
-                          task={item}
-                        />
-                      ),
+                    result.output && Array.isArray(result.output) ? (
+                      result.output.map((output, outputIndex) =>
+                        output.model === undefined ? (
+                          <TimelineItemMediaResult
+                            queryKey={queryKey}
+                            key={`${item._id}_${index}_${outputIndex}`}
+                            index={index}
+                            task={item}
+                            result={result}
+                          />
+                        ) : (
+                          // api populates a model property with full model document
+                          <TimelineItemModelResult
+                            queryKey={queryKey}
+                            key={`${item._id}_${index}_${outputIndex}`}
+                            index={index}
+                            result={result}
+                            task={item}
+                          />
+                        ),
+                      )
+                    ) : (
+                      <AlertDestructive key={index} title="Data Error">
+                        <AlertDescription>Item: {item?._id}</AlertDescription>
+                      </AlertDestructive>
                     ),
                   )
                 : null}

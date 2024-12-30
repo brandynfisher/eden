@@ -1,5 +1,7 @@
 'use client'
 
+import AlertDestructive from '@/components/alert/alert-destructive'
+import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -163,22 +165,33 @@ const TaskStatusIndicator = () => {
                       </div>
                       <div className={'h-10 flex gap-2 items-center'}>
                         {task.status === TaskV2Status.Completed
-                          ? task.result.map(result =>
-                              result.output.map((output, index) => (
-                                <Image
-                                  key={`${task._id}_${index}_${output.filename}`}
-                                  className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
-                                  loader={customImageLoader}
-                                  src={output.filename || ''}
-                                  alt={task.args.prompt || ''}
-                                  width={48}
-                                  height={48}
-                                />
-                              )),
+                          ? task.result.map((result, resultIndex) =>
+                              result.output && Array.isArray(result.output) ? (
+                                result.output.map((output, index) => (
+                                  <Image
+                                    key={`${task._id}_${index}_${output.filename}`}
+                                    className="flex-shrink-0 max-h-8 w-8 rounded-md object-cover"
+                                    loader={customImageLoader}
+                                    src={output.filename || ''}
+                                    alt={task.args.prompt || ''}
+                                    width={48}
+                                    height={48}
+                                  />
+                                ))
+                              ) : (
+                                <AlertDestructive
+                                  key={resultIndex}
+                                  title="Data Error"
+                                >
+                                  <AlertDescription>
+                                    Item: {task?._id}
+                                  </AlertDescription>
+                                </AlertDestructive>
+                              ),
                             )
                           : null}
                         <div className="text-xs line-clamp-2 text-muted-foreground">
-                          {task.args.prompt || '-'}
+                          {task.args?.prompt || '-'}
                         </div>
                       </div>
                     </div>
