@@ -187,7 +187,6 @@ creation.index({ concept: -1 })
 creation.index({ character: 1, createdAt: -1 })
 creation.index({ deleted: 1, isPrivate: 1, character: 1, user: 1 })
 creation.index({ uri: 1, deleted: 1, isPrivate: 1 })
-creation.index({ 'embedding.score': -1 })
 creation.index({
   uri: 1,
   'mediaAttributes.type': 1,

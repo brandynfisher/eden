@@ -45,8 +45,9 @@ const QuickUpscaleDialog = () => {
               exposedParameters={['longest_side']}
               initValues={{
                 init_image:
-                  getCloudfrontOriginalUrl(quickUpscaleModal.creation.url) ||
-                  '',
+                  getCloudfrontOriginalUrl(
+                    quickUpscaleModal.creation.filename,
+                  ) || '',
               }}
               onSubmitSuccess={() =>
                 dispatch(updateQuickUpscaleModal({ isOpen: false }))

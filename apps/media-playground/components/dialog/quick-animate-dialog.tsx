@@ -43,7 +43,8 @@ const QuickAnimateDialog = () => {
             exposedParameters={['n_seconds']}
             initValues={{
               image:
-                getCloudfrontOriginalUrl(quickAnimateModal.creation.url) || '',
+                getCloudfrontOriginalUrl(quickAnimateModal.creation.filename) ||
+                '',
             }}
             onSubmitSuccess={() =>
               dispatch(updateQuickAnimateModal({ isOpen: false }))
