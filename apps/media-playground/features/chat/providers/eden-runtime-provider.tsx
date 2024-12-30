@@ -1,5 +1,6 @@
 'use client'
 
+import LoadingIndicator from '@/components/loading-indicator'
 import {
   MessageEmitter,
   createAsyncIterableFromEmitter,
@@ -10,7 +11,7 @@ import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider } from '@assistant-ui/react'
 import { AssistantMessage } from '@edenlabs/eden-sdk'
-import { ReactNode, useEffect, useRef } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
 const TIMEOUT_DURATION_MS = 5 * 60 * 1000
@@ -24,6 +25,7 @@ export function EdenRuntimeProvider({
   threadId?: string
   children: ReactNode
 }>) {
+  const [isLoadingThread, setIsLoadingThread] = useState(false)
   const threadIdRef = useRef<string | undefined>()
   const abortController = useRef<AbortController>(new AbortController())
   const messageEmitterRef = useRef(new MessageEmitter())
@@ -67,9 +69,11 @@ export function EdenRuntimeProvider({
       window.history.pushState(null, '', `/chat/${agentId}`)
     },
     onSwitchToThread: async newThreadId => {
+      setIsLoadingThread(true)
       threadIdRef.current = newThreadId
       window.history.pushState(null, '', `/chat/${agentId}/${newThreadId}`)
       const thread = await getThread(newThreadId)
+      setIsLoadingThread(false)
       return {
         messages: thread.messages,
       }
@@ -156,6 +160,11 @@ export function EdenRuntimeProvider({
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
+      {isLoadingThread && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background bg-opacity-50 z-10">
+          <LoadingIndicator className="w-12 h-12" />
+        </div>
+      )}
       {children}
     </AssistantRuntimeProvider>
   )

@@ -30,9 +30,10 @@ import {
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { EditIcon } from 'lucide-react'
 import Link from 'next/link'
+import * as React from 'react'
 import { FC, useEffect } from 'react'
 
-const TopLeft: FC = () => {
+const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const threads = useThreadList().threads
   const isLoading = threads && threads[0] === 'DEFAULT_THREAD_ID'
   const isNewSelected = useThreadList(
@@ -43,6 +44,7 @@ const TopLeft: FC = () => {
     <ThreadListPrimitive.New asChild>
       <Button
         variant="ghost"
+        onClick={onItemClick}
         className={cn(
           'flex w-full justify-between px-3',
           !isLoading && isNewSelected && 'bg-aui-muted',
@@ -57,49 +59,21 @@ const TopLeft: FC = () => {
   )
 }
 
-const ThreadListItem: FC = () => {
+// This version of ThreadListItem receives `onItemClick` from props
+const ThreadListItem: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   return (
     <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all pr-3">
-      <ThreadListItemPrimitive.Trigger className="flex-grow text-start truncate px-3 py-2 w-full">
+      <ThreadListItemPrimitive.Trigger
+        className="flex-grow text-start truncate px-3 py-2 w-full"
+        onClick={onItemClick}
+      >
         <ThreadListItemPrimitive.Title fallback="Untitled" />
       </ThreadListItemPrimitive.Trigger>
-
-      {/*<ButtonWithTooltip*/}
-      {/*  variant="ghost"*/}
-      {/*  className="hover:text-foreground/60 ml-auto h-auto p-0"*/}
-      {/*  tooltip="Change thread title"*/}
-      {/*  // onClick={handleRenameClick}*/}
-      {/*  disabled={true}*/}
-      {/*>*/}
-      {/*  <Edit3Icon className="size-4 hidden group-hover:flex [@media(pointer:coarse)]:flex" />*/}
-      {/*</ButtonWithTooltip>*/}
-      {/*)*/}
-      {/*: null }*/}
-      {/*<ThreadListItemPrimitive.Archive asChild>*/}
-      {/*  <ButtonWithTooltip*/}
-      {/*    variant="ghost"*/}
-      {/*    className="hover:text-foreground/60 ml-auto h-auto p-0"*/}
-      {/*    tooltip="Archive"*/}
-      {/*    disabled={true}*/}
-      {/*  >*/}
-      {/*    <ArchiveIcon className="size-4" />*/}
-      {/*  </ButtonWithTooltip>*/}
-      {/*</ThreadListItemPrimitive.Archive>*/}
-      {/*<ThreadListItemPrimitive.Delete asChild>*/}
-      {/*  <ButtonWithTooltip*/}
-      {/*    variant="ghost"*/}
-      {/*    className="hover:text-foreground/60 ml-auto h-auto p-0"*/}
-      {/*    tooltip="Delete"*/}
-      {/*    disabled={true}*/}
-      {/*  >*/}
-      {/*    <DeleteIcon className="size-4" />*/}
-      {/*  </ButtonWithTooltip>*/}
-      {/*</ThreadListItemPrimitive.Delete>*/}
     </ThreadListItemPrimitive.Root>
   )
 }
 
-const MainLeft: FC = () => {
+const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const threads = useThreadList().threads
   const isLoading = threads && threads[0] === 'DEFAULT_THREAD_ID'
 
@@ -113,15 +87,24 @@ const MainLeft: FC = () => {
           <Skeleton className="w-full h-9" />
         </>
       ) : (
-        <ThreadListPrimitive.Items components={{ ThreadListItem }} />
+        <ThreadListPrimitive.Items
+          components={{
+            ThreadListItem: props => (
+              <ThreadListItem {...props} onItemClick={onItemClick} />
+            ),
+          }}
+        />
       )}
     </nav>
   )
 }
 
 const LeftBarSheet: FC = () => {
+  const [open, setOpen] = React.useState(false)
+  const handleCloseSheet = () => setOpen(false)
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" className="shrink-0 md:hidden gap-2">
           View Threads
@@ -132,9 +115,9 @@ const LeftBarSheet: FC = () => {
       <SheetContent side="left" className="flex flex-col max-h-full">
         <SheetTitle className="sr-only">Thread List</SheetTitle>
         <div className="mt-6 flex flex-col gap-1 max-h-full">
-          <TopLeft />
+          <TopLeft onItemClick={handleCloseSheet} />
           <Separator orientation="horizontal" className="my-2" />
-          <MainLeft />
+          <MainLeft onItemClick={handleCloseSheet} />
         </div>
       </SheetContent>
     </Sheet>
@@ -174,12 +157,15 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
   return (
     <EdenRuntimeProvider agentId={agentId} threadId={threadId}>
       <div className="grid h-[calc(100dvh_-_64px)] w-full grid-flow-col grid-rows-[auto_1fr] md:grid-cols-[250px_1fr]">
+        {/* Left side on large screens */}
         <div className={cn(sideStyle, leftStyle, topStyle)}>
           <TopLeft />
         </div>
         <div className={cn(sideStyle, leftStyle, 'overflow-y-auto')}>
           <MainLeft />
         </div>
+
+        {/* Header (contains the sheet button on mobile) */}
         <div className={cn(sideStyle, topStyle, 'flex')}>
           <Header />
           {agent ? (
@@ -201,6 +187,8 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
             </Link>
           ) : null}
         </div>
+
+        {/* Main content */}
         <div className="bg-background overflow-hidden">
           <Thread
             components={{
@@ -245,6 +233,7 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
             }}
             tools={[TaskResultTool]}
           />
+
           {isError ? (
             <div className="p-4">
               <AlertDestructive title={'Error loading agent'}>

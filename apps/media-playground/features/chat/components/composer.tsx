@@ -1,3 +1,4 @@
+import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
 import { Composer, useComposerRuntime } from '@assistant-ui/react'
@@ -38,8 +39,7 @@ export const MyComposer: FC = () => {
   const accept = composerRuntime.getAttachmentAccept()
 
   const handleFilesDropped = async (files: File[]) => {
-    // accept contains mimetypes with wildcards like image/* allow only these
-
+    // accept contains mimetypes with wildcards like image/*, allow only these
     const acceptedFiles = files.filter(file => fileMatchesAccept(file, accept))
 
     if (!acceptedFiles.length) {
@@ -87,7 +87,9 @@ export const MyComposer: FC = () => {
       onDrop={handleDrop}
     >
       <ComposerAttachmentDropzone isDragging={isDragging} accept={accept} />
-      <Composer.Attachments components={{ Attachment: MyAttachment }} />
+      <LightboxGallery>
+        <Composer.Attachments components={{ Attachment: MyAttachment }} />
+      </LightboxGallery>
       <Composer.AddAttachment />
       <Composer.Input autoFocus />
       <Composer.Action />

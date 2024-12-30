@@ -51,7 +51,7 @@ export const TaskResultTool = makeAssistantToolUI<
                         {getFileTypeByMimeType(
                           output.mediaAttributes?.mimeType,
                         ) === 'audio' ? (
-                          <audio controls>
+                          <audio controls className="w-full max-w-2xl">
                             <source
                               src={getCloudfrontOriginalUrl(output.filename)}
                               type={output.mediaAttributes?.mimeType}

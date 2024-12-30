@@ -1,13 +1,15 @@
+import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
-import { BranchPicker, UserActionBar, UserMessage } from '@assistant-ui/react'
-import type { FC } from 'react'
+import { UserActionBar, UserMessage } from '@assistant-ui/react'
+import React, { FC } from 'react'
 
 const MyUserMessage: FC = () => {
   return (
     <UserMessage.Root>
-      <UserMessage.Attachments components={{ Attachment: MyAttachment }} />
+      <LightboxGallery>
+        <UserMessage.Attachments components={{ Attachment: MyAttachment }} />
+      </LightboxGallery>
       <UserMessage.Content />
-      <BranchPicker />
       <UserActionBar />
     </UserMessage.Root>
   )
