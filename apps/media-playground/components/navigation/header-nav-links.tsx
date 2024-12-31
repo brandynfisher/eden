@@ -4,6 +4,7 @@ import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { NavLinkProps } from '@/components/navigation/nav-link'
 import NavLinkList from '@/components/navigation/nav-link-list'
 import { Separator } from '@/components/ui/separator'
+import { siteConfig } from '@/lib/config'
 import Link, { LinkProps } from 'next/link'
 import { useSelectedLayoutSegments } from 'next/navigation'
 import { PropsWithChildren } from 'react'
@@ -11,14 +12,10 @@ import { PropsWithChildren } from 'react'
 const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
   return (
     <Link
-      className="relative flex items-center gap-2 text-lg font-semibold md:text-base"
+      className="relative flex items-center gap-2 text-lg font-semibold md:text-base mr-2"
       {...rest}
     >
-      {/*{ inSheet ? (*/}
-      {/*  <EdenLogoWithTextBw />*/}
-      {/*) : (*/}
       <EdenLogoBw />
-      {/*) }*/}
       <span className="sr-only">Eden2.0</span>
     </Link>
   )
@@ -29,14 +26,6 @@ const navItemsExplore: NavLinkProps[] = [
     label: 'Explore',
     segments: ['explore'],
   },
-  // {
-  //   label: 'Models',
-  //   segments: ['models'],
-  // },
-  // {
-  //   label: 'Artists',
-  //   segments: ['artists'],
-  // },
 ]
 
 const navItemsMake: NavLinkProps[] = [
@@ -50,6 +39,13 @@ const navItemsTrain: NavLinkProps[] = [
   {
     label: 'Train Models',
     segments: ['train'],
+  },
+]
+
+const navItemsEve: NavLinkProps[] = [
+  {
+    label: 'Eve',
+    segments: [`chat/${siteConfig.featured.agents[0]}`],
   },
 ]
 
@@ -82,6 +78,11 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         segments={segments}
         inSheet={inSheet}
       />
+      <div className="md:self-stretch md:flex md:items-center">
+        <Separator orientation="vertical" className="hidden md:block" />
+        <Separator orientation="horizontal" className="md:hidden" />
+      </div>
+      <NavLinkList items={navItemsEve} segments={segments} inSheet={inSheet} />
     </>
   )
 }

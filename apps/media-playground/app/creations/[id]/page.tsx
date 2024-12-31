@@ -1,6 +1,7 @@
 import CreationDetail from '@/features/detail/creation-detail'
 import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontUrl } from '@/lib/media'
 import { OpenGraph, OpenGraphVideo, TwitterMetadata } from '@/types/OpenGraph'
 import { CreationsV2GetResponse, MediaType } from '@edenlabs/eden-sdk'
@@ -48,9 +49,10 @@ export async function generateMetadata(
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `${response.creation?.workflow} by ${response.creation?.user.username} | Eden Create`
-  const baseDescription = `Check out the latest creation by ${response.creation?.user.username}!`
-  const description = response.creation?.args.prompt || baseDescription
+  const title = `${response.creation?.tool} by ${response.creation?.user.username} | Eden Create`
+  const baseDescription = ``
+  console.log(response.creation)
+  const description = response.creation?.task.args.prompt || baseDescription
 
   // Initialize OpenGraph metadata
   const og: OpenGraph = {
@@ -85,7 +87,9 @@ export async function generateMetadata(
   }
 
   if (
-    response.creation?.mediaAttributes?.type === MediaType.Video &&
+    response.creation &&
+    getFileTypeByMimeType(response.creation?.mediaAttributes?.mimeType) ===
+      MediaType.Video &&
     response.creation.url
   ) {
     const videoUrl = getCloudfrontUrl(response.creation.url)

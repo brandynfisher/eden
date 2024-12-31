@@ -39,20 +39,9 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
       : false
   }
 
-  const hasEden2EarlyAccess = () => {
-    if (!isAuthenticated || !currentUser) {
-      return false
-    }
-
-    return currentUser.featureFlags
-      ? currentUser.featureFlags.includes(FeatureFlag.Eden2EarlyAccess)
-      : false
-  }
-
   return {
     user: currentUser,
     hasMinimumSubscriptionTier,
-    hasEden2EarlyAccess,
     balance: balance as number,
     foreverBalance,
     subscriptionBalance,

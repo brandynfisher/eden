@@ -4,10 +4,9 @@ import {
   createTask,
   getTask,
   listTasks,
-  publishTaskResult,
   subscribeTaskUpdates,
 } from '../../controllers/v2/taskControllerV2'
-import { isAuthEden2 } from '../../middleware/authMiddleware'
+import { isAuth } from '../../middleware/authMiddleware'
 import { argsType, taskV2Type } from '../../types/routeTypes'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
@@ -24,7 +23,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         },
       ],
       body: {
-        workflow: Type.String(),
+        tool: Type.String(),
         args: Type.Optional(argsType),
       },
       response: {
@@ -33,7 +32,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getTaskCost(server, request, reply),
   })
 
@@ -47,7 +46,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         },
       ],
       body: {
-        workflow: Type.String(),
+        tool: Type.String(),
         args: Type.Optional(argsType),
       },
       response: {
@@ -72,7 +71,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createTask(server, request, reply),
   })
 
@@ -92,7 +91,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
           taskId: Type.Optional(Type.Any()), //{ type: ['string', 'array'] },
           type: Type.Optional(Type.String()),
           output_type: Type.Optional(Type.String()),
-          workflow: Type.Optional(Type.Any()),
+          tool: Type.Optional(Type.Any()),
           minDate: Type.Optional(Type.Boolean()),
           ...paginationProperties(),
         },
@@ -102,7 +101,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         200: paginatedResponse(taskV2Type),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listTasks(server, request, reply),
   })
 
@@ -124,7 +123,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getTask(server, request, reply),
   })
 
@@ -141,7 +140,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         taskId: Type.Optional(Type.String()),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => subscribeTaskUpdates(server, request, reply),
   })
 
@@ -163,31 +162,8 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => cancelTask(server, request, reply),
-  })
-
-  server.post('/v2/tasks/publish', {
-    schema: {
-      tags: ['Tasks'],
-      description: 'Publish a task result',
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      body: {
-        taskId: Type.String(),
-        resultFilename: Type.String(),
-      },
-      response: {
-        200: Type.Object({
-          creation: Type.Any(), //@todo: creationV2Type
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => publishTaskResult(server, request, reply),
   })
 }
 

@@ -1,7 +1,7 @@
 import { enforceUserDocumentLimit } from '../lib/data'
 import { Collection } from '../models/Collection'
 import { Creation } from '../models/Creation'
-import { User } from '../models/Creator'
+import { User } from '../models/User'
 import CollectionRepository from '../repositories/CollectionRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
 import {

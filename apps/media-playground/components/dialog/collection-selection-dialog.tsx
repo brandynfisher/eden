@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import DialogContentOverlayBlur from '@/components/ui/custom/dialog-content-overlay-blur'
@@ -31,7 +32,7 @@ import {
 import { useAppDispatch } from '@/stores/store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckedState } from '@radix-ui/react-checkbox'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { LockIcon } from 'lucide-react'
 import React from 'react'
 import { useForm } from 'react-hook-form'
@@ -96,10 +97,13 @@ const CollectionSelectionDialog = () => {
       })
       handleCreateCollectionModalOpenChange()
     } catch (error) {
-      toast.error('Failed to create collection', {
-        description: `Collection: ${data.name} failed to create`,
-        dismissible: true,
+      toast.error('Collection creation failed', {
+        description:
+          // @ts-ignore
+          (error as AxiosError).response?.data?.message ||
+          'Unknown Error has occurred',
         richColors: true,
+        dismissible: true,
       })
     }
   }
@@ -199,8 +203,15 @@ const CollectionSelectionDialog = () => {
                           {collection.name}
                         </span>
                         {!collection.public && (
-                          <LockIcon className="size-3 flex-shrink-0 text-muted-foreground" />
+                          <LockIcon
+                            size={16}
+                            className="flex-shrink-0 text-muted-foreground"
+                          />
                         )}
+                        {collection.contributors &&
+                        collection.contributors.length > 0 ? (
+                          <Badge variant="secondary">Shared</Badge>
+                        ) : null}
                       </label>
                     </div>
                     <span className="text-muted-foreground text-xs bg-muted rounded-md px-2 py-1">

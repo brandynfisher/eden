@@ -1,7 +1,7 @@
 import { Creation } from '../models/Creation'
-import { User } from '../models/Creator'
 import { Follow, FollowDocument } from '../models/Follow'
 import { Manna } from '../models/Manna'
+import { User } from '../models/User'
 import CreatorRepository from '../repositories/CreatorRepository'
 import FollowerRepository from '../repositories/FollowerRepository'
 import {
@@ -29,15 +29,13 @@ const findCreatorByIdOrUsername = async (userId: string) => {
   const lowerCaseUserId = userId.toLowerCase().trim()
   const isObjectId = ObjectId.isValid(lowerCaseUserId)
 
-  const creatorDoc = await User.findOne(
-    {
-        $or: [
-          { userId: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
-          { username: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
-          ...(isObjectId ? [{ _id: new ObjectId(lowerCaseUserId) }] : [])
-        ],
-      },
-  )
+  const creatorDoc = await User.findOne({
+    $or: [
+      { userId: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
+      { username: { $regex: new RegExp(`^${lowerCaseUserId}$`, 'i') } },
+      ...(isObjectId ? [{ _id: new ObjectId(lowerCaseUserId) }] : []),
+    ],
+  })
 
   return creatorDoc
 }
@@ -90,7 +88,7 @@ const aggregateFollowerByUserId = (
     },
     {
       $lookup: {
-        from: 'users',
+        from: 'users3',
         localField: 'follower',
         foreignField: '_id',
         as: 'user',
@@ -172,7 +170,7 @@ const aggregateFollowingByUserId = (
     },
     {
       $lookup: {
-        from: 'users',
+        from: 'users3',
         localField: 'following',
         foreignField: '_id',
         as: 'user',

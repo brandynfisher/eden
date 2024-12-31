@@ -5,7 +5,8 @@ import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  enabled: process.env.NODE_ENV === 'production',
+  // enabled: process.env.NODE_ENV === 'production',
+  enabled: true,
   environment: process.env.NEXT_PUBLIC_APP_ENV,
   ignoreErrors: ['Request method eth_chainId is not supported'],
   // Adjust this value in production, or use tracesSampler for greater control
@@ -27,10 +28,9 @@ Sentry.init({
       blockAllMedia: false,
     }),
     Sentry.feedbackIntegration({
-      // Additional SDK configuration goes in here, for example:
-      colorScheme: 'system',
-      triggerLabel: 'Feedback',
+      autoInject: false,
       triggerAriaLabel: 'Feedback / Bugs',
+      colorScheme: 'system',
       formTitle: 'Give feedback or report bugs',
       submitTitle: 'Send report',
       nameLabel: 'Username',

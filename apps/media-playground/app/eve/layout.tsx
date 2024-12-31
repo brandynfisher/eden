@@ -1,8 +1,8 @@
-import { AssistantUiCustomProvider } from '@/providers/assistant-ui-custom-provider'
 import { PropsWithChildren } from 'react'
 
 const Layout = async ({ children }: PropsWithChildren) => {
-  return <AssistantUiCustomProvider>{children}</AssistantUiCustomProvider>
+  // return <EdenRuntimeProvider>{children}</EdenRuntimeProvider>
+  return <div>{children}</div>
 }
 
 export default Layout

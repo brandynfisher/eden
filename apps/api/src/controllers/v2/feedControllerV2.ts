@@ -1,4 +1,5 @@
 import { getSimilarCreationIds } from '../../lib/similar'
+import { Agent } from '../../models/Agent'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
 import {
   CollectionV2,
@@ -6,8 +7,16 @@ import {
 } from '../../models/v2/CollectionV2'
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
 import { ModelV2, ModelV2Document } from '../../models/v2/ModelV2'
-import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
-import { CursorPaginatedFeedQuery, ReactionType } from '@edenlabs/eden-sdk'
+import {
+  forceCloudfrontUrl,
+  s3ThumbnailUrl,
+  s3Url,
+} from '../../plugins/s3Plugin'
+import {
+  CursorPaginatedFeedQuery,
+  FeedAgentCursorResponse,
+  ReactionType,
+} from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { Expression, PipelineStage } from 'mongoose'
@@ -51,6 +60,7 @@ type Filters = Record<string, Filter>
 
 interface QueryOptions {
   cursor?: string
+  projection?: Record<string, 1 | -1 | Expression.Meta>
   sortCursor?:
     | { praiseCount: { $lte?: number } }
     | { creationCount: { $lte?: number } }
@@ -77,7 +87,7 @@ type CustomFilters = {
       | { $in?: string[] | ObjectId[] | undefined }
     )[]
   }
-  generator?:
+  tool?:
     | string
     | ObjectId
     | ObjectId[]
@@ -99,7 +109,7 @@ type CustomFilters = {
   creationCount?: { $gt?: number }
   followerCount?: { $gt?: number }
   createdAt?: Filter
-  _id?: string | ObjectId | { $in?: string[] }
+  _id?: string | ObjectId | { $in?: string[] | ObjectId[] }
   $or?: { user: { $ne?: ObjectId; $eq?: ObjectId }; public: boolean }[]
 }
 
@@ -145,7 +155,7 @@ const creationsLookup = (
   return [
     {
       $lookup: {
-        from: 'creations2',
+        from: 'creations3',
         localField: localField,
         foreignField: foreignField,
         pipeline: lookupPipeline,
@@ -227,7 +237,9 @@ const handleArguments = async ({
   const filterUserIds = filterMap
     ? filterMap
         ?.filter(
-          item => item.name === 'user' && item.value === authUserId?.toString(),
+          item =>
+            (item.name === 'user' && item.value === authUserId?.toString()) ||
+            (item.name === 'owner' && item.value === authUserId?.toString()),
         )
         .map(item => item.value)
     : undefined
@@ -245,15 +257,16 @@ const handleArguments = async ({
   let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
-    generator?: string[] | ObjectId[] | string | ObjectId
-    outputType?: string[]
+    tool?: string[] | ObjectId[] | string | ObjectId
+    base_model?: string[] | string
+    _id?: string[] | ObjectId[] | string | ObjectId
+    output_type?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
     praiseCount?: { $gt: 0 }
     creationCount?: { $gt: 0 }
     followerCount?: { $gt: 0 }
     creation?: ObjectId
-    _id?: { $in?: string[] | ObjectId[] }
     $or?: { user?: { $ne?: ObjectId; $eq?: ObjectId }; public: boolean }[]
   } = {}
 
@@ -310,6 +323,7 @@ const handleArguments = async ({
 
           if (
             field === 'user' ||
+            field === 'owner' ||
             field === 'character' ||
             field === 'concept' ||
             field === 'collection'
@@ -348,28 +362,48 @@ const handleArguments = async ({
             return []
           }
 
-          if (field === 'generator') {
-            if (!customFilterOptions['generator']) {
-              customFilterOptions['generator'] = [value]
+          if (field === 'tool') {
+            if (!customFilterOptions['tool']) {
+              customFilterOptions['tool'] = [value]
             } else {
               // @ts-ignore
-              customFilterOptions['generator'].push(value)
+              customFilterOptions['tool'].push(value)
             }
             return []
           }
 
-          if (field === 'outputType') {
-            if (!customFilterOptions['outputType']) {
-              customFilterOptions['outputType'] = [value]
+          if (field === 'base_model') {
+            if (!customFilterOptions['base_model']) {
+              customFilterOptions['base_model'] = [value]
             } else {
-              customFilterOptions['outputType'].push(value)
+              // @ts-ignore
+              customFilterOptions['base_model'].push(value)
+            }
+            return []
+          }
+
+          if (field === '_id') {
+            if (!customFilterOptions['_id']) {
+              customFilterOptions['_id'] = [value]
+            } else {
+              // @ts-ignore
+              customFilterOptions['_id'].push(value)
+            }
+            return []
+          }
+
+          if (field === 'output_type') {
+            if (!customFilterOptions['output_type']) {
+              customFilterOptions['output_type'] = [value]
+            } else {
+              customFilterOptions['output_type'].push(value)
             }
             return []
           }
 
           if (field === 'public') {
             if (!usesLikedFilter && isUserRequestingOwnProfileFeed) {
-              return [field, value === 'false']
+              return [field, value === 'true']
             }
             return []
           }
@@ -409,6 +443,7 @@ const handleArguments = async ({
           embeddingDoc.embedding,
         )
         customFilterOptions['_id'] = {
+          // @ts-ignore
           $in: similarCreationIds.map(item => new ObjectId(item)),
         }
       } else {
@@ -425,19 +460,26 @@ const handleArguments = async ({
   for (const [fieldName, fieldValues] of Object.entries(customFilterOptions)) {
     if (fieldValues === undefined) continue
 
-    if (fieldName === 'outputType') {
+    if (fieldName === 'output_type') {
       customFilterMap['mediaAttributes.type'] = {
         // @ts-ignore
         $in: Array.isArray(fieldValues) ? fieldValues : [fieldValues],
       }
-    } else if (fieldName === 'generator') {
+    } else if (fieldName === 'tool') {
       // @ts-ignore
-      customFilterMap['generator'] = {
+      customFilterMap['tool'] = {
         $in: Array.isArray(fieldValues)
           ? // @ts-ignore
             fieldValues.map(val => new ObjectId(val))
           : // @ts-ignore
             [new ObjectId(fieldValues)],
+      }
+    } else if (fieldName === 'base_model') {
+      // @ts-ignore
+      customFilterMap['base_model'] = {
+        $in: Array.isArray(fieldValues)
+          ? fieldValues.map(val => val)
+          : [fieldValues],
       }
     } else if (
       !usesLikedFilter &&
@@ -455,7 +497,14 @@ const handleArguments = async ({
       //@ts-ignore
       customFilterMap['createdAt'] = fieldValues
     } else if (fieldName === '_id') {
-      customFilterMap['_id'] = fieldValues as ObjectId
+      // @ts-ignore
+      customFilterMap['_id'] = {
+        $in: Array.isArray(fieldValues)
+          ? // @ts-ignore
+            fieldValues.map(val => new ObjectId(val))
+          : // @ts-ignore
+            [new ObjectId(fieldValues)],
+      }
     } else if (fieldName === '$or') {
       // @ts-ignore
       customFilterMap['$or'] = fieldValues
@@ -513,7 +562,8 @@ const handleArguments = async ({
 const createPipeline = async (
   options: QueryOptions = {},
 ): Promise<PipelineStage[]> => {
-  const { cursor, sortCursor, limit, filters = {}, sortOptions } = options
+  const { cursor, sortCursor, limit, filters, projection, sortOptions } =
+    options
   const pipeline: PipelineStage[] = []
 
   if (cursor) {
@@ -522,6 +572,7 @@ const createPipeline = async (
         ? { _id: { $lt: new ObjectId(cursor) } }
         : { _id: { $lt: new ObjectId(cursor) } }
     pipeline.push(
+      //@ts-ignore
       sortCursor !== undefined
         ? { $match: { $and: [sortCursor, idCursor, filters] } }
         : { $match: { ...idCursor, ...filters } },
@@ -538,6 +589,10 @@ const createPipeline = async (
     pipeline.push({ $limit: limit })
   }
 
+  if (projection) {
+    pipeline.push({ $project: projection })
+  }
+
   // console.log(JSON.stringify(pipeline, null, 2))
 
   return pipeline
@@ -546,7 +601,7 @@ const createPipeline = async (
 const userLookup: PipelineStage[] = [
   {
     $lookup: {
-      from: 'users',
+      from: 'users3',
       localField: 'user',
       foreignField: '_id',
       as: 'user',
@@ -565,10 +620,53 @@ const userLookup: PipelineStage[] = [
   { $unwind: '$user' },
 ]
 
+const taskLookup: PipelineStage[] = [
+  {
+    $lookup: {
+      from: 'tasks3',
+      localField: 'task',
+      foreignField: '_id',
+      as: 'task',
+      pipeline: [
+        {
+          $project: {
+            _id: 1,
+            args: 1,
+            status: 1,
+          },
+        },
+      ],
+    },
+  },
+  { $unwind: '$task' },
+]
+
+const ownerLookup: PipelineStage[] = [
+  {
+    $lookup: {
+      from: 'users3',
+      localField: 'owner',
+      foreignField: '_id',
+      as: 'owner',
+      pipeline: [
+        {
+          $project: {
+            _id: 1,
+            userId: 1,
+            username: 1,
+            userImage: 1,
+          },
+        },
+      ],
+    },
+  },
+  { $unwind: '$owner' },
+]
+
 const creationLookup: PipelineStage[] = [
   {
     $lookup: {
-      from: 'creations2',
+      from: 'creations3',
       localField: 'coverCreation',
       foreignField: '_id',
       as: 'coverCreation',
@@ -576,13 +674,13 @@ const creationLookup: PipelineStage[] = [
         {
           $project: {
             _id: 1,
-            thumbnail: 1,
+            filename: 1,
           },
         },
       ],
     },
   },
-  { $unwind: '$coverCreation' },
+  { $unwind: { path: '$coverCreation', preserveNullAndEmptyArrays: true } },
 ]
 
 export const getCreationsFeedCursorV2 = async (
@@ -726,8 +824,8 @@ export const getCreationsFeedCursorV2 = async (
 
     feed.docs.forEach(doc => {
       if (doc) {
-        doc.url = s3Url(server, doc.url || '')
-        doc.thumbnail = s3ThumbnailUrl(server, doc.thumbnail || '', 1024)
+        doc.url = s3Url(server, doc.filename || '')
+        doc.thumbnail = s3ThumbnailUrl(server, doc.filename || '', 1024)
       }
     })
 
@@ -746,7 +844,7 @@ export const getModelsFeedCursorV2 = async (
   const { userId: authUserId } = request.user || {}
   // const currentDate = new Date()
 
-  console.log({ query, authUserId })
+  // console.log({ query, authUserId })
 
   const {
     filters,
@@ -768,7 +866,7 @@ export const getModelsFeedCursorV2 = async (
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
-  const lateLookupStages = [...userLookup]
+  const lateLookupStages = [...taskLookup, ...userLookup]
 
   const pipeline = await createPipeline({
     limit: limit ?? 100,
@@ -812,7 +910,7 @@ export const getModelsFeedCursorV2 = async (
     ...lateLookupStages,
   ].filter(Boolean)
 
-  console.log(JSON.stringify(feedPipeline, null, 2))
+  // console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await ModelV2.aggregate(feedPipeline)
 
@@ -938,9 +1036,89 @@ export const getCollectionsFeedCursorV2 = async (
       if (doc && doc.coverCreation) {
         doc.coverCreation.thumbnail = s3ThumbnailUrl(
           server,
-          doc.coverCreation.thumbnail || '',
+          doc.coverCreation.filename || '',
           1024,
         )
+      }
+    })
+
+    reply.send(feed)
+  } catch (error) {
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+}
+
+export const getAgentsFeedCursor = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { query } = request
+  const { userId: authUserId } = request.user || {}
+
+  const ownerQuery = query as { filter: string | string[] }
+  if (ownerQuery.filter) {
+    ownerQuery.filter = (
+      Array.isArray(ownerQuery.filter) ? ownerQuery.filter : [ownerQuery.filter]
+    ).map(fil => (fil as string).replaceAll('user;', 'owner;'))
+  }
+
+  const { filters, sortOptions, customFilterOptions } = await handleArguments({
+    server,
+    reply,
+    authUserId,
+    query: ownerQuery as CursorPaginatedFeedQuery,
+  })
+
+  const { cursor, limit } = query as CursorPaginatedFeedQuery
+
+  let results = []
+  const lateLookupStages = ownerLookup
+
+  const pipeline = await createPipeline({
+    limit: limit ?? 100,
+    sortOptions: { ...sortOptions, _id: -1 },
+    cursor,
+    projection: {
+      _id: 1,
+      owner: 1,
+      name: 1,
+      description: 1,
+      username: 1,
+      userImage: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      public: 1,
+      deleted: 1,
+    },
+  })
+
+  const feedPipeline = [
+    { $match: filters },
+    ...pipeline,
+    ...lateLookupStages,
+  ].filter(Boolean)
+
+  // console.log(JSON.stringify(feedPipeline, null, 2))
+
+  results = await Agent.aggregate(feedPipeline)
+
+  const feed: FeedAgentCursorResponse = {
+    docs: results,
+  }
+
+  try {
+    feed.nextCursor =
+      results && results.length && results[results.length - 1]._id
+
+    if (customFilterOptions.createdAt) {
+      feed.nextValue =
+        results && results.length && results[results.length - 1].createdAt
+    }
+
+    feed.docs?.forEach(doc => {
+      if (doc && doc.userImage) {
+        doc.userImage = forceCloudfrontUrl(server, doc.userImage || '')
       }
     })
 

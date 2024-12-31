@@ -6,20 +6,38 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
-import { TaskV2Args } from './TasksV2'
+import { Agent } from './Agents'
+import { TaskV2Args, TaskV2Result, TaskV2Status } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
-export interface ThreadsCreateArguments extends WebAPICallOptions {}
+export interface ThreadsCreateArguments extends WebAPICallOptions {
+  thread_id?: string
+  agent_id?: string
+  content: string
+  attachments?: string[]
+}
+
+export interface ThreadsMessageArguments extends WebAPICallOptions {
+  thread_id?: string
+  agent_id?: string
+  content: string
+  attachments?: string[]
+}
+
+export interface ThreadsMessageReactArguments extends WebAPICallOptions {
+  message_id: string
+  reaction: 'thumbs_up' | 'thumbs_down'
+}
 
 export interface ThreadsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
-  userId?: string | string[]
+  agent_id?: string
 }
 
 export interface ThreadsGetArguments extends WebAPICallOptions {
-  threadId: string
+  thread_id: string
 }
 
 // Requests
@@ -36,13 +54,37 @@ export const threadsCreateRequestConfig = (
   }
 }
 
+export const threadsMessageRequestConfig = (
+  args: ThreadsMessageArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/threads',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const threadsMessageReactRequestConfig = (
+  args: ThreadsMessageReactArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/threads/react',
+    data: {
+      ...args,
+    },
+  }
+}
+
 export const threadsListRequestConfig = (
   args: ThreadsListArguments,
 ): AxiosRequestConfig => {
   const params = transformArgsIntoURLParams(args)
   return {
     method: 'GET',
-    url: 'v2/tasks',
+    url: 'v2/threads',
     params,
   }
 }
@@ -52,7 +94,7 @@ export const threadsGetRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'GET',
-    url: `v2/threads/${args.threadId}`,
+    url: `v2/threads/${args.thread_id}`,
   }
 }
 
@@ -64,7 +106,25 @@ export type ThreadsCreateResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { thread: Thread }
+    | { thread_id?: Thread['_id']; success: boolean }
+  )
+
+export type ThreadsMessageResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { thread_id?: Thread['_id']; success: boolean }
+  )
+
+export type ThreadsMessageReactResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { success: boolean }
   )
 
 export type ThreadsListResponse = WebAPICallResult &
@@ -80,26 +140,53 @@ export type ThreadsGetResponse = WebAPICallResult & {
 // Types
 
 export type Message = {
-  role: 'user' | 'assistant' | 'tool'
-  createdAt: Date
+  id: string
+  role: 'user' | 'assistant' | 'tool' | 'system'
+  metadata?: { [key: string]: string | boolean | number }
+  createdAt?: Date
 }
+
+export type UserMessageAttachments = string
 
 export type UserMessage = Message & {
   role: 'user'
-  name: string
+  // name: string
   content: string
-  metadata?: { [key: string]: string | boolean | number }
-  attachments?: string[]
+  attachments?: UserMessageAttachments[]
 }
 
 export type ToolCall = {
   id: string
   name: string
-  input: TaskV2Args
+  error?: string
+  status?: TaskV2Status
+  tool?: string
+  args: TaskV2Args
+  result?: TaskV2Result[]
+}
+
+export type ThreadMessageReaction = {
+  [key: string]: (string | number | boolean | Date | null)[]
+}
+
+export type ThreadMessage = {
+  id: string
+  role: 'user' | 'assistant' | 'tool' | 'system'
+  content?: string
+  reactions?: ThreadMessageReaction
+  metadata?: {
+    [key: string]: string | number | boolean | Date | null
+  }
+  tool_calls?: ToolCall[]
+  attachments?: string[]
+  createdAt: Date
 }
 
 export type ToolResults = {
   id: string
+  name: string
+  result: string
+  error?: string
 }
 
 export type AssistantMessage = Message & {
@@ -108,15 +195,27 @@ export type AssistantMessage = Message & {
   tool_calls?: ToolCall[]
 }
 
-export type ToolMessage = Message & {
-  role: 'tool'
-  tool_results: ToolResults[]
+export type SystemMessage = Message & {
+  role: 'system'
+  content: string
 }
+
+// export type ToolMessage = Message & {
+//   role: 'tool'
+//   content?: string
+//   tool_results: ToolResults[]
+// }
 
 export type Thread = {
   _id: string
   user: Creator
-  messages: (UserMessage | AssistantMessage)[]
+  agent: Agent
+  key?: string
+  title?: string
+  name: string
+  active?: string[] //active message.ids
+  // messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
+  messages: (UserMessage | AssistantMessage | SystemMessage)[]
   createdAt: Date
   updatedAt: Date
 }

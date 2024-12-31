@@ -1,4 +1,3 @@
-// Explicitly define the env data typings, using process.env here for simplicity
 import { Static, Type } from '@sinclair/typebox'
 import Ajv from 'ajv'
 import dotenv from 'dotenv'
@@ -6,7 +5,7 @@ import { FastifyPluginAsync } from 'fastify'
 import fp from 'fastify-plugin'
 
 interface EnvDataInterface {
-  [key: string]: string | undefined
+  [key: string]: string | number | undefined
 }
 const envData: EnvDataInterface = process.env
 
@@ -65,6 +64,9 @@ const ConfigSchema = Type.Strict(
     CLOUDINARY_API_KEY: Type.String(),
     CLOUDINARY_API_SECRET: Type.String(),
     CLOUDINARY_CLOUD_NAME: Type.String(),
+    MANNA_BONUS_SIGNUP: Type.Number({ default: 20 }),
+    MANNA_BONUS_DAILY_LOGIN: Type.Number({ default: 10 }),
+    MANNA_BONUS_DISCORD_LINK: Type.Number({ default: 50 }),
   }),
 )
 
@@ -93,7 +95,12 @@ const configPlugin: FastifyPluginAsync = async server => {
       )
     }
 
-    server.decorate('config', envData as Config)
+    server.decorate('config', {
+      ...envData,
+      MANNA_BONUS_SIGNUP: Number(envData.MANNA_BONUS_SIGNUP),
+      MANNA_BONUS_DAILY_LOGIN: Number(envData.MANNA_BONUS_DAILY_LOGIN),
+      MANNA_BONUS_DISCORD_LINK: Number(envData.MANNA_BONUS_DISCORD_LINK),
+    } as Config)
   } else {
     throw new Error(`ajv or ConfigSchema is not defined`)
   }

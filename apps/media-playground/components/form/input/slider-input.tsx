@@ -1,15 +1,17 @@
 import { SliderWithTooltip } from '@/components/ui/custom/slider-with-tooltip'
+import { useFormField } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
 type Props = {
-  type: 'float' | 'int'
+  type: 'float' | 'integer'
   min: number
   max: number
   step: number
   onChange: (newVal: number | undefined) => void
   value: number
   unit?: string
+  hideNumberInput?: boolean
 }
 
 const SliderInputRangeLabel = ({
@@ -39,7 +41,10 @@ const SliderInput = ({
   onChange,
   value,
   unit,
+  hideNumberInput = false,
 }: Props) => {
+  const { formItemId } = useFormField()
+
   return (
     <div className="flex items-center">
       <div className="relative flex items-center w-full">
@@ -49,6 +54,7 @@ const SliderInput = ({
         />
         <div className="flex-1 relative">
           <SliderWithTooltip
+            aria-labelledby={`${formItemId}-label`} // Associate label using ARIA
             className="flex-1"
             defaultValue={[value]}
             value={[value]}
@@ -67,7 +73,10 @@ const SliderInput = ({
         />
       </div>
       <Input
-        className="ml-2 w-20 h-8 rounded-md relative font-mono"
+        className={cn([
+          'ml-2 w-28 h-8 rounded-md relative font-mono',
+          hideNumberInput ? 'hidden' : '',
+        ])}
         type="number"
         min={min || 0}
         max={max || 1}
@@ -76,7 +85,7 @@ const SliderInput = ({
         onChange={e =>
           onChange(
             e.target.value
-              ? type === 'int'
+              ? type === 'integer'
                 ? parseInt(e.target.value)
                 : parseFloat(e.target.value)
               : undefined,

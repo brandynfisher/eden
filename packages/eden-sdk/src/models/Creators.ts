@@ -226,6 +226,8 @@ export type Creator = {
   featureFlags?: FeatureFlag[]
   subscriptionTier?: SubscriptionTier
   stripeCustomerId?: string
+  lastDailyLoginBonus?: Date
+  discordLinkBonusClaimed?: boolean
   discordId?: string
   createdAt: string
   updatedAt: string
@@ -246,4 +248,5 @@ export enum FeatureFlag {
   LimitsPro = 'limits_Pro',
   LimitsBeliever = 'limits_Believer',
   LimitsAdmin = 'limits_Admin',
+  AssistantAccess = 'assistant_access',
 }

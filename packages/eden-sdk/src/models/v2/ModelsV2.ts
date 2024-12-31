@@ -6,10 +6,9 @@ import {
   transformArgsIntoURLParams,
 } from '../../types'
 import { Creator } from '../Creators'
-import { BaseModelName } from './GeneratorsV2'
-import { TaskV2Args } from './TasksV2'
+import { TaskV2 } from './TasksV2'
+import { BaseModelName } from './ToolsV2'
 import { AxiosRequestConfig } from 'axios'
-import { ObjectId } from 'mongodb'
 
 // Arguments
 
@@ -85,8 +84,7 @@ export type ModelV2 = {
   _id: string
   name: string
   user: Creator
-  task: ObjectId
-  args: TaskV2Args
+  task: TaskV2
   thumbnail: string
   slug: string
   checkpoint: string

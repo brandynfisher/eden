@@ -1,11 +1,9 @@
 import { Creation } from '../models/Creation'
 import { s3BaseUrl } from '../plugins/s3Plugin'
+import { downloadZip } from '../utils/downloader'
 import { MediaBulkDownloadArguments } from '@edenlabs/eden-sdk'
-import archiver from 'archiver'
-import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { fileTypeFromBuffer } from 'file-type'
-import { Readable } from 'node:stream'
 import pLimit from 'p-limit'
 
 export const uploadMedia = async (
@@ -223,7 +221,7 @@ export const getMediaDownloadZip = async (
 ) => {
   const { files } = request.body as MediaBulkDownloadArguments
 
-  // **1. Validate the Request Body**
+  // Validate the Request Body
   if (
     !files ||
     !Array.isArray(files) ||
@@ -238,77 +236,7 @@ export const getMediaDownloadZip = async (
     })
   }
 
-  // **2. Initialize the ZIP Archive**
-  const archive = archiver('zip', {
-    zlib: { level: 9 }, // Maximum compression
-  })
-
-  // **3. Handle Archive Events**
-  archive.on('error', err => {
-    console.error('Archiver error:', err)
-    if (!reply.sent) {
-      reply.status(500).send({ message: 'Error creating ZIP archive.' })
-    }
-  })
-
-  // **4. Set Response Headers**
-  reply.header('Content-Type', 'application/zip')
-  reply.header('Content-Disposition', `attachment; filename="downloads.zip"`)
-
-  // **5. Stream the Archive to the Client**
-  reply.send(archive)
-
-  // **6. Append Files to the Archive**
-  for (const file of files) {
-    const { url, fileName, fileExtension } = file
-
-    // **a. Determine the Desired File Name**
-    const desiredFileName = fileName
-      ? fileExtension
-        ? `${fileName}.${fileExtension}`
-        : fileName
-      : url.split('/').pop() || 'file'
-
-    try {
-      // **b. Generate Signed URLs as Before**
-      const isCloudinaryAsset = url.startsWith('https://res.cloudinary.com')
-      let signedUrl: string
-
-      if (isCloudinaryAsset) {
-        signedUrl = await server.getCldSignedDownloadUrl(url, desiredFileName)
-      } else {
-        signedUrl = await server.getS3SignedDownloadUrl(
-          server,
-          url,
-          desiredFileName,
-        )
-      }
-
-      if (!signedUrl) {
-        console.error(`No signed URL generated for file: ${desiredFileName}`)
-        continue // Skip this file
-      }
-
-      // **c. Fetch the File as a Stream**
-      const response = await axios.get<Readable>(signedUrl, {
-        responseType: 'stream',
-      })
-
-      // **d. Append the File Stream to the Archive**
-      archive.append(response.data, { name: desiredFileName })
-    } catch (error: any) {
-      console.error(`Error processing file "${desiredFileName}":`, error)
-      // Optionally, you can choose to skip failed files or abort the entire archive
-      // Here, we'll skip the failed file
-      continue
-    }
-  }
-
-  // **7. Finalize the Archive**
-  archive.finalize()
-
-  // **8. Do Not Return Any Value**
-  // Fastify handles the response via the stream
+  await downloadZip(files, reply, server)
 }
 
 export const uploadS3MediaRequest = async (

@@ -1,4 +1,4 @@
-import { FormDescription, FormLabel } from '@/components/ui/form'
+import { FormDescription, FormLabel, useFormField } from '@/components/ui/form'
 import {
   Tooltip,
   TooltipContent,
@@ -10,14 +10,19 @@ import { ReactNode } from 'react'
 
 type Props = {
   label: string
-  description: string
+  description: string | ReactNode
   icon?: ReactNode
 }
 
 const FormItemHead = ({ icon, label, description }: Props) => {
+  const { formItemId } = useFormField()
+
   return (
     <div className="space-y-0.5 flex items-center">
-      <FormLabel className="flex items-center text-sm first-letter:uppercase mr-2 cursor-pointer">
+      <FormLabel
+        id={`${formItemId}-label`}
+        className="flex items-center text-sm first-letter:uppercase mr-2 cursor-pointer"
+      >
         {icon}
         {label}
       </FormLabel>
@@ -27,6 +32,7 @@ const FormItemHead = ({ icon, label, description }: Props) => {
             <TooltipTrigger
               className="hover:text-accent-foreground cursor-pointer flex items-center"
               onClick={ev => ev.preventDefault()}
+              asChild
             >
               <InfoIcon className="h-4 w-4" />
             </TooltipTrigger>

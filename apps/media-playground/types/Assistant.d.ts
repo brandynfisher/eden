@@ -1,5 +1,5 @@
-export type AssistantV2 = {
-  name: string
-  image: string
+import { Agent } from '@edenlabs/eden-sdk'
+
+export type AssistantV2 = Agent & {
   welcomeText: string
 }

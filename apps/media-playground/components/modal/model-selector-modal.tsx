@@ -1,6 +1,6 @@
 'use client'
 
-import ModelSelectorModalContent from '@/components/modal/model-selector-modal-content'
+import ToggleButton from '@/components/button/toggle-button'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
@@ -11,10 +11,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Skeleton } from '@/components/ui/skeleton'
+import { ToggleGroup } from '@/components/ui/toggle-group'
+import ModelsFeed from '@/features/feed/models-feed'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { BaseModelName, ModelV2 } from '@edenlabs/eden-sdk'
-import { PropsWithChildren, ReactNode, Suspense, useRef } from 'react'
+import { PropsWithChildren, ReactNode, useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -23,7 +25,7 @@ type Props = {
   className?: string
   trigger?: ReactNode
   currentValue: string
-  baseModel?: BaseModelName
+  base_model?: BaseModelName | BaseModelName[]
   onChange: (id: string) => void
 } & PropsWithChildren
 
@@ -31,10 +33,14 @@ const ModelSelectorModal = ({
   title,
   description,
   className,
-  baseModel,
+  trigger,
+  base_model,
   onChange,
 }: Props) => {
-  const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const { user } = useAuthState()
+
+  const [open, setOpen] = useState(false)
+  const [currentTab, setCurrentTab] = useState<'user' | 'public'>('user')
 
   const handleOnChange = (model: ModelV2) => {
     onChange(model._id)
@@ -43,25 +49,29 @@ const ModelSelectorModal = ({
       description: (
         <div className="text-xs text-foreground">
           <div>
-            {model.name} - {model.args.concept_mode}
+            {model.name} -{' '}
+            {model.task.args.concept_mode ? model.task.args.concept_mode : null}
           </div>
-          <div>{model.args.sd_model_version}</div>
+          {model.task.args.sd_model_version ? (
+            <div>{model.task.args.sd_model_version}</div>
+          ) : null}
         </div>
       ),
       dismissible: true,
       richColors: true,
     })
 
-    //@todo: fix this hackish way to close the modal by utilizing state for open,onOpenChange on the dialog
-    triggerRef.current?.click()
+    setOpen(false)
   }
 
   return (
-    <Dialog>
-      <DialogTrigger ref={triggerRef} asChild>
-        <Button type="button" variant="outline" className="!mt-0">
-          Select model
-        </Button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {trigger || (
+          <Button type="button" variant="outline" className="mt-2">
+            Select model
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContentScrollable
         className={cn([`overflow-x-hidden flex flex-col max-w-7xl`, className])}
@@ -69,18 +79,52 @@ const ModelSelectorModal = ({
         <DialogHeader className="mt-4">
           <div className="flex gap-4 items-center">
             <DialogTitle className="py-2">{title}</DialogTitle>
-            <Badge variant="secondary">{baseModel}</Badge>
+            <Badge variant="secondary">
+              {Array.isArray(base_model) ? base_model.join(', ') : base_model}
+            </Badge>
           </div>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <Suspense
-          fallback={<Skeleton className="h-10 pt-0.5 w-[270px] mb-4" />}
-        >
-          <ModelSelectorModalContent
-            baseModel={baseModel}
-            onChange={handleOnChange}
-          />
-        </Suspense>
+        <div>
+          <div className="flex flex-col items-center sm:block">
+            <ToggleGroup
+              type="single"
+              value={currentTab}
+              className="border border-muted rounded-lg p-1 mb-4 flex items-center max-w-fit bg-popover"
+            >
+              <ToggleButton
+                className="w-32"
+                value={'user'}
+                label={'My Models'}
+                onClick={() => setCurrentTab('user')}
+              />
+              <ToggleButton
+                className="w-32"
+                value={'public'}
+                label={'Public Models'}
+                onClick={() => setCurrentTab('public')}
+              />
+            </ToggleGroup>
+          </div>
+
+          {currentTab === 'user' ? (
+            <ModelsFeed
+              query={{ base_model, user: user?._id }}
+              minCols={2}
+              maxCols={5}
+              onClick={handleOnChange}
+              showFooterItems={{ name: true, actions: false }}
+            />
+          ) : (
+            <ModelsFeed
+              query={{ base_model }}
+              minCols={2}
+              maxCols={5}
+              onClick={handleOnChange}
+              showFooterItems={{ name: true, actions: false }}
+            />
+          )}
+        </div>
       </DialogContentScrollable>
     </Dialog>
   )

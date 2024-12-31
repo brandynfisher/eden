@@ -8,6 +8,7 @@ import {
 } from '@/lib/query/guards'
 import { capitalize } from '@/lib/strings'
 import {
+  AgentsUpdateResponse,
   CollectionsV2UpdateResponse,
   CreationV2,
   CreationsV2PatchResponse,
@@ -32,7 +33,7 @@ type PreviousData =
   | undefined
 
 type MutationOptions = {
-  type: 'creation' | 'model' | 'collection'
+  type: 'creation' | 'model' | 'collection' | 'agent'
   queryKey: QueryKey
   onSuccessMessage?: string
 }
@@ -47,7 +48,8 @@ export function usePrivacyMutation({
   return useMutation<
     | ModelsV2PatchResponse
     | CreationsV2PatchResponse
-    | CollectionsV2UpdateResponse,
+    | CollectionsV2UpdateResponse
+    | AgentsUpdateResponse,
     Error,
     { ids: string[]; public: boolean },
     { previousData: PreviousData }
@@ -81,9 +83,9 @@ export function usePrivacyMutation({
 
       const previousData = queryClient.getQueryData<PreviousData>(queryKey)
 
+      // Inside your onMutate function
       if (previousData) {
         let newData: PreviousData
-
         if (isInfiniteData(previousData)) {
           newData = {
             ...previousData,
@@ -93,36 +95,38 @@ export function usePrivacyMutation({
                   ...page,
                   docs: page?.docs?.map(doc => {
                     if (!isTaskV2(doc)) return doc
-
                     return {
                       ...doc,
                       result: doc.result.map(result => {
-                        if (
-                          type === 'creation' &&
-                          result.creation &&
-                          ids.includes(result.creation._id)
-                        ) {
-                          return {
-                            ...result,
-                            creation: {
-                              ...result.creation,
-                              public: isPublic,
-                            },
+                        result.output = result.output.map(output => {
+                          if (
+                            type === 'creation' &&
+                            output.creation &&
+                            ids.includes(output.creation._id)
+                          ) {
+                            return {
+                              ...output,
+                              creation: {
+                                ...output.creation,
+                                public: isPublic,
+                              },
+                            }
                           }
-                        }
-                        if (
-                          type === 'model' &&
-                          result.model &&
-                          ids.includes(result.model._id)
-                        ) {
-                          return {
-                            ...result,
-                            model: {
-                              ...result.model,
-                              public: isPublic,
-                            },
+                          if (
+                            type === 'model' &&
+                            output.model &&
+                            ids.includes(output.model._id)
+                          ) {
+                            return {
+                              ...output,
+                              model: {
+                                ...output.model,
+                                public: isPublic,
+                              },
+                            }
                           }
-                        }
+                          return output
+                        })
                         return result
                       }),
                     }
@@ -132,26 +136,29 @@ export function usePrivacyMutation({
               return page
             }),
           }
-        } else if (
-          type === 'creation' &&
-          isCreationData(previousData) &&
-          ids.includes(previousData._id)
-        ) {
-          newData = {
-            ...previousData,
-            public: isPublic,
-          }
-        } else if (
-          type === 'model' &&
-          isModelData(previousData) &&
-          ids.includes(previousData._id)
-        ) {
-          newData = {
-            ...previousData,
-            public: isPublic,
-          }
         } else {
-          newData = previousData
+          // Handle non-infinite data changes if applicable
+          if (
+            type === 'creation' &&
+            isCreationData(previousData) &&
+            ids.includes(previousData._id)
+          ) {
+            newData = {
+              ...previousData,
+              public: isPublic,
+            }
+          } else if (
+            type === 'model' &&
+            isModelData(previousData) &&
+            ids.includes(previousData._id)
+          ) {
+            newData = {
+              ...previousData,
+              public: isPublic,
+            }
+          } else {
+            newData = previousData
+          }
         }
 
         queryClient.setQueryData(queryKey, newData)

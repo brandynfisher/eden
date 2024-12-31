@@ -1,6 +1,7 @@
 'use client'
 
 import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
+import AgentsFeed from '@/features/feed/agents-feed'
 import CollectionsFeed from '@/features/feed/collections-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
@@ -74,6 +75,11 @@ const ProfileTabs = () => {
       key: 'collections',
       title: 'Collections',
       content: <CollectionsFeed query={baseQuery} />,
+    },
+    {
+      key: 'agents',
+      title: 'Agents',
+      content: <AgentsFeed query={baseQuery} minCols={1} maxCols={2} />,
     },
   ]
 

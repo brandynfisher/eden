@@ -1,4 +1,4 @@
-import { UserDocument } from '../Creator'
+import { UserDocument } from '../User'
 import { CreationV2Document } from './CreationV2'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -20,13 +20,6 @@ export interface CollectionV2Schema {
   public?: boolean
 }
 
-// export interface CollectionV2Input extends BaseTaskResult {
-//   user: ObjectId
-//   task: ObjectId
-//   args: TaskV2Args
-//   workflow: string
-// }
-
 export interface CollectionV2Document
   extends SoftDeleteDocument,
     CollectionV2Schema {}
@@ -35,7 +28,7 @@ export const collectionSchema = new Schema<CollectionV2Document>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     name: {
@@ -50,20 +43,20 @@ export const collectionSchema = new Schema<CollectionV2Document>(
     creations: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'creations2',
+        ref: 'creations3',
         default: [],
       },
     ],
     contributors: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'users3',
         default: [],
       },
     ],
     coverCreation: {
       type: Schema.Types.ObjectId,
-      ref: 'creations2',
+      ref: 'creations3',
     },
     deleted: {
       type: Boolean,
@@ -90,8 +83,17 @@ collectionSchema.plugin(aggregatePaginate)
 collectionSchema.plugin(mongooseDelete, {
   overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
 })
+collectionSchema.index({ user: 1, name: 1 }, { unique: true })
+
+// @ts-ignore
+collectionSchema.pre('delete', function (next) {
+  const doc = this as unknown as CollectionV2Document
+  const randomSuffix = Math.floor(1000 + Math.random() * 9000)
+  doc.name = `${doc.name} [deleted-${randomSuffix}]`
+  next()
+})
 
 export const CollectionV2 = model<CollectionV2Document>(
-  'collections2',
+  'collections3',
   collectionSchema,
 ) as SoftDeleteModel<CollectionV2Document>

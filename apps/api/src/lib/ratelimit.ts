@@ -1,9 +1,9 @@
 import { TaskV2 } from '../models/v2/TaskV2'
 import {
   FeatureFlag,
-  GeneratorOutputTypeV2,
   SubscriptionTier,
   TaskV2Status,
+  ToolOutputTypeV2,
 } from '@edenlabs/eden-sdk'
 import { FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -99,10 +99,10 @@ type TaskRateLimitCheckResult = {
 const getMaximumTasks = (
   map: Record<SubscriptionTier, TaskRateLimit>,
   subscriptionTier: SubscriptionTier | undefined,
-  outputType: GeneratorOutputTypeV2,
+  output_type: ToolOutputTypeV2,
 ): number => {
   const tier = subscriptionTier || SubscriptionTier.Free
-  const type = outputType === 'image' ? 'image' : 'video'
+  const type = output_type === 'image' ? 'image' : 'video'
   return map[tier][type]
 }
 
@@ -111,13 +111,13 @@ const getTasksCount = async (
   userId: ObjectId | undefined,
   since: Date,
   status: TaskV2Status[] = [],
-  outputType: GeneratorOutputTypeV2 | undefined,
+  output_type: ToolOutputTypeV2 | undefined,
 ) => {
   const query: {
     user?: ObjectId
     status?: { $in: TaskV2Status[] }
     createdAt?: { $gte: Date }
-    output_type?: GeneratorOutputTypeV2
+    output_type?: ToolOutputTypeV2
   } = {
     user: userId,
     createdAt: { $gte: since },
@@ -127,8 +127,8 @@ const getTasksCount = async (
     query.status = { $in: status }
   }
 
-  if (outputType) {
-    query.output_type = outputType
+  if (output_type) {
+    query.output_type = output_type
   }
 
   return TaskV2.countDocuments(query)
@@ -165,18 +165,10 @@ const getUserLimitTier = (
 
 export const taskRateLimitCheck = async (
   request: FastifyRequest,
-  outputType: GeneratorOutputTypeV2,
+  output_type: ToolOutputTypeV2,
 ): Promise<TaskRateLimitCheckResult> => {
   const { userId, subscriptionTier } = request.user
-  const type = outputType === 'image' ? 'image' : 'video'
-
-  // const hasEarlyAccess = eden2EarlyAccessCheck(request)
-  // if (!hasEarlyAccess) {
-  //   return {
-  //     status: 'error',
-  //     message: 'Account has no early access permission',
-  //   }
-  // }
+  const type = output_type === 'image' ? 'image' : 'video'
 
   const userLimitTier = getUserLimitTier(
     subscriptionTier,
@@ -212,7 +204,7 @@ export const taskRateLimitCheck = async (
   if (numTasksInProgress >= maximumTasksConcurrency) {
     return {
       status: 'error',
-      message: `Concurrency limit for '${outputType}' reached! Max. ${maximumTasksConcurrency} on '${subscriptionTierName}' plan. Wait for some tasks to finish.`,
+      message: `Concurrency limit for '${output_type}' reached! Max. ${maximumTasksConcurrency} on '${subscriptionTierName}' plan. Wait for some tasks to finish.`,
     }
   }
   const oneMinuteAgo = new Date(Date.now() - 60000)
@@ -230,7 +222,7 @@ export const taskRateLimitCheck = async (
   if (numTasksCreatedLastMinute >= maximumTasksPerMinute) {
     return {
       status: 'error',
-      message: `Rate limit for '${outputType}' reached! Max. ${maximumTasksPerMinute} per minute on '${subscriptionTierName}' plan. Try again later.`,
+      message: `Rate limit for '${output_type}' reached! Max. ${maximumTasksPerMinute} per minute on '${subscriptionTierName}' plan. Try again later.`,
     }
   }
 
@@ -248,7 +240,7 @@ export const taskRateLimitCheck = async (
   if (numTasksCreatedLastHour >= maximumTasksPerHour) {
     return {
       status: 'error',
-      message: `Rate limit for '${outputType}' reached! Max. ${maximumTasksPerHour} per hour on '${subscriptionTierName}' plan. Try again later.`,
+      message: `Rate limit for '${output_type}' reached! Max. ${maximumTasksPerHour} per hour on '${subscriptionTierName}' plan. Try again later.`,
     }
   }
 

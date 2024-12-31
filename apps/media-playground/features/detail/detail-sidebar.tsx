@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -33,7 +34,7 @@ type Props = {
 
 const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { user: creator } = item || {}
-  const { prompt, text_input, lora, ...remainingArgs } = item?.args || {}
+  const { prompt, text_input, lora, ...remainingArgs } = item?.task.args || {}
   const { TimeAgo } = useTimeAgo()
   const { user } = useAuthState()
 
@@ -100,13 +101,13 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <div className="h-9 flex items-center justify-between font-bold">
             Tool
           </div>
-          {item && (item as CreationV2).workflow ? (
+          {item && (item as CreationV2).tool ? (
             <Link
-              href={`/create/${(item as CreationV2).mediaAttributes?.type}/${
-                (item as CreationV2).workflow
-              }`}
+              href={`/create/${getFileTypeByMimeType(
+                (item as CreationV2).mediaAttributes?.mimeType,
+              )}/${(item as CreationV2).tool}`}
             >
-              {(item as CreationV2).workflow}
+              {(item as CreationV2).tool}
             </Link>
           ) : (
             <Skeleton className="h-5 w-[125px]" />
@@ -158,7 +159,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               <Button size="sm" variant="outline" asChild>
                 <Link
                   href={`/create/image/${
-                    (item as CreationV2).workflow
+                    (item as CreationV2).tool
                   }?lora=${lora}`}
                   className="ml-auto mr-2"
                   scroll={false}
@@ -181,7 +182,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <AccordionContent>
             {item && remainingArgs ? (
               <ParameterTable
-                taskId={item.task.toString()}
+                taskId={item.task._id.toString()}
                 args={remainingArgs}
               />
             ) : (

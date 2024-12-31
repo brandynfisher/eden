@@ -3,10 +3,11 @@ import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Creator, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { SquareMousePointerIcon } from 'lucide-react'
+import { PlayIcon, SquareMousePointerIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties } from 'react'
 
@@ -14,19 +15,30 @@ type Props = {
   model: ModelV2
   linkHref: string
   creator?: Creator
-  showFooter?: boolean
+  showFooterItems?: {
+    name: boolean
+    actions: boolean
+  }
   style?: CSSProperties
   queryKey: QueryKey
   onClick?: (item: ModelV2) => void
 }
 
-const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
+const ModelCard = ({
+  model,
+  showFooterItems = { name: true, actions: true },
+  style,
+  queryKey,
+  onClick,
+}: Props) => {
+  const hideFooter = !showFooterItems.name && !showFooterItems.actions
+
   return (
-    <Card className="relative overflow-hidden z-10 group" style={style}>
+    <Card className="relative overflow-hidden z-10" style={style}>
       {!model.public ? <PrivateIcon /> : null}
       {onClick ? (
         <div
-          className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover group-hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
+          className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
           onClick={() => onClick(model)}
         >
           <SquareMousePointerIcon className="mr-2 h-4 w-4" />
@@ -54,22 +66,48 @@ const ModelCard = ({ model, showFooter, style, queryKey, onClick }: Props) => {
           }}
         />
       </Link>
-      {showFooter ? (
+      {!hideFooter && (
         <CardFooter
           // creator={creator}
-          actions={[
-            // <LikeButton
-            //   key={0}
-            //   count={4}
-            //   isActive={false}
-            //   onChange={() => null}
-            // />,
-            <ModelActionsMenu key={1} queryKey={queryKey} model={model} />,
-          ]}
+          actions={
+            showFooterItems.actions
+              ? [
+                  // <LikeButton
+                  //   key={0}
+                  //   count={4}
+                  //   isActive={false}
+                  //   onChange={() => null}
+                  // />,
+                  <Link
+                    key={2}
+                    className="cursor-pointer"
+                    href={`/create/image/${
+                      model.base_model && model.base_model === 'flux-dev'
+                        ? 'flux_dev'
+                        : 'txt2img'
+                    }?lora=${model._id}`}
+                  >
+                    <Button
+                      className="w-9 h-9 p-2"
+                      size="icon"
+                      variant="outline"
+                      type="button"
+                    >
+                      <PlayIcon className="h-4 w-4" />
+                    </Button>
+                  </Link>,
+                  <ModelActionsMenu
+                    key={1}
+                    queryKey={queryKey}
+                    model={model}
+                  />,
+                ]
+              : []
+          }
         >
-          <div className="text-xs">{model.name}</div>
+          {showFooterItems.name && <div className="text-xs">{model.name}</div>}
         </CardFooter>
-      ) : null}
+      )}
     </Card>
   )
 }

@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { getFileTypeByMimeType } from '@/lib/files'
 import {
   updateAddToCollectionModal,
   updateQuickAnimateModal,
@@ -16,6 +17,7 @@ import {
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
+import { generateFilename } from '@/utils/slug.util'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { SizeIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
@@ -46,6 +48,19 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
   }
 
   return (
+    // <div className={cn(['', className])}>
+    //   {/*<CreationPresetLink creation={creation} hideLabel={true} />*/}
+    //   <ActionsDropdown onOpenChange={setIsOpen}>
+    //     {isOpen && (
+    //       <CreationActionsContent
+    //         creation={creation}
+    //         queryKey={queryKey}
+    //         userId={user?._id}
+    //         isOpen={isOpen}
+    //       />
+    //     )}
+    //   </ActionsDropdown>
+    // </div>
     <>
       <ActionsDropdown className={className} onOpenChange={setIsOpen}>
         {isOpen && (
@@ -87,6 +102,8 @@ const CreationActionsContent = ({
 
   const creationData = creationResponse || creation
 
+  // console.log({ creationData, creationResponse, creation })
+
   const handleAddToCollectionClick = () => {
     dispatch(
       updateAddToCollectionModal({
@@ -114,6 +131,9 @@ const CreationActionsContent = ({
       }),
     )
   }
+
+  const fileType =
+    getFileTypeByMimeType(creationData.mediaAttributes?.mimeType) || 'image'
 
   return (
     <>
@@ -145,7 +165,7 @@ const CreationActionsContent = ({
           <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {creationData.mediaAttributes?.type === 'image' ? (
+        {fileType === 'image' ? (
           <>
             <DropdownMenuItem
               disabled={!isSignedIn}
@@ -171,10 +191,11 @@ const CreationActionsContent = ({
         ) : null}
         <DropdownMenuItem asChild disabled={!isSignedIn}>
           <Link
-            className="cursor-pointer"
-            href={`/create/${creationData.mediaAttributes?.type}/${creationData.workflow}?creation=${creationData._id}`}
+            className="cursor-pointer flex items-center"
+            href={`/create/${fileType}/${creation.tool}?creation=${creation._id}`}
             scroll={false}
             shallow={true}
+            prefetch={false}
           >
             <FileSlidersIcon className="mr-2 h-4 w-4" />
             Use as Preset
@@ -208,15 +229,12 @@ const CreationActionsContent = ({
           <DropdownMenuGroup>
             <DownloadActionItem
               type="creation"
-              originalFileUrl={creationData.url || ''}
-              saveAsFileName={`${creationData.user.username}${
-                creationData.args.prompt
-                  ? `_${creationData.args.prompt
-                      .substring(0, 64)
-                      .trim()
-                      .replace(/\s+/g, '-')}`
-                  : ``
-              }_${creationData._id}`}
+              originalFileUrl={creationData.filename || ''}
+              saveAsFileName={generateFilename(
+                creationData.user.username,
+                creationData.task.args?.prompt?.substring(0, 64).trim(),
+                creationData._id,
+              )}
             />
           </DropdownMenuGroup>
         </>

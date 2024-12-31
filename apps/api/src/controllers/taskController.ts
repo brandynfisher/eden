@@ -3,7 +3,6 @@ import {
   getLatestGeneratorVersion,
   prepareConfig,
 } from '../lib/generator'
-import { User } from '../models/Creator'
 import {
   Generator,
   GeneratorDocument,
@@ -12,6 +11,7 @@ import {
 import { Manna, MannaDocument } from '../models/Manna'
 import { Task, TaskSchema, TaskStatus } from '../models/Task'
 import { Transaction, TransactionSchema } from '../models/Transaction'
+import { User } from '../models/User'
 import { InternalMessagesQueues } from '../plugins/internalMessagesPlugin'
 import TaskRepository from '../repositories/TaskRepository'
 import {

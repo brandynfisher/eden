@@ -8,13 +8,13 @@ import {
 import { Creator } from '../Creators'
 import { MediaAttributes } from '../Media'
 import { CreationV2 } from './CreationsV2'
-import { GeneratorOutputTypeV2 } from './GeneratorsV2'
 import { ModelV2 } from './ModelsV2'
+import { ToolOutputTypeV2 } from './ToolsV2'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 export interface TasksV2CreateArguments extends WebAPICallOptions {
-  workflow: string
+  tool: string
   args?: any
 }
 
@@ -24,8 +24,8 @@ export interface TasksV2ListArguments
   taskId?: string | string[]
   status?: string | string[]
   type?: 'concepts' | 'creations'
-  output_type?: GeneratorOutputTypeV2
-  workflow?: string
+  output_type?: ToolOutputTypeV2
+  tool?: string
   minDate?: boolean
 }
 
@@ -164,6 +164,7 @@ export type TaskV2Args = {
   lora?: string | null
   lora_strength?: number
   n_samples?: number
+  num_outputs?: number
   image?: string
   // models
   name?: string
@@ -174,30 +175,38 @@ export type TaskV2Args = {
   resolution?: number
 }
 
-export type MediaResult = {
+export type MediaOutput = {
   url?: string
   thumbnail?: string
   filename: string
   mediaAttributes?: MediaAttributes
 }
 
-export type TaskV2Result = {
-  mediaAttributes?: MediaAttributes & { type: GeneratorOutputTypeV2 }
-  metadata?: string | null
-  published?: boolean
+export type TasksV2ResultOutput = MediaOutput & {
+  mediaAttributes?: MediaAttributes & { type: ToolOutputTypeV2 }
   model?: ModelV2
   creation?: CreationV2
-  intermediateOutputs?: {
-    inpaint_preview?: MediaResult[]
-    controlnet_signal?: MediaResult[]
+}
+
+export type TaskV2Result = {
+  output: TasksV2ResultOutput[]
+  intermediate_outputs?: {
+    inpaint_preview?: MediaOutput[]
+    controlnet_signal?: MediaOutput[]
+    // audio_stems
+    isolated_bass?: MediaOutput[]
+    isolated_drums?: MediaOutput[]
+    isolated_other?: MediaOutput[]
+    isolated_vocals?: MediaOutput[]
   }
-} & MediaResult
+  metadata?: string | null
+}
 
 export type TaskV2 = {
   _id: string
   user: Creator
-  workflow: string
-  output_type?: GeneratorOutputTypeV2
+  tool: string
+  output_type?: ToolOutputTypeV2
   model?: string
   name?: string
   args: TaskV2Args

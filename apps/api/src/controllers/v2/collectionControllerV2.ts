@@ -1,10 +1,12 @@
+import { UserDocument } from '../../models/User'
 import {
   CollectionV2,
   CollectionV2Document,
 } from '../../models/v2/CollectionV2'
-import { CreationV2 } from '../../models/v2/CreationV2'
+import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
 import { s3ThumbnailUrl } from '../../plugins/s3Plugin'
 import CollectionV2Repository from '../../repositories/CollectionV2Repository'
+import { downloadZip } from '../../utils/downloader'
 import {
   CollectionsV2AddCreationsArguments,
   CollectionsV2CreateArguments,
@@ -13,7 +15,8 @@ import {
   CollectionsV2UpdateArguments,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { UpdateQuery } from 'mongoose'
+import { ObjectId } from 'mongodb'
+import { UpdateQuery, UpdateWriteOpResult } from 'mongoose'
 
 export const getUserCollectionsLight = async (
   request: FastifyRequest,
@@ -24,15 +27,14 @@ export const getUserCollectionsLight = async (
   const collectionsRepository = new CollectionV2Repository(CollectionV2)
   const collections = await collectionsRepository.query(
     {
-      user: currentUserId,
+      $or: [{ user: currentUserId }, { contributors: currentUserId }],
       deleted: false,
     },
     {
-      select: '_id name creations public',
+      select: '_id name creations public contributors',
+      sort: { updatedAt: -1 },
     },
   )
-
-  // console.log(collections.docs)
 
   return reply.status(200).send({ collections: collections.docs })
 }
@@ -56,8 +58,13 @@ export const getCollection = async (
   const currentUserId = request.user ? request.user.userId : undefined
   const isOwnCollection =
     currentUserId && collection.user.toString() === currentUserId.toString()
+  const isContributor = currentUserId
+    ? collection.contributors?.filter(
+        contributor => contributor.toString() === currentUserId?.toString(),
+      )[0]
+    : false
 
-  if (!isOwnCollection && !collection.public) {
+  if (!isOwnCollection && !isContributor && !collection.public) {
     return reply.status(401).send({
       error: 'User not authorized to view this collection',
     })
@@ -132,7 +139,19 @@ export const createCollection = async (
     public: isPublic,
   })
 
-  await collection.save()
+  try {
+    await collection.save()
+  } catch (error) {
+    // @ts-ignore
+    if (error.code === 11000) {
+      return reply.status(409).send({
+        error: 'A collection with this name already exists',
+      })
+    }
+    return reply.status(500).send({
+      error: 'Error creating collection',
+    })
+  }
 
   return reply.status(200).send({ collectionId: collection._id })
 }
@@ -162,14 +181,27 @@ export const updateCollection = async (
     public: isPublic,
   }
 
-  const result = await CollectionV2.updateOne(
-    {
-      _id: collectionId,
-      user: currentUserId,
-      deleted: false,
-    },
-    updateData,
-  )
+  let result: UpdateWriteOpResult
+  try {
+    result = await CollectionV2.updateOne(
+      {
+        _id: collectionId,
+        user: currentUserId,
+        deleted: false,
+      },
+      updateData,
+    )
+  } catch (error) {
+    // @ts-ignore
+    if (error.code === 11000) {
+      return reply.status(409).send({
+        error: 'A collection with this name already exists',
+      })
+    }
+    return reply.status(500).send({
+      error: 'Error updating collection',
+    })
+  }
 
   if (!result.matchedCount) {
     return reply.status(404).send({
@@ -228,6 +260,10 @@ export const addCreationsToCollection = async (
 
   const collection = await CollectionV2.findOne({
     _id: collectionId,
+    $or: [
+      { user: new ObjectId(currentUserId.toString()) },
+      { contributors: new ObjectId(currentUserId.toString()) },
+    ],
   })
 
   if (!collection || collection.deleted) {
@@ -237,9 +273,16 @@ export const addCreationsToCollection = async (
   }
 
   if (collection.user.toString() !== currentUserId.toString()) {
-    return reply.status(401).send({
-      error: 'User not authorized to update this collection',
-    })
+    const isContributor = currentUserId
+      ? collection.contributors?.filter(
+          contributor => contributor.toString() === currentUserId?.toString(),
+        )[0]
+      : false
+    if (!isContributor) {
+      return reply.status(401).send({
+        error: 'User not authorized to update this collection',
+      })
+    }
   }
 
   const creationsToAdd = await CreationV2.find({
@@ -306,6 +349,10 @@ export const removeCreationsFromCollection = async (
 
   const collection = await CollectionV2.findOne({
     _id: collectionId,
+    $or: [
+      { user: new ObjectId(currentUserId.toString()) },
+      { contributors: new ObjectId(currentUserId.toString()) },
+    ],
   })
 
   if (!collection || collection.deleted) {
@@ -315,9 +362,16 @@ export const removeCreationsFromCollection = async (
   }
 
   if (collection.user.toString() !== currentUserId.toString()) {
-    return reply.status(401).send({
-      error: 'User not authorized to update this collection',
-    })
+    const isContributor = currentUserId
+      ? collection.contributors?.filter(
+          contributor => contributor.toString() === currentUserId?.toString(),
+        )[0]
+      : false
+    if (!isContributor) {
+      return reply.status(401).send({
+        error: 'User not authorized to update this collection',
+      })
+    }
   }
 
   const shouldUpdateCoverCreation =
@@ -353,4 +407,68 @@ export const removeCreationsFromCollection = async (
   return reply.status(200).send({
     collectionId,
   })
+}
+
+export const getCollectionDownloadZip = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { collectionId } = request.params as { collectionId: string }
+
+  const collection: {
+    creations: {
+      _id: CreationV2Document['_id']
+      url: CreationV2Document['url']
+      user: {
+        username: UserDocument['username']
+      }
+    }[]
+  }[] = await CollectionV2.aggregate([
+    {
+      $match: { _id: new ObjectId(collectionId) },
+    },
+    {
+      $lookup: {
+        from: 'creations3',
+        localField: 'creations',
+        foreignField: '_id',
+        as: 'creations',
+      },
+    },
+    {
+      $unwind: '$creations',
+    },
+    {
+      $lookup: {
+        from: 'users3',
+        localField: 'creations.user',
+        foreignField: '_id',
+        as: 'creations.user',
+      },
+    },
+    {
+      $unwind: '$creations.user',
+    },
+    {
+      $group: {
+        _id: '$_id',
+        creations: { $push: '$creations' },
+      },
+    },
+  ]).exec()
+
+  if (!collection || !collection.length) {
+    return reply.status(404).send({
+      error: 'Collection not found',
+    })
+  }
+
+  const files = collection[0].creations.map(creation => ({
+    url: creation.url || '',
+    fileName: `${creation.user.username}_${creation._id}`,
+    fileExtension: creation.url?.split('.').pop() || '',
+  }))
+
+  await downloadZip(files, reply, server)
 }

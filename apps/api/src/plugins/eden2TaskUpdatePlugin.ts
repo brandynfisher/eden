@@ -3,7 +3,7 @@ import { TaskV2Document } from '../models/v2/TaskV2'
 import { FastifyPluginAsync } from 'fastify'
 import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
 
-const WATCHED_COLLECTION = 'tasks2'
+const WATCHED_COLLECTION = 'tasks3'
 export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
   try {
     const task2Collection =
@@ -74,9 +74,9 @@ export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
       done()
     })
 
-    fastify.log.info('Successfully registered plugin: Eden2Tasks')
+    fastify.log.info('Successfully registered plugin: Eden2TaskUpdates')
   } catch (err) {
-    fastify.log.error('Failed to register plugin: Eden2Tasks', { err })
+    fastify.log.error('Failed to register plugin: Eden2TaskUpdates', { err })
   }
 }
 

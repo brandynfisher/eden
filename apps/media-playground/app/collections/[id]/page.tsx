@@ -1,6 +1,7 @@
 import CollectionDetail from '@/features/detail/collection-detail'
 import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontUrl } from '@/lib/media'
 import { OpenGraph, OpenGraphVideo, TwitterMetadata } from '@/types/OpenGraph'
 import { CollectionsV2GetResponse, MediaType } from '@edenlabs/eden-sdk'
@@ -106,8 +107,10 @@ export async function generateMetadata(
   }
 
   if (
-    response.collection?.coverCreation.mediaAttributes?.type ===
-      MediaType.Video &&
+    response.collection &&
+    getFileTypeByMimeType(
+      response.collection?.coverCreation?.mediaAttributes?.mimeType,
+    ) === MediaType.Video &&
     response.collection.coverCreation.url
   ) {
     const videoUrl = getCloudfrontUrl(response.collection.coverCreation.url)

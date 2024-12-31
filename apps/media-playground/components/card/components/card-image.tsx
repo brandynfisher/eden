@@ -7,13 +7,14 @@ import Image from 'next/image'
 
 type Props = {
   media: Media
+  unoptimized?: boolean
   className?: string
 }
 
-const CardImage = ({ media, className }: Props) => {
-  const { blur, width, height } = media
+const CardImage = ({ media, unoptimized, className }: Props) => {
+  const { blurhash, width, height } = media
 
-  const blurDataUrl = useBlurDataUrl(blur, width, height)
+  const blurDataUrl = useBlurDataUrl(blurhash, width, height)
 
   return (
     <Image
@@ -23,7 +24,7 @@ const CardImage = ({ media, className }: Props) => {
       src={
         media.thumbnail ||
         (media.type === 'image' ? media.url : siteConfig.mediaErrorUrl) ||
-        ''
+        siteConfig.mediaErrorUrl
       }
       alt={'card media thumbnail'}
       width={media.width || 1024}
@@ -31,6 +32,7 @@ const CardImage = ({ media, className }: Props) => {
       blurDataURL={blurDataUrl}
       placeholder={blurDataUrl ? 'blur' : undefined}
       className={cn(['w-full h-full', className])}
+      unoptimized={unoptimized}
     />
   )
 }

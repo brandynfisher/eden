@@ -9,14 +9,17 @@ export enum InternalMessagesQueues {
 
 export interface InternalMessagesOptions {
   queues?: {
-    topic: 'task-updates' | 'task-updates-v2'
+    topic: 'task-updates' | 'task-updates-v2' | 'thread-updates'
     onMessage: (msg: unknown) => Promise<void>
   }[]
 }
 
 interface InternalMessagesPlugin {
   connection: EventEmitter
-  publish: (topic: 'task-updates' | 'task-updates-v2', message: unknown) => void
+  publish: (
+    topic: 'task-updates' | 'task-updates-v2' | 'thread-updates',
+    message: unknown,
+  ) => void
 }
 
 const fastifyInternalMessages: FastifyPluginAsync<
@@ -58,7 +61,13 @@ export const registerInternalMessages: FastifyPluginAsync = async fastify => {
         {
           topic: 'task-updates-v2',
           onMessage: async _message => {
-            // fastify.log.info('V2!!! Internal message received ', { message })
+            // fastify.log.info('V2!!! Internal message received', { message })
+          },
+        },
+        {
+          topic: 'thread-updates',
+          onMessage: async _message => {
+            // fastify.log.info('thread-updates: Internal message received ', { _message })
           },
         },
       ],

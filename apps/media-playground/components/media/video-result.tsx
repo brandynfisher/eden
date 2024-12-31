@@ -39,8 +39,8 @@ const VideoResult: React.FC<VideoProps> = ({
       muted={muted}
       width={width}
       height={height}
-      controlsList={'nodownload'}
-      onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
+      // controlsList={'nodownload'}
+      // onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
       className={cn(['w-full h-full outline-none', className])}
       poster={posterUrl}
       onPlay={onPlay}

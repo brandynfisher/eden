@@ -24,6 +24,7 @@ export interface FeedCreationsBaseArguments extends WebAPICallOptions {
   conceptId?: string | string[]
   generatorId?: string | string[]
   outputType?: string | string[]
+  output_type?: string | string[]
   isPrivate?: string
   name?: string
   maxDate?: string
@@ -63,19 +64,25 @@ export type CursorPaginatedRouteQueryParams = {
 export type FeedCursorRouteQueryParams = {
   sort?: string | string[]
   filter?: {
+    _id?: string | string[]
+    sort?: string | string[]
+    limit?: number
     name?: string | string[]
     user?: string | string[]
+    owner?: string | string[]
     character?: string | string[]
     collection?: string | string[]
     creation?: string | string[]
     generator?: string | string[]
+    tool?: string | string[]
     outputType?: string | string[]
+    output_type?: string | string[]
     concept?: string | string[]
     isPrivate?: boolean
     visibility?: 'all' | 'public' | 'private'
     maxDate?: string
     minDate?: string
-    base_model?: BaseModelName
+    base_model?: BaseModelName | BaseModelName[]
   }
 }
 

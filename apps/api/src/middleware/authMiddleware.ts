@@ -1,14 +1,13 @@
-import { eden2EarlyAccessCheck, isAllowedAccess } from '../lib/authorization'
+import { isAllowedAccess } from '../lib/authorization'
 import { checkUserFlags } from '../lib/data'
 import { ApiKey } from '../models/ApiKey'
-import { User } from '../models/Creator'
+import { User } from '../models/User'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 const apiKeyVerify = async (
   server: FastifyInstance,
   request: FastifyRequest,
-  isEden2?: boolean,
 ) => {
   if (!request.headers['x-api-key']) {
     throw new Error('Missing API key')
@@ -39,38 +38,17 @@ const apiKeyVerify = async (
     featureFlags: user.featureFlags || [],
     isAdmin: user.isAdmin || false,
   }
-
-  if (isEden2 && !eden2EarlyAccessCheck(request)) {
-    throw new Error('User not whitelisted for "Eden2 - Early Access"')
-  }
 }
 
 const getCredential = async (
   server: FastifyInstance,
   request: FastifyRequest,
-  isEden2?: boolean,
   // reply: FastifyReply,
 ) => {
   if (request.headers['x-api-key']) {
-    await apiKeyVerify(server, request, isEden2)
+    await apiKeyVerify(server, request)
   } else {
-    await server.verifyUser(request, isEden2)
-  }
-}
-
-export const isAuthEden2 = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  try {
-    await getCredential(server, request, true)
-  } catch (error: any) {
-    return reply.status(401).send({
-      statusCode: 401,
-      error: 'Unauthorized',
-      message: error.message,
-    })
+    await server.verifyUser(request)
   }
 }
 
@@ -158,17 +136,7 @@ export const hasFeatureFlag = (
   return checkUserFlags(request.user.featureFlags, featureFlag)
 }
 
-export const maybeAuthEden2 = async (
-  server: FastifyInstance,
-  request: FastifyRequest,
-) => {
-  try {
-    await getCredential(server, request, true)
-  } catch (error) {
-    // Ignore
-  }
-}
-
+// used for public routes that may contain elements with extra data when authed (think like count on a feed)
 export const maybeAuth = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -182,6 +150,6 @@ export const maybeAuth = async (
 
 declare module 'fastify' {
   interface FastifyInstance {
-    verifyUser: (request: FastifyRequest, isEden2?: boolean) => Promise<void>
+    verifyUser: (request: FastifyRequest) => Promise<void>
   }
 }

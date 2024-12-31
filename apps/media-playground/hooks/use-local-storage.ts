@@ -1,44 +1,29 @@
-import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useMemo } from 'react'
 
-const useLocalStorage = <T>(
-  key: string,
-  initialValue: T,
-): [T, (value: T) => void] => {
-  const readValue = (): T => {
-    if (typeof window === 'undefined') {
-      return initialValue
-    }
+function useLocalStorage<T>(key: string, defaultValue?: T) {
+  const queryKey = useMemo(() => ['local-storage', key], [key])
 
-    try {
-      const item = window.localStorage.getItem(key)
-      return item ? JSON.parse(item) : initialValue
-    } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error)
-      return initialValue
-    }
-  }
+  const queryClient = useQueryClient()
 
-  const [storedValue, setStoredValue] = useState<T>(readValue)
+  const query = useQuery<T>({
+    queryKey,
+    queryFn: () => {
+      const item = localStorage.getItem(key)
+      return item ? JSON.parse(item) : defaultValue || null
+    },
+    retry: false,
+  })
 
-  const setValue = (value: T) => {
-    if (typeof window == 'undefined') {
-      console.warn(
-        `Tried setting localStorage key "${key}" even though environment is not a client`,
-      )
-    }
+  const setValue = useCallback(
+    (value: T) => {
+      localStorage.setItem(key, JSON.stringify(value))
+      queryClient.setQueryData(queryKey, value)
+    },
+    [key, queryClient, queryKey],
+  )
 
-    try {
-      const newValue = value instanceof Function ? value(storedValue) : value
-
-      window.localStorage.setItem(key, JSON.stringify(newValue))
-
-      setStoredValue(newValue)
-    } catch (error) {
-      console.warn(`Error setting localStorage key "${key}":`, error)
-    }
-  }
-
-  return [storedValue, setValue]
+  return [query, setValue] as const
 }
 
 export default useLocalStorage

@@ -1,11 +1,11 @@
 import { usePrivacyMutation } from '@/hooks/use-privacy-mutation'
 import { capitalize } from '@/lib/strings'
-import { CollectionV2, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { Agent, CollectionV2, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 
 type TogglePrivacyProps = {
-  type: 'creation' | 'model' | 'collection'
-  item: ModelV2 | CreationV2 | CollectionV2
+  type: 'creation' | 'model' | 'collection' | 'agent'
+  item: ModelV2 | CreationV2 | CollectionV2 | Agent
   queryKey: QueryKey
 }
 

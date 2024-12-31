@@ -84,7 +84,6 @@ export const TaskStatusProvider = ({ children }: Props) => {
 
     if (event === 'task-update' && data?.task) {
       const taskUpdate = data.task as TaskV2
-
       // Update allTasks ensuring uniqueness
       setAllTasks(prev => {
         const existingTaskIndex = prev.findIndex(t => t._id === taskUpdate._id)
@@ -106,6 +105,7 @@ export const TaskStatusProvider = ({ children }: Props) => {
   const pendingRunningTasks = useMemo(() => {
     return allTasks.filter(
       task =>
+        task.status === null ||
         task.status === TaskV2Status.Pending ||
         task.status === TaskV2Status.Running,
     )

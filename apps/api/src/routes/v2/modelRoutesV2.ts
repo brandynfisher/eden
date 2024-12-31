@@ -1,5 +1,5 @@
 import { getModel, modelUpdate } from '../../controllers/v2/modelControllerV2'
-import { isAuthEden2, maybeAuthEden2 } from '../../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -38,7 +38,7 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [request => maybeAuthEden2(server, request)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getModel(server, request, reply),
   })
 
@@ -64,7 +64,7 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [async (request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => modelUpdate(request, reply),
   })
 }
