@@ -31,7 +31,7 @@ import {
   UserIcon,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import * as React from 'react'
 import { forwardRef, useRef, useState } from 'react'
 
@@ -256,10 +256,14 @@ const AccountDropdown = () => {
 const LoginButton = () => {
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
+  const pathname = usePathname()
 
   const authenticate = async () => {
     if (!isSignedIn) {
-      openSignIn({ appearance: { baseTheme: dark } })
+      openSignIn({
+        appearance: { baseTheme: dark },
+        forceRedirectUrl: pathname,
+      })
     }
   }
 
