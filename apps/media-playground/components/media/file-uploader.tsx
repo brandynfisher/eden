@@ -139,6 +139,10 @@ const supportedFileTypes: SupportedFileType[] = [
     ],
   },
   {
+    type: 'audio',
+    allowedMimeTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg'],
+  },
+  {
     type: 'archive',
     allowedMimeTypes: [
       'application/zip',
@@ -239,6 +243,12 @@ const FileUploader = ({
       case 'gz':
       case 'tgz':
         return 'application/x-gzip'
+      case 'mp3':
+        return 'audio/mpeg'
+      case 'wav':
+        return 'audio/wav'
+      case 'ogg':
+        return 'audio/ogg'
       default:
         return 'image/jpeg'
     }
@@ -298,6 +308,25 @@ const FileUploader = ({
     setFilesToUpload([])
     setExistingFiles([])
     onChange(maxFiles === 1 ? '' : [])
+  }
+
+  const verifyFileTypes = (acceptedFiles: File[]) => {
+    const acceptedFilesWithType = acceptedFiles.filter(file => {
+      const mimeType = urlToMimeType(file.name)
+      return allowedFileTypes.some(type => type === mimeType)
+    })
+
+    if (acceptedFilesWithType.length !== acceptedFiles.length) {
+      toast.error(`Unsupported file type!`, {
+        description: `Only ${allowedFileTypes
+          .map(type => type)
+          .join(', ')} files are supported`,
+        dismissible: true,
+        richColors: true,
+      })
+      return false
+    }
+    return true
   }
 
   const onDrop = useCallback(
@@ -482,7 +511,9 @@ const FileUploader = ({
         if (e.dataTransfer.getData('text/plain')) {
           handleDropFromTimeline(e)
         } else {
-          onDrop(Array.from(e.dataTransfer.files))
+          const files = Array.from(e.dataTransfer.files)
+          if (!verifyFileTypes(files)) return
+          onDrop(files)
         }
       }}
       className={cn(['flex-grow', className])}
@@ -565,25 +596,41 @@ const FileUploader = ({
                             <GripVerticalIcon aria-hidden="true" />
                           </SortableDragHandle>
                         )}
-                        <div className="relative text-white rounded-lg overflow-hidden shrink-0 mr-2 cursor-zoom-in">
-                          <LightboxTrigger
-                            className="hover:brightness-105 h-16 w-auto"
-                            slide={{
-                              url: file.url,
-                              thumbnail: file.url,
-                            }}
-                            startIndex={index}
-                            imageProps={{
-                              className:
-                                'relative rounded-lg hover:brightness-105 h-16 w-auto',
-                            }}
-                            videoProps={{
-                              className:
-                                'object-contain h-16 w-auto hover:brightness-105',
-                              controls: false,
-                              onLoad: () => URL.revokeObjectURL(file.url),
-                            }}
-                          />
+                        <div className="relative text-white rounded-lg overflow-hidden shrink-0 mr-2">
+                          {file.type === 'image' || file.type === 'video' ? (
+                            <LightboxTrigger
+                              className="hover:brightness-105 h-16 w-auto cursor-zoom-in"
+                              slide={{
+                                url: file.url,
+                                thumbnail: file.url,
+                              }}
+                              startIndex={index}
+                              imageProps={{
+                                className:
+                                  'relative rounded-lg hover:brightness-105 h-16 w-auto',
+                              }}
+                              videoProps={{
+                                className:
+                                  'object-contain h-16 w-auto hover:brightness-105',
+                                controls: false,
+                                onLoad: () => URL.revokeObjectURL(file.url),
+                              }}
+                            />
+                          ) : (
+                            <div
+                              className={`text-${
+                                getFileIconAndColor(
+                                  getFileTypeByMimeType(file.type),
+                                ).color
+                              } flex justify-center mr-2`}
+                            >
+                              {
+                                getFileIconAndColor(
+                                  getFileTypeByMimeType(file.type),
+                                ).icon
+                              }
+                            </div>
+                          )}
                         </div>
                         <div className="space-y-1 max-w-[96px] md:max-w-[110px] lg:max-w-[200px] overflow-hidden">
                           <div className="text-sm text-muted-foreground">
