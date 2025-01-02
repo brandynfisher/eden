@@ -48,7 +48,7 @@ export async function generateMetadata(
   const previousTwitter = (await parent).twitter || {}
 
   const title = `Agent: ${agent?.name} | Eden Create`
-  const baseDescription = `Check out this agent by ${agent?.owner.username}!`
+  const baseDescription = ``
   const description = agent?.description
 
   // Initialize OpenGraph metadata

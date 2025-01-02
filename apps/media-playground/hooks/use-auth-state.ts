@@ -3,10 +3,12 @@
 import { useMe } from '@/hooks/use-me'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
+import { usePathname } from 'next/navigation'
 
 export function useAuthState() {
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
+  const pathname = usePathname()
 
   const {
     user,
@@ -24,6 +26,7 @@ export function useAuthState() {
 
     openSignIn({
       appearance: { baseTheme: dark },
+      forceRedirectUrl: pathname,
     })
     return false
   }

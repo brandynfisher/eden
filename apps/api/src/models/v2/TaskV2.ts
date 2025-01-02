@@ -79,6 +79,35 @@ export const taskSchema = new Schema<TaskV2Document>(
   },
 )
 
+taskSchema.index({
+  tool: 1,
+})
+taskSchema.index({
+  result: 1,
+  status: 1,
+})
+taskSchema.index({
+  status: 1,
+  tool: 1,
+})
+taskSchema.index({
+  'args.lora': 1,
+  'result.output.creation': -1,
+  createdAt: -1,
+  _id: -1,
+})
+taskSchema.index({
+  output_type: 1,
+  createdAt: -1,
+})
+taskSchema.index({
+  output_type: 1,
+  'result.output.model': 1,
+})
+taskSchema.index({
+  output_type: 1,
+  'result.output.creation': 1,
+})
 taskSchema.index({ createdAt: -1 })
 taskSchema.index({ handler_id: -1 })
 taskSchema.index({

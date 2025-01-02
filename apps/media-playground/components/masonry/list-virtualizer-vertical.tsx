@@ -14,6 +14,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
+import { usePathname } from 'next/navigation'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
 const MASONRY_GUTTER = 32
@@ -34,6 +35,7 @@ const ListVirtualizerVertical = ({
 }: Props) => {
   const { openSignIn } = useClerk()
   const { user } = useAuthState()
+  const pathname = usePathname()
 
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
@@ -177,7 +179,12 @@ const ListVirtualizerVertical = ({
             Please{' '}
             <button
               className="underline"
-              onClick={() => openSignIn({ appearance: { baseTheme: dark } })}
+              onClick={() =>
+                openSignIn({
+                  appearance: { baseTheme: dark },
+                  forceRedirectUrl: pathname,
+                })
+              }
             >
               sign in
             </button>{' '}

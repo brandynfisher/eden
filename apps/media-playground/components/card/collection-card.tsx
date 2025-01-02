@@ -19,7 +19,7 @@ const CollectionCard = ({ collection, queryKey, onClick }: Props) => {
   return (
     <Card className="relative overflow-hidden border-0 z-10 transition-shadow group">
       {collection.creations ? (
-        <div className="absolute left-2 text-white top-2 bg-gray-700 bg-opacity-80 rounded-md p-1 drop-shadow backdrop-blur-[2px] z-20 text-xs">
+        <div className="absolute left-2 text-white top-2 bg-gray-700 bg-opacity-80 rounded-md p-1 z-20 text-xs">
           {collection.creations.length}
         </div>
       ) : null}
