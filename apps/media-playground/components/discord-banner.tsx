@@ -4,9 +4,15 @@ import DiscordIcon from '@/components/icons/discord'
 import { Button } from '@/components/ui/button'
 import useLocalStorage from '@/hooks/use-local-storage'
 import { XCircleIcon } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 import React from 'react'
 
 const DiscordBanner: React.FC = () => {
+  const pathname = usePathname()
+
+  //hide banner on /chat/... - quick and dirty fix to not screw with full height chat layout
+  const shouldShowDiscordBanner = !pathname.startsWith('/chat')
+
   const [discordBannerDismissedQuery, setDiscordBannerDismissed] =
     useLocalStorage<string>('discordBannerDismissed', '')
 
@@ -15,6 +21,7 @@ const DiscordBanner: React.FC = () => {
   }
 
   if (
+    !shouldShowDiscordBanner ||
     discordBannerDismissedQuery.isLoading ||
     discordBannerDismissedQuery.data
   ) {

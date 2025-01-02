@@ -121,6 +121,9 @@ let nextConfig = {
       static: 180,
     },
   },
+  sassOptions: {
+    silenceDeprecations: ['legacy-js-api'],
+  }
 }
 
 // Injected content via Sentry wizard below
