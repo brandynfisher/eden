@@ -86,6 +86,7 @@ export const createAgent = async (
     tools,
     discordId,
     model: modelId,
+    featureFlags: ['freeTools'],
   })
 
   try {

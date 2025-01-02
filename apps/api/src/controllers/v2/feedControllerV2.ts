@@ -534,7 +534,7 @@ const handleArguments = async ({
       : undefined
 
   const defaultDeletedFilter = usesPrivacy
-    ? { $or: [{ deleted: { $exists: false } }, { deleted: false }] }
+    ? { deleted: { $eq: false } }
     : undefined
 
   const filters = {
@@ -770,7 +770,6 @@ export const getCreationsFeedCursorV2 = async (
       cursor,
     })
 
-    // const hoursAgo = 360
     // currentDate.setMinutes(0, 0, 0)
     // const minDateDefault = new Date(currentDate)
     // minDateDefault.setHours(currentDate.getHours() - hoursAgo)
