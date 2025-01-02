@@ -7,6 +7,7 @@ import {
 } from '../../models/v2/CollectionV2'
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
 import { ModelV2, ModelV2Document } from '../../models/v2/ModelV2'
+import { TaskV2 } from '../../models/v2/TaskV2'
 import {
   forceCloudfrontUrl,
   s3ThumbnailUrl,
@@ -120,6 +121,8 @@ type GenericFilters = {
   character?: ObjectId
   concept?: ObjectId
   collection?: ObjectId
+  'args.lora'?: string
+  'result.output.creation'?: { $exists: true }
 }
 
 const createCursorMatch = (cursor: string) => {
@@ -195,6 +198,26 @@ const collectionsPreAggregatePipeline = (
   ]
 }
 
+const tasksPreAggregatePipeline = (
+  matchStage: PipelineStage[],
+  lookupPipeline: PipelineStage[],
+) => {
+  return [
+    ...matchStage,
+    // {
+    //   $project: {
+    //     creations: 1,
+    //   },
+    // },
+    ...creationsLookup('result.output.creation', '_id', lookupPipeline),
+    // {
+    //   $sort: {
+    //     _id: -1,
+    //   },
+    // },
+  ]
+}
+
 const handleArguments = async ({
   server,
   reply,
@@ -254,6 +277,7 @@ const handleArguments = async ({
   let useReactionsPreAggregate = false
   let useEmbeddingsPreAggregate = false
   let useCollectionsPreAggregate = false
+  let useTasksPreAggregate = false
   let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
@@ -336,7 +360,13 @@ const handleArguments = async ({
             }
 
             if (field === 'concept') {
-              return ['args.lora', value]
+              useTasksPreAggregate = true
+              preAggregateFilterOptions['args.lora'] = value
+              preAggregateFilterOptions['result.output.creation'] = {
+                $exists: true,
+              }
+
+              return []
             }
 
             return [field, new ObjectId(value)]
@@ -556,6 +586,7 @@ const handleArguments = async ({
     useEmbeddingsPreAggregate,
     useCollectionsPreAggregate,
     useFollowingPreAggregate,
+    useTasksPreAggregate,
   }
 }
 
@@ -701,6 +732,7 @@ export const getCreationsFeedCursorV2 = async (
     // useReactionsPreAggregate,
     // useEmbeddingsPreAggregate,
     useCollectionsPreAggregate,
+    useTasksPreAggregate,
     // useFollowingPreAggregate,
   } = await handleArguments({
     server,
@@ -729,25 +761,10 @@ export const getCreationsFeedCursorV2 = async (
       // @ts-ignore
       filters,
       sortOptions,
-      // limit: limit ?? 100,
-      // cursor
     })
     const pipeline = [
       ...collectionsPreAggregatePipeline(
-        [
-          // {
-          //   $match: {
-          //     _id: {
-          //       $eq: new ObjectId('65e8da9a6d2f63925c73a89d'),
-          //     },
-          //     createdAt: {
-          //       $lte: customFilterOptions?.createdAt?.$lte,
-          //     },
-          //   },
-          // },
-          { $match: preAggregateFilterOptions },
-          // { $sort: { createdAt: -1 } }, //@todo: only add this if we're actually sorting by reaction date and not reaction count etc
-        ],
+        [{ $match: preAggregateFilterOptions }],
         lookupPipeline,
       ),
       maybeAddCursorFilterStage(cursor),
@@ -759,6 +776,26 @@ export const getCreationsFeedCursorV2 = async (
 
     // @ts-ignore
     results = await CollectionV2.aggregate(pipeline)
+  } else if (useTasksPreAggregate) {
+    const lookupPipeline = await createPipeline({
+      // @ts-ignore
+      filters,
+      sortOptions,
+    })
+    const pipeline = [
+      ...tasksPreAggregatePipeline(
+        [{ $match: preAggregateFilterOptions }],
+        lookupPipeline,
+      ),
+      maybeAddCursorFilterStage(cursor),
+      { $limit: limit ?? 100 },
+      ...lateLookupStages,
+    ].filter(Boolean)
+
+    console.log(JSON.stringify(pipeline, null, 2))
+
+    // @ts-ignore
+    results = await TaskV2.aggregate(pipeline)
   } else {
     const pipeline = await createPipeline({
       limit: limit ?? 100,

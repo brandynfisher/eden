@@ -91,6 +91,12 @@ taskSchema.index({
   tool: 1,
 })
 taskSchema.index({
+  'args.lora': 1,
+  'result.output.creation': -1,
+  createdAt: -1,
+  _id: -1,
+})
+taskSchema.index({
   output_type: 1,
   createdAt: -1,
 })
