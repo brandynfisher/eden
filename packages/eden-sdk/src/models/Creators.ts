@@ -249,4 +249,5 @@ export enum FeatureFlag {
   LimitsBeliever = 'limits_Believer',
   LimitsAdmin = 'limits_Admin',
   AssistantAccess = 'assistant_access',
+  FreeTools = 'freeTools',
 }

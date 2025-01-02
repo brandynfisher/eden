@@ -58,9 +58,15 @@ export const WebSocketProvider = ({ endpoint, children }: Props) => {
     sendJsonMessage,
     lastMessage,
     readyState,
-  } = useWebSocketConnection(endpoint, shouldConnect, (msg: MessageEvent) =>
-    console.log('onMessage', JSON.parse(msg.data)),
-  )
+  } = useWebSocketConnection(endpoint, shouldConnect, (msg: MessageEvent) => {
+    const data = JSON.parse(msg.data)
+
+    if (data.event === 'auth-info') {
+      return
+    }
+
+    console.log('onMessage', data)
+  })
 
   const { isSignedIn } = useWebSocketAuth(sendJsonMessage)
 

@@ -54,7 +54,7 @@ type AgentFormDto = z.infer<typeof agentSchema>
 type AgentSheetProps = {
   mode: 'create' | 'update'
   agent?: Agent
-  onAction: () => void
+  onAction: () => Promise<void>
 }
 
 const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
@@ -94,8 +94,8 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
           dismissible: true,
         })
       }
-      onAction()
       onOpenChange(false)
+      await onAction()
     } catch (error) {
       toast.error(
         `${isUpdateMode ? 'Agent update' : 'Agent creation'} failed`,
@@ -113,7 +113,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open)
-    form.reset()
+    // form.reset()
   }
 
   return (
