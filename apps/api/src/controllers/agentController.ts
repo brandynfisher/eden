@@ -8,6 +8,7 @@ import {
   AgentsCreateArguments,
   AgentsDeleteArguments,
   AgentsUpdateArguments,
+  FeatureFlag,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateResult } from 'mongodb'
@@ -86,8 +87,10 @@ export const createAgent = async (
     tools,
     discordId,
     model: modelId,
-    featureFlags: ['freeTools'],
+    featureFlags: [FeatureFlag.FreeTools],
   })
+
+  // console.log(agent)
 
   try {
     await agent.save()
@@ -98,6 +101,8 @@ export const createAgent = async (
         error: 'An agent with this key already exists',
       })
     }
+
+    // console.log(error)
 
     return reply.status(500).send({
       error: 'An error occurred while creating the agent',

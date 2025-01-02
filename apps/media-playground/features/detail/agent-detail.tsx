@@ -84,8 +84,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     )
   }
 
-  const onUpdateAgent = () => {
-    invalidate()
+  const onUpdateAgent = async () => {
+    await invalidate()
   }
 
   const onShareAgent = () => {
