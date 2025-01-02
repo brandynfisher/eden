@@ -142,6 +142,7 @@ task.pre<TaskDocument>('save', function (next) {
 
 task.index({ character: 1, createdAt: -1 })
 task.index({ createdAt: -1 })
+task.index({ generator: 1 })
 task.index({ user: 1, createdAt: -1 })
 task.index({ user: 1, status: 1, creation: 1, concept: 1, createdAt: -1 })
 task.index({ status: 1, createdAt: -1 })

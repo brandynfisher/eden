@@ -186,6 +186,7 @@ creation.pre<CreationDocument>('save', function (next) {
 creation.index({ concept: -1 })
 creation.index({ character: 1, createdAt: -1 })
 creation.index({ deleted: 1, isPrivate: 1, character: 1, user: 1 })
+creation.index({ deleted: 1, user: -1, created: -1, _id: -1 })
 creation.index({ uri: 1, deleted: 1, isPrivate: 1 })
 creation.index({
   uri: 1,
@@ -206,6 +207,7 @@ creation.index({
   _id: -1,
   user: 1,
 })
+
 creation.index({ 'attributes.discordId': 1, deleted: 1 })
 creation.plugin(mongooseDelete, {
   overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
