@@ -107,14 +107,26 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
               errorMessage={fieldState.error?.message}
               className={className}
             >
-              <SliderInput
-                type="integer"
-                min={parameter.minimum || 0}
-                max={parameter.maximum || 1}
-                step={parameter.step || 1}
-                value={value}
-                onChange={onChange}
-              />
+              {parameter.choices && parameter.choices.length ? (
+                <SelectInput
+                  placeholder={label}
+                  label={label}
+                  onChange={onChange}
+                  value={value}
+                  options={parameter.choices}
+                  optionLabels={parameter.choices_labels || undefined}
+                  type="integer"
+                />
+              ) : (
+                <SliderInput
+                  type="integer"
+                  min={parameter.minimum || 0}
+                  max={parameter.maximum || 1}
+                  step={parameter.step || 1}
+                  value={value}
+                  onChange={onChange}
+                />
+              )}
             </FormItemWrap>
           )
         }
@@ -223,6 +235,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   value={value}
                   options={parameter.choices}
                   optionLabels={parameter.choices_labels || undefined}
+                  type="string"
                 />
               ) : (
                 <TextInput
