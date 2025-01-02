@@ -38,6 +38,7 @@ const SampleCountSelector = ({ parameter }: Props) => {
                 }
                 optionClassName={'font-mono'}
                 icon={<LayoutGridIcon className="h-4 w-4 mr-1" />}
+                type="integer"
               />
             </FormControl>
             <FormMessage>{fieldState.error?.message}</FormMessage>

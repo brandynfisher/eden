@@ -18,6 +18,7 @@ type Props = {
   value: string | number
   options: (string | number)[]
   optionLabels?: string[]
+  type: 'integer' | 'string'
   suffix?: string
   className?: string
   optionClassName?: string
@@ -31,6 +32,7 @@ const SelectInput = ({
   value,
   options,
   optionLabels,
+  type,
   suffix,
   className,
   optionClassName,
@@ -43,7 +45,12 @@ const SelectInput = ({
   })
 
   return (
-    <DelayedSelect onValueChange={onChange} value={String(value || '')}>
+    <DelayedSelect
+      onValueChange={newVal =>
+        onChange(type === 'integer' ? parseInt(newVal) : newVal)
+      }
+      value={String(value || '')}
+    >
       <SelectTrigger className={cn(['w-full', className])} title={placeholder}>
         {icon}
         <SelectValue placeholder={placeholder} />
