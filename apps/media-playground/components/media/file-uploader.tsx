@@ -312,9 +312,12 @@ const FileUploader = ({
 
   const verifyFileTypes = (acceptedFiles: File[]) => {
     const acceptedFilesWithType = acceptedFiles.filter(file => {
-      const mimeType = urlToMimeType(file.name)
-      return allowedFileTypes.some(type => type === mimeType)
+      const mimeType = file.type ?? urlToMimeType(file.name)
+      const fileType = getFileTypeByMimeType(mimeType)
+      return allowedFileTypes.some(type => type === fileType)
     })
+
+    // console.log({acceptedFilesWithType, acceptedFiles, allowedFileTypes})
 
     if (acceptedFilesWithType.length !== acceptedFiles.length) {
       toast.error(`Unsupported file type!`, {
