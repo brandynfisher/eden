@@ -7,6 +7,7 @@ import Stripe from 'stripe'
 
 export type TransactionType =
   | 'spend'
+  | 'refund'
   | 'credit_stripe'
   | 'credit_voucher'
   | 'admin_modify'
