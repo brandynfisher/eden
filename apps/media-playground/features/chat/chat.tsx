@@ -125,7 +125,7 @@ const LeftBarSheet: FC = () => {
   )
 }
 
-const AgentLink: FC<{ agent?: Agent }> = ({ agent }) => {
+export const AgentLink: FC<{ agent?: Agent }> = ({ agent }) => {
   return (
     <Link
       className="ml-auto md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"

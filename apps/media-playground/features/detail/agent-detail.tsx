@@ -132,7 +132,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
         <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold">{agent?.name}</h1>
           <div className="flex gap-x-2">
-            <Button variant="secondary" size="sm" asChild>
+            <Button variant="secondary" asChild>
               <Link href={`/chat/${agent._id}`}>
                 <ChatBubbleIcon className="mr-2 h-4 w-4" />
                 Start Chat
@@ -142,6 +142,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               <Share2Icon size={18} />
             </Button>
           </div>
+          te
         </div>
 
         <TextClampMore
