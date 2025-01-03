@@ -24,7 +24,7 @@ const getAgent = async (id: string): Promise<AgentGetResponse | undefined> => {
 
     return response
   } catch (e) {
-    console.error('Error fetching collection:', e)
+    console.error('Error fetching agent:', e)
     return undefined
   }
 }
@@ -49,7 +49,7 @@ export async function generateMetadata(
 
   const title = `Agent: ${agent?.name} | Eden Create`
   const baseDescription = ``
-  const description = agent?.description.substring(0, 200) || baseDescription
+  const description = agent?.description.substring(0, 320) || baseDescription
 
   // Initialize OpenGraph metadata
   const og: OpenGraph = {
