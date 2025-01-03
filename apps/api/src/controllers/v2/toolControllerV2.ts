@@ -3,15 +3,20 @@ import { ToolsGetArgumentsV2, ToolsListArgumentsV2 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getTool = async (
-  _server: FastifyInstance,
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { toolKey } = request.params as ToolsGetArgumentsV2
+  const isProdEnv = server.config.ENV_API === 'prod'
+  const statusFilter = isProdEnv
+    ? { status: 'prod' }
+    : { status: { $in: ['stage', 'prod'] } }
 
   const tool = await ToolV2.findOne(
     {
       key: toolKey,
+      ...statusFilter,
     },
     {
       'parameters.tip': 0,
@@ -31,11 +36,16 @@ export const getTool = async (
 }
 
 export const listTools = async (
-  _server: FastifyInstance,
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { hideParams } = request.query as ToolsListArgumentsV2
+  const isProdEnv = server.config.ENV_API === 'prod'
+  const statusFilter = isProdEnv
+    ? { status: 'prod' }
+    : { status: { $in: ['stage', 'prod'] } }
+
   const projection = hideParams
     ? {
         resolutions: 0,
@@ -45,7 +55,7 @@ export const listTools = async (
         'parameters.tip': 0,
       }
 
-  const tools = await ToolV2.find({}, projection).sort({ order: 1 })
+  const tools = await ToolV2.find(statusFilter, projection).sort({ order: 1 })
 
   return reply.status(200).send({ tools })
 }
