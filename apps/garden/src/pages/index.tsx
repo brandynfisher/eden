@@ -71,7 +71,7 @@ const featuredConceptsConfig =
 const featuredArtistsConfig =
   process.env.NEXT_PUBLIC_APP_ENV === 'production'
     ? [
-        'abraham',
+        // 'abraham',
         'marzipan',
         'chebel',
         'avishagaya',
