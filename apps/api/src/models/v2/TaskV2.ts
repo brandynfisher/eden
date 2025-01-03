@@ -83,16 +83,17 @@ taskSchema.index({
   tool: 1,
 })
 taskSchema.index({
-  result: 1,
-  status: 1,
-})
-taskSchema.index({
   status: 1,
   tool: 1,
 })
 taskSchema.index({
   'args.lora': 1,
   'result.output.creation': -1,
+  createdAt: -1,
+  _id: -1,
+})
+taskSchema.index({
+  'args.lora': 1,
   createdAt: -1,
   _id: -1,
 })
@@ -119,6 +120,7 @@ taskSchema.index({
 })
 taskSchema.index({ status: 1, createdAt: -1 })
 taskSchema.index({ cost: 1, status: 1, createdAt: -1 })
+taskSchema.index({ user: 1, createdAt: -1, tool: 1 })
 taskSchema.plugin(paginate)
 taskSchema.plugin(aggregatePaginate)
 

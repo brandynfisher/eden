@@ -4,7 +4,7 @@ import {
   getAgent,
   updateAgent,
 } from '../../controllers/agentController'
-import { isAuth } from '../../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -27,7 +27,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getAgent(server, request, reply),
   })
 

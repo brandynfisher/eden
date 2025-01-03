@@ -1,6 +1,6 @@
 import AgentDetail from '@/features/detail/agent-detail'
-import customImageLoader, { Formats } from '@/image-loader'
 import { fetcher } from '@/lib/fetcher'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
 import { AgentGetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
@@ -24,7 +24,7 @@ const getAgent = async (id: string): Promise<AgentGetResponse | undefined> => {
 
     return response
   } catch (e) {
-    console.error('Error fetching collection:', e)
+    console.error('Error fetching agent:', e)
     return undefined
   }
 }
@@ -49,7 +49,7 @@ export async function generateMetadata(
 
   const title = `Agent: ${agent?.name} | Eden Create`
   const baseDescription = ``
-  const description = agent?.description
+  const description = agent?.description.substring(0, 320) || baseDescription
 
   // Initialize OpenGraph metadata
   const og: OpenGraph = {
@@ -57,13 +57,7 @@ export async function generateMetadata(
     title,
     description: description,
     images: agent?.userImage
-      ? [
-          customImageLoader({
-            src: agent?.userImage || '',
-            width: 1024,
-            format: Formats.JPG,
-          }),
-        ]
+      ? [getCloudfrontOriginalUrl(agent?.userImage)]
       : undefined,
   }
 
@@ -73,13 +67,7 @@ export async function generateMetadata(
     title,
     description: baseDescription, // Default description for Twitter
     images: agent?.userImage
-      ? [
-          customImageLoader({
-            src: agent?.userImage || '',
-            width: 1024,
-            format: Formats.JPG,
-          }),
-        ]
+      ? [getCloudfrontOriginalUrl(agent?.userImage)]
       : undefined,
   }
 
