@@ -49,7 +49,7 @@ export async function generateMetadata(
 
   const title = `Agent: ${agent?.name} | Eden Create`
   const baseDescription = ``
-  const description = agent?.description
+  const description = agent?.description.substring(0, 200) || baseDescription
 
   // Initialize OpenGraph metadata
   const og: OpenGraph = {

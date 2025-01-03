@@ -142,7 +142,6 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               <Share2Icon size={18} />
             </Button>
           </div>
-          te
         </div>
 
         <TextClampMore
