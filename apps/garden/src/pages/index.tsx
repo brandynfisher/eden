@@ -164,7 +164,9 @@ export const getStaticProps = (async () => {
         return await fetchCreator(item)
       }),
     )
-    data.featuredArtists = featuredArtists.map(item => item.creator)
+    data.featuredArtists = featuredArtists
+      .filter(item => item.creator !== undefined)
+      .map(item => item.creator)
   } catch (e) {
     console.log('Error pre-rendering - featuredArtists')
   }
