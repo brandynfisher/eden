@@ -59,10 +59,30 @@ export const createThreadMessage = async (
     server.log.info('< modal::response::chat')
     server.log.info(modalResponse.data)
 
-    if (!modalResponse || !modalResponse.data) {
-      console.log('malformed response', modalResponse)
+    if (!modalResponse) {
+      server.log.error('empty response', modalResponse)
       return reply.status(500).send({
-        message: `Empty / Unexpected response from compute api`,
+        message: `Empty response from compute api`,
+      })
+    }
+
+    if (!modalResponse.data) {
+      server.log.error(
+        'malformed response, data missing from response',
+        modalResponse,
+      )
+      return reply.status(500).send({
+        message: `Unexpected response from compute api`,
+      })
+    }
+
+    if (!modalResponse.data.thread_id) {
+      server.log.error(
+        'malformed response, thread_id missing from response',
+        modalResponse,
+      )
+      return reply.status(500).send({
+        message: `Missing thread_id`,
       })
     }
 

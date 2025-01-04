@@ -311,7 +311,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                     value={value === null ? '' : value || ''}
                   />
                 </FormControl>
-                <div className="flex md:flex-col gap-2 items-center w-full">
+                <div className="flex flex-col gap-2 items-center w-full">
                   {/* // supports mask painter */}
                   {maskPainterParameterNames.includes(parameter.name) ? (
                     <>
