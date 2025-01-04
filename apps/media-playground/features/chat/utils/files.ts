@@ -10,11 +10,11 @@ export function fileMatchesAccept(
   // Split the accept string into an array of allowed types
   const allowedTypes = acceptString
     .split(',')
-    .map(type => type.trim().toLowerCase())
+    .map(type => type?.trim()?.toLowerCase())
 
   // Get the file's extension and MIME type
-  const fileExtension = '.' + file.name.split('.').pop()!.toLowerCase()
-  const fileMimeType = file.type.toLowerCase()
+  const fileExtension = '.' + file.name?.split('.').pop()?.toLowerCase()
+  const fileMimeType = file.type?.toLowerCase()
 
   for (const type of allowedTypes) {
     // Check for file extension match

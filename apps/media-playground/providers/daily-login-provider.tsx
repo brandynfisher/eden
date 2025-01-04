@@ -15,10 +15,15 @@ export function DailyLoginProvider({
     useLocalStorage<string>('nextBonusAvailable', '')
   const [isClaimedAlready, setIsClaimedAlready] = useState(false)
 
-  const { user, refetchMe } = useAuthState()
+  const { user, refetchMe, isSignedIn } = useAuthState()
 
   useEffect(() => {
-    if (!user || nextBonusAvailableQuery.isLoading || isClaimedAlready) {
+    if (
+      !isSignedIn ||
+      !user ||
+      nextBonusAvailableQuery.isLoading ||
+      isClaimedAlready
+    ) {
       return
     }
 
@@ -56,7 +61,7 @@ export function DailyLoginProvider({
     }
 
     claimDailyLoginBonus()
-  }, [user, nextBonusAvailableQuery, isClaimedAlready])
+  }, [isSignedIn, user, nextBonusAvailableQuery, isClaimedAlready])
 
   return <>{children}</>
 }

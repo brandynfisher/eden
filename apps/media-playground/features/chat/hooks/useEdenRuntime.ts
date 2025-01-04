@@ -6,6 +6,7 @@ import {
 } from '@/features/chat/eden-message-converter'
 import { useEdenMessages } from '@/features/chat/hooks/useEdenMessages'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import {
   CompositeAttachmentAdapter,
   TextContentPart,
@@ -43,9 +44,12 @@ export const useEdenRuntime = ({
 }) => {
   // const [threadTitle, setThreadTitle] = useState('')
   const [isRunning, setIsRunning] = useState(false)
-
+  const { isSignedIn } = useAuthState()
   const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
-  const { threads, invalidate } = useThreadListQuery({ agentId })
+  const { threads, invalidate } = useThreadListQuery({
+    agentId,
+    enabled: isSignedIn,
+  })
 
   const handleSendMessage = async (
     messages: EdenMessage[],
@@ -75,14 +79,6 @@ export const useEdenRuntime = ({
     //@todo: fix this type issue
     //@ts-expect-error: Type error: Type 'ThreadMessage[]' is not assignable to type 'EdenMessage[]'
     messages: threadMessages,
-    // extras: useMemo(
-    //   () =>
-    //     ({
-    //       [symbolEdenExtras]: true,
-    //       threadTitle,
-    //     }) satisfies EdenExtras,
-    //   [threadTitle],
-    // ),
     setMessages,
     adapters: {
       feedback: EdenFeedbackAdapter,
