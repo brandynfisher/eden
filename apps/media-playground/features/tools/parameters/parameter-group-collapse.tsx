@@ -22,20 +22,17 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
   const toggleName = group.toggle?.name || ''
   const [isOpen, setIsOpen] = useState(false)
 
-  // Use useWatch to derive the initial isOpen value directly from the form's toggle field
   const isWatchedActive = useWatch({
     control: form.control,
     name: toggleName,
     // defaultValue: false, // @todo: test this with "use preset"
   })
 
-  // Sync the isOpen state with the form's value
   useEffect(() => {
     setIsOpen(isWatchedActive)
   }, [isWatchedActive])
 
   const handleOpenChange = (newOpenState: boolean) => {
-    // console.log({newOpenState, isWatchedActive, toggleName})
     if (newOpenState && isWatchedActive === false) {
       form.setValue(toggleName, true)
     }
@@ -43,7 +40,6 @@ const ParameterGroupCollapse = ({ group, tool, form }: Props) => {
     setIsOpen(newOpenState)
   }
 
-  // Early return if conditions are not met
   if (
     !group.toggle ||
     !group.groupParameters ||

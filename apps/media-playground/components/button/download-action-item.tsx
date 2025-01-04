@@ -25,6 +25,7 @@ const DownloadActionItem = ({
       description: `${type}: ${saveAsFileName}`,
       dismissible: true,
       richColors: true,
+      duration: 500,
     })
   }
 
