@@ -1,5 +1,6 @@
 import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
+import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
 import { Composer, useComposerRuntime } from '@assistant-ui/react'
 import React, { FC, useState } from 'react'
@@ -90,9 +91,16 @@ export const MyComposer: FC = () => {
       <LightboxGallery>
         <Composer.Attachments components={{ Attachment: MyAttachment }} />
       </LightboxGallery>
-      <Composer.AddAttachment />
+
+      <AuthClickGuard>
+        <Composer.AddAttachment />
+      </AuthClickGuard>
+
       <Composer.Input autoFocus />
-      <Composer.Action />
+
+      <AuthClickGuard>
+        <Composer.Action />
+      </AuthClickGuard>
     </Composer.Root>
   )
 }

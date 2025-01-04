@@ -140,7 +140,7 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
               type="model"
               originalFileUrl={modelData.checkpoint}
               saveAsFileName={generateFilename(
-                modelData.slug.replaceAll('/', '_'),
+                `${modelData.name.replaceAll('/', '_')}_${modelData._id}`,
               )}
             />
           </DropdownMenuGroup>

@@ -6,12 +6,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Props = {
   agentId?: string
+  enabled?: boolean
 }
 
 export const useThreadListQuery = (props?: Props) => {
   const queryKey = ['threads', 'list']
 
-  const { agentId } = props || {}
+  const { agentId, enabled } = props || {}
   if (agentId) {
     queryKey.push(agentId)
   }
@@ -28,6 +29,7 @@ export const useThreadListQuery = (props?: Props) => {
     status,
   } = useQuery({
     queryKey,
+    enabled: enabled !== undefined ? enabled : undefined,
     queryFn: () =>
       fetcher<ThreadsListResponse>(
         `/api/threads/list?limit=50${agentId ? `&agentId=${agentId}` : ''}`,
