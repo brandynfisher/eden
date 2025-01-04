@@ -1,9 +1,10 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { ThreadWelcome, useThreadConfig } from '@assistant-ui/react'
-import { FC } from 'react'
+import React, { FC } from 'react'
 
 const MyThreadWelcomeAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
@@ -32,7 +33,9 @@ const MyThreadWelcome: FC = () => {
         <MyThreadWelcomeAvatar />
         <ThreadWelcome.Message />
       </ThreadWelcome.Center>
-      <ThreadWelcome.Suggestions />
+      <AuthClickGuard>
+        <ThreadWelcome.Suggestions />
+      </AuthClickGuard>
     </ThreadWelcome.Root>
   )
 }
