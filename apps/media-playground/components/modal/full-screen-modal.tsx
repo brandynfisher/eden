@@ -10,7 +10,7 @@ import {
 import { cn } from '@/lib/utils'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { useRouter } from 'next/navigation'
-import { PropsWithChildren, ReactElement } from 'react'
+import { PropsWithChildren, ReactElement, useEffect, useState } from 'react'
 
 type Props = {
   title?: string
@@ -28,9 +28,40 @@ const FullScreenModal = ({
   className,
   components: { OverlayComponent } = {},
 }: Props) => {
+  const [open, setOpen] = useState(true)
+  const [disableEsc, setDisableEsc] = useState(false)
   const router = useRouter()
 
-  const handleOpenChange = () => {
+  useEffect(() => {
+    window.addEventListener('lightbox-open', () => {
+      setDisableEsc(true)
+    })
+
+    window.addEventListener('lightbox-close', () => {
+      setDisableEsc(false)
+    })
+
+    return () => {
+      window.removeEventListener('lightbox-open', () => {})
+      window.removeEventListener('lightbox-close', () => {})
+    }
+  }, [])
+
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        document.body.style.pointerEvents = ''
+      }, 0)
+
+      return () => clearTimeout(timer)
+    } else {
+      document.body.style.pointerEvents = 'auto'
+    }
+  }, [open])
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (disableEsc) return
+    setOpen(isOpen)
     router.back()
   }
 

@@ -178,7 +178,7 @@ const adminRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(
           Type.Object({
             apiKey: Type.String(),
-            apiSecret: Type.String(),
+            apiSecret: Type.Optional(Type.String()),
             note: Type.Optional(Type.String()),
             createdAt: Type.String(),
           }),

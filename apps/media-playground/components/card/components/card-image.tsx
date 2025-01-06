@@ -12,9 +12,9 @@ type Props = {
 }
 
 const CardImage = ({ media, unoptimized, className }: Props) => {
-  const { blur, width, height } = media
+  const { blurhash, width, height } = media
 
-  const blurDataUrl = useBlurDataUrl(blur, width, height)
+  const blurDataUrl = useBlurDataUrl(blurhash, width, height)
 
   return (
     <Image

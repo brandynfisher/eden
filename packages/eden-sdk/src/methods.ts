@@ -228,10 +228,6 @@ import {
   CreationsV2GetResponse,
   CreationsV2PatchArguments,
   CreationsV2PatchResponse,
-  GeneratorsGetArgumentsV2,
-  GeneratorsGetResponseV2,
-  GeneratorsListArgumentsV2,
-  GeneratorsListResponseV2,
   ModelsV2GetArguments,
   ModelsV2GetResponse,
   ModelsV2ListArguments,
@@ -254,6 +250,14 @@ import {
   ThreadsGetResponse,
   ThreadsListArguments,
   ThreadsListResponse,
+  ThreadsMessageArguments,
+  ThreadsMessageReactArguments,
+  ThreadsMessageReactResponse,
+  ThreadsMessageResponse,
+  ToolsGetArgumentsV2,
+  ToolsGetResponseV2,
+  ToolsListArgumentsV2,
+  ToolsListResponseV2,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -264,8 +268,6 @@ import {
   creationsV2BulkPatchRequestConfig,
   creationsV2GetRequestConfig,
   creationsV2PatchRequestConfig,
-  generatorsGetRequestConfigV2,
-  generatorsListRequestConfigV2,
   modelsV2GetRequestConfig,
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
@@ -278,6 +280,10 @@ import {
   threadsCreateRequestConfig,
   threadsGetRequestConfig,
   threadsListRequestConfig,
+  threadsMessageReactRequestConfig,
+  threadsMessageRequestConfig,
+  toolsGetRequestConfigV2,
+  toolsListRequestConfigV2,
 } from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
@@ -655,13 +661,16 @@ export abstract class Methods {
       this,
       generatorsGetRequestConfig,
     ),
-    listV2: bindApiCall<GeneratorsListArgumentsV2, GeneratorsListResponseV2>(
+  }
+
+  public readonly tools = {
+    list: bindApiCall<ToolsListArgumentsV2, ToolsListResponseV2>(
       this,
-      generatorsListRequestConfigV2,
+      toolsListRequestConfigV2,
     ),
-    getV2: bindApiCall<GeneratorsGetArgumentsV2, GeneratorsGetResponseV2>(
+    get: bindApiCall<ToolsGetArgumentsV2, ToolsGetResponseV2>(
       this,
-      generatorsGetRequestConfigV2,
+      toolsGetRequestConfigV2,
     ),
   }
 
@@ -761,6 +770,14 @@ export abstract class Methods {
       this,
       threadsListRequestConfig,
     ),
+    message: bindApiCall<ThreadsMessageArguments, ThreadsMessageResponse>(
+      this,
+      threadsMessageRequestConfig,
+    ),
+    react: bindApiCall<
+      ThreadsMessageReactArguments,
+      ThreadsMessageReactResponse
+    >(this, threadsMessageReactRequestConfig),
   }
 
   public readonly tasks = {

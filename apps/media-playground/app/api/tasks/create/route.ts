@@ -5,13 +5,13 @@ import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 const createTask = async (
-  workflow: string,
+  tool: string,
   args: TaskV2['args'],
   eden: EdenClient,
 ) => {
   return eden.tasks
     .createV2({
-      workflow,
+      tool,
       args,
     })
     .then(response => {
@@ -79,22 +79,16 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  if (!requestJson.workflow) {
-    return new NextResponse(
-      JSON.stringify({ message: 'Missing workflow key' }),
-      {
-        status: 400,
-      },
-    )
+  if (!requestJson.tool) {
+    return new NextResponse(JSON.stringify({ message: 'Missing tool key' }), {
+      status: 400,
+    })
   }
 
   if (!requestJson.args) {
-    return new NextResponse(
-      JSON.stringify({ message: 'Missing generator args' }),
-      {
-        status: 400,
-      },
-    )
+    return new NextResponse(JSON.stringify({ message: 'Missing tool args' }), {
+      status: 400,
+    })
   }
 
   try {
@@ -104,7 +98,7 @@ export async function POST(request: NextRequest) {
     })
 
     const createdTaskResponse = await createTask(
-      requestJson.workflow,
+      requestJson.tool,
       requestJson.args,
       eden,
     )

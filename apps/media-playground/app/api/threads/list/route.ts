@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
   }
 
   const paginationParams = extractPaginationParams(request.nextUrl.searchParams)
+  const agentIdParam = request.nextUrl.searchParams.get('agentId')
 
   try {
     const eden = new EdenClient({
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
     })
     const res = await eden.threads.list({
       ...paginationParams,
+      agent_id: agentIdParam ?? undefined,
     })
 
     return NextResponse.json(res)

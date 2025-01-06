@@ -174,7 +174,7 @@ const createServer = async (
     },
   })
 
-  // Register Routes
+  // Register Routes 1
   // websocket route before all others
   server.get('/ws/updates', { websocket: true }, subscribeWebSocketUpdates)
 

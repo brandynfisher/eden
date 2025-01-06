@@ -1,11 +1,8 @@
-import LightboxGallery, {
-  LightboxGalleryItem,
-} from '@/components/media/lightbox-gallery'
+import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -15,14 +12,17 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Long, cn, toBigInt } from '@/lib/utils'
 import { TaskV2, TaskV2Args } from '@edenlabs/eden-sdk'
-import { InfoIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
+import { SquareCheckBigIcon, SquareIcon } from 'lucide-react'
 import React from 'react'
 import { toast } from 'sonner'
 
 const imageInputParameterNames = [
   'image',
   'init_image',
+  'mask_image',
+  'prompt_image',
   'control_image',
+  'control_input',
   'dummy_image',
   'person_image',
   'style_image',
@@ -34,12 +34,13 @@ const imageInputParameterNames = [
 const videoInputParameterNames = ['video', 'input_video']
 
 type Props = {
-  taskId: TaskV2['_id']
+  taskId?: TaskV2['_id']
   args: TaskV2Args
   className?: string
+  hideHeader?: boolean
 }
 
-const ParameterTable = ({ taskId, args, className }: Props) => {
+const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
   const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
@@ -60,24 +61,24 @@ const ParameterTable = ({ taskId, args, className }: Props) => {
       })
   }
 
+  const allArgs = taskId
+    ? Object.entries({ taskId, ...args })
+    : Object.entries({ ...args })
+
   return (
     <Table className={cn([`text-xs table-fixed w-full h-full`, className])}>
-      <TableCaption className="mb-2 mt-0 md:mb-1 md:mt-2">
-        <div className="flex w-full items-center justify-center gap-1 text-xs">
-          <InfoIcon size={12} />
-          Click a row to copy its value
-        </div>
-      </TableCaption>
-      <TableHeader className="rounded-t-lg overflow-hidden md:rounded-none md:overflow-auto">
-        <TableRow className="bg-popover/50">
-          <TableHead className="h-10 py-2 w-1/3 md:w-[150px]">
-            Parameter
-          </TableHead>
-          <TableHead className="h-10 py-2 w-2/3 md:w-auto">Value</TableHead>
-        </TableRow>
-      </TableHeader>
+      {!hideHeader ? (
+        <TableHeader className="rounded-t-lg overflow-hidden md:rounded-none md:overflow-auto">
+          <TableRow className="bg-popover/50">
+            <TableHead className="h-10 py-2 w-1/3 md:w-[150px]">
+              Parameter
+            </TableHead>
+            <TableHead className="h-10 py-2 w-2/3 md:w-auto">Value</TableHead>
+          </TableRow>
+        </TableHeader>
+      ) : null}
       <TableBody className="bg-popover/20">
-        {Object.entries({ taskId, ...args }).map(taskArg => (
+        {allArgs.map(taskArg => (
           <TableRow
             key={taskArg[0]}
             className="cursor-pointer text-xs"
@@ -92,25 +93,22 @@ const ParameterTable = ({ taskId, args, className }: Props) => {
             <TableCell className="py-2 w-2/3 md:w-auto truncate">
               {imageInputParameterNames.includes(taskArg[0]) ? (
                 <div className="flex gap-2">
-                  <LightboxGallery sizeOnLoad={true}>
-                    {(
-                      (Array.isArray(taskArg[1])
-                        ? taskArg[1]
-                        : [taskArg[1]]) as string[]
-                    )
+                  <LightboxGallery>
+                    {[taskArg[1] as string]
+                      .flat()
                       .filter(Boolean)
                       .map((inputImageUrl, index) => (
-                        <LightboxGalleryItem
-                          sizeOnLoad={true}
+                        <LightboxTrigger
                           className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
                           key={`${inputImageUrl}_${index}`}
-                          item={{
+                          slide={{
                             url: getCloudfrontOriginalUrl(inputImageUrl),
                             thumbnail: getCloudfrontOriginalUrl(inputImageUrl),
-                            width: 72,
-                            height: 72,
                           }}
-                          unoptimized={true}
+                          startIndex={index}
+                          imageProps={{
+                            unoptimized: true,
+                          }}
                         />
                       ))}
                   </LightboxGallery>

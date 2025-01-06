@@ -1,4 +1,3 @@
-import assistantUiTailwindPlugin from '@assistant-ui/react/tailwindcss'
 import { Config } from 'tailwindcss'
 import plugin from 'tailwindcss/plugin'
 
@@ -111,9 +110,32 @@ const config = {
       },
     },
   },
+  safelist: [
+    'bg-blue-400',
+    'from-blue-400',
+    'via-blue-400',
+    'to-blue-400',
+    'bg-purple-600',
+    'from-purple-600',
+    'via-purple-600',
+    'to-purple-600',
+    'bg-yellow-400',
+    'from-yellow-400',
+    'via-yellow-400',
+    'to-yellow-400',
+    'bg-green-400',
+    'from-green-400',
+    'via-green-400',
+    'to-green-400',
+    'bg-gray-400',
+    'from-gray-400',
+    'via-gray-400',
+    'to-gray-400',
+    { pattern: /aui-/ }, // assistant ui classes
+  ],
   plugins: [
     require('tailwindcss-animate'),
-    assistantUiTailwindPlugin({ shadcn: true }),
+    require('@assistant-ui/react/tailwindcss'),
     plugin(({ matchUtilities, theme }) => {
       matchUtilities(
         {

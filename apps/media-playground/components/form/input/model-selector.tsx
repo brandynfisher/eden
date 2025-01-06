@@ -10,12 +10,12 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense } from 'react'
 
 type Props = {
-  baseModel?: BaseModelName
+  base_model?: BaseModelName | BaseModelName[]
   onChange: (newVal: string | undefined) => void
   value: string
 }
 
-const ModelSelector = ({ baseModel, onChange, value }: Props) => {
+const ModelSelector = ({ base_model, onChange, value }: Props) => {
   const router = useRouter()
   const pathname = usePathname()
   const queryParams = useSearchParams()
@@ -49,7 +49,7 @@ const ModelSelector = ({ baseModel, onChange, value }: Props) => {
         className="p-4 md:p-8 w-full"
         title="Select model"
         description="Pick a model to use as a lora"
-        baseModel={baseModel}
+        base_model={base_model}
         currentValue={value}
         onChange={onChange}
       />

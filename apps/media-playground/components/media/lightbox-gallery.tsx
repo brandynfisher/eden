@@ -1,7 +1,6 @@
 import 'photoswipe/dist/photoswipe.css'
 
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
-// import LoadingIndicator from '@/components/loading-indicator'
 import VideoResult from '@/components/media/video-result'
 import { useBlurDataUrl } from '@/hooks/use-blur-hash'
 import { useHover } from '@/hooks/use-hover'
@@ -20,7 +19,7 @@ type GalleryItem = {
   width?: number
   height?: number
   duration?: number
-  blur?: string
+  blurhash?: string
 }
 
 type LightboxGalleryItemProps = {
@@ -44,7 +43,7 @@ export const LightboxGalleryItem = ({
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
   const width = item.width || 1024
   const height = item.height || 1024
-  const blurDataUrl = useBlurDataUrl(item.blur, item.width, item.height)
+  const blurDataUrl = useBlurDataUrl(item.blurhash, item.width, item.height)
   const [isLoaded, setIsLoaded] = useState(false)
 
   return (
@@ -79,6 +78,10 @@ export const LightboxGalleryItem = ({
     >
       {({ ref, open }) => (
         <div
+          draggable
+          onDragStart={e => {
+            e.dataTransfer.setData('text/plain', item.url || '')
+          }}
           className={cn([
             `rounded-md overflow-hidden`,
             isLoaded ? 'flex max-w-full max-h-full ' : 'w-full h-full',

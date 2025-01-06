@@ -3,7 +3,7 @@ const eden = require('../init_eden.js')
 const config = {
   // taskId: '0b74fb4091aa9ec9fcb9039d6e9de30c5b1e97b9863225ad'
   // status: ['running'],
-  workflow: 'xhibit/vton'
+  tool: 'xhibit/vton'
 }
 
 async function run() {

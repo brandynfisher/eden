@@ -57,7 +57,7 @@ export const useToolPreset = () => {
       }
 
       if (creationParam && creationData) {
-        const args = creationData.args as GenericValues
+        const args = creationData.task.args as GenericValues
         if (args && typeof args === 'object') {
           newPreset = {
             ...newPreset,

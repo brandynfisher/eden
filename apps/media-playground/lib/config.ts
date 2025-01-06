@@ -53,7 +53,7 @@ export const siteConfig: SiteConfig = {
   },
   ogImage: `${env.NEXT_PUBLIC_HOST}/logo_badge_square.png`,
   mediaErrorUrl:
-    'https://edenartlab-prod-data.s3-accelerate.amazonaws.com/7c31e443f964e9d0e99c2fd45bf0b042999045e224aa7e38cb91049dc8340c93.jpeg',
+    'https://d14i3advvh2bvd.cloudfront.net/7c31e443f964e9d0e99c2fd45bf0b042999045e224aa7e38cb91049dc8340c93.jpeg',
   publicRoutes: [
     '/',
     '/sign-in',
@@ -65,5 +65,18 @@ export const siteConfig: SiteConfig = {
   ],
   featured: {
     tools: ['flux_schnell', 'flux_dev', 'texture_flow', 'animate_3D'],
+    agents:
+      process.env.NEXT_PUBLIC_APP_ENV === 'production'
+        ? [
+            '657aa5cd35eb16a8136493e5', // eve
+            '657926f90a0f725740a93b77', // abraham
+            '6556e52b78c870d99c459052', // verdelis
+            '657aa5b70a0f725740bf7c10', // banny
+          ]
+        : [
+            '675fd3af79e00297cdac1324', // eve
+            '675f87f379e00297cd9b4396', // oppenheimer
+            '675f880079e00297cd9b45d9', // Eden444
+          ],
   },
 }

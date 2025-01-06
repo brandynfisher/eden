@@ -6,7 +6,7 @@ export const enforceUserDocumentLimit = async (
   modelName: string,
   userId: string,
 ) => {
-  const creator = await mongoose.model('users').findById(userId)
+  const creator = await mongoose.model('user').findById(userId)
   if (creator) {
     const count = await mongoose
       .model(modelName)

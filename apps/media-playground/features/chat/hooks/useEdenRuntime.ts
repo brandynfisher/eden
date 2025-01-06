@@ -1,66 +1,78 @@
+import EdenFeedbackAdapter from '@/features/chat/eden-feedback-adapter'
+import edenImageAttachmentAdapter from '@/features/chat/eden-image-attachment-adapter'
 import {
   EdenMessage,
-  convertEdenMessages,
-} from '@/features/chat/convertEdenMessages'
-import edenImageAttachmentAdapter from '@/features/chat/edenImageAttachmentAdapter'
+  edenMessageConverter,
+} from '@/features/chat/eden-message-converter'
 import { useEdenMessages } from '@/features/chat/hooks/useEdenMessages'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import {
   CompositeAttachmentAdapter,
   TextContentPart,
   useExternalMessageConverter,
   useExternalStoreRuntime,
+  useThread,
 } from '@assistant-ui/react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+
+const symbolEdenExtras = Symbol('eden-extras')
+
+export type EdenExtras = {
+  [symbolEdenExtras]: true
+  threadTitle: string
+}
 
 export const useEdenRuntime = ({
+  agentId,
   threadId,
   stream,
   onSwitchToNewThread,
   onSwitchToThread,
+  onRename,
 }: {
-  threadId?: string | undefined
+  agentId?: string
+  threadId?: string
   stream: (
     messages: EdenMessage[],
+    callback?: (thread_id?: string) => Promise<void>,
   ) => Promise<AsyncGenerator<{ data: EdenMessage }>>
   onSwitchToNewThread?: () => Promise<void> | void
   onSwitchToThread?: (threadId: string) => Promise<{ messages: EdenMessage[] }>
+  onRename?: (threadId: string, newTitle: string) => Promise<void>
 }) => {
+  // const [threadTitle, setThreadTitle] = useState('')
   const [isRunning, setIsRunning] = useState(false)
-
+  const { isSignedIn } = useAuthState()
   const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
-  const { threads } = useThreadListQuery()
+  const { threads, invalidate } = useThreadListQuery({
+    agentId,
+    enabled: isSignedIn,
+  })
 
-  useEffect(() => {
-    if (onSwitchToThread && !threadId && threads?.length) {
-      const selectInitialThread = async (threadId: string) => {
-        const { messages } = await onSwitchToThread(threadId)
-        setMessages(messages)
-        setIsRunning(false)
-      }
-      selectInitialThread(threads[0]._id)
-    }
-  }, [threadId, threads, onSwitchToThread])
-  // console.log('useEdenRuntime', { threadId, threads, messages })
-
-  const handleSendMessage = async (messages: EdenMessage[]) => {
+  const handleSendMessage = async (
+    messages: EdenMessage[],
+    callback?: (thread_id?: string) => Promise<void>,
+  ) => {
     try {
       setIsRunning(true)
-      await sendMessage(messages)
+      console.log('handleSendMessage')
+      await sendMessage(messages, callback)
+      console.log('handleSendMessage::done')
     } catch (error) {
       console.error('Error streaming messages:', error)
     } finally {
+      console.log('finally isRunning false')
       setIsRunning(false)
     }
   }
 
   const threadMessages = useExternalMessageConverter({
-    callback: convertEdenMessages,
+    callback: edenMessageConverter,
     messages,
     isRunning,
   })
-
-  // console.log({ messages })
 
   return useExternalStoreRuntime({
     isRunning,
@@ -69,15 +81,13 @@ export const useEdenRuntime = ({
     messages: threadMessages,
     setMessages,
     adapters: {
-      attachments: new CompositeAttachmentAdapter([
-        edenImageAttachmentAdapter,
-        // new SimpleTextAttachmentAdapter(),
-      ]),
+      feedback: EdenFeedbackAdapter,
+      attachments: new CompositeAttachmentAdapter([edenImageAttachmentAdapter]),
       threadList: {
         threadId,
         threads: threads?.map(thread => ({
           threadId: thread._id,
-          title: thread.name,
+          title: thread.title,
           state: 'regular',
         })),
         onSwitchToNewThread: !onSwitchToNewThread
@@ -92,19 +102,58 @@ export const useEdenRuntime = ({
               const { messages } = await onSwitchToThread(threadId)
               setMessages(messages)
             },
+        onRename: !onRename
+          ? undefined
+          : async (threadId, newTitle) => {
+              await onRename(threadId, newTitle)
+              // update optimistically or trigger thread list query invalidation
+            },
       },
     },
-    onNew: msg => {
-      return handleSendMessage([
-        {
-          role: 'user',
-          content:
-            msg.content && msg.content.length
-              ? (msg.content[0] as TextContentPart).text
-              : '',
-          attachments: msg.attachments.map(attachment => attachment.name),
+    onNew: async msg => {
+      return handleSendMessage(
+        [
+          {
+            id: uuidv4(),
+            role: 'user',
+            content:
+              msg.content && msg.content.length
+                ? (msg.content[0] as TextContentPart).text
+                : '',
+            attachments: msg.attachments.map(attachment => attachment.name),
+          },
+        ],
+        async (newThreadId?: string) => {
+          console.log('callback', agentId, threadId, newThreadId)
+          if (typeof window !== 'undefined')
+            window.history.pushState(
+              null,
+              '',
+              `/chat/${agentId}/${newThreadId}`,
+            )
+          // router.push(`/chat/${agentId}/${newThreadId}`)
+          setTimeout(async () => {
+            console.log('invalidated threadlist')
+            await invalidate()
+          }, 2000)
         },
-      ])
+      )
     },
+  })
+}
+
+// export function useEdenRuntimeExtras(): EdenExtras;
+// export function useEdenRuntimeExtras<T>(selector: (extras: EdenExtras) => T): T;
+export function useEdenRuntimeExtras<T>(
+  selector: (extras: EdenExtras) => T = extras => extras as T,
+): T {
+  return useThread(t => {
+    const extras = t.extras as EdenExtras
+    if (!extras[symbolEdenExtras])
+      throw new Error(
+        'useEdenRuntimeExtras can only be used inside a Eden runtime',
+      )
+
+    return selector(extras)
   })
 }

@@ -1,10 +1,13 @@
 {
   "extends": "@edenlabs/tsconfig/garden.json",
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
+    "types": ["node"],
     "plugins": [
       {
         "name": "next"

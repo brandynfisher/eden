@@ -1,4 +1,4 @@
-import { UserDocument } from '../Creator'
+import { UserDocument } from '../User'
 import { CreationV2Document } from './CreationV2'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -28,7 +28,7 @@ export const collectionSchema = new Schema<CollectionV2Document>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     name: {
@@ -43,20 +43,20 @@ export const collectionSchema = new Schema<CollectionV2Document>(
     creations: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'creations2',
+        ref: 'creations3',
         default: [],
       },
     ],
     contributors: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'users3',
         default: [],
       },
     ],
     coverCreation: {
       type: Schema.Types.ObjectId,
-      ref: 'creations2',
+      ref: 'creations3',
     },
     deleted: {
       type: Boolean,
@@ -94,6 +94,6 @@ collectionSchema.pre('delete', function (next) {
 })
 
 export const CollectionV2 = model<CollectionV2Document>(
-  'collections2',
+  'collections3',
   collectionSchema,
 ) as SoftDeleteModel<CollectionV2Document>

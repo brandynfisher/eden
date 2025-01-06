@@ -4,7 +4,7 @@ import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { NavLinkProps } from '@/components/navigation/nav-link'
 import NavLinkList from '@/components/navigation/nav-link-list'
 import { Separator } from '@/components/ui/separator'
-import { useAuthState } from '@/hooks/use-auth-state'
+import { siteConfig } from '@/lib/config'
 import Link, { LinkProps } from 'next/link'
 import { useSelectedLayoutSegments } from 'next/navigation'
 import { PropsWithChildren } from 'react'
@@ -12,7 +12,7 @@ import { PropsWithChildren } from 'react'
 const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
   return (
     <Link
-      className="relative flex items-center gap-2 text-lg font-semibold md:text-base"
+      className="relative flex items-center gap-2 text-lg font-semibold md:text-base mr-2"
       {...rest}
     >
       <EdenLogoBw />
@@ -45,7 +45,7 @@ const navItemsTrain: NavLinkProps[] = [
 const navItemsEve: NavLinkProps[] = [
   {
     label: 'Eve',
-    segments: ['eve'],
+    segments: [`chat/${siteConfig.featured.agents[0]}`],
   },
 ]
 
@@ -55,7 +55,6 @@ type Props = {
 
 const HeaderNavLinks = ({ inSheet }: Props) => {
   const segments = useSelectedLayoutSegments()
-  const { isSignedIn, hasAssistantAccess } = useAuthState()
 
   return (
     <>
@@ -79,19 +78,11 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         segments={segments}
         inSheet={inSheet}
       />
-      {isSignedIn && hasAssistantAccess() ? (
-        <>
-          <div className="md:self-stretch md:flex md:items-center">
-            <Separator orientation="vertical" className="hidden md:block" />
-            <Separator orientation="horizontal" className="md:hidden" />
-          </div>
-          <NavLinkList
-            items={navItemsEve}
-            segments={segments}
-            inSheet={inSheet}
-          />
-        </>
-      ) : null}
+      <div className="md:self-stretch md:flex md:items-center">
+        <Separator orientation="vertical" className="hidden md:block" />
+        <Separator orientation="horizontal" className="md:hidden" />
+      </div>
+      <NavLinkList items={navItemsEve} segments={segments} inSheet={inSheet} />
     </>
   )
 }

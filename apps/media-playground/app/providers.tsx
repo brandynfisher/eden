@@ -1,4 +1,5 @@
 import { env } from '@/lib/config'
+import { DailyLoginProvider } from '@/providers/daily-login-provider'
 import { ReactQueryProvider } from '@/providers/react-query-provider'
 import ReduxProvider from '@/providers/redux-provider'
 import { TaskStatusProvider } from '@/providers/task-status-provider'
@@ -35,7 +36,9 @@ export default function Providers({ children }: PropsWithChildren) {
             endpoint={env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
           >
             <ReduxProvider>
-              <TaskStatusProvider>{children}</TaskStatusProvider>
+              <TaskStatusProvider>
+                <DailyLoginProvider>{children}</DailyLoginProvider>
+              </TaskStatusProvider>
             </ReduxProvider>
           </WebSocketProvider>
         </ReactQueryProvider>

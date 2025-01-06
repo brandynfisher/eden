@@ -21,11 +21,11 @@ const DiscordAuthButton = () => {
       setIsLoading(false)
     } else {
       const clientId = env.NEXT_PUBLIC_DISCORD_CLIENT_ID
-      const redirectUri = env.NEXT_PUBLIC_EDEN_API_URL
-      const scope = 'identify email'
+      const redirectUri = `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/discord/callback`
+
       const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
         redirectUri,
-      )}&response_type=code&scope=${scope}`
+      )}&response_type=code&scope=identify&state=${user?.userId}`
 
       window.location.href = discordAuthUrl
     }

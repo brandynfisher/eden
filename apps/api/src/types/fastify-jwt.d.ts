@@ -1,5 +1,5 @@
 import { CharacterDocument } from '../models/Character'
-import { SubscriptionTier } from '../models/Creator'
+import { SubscriptionTier } from '../models/User'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
 import '@fastify/jwt'
 import { ObjectId } from 'mongodb'

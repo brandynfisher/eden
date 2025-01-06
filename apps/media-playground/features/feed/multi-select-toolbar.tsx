@@ -6,23 +6,11 @@ import { Button } from '@/components/ui/button'
 import { useMultiSelection } from '@/contexts/multi-select-context'
 import { DownloadFile, downloadFiles } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { GeneratorV2 } from '@edenlabs/eden-sdk'
+import { generateFilename } from '@/utils/slug.util'
 import { QueryKey } from '@tanstack/react-query'
 import { DownloadIcon, XIcon } from 'lucide-react'
 import React, { useState } from 'react'
 import { toast } from 'sonner'
-
-const getSaveAsFileName = (
-  id: string,
-  tool: GeneratorV2['key'],
-  username: string,
-  prompt?: string,
-) => {
-  const formattedPrompt = prompt
-    ? `_${prompt.substring(0, 64).trim().replace(/\s+/g, '-')}`
-    : ''
-  return `Eden_${tool}_${username || ''}${formattedPrompt}_${id}`
-}
 
 type Props = {
   queryKey: QueryKey
@@ -45,11 +33,11 @@ const MultiSelectToolbar = ({ queryKey }: Props) => {
     const files: DownloadFile[] = selectedItems.map(item => {
       return {
         url: getCloudfrontOriginalUrl(item.url),
-        fileName: getSaveAsFileName(
+        fileName: generateFilename(
           item._id,
-          item.workflow,
-          item.user.username || '',
-          item.args.prompt,
+          item.tool,
+          item.user.username,
+          item.task.args?.prompt?.substring(0, 64).trim(),
         ),
       }
     })

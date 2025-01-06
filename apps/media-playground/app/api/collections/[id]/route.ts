@@ -21,16 +21,10 @@ export async function GET(
   const { getToken } = getAuth(request)
   const authToken = await getToken()
 
-  if (!authToken) {
-    return new NextResponse(JSON.stringify({ error: 'Not authenticated' }), {
-      status: 401,
-    })
-  }
-
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-      token: authToken,
+      token: authToken || undefined,
     })
 
     const res = await eden.collections.getV2({
