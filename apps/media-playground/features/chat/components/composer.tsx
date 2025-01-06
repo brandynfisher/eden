@@ -5,8 +5,7 @@ import { fileMatchesAccept } from '@/features/chat/utils/files'
 import {
   Composer,
   ThreadPrimitive,
-  useComposerRuntime,
-  useThread,
+  useComposerRuntime, // useThread,
 } from '@assistant-ui/react'
 import { BotIcon } from 'lucide-react'
 import React, { FC, useState } from 'react'
@@ -45,9 +44,9 @@ export const MyComposer: FC = () => {
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime.getAttachmentAccept()
 
-  const isRunning = useThread(t => t.isRunning)
+  // const isRunning = useThread(t => t.isRunning)
 
-  console.log({ isRunning, thread: useThread() })
+  // console.log({ isRunning, thread: useThread() })
 
   const handleFilesDropped = async (files: File[]) => {
     // accept contains mimetypes with wildcards like image/*, allow only these

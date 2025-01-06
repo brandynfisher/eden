@@ -4,7 +4,6 @@ import ParameterTable from '@/components/timeline/parameter-table'
 import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
 import { TaskResultToolArgs } from '@/features/chat/components/tools/task-result-tool'
-import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
 import { TaskV2Status } from '@edenlabs/eden-sdk'
@@ -62,16 +61,6 @@ export const ToolFallback: ToolCallContentPartComponent = ({
       {!isCollapsed && (
         <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none">
           <ParameterTable args={args} hideHeader={true} />
-          {/*{result !== undefined && (*/}
-          {/*  <div className="border-t border-dashed px-4 pt-2">*/}
-          {/*    <p className="font-semibold">Result:</p>*/}
-          {/*    <pre className="text-sm whitespace-pre-wrap">*/}
-          {/*      {typeof result === 'string'*/}
-          {/*        ? result*/}
-          {/*        : JSON.stringify(result, null, 2)}*/}
-          {/*    </pre>*/}
-          {/*  </div>*/}
-          {/*)}*/}
         </div>
       )}
       {toolStatus === TaskV2Status.Failed ? (
@@ -81,13 +70,6 @@ export const ToolFallback: ToolCallContentPartComponent = ({
               <TextClampMore text={toolError || 'Unknown Error'} lines={3} />
             </AlertDescription>
           </AlertDestructive>
-        </div>
-      ) : null}
-      {toolStatus === null ||
-      toolStatus === TaskV2Status.Running ||
-      toolStatus === TaskV2Status.Pending ? (
-        <div className="mt-2">
-          <TypingIndicator />
         </div>
       ) : null}
     </div>

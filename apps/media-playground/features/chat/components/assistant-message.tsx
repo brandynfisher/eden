@@ -1,6 +1,7 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import {
@@ -49,21 +50,29 @@ const MyAssistantActionBar: FC = () => {
 }
 
 const MyAssistantMessage: FC = () => {
+  const content = useMessage(m => m.content)
   const status = useMessage(m => m.status)
-  console.log(status)
+  const isEmpty = !content || content.length === 0
+  const isRunning = status?.type === 'running'
+
+  // console.log({isEmpty, isRunning, content, status})
 
   return (
     <AssistantMessage.Root
       className={cn([
         'block sm:grid',
-        status?.type === 'running' &&
-          'border border-purple-600/40 bg-purple-900/5 rounded-lg',
+        isRunning && 'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >
       <MyAssistantMessageAvatar />
       <AssistantMessage.Content />
       <BranchPicker />
       <MyAssistantActionBar />
+      {!isEmpty && isRunning && (
+        <div className="col-start-3 row-start-2">
+          <TypingIndicator />
+        </div>
+      )}
     </AssistantMessage.Root>
   )
 }

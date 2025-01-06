@@ -15,6 +15,7 @@ export type JsonMessage = {
   data: {
     task?: TaskV2
     thread?: Thread
+    active?: string[]
     newMessages?: ThreadMessage[]
   } & GenericObject
 }

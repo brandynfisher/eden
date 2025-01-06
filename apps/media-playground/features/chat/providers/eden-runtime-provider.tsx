@@ -9,7 +9,7 @@ import { getThread, sendMessage } from '@/features/chat/chat-api'
 import { EdenMessage } from '@/features/chat/eden-message-converter'
 import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
-import { AssistantRuntimeProvider } from '@assistant-ui/react'
+import { AssistantRuntimeProvider, MessageStatus } from '@assistant-ui/react'
 import { AssistantMessage } from '@edenlabs/eden-sdk'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
@@ -45,6 +45,7 @@ export function EdenRuntimeProvider({
       if (typeof window !== 'undefined')
         window.history.pushState(null, '', `/chat/${agentId}`)
     },
+    //@ts-expect-error message status is not typed
     onSwitchToThread: async newThreadId => {
       setIsLoadingThread(true)
       threadIdRef.current = newThreadId
@@ -59,6 +60,7 @@ export function EdenRuntimeProvider({
     onRename: async (threadId, newTitle) => {
       console.log('rename', threadId, newTitle)
     },
+    //@ts-expect-error message status is not typed
     stream: async (messages, callback) => {
       return (async function* () {
         const messageEmitter = messageEmitterRef.current
@@ -108,10 +110,7 @@ export function EdenRuntimeProvider({
               data: {
                 id: assistantMessage.id,
                 role: 'assistant',
-                // status: assistantMessage.tool_calls?.length
-                //   ? { type: 'incomplete', reason: 'tool-calls' }
-                //   : { type: 'complete', reason: 'stop' },
-                status: assistantMessage.status,
+                status: assistantMessage.status as MessageStatus,
                 content: assistantMessage.content,
                 tool_calls: assistantMessage.tool_calls,
               },
@@ -159,6 +158,7 @@ export function EdenRuntimeProvider({
 
   useEffect(() => {
     if (websocketMessage && (isStreamActive || threadIdRef.current)) {
+      const activeMessageIds = websocketMessage.data.active
       const newMessages = websocketMessage.data.newMessages as
         | EdenMessage[]
         | undefined
@@ -183,7 +183,10 @@ export function EdenRuntimeProvider({
         const lastMessage = newMessages[newMessages.length - 1]
         console.log('lastMessage', lastMessage)
         // addOrUpdateMessage(lastMessage)
-        if (lastMessage.status?.type === 'complete') {
+        if (
+          lastMessage.status?.type === 'complete' &&
+          (!activeMessageIds || !activeMessageIds.length)
+        ) {
           console.log('lastMessage:complete - end stream')
           setIsRunning(false)
           setIsStreamActive(false)

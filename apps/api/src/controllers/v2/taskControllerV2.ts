@@ -751,14 +751,14 @@ export const subscribeWebSocketUpdates = function wsHandler(
                     return {
                       ...msg,
                       status:
-                        hasPendingToolCalls &&
-                        thread.active &&
-                        Array.isArray(thread.active) &&
-                        thread.active.some(
-                          t =>
-                            t.toString() === msg.id.toString() ||
-                            t.toString() === msg.reply_to?.toString(),
-                        )
+                        hasPendingToolCalls ||
+                        (thread.active &&
+                          Array.isArray(thread.active) &&
+                          thread.active.some(
+                            t =>
+                              t.toString() === msg.id.toString() ||
+                              t.toString() === msg.reply_to?.toString(),
+                          ))
                           ? { type: 'running' }
                           : { type: 'complete', reason: 'stop' },
                     }

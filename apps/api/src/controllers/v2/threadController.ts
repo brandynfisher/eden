@@ -207,7 +207,7 @@ export const getThread = async (
         return msg
       }
 
-      console.log(thread.active, msg.id.toString())
+      // console.log(thread.active, msg.id.toString())
 
       const hasPendingToolCalls =
         msg.tool_calls?.length &&
@@ -220,15 +220,15 @@ export const getThread = async (
       return {
         ...msg,
         status:
-          hasPendingToolCalls &&
-          thread.active &&
-          Array.isArray(thread.active) &&
-          thread.active.some(
-            t =>
-              t === msg.id.toString() ||
-              (index === thread.messages.length - 1 &&
-                t.toString() === msg.reply_to?.toString()),
-          )
+          hasPendingToolCalls ||
+          (thread.active &&
+            Array.isArray(thread.active) &&
+            thread.active.some(
+              t =>
+                t === msg.id.toString() ||
+                (index === thread.messages.length - 1 &&
+                  t.toString() === msg.reply_to?.toString()),
+            ))
             ? { type: 'running' }
             : { type: 'complete', reason: 'stop' },
       }

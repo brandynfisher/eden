@@ -193,6 +193,7 @@ export type ToolResults = {
 export type AssistantMessage = Message & {
   role: 'assistant'
   content: string
+  status?: { type: 'running' | 'complete'; reason?: string }
   tool_calls?: ToolCall[]
 }
 
