@@ -16,6 +16,14 @@ import { v4 as uuidv4 } from 'uuid'
 
 const TIMEOUT_DURATION_MS = 60 * 60 * 1000
 
+const LoadingOverlay = () => {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+      <LoadingIndicator className="w-12 h-12" />
+    </div>
+  )
+}
+
 export function EdenRuntimeProvider({
   agentId,
   threadId,
@@ -26,6 +34,7 @@ export function EdenRuntimeProvider({
   children: ReactNode
 }>) {
   const [isLoadingThread, setIsLoadingThread] = useState(false)
+  const [isClientMounted, setIsClientMounted] = useState(false)
   const threadIdRef = useRef<string | undefined>()
   const abortController = useRef<AbortController>(new AbortController())
   const messageEmitterRef = useRef(new MessageEmitter())
@@ -204,13 +213,13 @@ export function EdenRuntimeProvider({
     }
   }, [threadId])
 
+  useEffect(() => {
+    setIsClientMounted(true)
+  }, [])
+
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      {isLoadingThread && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background bg-opacity-50 z-10">
-          <LoadingIndicator className="w-12 h-12" />
-        </div>
-      )}
+      {isClientMounted && isLoadingThread && <LoadingOverlay />}
       {children}
     </AssistantRuntimeProvider>
   )
