@@ -69,7 +69,10 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                 )}
               </Suspense>
             </div>
-            <div className="text-xs text-foreground/70 mt-2">
+            <div
+              className="text-xs text-foreground/70 mt-2"
+              title={item.createdAt?.toLocaleString()}
+            >
               <TimeAgo date={item.createdAt} />
             </div>
           </div>

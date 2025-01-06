@@ -1,7 +1,7 @@
 const eden = require('../init_eden.js')
 
 const args = {
-  prompt: "Garden of Eden V2",
+  prompt: "Garden of Eden V2 FFF",
   // width: 128000,
   // 'images': [
   //   'https://edenartlab-stage-data.s3-accelerate.amazonaws.com/e3863a3d1737a7ddb7f8868a46446c42839b042e977af76e755acd21e2a8e4b9.jpeg',
@@ -23,19 +23,25 @@ const args = {
 }
 
 const input = {
-  tool: "txt2img",
-  args
+  tool: "flux_dev",
+  args: {
+     prompt: "Garden of Eden V2 n",
+  }
 }
 
 async function createTask() {
   try {
+    console.log({input});
     const result = await eden.createV2(input);
-    console.log(result);
+    console.log({result});
   } catch (error) {
-    console.error(error);
+    console.error({error});
   } finally {
     console.log('finally');
   }
 }
 
-createTask();
+createTask().then(() => {
+  console.log('done')
+  process.exit(0)
+});

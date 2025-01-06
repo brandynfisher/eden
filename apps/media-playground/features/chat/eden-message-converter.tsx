@@ -11,7 +11,7 @@ import {
 import { ToolCallContentPart } from '@assistant-ui/react'
 import {
   AssistantMessage,
-  SystemMessage, // ToolMessage,
+  SystemMessage,
   UserMessage,
 } from '@edenlabs/eden-sdk'
 
@@ -31,7 +31,9 @@ const contentToParts = (
 ) => {
   if (message.role === 'assistant') {
     if (
+      //@ts-expect-error message type is not correct
       message.status?.type === 'incomplete' &&
+      //@ts-expect-error message type is not correct
       message.status?.reason === 'error'
     ) {
       return [
@@ -53,6 +55,18 @@ const contentToParts = (
 
   return [{ type: 'text' as const, text: content }]
 }
+
+// export const getToolCallStatus = (message: AssistantMessage) => {
+//   const hasPending = message.tool_calls && message.tool_calls.length && message.tool_calls.some(call => !call.status || call.status === TaskV2Status.Running || call.status === TaskV2Status.Pending)
+//   if (hasPending) {
+//     return {
+//       type: 'running'
+//     } as MessageStatus
+//   }
+//   return { type: 'complete', reason: 'stop' } as MessageStatus
+
+//   // return { type: 'incomplete', reason: 'tool-calls' } as MessageStatus
+// }
 
 export const edenMessageConverter: useExternalMessageConverter.Callback<
   EdenMessage
@@ -117,11 +131,8 @@ export const edenMessageConverter: useExternalMessageConverter.Callback<
             }),
           ) ?? []),
         ],
-        status: message.status
-          ? message.status
-          : message.tool_calls?.length
-          ? { type: 'incomplete', reason: 'tool-calls' }
-          : { type: 'complete', reason: 'stop' },
+        // status: getToolCallStatus(message),
+        status: message.status,
         createdAt: message.createdAt,
       }
   }

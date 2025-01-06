@@ -23,6 +23,7 @@ export const TaskResultTool = makeAssistantToolUI<
   toolName: 'task_result',
   render: ({ args, argsText, status, result }) => {
     const { tool, result: toolResults } = result as TaskResultToolArgs
+    console.log('args', args)
 
     return (
       <div className="mb-2">
@@ -46,41 +47,52 @@ export const TaskResultTool = makeAssistantToolUI<
             {toolResults
               ? toolResults.map((result, index) => (
                   <div className="relative" key={index}>
-                    {result.output.map(output => (
-                      <div key={output.filename}>
-                        {getFileTypeByMimeType(
-                          output.mediaAttributes?.mimeType,
-                        ) === 'audio' ? (
-                          <audio controls className="w-full max-w-2xl">
-                            <source
-                              src={getCloudfrontOriginalUrl(output.filename)}
-                              type={output.mediaAttributes?.mimeType}
+                    {result &&
+                      Array.isArray(result?.output) &&
+                      result.output.map(output => (
+                        <div key={output.filename}>
+                          {getFileTypeByMimeType(
+                            output.mediaAttributes?.mimeType,
+                          ) === 'audio' ? (
+                            <audio controls className="w-full max-w-2xl">
+                              <source
+                                src={getCloudfrontOriginalUrl(output.filename)}
+                                type={output.mediaAttributes?.mimeType}
+                              />
+                            </audio>
+                          ) : (
+                            <LightboxTrigger
+                              // className="w-full h-full"
+                              slide={{
+                                url: getCloudfrontOriginalUrl(output.filename),
+                                thumbnail: getCloudfrontOriginalUrl(
+                                  output.filename,
+                                ),
+                                width: output.mediaAttributes?.width,
+                                height: output.mediaAttributes?.height,
+                                duration:
+                                  output.mediaAttributes?.duration || undefined,
+                                description:
+                                  args && args.prompt
+                                    ? String(args.prompt)
+                                    : undefined,
+                                title:
+                                  args && args.prompt
+                                    ? String(tool)
+                                    : undefined,
+                              }}
+                              startIndex={index}
+                              imageProps={{
+                                // blurhash: output.mediaAttributes?.blurhash,
+                                className: 'max-h-[420px]',
+                              }}
+                              videoProps={{
+                                className: 'max-h-[420px]',
+                              }}
                             />
-                          </audio>
-                        ) : (
-                          <LightboxTrigger
-                            // className="w-full h-full"
-                            slide={{
-                              url: getCloudfrontOriginalUrl(output.filename),
-                              thumbnail: getCloudfrontOriginalUrl(
-                                output.filename,
-                              ),
-                              width: output.mediaAttributes?.width,
-                              height: output.mediaAttributes?.height,
-                              duration:
-                                output.mediaAttributes?.duration || undefined,
-                            }}
-                            imageProps={{
-                              // blurhash: output.mediaAttributes?.blurhash,
-                              className: 'max-h-[420px]',
-                            }}
-                            videoProps={{
-                              className: 'max-h-[420px]',
-                            }}
-                          />
-                        )}
-                      </div>
-                    ))}
+                          )}
+                        </div>
+                      ))}
                   </div>
                 ))
               : null}

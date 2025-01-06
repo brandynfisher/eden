@@ -177,6 +177,7 @@ export type ThreadMessage = {
   metadata?: {
     [key: string]: string | number | boolean | Date | null
   }
+  reply_to?: string
   tool_calls?: ToolCall[]
   attachments?: string[]
   createdAt: Date
@@ -192,6 +193,7 @@ export type ToolResults = {
 export type AssistantMessage = Message & {
   role: 'assistant'
   content: string
+  status?: { type: 'running' | 'complete'; reason?: string }
   tool_calls?: ToolCall[]
 }
 
@@ -199,12 +201,6 @@ export type SystemMessage = Message & {
   role: 'system'
   content: string
 }
-
-// export type ToolMessage = Message & {
-//   role: 'tool'
-//   content?: string
-//   tool_results: ToolResults[]
-// }
 
 export type Thread = {
   _id: string
@@ -214,7 +210,6 @@ export type Thread = {
   title?: string
   name: string
   active?: string[] //active message.ids
-  // messages: (UserMessage | AssistantMessage | ToolMessage | SystemMessage)[]
   messages: (UserMessage | AssistantMessage | SystemMessage)[]
   createdAt: Date
   updatedAt: Date

@@ -6,6 +6,7 @@ dotenv.config()
 const apiKey = process.env.EDEN_API_KEY
 
 const eden = new EdenClient({
+  edenApiUrl: 'http://localhost:5050',
   apiKey,
 })
 

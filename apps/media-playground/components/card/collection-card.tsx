@@ -58,7 +58,7 @@ const CollectionCard = ({ collection, queryKey, onClick }: Props) => {
           />,
         ]}
       >
-        <div className="text-xs">{collection.name}</div>
+        <div className="text-xs truncate mr-2">{collection.name}</div>
       </CardFooter>
     </Card>
   )

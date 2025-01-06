@@ -45,7 +45,8 @@ export const useEdenRuntime = ({
   // const [threadTitle, setThreadTitle] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const { isSignedIn } = useAuthState()
-  const { messages, sendMessage, setMessages } = useEdenMessages({ stream })
+  const { messages, sendMessage, setMessages, addOrUpdateMessage } =
+    useEdenMessages({ stream })
   const { threads, invalidate } = useThreadListQuery({
     agentId,
     enabled: isSignedIn,
@@ -74,72 +75,79 @@ export const useEdenRuntime = ({
     isRunning,
   })
 
-  return useExternalStoreRuntime({
-    isRunning,
-    //@todo: fix this type issue
-    //@ts-expect-error: Type error: Type 'ThreadMessage[]' is not assignable to type 'EdenMessage[]'
-    messages: threadMessages,
+  return {
+    addOrUpdateMessage,
     setMessages,
-    adapters: {
-      feedback: EdenFeedbackAdapter,
-      attachments: new CompositeAttachmentAdapter([edenImageAttachmentAdapter]),
-      threadList: {
-        threadId,
-        threads: threads?.map(thread => ({
-          threadId: thread._id,
-          title: thread.title,
-          state: 'regular',
-        })),
-        onSwitchToNewThread: !onSwitchToNewThread
-          ? undefined
-          : async () => {
-              await onSwitchToNewThread()
-              setMessages([])
-            },
-        onSwitchToThread: !onSwitchToThread
-          ? undefined
-          : async threadId => {
-              const { messages } = await onSwitchToThread(threadId)
-              setMessages(messages)
-            },
-        onRename: !onRename
-          ? undefined
-          : async (threadId, newTitle) => {
-              await onRename(threadId, newTitle)
-              // update optimistically or trigger thread list query invalidation
-            },
-      },
-    },
-    onNew: async msg => {
-      return handleSendMessage(
-        [
-          {
-            id: uuidv4(),
-            role: 'user',
-            content:
-              msg.content && msg.content.length
-                ? (msg.content[0] as TextContentPart).text
-                : '',
-            attachments: msg.attachments.map(attachment => attachment.name),
-          },
-        ],
-        async (newThreadId?: string) => {
-          console.log('callback', agentId, threadId, newThreadId)
-          if (typeof window !== 'undefined')
-            window.history.pushState(
-              null,
-              '',
-              `/chat/${agentId}/${newThreadId}`,
-            )
-          // router.push(`/chat/${agentId}/${newThreadId}`)
-          setTimeout(async () => {
-            console.log('invalidated threadlist')
-            await invalidate()
-          }, 2000)
+    setIsRunning,
+    runtime: useExternalStoreRuntime({
+      isRunning,
+      //@todo: fix this type issue
+      //@ts-expect-error: Type error: Type 'ThreadMessage[]' is not assignable to type 'EdenMessage[]'
+      messages: threadMessages,
+      setMessages,
+      adapters: {
+        feedback: EdenFeedbackAdapter,
+        attachments: new CompositeAttachmentAdapter([
+          edenImageAttachmentAdapter,
+        ]),
+        threadList: {
+          threadId,
+          threads: threads?.map(thread => ({
+            threadId: thread._id,
+            title: thread.title,
+            state: 'regular',
+          })),
+          onSwitchToNewThread: !onSwitchToNewThread
+            ? undefined
+            : async () => {
+                await onSwitchToNewThread()
+                setMessages([])
+              },
+          onSwitchToThread: !onSwitchToThread
+            ? undefined
+            : async threadId => {
+                const { messages } = await onSwitchToThread(threadId)
+                setMessages(messages)
+              },
+          onRename: !onRename
+            ? undefined
+            : async (threadId, newTitle) => {
+                await onRename(threadId, newTitle)
+                // update optimistically or trigger thread list query invalidation
+              },
         },
-      )
-    },
-  })
+      },
+      onNew: async msg => {
+        return handleSendMessage(
+          [
+            {
+              id: uuidv4(),
+              role: 'user',
+              content:
+                msg.content && msg.content.length
+                  ? (msg.content[0] as TextContentPart).text
+                  : '',
+              attachments: msg.attachments.map(attachment => attachment.name),
+            },
+          ],
+          async (newThreadId?: string) => {
+            console.log('callback', agentId, threadId, newThreadId)
+            if (typeof window !== 'undefined')
+              window.history.pushState(
+                null,
+                '',
+                `/chat/${agentId}/${newThreadId}`,
+              )
+            // router.push(`/chat/${agentId}/${newThreadId}`)
+            setTimeout(async () => {
+              console.log('invalidated threadlist')
+              await invalidate()
+            }, 2000)
+          },
+        )
+      },
+    }),
+  }
 }
 
 // export function useEdenRuntimeExtras(): EdenExtras;

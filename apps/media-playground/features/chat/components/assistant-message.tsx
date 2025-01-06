@@ -1,11 +1,14 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { cn } from '@/lib/utils'
 import {
   AssistantActionBar,
   AssistantMessage,
   BranchPicker,
+  useMessage,
   useThreadConfig,
 } from '@assistant-ui/react'
 import type { FC } from 'react'
@@ -14,7 +17,7 @@ const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
   return (
     <div className="flex items-center md:items-start">
-      <Avatar className="w-10 h-10 md:w-12 md:h-12 mr-2 md:mr-4">
+      <Avatar className="w-10 h-10 md:w-12 md:h-12 mx-1 md:mx-2">
         <AvatarImage
           className={'object-cover'}
           src={getCloudfrontOriginalUrl(avatar.src)}
@@ -47,12 +50,29 @@ const MyAssistantActionBar: FC = () => {
 }
 
 const MyAssistantMessage: FC = () => {
+  const content = useMessage(m => m.content)
+  const status = useMessage(m => m.status)
+  const isEmpty = !content || content.length === 0
+  const isRunning = status?.type === 'running'
+
+  // console.log({isEmpty, isRunning, content, status})
+
   return (
-    <AssistantMessage.Root className="block sm:grid">
+    <AssistantMessage.Root
+      className={cn([
+        'block px-2 sm:px-0 sm:grid',
+        isRunning && 'border border-purple-600/40 bg-purple-900/5 rounded-lg',
+      ])}
+    >
       <MyAssistantMessageAvatar />
       <AssistantMessage.Content />
       <BranchPicker />
       <MyAssistantActionBar />
+      {!isEmpty && isRunning && (
+        <div className="col-start-3 row-start-2">
+          <TypingIndicator />
+        </div>
+      )}
     </AssistantMessage.Root>
   )
 }

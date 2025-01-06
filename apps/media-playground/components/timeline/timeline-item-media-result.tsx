@@ -1,5 +1,5 @@
 import PrivateIcon from '@/components/icons/private-icon'
-import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
+import { LightboxTrigger } from '@/components/media/lightbox'
 import { IntermediateOutputsDialog } from '@/components/timeline/intermediate-outputs-dialog'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import { cn } from '@/lib/utils'
@@ -17,9 +17,11 @@ type Props = {
 export const MediaResultOutput = ({
   task,
   output,
+  index,
 }: {
   task: TaskV2
   output: TasksV2ResultOutput
+  index?: number
 }) => {
   const num_samples = task.args.n_samples || task.args.num_outputs || false
 
@@ -57,23 +59,24 @@ export const MediaResultOutput = ({
           <audio src={output.url || output.filename} controls={true} />
         </div>
       ) : (
-        <LightboxGallery>
-          <LightboxTrigger
-            slide={{
-              url: output.url || output.filename,
-              thumbnail: output.thumbnail || output.filename,
-              width: output.mediaAttributes?.width,
-              height: output.mediaAttributes?.height,
-              duration: output.mediaAttributes?.duration || undefined,
-            }}
-            videoProps={{
-              poster: output.thumbnail || output.filename,
-            }}
-            imageProps={{
-              blurhash: output.mediaAttributes?.blurhash,
-            }}
-          />
-        </LightboxGallery>
+        <LightboxTrigger
+          slide={{
+            url: output.url || output.filename,
+            thumbnail: output.thumbnail || output.filename,
+            width: output.mediaAttributes?.width,
+            height: output.mediaAttributes?.height,
+            duration: output.mediaAttributes?.duration || undefined,
+            title: task.tool || undefined,
+            description: task.args.prompt || undefined,
+          }}
+          startIndex={index}
+          videoProps={{
+            poster: output.thumbnail || output.filename,
+          }}
+          imageProps={{
+            blurhash: output.mediaAttributes?.blurhash,
+          }}
+        />
       )}
     </div>
   )
@@ -95,7 +98,7 @@ const TimelineItemMediaResult = ({ task, result, index, queryKey }: Props) => {
                 : '',
             ])}
           >
-            <MediaResultOutput task={task} output={output} />
+            <MediaResultOutput task={task} output={output} index={index} />
 
             {result.intermediate_outputs ? (
               <IntermediateOutputsDialog

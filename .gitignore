@@ -28,6 +28,7 @@ build
 *.pem
 .idea/
 .lh/
+.vscode
 .history/
 scripts/xander_cmds.txt 
 

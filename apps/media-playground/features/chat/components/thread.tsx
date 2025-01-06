@@ -18,19 +18,21 @@ const ThreadFollowupSuggestions: FC = () => {
 
   return (
     <ThreadPrimitive.If empty={false} running={false}>
-      <div className="aui-thread-followup-suggestions">
-        {suggestions?.map((suggestion, idx) => (
-          <ThreadPrimitive.Suggestion
-            key={idx}
-            className="aui-thread-followup-suggestion"
-            prompt={suggestion.prompt}
-            method="replace"
-            autoSend
-          >
-            {suggestion.prompt}
-          </ThreadPrimitive.Suggestion>
-        ))}
-      </div>
+      {suggestions && suggestions.length ? (
+        <div className="aui-thread-followup-suggestions">
+          {suggestions?.map((suggestion, idx) => (
+            <ThreadPrimitive.Suggestion
+              key={idx}
+              className="aui-thread-followup-suggestion"
+              prompt={suggestion.prompt}
+              method="replace"
+              autoSend
+            >
+              {suggestion.prompt}
+            </ThreadPrimitive.Suggestion>
+          ))}
+        </div>
+      ) : null}
     </ThreadPrimitive.If>
   )
 }

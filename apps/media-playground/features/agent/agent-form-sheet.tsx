@@ -101,7 +101,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
         `${isUpdateMode ? 'Agent update' : 'Agent creation'} failed`,
         {
           description:
-            // @ts-ignore
+            // @ts-expect-error needs proper typings
             (error as AxiosError).response?.data?.message ||
             'Unknown Error has occurred',
           richColors: true,

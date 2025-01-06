@@ -105,7 +105,9 @@ const ModelCard = ({
               : []
           }
         >
-          {showFooterItems.name && <div className="text-xs">{model.name}</div>}
+          {showFooterItems.name && (
+            <div className="text-xs truncate">{model.name}</div>
+          )}
         </CardFooter>
       )}
     </Card>

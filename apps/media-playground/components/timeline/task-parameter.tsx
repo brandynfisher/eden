@@ -33,7 +33,10 @@ const TaskParameter = ({ name, label, value }: Props) => {
       ) : null}
 
       {name === 'createdAt' && value ? (
-        <div className="col-span-3 flex gap-2 text-muted-foreground text-xs">
+        <div
+          className="col-span-3 flex gap-2 text-muted-foreground text-xs"
+          title={String(value)}
+        >
           <div>
             <TimeAgo date={String(value)} locale="en-short" />
           </div>

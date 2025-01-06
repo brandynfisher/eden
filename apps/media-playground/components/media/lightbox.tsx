@@ -1,3 +1,5 @@
+import 'yet-another-react-lightbox/plugins/captions.css'
+import 'yet-another-react-lightbox/plugins/counter.css'
 import 'yet-another-react-lightbox/styles.css'
 
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
@@ -11,8 +13,11 @@ import NextImage, { ImageProps } from 'next/image'
 import React from 'react'
 import { ReactNode, createContext, useContext, useState } from 'react'
 import Lightbox, { Slide } from 'yet-another-react-lightbox'
+import Captions from 'yet-another-react-lightbox/plugins/captions'
+import Counter from 'yet-another-react-lightbox/plugins/counter'
 import Download from 'yet-another-react-lightbox/plugins/download'
 import Video from 'yet-another-react-lightbox/plugins/video'
+import Zoom from 'yet-another-react-lightbox/plugins/zoom'
 
 // Context type and creation
 type LightboxContextType = {
@@ -42,6 +47,8 @@ export type LightboxGallerySlide = {
   width?: number
   height?: number
   duration?: number
+  title?: string
+  description?: string
 }
 
 // Main Lightbox Gallery component
@@ -68,7 +75,13 @@ export const LightboxGallery = ({
     })
   }, [])
 
-  const plugins = [Video, ...(enableDownload ? [Download] : [])]
+  const plugins = [
+    Captions,
+    Counter,
+    Zoom,
+    Video,
+    ...(enableDownload ? [Download] : []),
+  ]
   const hasSingleSlide = slides.length <= 1
 
   return (
@@ -84,6 +97,15 @@ export const LightboxGallery = ({
       {children}
       <Lightbox
         plugins={plugins}
+        zoom={{
+          maxZoomPixelRatio: 4,
+          scrollToZoom: true,
+        }}
+        captions={{
+          showToggle: true,
+          descriptionMaxLines: 2,
+        }}
+        counter={{ container: { style: { top: 'unset', bottom: 80 } } }}
         open={open}
         index={startIndex}
         close={() => setOpen(false)}
@@ -140,6 +162,8 @@ export const LightboxTrigger = React.forwardRef<
             type: 'video/mp4',
           },
         ],
+        title: slide.title,
+        description: slide.description,
       })
     } else {
       addSlide({
@@ -147,6 +171,8 @@ export const LightboxTrigger = React.forwardRef<
         width: slide.width,
         height: slide.height,
         src: slide.url,
+        title: slide.title,
+        description: slide.description,
       })
     }
   }, [])
@@ -156,6 +182,10 @@ export const LightboxTrigger = React.forwardRef<
   return (
     <div
       ref={ref}
+      draggable
+      onDragStart={e => {
+        e.dataTransfer.setData('text/plain', slide.url || '')
+      }}
       className={cn('rounded-md overflow-hidden cursor-zoom-in', className)}
       onClick={() => {
         setStartIndex(startIndex ?? 0)

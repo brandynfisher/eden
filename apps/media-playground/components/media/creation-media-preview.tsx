@@ -35,6 +35,16 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
               width: creation.mediaAttributes?.width,
               height: creation.mediaAttributes?.height,
               duration: creation.mediaAttributes?.duration || undefined,
+              description:
+                creation.task.args &&
+                creation.task.args &&
+                creation.task.args.prompt
+                  ? String(creation.task.args.prompt)
+                  : undefined,
+              title:
+                creation.tool && creation.tool && creation.tool
+                  ? String(creation.tool)
+                  : undefined,
             }}
             imageProps={{
               className: isModal

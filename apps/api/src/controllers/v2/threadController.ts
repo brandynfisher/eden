@@ -3,6 +3,7 @@ import { Thread as ThreadModel } from '../../models/v2/Thread'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import ThreadRepository from '../../repositories/ThreadRepository'
 import {
+  TaskV2Status,
   ThreadsCreateArguments,
   ThreadsGetArguments,
   ThreadsListArguments,
@@ -59,10 +60,30 @@ export const createThreadMessage = async (
     server.log.info('< modal::response::chat')
     server.log.info(modalResponse.data)
 
-    if (!modalResponse || !modalResponse.data) {
-      console.log('malformed response', modalResponse)
+    if (!modalResponse) {
+      server.log.error('empty response', modalResponse)
       return reply.status(500).send({
-        message: `Empty / Unexpected response from compute api`,
+        message: `Empty response from compute api`,
+      })
+    }
+
+    if (!modalResponse.data) {
+      server.log.error(
+        'malformed response, data missing from response',
+        modalResponse,
+      )
+      return reply.status(500).send({
+        message: `Unexpected response from compute api`,
+      })
+    }
+
+    if (!modalResponse.data.thread_id) {
+      server.log.error(
+        'malformed response, thread_id missing from response',
+        modalResponse,
+      )
+      return reply.status(500).send({
+        message: `Missing thread_id`,
       })
     }
 
@@ -180,6 +201,40 @@ export const getThread = async (
         message: 'Thread not found',
       })
     }
+
+    const extendedMessages = thread.messages.map((msg, index) => {
+      if (msg.role !== 'assistant') {
+        return msg
+      }
+
+      // console.log(thread.active, msg.id.toString())
+
+      const hasPendingToolCalls =
+        msg.tool_calls?.length &&
+        msg.tool_calls?.some(
+          call =>
+            !call.status ||
+            call.status === TaskV2Status.Running ||
+            call.status === TaskV2Status.Pending,
+        )
+      return {
+        ...msg,
+        status:
+          hasPendingToolCalls ||
+          (thread.active &&
+            Array.isArray(thread.active) &&
+            thread.active.some(
+              t =>
+                t === msg.id.toString() ||
+                (index === thread.messages.length - 1 &&
+                  t.toString() === msg.reply_to?.toString()),
+            ))
+            ? { type: 'running' }
+            : { type: 'complete', reason: 'stop' },
+      }
+    })
+
+    thread.messages = extendedMessages
 
     return reply.status(200).send({ thread })
   } catch (e) {
