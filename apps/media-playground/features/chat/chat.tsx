@@ -234,8 +234,9 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
                     'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
                 },
                 {
-                  text: 'Make a cat image',
-                  prompt: 'Make an image of a cute little cat with a hat',
+                  text: 'Make some cat images',
+                  prompt:
+                    'Make 2 images of a cute little cats wearing funky hats ',
                 },
               ],
               message: 'What do you want to create today?',

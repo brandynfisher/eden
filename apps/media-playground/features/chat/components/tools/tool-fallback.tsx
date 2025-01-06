@@ -4,6 +4,7 @@ import ParameterTable from '@/components/timeline/parameter-table'
 import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
 import { TaskResultToolArgs } from '@/features/chat/components/tools/task-result-tool'
+import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
 import { TaskV2Status } from '@edenlabs/eden-sdk'
@@ -80,6 +81,13 @@ export const ToolFallback: ToolCallContentPartComponent = ({
               <TextClampMore text={toolError || 'Unknown Error'} lines={3} />
             </AlertDescription>
           </AlertDestructive>
+        </div>
+      ) : null}
+      {toolStatus === null ||
+      toolStatus === TaskV2Status.Running ||
+      toolStatus === TaskV2Status.Pending ? (
+        <div className="mt-2">
+          <TypingIndicator />
         </div>
       ) : null}
     </div>

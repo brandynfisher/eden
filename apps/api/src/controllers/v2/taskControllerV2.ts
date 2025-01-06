@@ -728,17 +728,10 @@ export const subscribeWebSocketUpdates = function wsHandler(
 
       // socket message is only sent to the intended recipient
       if (metaData?._id?.toString() === thread.user.toString()) {
-        // console.log('sending ws even', {
-        //   event: ServerEventName.ThreadUpdate,
-        //   data: {
-        //     thread: thread,
-        //   },
-        // })
-        // @todo: build and emit WS response
-        // @todo: handle status etc here?
         this.log.info(
           `${ServerEventName.ThreadUpdate}: ${metaData.connectionId} - ${metaData.msgId} ${thread._id}`,
         )
+
         socket.send(
           JSON.stringify({
             event: ServerEventName.ThreadUpdate,
@@ -746,11 +739,39 @@ export const subscribeWebSocketUpdates = function wsHandler(
             connectionId: metaData.connectionId,
             data: newMessages
               ? {
-                  newMessages: newMessages,
+                  newMessages: newMessages.map(msg => {
+                    const hasPendingToolCalls =
+                      msg.tool_calls?.length &&
+                      msg.tool_calls?.some(
+                        call =>
+                          !call.status ||
+                          call.status === TaskV2Status.Running ||
+                          call.status === TaskV2Status.Pending,
+                      )
+                    return {
+                      ...msg,
+                      status:
+                        hasPendingToolCalls &&
+                        thread.active &&
+                        Array.isArray(thread.active) &&
+                        thread.active.some(
+                          t =>
+                            t.toString() === msg.id.toString() ||
+                            t.toString() === msg.reply_to?.toString(),
+                        )
+                          ? { type: 'running' }
+                          : { type: 'complete', reason: 'stop' },
+                    }
+                  }),
                   thread_id: thread._id,
                   title: thread.title,
+                  active: thread.active,
                 }
-              : { thread: thread, thread_id: thread._id },
+              : {
+                  thread: thread,
+                  thread_id: thread._id,
+                  active: thread.active,
+                },
           }),
         )
 

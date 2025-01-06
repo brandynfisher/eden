@@ -57,7 +57,7 @@ export class EdenClient extends Methods {
       edenVersion ? `/${edenVersion}` : ''
     }/tasks/events${query}`
 
-    // console.log(endpointSSE)
+    console.log({ endpointSSE })
 
     const eventSource = new EventSource(endpointSSE, { headers })
 
@@ -67,14 +67,23 @@ export class EdenClient extends Methods {
         let resolver
 
         eventSource.addEventListener('task-update', event => {
-          console.log(
-            'eventSource event handler',
-            'task-update',
-            edenVersion,
-            event,
-          )
+          // console.log(
+          //   'eventSource event handler',
+          //   'task-update',
+          //   edenVersion,
+          //   event,
+          // )
+
           if (event && event.data) {
             const data = JSON.parse(event.data)
+            console.log(
+              event.type,
+              edenVersion,
+              taskId,
+              data.taskId,
+              data._id,
+              data.status,
+            )
             const eventTaskId = data
               ? data.taskId
                 ? data.taskId
@@ -149,9 +158,9 @@ export class EdenClient extends Methods {
   async createV2(args: TasksV2CreateArguments, awaitResult: boolean = true) {
     // Submit the task and get the ID
     const res = await this.tasks.createV2(args)
-    // console.log('tasks.createV2 response', res)
 
     const { task } = res as { task: TaskV2 }
+    console.log('tasks.createV2', task._id, { task })
 
     if (!task) {
       const { error, message } = res
@@ -166,7 +175,7 @@ export class EdenClient extends Methods {
     const subscription = this.subscribe(task._id, 'v2')
     try {
       for await (const event of subscription) {
-        // console.log('processing taskupdateEvent', event)
+        console.log('processing taskupdateEvent', event)
 
         if (event.status === 'completed' || event.status === 'failed') {
           return event.result

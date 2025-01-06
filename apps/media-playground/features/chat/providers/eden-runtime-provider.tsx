@@ -14,7 +14,7 @@ import { AssistantMessage } from '@edenlabs/eden-sdk'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
-const TIMEOUT_DURATION_MS = 5 * 60 * 1000
+const TIMEOUT_DURATION_MS = 60 * 60 * 1000
 
 export function EdenRuntimeProvider({
   agentId,
@@ -33,33 +33,9 @@ export function EdenRuntimeProvider({
     eventType: 'thread-update',
     abortSignal: abortController.current.signal,
   })
+  const [isStreamActive, setIsStreamActive] = useState(false)
 
-  useEffect(() => {
-    if (websocketMessage) {
-      const newMessages = websocketMessage.data.newMessages as
-        | EdenMessage[]
-        | undefined
-
-      if (newMessages && newMessages.length > 0) {
-        if (
-          threadIdRef.current &&
-          websocketMessage.data.thread_id &&
-          threadIdRef.current !== websocketMessage.data.thread_id
-        ) {
-          console.log(
-            'Message not for current thread, ignoring!!!!',
-            threadIdRef.current,
-            websocketMessage.data,
-          )
-          return
-        }
-
-        newMessages.forEach(msg => messageEmitterRef.current.emit(msg))
-      }
-    }
-  }, [websocketMessage])
-
-  const runtime = useEdenRuntime({
+  const { runtime, setIsRunning } = useEdenRuntime({
     agentId,
     threadId: threadIdRef.current,
     onSwitchToNewThread: async () => {
@@ -125,13 +101,17 @@ export function EdenRuntimeProvider({
         try {
           for await (const message of messageIterable) {
             const assistantMessage = message as AssistantMessage
+
+            console.log('assistantMessage', assistantMessage.status)
+
             yield {
               data: {
                 id: assistantMessage.id,
                 role: 'assistant',
-                status: assistantMessage.tool_calls?.length
-                  ? { type: 'incomplete', reason: 'tool-calls' }
-                  : { type: 'complete', reason: 'stop' },
+                // status: assistantMessage.tool_calls?.length
+                //   ? { type: 'incomplete', reason: 'tool-calls' }
+                //   : { type: 'complete', reason: 'stop' },
+                status: assistantMessage.status,
                 content: assistantMessage.content,
                 tool_calls: assistantMessage.tool_calls,
               },
@@ -150,6 +130,67 @@ export function EdenRuntimeProvider({
       })()
     },
   })
+
+  useEffect(() => {
+    async function checkThreadStatus() {
+      if (!threadId) return
+
+      try {
+        const thread = await getThread(threadId)
+        // If thread has active items, set up stream listening
+        if (thread.active && thread.active.length > 0) {
+          console.log('thread.active', thread.active?.length, threadId)
+
+          setIsStreamActive(true)
+          // setIsRunning(true)
+          threadIdRef.current = threadId
+          // Reset abort controller to ensure we have a fresh signal
+          abortController.current = new AbortController()
+        } else {
+          console.log('thread inactive', threadId)
+        }
+      } catch (error) {
+        console.error('Error checking thread status:', error)
+      }
+    }
+
+    checkThreadStatus()
+  }, [threadId])
+
+  useEffect(() => {
+    if (websocketMessage && (isStreamActive || threadIdRef.current)) {
+      const newMessages = websocketMessage.data.newMessages as
+        | EdenMessage[]
+        | undefined
+
+      if (newMessages && newMessages.length > 0) {
+        if (
+          threadIdRef.current &&
+          websocketMessage.data.thread_id &&
+          threadIdRef.current !== websocketMessage.data.thread_id
+        ) {
+          console.log(
+            'Message not for current thread, ignoring!',
+            threadIdRef.current,
+            websocketMessage.data,
+          )
+          return
+        }
+
+        newMessages.forEach(msg => messageEmitterRef.current.emit(msg))
+
+        // If this was the last message (has status complete), clear stream active
+        const lastMessage = newMessages[newMessages.length - 1]
+        console.log('lastMessage', lastMessage)
+        // addOrUpdateMessage(lastMessage)
+        if (lastMessage.status?.type === 'complete') {
+          console.log('lastMessage:complete - end stream')
+          setIsRunning(false)
+          setIsStreamActive(false)
+        }
+      }
+    }
+  }, [websocketMessage, isStreamActive, setIsRunning])
 
   useEffect(() => {
     console.log(threadId, threadIdRef.current)

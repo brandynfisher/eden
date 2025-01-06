@@ -2,7 +2,13 @@ import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
-import { Composer, useComposerRuntime } from '@assistant-ui/react'
+import {
+  Composer,
+  ThreadPrimitive,
+  useComposerRuntime,
+  useThread,
+} from '@assistant-ui/react'
+import { BotIcon } from 'lucide-react'
 import React, { FC, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -38,6 +44,10 @@ export const MyComposer: FC = () => {
   const [isDragging, setIsDragging] = useState(false)
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime.getAttachmentAccept()
+
+  const isRunning = useThread(t => t.isRunning)
+
+  console.log({ isRunning, thread: useThread() })
 
   const handleFilesDropped = async (files: File[]) => {
     // accept contains mimetypes with wildcards like image/*, allow only these
@@ -98,9 +108,18 @@ export const MyComposer: FC = () => {
 
       <Composer.Input autoFocus />
 
-      <AuthClickGuard>
-        <Composer.Action />
-      </AuthClickGuard>
+      <ThreadPrimitive.If running={true}>
+        <div className="flex items-center gap-3">
+          <BotIcon className="animate-pulse duration-1000 text-purple-600" />
+          <Composer.Cancel />
+        </div>
+      </ThreadPrimitive.If>
+
+      <ThreadPrimitive.If running={false}>
+        <AuthClickGuard>
+          <Composer.Action />
+        </AuthClickGuard>
+      </ThreadPrimitive.If>
     </Composer.Root>
   )
 }
