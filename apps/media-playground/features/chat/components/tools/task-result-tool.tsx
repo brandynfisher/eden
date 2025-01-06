@@ -23,6 +23,7 @@ export const TaskResultTool = makeAssistantToolUI<
   toolName: 'task_result',
   render: ({ args, argsText, status, result }) => {
     const { tool, result: toolResults } = result as TaskResultToolArgs
+    console.log('args', args)
 
     return (
       <div className="mb-2">
@@ -71,6 +72,14 @@ export const TaskResultTool = makeAssistantToolUI<
                                 height: output.mediaAttributes?.height,
                                 duration:
                                   output.mediaAttributes?.duration || undefined,
+                                description:
+                                  args && args.prompt
+                                    ? String(args.prompt)
+                                    : undefined,
+                                title:
+                                  args && args.prompt
+                                    ? String(tool)
+                                    : undefined,
                               }}
                               startIndex={index}
                               imageProps={{

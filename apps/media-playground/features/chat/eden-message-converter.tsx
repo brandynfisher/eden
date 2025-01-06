@@ -108,7 +108,7 @@ export const edenMessageConverter: useExternalMessageConverter.Callback<
         createdAt: message.createdAt,
       }
     case 'assistant':
-      console.log('convertEdenMessage', 'assistant', message)
+      // console.log('convertEdenMessage', 'assistant', message)
       return {
         id: message.id,
         role: 'assistant',
