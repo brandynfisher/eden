@@ -31,7 +31,9 @@ const contentToParts = (
 ) => {
   if (message.role === 'assistant') {
     if (
+      //@ts-expect-error message type is not correct
       message.status?.type === 'incomplete' &&
+      //@ts-expect-error message type is not correct
       message.status?.reason === 'error'
     ) {
       return [
