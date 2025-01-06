@@ -104,7 +104,7 @@ export function EdenRuntimeProvider({
           for await (const message of messageIterable) {
             const assistantMessage = message as AssistantMessage
 
-            console.log('assistantMessage', assistantMessage.status)
+            // console.log('assistantMessage', assistantMessage.status)
 
             yield {
               data: {
@@ -138,7 +138,7 @@ export function EdenRuntimeProvider({
         const thread = await getThread(threadId)
         // If thread has active items, set up stream listening
         if (thread.active && thread.active.length > 0) {
-          console.log('thread.active', thread.active?.length, threadId)
+          // console.log('thread.active', thread.active?.length, threadId)
 
           setIsStreamActive(true)
           // setIsRunning(true)
@@ -146,7 +146,7 @@ export function EdenRuntimeProvider({
           // Reset abort controller to ensure we have a fresh signal
           abortController.current = new AbortController()
         } else {
-          console.log('thread inactive', threadId)
+          // console.log('thread inactive', threadId)
         }
       } catch (error) {
         console.error('Error checking thread status:', error)
@@ -181,7 +181,7 @@ export function EdenRuntimeProvider({
 
         // If this was the last message (has status complete), clear stream active
         const lastMessage = newMessages[newMessages.length - 1]
-        console.log('lastMessage', lastMessage)
+        // console.log('lastMessage', lastMessage)
         // addOrUpdateMessage(lastMessage)
         if (
           lastMessage.status?.type === 'complete' &&
@@ -196,7 +196,7 @@ export function EdenRuntimeProvider({
   }, [websocketMessage, isStreamActive, setIsRunning])
 
   useEffect(() => {
-    console.log(threadId, threadIdRef.current)
+    // console.log(threadId, threadIdRef.current)
     if (threadId) {
       runtime.switchToThread(threadId)
     } else {
