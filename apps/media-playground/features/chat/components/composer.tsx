@@ -2,10 +2,11 @@ import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
+import { cn } from '@/lib/utils'
 import {
   Composer,
   ThreadPrimitive,
-  useComposerRuntime, // useThread,
+  useComposerRuntime,
 } from '@assistant-ui/react'
 import { BotIcon } from 'lucide-react'
 import React, { FC, useState } from 'react'
@@ -21,9 +22,10 @@ export const ComposerAttachmentDropzone: FC<
 > = ({ isDragging, accept }) => {
   return (
     <div
-      className={
-        'absolute w-full h-full z-10 left-0 pointer-events-none bg-muted/50 border border-muted-foreground border-dotted rounded-md overflow-hidden'
-      }
+      className={cn([
+        'absolute w-full opacity-0 h-full z-10 left-0 pointer-events-none bg-muted/50 border border-muted-foreground border-dotted rounded-md overflow-hidden',
+        isDragging ?? 'opacity-100',
+      ])}
     >
       {isDragging && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
