@@ -21,11 +21,9 @@ export const ComposerAttachmentDropzone: FC<
 > = ({ isDragging, accept }) => {
   return (
     <div
-      className={`absolute w-full h-full z-10 left-0 ${
-        isDragging
-          ? 'pointer-events-auto bg-muted/50 border border-muted-foreground border-dotted rounded-md overflow-hidden'
-          : 'pointer-events-none'
-      }`}
+      className={
+        'absolute w-full h-full z-10 left-0 pointer-events-none bg-muted/50 border border-muted-foreground border-dotted rounded-md overflow-hidden'
+      }
     >
       {isDragging && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
