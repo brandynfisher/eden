@@ -2,7 +2,7 @@ import { GenericPageType, PageData, RowItem } from '@/lib/query/cache-updates'
 import { create } from 'zustand'
 
 type FeedState = {
-  activeIndex: number | null
+  activeIndexMap: Record<string, number | null>
   items: RowItem[]
   fetchNextPage: (() => Promise<PageData<GenericPageType>>) | null
   setItems: (items: RowItem[]) => void
@@ -12,21 +12,37 @@ type FeedState = {
   setActiveIndex: (index: number | null) => void
   goNext: () => Promise<void>
   goPrevious: () => void
+  feedId: string
 }
 
 type FeedStore = {
-  activeFeedId: string | null
-  setActiveFeedId: (feedId: string) => void
+  feedHistory: string[]
+  addToHistory: (feedId: string) => void
+  removeLastFromHistory: () => void
+  getActiveFeedId: () => string | null
 }
 
-export const useActiveFeedStore = create<FeedStore>(set => ({
-  activeFeedId: null,
-  setActiveFeedId: feedId => set({ activeFeedId: feedId }),
+export const useActiveFeedStore = create<FeedStore>((set, get) => ({
+  feedHistory: [],
+  addToHistory: feedId =>
+    set(state => ({
+      feedHistory: [...state.feedHistory, feedId],
+    })),
+  removeLastFromHistory: () =>
+    set(state => ({
+      feedHistory: state.feedHistory.slice(0, -1),
+    })),
+  getActiveFeedId: () => {
+    const state = get()
+    return state.feedHistory.length > 0
+      ? state.feedHistory[state.feedHistory.length - 1]
+      : null
+  },
 }))
 
 const createFeedStore = () =>
   create<FeedState>((set, get) => ({
-    activeIndex: null,
+    activeIndexMap: {},
     items: [],
     fetchNextPage: null,
     setItems: newItems => {
@@ -37,9 +53,19 @@ const createFeedStore = () =>
       }
     },
     setFetchNextPage: fetchNext => set({ fetchNextPage: fetchNext }),
-    setActiveIndex: index => set({ activeIndex: index }),
+    setActiveIndex: index => {
+      const { activeIndexMap } = get()
+      set({
+        activeIndexMap: {
+          ...activeIndexMap,
+          [get().feedId]: index,
+        },
+      })
+    },
     goNext: async () => {
-      const { activeIndex, items, fetchNextPage, setItems } = get()
+      const { activeIndexMap, items, fetchNextPage, setItems, feedId } = get()
+      const activeIndex = activeIndexMap[feedId] ?? null
+
       if (activeIndex === null || activeIndex >= items.length - 1) {
         if (fetchNextPage) {
           const result = await fetchNextPage()
@@ -50,14 +76,27 @@ const createFeedStore = () =>
           }
         }
       } else {
-        set({ activeIndex: activeIndex + 1 })
+        set({
+          activeIndexMap: {
+            ...activeIndexMap,
+            [feedId]: activeIndex + 1,
+          },
+        })
       }
     },
     goPrevious: () => {
-      const { activeIndex } = get()
+      const { activeIndexMap, feedId } = get()
+      const activeIndex = activeIndexMap[feedId] ?? null
+
       if (activeIndex === null || activeIndex <= 0) return
-      set({ activeIndex: activeIndex - 1 })
+      set({
+        activeIndexMap: {
+          ...activeIndexMap,
+          [feedId]: activeIndex - 1,
+        },
+      })
     },
+    feedId: '',
   }))
 
 // Store map to hold scoped stores
@@ -66,6 +105,7 @@ const feedStores: Record<string, ReturnType<typeof createFeedStore>> = {}
 export const useFeedStore = (feedId: string) => {
   if (!feedStores[feedId]) {
     feedStores[feedId] = createFeedStore()
+    feedStores[feedId].setState({ feedId })
   }
   return feedStores[feedId]()
 }

@@ -5,7 +5,7 @@ import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer
 import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useMemo } from 'react'
 
 type Props = {
@@ -35,16 +35,24 @@ const CreationsFeed = ({
   }, [defaultQuery, queryProp])
 
   const queryKey = useMemo(() => ['creations', query], [query])
+  const pathname = usePathname()
 
-  // console.log({ query, queryKey })
+  // Include pathname in feedId to differentiate between same queries in different routes
+  const feedId = useMemo(
+    () => JSON.stringify({ queryKey, path: pathname }),
+    [queryKey, pathname],
+  )
 
-  const feedId = useMemo(() => JSON.stringify(queryKey), [queryKey])
-  const { setItems, setActiveIndex } = useFeedStore(feedId)
-  const { setActiveFeedId } = useActiveFeedStore()
+  const { items, activeIndexMap, setItems, setActiveIndex } =
+    useFeedStore(feedId)
+  const { addToHistory } = useActiveFeedStore()
+  const activeIndex = activeIndexMap[feedId] ?? null
+
+  console.log({ items, activeIndex, feedId })
 
   const handleCardClick = (itemId: string, index: number) => {
     setActiveIndex(index)
-    setActiveFeedId(JSON.stringify(queryKey)) // Set the active feedId
+    addToHistory(feedId) // Add current feed to history when navigating
     router.push(`/creations/${itemId}`) // Navigate to the modal
   }
 

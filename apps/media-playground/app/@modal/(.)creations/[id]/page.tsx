@@ -17,9 +17,11 @@ const ArrowNavigation = ({
 }: {
   onIdChange: (id: string) => void
 }) => {
-  const { activeFeedId } = useActiveFeedStore()
+  const { getActiveFeedId } = useActiveFeedStore()
+  const activeFeedId = getActiveFeedId()
   const feedStore = useFeedStore(activeFeedId || 'default')
-  const { items, activeIndex, goNext, goPrevious } = feedStore
+  const { items, activeIndexMap, goNext, goPrevious } = feedStore
+  const activeIndex = activeIndexMap[activeFeedId || 'default'] ?? null
   const pathname = usePathname()
 
   const handleNext = useCallback(async () => {
@@ -64,6 +66,12 @@ const ArrowNavigation = ({
       }
       if (e.key === 'ArrowLeft') {
         handlePrevious()
+      }
+      if (e.key === 'Escape') {
+        const { removeLastFromHistory } = useActiveFeedStore.getState()
+        removeLastFromHistory()
+        const activeIndex = activeIndexMap[activeFeedId || 'default'] ?? null
+        console.log({ aktifIndex: activeIndex })
       }
     }
 
