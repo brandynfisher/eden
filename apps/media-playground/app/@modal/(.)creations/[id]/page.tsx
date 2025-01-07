@@ -5,18 +5,23 @@ import { Button } from '@/components/ui/button'
 import CreationDetail from '@/features/detail/creation-detail'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useCallback, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 
 type Props = {
   params: { id: string }
 }
 
-const ArrowNavigation = () => {
-  const { activeFeedId } = useActiveFeedStore() // Get the active feedId
-  const feedStore = useFeedStore(activeFeedId || 'default') // Access the appropriate feed store
+const ArrowNavigation = ({
+  onIdChange,
+}: {
+  onIdChange: (id: string) => void
+}) => {
+  const { activeFeedId } = useActiveFeedStore()
+  const feedStore = useFeedStore(activeFeedId || 'default')
   const { items, activeIndex, goNext, goPrevious } = feedStore
-  const router = useRouter()
+  const pathname = usePathname()
+
   const handleNext = useCallback(async () => {
     if (activeIndex === null || !items[activeIndex]) {
       return
@@ -25,9 +30,11 @@ const ArrowNavigation = () => {
     await goNext()
     const nextItem = items[activeIndex + 1]
     if (nextItem) {
-      router.push(`/creations/${nextItem._id}`)
+      const newPath = `/creations/${nextItem._id}`
+      window.history.replaceState({}, '', newPath)
+      onIdChange(nextItem._id)
     }
-  }, [activeIndex, goNext, items, router])
+  }, [activeIndex, goNext, items, onIdChange])
 
   const handlePrevious = useCallback(() => {
     if (activeIndex === null || !items[activeIndex]) {
@@ -37,9 +44,18 @@ const ArrowNavigation = () => {
     goPrevious()
     const previousItem = items[activeIndex - 1]
     if (previousItem) {
-      router.push(`/creations/${previousItem._id}`)
+      const newPath = `/creations/${previousItem._id}`
+      window.history.replaceState({}, '', newPath)
+      onIdChange(previousItem._id)
     }
-  }, [activeIndex, goPrevious, items, router])
+  }, [activeIndex, goPrevious, items, onIdChange])
+
+  useEffect(() => {
+    const id = pathname.split('/').pop()
+    if (id) {
+      onIdChange(id)
+    }
+  }, [pathname, onIdChange])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
@@ -86,16 +102,18 @@ const ArrowNavigation = () => {
   )
 }
 
-export default function CreationsModalPage({
-  params: { id: creationId },
-}: Props) {
+export default function CreationsModalPage({ params: { id } }: Props) {
+  const [currentId, setCurrentId] = useState(id)
+
   return (
     <>
       <FullScreenModal
         className="p-0 relative"
-        components={{ OverlayComponent: ArrowNavigation }}
+        components={{
+          OverlayComponent: () => <ArrowNavigation onIdChange={setCurrentId} />,
+        }}
       >
-        <CreationDetail id={creationId} isModal={true} />
+        <CreationDetail id={currentId} isModal={true} />
       </FullScreenModal>
     </>
   )
