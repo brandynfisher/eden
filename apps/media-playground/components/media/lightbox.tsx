@@ -105,7 +105,7 @@ export const LightboxGallery = ({
           showToggle: true,
           descriptionMaxLines: 2,
         }}
-        counter={{ container: { style: { top: 'unset', bottom: 80 } } }}
+        // counter={{ container: { style: { top: 'unset', bottom: 80 } } }}
         open={open}
         index={startIndex}
         close={() => setOpen(false)}
@@ -162,7 +162,7 @@ export const LightboxTrigger = React.forwardRef<
             type: 'video/mp4',
           },
         ],
-        title: slide.title,
+        // title: slide.title,
         description: slide.description,
       })
     } else {
@@ -171,7 +171,7 @@ export const LightboxTrigger = React.forwardRef<
         width: slide.width,
         height: slide.height,
         src: slide.url,
-        title: slide.title,
+        // title: slide.title,
         description: slide.description,
       })
     }

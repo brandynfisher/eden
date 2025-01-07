@@ -26,7 +26,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
 
   const [isCollapsed, setIsCollapsed] = useState(true)
   return (
-    <div className="mt-1 mb-3 flex w-full flex-col">
+    <div className="mt-2 mb-2 flex w-full flex-col">
       <div
         className={cn([
           'bg-muted-darker cursor-pointer py-2 flex items-center gap-2 px-4 rounded-md border',

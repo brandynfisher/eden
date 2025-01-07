@@ -3,7 +3,7 @@
 import { useAuthState } from '@/hooks/use-auth-state'
 import useLocalStorage from '@/hooks/use-local-storage'
 import axios from 'axios'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 export function DailyLoginProvider({
@@ -13,7 +13,7 @@ export function DailyLoginProvider({
 }) {
   const [nextBonusAvailableQuery, setNextBonusAvailable] =
     useLocalStorage<string>('nextBonusAvailable', '')
-  const [isClaimedAlready, setIsClaimedAlready] = useState(false)
+  const hasRun = useRef(false)
 
   const { user, refetchMe, isSignedIn } = useAuthState()
 
@@ -22,7 +22,7 @@ export function DailyLoginProvider({
       !isSignedIn ||
       !user ||
       nextBonusAvailableQuery.isLoading ||
-      isClaimedAlready
+      hasRun.current
     ) {
       return
     }
@@ -34,12 +34,13 @@ export function DailyLoginProvider({
       const now = Date.now()
 
       if (now < lastDailyLogin + oneDayInMs) {
-        setIsClaimedAlready(true)
+        hasRun.current = true
         return
       }
     }
 
     const claimDailyLoginBonus = async () => {
+      hasRun.current = true
       const response = await axios.post('/api/auth/daily-login')
       const { claimed, lastDailyLogin } = response.data
 
@@ -57,11 +58,10 @@ export function DailyLoginProvider({
           new Date(lastDailyLogin).getTime() + oneDayInMs
         setNextBonusAvailable(nextBonusAvailable.toString())
       }
-      setIsClaimedAlready(true)
     }
 
     claimDailyLoginBonus()
-  }, [isSignedIn, user, nextBonusAvailableQuery, isClaimedAlready])
+  }, [isSignedIn, user, nextBonusAvailableQuery])
 
   return <>{children}</>
 }

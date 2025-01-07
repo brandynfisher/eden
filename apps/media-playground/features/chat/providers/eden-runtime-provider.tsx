@@ -16,6 +16,14 @@ import { v4 as uuidv4 } from 'uuid'
 
 const TIMEOUT_DURATION_MS = 60 * 60 * 1000
 
+const LoadingOverlay = () => {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+      <LoadingIndicator className="w-12 h-12" />
+    </div>
+  )
+}
+
 export function EdenRuntimeProvider({
   agentId,
   threadId,
@@ -26,6 +34,7 @@ export function EdenRuntimeProvider({
   children: ReactNode
 }>) {
   const [isLoadingThread, setIsLoadingThread] = useState(false)
+  const [isClientMounted, setIsClientMounted] = useState(false)
   const threadIdRef = useRef<string | undefined>()
   const abortController = useRef<AbortController>(new AbortController())
   const messageEmitterRef = useRef(new MessageEmitter())
@@ -104,7 +113,7 @@ export function EdenRuntimeProvider({
           for await (const message of messageIterable) {
             const assistantMessage = message as AssistantMessage
 
-            console.log('assistantMessage', assistantMessage.status)
+            // console.log('assistantMessage', assistantMessage.status)
 
             yield {
               data: {
@@ -138,7 +147,7 @@ export function EdenRuntimeProvider({
         const thread = await getThread(threadId)
         // If thread has active items, set up stream listening
         if (thread.active && thread.active.length > 0) {
-          console.log('thread.active', thread.active?.length, threadId)
+          // console.log('thread.active', thread.active?.length, threadId)
 
           setIsStreamActive(true)
           // setIsRunning(true)
@@ -146,7 +155,7 @@ export function EdenRuntimeProvider({
           // Reset abort controller to ensure we have a fresh signal
           abortController.current = new AbortController()
         } else {
-          console.log('thread inactive', threadId)
+          // console.log('thread inactive', threadId)
         }
       } catch (error) {
         console.error('Error checking thread status:', error)
@@ -181,7 +190,7 @@ export function EdenRuntimeProvider({
 
         // If this was the last message (has status complete), clear stream active
         const lastMessage = newMessages[newMessages.length - 1]
-        console.log('lastMessage', lastMessage)
+        // console.log('lastMessage', lastMessage)
         // addOrUpdateMessage(lastMessage)
         if (
           lastMessage.status?.type === 'complete' &&
@@ -196,7 +205,7 @@ export function EdenRuntimeProvider({
   }, [websocketMessage, isStreamActive, setIsRunning])
 
   useEffect(() => {
-    console.log(threadId, threadIdRef.current)
+    // console.log(threadId, threadIdRef.current)
     if (threadId) {
       runtime.switchToThread(threadId)
     } else {
@@ -204,13 +213,13 @@ export function EdenRuntimeProvider({
     }
   }, [threadId])
 
+  useEffect(() => {
+    setIsClientMounted(true)
+  }, [])
+
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      {isLoadingThread && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background bg-opacity-50 z-10">
-          <LoadingIndicator className="w-12 h-12" />
-        </div>
-      )}
+      {isClientMounted && isLoadingThread && <LoadingOverlay />}
       {children}
     </AssistantRuntimeProvider>
   )
