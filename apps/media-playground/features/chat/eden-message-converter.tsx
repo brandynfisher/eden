@@ -56,18 +56,6 @@ const contentToParts = (
   return [{ type: 'text' as const, text: content }]
 }
 
-// export const getToolCallStatus = (message: AssistantMessage) => {
-//   const hasPending = message.tool_calls && message.tool_calls.length && message.tool_calls.some(call => !call.status || call.status === TaskV2Status.Running || call.status === TaskV2Status.Pending)
-//   if (hasPending) {
-//     return {
-//       type: 'running'
-//     } as MessageStatus
-//   }
-//   return { type: 'complete', reason: 'stop' } as MessageStatus
-
-//   // return { type: 'incomplete', reason: 'tool-calls' } as MessageStatus
-// }
-
 export const edenMessageConverter: useExternalMessageConverter.Callback<
   EdenMessage
 > = message => {
