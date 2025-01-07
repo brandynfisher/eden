@@ -25,6 +25,7 @@ export const useEdenMessages = <TMessage extends { id: string }>({
       const updatedMessages = currentMessages.map(m =>
         //@ts-expect-error status not typed on generic
         m.status?.type === 'running' &&
+        //@ts-expect-error status not typed on generic
         (!m.reply_to ? message.status?.type !== 'running' : true)
           ? { ...m, status: { type: 'complete', reason: 'stop' } }
           : m,
