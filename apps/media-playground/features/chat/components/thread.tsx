@@ -84,8 +84,6 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     }
   }, [readyState])
 
-  console.log('readyState', readyState)
-
   return (
     <Thread.Root config={config}>
       <Thread.Viewport>
