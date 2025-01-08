@@ -9,7 +9,7 @@ export type ToolV2Schema = {
   key: string
   name: string
   description?: string
-  private?: boolean
+  visible?: boolean
   status?: 'inactive' | 'stage' | 'prod'
   parameters?: ToolParameterV2[]
   output_type: ToolOutputTypeV2
@@ -36,8 +36,9 @@ export const ToolV2Schema = new Schema<ToolV2Document>(
     description: {
       type: String,
     },
-    private: {
+    visible: {
       type: Boolean,
+      default: false,
     },
     status: {
       type: String,

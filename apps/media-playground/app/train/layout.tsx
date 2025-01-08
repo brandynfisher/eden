@@ -27,7 +27,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             .filter(tool => tool.output_type === 'lora')
             .map(tool => ({
               label: tool.name,
-              private: tool.private,
+              status: tool.status,
               segments: [baseSegment, tool.key],
               description: tool.description,
             })),

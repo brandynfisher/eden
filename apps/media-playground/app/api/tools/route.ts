@@ -1,4 +1,3 @@
-import { env } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
@@ -27,11 +26,6 @@ export async function GET(request: NextRequest) {
       return new NextResponse(JSON.stringify({ message: 'No tools found' }), {
         status: 404,
       })
-    }
-
-    if (env.NEXT_PUBLIC_APP_ENV === 'production') {
-      const publicTools = res?.tools?.filter(tool => !tool.private)
-      return NextResponse.json({ tools: publicTools })
     }
 
     return NextResponse.json({ tools: res?.tools })

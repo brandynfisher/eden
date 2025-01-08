@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/navigation-menu'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import { cn } from '@/lib/utils'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import * as React from 'react'
@@ -61,7 +62,7 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
                         key={`/${link.segments.join('/')}`}
                         href={`/${link.segments.join('/')}`}
                         title={link.label}
-                        isPrivate={link.private}
+                        status={link.status}
                       >
                         {link.description}
                       </ListItem>
@@ -82,8 +83,8 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
 
 const ListItem = React.forwardRef<
   React.ElementRef<'a'>,
-  React.ComponentPropsWithoutRef<'a'> & { isPrivate?: boolean }
->(({ className, isPrivate, href, title, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<'a'> & { status?: ToolV2['status'] }
+>(({ className, status, href, title, children, ...props }, ref) => {
   const pathname = usePathname()
   const isActive = href === pathname
 
@@ -109,9 +110,9 @@ const ListItem = React.forwardRef<
         >
           <div className="text-sm font-medium leading-none">
             {title}
-            {isPrivate ? (
-              <Badge variant="destructive" className="ml-2 text-xs">
-                private
+            {status !== 'prod' ? (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {status}
               </Badge>
             ) : null}
           </div>

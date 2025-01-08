@@ -8,7 +8,7 @@ export const getTool = async (
   reply: FastifyReply,
 ) => {
   const { toolKey } = request.params as ToolsGetArgumentsV2
-  const isProdEnv = server.config.ENV_API === 'prod'
+  const isProdEnv = server.config.NODE_ENV === 'production'
   const statusFilter = isProdEnv
     ? { status: 'prod' }
     : { status: { $in: ['stage', 'prod'] } }
@@ -41,10 +41,10 @@ export const listTools = async (
   reply: FastifyReply,
 ) => {
   const { hideParams } = request.query as ToolsListArgumentsV2
-  const isProdEnv = server.config.ENV_API === 'prod'
-  const statusFilter = isProdEnv
-    ? { status: 'prod' }
-    : { status: { $in: ['stage', 'prod'] } }
+  const isProdEnv = server.config.NODE_ENV === 'production'
+  const visibilityFilter = isProdEnv
+    ? { visible: true, status: 'prod' }
+    : { visible: true, status: { $in: ['stage', 'prod'] } }
 
   const projection = hideParams
     ? {
@@ -55,7 +55,9 @@ export const listTools = async (
         'parameters.tip': 0,
       }
 
-  const tools = await ToolV2.find(statusFilter, projection).sort({ order: 1 })
+  const tools = await ToolV2.find(visibilityFilter, projection).sort({
+    order: 1,
+  })
 
   return reply.status(200).send({ tools })
 }
