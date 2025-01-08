@@ -10,7 +10,6 @@ export type ToolV2Schema = {
   name: string
   description?: string
   visible?: boolean
-  status?: 'inactive' | 'stage' | 'prod'
   parameters?: ToolParameterV2[]
   output_type: ToolOutputTypeV2
   cost_estimate?: string
@@ -40,10 +39,6 @@ export const ToolV2Schema = new Schema<ToolV2Document>(
       type: Boolean,
       default: false,
     },
-    status: {
-      type: String,
-      required: true,
-    },
     parameters: {
       type: [Schema.Types.Mixed],
       default: [],
@@ -69,9 +64,9 @@ export const ToolV2Schema = new Schema<ToolV2Document>(
   },
 )
 
-ToolV2Schema.index({ status: 1 })
+ToolV2Schema.index({ visible: 1 })
 ToolV2Schema.index({ createdAt: -1 })
 ToolV2Schema.index({ output_type: -1, createdAt: -1 })
-ToolV2Schema.index({ key: -1, private: -1, createdAt: -1 })
+ToolV2Schema.index({ key: -1, visible: 1, createdAt: -1 })
 
 export const ToolV2 = model<ToolV2Document>('tools3', ToolV2Schema)

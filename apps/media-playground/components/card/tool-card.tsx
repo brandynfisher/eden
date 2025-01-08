@@ -1,7 +1,6 @@
 'use client'
 
 import ImageWithFallback from '@/components/media/image-with-fallback'
-import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import { ToolV2 } from '@edenlabs/eden-sdk'
@@ -16,14 +15,7 @@ type Props = {
   priority?: boolean
 }
 
-const ToolCard = ({
-  title,
-  image,
-  link,
-  description,
-  status,
-  priority,
-}: Props) => {
+const ToolCard = ({ title, image, link, description, priority }: Props) => {
   return (
     <Link prefetch={false} href={link} className="group aspect-square">
       <Card className="relative min-h-64 flex flex-col justify-between overflow-hidden border-0 h-full w-full">
@@ -62,9 +54,6 @@ const ToolCard = ({
           <div className="px-3 py-2">
             <TypographyH6 className="flex items-center justify-between opacity-75 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-all">
               {title}
-              {status !== 'prod' ? (
-                <Badge variant="secondary">{status}</Badge>
-              ) : null}
             </TypographyH6>
             <div className="text-sm line-clamp-2">{description}</div>
           </div>

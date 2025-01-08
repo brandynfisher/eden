@@ -2,7 +2,6 @@
 
 import LoadingIndicator from '@/components/loading-indicator'
 import { SecondaryNavSection } from '@/components/navigation/secondary-nav-links'
-import { Badge } from '@/components/ui/badge'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -16,7 +15,6 @@ import {
 } from '@/components/ui/navigation-menu'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import { cn } from '@/lib/utils'
-import { ToolV2 } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import * as React from 'react'
@@ -31,11 +29,6 @@ type Props = {
 }
 
 const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
-  // const partialSegments = useSelectedLayoutSegments()
-  // const segments = baseSegment
-  //   ? [baseSegment, ...partialSegments]
-  //   : partialSegments
-
   return (
     <div className="relative flex px-1 items-center bg-muted-darker z-20 md:sticky md:top-16 drop-shadow-lg">
       <NavigationMenu>
@@ -62,7 +55,6 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
                         key={`/${link.segments.join('/')}`}
                         href={`/${link.segments.join('/')}`}
                         title={link.label}
-                        status={link.status}
                       >
                         {link.description}
                       </ListItem>
@@ -83,8 +75,8 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
 
 const ListItem = React.forwardRef<
   React.ElementRef<'a'>,
-  React.ComponentPropsWithoutRef<'a'> & { status?: ToolV2['status'] }
->(({ className, status, href, title, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<'a'>
+>(({ className, href, title, children, ...props }, ref) => {
   const pathname = usePathname()
   const isActive = href === pathname
 
@@ -108,14 +100,7 @@ const ListItem = React.forwardRef<
           )}
           {...props}
         >
-          <div className="text-sm font-medium leading-none">
-            {title}
-            {status !== 'prod' ? (
-              <Badge variant="secondary" className="ml-2 text-xs">
-                {status}
-              </Badge>
-            ) : null}
-          </div>
+          <div className="text-sm font-medium leading-none">{title}</div>
           <p className="line-clamp-1 md:line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>

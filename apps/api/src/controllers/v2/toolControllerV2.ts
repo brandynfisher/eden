@@ -3,27 +3,22 @@ import { ToolsGetArgumentsV2, ToolsListArgumentsV2 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getTool = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { toolKey } = request.params as ToolsGetArgumentsV2
-  const isProdEnv = server.config.NODE_ENV === 'production'
-  const statusFilter = isProdEnv
-    ? { status: 'prod' }
-    : { status: { $in: ['stage', 'prod'] } }
+  const visibilityFilter = { visible: true }
 
   const tool = await ToolV2.findOne(
     {
       key: toolKey,
-      ...statusFilter,
+      ...visibilityFilter,
     },
     {
       'parameters.tip': 0,
     },
   )
-
-  // console.log({ tool })
 
   // nothing found or it was deleted and the user is not the owner
   if (!tool) {
@@ -36,15 +31,12 @@ export const getTool = async (
 }
 
 export const listTools = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const { hideParams } = request.query as ToolsListArgumentsV2
-  const isProdEnv = server.config.NODE_ENV === 'production'
-  const visibilityFilter = isProdEnv
-    ? { visible: true, status: 'prod' }
-    : { visible: true, status: { $in: ['stage', 'prod'] } }
+  const visibilityFilter = { visible: true }
 
   const projection = hideParams
     ? {

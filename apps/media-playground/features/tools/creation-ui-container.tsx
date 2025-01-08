@@ -179,21 +179,14 @@ const CreationUIContainer = ({ tool }: Props) => {
           <TypographyH4 className="text-sm md:text-lg pl-8 md:pl-12 lg:pl-0">
             {tool.name}
           </TypographyH4>
-          {tool.base_model || tool.status !== 'prod' ? (
+          {tool.base_model ? (
             <div className="flex-shrink-0">
-              {tool.base_model ? (
-                <Badge
-                  variant="secondary"
-                  className="ml-2 border-muted-foreground"
-                >
-                  {tool.base_model}
-                </Badge>
-              ) : null}
-              {tool.status !== 'prod' ? (
-                <Badge variant="secondary" className="ml-2">
-                  {tool.status}
-                </Badge>
-              ) : null}
+              <Badge
+                variant="secondary"
+                className="ml-2 border-muted-foreground"
+              >
+                {tool.base_model}
+              </Badge>
             </div>
           ) : null}
         </div>

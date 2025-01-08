@@ -1,12 +1,10 @@
 import { SheetClose } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
-import { ToolV2 } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
 
 export type NavLinkProps = {
   label: string
   segments: string[]
-  status?: ToolV2['status']
   active?: boolean
   inSheet?: boolean
   description?: string

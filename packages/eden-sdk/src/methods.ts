@@ -242,8 +242,6 @@ import {
   TasksV2GetResponse,
   TasksV2ListArguments,
   TasksV2ListResponse,
-  TasksV2PublishArguments,
-  TasksV2PublishResponse,
   ThreadsCreateArguments,
   ThreadsCreateResponse,
   ThreadsGetArguments,
@@ -276,7 +274,6 @@ import {
   tasksV2CreateRequestConfig,
   tasksV2GetRequestConfig,
   tasksV2ListRequestConfig,
-  tasksV2PublishRequestConfig,
   threadsCreateRequestConfig,
   threadsGetRequestConfig,
   threadsListRequestConfig,
@@ -816,10 +813,6 @@ export abstract class Methods {
     cancelV2: bindApiCall<TasksV2CancelArguments, TasksV2CancelResponse>(
       this,
       tasksV2CancelRequestConfig,
-    ),
-    publishV2: bindApiCall<TasksV2PublishArguments, TasksV2PublishResponse>(
-      this,
-      tasksV2PublishRequestConfig,
     ),
   }
 }
