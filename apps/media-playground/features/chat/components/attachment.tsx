@@ -100,7 +100,7 @@ const MyAttachment: FC = () => {
   const src = useAttachmentSrc()
 
   const attachments = useComposer(s => s.attachments)
-  console.log({ attachments })
+  // console.log({ attachments })
 
   const attachmentIndex = attachments.findIndex(a => a.id === attachment.id)
   return (

@@ -1,8 +1,10 @@
 'use client'
 
+import AlertDestructive from '@/components/alert/alert-destructive'
 import MyAssistantMessage from '@/features/chat/components/assistant-message'
 import MyEditComposer from '@/features/chat/components/edit-composer'
 import MyUserMessage from '@/features/chat/components/user-message'
+import { useWebSocketContext } from '@/providers/websocket-provider'
 import {
   Composer,
   Thread,
@@ -11,7 +13,8 @@ import {
   ThreadWelcome,
   useThread,
 } from '@assistant-ui/react'
-import { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
+import { ReadyState } from 'react-use-websocket'
 
 const ThreadFollowupSuggestions: FC = () => {
   const suggestions = useThread(t => t.suggestions)
@@ -37,13 +40,51 @@ const ThreadFollowupSuggestions: FC = () => {
   )
 }
 
-const MyThread: FC<ThreadConfig> = config => {
+type ThreadConfigWithExtras = ThreadConfig & {
+  connectionLost?: boolean
+}
+
+const MyThread: FC<ThreadConfigWithExtras> = config => {
   const {
     components: {
       Composer: ComposerComponent = Composer,
       ThreadWelcome: ThreadWelcomeComponent = ThreadWelcome,
     } = {},
   } = config
+
+  const [connectionLost, setConnectionLost] = useState(false)
+
+  const { readyState } = useWebSocketContext()
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setConnectionLost(false)
+    }
+
+    const handleOffline = () => {
+      setConnectionLost(true)
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    if (
+      !navigator.onLine ||
+      readyState === ReadyState.CLOSED ||
+      readyState === ReadyState.CLOSING
+    ) {
+      setConnectionLost(true)
+    } else {
+      setConnectionLost(false)
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [readyState])
+
+  console.log('readyState', readyState)
 
   return (
     <Thread.Root config={config}>
@@ -58,6 +99,11 @@ const MyThread: FC<ThreadConfig> = config => {
         />
         <ThreadFollowupSuggestions />
         <Thread.ViewportFooter>
+          {connectionLost ? (
+            <div className="w-full bg-accent my-2 rounded-lg overflow-hidden">
+              <AlertDestructive title="Network connection lost" />
+            </div>
+          ) : null}
           <Thread.ScrollToBottom />
           <ComposerComponent />
         </Thread.ViewportFooter>

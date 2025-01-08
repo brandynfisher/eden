@@ -98,7 +98,7 @@ export const LightboxGallery = ({
       <Lightbox
         plugins={plugins}
         zoom={{
-          maxZoomPixelRatio: 4,
+          maxZoomPixelRatio: 12,
           scrollToZoom: true,
         }}
         captions={{
