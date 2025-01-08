@@ -47,6 +47,9 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
                   : undefined,
             }}
             imageProps={{
+              onClickCapture: e => {
+                e.stopPropagation()
+              },
               className: isModal
                 ? 'max-h-[calc(100dvh_-_130px)]'
                 : 'max-h-[calc(100dvh_-_230px)]',
@@ -60,7 +63,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
               duration: null,
               controls: true,
               autoPlay: true,
-              onClick: e => {
+              onClickCapture: e => {
                 e.stopPropagation()
               },
               onMouseEnter: () => {},

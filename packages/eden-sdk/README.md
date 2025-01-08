@@ -15,6 +15,7 @@ const eden = new EdenClient({ apiKey });
 ### Making a creation
 
 Submit a task and await creation result
+
 ```js
 const input = {
   tool: "flux_dev",
@@ -27,6 +28,7 @@ const result = await eden.createV2(input);
 ```
 
 Submit a task and return task data immediately, without waiting for creation result
+
 ```js
 const input = {
   tool: "flux_dev",
@@ -82,7 +84,7 @@ console.log(tool);
 
 ### Uploading an image
 
-```
+```js
 import fs from 'fs'
 
 const filepath = `${__dirname}/test.png`
@@ -90,3 +92,8 @@ const media = await fs.readFileSync(filepath)
 
 const result = await eden.media.upload({ media })
 ```
+
+
+### Examples
+
+See examples/ for more (*V2.js)

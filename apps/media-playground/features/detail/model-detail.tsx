@@ -1,5 +1,6 @@
 'use client'
 
+import ErrorBoundary from '@/components/error-boundary'
 import LoadingIndicator from '@/components/loading-indicator'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import ModelMediaPreview from '@/components/media/model-media-preview'
@@ -79,12 +80,14 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
         )}
 
         <Suspense fallback={<LoadingIndicator />}>
-          <DetailSidebar
-            item={model}
-            type={'model'}
-            inModal={isModal}
-            queryKey={queryKey}
-          />
+          <ErrorBoundary>
+            <DetailSidebar
+              item={model}
+              type={'model'}
+              inModal={isModal}
+              queryKey={queryKey}
+            />
+          </ErrorBoundary>
         </Suspense>
       </div>
       <div>
@@ -100,7 +103,12 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
               >
                 {shouldRenderRecentCreations ? (
                   <Suspense fallback={<MasonrySkeleton />}>
-                    <CreationsFeed query={{ concept: model._id }} maxCols={5} />
+                    <ErrorBoundary>
+                      <CreationsFeed
+                        query={{ concept: model._id }}
+                        maxCols={5}
+                      />
+                    </ErrorBoundary>
                   </Suspense>
                 ) : null}
               </div>

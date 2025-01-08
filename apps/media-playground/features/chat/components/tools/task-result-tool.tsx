@@ -83,7 +83,7 @@ export const TaskResultTool = makeAssistantToolUI<
                               }}
                               startIndex={index}
                               imageProps={{
-                                // blurhash: output.mediaAttributes?.blurhash,
+                                blurhash: output.mediaAttributes?.blurhash,
                                 className: 'max-h-[420px]',
                               }}
                               videoProps={{

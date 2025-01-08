@@ -1,5 +1,6 @@
 'use client'
 
+import ErrorBoundary from '@/components/error-boundary'
 import Timeline from '@/components/timeline/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
 import CreationUiContainer from '@/features/tools/creation-ui-container'
@@ -33,13 +34,17 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
     <div data-test-id="workspace" className="flex flex-col lg:flex-row">
       <div className="lg:pr-4 lg:sticky lg:top-[120px] lg:h-screen min-w-[324px] w-full lg:max-w-[420px] lg:pt-4">
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
-          <CreationUiContainer tool={tool} />
+          <ErrorBoundary>
+            <CreationUiContainer tool={tool} />
+          </ErrorBoundary>
         </Suspense>
       </div>
 
       <div className="mb-8 lg:pt-4 flex flex-col gap-y-4 w-full">
         <Suspense>
-          <Timeline tool={tool} />
+          <ErrorBoundary>
+            <Timeline tool={tool} />
+          </ErrorBoundary>
         </Suspense>
       </div>
     </div>
