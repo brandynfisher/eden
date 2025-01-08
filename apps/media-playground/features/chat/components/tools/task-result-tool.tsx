@@ -83,6 +83,7 @@ export const TaskResultTool = makeAssistantToolUI<
                               }}
                               startIndex={index}
                               imageProps={{
+                                loading: 'lazy',
                                 blurhash: output.mediaAttributes?.blurhash,
                                 className: 'max-h-[420px]',
                               }}

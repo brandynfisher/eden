@@ -232,7 +232,7 @@ export function LightboxImageTrigger({
       className={cn('object-contain w-full h-full !bg-contain', className)}
       blurDataURL={blurDataUrl}
       placeholder={blurDataUrl ? 'blur' : undefined}
-      loading={'eager'}
+      loading={props.loading ?? 'eager'}
       {...props}
       width={width}
       height={height}
