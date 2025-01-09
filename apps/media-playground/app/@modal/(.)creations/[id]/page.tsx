@@ -70,8 +70,6 @@ const ArrowNavigation = ({
       if (e.key === 'Escape') {
         const { removeLastFromHistory } = useActiveFeedStore.getState()
         removeLastFromHistory()
-        const activeIndex = activeIndexMap[activeFeedId || 'default'] ?? null
-        console.log({ aktifIndex: activeIndex })
       }
     }
 

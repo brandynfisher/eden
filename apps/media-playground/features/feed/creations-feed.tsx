@@ -43,12 +43,8 @@ const CreationsFeed = ({
     [queryKey, pathname],
   )
 
-  const { items, activeIndexMap, setItems, setActiveIndex } =
-    useFeedStore(feedId)
+  const { setItems, setActiveIndex, setFetchNextPage } = useFeedStore(feedId)
   const { addToHistory } = useActiveFeedStore()
-  const activeIndex = activeIndexMap[feedId] ?? null
-
-  console.log({ items, activeIndex, feedId })
 
   const handleCardClick = (itemId: string, index: number) => {
     setActiveIndex(index)
@@ -57,7 +53,6 @@ const CreationsFeed = ({
   }
 
   const handleItemsLoaded = (newItems: RowItem[]) => {
-    console.log('handleItemsLoaded', newItems)
     setItems(newItems)
   }
 
@@ -70,6 +65,7 @@ const CreationsFeed = ({
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
       onItemsLoaded={handleItemsLoaded}
+      setFetchNextPage={setFetchNextPage}
       render={(item: RowItem, onUpdate, index) => (
         <CreationCard
           onUpdate={onUpdate}

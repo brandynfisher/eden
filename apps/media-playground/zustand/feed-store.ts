@@ -1,13 +1,14 @@
-import { GenericPageType, PageData, RowItem } from '@/lib/query/cache-updates'
+import { RowItem } from '@/lib/query/cache-updates'
+import { PaginatedCursorResponse } from '@edenlabs/eden-sdk'
 import { create } from 'zustand'
 
 type FeedState = {
   activeIndexMap: Record<string, number | null>
   items: RowItem[]
-  fetchNextPage: (() => Promise<PageData<GenericPageType>>) | null
+  fetchNextPage: (() => Promise<PaginatedCursorResponse<RowItem>>) | null
   setItems: (items: RowItem[]) => void
   setFetchNextPage: (
-    fetchNext: () => Promise<PageData<GenericPageType>>,
+    fetchNext: () => Promise<PaginatedCursorResponse<RowItem>>,
   ) => void
   setActiveIndex: (index: number | null) => void
   goNext: () => Promise<void>
@@ -64,24 +65,28 @@ const createFeedStore = () =>
     },
     goNext: async () => {
       const { activeIndexMap, items, fetchNextPage, setItems, feedId } = get()
-      const activeIndex = activeIndexMap[feedId] ?? null
+      const activeIndex = activeIndexMap[feedId] ?? 0
 
-      if (activeIndex === null || activeIndex >= items.length - 1) {
-        if (fetchNextPage) {
-          const result = await fetchNextPage()
-          const newItems = result.pages.flatMap(page => page.docs ?? [])
-
-          if (newItems && newItems.length > 0) {
-            setItems([...items, ...newItems])
-          }
-        }
-      } else {
+      const increaseActiveIndex = () => {
         set({
           activeIndexMap: {
             ...activeIndexMap,
             [feedId]: activeIndex + 1,
           },
         })
+      }
+
+      if (activeIndex >= items.length - 2 && fetchNextPage) {
+        const result = await fetchNextPage()
+
+        const newItems = result.docs
+
+        if (newItems && newItems.length > 0) {
+          setItems([...items, ...newItems])
+          increaseActiveIndex()
+        }
+      } else {
+        increaseActiveIndex()
       }
     },
     goPrevious: () => {
