@@ -3,7 +3,7 @@ import { ToolV2 } from '@edenlabs/eden-sdk'
 
 type GridSectionProps = {
   title: string
-  generators?: ToolV2[]
+  tools?: ToolV2[]
   priority?: boolean
 }
 
@@ -11,23 +11,22 @@ export const getMediaUrl = (mediaFileName: string) => {
   return `https://d14i3advvh2bvd.cloudfront.net/${mediaFileName}`
 }
 
-const ToolsGridSection = ({ generators, priority }: GridSectionProps) => {
+const ToolsGridSection = ({ tools, priority }: GridSectionProps) => {
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {generators && generators.length ? (
+      {tools && tools.length ? (
         <>
-          {generators.map(generator => (
+          {tools.map(tool => (
             <ToolCard
-              key={generator.key}
-              title={generator.name}
-              description={generator.description}
-              image={getMediaUrl(generator.thumbnail || '')}
+              key={tool.key}
+              title={tool.name}
+              description={tool.description}
+              image={getMediaUrl(tool.thumbnail || '')}
               link={`/${
-                generator.output_type === 'lora'
+                tool.output_type === 'lora'
                   ? 'train'
-                  : `create/${generator.output_type}`
-              }/${generator.key}`}
-              isPrivate={generator.private}
+                  : `create/${tool.output_type}`
+              }/${tool.key}`}
               priority={priority}
             />
           ))}
