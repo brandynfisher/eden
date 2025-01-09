@@ -37,12 +37,12 @@ export function EdenRuntimeProvider({
   const [isLoadingThread, setIsLoadingThread] = useState(false)
   const [isClientMounted, setIsClientMounted] = useState(false)
   const threadIdRef = useRef<string | undefined>(undefined)
-  const abortController = useRef<AbortController>(new AbortController())
-  const messageEmitterRef = useRef(new MessageEmitter())
+  const abortController = useRef<AbortController | null>(null)
+  const messageEmitterRef = useRef<MessageEmitter | null>(null)
 
   const { message: websocketMessage, readyState } = useWebSocketMessage({
     eventType: 'thread-update',
-    abortSignal: abortController.current.signal,
+    abortSignal: abortController.current?.signal,
   })
 
   const [isStreamActive, setIsStreamActive] = useState(false)
@@ -102,13 +102,18 @@ export function EdenRuntimeProvider({
       //@ts-expect-error message status is not typed
       stream: async (messages, callback) => {
         return (async function* () {
+          if (!messageEmitterRef.current) {
+            console.error('Message emitter is not initialized')
+            return
+          }
+
           const messageEmitter = messageEmitterRef.current
 
           const sendMessageResponse = await sendMessage({
             threadId: threadIdRef.current,
             agentId,
             messages,
-            abortSignal: abortController.current.signal,
+            abortSignal: abortController.current?.signal,
           })
 
           if (
@@ -138,7 +143,7 @@ export function EdenRuntimeProvider({
             messageEmitter,
             {
               timeout: TIMEOUT_DURATION_MS,
-              signal: abortController.current.signal,
+              signal: abortController.current?.signal,
             },
           )
 
@@ -173,15 +178,13 @@ export function EdenRuntimeProvider({
     })
 
   const checkThreadStatus = useCallback(async () => {
-    if (!threadIdRef.current) return
-    console.log('checkThreadStatus', threadIdRef.current)
+    if (!threadIdRef.current || !messageEmitterRef.current) return
+
     try {
       const thread = await getThread(threadIdRef.current)
-      console.log('thread', thread)
       if (!thread) return
 
-      // Reset message emitter when reconnecting
-      if (wasDisconnected) {
+      if (wasDisconnected && messageEmitterRef.current) {
         messageEmitterRef.current = new MessageEmitter()
       }
 
@@ -294,7 +297,7 @@ export function EdenRuntimeProvider({
 
     // Process new messages
     newMessages.forEach(msg => {
-      messageEmitterRef.current.emit(msg)
+      messageEmitterRef.current?.emit(msg)
       addOrUpdateMessage(msg)
     })
 
@@ -307,13 +310,23 @@ export function EdenRuntimeProvider({
     }
   }, [websocketMessage, isStreamActive, setIsRunning, addOrUpdateMessage])
 
+  // Initialize client-side only refs after mount
   useEffect(() => {
+    abortController.current = new AbortController()
+    messageEmitterRef.current = new MessageEmitter()
     setIsClientMounted(true)
+
+    return () => {
+      abortController.current?.abort()
+    }
   }, [])
+
+  // Only render loading overlay after client mount
+  const showLoadingOverlay = isClientMounted && isLoadingThread
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      {isClientMounted && isLoadingThread && <LoadingOverlay />}
+      {showLoadingOverlay && <LoadingOverlay />}
       {children}
     </AssistantRuntimeProvider>
   )
