@@ -1,3 +1,5 @@
+'use client'
+
 import LoadingIndicator from '@/components/loading-indicator'
 import { LightboxTrigger } from '@/components/media/lightbox'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'

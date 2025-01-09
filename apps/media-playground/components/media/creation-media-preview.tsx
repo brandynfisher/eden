@@ -47,7 +47,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
                   : undefined,
             }}
             imageProps={{
-              onClickCapture: e => {
+              onClick: e => {
                 e.stopPropagation()
               },
               className: isModal
@@ -63,9 +63,6 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
               duration: null,
               controls: true,
               autoPlay: true,
-              onClickCapture: e => {
-                e.stopPropagation()
-              },
               onMouseEnter: () => {},
               onMouseLeave: () => {},
             }}

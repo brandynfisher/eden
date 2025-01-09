@@ -1,3 +1,5 @@
+'use client'
+
 import AlertDestructive from '@/components/alert/alert-destructive'
 import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'

@@ -110,7 +110,7 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
                           startIndex={index}
                           imageProps={{
                             unoptimized: true,
-                            onClickCapture: e => {
+                            onClick: e => {
                               e.stopPropagation()
                             },
                           }}

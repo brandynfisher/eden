@@ -1,3 +1,5 @@
+'use client'
+
 import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
 import { UserActionBar, UserMessage } from '@assistant-ui/react'
