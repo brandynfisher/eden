@@ -40,6 +40,14 @@ const input = {
 const result = await eden.createV2(input, false);
 ```
 
+### Creations 
+
+Get a single creation by id
+
+```js
+const creation = await eden.creations.getV2({creationId: '1234567890'})
+```
+
 
 ### Tasks 
 
@@ -47,21 +55,18 @@ Get a single task by id
 
 ```js
 const task = await eden.tasks.getV2({taskId: '1234567890'})
-console.log(task);
 ```
 
 Get paginated list of tasks
 
 ```js
 const tasks = await eden.tasks.listV2();
-console.log(tasks);
 ```
 
 Get paginated list of tasks filterd by tool and status 
 
 ```js
 const tasks = await eden.tasks.listV2({ tool: 'flux_dev', status: 'pending' });
-console.log(tasks);
 ```
 
 
@@ -71,14 +76,12 @@ To get a list of all the tools available:
 
 ```js
 const tools = await eden.tools.list();
-console.log(tools);
 ```
 
 Get a single tool by key
 
 ```js
 const tool = await eden.tools.get({key: 'flux_dev});
-console.log(tool);
 ```
 
 
