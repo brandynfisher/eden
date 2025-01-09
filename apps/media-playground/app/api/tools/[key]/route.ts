@@ -1,4 +1,3 @@
-import { env } from '@/lib/config'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient, ToolParameterV2 } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
@@ -45,12 +44,6 @@ export async function GET(
     })
 
     const res = await eden.tools.get({ toolKey: params.key })
-
-    if (env.NEXT_PUBLIC_APP_ENV === 'production' && res.tool?.private) {
-      return new NextResponse(JSON.stringify({ message: 'Tool not found' }), {
-        status: 404,
-      })
-    }
 
     const transformedParameters = res.tool?.parameters
       ? prepareParameters(res.tool?.parameters)
