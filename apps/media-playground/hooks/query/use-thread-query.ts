@@ -22,6 +22,6 @@ export function useThreadQuery({
       return response
     },
     enabled: enabled && !!threadId,
-    staleTime: 1000,
+    staleTime: 0,
   })
 }

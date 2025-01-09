@@ -156,6 +156,7 @@ export const LightboxTrigger = React.forwardRef<
         playsInline: true,
         autoPlay: true,
         muted: false,
+        loop: true,
         sources: [
           {
             src: getCloudfrontUrl(slide.url) || '',
