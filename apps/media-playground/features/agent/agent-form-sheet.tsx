@@ -224,7 +224,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                     <FormLabel>Name*</FormLabel>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       className="h-6 text-xs"
                       onClick={() => setIsManualKeyEdit(!isManualKeyEdit)}
