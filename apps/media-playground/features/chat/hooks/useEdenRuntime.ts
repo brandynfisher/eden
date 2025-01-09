@@ -14,7 +14,7 @@ import {
   useExternalStoreRuntime,
   useThread,
 } from '@assistant-ui/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 
 const symbolEdenExtras = Symbol('eden-extras')
@@ -52,20 +52,35 @@ export const useEdenRuntime = ({
     enabled: isSignedIn,
   })
 
+  // Add mounted ref to prevent state updates after unmount
+  const isMounted = useRef(true)
+
+  useEffect(() => {
+    console.log('useEdenRuntime mounted')
+    return () => {
+      console.log('useEdenRuntime unmounting')
+      isMounted.current = false
+    }
+  }, [])
+
   const handleSendMessage = async (
     messages: EdenMessage[],
     callback?: (thread_id?: string) => Promise<void>,
   ) => {
     try {
+      console.log('handleSendMessage start')
       setIsRunning(true)
-      console.log('handleSendMessage')
       await sendMessage(messages, callback)
-      console.log('handleSendMessage::done')
+      console.log('handleSendMessage complete')
     } catch (error) {
       console.error('Error streaming messages:', error)
     } finally {
-      console.log('finally isRunning false')
-      setIsRunning(false)
+      console.log('handleSendMessage cleanup, isMounted:', isMounted.current)
+      if (isMounted.current) {
+        setIsRunning(false)
+      } else {
+        console.warn('Prevented setState after unmount in handleSendMessage')
+      }
     }
   }
 
