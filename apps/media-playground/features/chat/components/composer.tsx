@@ -46,10 +46,6 @@ export const MyComposer: FC = () => {
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime.getAttachmentAccept()
 
-  // const isRunning = useThread(t => t.isRunning)
-
-  // console.log({ isRunning, thread: useThread() })
-
   const handleFilesDropped = async (files: File[]) => {
     // accept contains mimetypes with wildcards like image/*, allow only these
     const acceptedFiles = files.filter(file => fileMatchesAccept(file, accept))

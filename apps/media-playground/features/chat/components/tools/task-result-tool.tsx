@@ -52,10 +52,12 @@ export const TaskResultTool = makeAssistantToolUI<
             >
               {toolResults
                 ? toolResults.map((result, index) => (
-                    <div className="relative" key={index}>
+                    <div className="relative" key={`${index}-${tool}`}>
                       {result && Array.isArray(result?.output) ? (
-                        result.output.map(output => (
-                          <div key={output.filename}>
+                        result.output.map((output, outputIndex) => (
+                          <div
+                            key={`${index}-${outputIndex}-${output.filename}`}
+                          >
                             {getFileTypeByMimeType(
                               output.mediaAttributes?.mimeType,
                             ) === 'audio' ? (
@@ -93,7 +95,7 @@ export const TaskResultTool = makeAssistantToolUI<
                                 }}
                                 startIndex={index}
                                 imageProps={{
-                                  loading: 'lazy',
+                                  // loading: 'lazy',
                                   blurhash: output.mediaAttributes?.blurhash,
                                   className: 'max-h-[420px]',
                                 }}
