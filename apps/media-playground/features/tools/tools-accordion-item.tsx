@@ -28,11 +28,7 @@ export const ToolsAccordionItem = ({
         <TypographyH5 className="capitalize">{label}</TypographyH5>
       </AccordionTrigger>
       <AccordionContent className="my-4 px-4">
-        <ToolsGridSection
-          title={label}
-          generators={tools}
-          priority={priority}
-        />
+        <ToolsGridSection title={label} tools={tools} priority={priority} />
       </AccordionContent>
     </AccordionItem>
   )
