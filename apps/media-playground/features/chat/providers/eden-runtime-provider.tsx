@@ -172,19 +172,6 @@ export function EdenRuntimeProvider({
       },
     })
 
-  // Update thread state when thread data changes
-  // useEffect(() => {
-  //   if (!threadIdRef) return
-
-  //   if (thread.active && thread.active.length > 0) {
-  //     setIsStreamActive(true)
-  //   } else {
-  //     setIsStreamActive(false)
-  //     setIsRunning(false)
-  //   }
-  // }, [threadIdRef, setIsRunning])
-
-  // Add back checkThreadStatus for reconnection handling
   const checkThreadStatus = useCallback(async () => {
     if (!threadIdRef.current) return
     console.log('checkThreadStatus', threadIdRef.current)
@@ -200,21 +187,21 @@ export function EdenRuntimeProvider({
 
       // Update messages and ensure they're properly converted
       if (thread.messages) {
-        console.log(
-          'thread.messages',
-          thread.messages[thread.messages.length - 1],
-        )
+        // console.log(
+        //   'thread.messages',
+        //   thread.messages[thread.messages.length - 1],
+        // )
         setMessages(thread.messages as EdenMessage[])
       }
 
       // Check if thread has active messages
       const hasActiveMessages = thread.active && thread.active.length > 0
-      console.log(
-        'hasActiveMessages',
-        hasActiveMessages,
-        thread.active,
-        thread.active?.length,
-      )
+      // console.log(
+      //   'hasActiveMessages',
+      //   hasActiveMessages,
+      //   thread.active,
+      //   thread.active?.length,
+      // )
       setIsStreamActive(hasActiveMessages ?? false)
       setIsRunning(hasActiveMessages ?? false)
 
