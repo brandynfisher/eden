@@ -3,7 +3,6 @@
 import ImageWithFallback from '@/components/media/image-with-fallback'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
-import { ToolV2 } from '@edenlabs/eden-sdk'
 import Link from 'next/link'
 
 type Props = {
@@ -11,7 +10,6 @@ type Props = {
   description?: string
   image: string
   link: string
-  status?: ToolV2['status']
   priority?: boolean
 }
 
