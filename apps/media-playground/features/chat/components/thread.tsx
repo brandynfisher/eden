@@ -98,7 +98,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
         <ThreadFollowupSuggestions />
         <Thread.ViewportFooter>
           {connectionLost ? (
-            <div className="w-full bg-accent my-2 rounded-lg overflow-hidden">
+            <div className="w-full bg-accent mb-4 mt-2 rounded-lg overflow-hidden">
               <AlertDestructive title="Network connection lost" />
             </div>
           ) : null}

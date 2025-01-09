@@ -38,12 +38,14 @@ export const useEdenMessages = <TMessage extends { id: string }>({
 
   const sendMessage = useCallback(
     async (newMessages: TMessage[], callback?: () => Promise<void>) => {
+      console.log('sendMessage', newMessages)
       // Add new messages optimistically
       newMessages.forEach(message => addOrUpdateMessage(message))
 
       const response = await stream(newMessages, callback)
 
       for await (const message of response) {
+        console.log('addOrUpdateMessage', message)
         addOrUpdateMessage(message.data)
       }
     },
