@@ -47,9 +47,6 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
                   : undefined,
             }}
             imageProps={{
-              onClick: e => {
-                e.stopPropagation()
-              },
               className: isModal
                 ? 'max-h-[calc(100dvh_-_130px)]'
                 : 'max-h-[calc(100dvh_-_230px)]',

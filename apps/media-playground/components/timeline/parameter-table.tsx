@@ -81,14 +81,7 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
       ) : null}
       <TableBody className="bg-popover/20">
         {allArgs.map(taskArg => (
-          <TableRow
-            key={taskArg[0]}
-            className="cursor-pointer text-xs"
-            onClick={handleCopyString(
-              taskArg[0],
-              String(taskArg[1] !== null ? taskArg[1] : ''),
-            )}
-          >
+          <TableRow key={taskArg[0]} className="cursor-pointer text-xs">
             <TableCell className="px-2 py-2 text-muted-foreground w-1/3 md:w-[125px] truncate align-top">
               {taskArg[0]}
             </TableCell>
@@ -110,9 +103,6 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
                           startIndex={index}
                           imageProps={{
                             unoptimized: true,
-                            onClick: e => {
-                              e.stopPropagation()
-                            },
                           }}
                         />
                       ))}
@@ -150,11 +140,18 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
                   '-'
                 )
               ) : (
-                <TextClampMore
-                  text={taskArg[1] as string}
-                  lines={2}
-                  className="text-xs"
-                />
+                <div
+                  onClick={handleCopyString(
+                    taskArg[0],
+                    String(taskArg[1] !== null ? taskArg[1] : ''),
+                  )}
+                >
+                  <TextClampMore
+                    text={taskArg[1] as string}
+                    lines={2}
+                    className="text-xs"
+                  />
+                </div>
               )}
             </TableCell>
           </TableRow>
