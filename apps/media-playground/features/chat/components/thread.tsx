@@ -57,6 +57,10 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const { readyState } = useWebSocketContext()
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
     setIsMounted(true)
 
     const handleOnline = () => setConnectionLost(false)
@@ -65,13 +69,15 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
-    // Check connection status after mount
-    if (
-      !navigator.onLine ||
-      readyState === ReadyState.CLOSED ||
-      readyState === ReadyState.CLOSING
-    ) {
-      setConnectionLost(true)
+    if (navigator) {
+      // Check connection status after mount
+      if (
+        !navigator.onLine ||
+        readyState === ReadyState.CLOSED ||
+        readyState === ReadyState.CLOSING
+      ) {
+        setConnectionLost(true)
+      }
     }
 
     return () => {
