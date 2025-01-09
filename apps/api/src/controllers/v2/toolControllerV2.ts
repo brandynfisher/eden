@@ -8,7 +8,7 @@ export const getTool = async (
   reply: FastifyReply,
 ) => {
   const { toolKey } = request.params as ToolsGetArgumentsV2
-  const visibilityFilter = { visible: true }
+  const visibilityFilter = { active: true }
 
   const tool = await ToolV2.findOne(
     {
@@ -36,7 +36,7 @@ export const listTools = async (
   reply: FastifyReply,
 ) => {
   const { hideParams } = request.query as ToolsListArgumentsV2
-  const visibilityFilter = { visible: true }
+  const visibilityFilter = { active: true }
 
   const projection = hideParams
     ? {
