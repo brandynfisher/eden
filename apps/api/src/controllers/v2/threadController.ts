@@ -23,6 +23,24 @@ export const createThreadMessage = async (
   const { thread_id, agent_id, content, attachments } =
     request.body as ThreadsCreateArguments
 
+  if (!agent_id) {
+    return reply.status(400).send({
+      message: 'agent_id not provided',
+    })
+  }
+
+  const isObjectId = ObjectId.isValid(agent_id)
+  const query = isObjectId
+    ? { _id: new ObjectId(agent_id) }
+    : { username: agent_id }
+  const agent = await Agent.findOne(query)
+
+  if (!agent) {
+    return reply.status(404).send({
+      message: 'agent not found',
+    })
+  }
+
   const userDocument = await User.findById(userId)
   if (!userDocument) {
     return reply.status(404).send({
@@ -33,7 +51,7 @@ export const createThreadMessage = async (
   const modalRequest = {
     endpoint: `${server.config.EDEN_COMPUTE_API_URL}/chat`,
     data: {
-      agent_id,
+      agent_id: agent._id,
       thread_id,
       user_message: {
         content,

@@ -246,6 +246,8 @@ export function EdenRuntimeProvider({
 
   // Connection monitoring effect remains the same but uses the restored checkThreadStatus
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
     const handleOnline = () => {
       if (wasDisconnected) {
         checkThreadStatus()
@@ -268,7 +270,7 @@ export function EdenRuntimeProvider({
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
-    if (!navigator.onLine) {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
       setWasDisconnected(true)
     }
 
