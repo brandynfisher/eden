@@ -144,7 +144,7 @@ export const AgentLink: FC<{ agent?: Agent }> = ({ agent }) => {
     <Link
       className="ml-auto md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
       title="View Agent profile"
-      href={`/agents/${agent?._id}`}
+      href={`/agents/${agent?.username}`}
     >
       <Avatar className="w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1">
         <AvatarImage

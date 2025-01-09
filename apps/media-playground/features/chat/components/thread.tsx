@@ -53,29 +53,31 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   } = config
 
   const [connectionLost, setConnectionLost] = useState(false)
-
+  const [isMounted, setIsMounted] = useState(false)
   const { readyState } = useWebSocketContext()
 
   useEffect(() => {
-    const handleOnline = () => {
-      setConnectionLost(false)
+    if (typeof window === 'undefined') {
+      return
     }
 
-    const handleOffline = () => {
-      setConnectionLost(true)
-    }
+    setIsMounted(true)
+
+    const handleOnline = () => setConnectionLost(false)
+    const handleOffline = () => setConnectionLost(true)
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
-    if (
-      !navigator.onLine ||
-      readyState === ReadyState.CLOSED ||
-      readyState === ReadyState.CLOSING
-    ) {
-      setConnectionLost(true)
-    } else {
-      setConnectionLost(false)
+    if (navigator) {
+      // Check connection status after mount
+      if (
+        !navigator.onLine ||
+        readyState === ReadyState.CLOSED ||
+        readyState === ReadyState.CLOSING
+      ) {
+        setConnectionLost(true)
+      }
     }
 
     return () => {
@@ -83,6 +85,9 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
       window.removeEventListener('offline', handleOffline)
     }
   }, [readyState])
+
+  // Only render connection status after mount
+  const showConnectionLost = isMounted && connectionLost
 
   return (
     <Thread.Root config={config}>
@@ -97,7 +102,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
         />
         <ThreadFollowupSuggestions />
         <Thread.ViewportFooter>
-          {connectionLost ? (
+          {showConnectionLost ? (
             <div className="w-full bg-accent mb-4 mt-2 rounded-lg overflow-hidden">
               <AlertDestructive title="Network connection lost" />
             </div>

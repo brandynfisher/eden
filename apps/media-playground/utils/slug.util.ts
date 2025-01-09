@@ -7,3 +7,12 @@ export const generateFilename = (...args: (string | number | undefined)[]) => {
     strict: true,
   })
 }
+
+export const slugifyName = (name: string) => {
+  return slugify(name, {
+    trim: true,
+    locale: 'en',
+    strict: true,
+    lower: true,
+  })
+}

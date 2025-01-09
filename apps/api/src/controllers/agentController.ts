@@ -1,7 +1,6 @@
 import { Agent, AgentDocument } from '../models/Agent'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
-import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import {
   AgentGetArguments,
@@ -10,6 +9,7 @@ import {
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
+import { ObjectId } from '@fastify/mongodb'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateResult } from 'mongodb'
 import { UpdateQuery } from 'mongoose'
@@ -20,9 +20,11 @@ export const getAgent = async (
   reply: FastifyReply,
 ) => {
   const { agentId } = request.params as AgentGetArguments
-
-  const agentRepository = new AgentRepository(Agent)
-  const agent = await agentRepository.findById(agentId)
+  const isObjectId = ObjectId.isValid(agentId)
+  const query = isObjectId
+    ? { _id: new ObjectId(agentId) }
+    : { username: agentId }
+  const agent = await Agent.findOne(query)
 
   if (!agent || agent.deleted) {
     return reply.status(404).send({
@@ -40,7 +42,7 @@ export const getAgent = async (
     })
   }
 
-  await agentRepository.model.populate(agent, {
+  await Agent.populate(agent, {
     path: 'owner',
     select: '_id userId username userImage',
   })
@@ -101,8 +103,6 @@ export const createAgent = async (
         error: 'An agent with this key already exists',
       })
     }
-
-    // console.log(error)
 
     return reply.status(500).send({
       error: 'An error occurred while creating the agent',
