@@ -9,11 +9,12 @@ import {
   useRef,
   useState,
 } from 'react'
+import React from 'react'
 
 type Lines = 1 | 2 | 3 | 4 | 5 | 6
 
 type Props = {
-  text: string
+  text: string | React.ReactNode
   className?: string
   lines?: Lines
 }
@@ -78,7 +79,8 @@ const TextClampMore = ({ text, className, lines = 4 }: Props) => {
   const textRef = useRef<HTMLDivElement>(null)
   const showButton = useButtonVisibility(clampedLines, textRef)
 
-  const buttonToggle = () => {
+  const buttonToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation()
     setShowMore(!showMore)
   }
 
@@ -102,8 +104,8 @@ const TextClampMore = ({ text, className, lines = 4 }: Props) => {
           <Button
             variant="link"
             size="sm"
-            className="ml-auto text-xs text-muted-foreground flex items-center cursor-pointer hover:text-accent-foreground"
-            onClick={buttonToggle}
+            className="ml-auto text-xs text-muted-foreground flex items-center cursor-pointer hover:text-accent-foreground h-5"
+            onClickCapture={buttonToggle}
           >
             {showMore ? (
               <>

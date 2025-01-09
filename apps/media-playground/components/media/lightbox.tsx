@@ -98,7 +98,7 @@ export const LightboxGallery = ({
       <Lightbox
         plugins={plugins}
         zoom={{
-          maxZoomPixelRatio: 4,
+          maxZoomPixelRatio: 12,
           scrollToZoom: true,
         }}
         captions={{
@@ -156,6 +156,7 @@ export const LightboxTrigger = React.forwardRef<
         playsInline: true,
         autoPlay: true,
         muted: false,
+        loop: true,
         sources: [
           {
             src: getCloudfrontUrl(slide.url) || '',
@@ -232,7 +233,7 @@ export function LightboxImageTrigger({
       className={cn('object-contain w-full h-full !bg-contain', className)}
       blurDataURL={blurDataUrl}
       placeholder={blurDataUrl ? 'blur' : undefined}
-      loading={'eager'}
+      loading={props.loading ?? 'eager'}
       {...props}
       width={width}
       height={height}

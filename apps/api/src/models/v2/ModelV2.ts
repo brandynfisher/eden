@@ -53,11 +53,6 @@ export const modelSchema = new Schema<ModelV2Document>(
       type: String,
       required: true,
     },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
-    },
     thumbnail: {
       type: String,
       required: true,

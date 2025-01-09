@@ -1,3 +1,4 @@
+import TextClampMore from '../text/text-clamp-more'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import {
@@ -46,7 +47,8 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
     copy(text)
       .then(() => {
         toast.success(`Copied "${parameterName}"`, {
-          description: text,
+          description:
+            text && text.length > 100 ? text.slice(0, 100) + '...' : text,
           dismissible: true,
           richColors: true,
         })
@@ -79,18 +81,11 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
       ) : null}
       <TableBody className="bg-popover/20">
         {allArgs.map(taskArg => (
-          <TableRow
-            key={taskArg[0]}
-            className="cursor-pointer text-xs"
-            onClick={handleCopyString(
-              taskArg[0],
-              String(taskArg[1] !== null ? taskArg[1] : ''),
-            )}
-          >
-            <TableCell className="py-2 text-muted-foreground w-1/3 md:w-[150px]">
+          <TableRow key={taskArg[0]} className="cursor-pointer text-xs">
+            <TableCell className="px-2 py-2 text-muted-foreground w-1/3 md:w-[125px] truncate align-top">
               {taskArg[0]}
             </TableCell>
-            <TableCell className="py-2 w-2/3 md:w-auto truncate">
+            <TableCell className="pl-0 pr-2 py-2 w-2/3 md:w-auto">
               {imageInputParameterNames.includes(taskArg[0]) ? (
                 <div className="flex gap-2">
                   <LightboxGallery>
@@ -145,7 +140,18 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
                   '-'
                 )
               ) : (
-                taskArg[1]
+                <div
+                  onClick={handleCopyString(
+                    taskArg[0],
+                    String(taskArg[1] !== null ? taskArg[1] : ''),
+                  )}
+                >
+                  <TextClampMore
+                    text={taskArg[1] as string}
+                    lines={2}
+                    className="text-xs"
+                  />
+                </div>
               )}
             </TableCell>
           </TableRow>

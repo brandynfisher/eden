@@ -13,7 +13,7 @@ export const useWebSocketMessage = ({
   eventType,
   abortSignal,
 }: UseWebSocketMessageOptions) => {
-  const { lastMessageJson } = useWebSocketContext()
+  const { lastMessageJson, readyState } = useWebSocketContext()
   const [message, setMessage] = useState<JsonMessage | null>(null)
 
   useEffect(() => {
@@ -24,5 +24,8 @@ export const useWebSocketMessage = ({
     }
   }, [lastMessageJson, eventType, abortSignal])
 
-  return message
+  return {
+    message,
+    readyState,
+  }
 }

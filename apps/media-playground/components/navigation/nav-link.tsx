@@ -5,7 +5,6 @@ import Link from 'next/link'
 export type NavLinkProps = {
   label: string
   segments: string[]
-  private?: boolean
   active?: boolean
   inSheet?: boolean
   description?: string

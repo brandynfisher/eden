@@ -1,3 +1,5 @@
+'use client'
+
 import AlertDestructive from '@/components/alert/alert-destructive'
 import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
@@ -59,7 +61,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
         </TooltipIconButton>
       </div>
       {!isCollapsed && (
-        <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none">
+        <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none bg-popover/30">
           <ParameterTable args={args} hideHeader={true} />
         </div>
       )}

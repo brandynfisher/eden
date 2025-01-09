@@ -60,9 +60,6 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
               duration: null,
               controls: true,
               autoPlay: true,
-              onClick: e => {
-                e.stopPropagation()
-              },
               onMouseEnter: () => {},
               onMouseLeave: () => {},
             }}

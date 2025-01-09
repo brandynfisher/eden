@@ -52,6 +52,7 @@ const MyAssistantActionBar: FC = () => {
 const MyAssistantMessage: FC = () => {
   const content = useMessage(m => m.content)
   const status = useMessage(m => m.status)
+  const id = useMessage(m => m.id)
   const isEmpty = !content || content.length === 0
   const isRunning = status?.type === 'running'
 
@@ -65,7 +66,7 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      <AssistantMessage.Content />
+      <AssistantMessage.Content key={id} />
       <BranchPicker />
       <MyAssistantActionBar />
       {!isEmpty && isRunning && (

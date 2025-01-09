@@ -173,7 +173,9 @@ export function createZodParameterSchema(
         }
         throw new Error('Array schema must have items')
       default:
-        throw new Error(`${parameter.schema.type} not supported.`)
+        throw new Error(
+          `${parameter.name}: ${parameter.schema.type} not supported.`,
+        )
     }
   } else if (parameter.schema.anyOf) {
     return createUnionSchema(parameter, { anyOf: parameter.schema.anyOf })

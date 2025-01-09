@@ -3,6 +3,7 @@ import customImageLoader from '@/image-loader'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import Image from 'next/image'
+import Link from 'next/link'
 import React from 'react'
 
 type Props = {
@@ -17,7 +18,10 @@ const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
     <>
       {result.output.map(output => (
         <div key={output.filename} className="p-2 bg-secondary rounded-md ">
-          <div className="max-h-[60vh] aspect-square rounded-md overflow-hidden">
+          <Link
+            href={`/models/${output.model?._id}`}
+            className="max-h-[60vh] aspect-square rounded-md overflow-hidden"
+          >
             <Image
               loader={customImageLoader}
               src={output.thumbnail || ''}
@@ -26,7 +30,7 @@ const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
               height={1024}
               className="w-full h-full"
             />
-          </div>
+          </Link>
           <TimelineItemResultTools
             result={result}
             output={output}

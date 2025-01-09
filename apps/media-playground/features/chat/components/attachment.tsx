@@ -1,3 +1,5 @@
+'use client'
+
 import LoadingIndicator from '@/components/loading-indicator'
 import { LightboxTrigger } from '@/components/media/lightbox'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
@@ -100,7 +102,7 @@ const MyAttachment: FC = () => {
   const src = useAttachmentSrc()
 
   const attachments = useComposer(s => s.attachments)
-  console.log({ attachments })
+  // console.log({ attachments })
 
   const attachmentIndex = attachments.findIndex(a => a.id === attachment.id)
   return (

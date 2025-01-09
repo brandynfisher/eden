@@ -1,8 +1,9 @@
 'use client'
 
+import { EdenMessage } from '@/features/chat/eden-message-converter'
 import { useWebSocketAuth } from '@/hooks/use-websocket-auth'
 import { useWebSocketConnection } from '@/hooks/use-websocket-connection'
-import { TaskV2, Thread, ThreadMessage } from '@edenlabs/eden-sdk'
+import { TaskV2, Thread } from '@edenlabs/eden-sdk'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { ReadyState } from 'react-use-websocket'
 
@@ -16,7 +17,7 @@ export type JsonMessage = {
     task?: TaskV2
     thread?: Thread
     active?: string[]
-    newMessages?: ThreadMessage[]
+    newMessages?: EdenMessage[]
   } & GenericObject
 }
 
@@ -59,15 +60,7 @@ export const WebSocketProvider = ({ endpoint, children }: Props) => {
     sendJsonMessage,
     lastMessage,
     readyState,
-  } = useWebSocketConnection(endpoint, shouldConnect, (msg: MessageEvent) => {
-    const data = JSON.parse(msg.data)
-
-    if (data.event === 'auth-info') {
-      return
-    }
-
-    console.log('onMessage', data)
-  })
+  } = useWebSocketConnection(endpoint, shouldConnect)
 
   const { isSignedIn } = useWebSocketAuth(sendJsonMessage)
 

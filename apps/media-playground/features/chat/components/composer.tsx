@@ -1,3 +1,5 @@
+'use client'
+
 import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
@@ -43,10 +45,6 @@ export const MyComposer: FC = () => {
   const [isDragging, setIsDragging] = useState(false)
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime.getAttachmentAccept()
-
-  // const isRunning = useThread(t => t.isRunning)
-
-  // console.log({ isRunning, thread: useThread() })
 
   const handleFilesDropped = async (files: File[]) => {
     // accept contains mimetypes with wildcards like image/*, allow only these
