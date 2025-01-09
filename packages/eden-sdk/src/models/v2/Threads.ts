@@ -13,7 +13,7 @@ import { AxiosRequestConfig } from 'axios'
 // Arguments
 export interface ThreadsCreateArguments extends WebAPICallOptions {
   thread_id?: string
-  agent_id?: string
+  agent_id: string
   content: string
   attachments?: string[]
 }
@@ -33,7 +33,7 @@ export interface ThreadsMessageReactArguments extends WebAPICallOptions {
 export interface ThreadsListArguments
   extends WebAPICallOptions,
     ListQueryParams {
-  agent_id?: string
+  agent_id: string
 }
 
 export interface ThreadsGetArguments extends WebAPICallOptions {

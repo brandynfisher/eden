@@ -22,6 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { slugifyName } from '@/utils/slug.util'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -57,8 +58,17 @@ type AgentSheetProps = {
   onAction: () => Promise<void>
 }
 
+function CharacterCount({ current, max }: { current: number; max: number }) {
+  return (
+    <div className="ml-auto text-xs text-muted-foreground flex-shrink-0 text-right">
+      {current}/{max} chars
+    </div>
+  )
+}
+
 const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
 
   const isUpdateMode = mode === 'update'
 
@@ -67,15 +77,32 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
     defaultValues: isUpdateMode
       ? {
           name: agent?.name,
-          key: agent?.username,
+          key: agent?.username || '',
           image: agent?.userImage,
           description: agent?.description,
           instructions: agent?.instructions,
           discordId: agent?.discordId ?? '',
           modelId: agent?.model,
         }
-      : {},
+      : {
+          name: '',
+          key: '',
+          description: '',
+          instructions: '',
+          // discordId: '',
+          // modelId: '',
+        },
   })
+
+  const name = form.watch('name')
+  // const currentKey = form.watch('key')
+
+  // Add effect to auto-generate key from name
+  React.useEffect(() => {
+    if (!isManualKeyEdit && name) {
+      form.setValue('key', slugifyName(name))
+    }
+  }, [form, name, isManualKeyEdit])
 
   const handleSubmit = async (data: AgentFormDto) => {
     try {
@@ -129,7 +156,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
           ) : (
             <>
               <PlusIcon className="size-4" />
-              <p className="text-sm font-semibold">Create Agent</p>
+              <div className="text-sm font-semibold">Create Agent</div>
             </>
           )}
         </Button>
@@ -165,15 +192,24 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                       type="text"
                       placeholder="My helpful Agent"
                       {...field}
+                      onChange={e => {
+                        field.onChange(e.target.value.slice(0, 42))
+                      }}
                     />
                   </FormControl>
+                  <div className="flex gap-2 flex-wrap">
+                    {!isUpdateMode && (
+                      <FormDescription>
+                        Friendly Name of your agent. This will be displayed to
+                        users.
+                      </FormDescription>
+                    )}
+                    <CharacterCount
+                      current={field.value?.length || 0}
+                      max={42}
+                    />
+                  </div>
                   <FormMessage />
-                  {!isUpdateMode && (
-                    <FormDescription>
-                      Friendly Name of your agent. This will be displayed to
-                      users.
-                    </FormDescription>
-                  )}
                 </FormItem>
               )}
             />
@@ -184,22 +220,72 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
               name="key"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Name*</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Name*</FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={() => setIsManualKeyEdit(!isManualKeyEdit)}
+                    >
+                      {isManualKeyEdit ? 'Auto Generate' : 'Manual Edit'}
+                    </Button>
+                  </div>
                   <FormControl>
                     <Input
                       type="text"
                       placeholder="helpful-agent-1"
                       {...field}
+                      onChange={e => {
+                        if (isManualKeyEdit) {
+                          const value = e.target.value
+                            .toLowerCase()
+                            .slice(0, 42)
+                          field.onChange(value)
+                        } else {
+                          field.onChange(e.target.value)
+                        }
+                      }}
+                      onBlur={e => {
+                        if (isManualKeyEdit) {
+                          field.onChange(
+                            slugifyName(e.target.value.slice(0, 42)),
+                          )
+                        }
+                        field.onBlur()
+                      }}
+                      readOnly={!isManualKeyEdit}
+                      className={!isManualKeyEdit ? 'bg-accent' : ''}
+                      disabled={!isManualKeyEdit}
                     />
                   </FormControl>
-                  <FormMessage />
-                  {!isUpdateMode && (
+                  <div className="flex gap-2 flex-wrap">
                     <FormDescription>
-                      Unique name of your agent. This will be used in URLs and
-                      in the API.
-                      <p>Lowercase letters, numbers, and dashes only.</p>
+                      {isManualKeyEdit ? (
+                        <>
+                          Enter a unique name for your agent. Used in URLs and
+                          API.
+                          <span className="block mt-1 text-xs text-muted-foreground">
+                            Lowercase letters, numbers, and dashes only.
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          Unique name of your agent. This will be used in URLs
+                          and in the API. Auto-generated from display name
+                          <span className="block mt-1 text-xs text-muted-foreground">
+                            Lowercase letters, numbers, and dashes only.
+                          </span>
+                        </>
+                      )}
                     </FormDescription>
-                  )}
+                    <CharacterCount
+                      current={field.value?.length || 0}
+                      max={42}
+                    />
+                  </div>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -244,6 +330,10 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                       {...field}
                     />
                   </FormControl>
+                  <CharacterCount
+                    current={field.value?.length || 0}
+                    max={10000}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -262,6 +352,10 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                       {...field}
                     />
                   </FormControl>
+                  <CharacterCount
+                    current={field.value?.length || 0}
+                    max={10000}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -273,7 +367,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
               name="modelId"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>LoRa (Optional)</FormLabel>
+                  <FormLabel>Flux LoRa (Optional)</FormLabel>
                   <div>
                     {field.value && (
                       <div className="relative mb-2">
@@ -295,14 +389,16 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                     )}
                     <ModelSelectorModal
                       className="p-4 md:p-8 w-full"
-                      title="Select model"
-                      description="Pick a model to use as a lora"
+                      title="Select Flux LoRa"
+                      description="Pick a Flux LoRa to use as a default model for this agent"
                       base_model="flux-dev"
                       currentValue={field.value || ''}
                       onChange={field.onChange}
                       trigger={
                         <Button type="button" variant="outline">
-                          {field.value ? 'Change LoRa' : 'Select LoRa'}
+                          {field.value
+                            ? 'Change Flux LoRa'
+                            : 'Select Flux LoRa'}
                         </Button>
                       }
                     />

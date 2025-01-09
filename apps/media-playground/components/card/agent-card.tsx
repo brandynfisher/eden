@@ -35,7 +35,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
         </div>
       ) : null}
       <Link
-        href={`/chat/${agent._id}`}
+        href={`/chat/${agent.username}`}
         prefetch={false}
         className="relative w-full block"
       >

@@ -76,9 +76,9 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             }
 
             if (!cachedDoc.user) {
-              fastify.log.error(
-                `insert: No user field found for thread ${cachedDoc._id}`,
-              )
+              // fastify.log.error(
+              //   `insert: No user field found for thread ${cachedDoc._id}`,
+              // )
               return
             }
 
@@ -92,9 +92,9 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             }
 
             if (!cachedDoc.user) {
-              fastify.log.error(
-                `update: No user field found for thread ${cachedDoc._id}`,
-              )
+              // fastify.log.error(
+              //   `update: No user field found for thread ${cachedDoc._id}`,
+              // )
               return
             }
 

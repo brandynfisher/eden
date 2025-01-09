@@ -35,7 +35,7 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
 
   const handleShareClick = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/agents/${agent._id}`
+    const shareUrl = `${baseUrl}/agents/${agent.username}`
     dispatch(
       updateShareModal({
         isOpen: true,
@@ -50,13 +50,13 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
         <>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link href={`/agents/${agent._id}`} prefetch={false}>
+              <Link href={`/agents/${agent.username}`} prefetch={false}>
                 <ExternalLinkIcon className="mr-2 h-4 w-4" />
                 View Details
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/chat/${agent._id}`}>
+              <Link href={`/chat/${agent.username}`}>
                 <ChatBubbleIcon className="mr-2 h-4 w-4" />
                 Chat
               </Link>

@@ -609,6 +609,7 @@ const FileUploader = ({
                               }}
                               startIndex={index}
                               imageProps={{
+                                unoptimized: true,
                                 className:
                                   'relative rounded-lg hover:brightness-105 h-16 w-auto',
                               }}
