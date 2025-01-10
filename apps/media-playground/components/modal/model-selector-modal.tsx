@@ -113,6 +113,7 @@ const ModelSelectorModal = ({
               minCols={2}
               maxCols={5}
               onClick={handleOnChange}
+              isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
             />
           ) : (
@@ -121,6 +122,7 @@ const ModelSelectorModal = ({
               minCols={2}
               maxCols={5}
               onClick={handleOnChange}
+              isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
             />
           )}

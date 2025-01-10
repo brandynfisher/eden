@@ -23,7 +23,7 @@ import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
 const MASONRY_GUTTER = 16
-const DEFAULT_PAGE_LIMIT = 3
+const DEFAULT_PAGE_LIMIT = 35
 
 type Props = {
   apiEndpoint: string
