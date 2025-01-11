@@ -145,7 +145,7 @@ export const AgentLink: FC<{ agent?: Agent; className?: string }> = ({
 }) => {
   return (
     <Link
-      className="ml-auto md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
+      className="ml-auto w-fit md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
       title="View Agent profile"
       href={`/agents/${agent?.username}`}
     >
