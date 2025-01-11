@@ -48,11 +48,13 @@ const ParameterTableCollapsible = ({ item }: Props) => {
           {item.name ? (
             <TaskParameter name={'prompt'} label={'Name'} value={item.name} />
           ) : null}
-          {item.args.prompt || item.args.text_input ? (
+          {item.args.prompt || item.args.text_input || item.args.name ? (
             <TaskParameter
               name={'prompt'}
               label={'Prompt'}
-              value={item.args.prompt || item.args.text_input || ''}
+              value={
+                item.args.prompt || item.args.text_input || item.args.name || ''
+              }
             />
           ) : null}
         </div>

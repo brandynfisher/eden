@@ -20,7 +20,7 @@ const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
         <div key={output.filename} className="p-2 bg-secondary rounded-md ">
           <Link
             href={`/models/${output.model?._id}`}
-            className="max-h-[60vh] aspect-square rounded-md overflow-hidden"
+            className="flex max-h-[60vh] aspect-square rounded-md overflow-hidden"
           >
             <Image
               loader={customImageLoader}

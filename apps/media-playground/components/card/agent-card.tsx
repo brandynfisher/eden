@@ -24,7 +24,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
         className,
       ])}
     >
-      {!agent.public ? <PrivateIcon /> : null}
+      {!agent.public ? <PrivateIcon className="" /> : null}
       {onClick ? (
         <div
           className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover group-hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
@@ -53,17 +53,17 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
             className="object-cover rounded-lg w-[90px] h-[132px] flex-shrink-0 flex-grow-0"
           />
           <div className="ml-3 flex flex-col w-full">
-            <div className="flex items-center gap-2 flex-wrap ">
-              <span className="font-semibold text-sm mr-auto">
-                {agent.name}
-              </span>
-              <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />
-            </div>
+            <span className="font-semibold text-sm mr-auto">{agent.name}</span>
+
             <div className="text-xs text-accent-foreground line-clamp-3 mt-2">
               {agent.description}
             </div>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-auto">
-              by <span className="font-semibold">{agent.owner.username}</span>
+
+            <div className="flex items-center justify-between gap-2 flex-wrap mt-auto">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                by <span className="font-semibold">{agent.owner.username}</span>
+              </div>
+              <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />
             </div>
           </div>
         </div>
