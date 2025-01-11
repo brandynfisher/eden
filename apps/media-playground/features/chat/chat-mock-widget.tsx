@@ -94,10 +94,7 @@ export const ChatMockWidget = () => {
         return
       }
 
-      // redirect to /chat/:agentId/:threadId
-      router.push(
-        `/chat/${siteConfig.featured.agents[0]}/${response.data.thread_id}`,
-      )
+      router.push(`/chat/${agent?.username}/${response.data.thread_id}`)
     } catch (err) {
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
