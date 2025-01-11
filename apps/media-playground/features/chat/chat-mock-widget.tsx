@@ -140,6 +140,7 @@ export const ChatMockWidget = () => {
                     onChange={field.onChange}
                     onBlur={field.onBlur}
                     value={field.value || ''}
+                    disabled={isSubmitting}
                     onKeyDown={e => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault()
@@ -180,7 +181,7 @@ export const ChatMockWidget = () => {
               disabled={isSubmitting || !form.formState.isValid}
             >
               {isSubmitting ? (
-                <Loader2Icon className="h-4 w-4" />
+                <Loader2Icon className="h-4 w-4 animate-spin" />
               ) : (
                 <SendIcon className="h-4 w-4" />
               )}
