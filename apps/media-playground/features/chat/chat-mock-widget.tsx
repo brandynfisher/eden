@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -15,6 +16,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { siteConfig } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import {
+  Agent,
   ThreadsCreateArguments,
   ThreadsCreateResponse,
 } from '@edenlabs/eden-sdk'
@@ -22,7 +24,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError, AxiosInstance } from 'axios'
 import { Keyboard, Loader2Icon, SendIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -33,9 +35,23 @@ export const chatMockSchema = z.object({
 })
 
 type FormData = z.infer<typeof chatMockSchema>
+type Props = {
+  agentId: string
+  agentSSRData?: Agent
+}
 
-export const ChatMockWidget = () => {
-  const { agent } = useAgentQuery({ key: siteConfig.featured.agents[0] })
+export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
+  const { agent: agentClientData } = useAgentQuery({
+    key: agentId,
+    initialData: agentSSRData
+      ? {
+          agent: agentSSRData,
+        }
+      : undefined,
+  })
+
+  const agent = agentClientData || agentSSRData
+
   const { verifyAuth } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
@@ -83,8 +99,6 @@ export const ChatMockWidget = () => {
         attachments: finalData.attachments,
       })
 
-      console.log({ response })
-
       if (!response || !response.data || !response.data?.thread_id) {
         toast.error(`Failed to create thread!`, {
           description: JSON.stringify(response),
@@ -114,13 +128,13 @@ export const ChatMockWidget = () => {
     <div data-testid="chat-mock-widget">
       <div className="mb-4">
         <AgentLink agent={agent} className="h-12 w-12 md:h-16 md:w-16" />
-        <div className="inline-flex ml-16 p-2 mt-2 bg-purple-600/25 rounded-lg rounded-tl-none">
+        <div className="inline-flex ml-16 p-2 mt-2 bg-purple-600/40 rounded-lg rounded-tl-none">
           How can i help you today?
         </div>
       </div>
       <Form {...form}>
         <form
-          className="flex gap-2 w-full bg-popover rounded-lg p-2"
+          className="flex gap-2 w-full bg-popover border border-secondary rounded-lg p-2"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <FormField
@@ -129,7 +143,7 @@ export const ChatMockWidget = () => {
               <FormItem className="w-full relative">
                 <FormControl id={'message'}>
                   <AutosizeTextarea
-                    className="w-full mb-2 !border-none !ring-0 !outline-none"
+                    className="w-full mb-2 !border-none !ring-0 !outline-none !ring-offset-0"
                     placeholder="Type your message here..."
                     rows={4}
                     minHeight={96}
@@ -159,7 +173,14 @@ export const ChatMockWidget = () => {
                 >
                   <Keyboard className="h-3 w-3" />
                   <span className="opacity-70">
-                    Enter to send, Shift+Enter for new line
+                    <Badge variant="outline" className="rounded-sm px-1.5">
+                      Enter
+                    </Badge>{' '}
+                    to send,{' '}
+                    <Badge variant="outline" className="px-1.5 rounded-sm">
+                      Shift+Enter
+                    </Badge>{' '}
+                    for new line
                   </span>
                 </div>
               </FormItem>

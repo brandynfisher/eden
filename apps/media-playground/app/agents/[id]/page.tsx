@@ -1,105 +1,67 @@
 import AgentDetail from '@/features/detail/agent-detail'
-import { fetcher } from '@/lib/fetcher'
+import { getAgentCached } from '@/lib/actions/agent'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
-import { AgentGetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
-import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
-import { cache } from 'react'
 
-type Props = {
+interface Props {
   params: { id: string }
 }
-
-const getAgent = async (id: string): Promise<AgentGetResponse | undefined> => {
-  try {
-    const response = await fetcher<AgentGetResponse>(
-      `${process.env.NEXT_PUBLIC_HOST}/api/agents/${id}`,
-      {
-        credentials: 'include',
-        headers: { Cookie: cookies().toString() },
-      },
-    )
-
-    return response
-  } catch (e) {
-    console.error('Error fetching agent:', e)
-    return undefined
-  }
-}
-
-const getAgentCached = cache(getAgent)
 
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
-  const id = params.id
-  const response = await getAgentCached(id || '')
+  const response = await getAgentCached(params.id)
 
-  if (!response) {
+  if (!response?.agent) {
     return {}
   }
-
-  const agent = response.agent
 
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `Agent: ${agent?.name} | Eden Create`
-  const baseDescription = ``
-  const description = agent?.description.substring(0, 320) || baseDescription
+  const title = `Agent: ${response.agent.name} | Eden Create`
+  const description = response.agent.description?.substring(0, 320) || ''
 
-  // Initialize OpenGraph metadata
+  const ogImage = response.agent.userImage
+    ? getCloudfrontOriginalUrl(response.agent.userImage)
+    : undefined
+
   const og: OpenGraph = {
     ...previousOg,
     title,
-    description: description,
-    images: agent?.userImage
-      ? [getCloudfrontOriginalUrl(agent?.userImage)]
-      : undefined,
+    description,
+    images: ogImage ? [ogImage] : undefined,
   }
 
-  // Initialize Twitter metadata
   const twitter: TwitterMetadata = {
     ...previousTwitter,
     title,
-    description: baseDescription, // Default description for Twitter
-    images: agent?.userImage
-      ? [getCloudfrontOriginalUrl(agent?.userImage)]
-      : undefined,
+    description,
+    images: ogImage ? [ogImage] : undefined,
+    card: 'summary_large_image',
   }
 
-  twitter.card = 'summary_large_image'
-
-  // Assemble the final metadata object
-  const metadata: Metadata = {
+  return {
     title,
-    description: og.description, // OG description (might be empty for videos)
+    description: og.description,
     openGraph: og,
-    twitter: twitter,
+    twitter,
   }
-
-  return metadata
 }
 
-const AgentDetailPage = async ({ params: { id: agentId } }: Props) => {
-  if (!agentId) {
-    return notFound()
-  }
+export default async function AgentDetailPage({ params: { id } }: Props) {
+  const response = await getAgentCached(id)
 
-  const response = await getAgentCached(agentId || '')
-
-  if (!response || !response.agent) {
+  if (!response?.agent) {
     return notFound()
   }
 
   if (response.error) {
-    return <div>error response: {String(response.error)}</div>
+    throw new Error(`Error loading agent: ${response.error}`)
   }
 
-  return <AgentDetail id={agentId} agentSSRData={response.agent} />
+  return <AgentDetail id={id} agentSSRData={response.agent} />
 }
-
-export default AgentDetailPage
