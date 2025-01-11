@@ -95,14 +95,12 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
   })
 
   const name = form.watch('name')
-  // const currentKey = form.watch('key')
 
-  // Add effect to auto-generate key from name
   React.useEffect(() => {
-    if (!isManualKeyEdit && name) {
+    if (!isManualKeyEdit && name && !isUpdateMode) {
       form.setValue('key', slugifyName(name))
     }
-  }, [form, name, isManualKeyEdit])
+  }, [form, name, isManualKeyEdit, isUpdateMode])
 
   const handleSubmit = async (data: AgentFormDto) => {
     try {
@@ -264,19 +262,15 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                     <FormDescription>
                       {isManualKeyEdit ? (
                         <>
-                          Enter a unique name for your agent. Used in URLs and
-                          API.
+                          Enter a unique name for your agent.
                           <span className="block mt-1 text-xs text-muted-foreground">
                             Lowercase letters, numbers, and dashes only.
                           </span>
                         </>
                       ) : (
                         <>
-                          Unique name of your agent. This will be used in URLs
-                          and in the API. Auto-generated from display name
-                          <span className="block mt-1 text-xs text-muted-foreground">
-                            Lowercase letters, numbers, and dashes only.
-                          </span>
+                          Unique name of your agent. Auto-generated from display
+                          name
                         </>
                       )}
                     </FormDescription>
