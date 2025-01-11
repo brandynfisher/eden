@@ -13,7 +13,7 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Long, cn, toBigInt } from '@/lib/utils'
 import { TaskV2, TaskV2Args } from '@edenlabs/eden-sdk'
-import { SquareCheckBigIcon, SquareIcon } from 'lucide-react'
+import { LockKeyholeIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
 import React from 'react'
 import { toast } from 'sonner'
 
@@ -83,8 +83,11 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
       <TableBody className="bg-popover/20">
         {allArgs.map(taskArg => (
           <TableRow key={taskArg[0]} className="cursor-pointer text-xs">
-            <TableCell className="px-2 py-2 text-muted-foreground w-1/3 md:w-[125px] truncate align-top">
+            <TableCell className="flex items-center gap-1 px-2 py-2 text-muted-foreground w-1/3 md:w-[125px] truncate align-top">
               {taskArg[0]}
+              {taskArg[0] === 'lora_training_urls' ? (
+                <LockKeyholeIcon className="relative h-3.5 w-3.5 flex-shrink-0" />
+              ) : null}
             </TableCell>
             <TableCell className="pl-0 pr-2 py-2 w-2/3 md:w-auto">
               {imageInputParameterNames.includes(taskArg[0]) ? (

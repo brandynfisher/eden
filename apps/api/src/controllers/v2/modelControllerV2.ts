@@ -83,6 +83,10 @@ export const getModel = async (
     })
   }
 
+  if (!isOwner && model?.task?.args) {
+    delete model.task.args.lora_training_urls
+  }
+
   model.thumbnail = s3ThumbnailUrl(server, model.thumbnail || '', 1024)
 
   return reply.status(200).send({ model })
