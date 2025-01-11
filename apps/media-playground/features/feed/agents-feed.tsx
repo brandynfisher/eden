@@ -1,7 +1,9 @@
 'use client'
 
 import AgentCard from '@/components/card/agent-card'
-import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
+import MasonryVirtualizerVertical, {
+  BreakpointConfig,
+} from '@/components/masonry/masonry-virtualizer-vertical'
 import AgentFormSheet from '@/features/agent/agent-form-sheet'
 import { RowItem } from '@/lib/query/cache-updates'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
@@ -12,9 +14,15 @@ type Props = {
   query?: FeedAgentCursorArguments
   minCols?: number
   maxCols?: number
+  breakpoints?: BreakpointConfig[]
 }
 
-const AgentsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
+const AgentsFeed = ({
+  query: queryProp,
+  minCols,
+  maxCols,
+  breakpoints,
+}: Props) => {
   const defaultQuery: FeedAgentCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -47,6 +55,7 @@ const AgentsFeed = ({ query: queryProp, minCols, maxCols }: Props) => {
         query={query}
         minCols={minCols || 2}
         maxCols={maxCols || undefined}
+        breakpoints={breakpoints}
         render={(item: RowItem) => (
           <AgentCard agent={item as Agent} queryKey={queryKey} />
         )}
