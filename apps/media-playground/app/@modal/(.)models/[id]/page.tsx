@@ -64,11 +64,9 @@ const ArrowNavigation = ({
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') {
-        console.log('ArrowRight')
         await handleNext()
       }
       if (e.key === 'ArrowLeft') {
-        console.log('ArrowLeft')
         handlePrevious()
       }
       if (e.key === 'Escape') {
@@ -91,18 +89,15 @@ const ArrowNavigation = ({
     <>
       <Button
         variant="outline"
-        className="absolute h-16 left-0 top-1/2 z-[51] w-16"
+        className="fixed top-1/2 left-0 size-16 z-[999] hidden md:block"
         onClick={handlePrevious}
         disabled={activeIndex <= 0}
       >
         <ArrowLeftIcon />
       </Button>
-      <div className="absolute bottom-0 bg-red-700 h-16 w-full z-[51]">
-        minimap
-      </div>
       <Button
         variant="outline"
-        className="absolute h-16 right-0 top-1/2 z-[51] w-16"
+        className="fixed top-1/2 right-0 ml-auto z-[999] size-16 hidden md:block"
         onClick={handleNext}
         disabled={!items[activeIndex + 1]}
       >
