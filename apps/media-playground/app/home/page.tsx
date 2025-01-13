@@ -7,7 +7,12 @@ import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
 import { Metadata, ResolvingMetadata } from 'next'
 import { notFound } from 'next/navigation'
 
+type Props = {
+  params: {}
+}
 export async function generateMetadata(
+  // eslint-disable-next-line no-unused-vars
+  { params: _test }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const response = await getAgentCached(siteConfig.featured.agents[0])
