@@ -22,7 +22,15 @@ import {
 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError, AxiosInstance } from 'axios'
-import { Keyboard, Loader2Icon, SendIcon } from 'lucide-react'
+import {
+  CatIcon,
+  ImageIcon,
+  Keyboard,
+  ListIcon,
+  Loader2Icon,
+  PersonStandingIcon,
+  SendIcon,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -160,7 +168,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
 
   return (
     <div data-testid="chat-mock-widget">
-      <div className="mb-4 flex justify-around">
+      <div className="mb-6 flex justify-around">
         <div className="flex flex-col items-center w-fit">
           <AgentLink agent={agent} className="h-12 w-12 md:h-16 md:w-16" />
           <div className="inline-flex ml-16 p-2 mt-2 bg-purple-600/40 rounded-lg rounded-tl-none">
@@ -242,6 +250,41 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
             </Button>
           </div>
         </form>
+        {/* @todo: suggestion component with submit logic */}
+        <div className="mt-6 flex gap-2 flex-wrap justify-center">
+          <Button
+            variant="outline"
+            type="button"
+            className="flex gap-2 rounded-full"
+          >
+            <ListIcon className="h-4 w-4" />
+            What tools can you use?
+          </Button>
+          <Button
+            variant="outline"
+            type="button"
+            className="flex gap-2 rounded-full"
+          >
+            <ImageIcon className="h-4 w-4" />
+            Animate my logo
+          </Button>
+          <Button
+            variant="outline"
+            type="button"
+            className="flex gap-2 rounded-full"
+          >
+            <CatIcon className="h-4 w-4" />
+            Make cute cat images
+          </Button>
+          <Button
+            variant="outline"
+            type="button"
+            className="flex gap-2 rounded-full"
+          >
+            <PersonStandingIcon className="h-4 w-4" />
+            Help me draft a character
+          </Button>
+        </div>
       </Form>
     </div>
   )
