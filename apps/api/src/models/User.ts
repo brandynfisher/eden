@@ -93,5 +93,7 @@ const UserSchema = new Schema<UserDocument>(
 )
 
 UserSchema.index({ userId: 1 })
+UserSchema.index({ email: 1 })
+UserSchema.index({ normalizedEmail: 1 })
 
 export const User = BaseUser.discriminator<UserDocument>('user', UserSchema)

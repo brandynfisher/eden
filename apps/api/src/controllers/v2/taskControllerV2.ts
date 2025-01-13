@@ -917,9 +917,12 @@ export const cancelTask = async (
   try {
     const modalRequest = {
       endpoint: `${server.config.EDEN_COMPUTE_API_URL}/cancel`,
+      // @todo: remove duplication after compute api is updated
       data: {
         taskId,
-        user: userId,
+        task_id: taskId,
+        user: userDocument._id,
+        user_id: userDocument._id,
       },
     }
 
