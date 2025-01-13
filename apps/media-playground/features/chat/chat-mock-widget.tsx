@@ -40,6 +40,8 @@ type Props = {
   agentSSRData?: Agent
 }
 
+const FORM_STORAGE_KEY = 'chat-mock-form-state'
+
 export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
   const { agent: agentClientData } = useAgentQuery({
     key: agentId,
@@ -52,7 +54,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
 
   const agent = agentClientData || agentSSRData
 
-  const { verifyAuth } = useAuthState()
+  const { verifyAuth, isPostAuthRedirect } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const [shouldShowHint, setShouldShowHint] = useState(false)
@@ -63,9 +65,29 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
     attachments: [],
   }
 
+  // Initialize form with stored values or defaults
+  const getInitialValues = (): FormData => {
+    if (typeof window === 'undefined') return defaultValues
+
+    // Only try to restore if we're coming back from auth
+    if (isPostAuthRedirect) {
+      try {
+        const stored = localStorage.getItem(FORM_STORAGE_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          localStorage.removeItem(FORM_STORAGE_KEY) // Clean up after reading
+          return parsed
+        }
+      } catch (e) {
+        console.error('Error reading stored form state:', e)
+      }
+    }
+    return defaultValues
+  }
+
   const form = useForm<FormData>({
-    resolver: zodResolver(chatMockSchema), // use generated form schema for resolver
-    defaultValues,
+    resolver: zodResolver(chatMockSchema),
+    defaultValues: getInitialValues(),
   })
 
   const message = form.watch('message')
@@ -76,10 +98,11 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
     setShouldShowHint(messageLength > 3)
   }, [message])
 
-  async function onSubmit(formData: FormData) {
-    const finalData = { ...defaultValues, ...formData }
-
+  // Store form state before auth redirect
+  const handleSubmit = async (formData: FormData) => {
     if (!(await verifyAuth())) {
+      // Save form state before redirect
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData))
       return
     }
 
@@ -95,8 +118,8 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
         ThreadsCreateArguments
       >('/api/threads', {
         agent_id: siteConfig.featured.agents[0],
-        content: finalData.message,
-        attachments: finalData.attachments,
+        content: formData.message,
+        attachments: formData.attachments,
       })
 
       if (!response || !response.data || !response.data?.thread_id) {
@@ -124,6 +147,17 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
     }
   }
 
+  // Clean up stored state when component unmounts
+  useEffect(() => {
+    if (!isSubmitting && (message?.length || 0) && isPostAuthRedirect) {
+      handleSubmit(form.getValues())
+    }
+
+    return () => {
+      localStorage.removeItem(FORM_STORAGE_KEY)
+    }
+  }, [isPostAuthRedirect, message, isSubmitting])
+
   return (
     <div data-testid="chat-mock-widget">
       <div className="mb-4 flex justify-around">
@@ -137,7 +171,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
       <Form {...form}>
         <form
           className="flex gap-2 w-full bg-popover border border-secondary rounded-lg p-2"
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(handleSubmit)}
         >
           <FormField
             name="message"
@@ -158,7 +192,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault()
                         if (form.formState.isValid && !isSubmitting) {
-                          form.handleSubmit(onSubmit)()
+                          form.handleSubmit(handleSubmit)()
                         }
                       }
                     }}

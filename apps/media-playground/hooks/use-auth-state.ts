@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 
 export function useAuthState() {
   const { openSignIn } = useClerk()
-  const { isSignedIn } = useAuth()
+  const { isSignedIn, isLoaded } = useAuth()
   const pathname = usePathname()
 
   const {
@@ -18,6 +18,9 @@ export function useAuthState() {
     hasMinimumSubscriptionTier,
     invalidate,
   } = useMe({ isAuthenticated: !!isSignedIn })
+
+  // We can detect if we're returning from auth by checking if auth is loaded and user just signed in
+  const isPostAuthRedirect = isLoaded && isSignedIn
 
   const verifyAuth = async () => {
     if (isSignedIn) {
@@ -33,6 +36,7 @@ export function useAuthState() {
 
   return {
     verifyAuth,
+    isPostAuthRedirect,
     user,
     balance,
     foreverBalance,
