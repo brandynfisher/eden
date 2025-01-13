@@ -5,7 +5,6 @@ import {
   getTask,
   listTasks,
   subscribeTaskUpdates,
-  testMongoWatchPerformance,
 } from '../../controllers/v2/taskControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { argsType, taskV2Type } from '../../types/routeTypes'
@@ -165,27 +164,6 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => cancelTask(server, request, reply),
-  })
-
-  server.post('/v2/tasks/test', {
-    schema: {
-      tags: ['Tasks'],
-      description: 'test perf',
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      response: {
-        200: Type.Object({
-          measurement: Type.Any(),
-          data: Type.Any(),
-        }),
-      },
-    },
-    // preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) =>
-      testMongoWatchPerformance(server, request, reply),
   })
 }
 
