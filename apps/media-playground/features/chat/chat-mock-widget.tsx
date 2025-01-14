@@ -32,7 +32,7 @@ import {
   SendIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { FC, useEffect, useState } from 'react'
+import { FC, ReactNode, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -50,6 +50,36 @@ type Props = {
 
 const FORM_STORAGE_KEY = 'chat-mock-form-state'
 
+interface Suggestion {
+  text: string
+  prompt: string
+  icon: ReactNode
+}
+
+const DEFAULT_SUGGESTIONS: Suggestion[] = [
+  {
+    text: 'What tools can you use?',
+    prompt: 'Can you list all the tools and capabilities you have access to?',
+    icon: <ListIcon className="h-4 w-4" />,
+  },
+  {
+    text: 'Animate my logo',
+    prompt:
+      'I would like to animate my company logo. Can you help me with that?',
+    icon: <ImageIcon className="h-4 w-4" />,
+  },
+  {
+    text: 'Make cute cat images',
+    prompt: 'Can you create some cute cat images for me?',
+    icon: <CatIcon className="h-4 w-4" />,
+  },
+  {
+    text: 'Help me draft a character',
+    prompt: 'I need help creating a character design. Can you assist me?',
+    icon: <PersonStandingIcon className="h-4 w-4" />,
+  },
+]
+
 export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
   const { agent: agentClientData } = useAgentQuery({
     key: agentId,
@@ -62,7 +92,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
 
   const agent = agentClientData || agentSSRData
 
-  const { verifyAuth, isPostAuthRedirect } = useAuthState()
+  const { verifyAuth, isSignedIn } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const [shouldShowHint, setShouldShowHint] = useState(false)
@@ -73,30 +103,33 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
     attachments: [],
   }
 
-  // Initialize form with stored values or defaults
-  const getInitialValues = (): FormData => {
-    if (typeof window === 'undefined') return defaultValues
-
-    // Only try to restore if we're coming back from auth
-    if (isPostAuthRedirect) {
-      try {
-        const stored = localStorage.getItem(FORM_STORAGE_KEY)
-        if (stored) {
-          const parsed = JSON.parse(stored)
-          localStorage.removeItem(FORM_STORAGE_KEY) // Clean up after reading
-          return parsed
-        }
-      } catch (e) {
-        console.error('Error reading stored form state:', e)
-      }
-    }
-    return defaultValues
-  }
+  // Move the stored data check to a separate effect that runs once
+  const [initialFormData, setInitialFormData] =
+    useState<FormData>(defaultValues)
+  const [hasStoredData, setHasStoredData] = useState(false)
 
   const form = useForm<FormData>({
     resolver: zodResolver(chatMockSchema),
-    defaultValues: getInitialValues(),
+    defaultValues: initialFormData,
   })
+
+  // Load stored data and reset form when found
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const stored = localStorage.getItem(FORM_STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        setInitialFormData(parsed)
+        setHasStoredData(true)
+        // Reset form with stored data
+        form.reset(parsed)
+      }
+    } catch (e) {
+      console.error('Error reading stored form state:', e)
+    }
+  }, []) // Empty dependency array - runs once on mount
 
   const message = form.watch('message')
 
@@ -108,16 +141,15 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
 
   // Store form state before auth redirect
   const handleSubmit = async (formData: FormData) => {
+    console.log('handleSubmit', formData)
     if (!(await verifyAuth())) {
       // Save form state before redirect
-      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData))
+      const currentFormData = form.getValues()
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(currentFormData))
       return
     }
 
     setIsSubmitting(true)
-
-    // console.log('onSubmit', finalData)
-    // return
 
     try {
       const response = await axios.post<
@@ -152,19 +184,35 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
       })
     } finally {
       setIsSubmitting(false)
+      // Clean up storage after successful submission
+      localStorage.removeItem(FORM_STORAGE_KEY)
+      setHasStoredData(false)
     }
   }
 
-  // Clean up stored state when component unmounts
+  // Auto-submit effect
   useEffect(() => {
-    if (!isSubmitting && (message?.length || 0) && isPostAuthRedirect) {
-      handleSubmit(form.getValues())
-    }
+    const shouldAutoSubmit = isSignedIn && hasStoredData && !isSubmitting
 
+    if (shouldAutoSubmit) {
+      const formData = form.getValues()
+      if (formData.message) {
+        handleSubmit(formData)
+      }
+    }
+  }, [isSignedIn, hasStoredData, isSubmitting])
+
+  // Separate cleanup effect
+  useEffect(() => {
     return () => {
       localStorage.removeItem(FORM_STORAGE_KEY)
     }
-  }, [isPostAuthRedirect, message, isSubmitting])
+  }, []) // Empty dependency array for cleanup on unmount
+
+  const handleSuggestionClick = (prompt: string) => {
+    form.setValue('message', prompt)
+    form.handleSubmit(handleSubmit)()
+  }
 
   return (
     <div data-testid="chat-mock-widget">
@@ -250,40 +298,20 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
             </Button>
           </div>
         </form>
-        {/* @todo: suggestion component with submit logic */}
-        <div className="mt-6 flex gap-2 flex-wrap justify-center">
-          <Button
-            variant="outline"
-            type="button"
-            className="flex gap-2 rounded-full"
-          >
-            <ListIcon className="h-4 w-4" />
-            What tools can you use?
-          </Button>
-          <Button
-            variant="outline"
-            type="button"
-            className="flex gap-2 rounded-full"
-          >
-            <ImageIcon className="h-4 w-4" />
-            Animate my logo
-          </Button>
-          <Button
-            variant="outline"
-            type="button"
-            className="flex gap-2 rounded-full"
-          >
-            <CatIcon className="h-4 w-4" />
-            Make cute cat images
-          </Button>
-          <Button
-            variant="outline"
-            type="button"
-            className="flex gap-2 rounded-full"
-          >
-            <PersonStandingIcon className="h-4 w-4" />
-            Help me draft a character
-          </Button>
+        <div className="mt-6 mb-2 flex gap-2 flex-wrap justify-center">
+          {DEFAULT_SUGGESTIONS.map((suggestion, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              type="button"
+              className="flex gap-2 rounded-full"
+              onClick={() => handleSuggestionClick(suggestion.prompt)}
+              disabled={isSubmitting}
+            >
+              {suggestion.icon}
+              {suggestion.text}
+            </Button>
+          ))}
         </div>
       </Form>
     </div>

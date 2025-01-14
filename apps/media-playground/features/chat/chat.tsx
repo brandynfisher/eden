@@ -145,7 +145,7 @@ export const AgentLink: FC<{ agent?: Agent; className?: string }> = ({
 }) => {
   return (
     <Link
-      className="ml-auto w-fit md:ml-0 flex self-start items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
+      className="w-fit md:ml-0 flex self-start items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
       title="View Agent profile"
       href={`/agents/${agent?.username}`}
     >
@@ -214,7 +214,9 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
         {/* MOBILE-ONLY HEADER */}
         <div className="bg-muted/40 border-b px-3 py-2 md:hidden flex items-center gap-2">
           <Header />
-          <AgentLink agent={agent} />
+          <div className="ml-auto">
+            <AgentLink agent={agent} />
+          </div>
         </div>
 
         {/* DESKTOP-ONLY SIDEBAR */}
