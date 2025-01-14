@@ -22,6 +22,11 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 const MASONRY_GUTTER = 16
 const DEFAULT_PAGE_LIMIT = 35
 
+export interface BreakpointConfig {
+  minWidth: 1920 | 1536 | 1280 | 1024 | 768 | 640 | 480 | 0
+  columns: number
+}
+
 type Props = {
   apiEndpoint: string
   render: (
@@ -33,6 +38,7 @@ type Props = {
   minCols?: number
   maxCols?: number
   limit?: number
+  breakpoints?: BreakpointConfig[]
 }
 
 export const MasonrySkeleton = () => {
@@ -57,19 +63,69 @@ const MasonryVirtualizerVertical = ({
   minCols = 1,
   maxCols = 5,
   limit = DEFAULT_PAGE_LIMIT,
+  breakpoints,
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
 
-  const mediaQueries = [
-    useMediaQuery('(min-width: 1920px)'),
-    useMediaQuery('(min-width: 1536px)'),
-    useMediaQuery('(min-width: 1280px)'),
-    useMediaQuery('(min-width: 1024px)'),
-    useMediaQuery('(min-width: 768px)'),
-    useMediaQuery('(min-width: 640px)'),
-    useMediaQuery('(min-width: 480px)'),
-  ].reverse()
+  // Define individual media query hooks
+  const isMin480 = useMediaQuery('(min-width: 480px)')
+  const isMin640 = useMediaQuery('(min-width: 640px)')
+  const isMin768 = useMediaQuery('(min-width: 768px)')
+  const isMin1024 = useMediaQuery('(min-width: 1024px)')
+  const isMin1280 = useMediaQuery('(min-width: 1280px)')
+  const isMin1536 = useMediaQuery('(min-width: 1536px)')
+  const isMin1920 = useMediaQuery('(min-width: 1920px)')
+
+  // Combine media query results
+  const mediaQueries = useMemo(() => {
+    if (breakpoints) {
+      // Create an array of boolean values based on breakpoint matches
+      return breakpoints
+        .sort((a, b) => b.minWidth - a.minWidth)
+        .map(bp => {
+          switch (bp.minWidth) {
+            case 1920:
+              return isMin1920
+            case 1536:
+              return isMin1536
+            case 1280:
+              return isMin1280
+            case 1024:
+              return isMin1024
+            case 768:
+              return isMin768
+            case 640:
+              return isMin640
+            case 480:
+              return isMin480
+            case 0:
+              return true
+            default:
+              return false
+          }
+        })
+    }
+
+    return [
+      isMin1920,
+      isMin1536,
+      isMin1280,
+      isMin1024,
+      isMin768,
+      isMin640,
+      isMin480,
+    ].reverse()
+  }, [
+    breakpoints,
+    isMin480,
+    isMin640,
+    isMin768,
+    isMin1024,
+    isMin1280,
+    isMin1536,
+    isMin1920,
+  ])
 
   const queryClient = useQueryClient()
 
@@ -108,15 +164,21 @@ const MasonryVirtualizerVertical = ({
     [queryKey, queryClient],
   )
 
-  const activeMQ = mediaQueries.lastIndexOf(true)
+  const MASONRY_COLUMN_COUNT = useMemo(() => {
+    if (breakpoints) {
+      const activeBreakpointIndex = mediaQueries.findIndex(mq => mq)
+      if (activeBreakpointIndex !== -1) {
+        const columns = breakpoints[activeBreakpointIndex].columns
+        return maxCols ? Math.min(columns, maxCols) : columns
+      }
+      return minCols
+    }
 
-  const derivedColumnCount =
-    activeMQ !== -1 ? minCols + (activeMQ + 1) : minCols
-  const MASONRY_COLUMN_COUNT = maxCols
-    ? derivedColumnCount > maxCols
-      ? maxCols
-      : derivedColumnCount
-    : derivedColumnCount
+    const activeMQ = mediaQueries.lastIndexOf(true)
+    const derivedColumnCount =
+      activeMQ !== -1 ? minCols + (activeMQ + 1) : minCols
+    return maxCols ? Math.min(derivedColumnCount, maxCols) : derivedColumnCount
+  }, [mediaQueries, breakpoints, minCols, maxCols])
 
   const columnWidth = useMemo(() => {
     return (

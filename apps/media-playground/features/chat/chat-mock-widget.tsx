@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -15,14 +16,23 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { siteConfig } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import {
+  Agent,
   ThreadsCreateArguments,
   ThreadsCreateResponse,
 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError, AxiosInstance } from 'axios'
-import { Keyboard, Loader2Icon, SendIcon } from 'lucide-react'
+import {
+  CatIcon,
+  ImageIcon,
+  Keyboard,
+  ListIcon,
+  Loader2Icon,
+  PersonStandingIcon,
+  SendIcon,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { FC, ReactNode, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -33,10 +43,56 @@ export const chatMockSchema = z.object({
 })
 
 type FormData = z.infer<typeof chatMockSchema>
+type Props = {
+  agentId: string
+  agentSSRData?: Agent
+}
 
-export const ChatMockWidget = () => {
-  const { agent } = useAgentQuery({ key: siteConfig.featured.agents[0] })
-  const { verifyAuth } = useAuthState()
+const FORM_STORAGE_KEY = 'chat-mock-form-state'
+
+interface Suggestion {
+  text: string
+  prompt: string
+  icon: ReactNode
+}
+
+const DEFAULT_SUGGESTIONS: Suggestion[] = [
+  {
+    text: 'What tools can you use?',
+    prompt: 'Can you list all the tools and capabilities you have access to?',
+    icon: <ListIcon className="h-4 w-4" />,
+  },
+  {
+    text: 'Animate my logo',
+    prompt:
+      'I would like to animate my company logo. Can you help me with that?',
+    icon: <ImageIcon className="h-4 w-4" />,
+  },
+  {
+    text: 'Make cute cat images',
+    prompt: 'Can you create some cute cat images for me?',
+    icon: <CatIcon className="h-4 w-4" />,
+  },
+  {
+    text: 'Help me draft a character',
+    prompt: 'I need help creating a character design. Can you assist me?',
+    icon: <PersonStandingIcon className="h-4 w-4" />,
+  },
+]
+
+export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
+  const { agent: agentClientData } = useAgentQuery({
+    key: agentId,
+    initialData: agentSSRData
+      ? {
+          agent: agentSSRData,
+        }
+      : undefined,
+  })
+
+  const agent = agentClientData || agentSSRData
+
+  const { verifyAuth, isSignedIn } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const [shouldShowHint, setShouldShowHint] = useState(false)
@@ -47,10 +103,33 @@ export const ChatMockWidget = () => {
     attachments: [],
   }
 
+  // Move the stored data check to a separate effect that runs once
+  const [initialFormData, setInitialFormData] =
+    useState<FormData>(defaultValues)
+  const [hasStoredData, setHasStoredData] = useState(false)
+
   const form = useForm<FormData>({
-    resolver: zodResolver(chatMockSchema), // use generated form schema for resolver
-    defaultValues,
+    resolver: zodResolver(chatMockSchema),
+    defaultValues: initialFormData,
   })
+
+  // Load stored data and reset form when found
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const stored = localStorage.getItem(FORM_STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        setInitialFormData(parsed)
+        setHasStoredData(true)
+        // Reset form with stored data
+        form.reset(parsed)
+      }
+    } catch (e) {
+      console.error('Error reading stored form state:', e)
+    }
+  }, []) // Empty dependency array - runs once on mount
 
   const message = form.watch('message')
 
@@ -60,17 +139,17 @@ export const ChatMockWidget = () => {
     setShouldShowHint(messageLength > 3)
   }, [message])
 
-  async function onSubmit(formData: FormData) {
-    const finalData = { ...defaultValues, ...formData }
-
+  // Store form state before auth redirect
+  const handleSubmit = async (formData: FormData) => {
+    console.log('handleSubmit', formData)
     if (!(await verifyAuth())) {
+      // Save form state before redirect
+      const currentFormData = form.getValues()
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(currentFormData))
       return
     }
 
     setIsSubmitting(true)
-
-    // console.log('onSubmit', finalData)
-    // return
 
     try {
       const response = await axios.post<
@@ -79,11 +158,9 @@ export const ChatMockWidget = () => {
         ThreadsCreateArguments
       >('/api/threads', {
         agent_id: siteConfig.featured.agents[0],
-        content: finalData.message,
-        attachments: finalData.attachments,
+        content: formData.message,
+        attachments: formData.attachments,
       })
-
-      console.log({ response })
 
       if (!response || !response.data || !response.data?.thread_id) {
         toast.error(`Failed to create thread!`, {
@@ -107,21 +184,50 @@ export const ChatMockWidget = () => {
       })
     } finally {
       setIsSubmitting(false)
+      // Clean up storage after successful submission
+      localStorage.removeItem(FORM_STORAGE_KEY)
+      setHasStoredData(false)
     }
+  }
+
+  // Auto-submit effect
+  useEffect(() => {
+    const shouldAutoSubmit = isSignedIn && hasStoredData && !isSubmitting
+
+    if (shouldAutoSubmit) {
+      const formData = form.getValues()
+      if (formData.message) {
+        handleSubmit(formData)
+      }
+    }
+  }, [isSignedIn, hasStoredData, isSubmitting])
+
+  // Separate cleanup effect
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem(FORM_STORAGE_KEY)
+    }
+  }, []) // Empty dependency array for cleanup on unmount
+
+  const handleSuggestionClick = (prompt: string) => {
+    form.setValue('message', prompt)
+    form.handleSubmit(handleSubmit)()
   }
 
   return (
     <div data-testid="chat-mock-widget">
-      <div className="mb-4">
-        <AgentLink agent={agent} className="h-12 w-12 md:h-16 md:w-16" />
-        <div className="inline-flex ml-16 p-2 mt-2 bg-purple-600/25 rounded-lg rounded-tl-none">
-          How can i help you today?
+      <div className="mb-6 flex justify-around">
+        <div className="flex flex-col items-center w-fit">
+          <AgentLink agent={agent} className="h-12 w-12 md:h-16 md:w-16" />
+          <div className="inline-flex ml-16 p-2 mt-2 bg-purple-600/40 rounded-lg rounded-tl-none">
+            How can I help you today?
+          </div>
         </div>
       </div>
       <Form {...form}>
         <form
-          className="flex gap-2 w-full bg-popover rounded-lg p-2"
-          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex gap-2 w-full bg-popover border border-secondary rounded-lg p-2"
+          onSubmit={form.handleSubmit(handleSubmit)}
         >
           <FormField
             name="message"
@@ -129,7 +235,7 @@ export const ChatMockWidget = () => {
               <FormItem className="w-full relative">
                 <FormControl id={'message'}>
                   <AutosizeTextarea
-                    className="w-full mb-2 !border-none !ring-0 !outline-none"
+                    className="w-full mb-2 !border-none !ring-0 !outline-none !ring-offset-0"
                     placeholder="Type your message here..."
                     rows={4}
                     minHeight={96}
@@ -142,7 +248,7 @@ export const ChatMockWidget = () => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault()
                         if (form.formState.isValid && !isSubmitting) {
-                          form.handleSubmit(onSubmit)()
+                          form.handleSubmit(handleSubmit)()
                         }
                       }
                     }}
@@ -159,7 +265,14 @@ export const ChatMockWidget = () => {
                 >
                   <Keyboard className="h-3 w-3" />
                   <span className="opacity-70">
-                    Enter to send, Shift+Enter for new line
+                    <Badge variant="outline" className="rounded-sm px-1.5">
+                      Enter
+                    </Badge>{' '}
+                    to send,{' '}
+                    <Badge variant="outline" className="px-1.5 rounded-sm">
+                      Shift+Enter
+                    </Badge>{' '}
+                    for new line
                   </span>
                 </div>
               </FormItem>
@@ -185,6 +298,21 @@ export const ChatMockWidget = () => {
             </Button>
           </div>
         </form>
+        <div className="mt-6 mb-2 flex gap-2 flex-wrap justify-center">
+          {DEFAULT_SUGGESTIONS.map((suggestion, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              type="button"
+              className="flex gap-2 rounded-full"
+              onClick={() => handleSuggestionClick(suggestion.prompt)}
+              disabled={isSubmitting}
+            >
+              {suggestion.icon}
+              {suggestion.text}
+            </Button>
+          ))}
+        </div>
       </Form>
     </div>
   )

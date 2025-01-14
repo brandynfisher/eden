@@ -132,9 +132,9 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
         <TextClampMore
           text={agent?.description}
-          className="text-sm break-words  mt-2 text-gray-200"
+          className="text-sm break-words mt-2 text-muted-darker-foreground"
         />
-        <div className="flex items-center gap-x-2 mt-2 text-sm text-gray-300">
+        <div className="flex items-center gap-x-2 mt-2 text-sm text-muted-foreground">
           by{' '}
           <span>
             <UserAvatarLink

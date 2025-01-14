@@ -2,16 +2,19 @@
 
 import DiscordIcon from '@/components/icons/discord'
 import { Button } from '@/components/ui/button'
+import { useAuthState } from '@/hooks/use-auth-state'
 import useLocalStorage from '@/hooks/use-local-storage'
 import { XCircleIcon } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
 const DiscordBanner: React.FC = () => {
+  const { isSignedIn } = useAuthState()
   const pathname = usePathname()
 
   //hide banner on /chat/... - quick and dirty fix to not screw with full height chat layout
-  const shouldShowDiscordBanner = !pathname.startsWith('/chat')
+  const shouldShowDiscordBanner =
+    !pathname.startsWith('/chat') && pathname !== '/'
 
   const [discordBannerDismissedQuery, setDiscordBannerDismissed] =
     useLocalStorage<string>('discordBannerDismissed', '')
@@ -21,6 +24,7 @@ const DiscordBanner: React.FC = () => {
   }
 
   if (
+    !isSignedIn ||
     !shouldShowDiscordBanner ||
     discordBannerDismissedQuery.isLoading ||
     discordBannerDismissedQuery.data

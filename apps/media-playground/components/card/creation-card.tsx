@@ -79,7 +79,7 @@ const CreationCard = ({
             <Button
               variant="ghost"
               className={cn([
-                'relative top-1 left-1 p-1 h-9 w-9 [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:w-7 transition-all hover:backdrop-blur-[2px] overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20 [@media(pointer:coarse)]:!bg-opacity-20',
+                'relative top-1 left-1 p-1 h-9 w-9 [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:w-7 overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20 [@media(pointer:coarse)]:!bg-opacity-20',
                 selectedItems.length ? '!bg-opacity-10' : '',
               ])}
               onClick={handleSelection}

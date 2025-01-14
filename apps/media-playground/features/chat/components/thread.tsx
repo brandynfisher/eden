@@ -77,6 +77,8 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
         readyState === ReadyState.CLOSING
       ) {
         setConnectionLost(true)
+      } else {
+        setConnectionLost(false)
       }
     }
 
