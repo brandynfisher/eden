@@ -60,6 +60,10 @@ export const createThreadMessage = async (
       user_id: userId,
       force_reply: true,
     },
+    headers: {
+      'X-Client-Platform': 'web',
+      'X-Client-Agent': agent.username,
+    },
   }
 
   server.log.info('> modal::request::chat')
