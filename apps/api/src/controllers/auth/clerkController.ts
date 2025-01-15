@@ -84,6 +84,7 @@ export const receiveUserUpdate = async (
       const existingUser = await User.findOne({
         normalizedEmail: normalizedEmail,
       })
+
       // Check if the normalized email already exists
       // If the existing user is found, delete the newly created user from Clerk.
       if (existingUser) {
@@ -97,13 +98,15 @@ export const receiveUserUpdate = async (
         return reply.status(500).send('Webhook Error: Duplicate E-Mail address')
       }
 
+      // Check if the  email is somehow blacklsited
+      // If so, delete the newly created user from Clerk.
       const cleanedEmail = replaceDotsInEmailAddress(email)
       const blacklistedEmail = BLACKLIST.some(blacklist =>
         blacklist.words.some(
           word =>
             cleanedEmail.includes(word) &&
             (blacklist.domain
-              ? blacklist.domain === email.split('@')[1]
+              ? blacklist.domain === cleanedEmail.split('@')[1]
               : true),
         ),
       )

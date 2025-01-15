@@ -1,4 +1,5 @@
 import AgentCard from '@/components/card/agent-card'
+import { CreateAgentCard } from '@/components/card/create-agent-card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAgentsListQuery } from '@/hooks/query/use-agents-list-query'
 
@@ -27,6 +28,7 @@ export const AgentGridSection = ({ agentIds }: Props) => {
           <Skeleton className="min-h-40 w-full" />
         </>
       )}
+      <CreateAgentCard className="bg-secondary" />
     </div>
   )
 }

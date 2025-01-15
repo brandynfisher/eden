@@ -144,7 +144,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open)
-    if (hasEditParam && !open) {
+    if (hasEditParam && agent && !open) {
       router.replace(`/agents/${agent?.username}`)
     }
     // form.reset()
@@ -335,7 +335,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                   </FormControl>
                   <CharacterCount
                     current={field.value?.length || 0}
-                    max={10000}
+                    max={20000}
                   />
                   <FormMessage />
                 </FormItem>
@@ -357,7 +357,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                   </FormControl>
                   <CharacterCount
                     current={field.value?.length || 0}
-                    max={10000}
+                    max={20000}
                   />
                   <FormMessage />
                 </FormItem>
