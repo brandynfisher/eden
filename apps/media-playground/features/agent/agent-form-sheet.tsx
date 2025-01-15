@@ -1,3 +1,5 @@
+'use client'
+
 import ModelMiniCard from '@/components/card/model-mini-card'
 import FileUploader from '@/components/media/file-uploader'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
@@ -27,8 +29,8 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Edit2Icon, PlusIcon, XIcon } from 'lucide-react'
-import { useState } from 'react'
-import * as React from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -67,10 +69,14 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
 }
 
 const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const hasEditParam = searchParams.get('edit')
+  const [isOpen, setIsOpen] = useState(
+    hasEditParam !== null ? hasEditParam === 'true' : false,
+  )
   const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
-
-  const isUpdateMode = mode === 'update'
+  const isUpdateMode = hasEditParam || mode === 'update'
 
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
@@ -96,7 +102,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
 
   const name = form.watch('name')
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isManualKeyEdit && name && !isUpdateMode) {
       form.setValue('key', slugifyName(name))
     }
@@ -138,6 +144,9 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open)
+    if (hasEditParam && !open) {
+      router.replace(`/agents/${agent?.username}`)
+    }
     // form.reset()
   }
 

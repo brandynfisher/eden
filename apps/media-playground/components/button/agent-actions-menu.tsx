@@ -14,7 +14,7 @@ import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
-import { ExternalLinkIcon, Share2Icon } from 'lucide-react'
+import { Edit2Icon, ExternalLinkIcon, Share2Icon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
@@ -50,19 +50,22 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
         <>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link href={`/agents/${agent.username}`} prefetch={false}>
+              <Link
+                href={`/agents/${agent.username}`}
+                prefetch={false}
+                className="cursor-pointer"
+              >
                 <ExternalLinkIcon className="mr-2 h-4 w-4" />
                 View Details
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/chat/${agent.username}`}>
+              <Link href={`/chat/${agent.username}`} className="cursor-pointer">
                 <ChatBubbleIcon className="mr-2 h-4 w-4" />
                 Chat
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem asChild className="cursor-pointer">
               <button
@@ -78,6 +81,16 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
           {agent.owner._id === user?._id && (
             <>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`/agents/${agent.username}?edit=true`}
+                  prefetch={false}
+                  className="cursor-pointer"
+                >
+                  <Edit2Icon className="mr-2 h-4 w-4" />
+                  Edit
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuGroup>
                 <PrivacyActionItem
                   type="agent"
