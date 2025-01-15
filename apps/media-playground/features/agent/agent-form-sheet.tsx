@@ -24,6 +24,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { slugifyName } from '@/utils/slug.util'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -69,6 +70,7 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
 }
 
 const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
+  const { user } = useAuthState()
   const searchParams = useSearchParams()
   const router = useRouter()
   const hasEditParam = searchParams.get('edit')
@@ -144,8 +146,12 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open)
-    if (hasEditParam && agent && !open) {
-      router.replace(`/agents/${agent?.username}`)
+    if (hasEditParam && !open) {
+      if (agent) {
+        router.replace(`/agents/${agent?.username}`)
+      } else {
+        router.replace(`/creators/${user?.username}?tab=agents`)
+      }
     }
     // form.reset()
   }
