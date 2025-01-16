@@ -25,8 +25,8 @@ export const ComposerAttachmentDropzone: FC<
   return (
     <div
       className={cn([
-        'absolute w-full opacity-0 h-full z-10 left-0 pointer-events-none bg-muted/50 border border-muted-foreground border-dotted rounded-md overflow-hidden',
-        isDragging ?? 'opacity-100',
+        'absolute w-full opacity-0 h-full z-10 left-0 pointer-events-none bg-muted/50 border border-purple-600 rounded-md overflow-hidden',
+        isDragging ? 'opacity-100' : '',
       ])}
     >
       {isDragging && (
