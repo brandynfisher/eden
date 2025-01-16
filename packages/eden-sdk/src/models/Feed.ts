@@ -69,6 +69,7 @@ export type FeedCursorRouteQueryParams = {
     limit?: number
     name?: string | string[]
     user?: string | string[]
+    requester?: string | string[]
     owner?: string | string[]
     character?: string | string[]
     collection?: string | string[]
