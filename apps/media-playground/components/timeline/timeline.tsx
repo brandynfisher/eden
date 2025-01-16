@@ -70,6 +70,8 @@ const Timeline = ({ tool }: Props) => {
   // Subscribe to task updates via TaskStatusProvider
   useEffect(() => {
     const callback = (taskUpdate: TaskV2) => {
+      if (taskUpdate.tool !== tool.key) return
+
       // Update the query cache for the infinite query in the timeline
       // queryClient.setQueryData<PageData<IPage<TaskV2>>>(queryKey, oldData => {
       //   if (!oldData) return oldData
