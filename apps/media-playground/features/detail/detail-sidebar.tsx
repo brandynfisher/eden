@@ -34,7 +34,8 @@ type Props = {
 
 const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { user: creator } = item || {}
-  const { prompt, text_input, lora, ...remainingArgs } = item?.task.args || {}
+  const { prompt, text_input, prompt_text, lora, lora2, ...remainingArgs } =
+    item?.task.args || {}
   const { TimeAgo } = useTimeAgo()
   const { user } = useAuthState()
 
@@ -135,15 +136,15 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         <div className="pb-4 text-sm">
           <div className="h-9 flex items-center justify-between">
             <div className="font-bold">Prompt</div>
-            {prompt || text_input ? (
+            {prompt || text_input || prompt_text ? (
               <CopyTextButton
                 title={'Prompt'}
-                text={prompt || text_input || ''}
+                text={prompt || text_input || prompt_text || ''}
               />
             ) : null}
           </div>
           {item ? (
-            <TextClampMore text={prompt || text_input || '-'} />
+            <TextClampMore text={prompt || text_input || prompt_text || '-'} />
           ) : (
             <div className="space-y-1">
               <Skeleton className="h-5 w-[250px]" />
@@ -164,6 +165,29 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                   href={`/create/image/${
                     (item as CreationV2).tool
                   }?lora=${lora}`}
+                  className="ml-auto mr-2"
+                  scroll={false}
+                  shallow={true}
+                >
+                  <ComponentIcon className="mr-2 h-4 w-4" />
+                  Use
+                </Link>
+              </Button>
+            </ModelMiniCard>
+          </Suspense>
+        </div>
+      ) : null}
+
+      {lora2 ? (
+        <div>
+          <div className="font-bold text-sm mb-3 mt-4">Model 2</div>
+          <Suspense fallback={<LoadingIndicator />}>
+            <ModelMiniCard modelId={lora2} className="bg-popover">
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  href={`/create/image/${
+                    (item as CreationV2).tool
+                  }?lora2=${lora2}`}
                   className="ml-auto mr-2"
                   scroll={false}
                   shallow={true}

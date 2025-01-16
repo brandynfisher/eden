@@ -103,7 +103,7 @@ export const MyComposer: FC = () => {
         <Composer.AddAttachment />
       </AuthClickGuard>
 
-      <Composer.Input autoFocus />
+      <Composer.Input autoFocus className="text-base" />
 
       <ThreadPrimitive.If running={true}>
         <div className="flex items-center gap-3">

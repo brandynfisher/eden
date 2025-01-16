@@ -158,11 +158,14 @@ export type TaskV2Args = {
   prompt?: string
   negative_prompt?: string
   text_input?: string
+  prompt_text?: string
   width?: number
   height?: number
   seed?: number
   lora?: string | null
+  lora2?: string | null
   lora_strength?: number
+  lora2_strength?: number
   n_samples?: number
   num_outputs?: number
   image?: string

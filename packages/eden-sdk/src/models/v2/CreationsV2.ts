@@ -179,6 +179,7 @@ export type CreationsV2DeleteResponse = WebAPICallResult & {
 export type CreationV2 = MediaOutput & {
   _id: string
   user: Creator
+  requester: Creator
   task: TaskV2
   output_type: ToolOutputTypeV2
   tool: string

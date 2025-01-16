@@ -1,7 +1,15 @@
+'use client'
+
 import ModelMiniCard from '@/components/card/model-mini-card'
 import FileUploader from '@/components/media/file-uploader'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   Form,
@@ -22,16 +30,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { useToolsListQuery } from '@/hooks/query/use-tools-list-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { slugifyName } from '@/utils/slug.util'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Edit2Icon, PlusIcon, XIcon } from 'lucide-react'
-import { useState } from 'react'
-import * as React from 'react'
+import { ChevronDown } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+
+const DEFAULT_TOOL_KEYS = ['flux_dev_lora']
 
 export const agentSchema = z.object({
   name: z.string().min(1).max(42),
@@ -48,6 +61,7 @@ export const agentSchema = z.object({
   instructions: z.string().min(1).max(10000),
   discordId: z.string().optional(),
   modelId: z.string().optional(),
+  tools: z.string().optional(),
 })
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -66,11 +80,42 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
   )
 }
 
-const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
+function groupToolsByOutputType(
+  tools: Array<{ key: string; name: string; output_type: string }>,
+) {
+  return tools?.reduce((acc, tool) => {
+    const group = tool.output_type || 'Other'
+    if (!acc[group]) {
+      acc[group] = []
+    }
+    acc[group].push({
+      key: tool.key,
+      label: tool.name,
+    })
+    return acc
+  }, {} as Record<string, Array<{ key: string; label: string }>>)
+}
 
-  const isUpdateMode = mode === 'update'
+const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
+  const { tools } = useToolsListQuery()
+  const AVAILABLE_TOOLS = tools?.map(tool => ({
+    label: tool.name,
+    key: tool.key,
+  }))
+  const { user } = useAuthState()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const hasEditParam = searchParams.get('edit')
+  const hasCreateParam = searchParams.get('create')
+  const [isOpen, setIsOpen] = useState(
+    hasEditParam !== null
+      ? hasEditParam === 'true'
+      : false || hasCreateParam !== null
+      ? hasCreateParam === 'true'
+      : false,
+  )
+  const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
+  const isUpdateMode = hasEditParam || mode === 'update'
 
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
@@ -82,7 +127,8 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
           description: agent?.description,
           instructions: agent?.instructions,
           discordId: agent?.discordId ?? '',
-          modelId: agent?.model,
+          modelId: agent?.model ?? '',
+          // tools: agent?.tools as unknown as string ?? '',
         }
       : {
           name: '',
@@ -91,12 +137,13 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
           instructions: '',
           // discordId: '',
           // modelId: '',
+          // tools: '',
         },
   })
 
   const name = form.watch('name')
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isManualKeyEdit && name && !isUpdateMode) {
       form.setValue('key', slugifyName(name))
     }
@@ -138,6 +185,13 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open)
+    if ((hasCreateParam || hasEditParam) && !open) {
+      if (agent) {
+        router.replace(`/agents/${agent?.username}`)
+      } else {
+        router.replace(`/creators/${user?.username}?tab=agents`)
+      }
+    }
     // form.reset()
   }
 
@@ -326,7 +380,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                   </FormControl>
                   <CharacterCount
                     current={field.value?.length || 0}
-                    max={10000}
+                    max={20000}
                   />
                   <FormMessage />
                 </FormItem>
@@ -348,7 +402,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                   </FormControl>
                   <CharacterCount
                     current={field.value?.length || 0}
-                    max={10000}
+                    max={20000}
                   />
                   <FormMessage />
                 </FormItem>
@@ -418,6 +472,143 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                 </FormItem>
               )}
             />
+
+            {/** Tools Field */}
+            <FormField
+              control={form.control}
+              name="tools"
+              render={({ field }) => {
+                const selectedTools = field.value
+                  ? field.value.split(',')
+                  : DEFAULT_TOOL_KEYS
+                const groupedTools = groupToolsByOutputType(tools || [])
+
+                const handleSelectAll = () => {
+                  field.onChange(AVAILABLE_TOOLS?.map(t => t.key).join(','))
+                }
+
+                const handleSelectNone = () => {
+                  field.onChange('')
+                }
+
+                const handleResetToDefault = () => {
+                  field.onChange(DEFAULT_TOOL_KEYS.join(','))
+                }
+
+                return (
+                  <Collapsible
+                    defaultOpen={false}
+                    className="p-2 bg-secondary rounded-lg space-y-2 hidden" //@TODO: temporarily hidden
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CollapsibleTrigger className="hover:opacity-80">
+                          <ChevronDown className="h-4 w-4" />
+                        </CollapsibleTrigger>
+                        <FormLabel className="hover:cursor-pointer">
+                          Tools{' '}
+                          <span className="text-xs text-muted-foreground">
+                            ({selectedTools.length}/{AVAILABLE_TOOLS?.length})
+                          </span>
+                        </FormLabel>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={handleSelectAll}
+                        >
+                          Select All
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={handleSelectNone}
+                        >
+                          Select None
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={handleResetToDefault}
+                        >
+                          Reset to Default
+                        </Button>
+                      </div>
+                    </div>
+
+                    <CollapsibleContent className="space-y-4">
+                      <FormDescription>
+                        Configure which tools this agent can use.
+                      </FormDescription>
+
+                      {Object.entries(groupedTools).map(
+                        ([groupName, groupTools]) => (
+                          <Collapsible
+                            key={groupName}
+                            defaultOpen={false}
+                            className="space-y-2"
+                          >
+                            <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-80">
+                              <ChevronDown className="h-4 w-4" />
+                              <div className="flex justify-between w-full">
+                                <span className="text-sm font-medium">
+                                  {groupName}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  (
+                                  {
+                                    groupTools.filter(t =>
+                                      selectedTools.includes(t.key),
+                                    ).length
+                                  }
+                                  /{groupTools.length})
+                                </span>
+                              </div>
+                            </CollapsibleTrigger>
+
+                            <CollapsibleContent className="space-y-2 pl-6">
+                              {groupTools.map(tool => (
+                                <div
+                                  key={tool.key}
+                                  className="flex items-center space-x-2"
+                                >
+                                  <Checkbox
+                                    id={tool.key}
+                                    checked={selectedTools.includes(tool.key)}
+                                    onCheckedChange={checked => {
+                                      const updatedTools = checked
+                                        ? [...selectedTools, tool.key]
+                                        : selectedTools.filter(
+                                            t => t !== tool.key,
+                                          )
+                                      field.onChange(updatedTools.join(','))
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={tool.key}
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                    {tool.label}
+                                  </label>
+                                </div>
+                              ))}
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ),
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                )
+              }}
+            />
+
             <SheetFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {isUpdateMode ? 'Update Agent' : 'Create Agent'}

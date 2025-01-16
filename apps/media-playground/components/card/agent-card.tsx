@@ -20,14 +20,14 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
   return (
     <Card
       className={cn([
-        'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary',
+        'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary hover:ring-2 ring-purple-600/40',
         className,
       ])}
     >
       {!agent.public ? <PrivateIcon className="" /> : null}
       {onClick ? (
         <div
-          className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover group-hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
+          className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer z-50 opacity-0 bg-popover group-hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
           onClick={() => onClick(agent)}
         >
           <SquareMousePointerIcon className="mr-2 h-4 w-4" />
