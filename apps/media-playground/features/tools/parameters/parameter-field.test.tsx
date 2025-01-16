@@ -132,7 +132,7 @@ describe('ParameterField Component', () => {
       name: 'sample_media',
       label: 'Sample Media',
       schema: {
-        anyOf: [{ type: 'image' }, { type: 'video' }, { type: 'archive' }],
+        anyOf: [{ type: 'image' }, { type: 'video' }, { type: 'zip' }],
       },
       description: 'A media parameter',
       required: false,

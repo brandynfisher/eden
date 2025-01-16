@@ -1,4 +1,4 @@
-export type FileType = 'image' | 'pdf' | 'audio' | 'video' | 'archive' | 'other'
+export type FileType = 'image' | 'pdf' | 'audio' | 'video' | 'zip' | 'other'
 export type MimeTypesVideo =
   | 'video/mp4'
   | 'video/webm'

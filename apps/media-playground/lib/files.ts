@@ -285,7 +285,7 @@ export const getFileTypeByMimeType = (mimeType?: MimeType | string) => {
   const type = mimeType?.split('/')[0] || 'other'
 
   if (type === 'application') {
-    return 'archive'
+    return 'zip'
   }
 
   return type as FileType

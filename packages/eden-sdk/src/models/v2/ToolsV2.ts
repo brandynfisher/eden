@@ -95,6 +95,7 @@ export type ToolParameterTypeValue =
   | 'boolean'
   | 'lora'
   | 'archive'
+  | 'zip'
 
 export type ToolParameterSingleType = {
   type: ToolParameterTypeValue
