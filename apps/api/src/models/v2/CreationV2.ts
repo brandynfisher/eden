@@ -10,6 +10,7 @@ import paginate from 'mongoose-paginate-v2'
 
 export interface CreationV2Schema extends MediaOutput {
   user: ObjectId
+  requester?: ObjectId
   task: ObjectId
   args: TaskV2Args
   tool: string
@@ -21,6 +22,7 @@ export interface CreationV2Schema extends MediaOutput {
 
 export interface CreationV2Input extends MediaOutput {
   user: ObjectId
+  requester?: ObjectId
   task: ObjectId
   args: TaskV2Args
   tool: string
@@ -37,6 +39,11 @@ export const creationSchema = new Schema<CreationV2Document>(
       type: Schema.Types.ObjectId,
       ref: 'users3',
       required: true,
+    },
+    requester: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      required: false,
     },
     task: {
       type: Schema.Types.ObjectId,
@@ -105,6 +112,7 @@ creationSchema.index({ deleted: -1, createdAt: -1 })
 creationSchema.index({ public: 1, deleted: 1, createdAt: -1, _id: -1 })
 creationSchema.index({
   user: 1,
+  requester: 1,
   task: -1,
   public: -1,
   deleted: -1,
