@@ -53,7 +53,11 @@ const ParameterTableCollapsible = ({ item }: Props) => {
               name={'prompt'}
               label={'Prompt'}
               value={
-                item.args.prompt || item.args.text_input || item.args.name || ''
+                item.args.prompt ||
+                item.args.text_input ||
+                item.args.name ||
+                item.args.prompt_text ||
+                ''
               }
             />
           ) : null}
@@ -81,24 +85,44 @@ const ParameterTableCollapsible = ({ item }: Props) => {
         </div>
       </div>
       <CollapsibleContent className="data-[state=open]:animate-none data-[state=closed]:animate-none mb-2">
+        {item.args.lora ? (
+          <Suspense fallback={<LoadingIndicator />}>
+            <ModelMiniCard modelId={item.args.lora} className="bg-popover mb-2">
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  href={`/create/image/${item.tool}?lora=${item.args.lora}`}
+                  className="ml-auto mr-2"
+                  scroll={false}
+                  shallow={true}
+                >
+                  <ComponentIcon className="mr-2 h-4 w-4" />
+                  Use
+                </Link>
+              </Button>
+            </ModelMiniCard>
+          </Suspense>
+        ) : null}
+        {item.args.lora2 ? (
+          <Suspense fallback={<LoadingIndicator />}>
+            <ModelMiniCard
+              modelId={item.args.lora2}
+              className="bg-popover mb-2"
+            >
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  href={`/create/image/${item.tool}?lora2=${item.args.lora2}`}
+                  className="ml-auto mr-2"
+                  scroll={false}
+                  shallow={true}
+                >
+                  <ComponentIcon className="mr-2 h-4 w-4" />
+                  Use
+                </Link>
+              </Button>
+            </ModelMiniCard>
+          </Suspense>
+        ) : null}
         <div className="bg-accent rounded-md">
-          {item.args.lora ? (
-            <Suspense fallback={<LoadingIndicator />}>
-              <ModelMiniCard modelId={item.args.lora} className="bg-popover">
-                <Button size="sm" variant="outline" asChild>
-                  <Link
-                    href={`/create/image/${item.tool}?lora=${item.args.lora}`}
-                    className="ml-auto mr-2"
-                    scroll={false}
-                    shallow={true}
-                  >
-                    <ComponentIcon className="mr-2 h-4 w-4" />
-                    Use
-                  </Link>
-                </Button>
-              </ModelMiniCard>
-            </Suspense>
-          ) : null}
           <ParameterTable taskId={item._id} args={item.args} />
         </div>
       </CollapsibleContent>

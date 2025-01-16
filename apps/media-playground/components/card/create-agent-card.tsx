@@ -22,7 +22,7 @@ export function CreateAgentCard({ className }: CreateAgentCardProps) {
     >
       <AuthClickGuard>
         <Link
-          href={`/creators/${user?.username}?tab=agents&edit=true`}
+          href={`/creators/${user?.username}?tab=agents&create=true`}
           className="relative w-full block p-2"
         >
           <div className="relative flex">

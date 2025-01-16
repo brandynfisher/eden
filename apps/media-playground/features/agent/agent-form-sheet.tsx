@@ -74,8 +74,13 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
   const searchParams = useSearchParams()
   const router = useRouter()
   const hasEditParam = searchParams.get('edit')
+  const hasCreateParam = searchParams.get('create')
   const [isOpen, setIsOpen] = useState(
-    hasEditParam !== null ? hasEditParam === 'true' : false,
+    hasEditParam !== null
+      ? hasEditParam === 'true'
+      : false || hasCreateParam !== null
+      ? hasCreateParam === 'true'
+      : false,
   )
   const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
   const isUpdateMode = hasEditParam || mode === 'update'
@@ -146,7 +151,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
 
   const onOpenChange = (open: boolean) => {
     setIsOpen(open)
-    if (hasEditParam && !open) {
+    if ((hasCreateParam || hasEditParam) && !open) {
       if (agent) {
         router.replace(`/agents/${agent?.username}`)
       } else {

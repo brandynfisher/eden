@@ -95,6 +95,9 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                   <TaskStatusBadge status={item.status} />
                   <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
                     {item.error}
+                    <div className="text-xs text-muted-foreground">
+                      {item._id}
+                    </div>
                   </div>
                 </div>
               ) : null}
