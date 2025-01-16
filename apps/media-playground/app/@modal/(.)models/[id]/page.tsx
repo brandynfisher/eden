@@ -89,7 +89,7 @@ const ArrowNavigation = ({
     <>
       <Button
         variant="outline"
-        className="fixed top-1/2 left-0 size-16 z-[999] hidden md:block"
+        className="fixed top-1/2 left-0 size-16 z-[999] hidden md:block  disabled:pointer-events-auto disabled:hover:bg-background disabled:hover:text-foreground"
         onClick={handlePrevious}
         disabled={activeIndex <= 0}
       >
@@ -97,7 +97,7 @@ const ArrowNavigation = ({
       </Button>
       <Button
         variant="outline"
-        className="fixed top-1/2 right-0 ml-auto z-[999] size-16 hidden md:block"
+        className="fixed top-1/2 right-0 ml-auto z-[999] size-16 hidden md:block  disabled:pointer-events-auto disabled:hover:bg-background disabled:hover:text-foreground"
         onClick={handleNext}
         disabled={!items[activeIndex + 1]}
       >
