@@ -99,7 +99,7 @@ const getFileIconAndColor = (fileType: FileType) => {
     }
   }
 
-  if (fileType === 'archive') {
+  if (fileType === 'zip') {
     return {
       icon: (
         <FolderArchive
@@ -143,7 +143,7 @@ const supportedFileTypes: SupportedFileType[] = [
     allowedMimeTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg'],
   },
   {
-    type: 'archive',
+    type: 'zip',
     allowedMimeTypes: [
       'application/zip',
       'application/x-tar',
@@ -482,7 +482,7 @@ const FileUploader = ({
     if (allowedFileTypes.includes('video')) {
       colors.push(VideoColor.bgColor)
     }
-    if (allowedFileTypes.includes('archive')) {
+    if (allowedFileTypes.includes('zip')) {
       colors.push(ArchiveColor.bgColor)
     }
     if (allowedFileTypes.includes('audio')) {

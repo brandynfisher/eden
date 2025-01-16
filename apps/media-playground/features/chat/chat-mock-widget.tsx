@@ -173,6 +173,8 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
 
       router.push(`/chat/${agent?.username}/${response.data.thread_id}`)
     } catch (err) {
+      setIsSubmitting(false)
+
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'
@@ -183,7 +185,6 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
         richColors: true,
       })
     } finally {
-      setIsSubmitting(false)
       // Clean up storage after successful submission
       localStorage.removeItem(FORM_STORAGE_KEY)
       setHasStoredData(false)

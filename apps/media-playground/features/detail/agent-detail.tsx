@@ -3,6 +3,7 @@
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentFormSheet from '@/features/agent/agent-form-sheet'
 import CreationsFeed from '@/features/feed/creations-feed'
@@ -30,7 +31,7 @@ type Props = {
 
 const AgentDetail = ({ id, agentSSRData }: Props) => {
   const router = useRouter()
-  const { user } = useAuthState()
+  const { isSignedIn, user } = useAuthState()
   const dispatch = useAppDispatch()
 
   const { agent: agentClientData, invalidate } = useAgentQuery({
@@ -88,7 +89,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     )
   }
 
-  if (!agent) return null
+  if (!agent || (!isSignedIn && !user)) return null
 
   return (
     <>
@@ -145,7 +146,20 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
         </div>
       </div>
       <div className="p-4">
-        <CreationsFeed query={{ user: agent._id }} />
+        {isSignedIn ? (
+          !!user && (
+            <div>
+              <TypographyH6 className="mb-4">
+                Your Creations with {agent?.name}
+              </TypographyH6>
+              <CreationsFeed
+                query={{ user: agent._id, requester: user?._id }}
+              />
+            </div>
+          )
+        ) : (
+          <CreationsFeed query={{ user: agent._id }} />
+        )}
       </div>
     </>
   )

@@ -283,7 +283,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           isSchemaType(parameter, 'video') ||
           isSchemaType(parameter, 'image') ||
           isSchemaType(parameter, 'audio') ||
-          isSchemaType(parameter, 'archive')
+          isSchemaType(parameter, 'zip')
         ) {
           const types = getSchemaAnyOfTypes(parameter) || [
             getSchemaType(parameter) || 'image',
@@ -292,7 +292,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             types?.includes('image') ||
             types?.includes('video') ||
             types?.includes('audio') ||
-            types?.includes('archive')
+            types?.includes('zip')
           ) {
             return (
               <FormItem
@@ -384,7 +384,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             arrayItemType === 'image' ||
             arrayItemType === 'video' ||
             arrayItemType === 'audio' ||
-            arrayItemType === 'archive' ||
+            arrayItemType === 'zip' ||
             arrayItemType === 'anyOf'
           ) {
             const types =
@@ -398,7 +398,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
               types?.includes('image') ||
               types?.includes('video') ||
               types?.includes('audio') ||
-              types?.includes('archive')
+              types?.includes('zip')
             ) {
               return (
                 <FormItem
