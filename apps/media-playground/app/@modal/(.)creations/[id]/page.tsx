@@ -109,7 +109,7 @@ export default function CreationsModalPage({ params: { id } }: Props) {
   return (
     <>
       <FullScreenModal
-        className="p-0 relative outline-none"
+        className="p-0 relative"
         components={{
           OverlayComponent: () => <ArrowNavigation onIdChange={setCurrentId} />,
         }}
