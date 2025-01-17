@@ -24,8 +24,6 @@ const ArrowNavigation = ({
   const activeIndex = activeIndexMap[activeFeedId || 'default'] ?? null
   const pathname = usePathname()
 
-  console.log(items)
-
   const handleNext = useCallback(async () => {
     if (activeIndex === null || !items[activeIndex]) {
       return
