@@ -33,9 +33,11 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
     return null
   }
 
-  const handleShareClick = () => {
+  const handleShareClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault()
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
     const shareUrl = `${baseUrl}/agents/${agent.username}`
+    setIsOpen(false)
     dispatch(
       updateShareModal({
         isOpen: true,
@@ -45,7 +47,11 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
   }
 
   return (
-    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
+    <ActionsDropdown
+      open={isOpen}
+      className={className}
+      onOpenChange={setIsOpen}
+    >
       {isOpen && (
         <>
           <DropdownMenuGroup>
