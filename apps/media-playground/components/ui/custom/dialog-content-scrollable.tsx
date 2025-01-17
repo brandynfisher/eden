@@ -25,7 +25,6 @@ const DialogContentScrollable = React.forwardRef<
 >(({ className, children, ...props }, ref) => {
   return (
     <DialogPortal>
-      <div className="absolute">123</div>
       <DialogOverlayScrollable className="backdrop-filter backdrop-blur-sm">
         <DialogPrimitive.Content
           ref={ref}

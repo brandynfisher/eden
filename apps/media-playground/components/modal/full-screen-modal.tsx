@@ -70,17 +70,19 @@ const FullScreenModal = ({
       {OverlayComponent ? <OverlayComponent /> : null}
       <DialogContentScrollable
         className={cn([
-          `w-full md:w-[calc(100dvw_-_32px)] h-fit overflow-x-hidden`,
+          `w-full md:w-[calc(100dvw_-_144px)] h-full overflow-x-hidden no-scrollbar`,
           className,
         ])}
       >
+        {OverlayComponent ? <OverlayComponent /> : null}
+
         <VisuallyHidden>
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
         </VisuallyHidden>
-        {children}
+        <div className="absolute inset-0">{children}</div>
       </DialogContentScrollable>
     </Dialog>
   )

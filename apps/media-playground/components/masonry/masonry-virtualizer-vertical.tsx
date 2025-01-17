@@ -14,14 +14,11 @@ import {
   addDocIfNotExistInPage,
   updateDocInPage,
 } from '@/lib/query/cache-updates'
-import { FeedV2CursorResponse } from '@edenlabs/eden-sdk'
 import {
-  FetchNextPageOptions,
-  InfiniteData,
-  InfiniteQueryObserverResult,
-  useInfiniteQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+  FeedV2CursorResponse,
+  PaginatedCursorResponse,
+} from '@edenlabs/eden-sdk'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
@@ -47,14 +44,9 @@ type Props = {
   limit?: number
   breakpoints?: BreakpointConfig[]
   onItemsLoaded?: (items: RowItem[]) => void
-  onFetchNextPage?: (
-    options?: FetchNextPageOptions | undefined,
-  ) => Promise<
-    InfiniteQueryObserverResult<
-      InfiniteData<FeedV2CursorResponse, unknown>,
-      Error
-    >
-  >
+  setFetchNextPage?: (
+    fetchNext: () => Promise<PaginatedCursorResponse<RowItem>>,
+  ) => void
 }
 
 export const MasonrySkeleton = () => {
@@ -81,7 +73,7 @@ const MasonryVirtualizerVertical = ({
   limit = DEFAULT_PAGE_LIMIT,
   breakpoints,
   onItemsLoaded, // Callback for passing items to parent
-  onFetchNextPage, // Callback for external fetch triggers
+  setFetchNextPage, // Callback for external fetch triggers
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
@@ -258,14 +250,20 @@ const MasonryVirtualizerVertical = ({
     }
   }, [allRows, onItemsLoaded])
 
-  // Expose fetchNextPage for external calls
-  useEffect(() => {
-    if (onFetchNextPage) {
-      // @TODO: fix this  these types currently dont make sense here
-      // @ts-ignore these types currently dont make sense here
-      onFetchNextPage(fetchNextPage)
+  const fetchNextForExternal = useCallback(async () => {
+    if (hasNextPage) {
+      const result = await fetchNextPage()
+      return result.data?.pages[result.data.pages.length - 1] ?? { docs: [] }
     }
-  }, [fetchNextPage, onFetchNextPage])
+
+    return { docs: [] }
+  }, [fetchNextPage, hasNextPage])
+
+  useEffect(() => {
+    if (setFetchNextPage) {
+      setFetchNextPage(fetchNextForExternal)
+    }
+  }, [fetchNextForExternal, setFetchNextPage])
 
   const rowVirtualizer = useWindowVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,
