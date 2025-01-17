@@ -197,10 +197,17 @@ export const LightboxTrigger = React.forwardRef<
         <LightboxVideoTrigger
           src={slide.url}
           duration={slide.duration}
+          width={slide.width}
+          height={slide.height}
           {...videoProps}
         />
       ) : (
-        <LightboxImageTrigger src={slide.url} {...imageProps} />
+        <LightboxImageTrigger
+          src={slide.url}
+          width={slide.width}
+          height={slide.height}
+          {...imageProps}
+        />
       )}
     </div>
   )
@@ -253,9 +260,20 @@ export function LightboxVideoTrigger({
   ...props
 }: LightboxVideoTriggerProps) {
   const { hovered, ref: hoverRef } = useHover()
+  const width = props?.width ? +props.width : 1024
+  const height = props?.height ? +props.height : 1024
 
   return (
-    <div ref={hoverRef}>
+    <div ref={hoverRef} className="relative h-full w-full">
+      <LightboxImageTrigger
+        src={src}
+        width={width}
+        height={height}
+        className={cn(
+          'absolute inset-0 flex w-full h-full object-contain',
+          className,
+        )}
+      />
       {duration && !hovered ? (
         <MediaDurationBadge duration={duration} isLoading={false} />
       ) : null}
@@ -264,7 +282,12 @@ export function LightboxVideoTrigger({
         muted
         playsInline
         loop
-        className={cn('flex w-full h-full object-contain', className)}
+        width={width}
+        height={height}
+        className={cn(
+          'flex w-full h-full object-contain relative z-10',
+          className,
+        )}
         onMouseEnter={e => {
           e.currentTarget.play()
         }}
