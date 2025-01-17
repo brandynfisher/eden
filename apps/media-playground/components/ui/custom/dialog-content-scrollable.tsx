@@ -35,7 +35,7 @@ const DialogContentScrollable = React.forwardRef<
           {...props}
         >
           {children}
-          <DialogPrimitive.Close className="absolute w-8 h-8 top-0 left-0 rounded-t-none rounded-l-none rounded-tl-lg flex items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none bg-accent data-[state=open]:text-muted-foreground">
+          <DialogPrimitive.Close className="absolute z-10 w-8 h-8 top-0 left-0 rounded-t-none rounded-l-none rounded-tl-lg flex items-center justify-center rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none bg-accent data-[state=open]:text-muted-foreground">
             <ArrowLeftIcon className="h-6 w-6" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
