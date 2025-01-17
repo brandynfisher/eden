@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -33,7 +34,8 @@ type Props = {
 
 const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { user: creator } = item || {}
-  const { prompt, text_input, lora, ...remainingArgs } = item?.args || {}
+  const { prompt, text_input, prompt_text, lora, lora2, ...remainingArgs } =
+    item?.task.args || {}
   const { TimeAgo } = useTimeAgo()
   const { user } = useAuthState()
 
@@ -68,7 +70,10 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                 )}
               </Suspense>
             </div>
-            <div className="text-xs text-foreground/70 mt-2">
+            <div
+              className="text-xs text-foreground/70 mt-2"
+              title={item.createdAt?.toLocaleString()}
+            >
               <TimeAgo date={item.createdAt} />
             </div>
           </div>
@@ -100,13 +105,13 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <div className="h-9 flex items-center justify-between font-bold">
             Tool
           </div>
-          {item && (item as CreationV2).workflow ? (
+          {item && (item as CreationV2).tool ? (
             <Link
-              href={`/create/${(item as CreationV2).mediaAttributes?.type}/${
-                (item as CreationV2).workflow
-              }`}
+              href={`/create/${getFileTypeByMimeType(
+                (item as CreationV2).mediaAttributes?.mimeType,
+              )}/${(item as CreationV2).tool}`}
             >
-              {(item as CreationV2).workflow}
+              {(item as CreationV2).tool}
             </Link>
           ) : (
             <Skeleton className="h-5 w-[125px]" />
@@ -131,15 +136,15 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         <div className="pb-4 text-sm">
           <div className="h-9 flex items-center justify-between">
             <div className="font-bold">Prompt</div>
-            {prompt || text_input ? (
+            {prompt || text_input || prompt_text ? (
               <CopyTextButton
                 title={'Prompt'}
-                text={prompt || text_input || ''}
+                text={prompt || text_input || prompt_text || ''}
               />
             ) : null}
           </div>
           {item ? (
-            <TextClampMore text={prompt || text_input || '-'} />
+            <TextClampMore text={prompt || text_input || prompt_text || '-'} />
           ) : (
             <div className="space-y-1">
               <Skeleton className="h-5 w-[250px]" />
@@ -158,8 +163,31 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               <Button size="sm" variant="outline" asChild>
                 <Link
                   href={`/create/image/${
-                    (item as CreationV2).workflow
+                    (item as CreationV2).tool
                   }?lora=${lora}`}
+                  className="ml-auto mr-2"
+                  scroll={false}
+                  shallow={true}
+                >
+                  <ComponentIcon className="mr-2 h-4 w-4" />
+                  Use
+                </Link>
+              </Button>
+            </ModelMiniCard>
+          </Suspense>
+        </div>
+      ) : null}
+
+      {lora2 ? (
+        <div>
+          <div className="font-bold text-sm mb-3 mt-4">Model 2</div>
+          <Suspense fallback={<LoadingIndicator />}>
+            <ModelMiniCard modelId={lora2} className="bg-popover">
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  href={`/create/image/${
+                    (item as CreationV2).tool
+                  }?lora2=${lora2}`}
                   className="ml-auto mr-2"
                   scroll={false}
                   shallow={true}
@@ -181,7 +209,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <AccordionContent>
             {item && remainingArgs ? (
               <ParameterTable
-                taskId={item.task.toString()}
+                taskId={item.task._id.toString()}
                 args={remainingArgs}
               />
             ) : (

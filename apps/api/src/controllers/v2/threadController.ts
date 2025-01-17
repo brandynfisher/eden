@@ -1,11 +1,14 @@
-import { User } from '../../models/Creator'
+import { Agent } from '../../models/Agent'
+import { User } from '../../models/User'
 import { Thread as ThreadModel } from '../../models/v2/Thread'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import ThreadRepository from '../../repositories/ThreadRepository'
 import {
+  TaskV2Status,
   ThreadsCreateArguments,
   ThreadsGetArguments,
   ThreadsListArguments,
+  ThreadsMessageReactArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -17,8 +20,26 @@ export const createThreadMessage = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { threadId, agentId, content, attachments } =
+  const { thread_id, agent_id, content, attachments } =
     request.body as ThreadsCreateArguments
+
+  if (!agent_id) {
+    return reply.status(400).send({
+      message: 'agent_id not provided',
+    })
+  }
+
+  const isObjectId = ObjectId.isValid(agent_id)
+  const query = isObjectId
+    ? { _id: new ObjectId(agent_id) }
+    : { username: agent_id }
+  const agent = await Agent.findOne(query)
+
+  if (!agent) {
+    return reply.status(404).send({
+      message: 'agent not found',
+    })
+  }
 
   const userDocument = await User.findById(userId)
   if (!userDocument) {
@@ -28,16 +49,20 @@ export const createThreadMessage = async (
   }
 
   const modalRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/create`,
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/chat`,
     data: {
-      workflow: 'chat',
-      args: {
-        thread_id: threadId,
-        agent_id: agentId,
+      agent_id: agent._id,
+      thread_id,
+      user_message: {
         content,
         attachments,
       },
-      user: userId,
+      user_id: userId,
+      force_reply: true,
+    },
+    headers: {
+      'X-Client-Platform': 'web',
+      'X-Client-Agent': agent.username,
     },
   }
 
@@ -58,23 +83,41 @@ export const createThreadMessage = async (
     server.log.info('< modal::response::chat')
     server.log.info(modalResponse.data)
 
-    if (!modalResponse || !modalResponse.data) {
-      console.log('malformed response', modalResponse)
+    if (!modalResponse) {
+      server.log.error('empty response', modalResponse)
       return reply.status(500).send({
-        message: `Empty / Unexpected response from compute api`,
+        message: `Empty response from compute api`,
       })
     }
 
-    console.log('send', { success: true })
+    if (!modalResponse.data) {
+      server.log.error(
+        'malformed response, data missing from response',
+        modalResponse,
+      )
+      return reply.status(500).send({
+        message: `Unexpected response from compute api`,
+      })
+    }
 
-    return reply.status(200).send({ success: true })
+    if (!modalResponse.data.thread_id) {
+      server.log.error(
+        'malformed response, thread_id missing from response',
+        modalResponse,
+      )
+      return reply.status(500).send({
+        message: `Missing thread_id`,
+      })
+    }
+
+    return reply.status(200).send({ thread_id: modalResponse.data.thread_id })
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage =
       error && error.response && error.response.data
         ? error.response.data
         : 'Unknown Error'
-
+    console.log(e)
     server.log.error({
       message: 'Failed to create thread/message',
       error: errorMessage,
@@ -97,25 +140,48 @@ export const listThreads = async (
     })
   }
 
-  const { limit = 25, page, sort } = request.query as ThreadsListArguments
+  const {
+    limit = 25,
+    page,
+    sort,
+    agent_id,
+  } = request.query as ThreadsListArguments
 
   try {
+    const isObjectId = ObjectId.isValid(agent_id)
+    const agent = await Agent.findOne(
+      isObjectId ? { _id: new ObjectId(agent_id) } : { username: agent_id },
+    )
+
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found',
+      })
+    }
+
     const query = {
       user: user._id,
+      agent: agent._id,
     }
 
     const queryOptions: QueryOptions = {
-      select: '_id name createdAt updatedAt user',
+      select: '_id title name createdAt updatedAt user agent',
       limit,
       page,
       sort: {
         ...sort,
         updatedAt: -1,
+        createdAt: -1,
       },
     }
 
     const threadsRepository = new ThreadRepository(ThreadModel)
     const paginatedResponse = await threadsRepository.query(query, queryOptions)
+
+    await threadsRepository.model.populate(paginatedResponse.docs, {
+      path: 'agent',
+      select: '_id username userImage',
+    })
 
     return reply.status(200).send(paginatedResponse)
   } catch (e) {
@@ -139,7 +205,7 @@ export const getThread = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { threadId } = request.params as ThreadsGetArguments
+  const { thread_id } = request.params as ThreadsGetArguments
 
   const user = await User.findById(userId)
   if (!user) {
@@ -150,12 +216,17 @@ export const getThread = async (
 
   try {
     const thread = await ThreadModel.findOne({
-      _id: new ObjectId(threadId),
+      _id: new ObjectId(thread_id),
       user: userId,
-    }).populate({
-      path: 'user',
-      select: '_id username userId userImage',
     })
+      .populate({
+        path: 'user',
+        select: '_id username userId userImage',
+      })
+      .populate({
+        path: 'agent',
+        select: '_id username userImage',
+      })
 
     // console.log(thread)
 
@@ -164,6 +235,40 @@ export const getThread = async (
         message: 'Thread not found',
       })
     }
+
+    const extendedMessages = thread.messages.map((msg, index) => {
+      if (msg.role !== 'assistant') {
+        return msg
+      }
+
+      // console.log(thread.active, msg.id.toString())
+
+      const hasPendingToolCalls =
+        msg.tool_calls?.length &&
+        msg.tool_calls?.some(
+          call =>
+            !call.status ||
+            call.status === TaskV2Status.Running ||
+            call.status === TaskV2Status.Pending,
+        )
+      return {
+        ...msg,
+        status:
+          hasPendingToolCalls ||
+          (thread.active &&
+            Array.isArray(thread.active) &&
+            thread.active.some(
+              t =>
+                t === msg.id.toString() ||
+                (index === thread.messages.length - 1 &&
+                  t.toString() === msg.reply_to?.toString()),
+            ))
+            ? { type: 'running' }
+            : { type: 'complete', reason: 'stop' },
+      }
+    })
+
+    thread.messages = extendedMessages
 
     return reply.status(200).send({ thread })
   } catch (e) {
@@ -175,6 +280,129 @@ export const getThread = async (
 
     server.log.error({
       message: 'Failed to get thread',
+      error: errorMessage,
+    })
+    return reply.status(500).send({ error: errorMessage })
+  }
+}
+
+export const addThreadMessageReaction = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user
+  const { message_id, reaction } = request.body as ThreadsMessageReactArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!message_id) {
+    return reply.status(400).send({
+      message: 'message_id not provided',
+    })
+  }
+
+  if (!reaction) {
+    return reply.status(400).send({
+      message: 'reaction not provided',
+    })
+  }
+
+  try {
+    const query = {
+      user: userId,
+      'messages.id': new ObjectId(message_id),
+    }
+
+    const thread = await ThreadModel.findOne(query)
+
+    if (reaction === 'thumbs_up') {
+      const existingReactions =
+        thread?.messages.find(m => {
+          return m.id.toString() === message_id
+        })?.reactions?.thumbs_up || []
+
+      console.log({ existingReactions })
+
+      if (
+        existingReactions
+          .map(reactingUserId => reactingUserId?.toString())
+          .includes(userId.toString())
+      ) {
+        console.log('already reacted', 'remove', userId.toString())
+        // User already reacted, remove the reaction
+        await ThreadModel.updateOne(
+          query,
+          {
+            $pull: { 'messages.$[msg].reactions.thumbs_up': userId },
+          },
+          {
+            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+          },
+        )
+      } else {
+        console.log('not reacted', 'add', userId.toString())
+        // User has not reacted, add the reaction
+        await ThreadModel.updateOne(
+          query,
+          {
+            $push: { 'messages.$[msg].reactions.thumbs_up': userId },
+          },
+          {
+            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+          },
+        )
+      }
+    } else if (reaction === 'thumbs_down') {
+      const existingReactions =
+        thread?.messages.find(m => m.id.toString() === message_id)?.reactions
+          ?.thumbs_down || []
+
+      if (
+        existingReactions
+          .map(reactingUserId => reactingUserId?.toString())
+          .includes(userId.toString())
+      ) {
+        // User already reacted, remove the reaction
+        await ThreadModel.updateOne(
+          query,
+          {
+            $pull: { 'messages.$[msg].reactions.thumbs_down': userId },
+          },
+          {
+            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+          },
+        )
+      } else {
+        // User has not reacted, add the reaction
+        await ThreadModel.updateOne(
+          query,
+          {
+            $push: { 'messages.$[msg].reactions.thumbs_down': userId },
+          },
+          {
+            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+          },
+        )
+      }
+    }
+
+    return reply.status(200).send({ success: true })
+  } catch (e) {
+    console.log(e)
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({
+      message: 'Failed to add thread message reaction',
       error: errorMessage,
     })
     return reply.status(500).send({ error: errorMessage })

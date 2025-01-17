@@ -121,6 +121,9 @@ let nextConfig = {
       static: 180,
     },
   },
+  sassOptions: {
+    silenceDeprecations: ['legacy-js-api'],
+  }
 }
 
 // Injected content via Sentry wizard below
@@ -147,10 +150,6 @@ if (process.env.NODE_ENV !== 'development') {
       enabled: true,
     },
 
-    // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-    // This can increase your server load as well as your hosting bill.
-    // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-    // side errors will fail.
     tunnelRoute: '/monitoring',
 
     // Hides source maps from generated client bundles

@@ -1,8 +1,12 @@
+import AlertDestructive from '@/components/alert/alert-destructive'
 import TaskStatusBadge from '@/components/badge/task-status-badge'
 import TaskActionsMenu from '@/components/button/task-actions-menu'
+import ErrorBoundary from '@/components/error-boundary'
+import { LightboxGallery } from '@/components/media/lightbox'
 import ParameterTableCollapsible from '@/components/timeline/parameter-table-collapsible'
 import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
 import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
+import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
@@ -58,25 +62,27 @@ const TimelineItem = ({ item, queryKey }: Props) => {
     }
   }, [])
 
+  const num_samples = (item.args.n_samples ?? item.args.num_outputs) || false
+
   return (
     <div
       data-test-id="timeline-item"
       key={item._id}
-      className="border border-secondary p-2 rounded-lg overflow-hidden min-h-80"
+      className={cn([`border border-secondary p-2 rounded-lg overflow-hidden`])}
     >
       <ParameterTableCollapsible item={item} />
-      <div className="flex items-center justify-center h-full w-full">
+      <div className="flex items-center justify-center h-full w-full flex-grow">
         <div
           className={cn([
             'grid gap-2 auto-cols-fr',
-            !item.args.n_samples || item.args.n_samples === 1
+            !num_samples || num_samples === 1
               ? 'grid-flow-col grid-cols-1'
-              : item.args.n_samples > 2
+              : num_samples > 2
               ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
                 ? 'grid-cols-2 grid-rows-2 md:grid-cols-2 md:grid-rows-2 justify-items-center'
                 : 'grid-flow-col auto-cols-[minmax(0,_1fr)] grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 lg:grid-cols-2 lg:grid-rows-2 xl:grid-cols-4 xl:grid-rows-1 justify-items-center'
               : 'grid-cols-2 justify-items-center',
-            item.args.n_samples === 3
+            num_samples === 3
               ? 'md:!grid-cols-3 xl:!grid-cols-3 md:!grid-rows-1'
               : '',
             item.output_type === 'lora' ? 'flex flex-col gap-0' : '',
@@ -89,6 +95,9 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                   <TaskStatusBadge status={item.status} />
                   <div className="mt-1 text-muted-foreground text-sm line-clamp-3">
                     {item.error}
+                    <div className="text-xs text-muted-foreground">
+                      {item._id}
+                    </div>
                   </div>
                 </div>
               ) : null}
@@ -103,7 +112,14 @@ const TimelineItem = ({ item, queryKey }: Props) => {
 
           {item.status === 'pending' || item.status === 'running' ? (
             <>
-              {[...Array(item.args.n_samples || 1)].map((_e, i) => (
+              {[
+                ...Array(
+                  (num_samples || 1) -
+                    (item.result && Array.isArray(item.result)
+                      ? item.result.length
+                      : 0),
+                ),
+              ].map((_e, i) => (
                 <div
                   key={i}
                   className={cn([
@@ -121,11 +137,11 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                       'max-h-[calc(60vh_-_72.4px)]',
                       (item.args.width ?? 1024) / (item.args.height ?? 1024) ||
                       ((item.output_type === 'audio' ? 3 : 1) < 1 &&
-                        (item.args.n_samples || 1) === 1)
+                        (num_samples || 1) === 1)
                         ? 'h-[calc(60dvh_-_72.4px)] max-h-full flex justify-center max-w-full'
                         : (item.args.width ?? 1024) /
                             (item.args.height ?? 1024) >
-                            1 && (item.args.n_samples || 1) === 1
+                            1 && (num_samples || 1) === 1
                         ? 'w-[calc(60vh_-_72.4px)] max-h-full max-w-full'
                         : '',
                     ])}
@@ -149,7 +165,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                         <TaskStatusBadge
                           status={item.status}
                           hideText={true}
-                          outputType={item.output_type}
+                          output_type={item.output_type}
                         />
                         {item.status === 'pending'
                           ? 'Waiting to start...'
@@ -163,34 +179,40 @@ const TimelineItem = ({ item, queryKey }: Props) => {
           ) : null}
 
           <Suspense>
-            {item.status === 'completed' ? (
-              item.result && Array.isArray(item.result) ? (
-                item.result.map((result, index) =>
-                  result.model === undefined ? (
-                    <TimelineItemMediaResult
-                      queryKey={queryKey}
-                      key={`${item._id}_${index}`}
-                      index={index}
-                      task={item}
-                      result={result}
-                    />
-                  ) : (
-                    // api populates a model property with full model document
-                    <TimelineItemModelResult
-                      queryKey={queryKey}
-                      key={`${item._id}_${index}`}
-                      index={index}
-                      result={result}
-                      task={item}
-                    />
-                  ),
-                )
-              ) : (
-                <div className="text-warning">
-                  Unhandled result: {item.workflow} - {item._id}
-                </div>
-              )
-            ) : null}
+            <ErrorBoundary>
+              <LightboxGallery>
+                {item.result && Array.isArray(item.result) && item.result.length
+                  ? item.result.map((result, index) =>
+                      result.output && Array.isArray(result.output) ? (
+                        result.output.map((output, outputIndex) =>
+                          output.model === undefined ? (
+                            <TimelineItemMediaResult
+                              queryKey={queryKey}
+                              key={`${item._id}_${index}_${outputIndex}`}
+                              index={index}
+                              task={item}
+                              result={result}
+                            />
+                          ) : (
+                            // api populates a model property with full model document
+                            <TimelineItemModelResult
+                              queryKey={queryKey}
+                              key={`${item._id}_${index}_${outputIndex}`}
+                              index={index}
+                              result={result}
+                              task={item}
+                            />
+                          ),
+                        )
+                      ) : (
+                        <AlertDestructive key={index} title="Data Error">
+                          <AlertDescription>Item: {item?._id}</AlertDescription>
+                        </AlertDestructive>
+                      ),
+                    )
+                  : null}
+              </LightboxGallery>
+            </ErrorBoundary>
           </Suspense>
         </div>
       </div>

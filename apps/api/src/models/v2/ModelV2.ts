@@ -1,4 +1,4 @@
-import { TaskV2Args } from '@edenlabs/eden-sdk'
+import { TaskV2 } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -11,7 +11,7 @@ import paginate from 'mongoose-paginate-v2'
 export interface ModelV2Schema {
   name: string
   user: ObjectId
-  args: TaskV2Args
+  task: TaskV2
   checkpoint: string
   public?: boolean
   slug: string
@@ -23,7 +23,7 @@ export interface ModelV2Schema {
 export interface ModelV2Input {
   name: string
   user: ObjectId
-  args: TaskV2Args
+  task: TaskV2
   checkpoint: string
   public?: boolean
   slug: string
@@ -41,21 +41,17 @@ export const modelSchema = new Schema<ModelV2Document>(
     },
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
-    args: {
-      type: Schema.Types.Mixed,
-      default: {},
+    task: {
+      type: Schema.Types.ObjectId,
+      ref: 'tasks3',
+      required: true,
     },
     checkpoint: {
       type: String,
       required: true,
-    },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
     },
     thumbnail: {
       type: String,
@@ -75,6 +71,7 @@ export const modelSchema = new Schema<ModelV2Document>(
   },
 )
 modelSchema.index({ createdAt: -1 })
+modelSchema.index({ base_model: 1, createdAt: 1, thumbnail: 1 })
 modelSchema.index({ deleted: -1, createdAt: -1 })
 modelSchema.index({ public: -1, deleted: -1, createdAt: -1 })
 modelSchema.index({ user: 1, public: -1, deleted: -1, createdAt: -1 })
@@ -85,6 +82,6 @@ modelSchema.plugin(mongooseDelete, {
 })
 
 export const ModelV2 = model<ModelV2Document>(
-  'models',
+  'models3',
   modelSchema,
 ) as SoftDeleteModel<ModelV2Document>

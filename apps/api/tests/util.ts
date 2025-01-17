@@ -1,14 +1,13 @@
-import { MediaType } from '@edenlabs/eden-sdk'
-import { FastifyInstance } from 'fastify'
-import { ObjectId } from 'mongodb'
-
 import { edenHandlers } from '../src/lib/taskHandlers/edenHandlers'
 import { ApiKey } from '../src/models/ApiKey'
 import { Character, CharacterInput } from '../src/models/Character'
 import { Creation } from '../src/models/Creation'
-import { User } from '../src/models/Creator'
 import { Generator, GeneratorSchema } from '../src/models/Generator'
+import { User } from '../src/models/User'
 import createServer, { CreateServerOpts } from '../src/server'
+import { MediaType } from '@edenlabs/eden-sdk'
+import { FastifyInstance } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 export const createTestServer = async () => {
   const opts: CreateServerOpts = {

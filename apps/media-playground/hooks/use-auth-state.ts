@@ -1,13 +1,14 @@
 'use client'
 
 import { useMe } from '@/hooks/use-me'
-import { env } from '@/lib/config'
 import { useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
+import { usePathname } from 'next/navigation'
 
 export function useAuthState() {
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
+  const pathname = usePathname()
 
   const {
     user,
@@ -15,8 +16,6 @@ export function useAuthState() {
     foreverBalance,
     subscriptionBalance,
     hasMinimumSubscriptionTier,
-    hasEden2EarlyAccess,
-    hasAssistantAccess,
     invalidate,
   } = useMe({ isAuthenticated: !!isSignedIn })
 
@@ -26,9 +25,8 @@ export function useAuthState() {
     }
 
     openSignIn({
-      fallbackRedirectUrl: env.NEXT_PUBLIC_HOST,
-      signUpFallbackRedirectUrl: env.NEXT_PUBLIC_HOST,
       appearance: { baseTheme: dark },
+      forceRedirectUrl: pathname,
     })
     return false
   }
@@ -40,8 +38,6 @@ export function useAuthState() {
     foreverBalance,
     subscriptionBalance,
     hasMinimumSubscriptionTier,
-    hasEden2EarlyAccess,
-    hasAssistantAccess,
     isSignedIn,
     refetchMe: invalidate,
   }

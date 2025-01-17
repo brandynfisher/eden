@@ -130,6 +130,7 @@ export interface CollectionsV2GetLightResponse extends WebAPICallResult {
     name: string
     creations: string[]
     public: boolean
+    contributors: string[]
   }[]
   error?: string
 }

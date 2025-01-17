@@ -1,4 +1,4 @@
-import { User } from '../../models/Creator'
+import { User } from '../../models/User'
 import { ModelV2 } from '../../models/v2/ModelV2'
 import { s3ThumbnailUrl } from '../../plugins/s3Plugin'
 import ModelV2Repository from '../../repositories/ModelV2Repository'
@@ -60,33 +60,31 @@ export const getModel = async (
   const model = await ModelV2.findOneWithDeleted({
     _id: modelId,
   })
-    .select('-args.lora_training_urls')
     .populate({
       path: 'user',
       select: '_id userId username userImage',
     })
+    .populate({
+      path: 'task',
+      select: '_id args',
+    })
 
-  console.log({ model })
-
-  // nothing found or it was deleted and the user is not the owner
-  if (
-    !model ||
-    (request.user?.userId &&
-      model.deleted &&
-      model.user._id.toString() !== request.user?.userId.toString())
-  ) {
+  if (!model) {
     return reply.status(404).send({
       message: 'Model not found',
     })
   }
 
-  if (model.user._id.toString() !== request.user?.userId.toString()) {
-    if (!model.public) {
-      console.error('User not authorized to view this')
-      return reply.status(401).send({
-        message: 'User not authorized to view this',
-      })
-    }
+  const isOwner = model.user._id.toString() === request.user?.userId.toString()
+
+  if (!isOwner && !model.public) {
+    return reply.status(401).send({
+      message: 'User not authorized to view this',
+    })
+  }
+
+  if (!isOwner && model?.task?.args) {
+    delete model.task.args.lora_training_urls
   }
 
   model.thumbnail = s3ThumbnailUrl(server, model.thumbnail || '', 1024)

@@ -1,3 +1,4 @@
+import { NotFoundError, ServerError, UnauthorizedError } from '@/lib/errors'
 import {
   CursorPaginatedFeedQuery,
   CursorPaginatedRouteQueryParams,
@@ -11,22 +12,14 @@ import axios, { AxiosError } from 'axios'
 export const fetcher = async <T>(
   ...args: Parameters<typeof fetch>
 ): Promise<T> => {
-  // console.log('fetcher', ...args)
   const response = await fetch(...args)
 
-  if (!response.ok) {
-    console.log(
-      response.url,
-      response.status,
-      response.statusText,
-      response.headers,
-    )
-    throw new Error('Network response was not ok')
-  }
+  if (response.ok) return response.json()
 
-  // console.log({ response })
+  if (response.status === 401) throw new UnauthorizedError(response.statusText)
+  if (response.status === 404) throw new NotFoundError(response.statusText)
 
-  return response.json()
+  throw new ServerError('Network response was not ok')
 }
 
 export const handleAxiosServerError = (error: AxiosError | unknown) => {
@@ -54,26 +47,6 @@ export const extractPaginationParams = (
 
   const page = params.get('page')
   if (page) query.page = Number(page)
-
-  // const filterKeys = ['name', 'user', 'character', 'collection', 'creation', 'generator', 'outputType', 'concept', 'isPrivate', 'visibility', 'maxDate', 'minDate']
-  // const filter: Partial<TasksV2ListArguments['filter']> = {}
-
-  // filterKeys.forEach((key) => {
-  //   let value = params.getAll(`filter.${key}`)
-
-  // if (value) {
-  //   if (key === 'isPrivate') {
-  //     filter.isPrivate = value[0] === 'true'
-  //   } else if (key === 'visibility') {
-  //     filter.visibility = value[0] as 'all' | 'public' | 'private'
-  //   } else {
-  //     // @ts-ignore
-  //     filter[key] = value
-  //   }
-  // }
-  // })
-
-  // if (Object.keys(filter).length) feedQuery.filter = filter
 
   return query
 }
@@ -125,8 +98,6 @@ export const createCursorPaginationRoute = (
   const basePath = baseUrl
   const params: CursorPaginatedFeedQuery = {}
 
-  // console.log(query)
-
   if (query.limit) {
     params.limit = query.limit
   }
@@ -161,6 +132,12 @@ export const createCursorPaginationRoute = (
   if (query.name && query.name.length > 0) {
     filters.push({ name: String(query.name) })
   }
+  if (query.owner) {
+    filters.push({ owner: String(query.owner) })
+  }
+  if (query.requester) {
+    filters.push({ requester: String(query.requester) })
+  }
   if (query.creation) {
     filters.push({ creation: String(query.creation) })
   }
@@ -179,26 +156,43 @@ export const createCursorPaginationRoute = (
   if (query.minDate) {
     filters.push({ minDate: query.minDate })
   }
-  if (query.base_model) {
-    filters.push({ base_model: query.base_model })
-  }
 
-  if (query.generator) {
-    if (typeof query.generator === 'string') {
-      filters.push({ generator: query.generator })
-    } else if (Array.isArray(query.generator) && query.generator.length) {
-      query.generator.map(id => {
-        filters.push({ generator: id })
+  if (query.base_model) {
+    if (typeof query.base_model === 'string') {
+      filters.push({ base_model: query.base_model })
+    } else if (Array.isArray(query.base_model) && query.base_model.length) {
+      query.base_model.map(base_model => {
+        filters.push({ base_model: base_model })
       })
     }
   }
 
-  if (query.outputType) {
-    if (typeof query.outputType === 'string') {
-      filters.push({ outputType: query.outputType })
-    } else if (Array.isArray(query.outputType) && query.outputType.length) {
-      query.outputType.map(id => {
-        filters.push({ outputType: id })
+  if (query.tool) {
+    if (typeof query.tool === 'string') {
+      filters.push({ tool: query.tool })
+    } else if (Array.isArray(query.tool) && query.tool.length) {
+      query.tool.map(id => {
+        filters.push({ tool: id })
+      })
+    }
+  }
+
+  if (query.output_type) {
+    if (typeof query.output_type === 'string') {
+      filters.push({ output_type: query.output_type })
+    } else if (Array.isArray(query.output_type) && query.output_type.length) {
+      query.output_type.map(id => {
+        filters.push({ output_type: id })
+      })
+    }
+  }
+
+  if (query._id) {
+    if (typeof query._id === 'string') {
+      filters.push({ _id: query._id })
+    } else if (Array.isArray(query._id) && query._id.length) {
+      query._id.map(id => {
+        filters.push({ _id: id })
       })
     }
   }
@@ -206,7 +200,7 @@ export const createCursorPaginationRoute = (
   if (query.visibility && query.visibility !== 'all') {
     filters.push({ public: query.visibility === 'private' })
   } else if (typeof query.isPrivate !== 'undefined') {
-    filters.push({ public: query.isPrivate })
+    filters.push({ public: !query.isPrivate })
   }
 
   // if (query.orderBy) {
@@ -218,6 +212,11 @@ export const createCursorPaginationRoute = (
   //   filters.push({ praiseCount: true })
   // }
   // }
+
+  // console.log(query, filters, params)
+  if (query.sort) {
+    params.sort = query.sort
+  }
 
   let queryStringArray: string[] = []
 

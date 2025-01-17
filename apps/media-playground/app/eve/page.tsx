@@ -1,7 +1,7 @@
 import Chat from '@/features/chat/chat'
 
 const EvePage = () => {
-  return <Chat />
+  return <Chat agentId={'eve'} />
 }
 
 export default EvePage

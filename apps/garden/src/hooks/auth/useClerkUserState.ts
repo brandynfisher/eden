@@ -2,6 +2,7 @@ import { useMe } from '@/hooks/auth/useMe'
 import { useSettings } from '@/hooks/useSettings'
 import { UserContextType } from '@/providers/UserProvider'
 import { useAuth, useClerk } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
@@ -22,7 +23,9 @@ export const useClerkUserState = () => {
 
   const authenticate = async () => {
     if (!isAuthenticated) {
-      openSignIn(undefined)
+      openSignIn({
+        appearance: { baseTheme: dark },
+      })
     }
   }
 

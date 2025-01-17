@@ -31,7 +31,7 @@ import {
   UserIcon,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import * as React from 'react'
 import { forwardRef, useRef, useState } from 'react'
 
@@ -48,7 +48,7 @@ const AccountDropdown = () => {
   const router = useRouter()
   const { isSignedIn } = useAuth()
 
-  const { user, balance, hasAssistantAccess } = useMe({
+  const { user, balance } = useMe({
     isAuthenticated: !!isSignedIn,
   })
   const { signOut } = useClerk()
@@ -171,14 +171,12 @@ const AccountDropdown = () => {
           </Link>
           {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
         </DropdownMenuItem>
-        {hasAssistantAccess() && (
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/creators/${user?.username}?tab=assistants`}>
-              <BotIcon className="mr-2 h-4 w-4" />
-              <span>Assistants</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/creators/${user?.username}?tab=agents`}>
+            <BotIcon className="mr-2 h-4 w-4" />
+            <span>Agents</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/settings/subscription`}>
@@ -258,10 +256,14 @@ const AccountDropdown = () => {
 const LoginButton = () => {
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
+  const pathname = usePathname()
 
   const authenticate = async () => {
     if (!isSignedIn) {
-      openSignIn({ appearance: { baseTheme: dark } })
+      openSignIn({
+        appearance: { baseTheme: dark },
+        forceRedirectUrl: pathname,
+      })
     }
   }
 

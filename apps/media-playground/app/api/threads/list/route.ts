@@ -13,6 +13,16 @@ export async function GET(request: NextRequest) {
   }
 
   const paginationParams = extractPaginationParams(request.nextUrl.searchParams)
+  const agentIdParam = request.nextUrl.searchParams.get('agentId')
+
+  if (!agentIdParam) {
+    return new NextResponse(
+      JSON.stringify({ message: 'Agent ID is required' }),
+      {
+        status: 400,
+      },
+    )
+  }
 
   try {
     const eden = new EdenClient({
@@ -21,6 +31,7 @@ export async function GET(request: NextRequest) {
     })
     const res = await eden.threads.list({
       ...paginationParams,
+      agent_id: agentIdParam,
     })
 
     return NextResponse.json(res)

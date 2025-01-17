@@ -1,4 +1,4 @@
-import { UserDocument } from './Creator'
+import { UserDocument } from './User'
 import { Document, Schema, model } from 'mongoose'
 
 export interface MannaSchema {
@@ -20,7 +20,7 @@ const manna = new Schema<MannaDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     balance: {

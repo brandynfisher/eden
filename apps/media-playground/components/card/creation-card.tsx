@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useMultiSelection } from '@/contexts/multi-select-context'
 import { useHover } from '@/hooks/use-hover'
+import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { FileType } from '@/types/Media'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
 import { AudioLinesIcon, CheckIcon, SquareIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -61,6 +61,9 @@ const CreationCard = ({
     }
   }
 
+  const fileType =
+    getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
+
   return (
     <Card
       ref={ref}
@@ -92,7 +95,7 @@ const CreationCard = ({
             <Button
               variant="ghost"
               className={cn([
-                'relative top-1 left-1 p-1 h-9 w-9 [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:w-7 transition-all hover:backdrop-blur-[2px] overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20 [@media(pointer:coarse)]:!bg-opacity-20',
+                'relative top-1 left-1 p-1 h-9 w-9 [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:w-7 overflow-hidden !bg-gray-300 !bg-opacity-0 hover:!bg-opacity-20 [@media(pointer:coarse)]:!bg-opacity-20',
                 selectedItems.length ? '!bg-opacity-10' : '',
               ])}
               onClick={handleSelection}
@@ -118,10 +121,10 @@ const CreationCard = ({
             selected ? 'scale-[0.80] rounded-md overflow-hidden' : '',
           ])}
         >
-          {creation.mediaAttributes?.type === 'audio' ? (
+          {fileType === 'audio' ? (
             <div className="flex items-center justify-center h-32">
               <MediaDurationBadge
-                duration={creation.mediaAttributes.duration}
+                duration={creation.mediaAttributes?.duration}
                 isLoading={false}
               />
               <AudioLinesIcon className="h-12 w-12" />
@@ -133,24 +136,24 @@ const CreationCard = ({
                 thumbnail: creation.thumbnail,
                 width: creation.mediaAttributes?.width,
                 height: creation.mediaAttributes?.height,
-                type: creation.mediaAttributes?.type as FileType,
-                blur: creation.mediaAttributes?.blur,
+                type: fileType,
+                blurhash: creation.mediaAttributes?.blurhash,
               }}
             />
           )}
 
-          {creation.mediaAttributes?.type === 'video' ? (
+          {fileType === 'video' ? (
             <>
               <MediaDurationBadge
-                duration={creation.mediaAttributes.duration}
+                duration={creation.mediaAttributes?.duration}
                 isLoading={hovered && !hasStartedPlayback}
               />
               {hovered ? (
                 <VideoResult
                   className="absolute inset-0 pointer-events-none"
                   videoUrl={getCloudfrontUrl(creation.url) || ''}
-                  width={creation.mediaAttributes.width}
-                  height={creation.mediaAttributes.height}
+                  width={creation.mediaAttributes?.width}
+                  height={creation.mediaAttributes?.height}
                   muted={true}
                   loop={true}
                   autoPlay={true}

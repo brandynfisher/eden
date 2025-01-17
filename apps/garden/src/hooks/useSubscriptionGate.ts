@@ -17,7 +17,7 @@ export const useSubscriptionGate = (action: GatedActions) => {
   useEffect(() => {
     switch (action) {
       case GatedActions.ConceptDownload: {
-        setIsAllowed(hasMinimumSubscriptionTier(SubscriptionTier.Pro))
+        setIsAllowed(true)
         return
       }
       case GatedActions.MakePrivate: {

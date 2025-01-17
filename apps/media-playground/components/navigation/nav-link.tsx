@@ -5,7 +5,6 @@ import Link from 'next/link'
 export type NavLinkProps = {
   label: string
   segments: string[]
-  private?: boolean
   active?: boolean
   inSheet?: boolean
   description?: string
@@ -35,8 +34,8 @@ const NavLink = ({ label, segments, active, inSheet }: NavLinkProps) => {
     <Link
       prefetch={false}
       className={cn(
-        'text-muted-foreground transition-colors hover:text-foreground capitalize',
-        active ? 'text-foreground' : '',
+        'text-muted-foreground transition-colors hover:text-foreground capitalize py-2 px-3 hover:bg-accent rounded-md',
+        active ? 'text-foreground bg-accent/50' : '',
       )}
       href={href}
     >

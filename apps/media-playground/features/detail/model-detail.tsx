@@ -1,5 +1,6 @@
 'use client'
 
+import ErrorBoundary from '@/components/error-boundary'
 import LoadingIndicator from '@/components/loading-indicator'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import ModelMediaPreview from '@/components/media/model-media-preview'
@@ -28,6 +29,8 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
   })
 
   const model = modelClientData || modelSSRData
+
+  console.log({ model })
 
   const [shouldRenderRecentCreations, setShouldRenderRecentCreations] =
     useState(false)
@@ -70,13 +73,6 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
             : 'lg:h-[calc(100vh_-_64px)] lg:w-[calc(100dvw_-_16px)]',
         ])}
       >
-        {model?.deleted ? (
-          <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
-            <div className="p-1 bg-destructive/50 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
-              deleted
-            </div>
-          </div>
-        ) : null}
         {model ? (
           <ModelMediaPreview model={model} isModal={isModal} />
         ) : (
@@ -84,12 +80,14 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
         )}
 
         <Suspense fallback={<LoadingIndicator />}>
-          <DetailSidebar
-            item={model}
-            type={'model'}
-            inModal={isModal}
-            queryKey={queryKey}
-          />
+          <ErrorBoundary>
+            <DetailSidebar
+              item={model}
+              type={'model'}
+              inModal={isModal}
+              queryKey={queryKey}
+            />
+          </ErrorBoundary>
         </Suspense>
       </div>
       <div>
@@ -105,7 +103,12 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
               >
                 {shouldRenderRecentCreations ? (
                   <Suspense fallback={<MasonrySkeleton />}>
-                    <CreationsFeed query={{ concept: model._id }} maxCols={5} />
+                    <ErrorBoundary>
+                      <CreationsFeed
+                        query={{ concept: model._id }}
+                        maxCols={5}
+                      />
+                    </ErrorBoundary>
                   </Suspense>
                 ) : null}
               </div>

@@ -1,10 +1,15 @@
 // components/AutosizeTextarea.tsx
 'use client'
 
+import { useFormField } from '@/components/ui/form'
 import { useAutosizeTextArea } from '@/hooks/use-auto-resize-textarea'
 import { cn } from '@/lib/utils'
 import * as React from 'react'
 import { useImperativeHandle } from 'react'
+
+// components/AutosizeTextarea.tsx
+
+// components/AutosizeTextarea.tsx
 
 // components/AutosizeTextarea.tsx
 
@@ -39,6 +44,7 @@ export const AutosizeTextarea = React.forwardRef<
   ) => {
     const textAreaRef = React.useRef<HTMLTextAreaElement | null>(null)
     const [triggerAutoSize, setTriggerAutoSize] = React.useState<string>('')
+    const { formItemId } = useFormField()
 
     useAutosizeTextArea({
       textAreaRef: textAreaRef.current,
@@ -66,6 +72,7 @@ export const AutosizeTextarea = React.forwardRef<
     return (
       <textarea
         {...props}
+        id={formItemId}
         value={value}
         ref={textAreaRef}
         className={cn(

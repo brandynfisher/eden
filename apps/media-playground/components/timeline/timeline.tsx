@@ -11,7 +11,7 @@ import {
   updateDocInPage,
 } from '@/lib/query/cache-updates'
 import { useTaskStatus } from '@/providers/task-status-provider'
-import { GeneratorV2, TaskV2, TasksV2ListArguments } from '@edenlabs/eden-sdk'
+import { TaskV2, TasksV2ListArguments, ToolV2 } from '@edenlabs/eden-sdk'
 import { QueryKey, useQueryClient } from '@tanstack/react-query'
 import { Suspense, useEffect, useMemo, useState } from 'react'
 
@@ -28,10 +28,10 @@ export const ListSkeleton = () => {
 }
 
 type Props = {
-  generator: GeneratorV2
+  tool: ToolV2
 }
 
-const Timeline = ({ generator }: Props) => {
+const Timeline = ({ tool }: Props) => {
   const [showAllToolResults, setShowAllToolResults] = useState(true)
   const queryClient = useQueryClient()
   const { subscribeToTaskUpdates } = useTaskStatus()
@@ -41,14 +41,14 @@ const Timeline = ({ generator }: Props) => {
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
-      workflow:
-        generator.outputType === 'lora'
-          ? generator.key
+      tool:
+        tool.output_type === 'lora'
+          ? tool.key
           : !showAllToolResults
-          ? generator.key
+          ? tool.key
           : undefined,
     }),
-    [showAllToolResults, generator.outputType, generator.key],
+    [showAllToolResults, tool.output_type, tool.key],
   )
 
   // Define the query key to match what TaskStatusProvider uses
@@ -56,20 +56,22 @@ const Timeline = ({ generator }: Props) => {
     () => [
       [
         'tasks',
-        generator.outputType === 'lora'
-          ? generator.key
+        tool.output_type === 'lora'
+          ? tool.key
           : !showAllToolResults
-          ? generator.key
+          ? tool.key
           : undefined,
       ].filter(Boolean),
       query,
     ],
-    [showAllToolResults, generator.outputType, generator.key, query],
+    [showAllToolResults, tool.output_type, tool.key, query],
   )
 
   // Subscribe to task updates via TaskStatusProvider
   useEffect(() => {
     const callback = (taskUpdate: TaskV2) => {
+      if (taskUpdate.tool !== tool.key) return
+
       // Update the query cache for the infinite query in the timeline
       // queryClient.setQueryData<PageData<IPage<TaskV2>>>(queryKey, oldData => {
       //   if (!oldData) return oldData
@@ -119,7 +121,7 @@ const Timeline = ({ generator }: Props) => {
 
   return (
     <div className="mb-8">
-      {generator.outputType !== 'lora' ? (
+      {tool.output_type !== 'lora' ? (
         <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 my-2 bg-muted-darker">
           <div className="flex items-center justify-between gap-2">
             <label className="text-sm" htmlFor={'show-all-tool-results'}>

@@ -1,4 +1,4 @@
-export type FileType = 'image' | 'pdf' | 'audio' | 'video' | 'other'
+export type FileType = 'image' | 'pdf' | 'audio' | 'video' | 'zip' | 'other'
 export type MimeTypesVideo =
   | 'video/mp4'
   | 'video/webm'
@@ -9,8 +9,17 @@ export type MimeTypesImage =
   | 'image/webp'
   | 'image/jpg'
   | 'image/jpeg'
+export type MimeTypesArchive =
+  | 'application/zip'
+  | 'application/x-tar'
+  | 'application/x-gzip'
+export type MimeTypesAudio = 'audio/mpeg' | 'audio/wav' | 'audio/ogg'
 
-export type MimeType = MimeTypesVideo | MimeTypesImage
+export type MimeType =
+  | MimeTypesVideo
+  | MimeTypesImage
+  | MimeTypesArchive
+  | MimeTypesAudio
 
 interface Media {
   url?: string
@@ -19,7 +28,7 @@ interface Media {
   height?: number
   type: FileType
   mimeType?: MimeType
-  blur?: string
+  blurhash?: string
 }
 
 interface MediaVideo extends Media {
@@ -30,4 +39,9 @@ interface MediaVideo extends Media {
 interface MediaImage extends Media {
   type: 'image'
   mimeType: MimeTypesImage
+}
+
+interface MediaAudio extends Media {
+  type: 'audio'
+  mimeType: MimeTypesAudio
 }

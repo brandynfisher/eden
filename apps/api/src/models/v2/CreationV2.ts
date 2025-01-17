@@ -1,4 +1,4 @@
-import { TaskV2Args, TaskV2Result } from '@edenlabs/eden-sdk'
+import { MediaOutput, TaskV2Args } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -8,23 +8,25 @@ import mongooseDelete, {
 } from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
-type BaseTaskResult = Omit<TaskV2Result, 'creation' | 'model'>
-
-export interface CreationV2Schema extends BaseTaskResult {
+export interface CreationV2Schema extends MediaOutput {
   user: ObjectId
+  requester?: ObjectId
   task: ObjectId
   args: TaskV2Args
-  workflow: string
+  tool: string
   createdAt: Date
   updatedAt: Date
   public?: boolean
+  metadata?: string | null
 }
 
-export interface CreationV2Input extends BaseTaskResult {
+export interface CreationV2Input extends MediaOutput {
   user: ObjectId
+  requester?: ObjectId
   task: ObjectId
   args: TaskV2Args
-  workflow: string
+  tool: string
+  metadata?: string | null
 }
 
 export interface CreationV2Document
@@ -35,15 +37,20 @@ export const creationSchema = new Schema<CreationV2Document>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
+    },
+    requester: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      required: false,
     },
     task: {
       type: Schema.Types.ObjectId,
-      ref: 'tasks',
+      ref: 'tasks3',
       required: true,
     },
-    workflow: {
+    tool: {
       type: String,
       required: true,
     },
@@ -53,21 +60,19 @@ export const creationSchema = new Schema<CreationV2Document>(
     },
     url: {
       type: String,
-      maxlength: 1000,
     },
     thumbnail: {
       type: String,
-      maxlength: 1000,
+    },
+    filename: {
+      type: String,
+      required: true,
     },
     metadata: {
       type: Schema.Types.Mixed,
     },
     mediaAttributes: {
       mimeType: {
-        type: String,
-        required: true,
-      },
-      type: {
         type: String,
         required: true,
       },
@@ -83,7 +88,7 @@ export const creationSchema = new Schema<CreationV2Document>(
       aspectRatio: {
         type: Number,
       },
-      blur: {
+      blurhash: {
         type: String,
       },
     },
@@ -101,11 +106,13 @@ export const creationSchema = new Schema<CreationV2Document>(
   },
 )
 
+creationSchema.index({ task: 1 })
 creationSchema.index({ createdAt: -1 })
 creationSchema.index({ deleted: -1, createdAt: -1 })
-creationSchema.index({ public: -1, deleted: -1, createdAt: -1 })
+creationSchema.index({ public: 1, deleted: 1, createdAt: -1, _id: -1 })
 creationSchema.index({
   user: 1,
+  requester: 1,
   task: -1,
   public: -1,
   deleted: -1,
@@ -118,6 +125,6 @@ creationSchema.plugin(mongooseDelete, {
 })
 
 export const CreationV2 = model<CreationV2Document>(
-  'creations2',
+  'creations3',
   creationSchema,
 ) as SoftDeleteModel<CreationV2Document>

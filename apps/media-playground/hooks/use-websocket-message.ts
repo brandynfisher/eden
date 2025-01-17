@@ -1,3 +1,5 @@
+'use client'
+
 import {
   JsonMessage,
   useWebSocketContext,
@@ -13,22 +15,19 @@ export const useWebSocketMessage = ({
   eventType,
   abortSignal,
 }: UseWebSocketMessageOptions) => {
-  const { lastMessageJson } = useWebSocketContext()
+  const { lastMessageJson, readyState } = useWebSocketContext()
   const [message, setMessage] = useState<JsonMessage | null>(null)
 
   useEffect(() => {
     if (abortSignal?.aborted) return
 
     if (lastMessageJson?.event === eventType) {
-      // console.log(
-      //   'useWebSocketMessage',
-      //   lastMessageJson?.event,
-      //   lastMessageJson?.data,
-      //   lastMessageJson?.event === eventType,
-      // )
       setMessage(lastMessageJson)
     }
   }, [lastMessageJson, eventType, abortSignal])
 
-  return message
+  return {
+    message,
+    readyState,
+  }
 }

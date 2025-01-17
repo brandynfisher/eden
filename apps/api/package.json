@@ -78,6 +78,7 @@
     "@types/async": "^3.2.21",
     "@types/event-source-polyfill": "^1.0.3",
     "@types/fluent-ffmpeg": "^2.1.21",
+    "@types/lodash": "^4.17.13",
     "@types/mongoose-aggregate-paginate-v2": "^1.0.9",
     "@types/mongoose-delete": "^0.5.9",
     "@types/node": "^20",

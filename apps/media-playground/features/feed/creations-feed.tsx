@@ -36,7 +36,7 @@ const CreationsFeed = ({
 
   const queryKey = useMemo(() => ['creations', query], [query])
 
-  // console.log({ query, queryKey })
+  console.log(query)
 
   const feedId = useMemo(() => JSON.stringify(queryKey), [queryKey])
   const { setItems, setActiveIndex } = useFeedStore(feedId)

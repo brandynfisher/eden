@@ -71,7 +71,7 @@ const featuredConceptsConfig =
 const featuredArtistsConfig =
   process.env.NEXT_PUBLIC_APP_ENV === 'production'
     ? [
-        'abraham',
+        // 'abraham',
         'marzipan',
         'chebel',
         'avishagaya',
@@ -164,7 +164,9 @@ export const getStaticProps = (async () => {
         return await fetchCreator(item)
       }),
     )
-    data.featuredArtists = featuredArtists.map(item => item.creator)
+    data.featuredArtists = featuredArtists
+      .filter(item => item.creator !== undefined)
+      .map(item => item.creator)
   } catch (e) {
     console.log('Error pre-rendering - featuredArtists')
   }

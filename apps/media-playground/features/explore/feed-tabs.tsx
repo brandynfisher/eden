@@ -1,19 +1,18 @@
 'use client'
 
 import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
+import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
 import { ClockArrowDownIcon, StarIcon } from 'lucide-react'
 
 const FeedTabs = () => {
-  // Define a base query for the initial state to prevent any unfiltered requests
   const creationsBaseQuery = process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
     ? {
         collection: process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
       }
     : undefined
 
-  // Define the tabs with filter options, ensuring we start with a consistent query
   const tabs: RouterTab[] = [
     {
       key: 'creations',
@@ -37,11 +36,36 @@ const FeedTabs = () => {
     {
       key: 'models',
       title: 'Models',
-      content: <ModelsFeed minCols={1} maxCols={4} />, // No base query for models, just an empty query to ensure it doesn't issue unfiltered requests
+      content: (
+        <ModelsFeed
+          minCols={1}
+          maxCols={5}
+          breakpoints={[
+            { minWidth: 1536, columns: 5 },
+            { minWidth: 1280, columns: 4 },
+            { minWidth: 640, columns: 2 },
+            { minWidth: 0, columns: 1 },
+          ]}
+        />
+      ),
+    },
+    {
+      key: 'agents',
+      title: 'Agents',
+      content: (
+        <AgentsFeed
+          minCols={1}
+          maxCols={3}
+          breakpoints={[
+            { minWidth: 1280, columns: 3 },
+            { minWidth: 640, columns: 2 },
+            { minWidth: 0, columns: 1 },
+          ]}
+        />
+      ),
     },
   ]
 
-  // Render RouterTabs, no separate loading state is needed
   return <RouterTabs tabs={tabs} />
 }
 

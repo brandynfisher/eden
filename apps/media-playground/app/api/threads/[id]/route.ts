@@ -22,7 +22,7 @@ export async function GET(
       token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.threads.get({ threadId: id })
+    const res = await eden.threads.get({ thread_id: id })
 
     if (!res) {
       return new NextResponse(JSON.stringify({ message: 'Task not found' }), {

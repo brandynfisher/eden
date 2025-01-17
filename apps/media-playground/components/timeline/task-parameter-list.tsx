@@ -24,11 +24,7 @@ const TaskParameterList = ({ task }: Props) => {
           />
         ) : null}
         <div className="flex gap-4 mt-1">
-          <TaskParameter
-            name={'workflow'}
-            label={'Tool'}
-            value={task.workflow}
-          />
+          <TaskParameter name={'tool'} label={'Tool'} value={task.tool} />
           {width && height ? (
             <TaskParameter
               name={'resolution'}

@@ -1,4 +1,4 @@
-export * from './Agent'
+export * from './v2/Agents'
 export * from './Admin'
 export * from './ApiKeys'
 export * from './Characters'

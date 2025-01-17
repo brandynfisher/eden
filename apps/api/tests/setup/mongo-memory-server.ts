@@ -1,19 +1,18 @@
-import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
-import { MongoClient } from 'mongodb'
-import mongoose from 'mongoose'
-import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
-import { setup, teardown } from 'vitest-mongodb'
-
 import { ApiKey, ApiKeyInput } from '../../src/models/ApiKey'
 import { Collection } from '../../src/models/Collection'
-import { User, UserInput } from '../../src/models/Creator'
 import { Manna } from '../../src/models/Manna'
+import { User, UserInput } from '../../src/models/User'
 import {
   createCharacter,
   createCreation,
   createGenerator,
   getDefaultUserId,
 } from '../util'
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
+import { MongoClient } from 'mongodb'
+import mongoose from 'mongoose'
+import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
+import { setup, teardown } from 'vitest-mongodb'
 
 const createAdmin = async () => {
   const userData: UserInput = {

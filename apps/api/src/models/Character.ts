@@ -1,5 +1,5 @@
 import { VisibilitySchema } from '../types/baseSchemas'
-import { UserDocument } from './Creator'
+import { UserDocument } from './User'
 import { Capabilities, LogosData } from '@edenlabs/eden-sdk'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
@@ -53,7 +53,7 @@ const character = new Schema<CharacterDocument>(
   {
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'users',
+      ref: 'users3',
       required: true,
     },
     name: {

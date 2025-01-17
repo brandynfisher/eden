@@ -1,4 +1,4 @@
-import { User, UserDocument } from '../../models/Creator'
+import { User, UserDocument } from '../../models/User'
 import { createNewUser } from './authController'
 import { WebhookEvent } from '@clerk/clerk-sdk-node'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -20,6 +20,16 @@ function normalizeGmailAddress(email: string) {
   }
   return email
 }
+
+const BLACKLIST = [
+  {
+    words: ['uffa'],
+    domain: 'hotmail.com',
+  },
+  {
+    words: ['uffan'],
+  },
+]
 
 export const receiveUserUpdate = async (
   server: FastifyInstance,
@@ -69,31 +79,57 @@ export const receiveUserUpdate = async (
       }
 
       const email = evt.data.email_addresses[0].email_address
+
       const normalizedEmail = normalizeGmailAddress(email)
       const existingUser = await User.findOne({
         normalizedEmail: normalizedEmail,
       })
+
       // Check if the normalized email already exists
       // If the existing user is found, delete the newly created user from Clerk.
       if (existingUser) {
-        console.log(
-          'User with the normalized @gmail address already exists (dot-trick prevention)',
+        server.log.error({
+          reason:
+            'User with the normalized @gmail address already exists (dot-trick prevention)',
           existingUser,
-        )
+        })
 
         await server.clerk?.users.deleteUser(evt.data.id)
-
         return reply.status(500).send('Webhook Error: Duplicate E-Mail address')
       }
 
-      await createNewUser({
+      // Check if the  email is somehow blacklsited
+      // If so, delete the newly created user from Clerk.
+      const cleanedEmail = replaceDotsInEmailAddress(email)
+      const blacklistedEmail = BLACKLIST.some(blacklist =>
+        blacklist.words.some(
+          word =>
+            cleanedEmail.includes(word) &&
+            (blacklist.domain
+              ? blacklist.domain === cleanedEmail.split('@')[1]
+              : true),
+        ),
+      )
+
+      if (blacklistedEmail) {
+        server.log.error({
+          reason: 'User with the blacklisted email address',
+          email,
+        })
+
+        await server.clerk?.users.deleteUser(evt.data.id)
+        return reply
+          .status(500)
+          .send('Webhook Error: Blacklisted E-Mail address')
+      }
+
+      await createNewUser(server, {
         userId: evt.data.id,
         username: evt.data.username,
         userImage: evt.data.image_url,
         email: email,
         normalizedEmail: normalizedEmail,
         isWeb2: false,
-        isClerk: true,
         isAdmin: false,
       })
       return reply.status(200).send({})

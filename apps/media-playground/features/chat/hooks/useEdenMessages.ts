@@ -1,41 +1,61 @@
-import { INTERNAL } from '@assistant-ui/react'
 import { useCallback, useState } from 'react'
 
-const { generateId } = INTERNAL
-
-export const useEdenMessages = <TMessage>({
+export const useEdenMessages = <TMessage extends { id: string }>({
   stream,
 }: {
-  stream: (messages: TMessage[]) => Promise<AsyncGenerator<{ data: TMessage }>>
+  stream: (
+    messages: TMessage[],
+    callback?: (thread_id?: string) => Promise<void>,
+  ) => Promise<AsyncGenerator<{ data: TMessage }>>
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
 
-  // console.log('useEdenMessages', messages)
+  const addOrUpdateMessage = useCallback((message: TMessage) => {
+    setMessages(currentMessages => {
+      const index = currentMessages.findIndex(m => m.id === message.id)
+
+      if (index !== -1) {
+        // Update existing message
+        const updatedMessages = [...currentMessages]
+        updatedMessages[index] = message
+        return updatedMessages
+      }
+
+      // Find and update all running messages
+      const updatedMessages = currentMessages.map(m =>
+        //@ts-expect-error status not typed on generic
+        m.status?.type === 'running' &&
+        //@ts-expect-error status not typed on generic
+        (!m.reply_to ? message.status?.type !== 'running' : true)
+          ? { ...m, status: { type: 'complete', reason: 'stop' } }
+          : m,
+      )
+
+      // Add new message
+      return [...updatedMessages, message]
+    })
+  }, [])
 
   const sendMessage = useCallback(
-    async (newMessages: TMessage[]) => {
-      const optimisticMessages = [...messages, ...newMessages]
+    async (newMessages: TMessage[], callback?: () => Promise<void>) => {
+      console.log('sendMessage', newMessages)
+      // Add new messages optimistically
+      newMessages.forEach(message => addOrUpdateMessage(message))
 
-      // console.log('useEdenMessages - sendMessage - messages', messages)
-      // console.log('useEdenMessages - sendMessage - newMessages', newMessages)
+      const response = await stream(newMessages, callback)
 
-      if (newMessages.length > 0) {
-        setMessages(optimisticMessages)
-      }
-
-      const response = await stream(newMessages)
-
-      const completeMessages: TMessage[] = []
-      // let partialMessages: Map<string, TMessage> = new Map();
       for await (const message of response) {
-        // console.log('useEdenMessages - sendMessage - stream response', message)
-        completeMessages.push({ ...message.data, id: generateId() })
+        console.log('addOrUpdateMessage', message)
+        addOrUpdateMessage(message.data)
       }
-
-      setMessages(currentMessages => [...currentMessages, ...completeMessages])
     },
-    [messages, stream],
+    [addOrUpdateMessage, stream],
   )
 
-  return { messages, sendMessage, setMessages }
+  return {
+    messages,
+    sendMessage,
+    setMessages,
+    addOrUpdateMessage,
+  }
 }

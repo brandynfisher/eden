@@ -48,11 +48,17 @@ const ParameterTableCollapsible = ({ item }: Props) => {
           {item.name ? (
             <TaskParameter name={'prompt'} label={'Name'} value={item.name} />
           ) : null}
-          {item.args.prompt || item.args.text_input ? (
+          {item.args.prompt || item.args.text_input || item.args.name ? (
             <TaskParameter
               name={'prompt'}
               label={'Prompt'}
-              value={item.args.prompt || item.args.text_input || ''}
+              value={
+                item.args.prompt ||
+                item.args.text_input ||
+                item.args.name ||
+                item.args.prompt_text ||
+                ''
+              }
             />
           ) : null}
         </div>
@@ -60,11 +66,18 @@ const ParameterTableCollapsible = ({ item }: Props) => {
           <Separator orientation="vertical" className="ml-2 h-9" />
           <div>
             <div className="text-popover-foreground text-xs md:text-sm text-end text-nowrap">
-              {item.workflow}
+              {item.tool}
             </div>
-            <div className="text-muted-foreground/50 text-xs text-end text-nowrap">
+            <div
+              className="text-muted-foreground/50 text-xs text-end text-nowrap"
+              title={(
+                item.createdAt || new Date('1974-01-01')
+              ).toLocaleString()}
+            >
               <TimeAgo
-                date={(item.createdAt || new Date('1974-01-01')).toString()}
+                date={(
+                  item.createdAt || new Date('1974-01-01')
+                ).toLocaleString()}
                 locale="en-short"
               />
             </div>
@@ -72,24 +85,44 @@ const ParameterTableCollapsible = ({ item }: Props) => {
         </div>
       </div>
       <CollapsibleContent className="data-[state=open]:animate-none data-[state=closed]:animate-none mb-2">
+        {item.args.lora ? (
+          <Suspense fallback={<LoadingIndicator />}>
+            <ModelMiniCard modelId={item.args.lora} className="bg-popover mb-2">
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  href={`/create/image/${item.tool}?lora=${item.args.lora}`}
+                  className="ml-auto mr-2"
+                  scroll={false}
+                  shallow={true}
+                >
+                  <ComponentIcon className="mr-2 h-4 w-4" />
+                  Use
+                </Link>
+              </Button>
+            </ModelMiniCard>
+          </Suspense>
+        ) : null}
+        {item.args.lora2 ? (
+          <Suspense fallback={<LoadingIndicator />}>
+            <ModelMiniCard
+              modelId={item.args.lora2}
+              className="bg-popover mb-2"
+            >
+              <Button size="sm" variant="outline" asChild>
+                <Link
+                  href={`/create/image/${item.tool}?lora2=${item.args.lora2}`}
+                  className="ml-auto mr-2"
+                  scroll={false}
+                  shallow={true}
+                >
+                  <ComponentIcon className="mr-2 h-4 w-4" />
+                  Use
+                </Link>
+              </Button>
+            </ModelMiniCard>
+          </Suspense>
+        ) : null}
         <div className="bg-accent rounded-md">
-          {item.args.lora ? (
-            <Suspense fallback={<LoadingIndicator />}>
-              <ModelMiniCard modelId={item.args.lora} className="bg-popover">
-                <Button size="sm" variant="outline" asChild>
-                  <Link
-                    href={`/create/image/${item.workflow}?lora=${item.args.lora}`}
-                    className="ml-auto mr-2"
-                    scroll={false}
-                    shallow={true}
-                  >
-                    <ComponentIcon className="mr-2 h-4 w-4" />
-                    Use
-                  </Link>
-                </Button>
-              </ModelMiniCard>
-            </Suspense>
-          ) : null}
           <ParameterTable taskId={item._id} args={item.args} />
         </div>
       </CollapsibleContent>

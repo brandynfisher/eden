@@ -1,28 +1,68 @@
 import {
+  addThreadMessageReaction,
   createThreadMessage,
   getThread,
   listThreads,
 } from '../../controllers/v2/threadController'
-import { isAuthEden2 } from '../../middleware/authMiddleware'
+import { isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const threadRoutes: FastifyPluginAsync = async server => {
-  server.post('/v2/threads/create', {
+  server.post('/v2/threads', {
     schema: {
       tags: ['Threads'],
-      description: 'Create a thread',
+      description: 'Add a thread message ',
       security: [
         {
           apiKey: [],
         },
       ],
       body: {
-        threadId: Type.Optional(Type.String()),
-        agentId: Type.String(),
-        content: Type.String(),
+        thread_id: Type.Optional(Type.String()),
+        agent_id: Type.String(),
+        content: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),
+      },
+      response: {
+        200: Type.Object({
+          thread_id: Type.String(),
+        }),
+        400: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => createThreadMessage(server, request, reply),
+  })
+
+  server.post('/v2/threads/react', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Add a reaction to a thread message ',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        message_id: Type.String(),
+        reaction: Type.String(),
       },
       response: {
         200: Type.Any(),
@@ -44,8 +84,9 @@ const threadRoutes: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
-    handler: (request, reply) => createThreadMessage(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      addThreadMessageReaction(server, request, reply),
   })
 
   server.get('/v2/threads', {
@@ -60,6 +101,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
       querystring: {
         type: 'object',
         properties: {
+          agent_id: Type.Optional(Type.String()),
           ...paginationProperties(),
         },
         required: [],
@@ -68,11 +110,11 @@ const threadRoutes: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => listThreads(server, request, reply),
   })
 
-  server.get('/v2/threads/:threadId', {
+  server.get('/v2/threads/:thread_id', {
     schema: {
       tags: ['Threads'],
       description: 'Get a thread',
@@ -82,7 +124,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         },
       ],
       params: {
-        threadId: Type.String(),
+        thread_id: Type.String(),
       },
       response: {
         200: Type.Object({
@@ -90,7 +132,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuthEden2(server, request, reply)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getThread(server, request, reply),
   })
 }

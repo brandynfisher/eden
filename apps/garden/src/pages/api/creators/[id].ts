@@ -15,7 +15,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const eden = new EdenClient({
       edenApiUrl: CONFIG.API_URL,
-      token: authToken,
+      token: authToken || undefined,
     })
     const response = await eden.creators.get({
       userId: id,

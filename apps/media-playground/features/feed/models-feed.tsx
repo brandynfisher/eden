@@ -1,7 +1,9 @@
 'use client'
 
 import ModelCard from '@/components/card/model-card'
-import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
+import MasonryVirtualizerVertical, {
+  BreakpointConfig,
+} from '@/components/masonry/masonry-virtualizer-vertical'
 import { RowItem } from '@/lib/query/cache-updates'
 import { FeedConceptsCursorArguments, ModelV2 } from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
@@ -10,10 +12,22 @@ type Props = {
   query?: FeedConceptsCursorArguments
   minCols?: number
   maxCols?: number
+  breakpoints?: BreakpointConfig[]
   onClick?: (item: ModelV2) => void
+  showFooterItems?: {
+    name: boolean
+    actions: boolean
+  }
 }
 
-const ModelsFeed = ({ query: queryProp, minCols, maxCols, onClick }: Props) => {
+const ModelsFeed = ({
+  query: queryProp,
+  minCols,
+  maxCols,
+  breakpoints,
+  onClick,
+  showFooterItems,
+}: Props) => {
   const defaultQuery: FeedConceptsCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -36,6 +50,7 @@ const ModelsFeed = ({ query: queryProp, minCols, maxCols, onClick }: Props) => {
       query={query}
       minCols={minCols || 2}
       maxCols={maxCols || undefined}
+      breakpoints={breakpoints}
       render={(item: RowItem) => (
         <ModelCard
           onClick={onClick}
@@ -43,7 +58,7 @@ const ModelsFeed = ({ query: queryProp, minCols, maxCols, onClick }: Props) => {
           model={item as ModelV2}
           creator={(item as ModelV2).user}
           linkHref={`/models/${item._id}`}
-          showFooter={true} // @todo: make this a feed prop
+          showFooterItems={showFooterItems}
         />
       )}
     />

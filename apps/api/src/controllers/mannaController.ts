@@ -1,6 +1,5 @@
 import { checkUserFlags } from '../lib/data'
 import { randomId } from '../lib/util'
-import { User, UserDocument } from '../models/Creator'
 import { Manna } from '../models/Manna'
 import {
   MannaVoucher,
@@ -8,6 +7,7 @@ import {
   VoucherAction,
 } from '../models/MannaVoucher'
 import { Transaction } from '../models/Transaction'
+import { User, UserDocument } from '../models/User'
 import { MannaModifyRequestBody } from '../routes/adminRoutes'
 import { FeatureFlag, MannaVouchersRedeemArguments } from '@edenlabs/eden-sdk'
 import { FastifyReply, FastifyRequest } from 'fastify'
@@ -46,6 +46,7 @@ export const modifyManna = async (
   const transaction = new Transaction({
     manna: newManna._id,
     amount,
+    type: 'admin_modify',
   })
   await transaction.save()
 
@@ -275,6 +276,9 @@ const handleMannaVoucher = async (
   const transaction = new Transaction({
     manna: mannaId,
     amount: voucher.amount,
+    type: 'credit_voucher',
+    voucher: voucher._id,
+    code: voucher.code,
   })
   await transaction.save()
 
