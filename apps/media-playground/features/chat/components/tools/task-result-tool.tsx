@@ -123,10 +123,11 @@ export const TaskResultTool = makeAssistantToolUI<
                               <CreationActionsMenu
                                 creation={{
                                   ...output.creation,
+                                  // @ts-expect-error faked taskv2
                                   task: { args },
                                 }}
                                 className="ml-auto absolute top-2 right-2"
-                                queryKey={['creations', output.creation]}
+                                queryKey={['creations', output.creation?._id]}
                               />
                             )}
                           </div>
