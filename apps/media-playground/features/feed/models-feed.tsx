@@ -83,7 +83,7 @@ const ModelsFeed = ({
       breakpoints={breakpoints}
       onItemsLoaded={handleItemsLoaded}
       setFetchNextPage={setFetchNextPage}
-      render={(item: RowItem, onUpdate, index) => (
+      render={(item: RowItem, _onUpdate, index) => (
         <ModelCard
           onClick={() => handleCardClick(item as ModelV2, index)}
           isSelectable={isSelectable}
