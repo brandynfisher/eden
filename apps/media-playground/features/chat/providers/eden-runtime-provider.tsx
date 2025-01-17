@@ -91,6 +91,7 @@ export function EdenRuntimeProvider({
           }
         } catch (error) {
           console.error('Error switching thread:', error)
+          window.history.replaceState(null, '', `/chat/${agentId}`)
           return { messages: [] }
         } finally {
           setIsLoadingThread(false)
