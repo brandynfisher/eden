@@ -8,12 +8,31 @@ RUN yarn global add turbo
 COPY . .
 RUN turbo prune --scope=media-playground --docker
 
+# Installer stage with build dependencies
 FROM base AS installer
 WORKDIR /app
-RUN apk add --no-cache --virtual .build-deps g++ build-base cairo-dev jpeg-dev pango-dev giflib-dev librsvg-dev
+
+# Install build dependencies in a single layer and cache them
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache --virtual .build-deps \
+    g++ \
+    build-base \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    librsvg-dev
+
+# Copy and install dependencies
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/yarn.lock ./yarn.lock
-RUN yarn install
+
+# Use yarn cache
+RUN --mount=type=cache,target=/root/.yarn \
+    YARN_CACHE_FOLDER=/root/.yarn \
+    yarn install --frozen-lockfile --network-timeout 1000000
+
+# Copy source code
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
@@ -57,16 +76,27 @@ ENV NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
 ENV SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
 ENV SENTRY_IGNORE_API_RESOLUTION_ERROR=${SENTRY_IGNORE_API_RESOLUTION_ERROR}
 
-# Build the project
-RUN yarn turbo run build --filter=media-playground...
-RUN apk del .build-deps
+# Build with turborepo cache
+RUN --mount=type=cache,target=/root/.cache/turbo \
+    yarn turbo run build --filter=media-playground...
 
 FROM base AS runner
 WORKDIR /app
-RUN apk add --no-cache cairo-dev jpeg-dev pango-dev giflib-dev librsvg-dev
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+
+# Install runtime dependencies only
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --no-cache \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    librsvg-dev
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 USER nextjs
 
+# Copy build artifacts
 COPY --from=installer /app/apps/media-playground/next.config.js .
 COPY --from=installer /app/apps/media-playground/package.json .
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/standalone ./
