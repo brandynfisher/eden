@@ -78,9 +78,9 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
             </div>
           </div>
         ) : (
-          <div className="space-y-1">
-            <Skeleton className="h-6 w-[250px]" />
-            <Skeleton className="h-5 w-[100px]" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-[250px]" />
+            <Skeleton className="h-5 w-[100px] mb-2.5" />
           </div>
         )}
       </div>

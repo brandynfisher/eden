@@ -9,6 +9,7 @@ type VideoProps = {
   loop?: boolean
   controls?: boolean
   muted?: boolean
+  allowDownload?: boolean
   width?: number
   height?: number
   onPlay?: () => void
@@ -25,6 +26,7 @@ const VideoResult: React.FC<VideoProps> = ({
   loop = true,
   controls = true,
   muted = true,
+  allowDownload = false,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -39,8 +41,10 @@ const VideoResult: React.FC<VideoProps> = ({
       muted={muted}
       width={width}
       height={height}
-      // controlsList={'nodownload'}
-      // onContextMenu={(e: React.MouseEvent) => e.preventDefault()}
+      controlsList={allowDownload ? undefined : 'nodownload'}
+      onContextMenu={
+        allowDownload ? undefined : (e: React.MouseEvent) => e.preventDefault()
+      }
       className={cn(['w-full h-full outline-none', className])}
       poster={posterUrl}
       onPlay={onPlay}

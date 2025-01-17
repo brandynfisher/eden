@@ -6,8 +6,6 @@ import { cn } from '@/lib/utils'
 import * as React from 'react'
 import { useImperativeHandle } from 'react'
 
-// Adjust the import path as needed
-
 export type AutosizeTextAreaRef = {
   textArea: HTMLTextAreaElement
   focus: () => void

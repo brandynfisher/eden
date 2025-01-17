@@ -27,6 +27,7 @@ type Props = {
   style?: CSSProperties
   onUpdate?: (item: CreationV2) => void
   multiselect?: boolean
+  onClick?: () => void
 }
 
 const CreationCard = ({
@@ -34,7 +35,9 @@ const CreationCard = ({
   showFooter,
   style,
   multiselect = false,
+  onClick,
 }: Props) => {
+  // const router = useRouter()
   const { hovered, ref } = useHover()
   const [hasStartedPlayback, setHasStartedPlayback] = useState(false)
   const { toggleSelection, isSelected, selectedItems } = useMultiSelection()
@@ -47,8 +50,20 @@ const CreationCard = ({
   }
 
   const selected = isSelected(creation)
+
+  const handleCardClick = (event: React.MouseEvent) => {
+    if (event.defaultPrevented) return // Allow other interactions like multiselect
+    if (onClick) {
+      console.log('handleCardClick - onClick', creation._id)
+      event.preventDefault()
+      onClick()
+      // router.push(`/creations/${creation._id}`)
+    }
+  }
+
   const fileType =
     getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
+
   return (
     <Card
       ref={ref}
@@ -65,6 +80,7 @@ const CreationCard = ({
       <Link
         href={`/creations/${creation._id}`}
         prefetch={false}
+        onClick={handleCardClick}
         className={cn([
           'relative w-full block group',
           selected ? 'bg-popover-foreground/30' : '',
