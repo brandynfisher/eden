@@ -1,5 +1,5 @@
 import { handleThreadUpdateStreamEvent } from '../lib/eden2'
-import { ThreadDocument } from '../models/v2/Thread'
+import { Thread, ThreadDocument } from '../models/v2/Thread'
 import { ThreadMessage } from '@edenlabs/eden-sdk'
 import { FastifyPluginAsync } from 'fastify'
 import _ from 'lodash'
@@ -110,16 +110,47 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
               _.set(cachedDoc, key, value)
             })
 
+            if (cachedDoc) {
+              await Thread.populate(cachedDoc, {
+                path: 'messages.tool_calls.result.output.creation',
+                model: 'creations3',
+                select: '_id user mediaAttributes tool filename',
+                populate: {
+                  path: 'user',
+                  model: 'users3',
+                  select: '_id username userImage',
+                },
+              })
+            }
+
+            if (updatedFields) {
+              await Thread.populate(updatedFields, {
+                path: 'messages.tool_calls.result.output.creation',
+                model: 'creations3',
+                select: '_id user mediaAttributes tool filename',
+                populate: {
+                  path: 'user',
+                  model: 'users3',
+                  select: '_id username userImage',
+                },
+              })
+            }
+
             const modifiedMessages = extractModifiedMessages(updatedFields)
 
             const updatedMessages: ThreadMessage[] = []
             // Merge updated parts into the cached document or `fullDocument`
-            Object.entries(modifiedMessages).forEach(([index, updates]) => {
-              const messageIndex = parseInt(index, 10)
-              const existingMessage = cachedDoc?.messages[messageIndex] || {}
-              const fullUpdatedMessage = _.merge(existingMessage, updates)
-              updatedMessages.push(fullUpdatedMessage)
-            })
+            Object.entries(modifiedMessages).forEach(
+              async ([index, updates]) => {
+                const messageIndex = parseInt(index, 10)
+                const existingMessage = cachedDoc?.messages[messageIndex] || {}
+                const fullUpdatedMessage = _.merge(existingMessage, updates)
+                // console.log('fullUpdatedMessage', fullUpdatedMessage)
+                // populate fullUpdatedMessage.tool_calls.result.output.creation
+
+                updatedMessages.push(fullUpdatedMessage)
+              },
+            )
 
             if (!updatedMessages.length) {
               console.log('update: No messages updated')
@@ -142,6 +173,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             )
           }
         } catch (err) {
+          console.log('err', err)
           fastify.log.error(
             'Failed to handle change stream onChange: Eden2Tasks',
             { err },

@@ -11,6 +11,7 @@ import {
   useMessage,
   useThreadConfig,
 } from '@assistant-ui/react'
+import { useTimeAgo } from 'next-timeago'
 import type { FC } from 'react'
 
 const MyAssistantMessageAvatar: FC = () => {
@@ -34,17 +35,27 @@ const MyAssistantMessageAvatar: FC = () => {
 }
 
 const MyAssistantActionBar: FC = () => {
+  const { TimeAgo } = useTimeAgo()
+  const createdAt = useMessage(m => m.createdAt)
   return (
     <AssistantActionBar.Root
       hideWhenRunning
       autohide="not-last"
       autohideFloat="single-branch"
+      className="flex items-center gap-2 w-full z-10"
     >
       {/*<AssistantActionBar.SpeechControl />*/}
       <AssistantActionBar.Copy />
       {/*<AssistantActionBar.Reload />*/}
       <AssistantActionBar.FeedbackPositive />
       <AssistantActionBar.FeedbackNegative />
+
+      <div
+        className="ml-auto text-xs text-muted-foreground"
+        title={new Date(createdAt).toLocaleString()}
+      >
+        <TimeAgo date={new Date(createdAt)} />
+      </div>
     </AssistantActionBar.Root>
   )
 }

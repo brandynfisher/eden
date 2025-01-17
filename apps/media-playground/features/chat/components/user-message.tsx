@@ -7,7 +7,7 @@ import React, { FC } from 'react'
 
 const MyUserMessage: FC = () => {
   return (
-    <UserMessage.Root>
+    <UserMessage.Root className="mt-2">
       <LightboxGallery>
         <UserMessage.Attachments components={{ Attachment: MyAttachment }} />
       </LightboxGallery>

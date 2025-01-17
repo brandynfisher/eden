@@ -102,7 +102,7 @@ const CreationActionsContent = ({
 
   const creationData = creationResponse || creation
 
-  // console.log({ creationData, creationResponse, creation })
+  console.log({ creationData, creationResponse, creation })
 
   const handleAddToCollectionClick = () => {
     dispatch(
@@ -192,7 +192,7 @@ const CreationActionsContent = ({
         <DropdownMenuItem asChild disabled={!isSignedIn}>
           <Link
             className="cursor-pointer flex items-center"
-            href={`/create/${fileType}/${creation.tool}?creation=${creation._id}`}
+            href={`/create/${fileType}/${creationData.tool}?creation=${creationData._id}`}
             scroll={false}
             shallow={true}
             prefetch={false}

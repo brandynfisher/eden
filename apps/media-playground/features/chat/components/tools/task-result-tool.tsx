@@ -1,5 +1,6 @@
 'use client'
 
+import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
@@ -102,6 +103,30 @@ export const TaskResultTool = makeAssistantToolUI<
                                 videoProps={{
                                   className: 'max-h-[420px]',
                                 }}
+                              />
+                            )}
+                            {/* <Button
+                            size="sm"
+                            variant="outline"
+                            type="button"
+                            asChild
+                          >
+                            <Link
+                              href={`/creations/${output.creation}`}
+                              prefetch={false}
+                              className="absolute top-2 right-2"
+                            >
+                              <ExternalLinkIcon className="h-4 w-4" />
+                            </Link>
+                          </Button> */}
+                            {output.creation && (
+                              <CreationActionsMenu
+                                creation={{
+                                  ...output.creation,
+                                  task: { args },
+                                }}
+                                className="ml-auto absolute top-2 right-2"
+                                queryKey={['creations', output.creation]}
                               />
                             )}
                           </div>

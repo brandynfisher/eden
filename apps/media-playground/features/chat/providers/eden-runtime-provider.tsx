@@ -20,7 +20,7 @@ const TIMEOUT_DURATION_MS = 60 * 60 * 1000
 
 const LoadingOverlay = () => {
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+    <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-50">
       <LoadingIndicator className="w-12 h-12" />
     </div>
   )
