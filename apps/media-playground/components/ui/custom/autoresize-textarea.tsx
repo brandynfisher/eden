@@ -1,4 +1,3 @@
-// components/AutosizeTextarea.tsx
 'use client'
 
 import { useFormField } from '@/components/ui/form'
@@ -6,10 +5,6 @@ import { useAutosizeTextArea } from '@/hooks/use-auto-resize-textarea'
 import { cn } from '@/lib/utils'
 import * as React from 'react'
 import { useImperativeHandle } from 'react'
-
-// components/AutosizeTextarea.tsx
-
-// components/AutosizeTextarea.tsx
 
 // Adjust the import path as needed
 
@@ -32,7 +27,7 @@ export const AutosizeTextarea = React.forwardRef<
   (
     {
       maxHeight = Number.MAX_SAFE_INTEGER,
-      minHeight = 52,
+      minHeight = 64,
       className,
       onChange,
       value,

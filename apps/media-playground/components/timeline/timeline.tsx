@@ -117,7 +117,7 @@ const Timeline = ({ tool }: Props) => {
     // return () => {
     //   unsubscribe()
     // }
-  }, [subscribeToTaskUpdates, queryClient, queryKey])
+  }, [subscribeToTaskUpdates, queryClient, queryKey, tool.key])
 
   return (
     <div className="mb-8">
