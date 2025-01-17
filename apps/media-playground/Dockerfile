@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:18-alpine AS base
 
 # Multi-stage Build
 FROM base AS builder
@@ -103,4 +103,4 @@ COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/sta
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/static ./apps/media-playground/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/public ./apps/media-playground/public
 
-CMD ["node", "apps/media-playground/server.js"]
+CMD node apps/media-playground/server.js
