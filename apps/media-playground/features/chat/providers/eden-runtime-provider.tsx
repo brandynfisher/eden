@@ -13,6 +13,7 @@ import { AssistantRuntimeProvider, MessageStatus } from '@assistant-ui/react'
 import { AssistantMessage } from '@edenlabs/eden-sdk'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { ReadyState } from 'react-use-websocket'
+import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
 const TIMEOUT_DURATION_MS = 60 * 60 * 1000
@@ -91,6 +92,11 @@ export function EdenRuntimeProvider({
           }
         } catch (error) {
           console.error('Error switching thread:', error)
+          toast.error('Failed to switch to thread', {
+            description: `Thread may not exist or you may not have access to it`,
+            dismissible: true,
+            richColors: true,
+          })
           window.history.replaceState(null, '', `/chat/${agentId}`)
           return { messages: [] }
         } finally {
