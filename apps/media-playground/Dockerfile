@@ -103,4 +103,4 @@ COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/sta
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/static ./apps/media-playground/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/public ./apps/media-playground/public
 
-CMD node apps/media-playground/server.js
+CMD ["node", "apps/media-playground/server.js"]
