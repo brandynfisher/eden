@@ -59,12 +59,10 @@ const ModelsFeed = ({
   const { addToHistory } = useActiveFeedStore()
 
   const handleCardClick = (item: ModelV2, index: number) => {
-    console.log('isSelectable', isSelectable)
     if (isSelectable) {
       onClick?.(item)
       return
     }
-    console.log('here')
     setActiveIndex(index)
     addToHistory(feedId) // Add current feed to history when navigating
     router.push(`/models/${item._id}`) // Navigate to the modal
