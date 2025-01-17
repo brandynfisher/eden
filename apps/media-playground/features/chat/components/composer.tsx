@@ -31,7 +31,7 @@ export const ComposerAttachmentDropzone: FC<
     >
       {isDragging && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <p className="text-sm text-purple-400">Drop attachments here</p>
+          <p className="text-sm text-purple-600">Drop attachments here</p>
           <div className="text-xs text-muted-foreground">
             Accepted: <span className="font-semibold">{accept}</span>
           </div>
@@ -95,6 +95,7 @@ export const MyComposer: FC = () => {
       onDrop={handleDrop}
     >
       <ComposerAttachmentDropzone isDragging={isDragging} accept={accept} />
+
       <LightboxGallery>
         <Composer.Attachments components={{ Attachment: MyAttachment }} />
       </LightboxGallery>

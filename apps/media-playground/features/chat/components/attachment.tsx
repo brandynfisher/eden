@@ -77,34 +77,25 @@ const AttachmentRemove: FC = () => {
 
 const MyAttachment: FC = () => {
   const canRemove = useAttachment(a => a.source !== 'message')
-  // const typeLabel = useAttachment(a => {
-  //   const type = a.type
-  //   switch (type) {
-  //     case 'image':
-  //       return 'Image'
-  //     case 'document':
-  //       return 'Document'
-  //     case 'file':
-  //       return 'File'
-  //     default:
-  //       throw new Error(`Unknown attachment type: ${type as never}`)
-  //   }
-  // })
 
   const uploadProgress = useAttachment(a =>
     a.status.type === 'running' ? a.status.progress : 1,
   )
   const attachment = useAttachment()
 
+  // console.log({ attachment })
+
   // @ts-ignore
   const fileUrl = attachment.file ? attachment.file.fileUrl : ''
-
   const src = useAttachmentSrc()
 
   const attachments = useComposer(s => s.attachments)
   // console.log({ attachments })
 
-  const attachmentIndex = attachments.findIndex(a => a.id === attachment.id)
+  const attachmentIndex = canRemove
+    ? attachments.findIndex(a => a.id === attachment.id)
+    : Number(attachment.id)
+  // console.log({ attachmentIndex })
   return (
     <AttachmentPrimitive.Root
       className={cn([
