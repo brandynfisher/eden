@@ -3,12 +3,15 @@
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
+import { Button } from '@/components/ui/button'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { makeAssistantToolUI } from '@assistant-ui/react'
 import { TaskV2Result, TaskV2Status, ToolV2 } from '@edenlabs/eden-sdk'
+import { ExternalLinkIcon } from 'lucide-react'
+import Link from 'next/link'
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 
@@ -104,6 +107,20 @@ export const TaskResultTool = makeAssistantToolUI<
                                 }}
                               />
                             )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              type="button"
+                              asChild
+                            >
+                              <Link
+                                href={`/creations/${output.creation}`}
+                                prefetch={false}
+                                className="absolute top-2 right-2"
+                              >
+                                <ExternalLinkIcon className="h-4 w-4" />
+                              </Link>
+                            </Button>
                           </div>
                         ))
                       ) : (

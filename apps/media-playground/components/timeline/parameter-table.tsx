@@ -69,7 +69,7 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
     : Object.entries({ ...args })
 
   return (
-    <Table className={cn([`text-xs table-fixed w-full h-full`, className])}>
+    <Table className={cn([`text-xs table-fixed h-full`, className])}>
       {!hideHeader ? (
         <TableHeader className="rounded-t-lg overflow-hidden md:rounded-none md:overflow-auto">
           <TableRow className="bg-popover/50">
