@@ -22,6 +22,7 @@ type Props = {
   style?: CSSProperties
   queryKey: QueryKey
   onClick?: (item: ModelV2) => void
+  isSelectable?: boolean
 }
 
 const ModelCard = ({
@@ -30,16 +31,17 @@ const ModelCard = ({
   style,
   queryKey,
   onClick,
+  isSelectable,
 }: Props) => {
   const hideFooter = !showFooterItems.name && !showFooterItems.actions
 
   return (
     <Card className="relative overflow-hidden z-10" style={style}>
       {!model.public ? <PrivateIcon /> : null}
-      {onClick ? (
+      {isSelectable ? (
         <div
           className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
-          onClick={() => onClick(model)}
+          onClick={() => onClick?.(model)}
         >
           <SquareMousePointerIcon className="mr-2 h-4 w-4" />
           Select
@@ -49,6 +51,7 @@ const ModelCard = ({
         href={`/models/${model._id}`}
         prefetch={false}
         className="relative w-full block p-4 border-b-0 bg-accent"
+        onClick={() => onClick?.(model)}
       >
         <div className="absolute bottom-2 right-2 pointer-events-none">
           <Badge variant="secondary" className="text-xs bg-opacity-80">
