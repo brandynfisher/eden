@@ -8,6 +8,7 @@ import React, { FC } from 'react'
 
 const MyThreadWelcomeAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
+  // console.log({ avatar, thumb: getCloudfrontUrl(avatar.src, 1024), src: getCloudfrontOriginalUrl(avatar.src) })
   return (
     <>
       <div className="text-sm text-muted-foreground mb-2">

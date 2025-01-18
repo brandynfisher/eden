@@ -115,7 +115,6 @@ const TaskStatusIndicator = () => {
             </div>
           </Link>
         </DropdownMenuItem>
-
         <DropdownMenuSeparator />
         <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh_-_240px)] md:max-h-[calc(100dvh_-_120px)]">
           {allTasks.length === 0 ? (

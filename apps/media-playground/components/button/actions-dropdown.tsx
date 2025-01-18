@@ -13,6 +13,7 @@ type Props = {
   label?: ReactNode
   className?: string
   onOpenChange?: (open: boolean) => void
+  open?: boolean
 } & PropsWithChildren
 
 const ActionsDropdown = ({
@@ -20,10 +21,11 @@ const ActionsDropdown = ({
   children,
   label,
   className,
+  open,
   onOpenChange,
 }: Props) => {
   return (
-    <DropdownMenu onOpenChange={onOpenChange}>
+    <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           size={size || undefined}

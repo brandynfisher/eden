@@ -57,6 +57,7 @@ const ConfigSchema = Type.Strict(
     AIRFLOW_BASE_URL: Type.Optional(Type.String()),
     DISCORD_CLIENT_ID: Type.Optional(Type.String()),
     DISCORD_CLIENT_SECRET: Type.Optional(Type.String()),
+    DISCORD_TASK_ERROR_WEBHOOK_URL: Type.Optional(Type.String()),
     LOGOS_URL: Type.Optional(Type.String()),
     HF_TOKEN: Type.Optional(Type.String()),
     GOOGLE_ANALYTICS_MEASUREMENT_ID: Type.Optional(Type.String()),
@@ -100,6 +101,8 @@ const configPlugin: FastifyPluginAsync = async server => {
       MANNA_BONUS_SIGNUP: Number(envData.MANNA_BONUS_SIGNUP),
       MANNA_BONUS_DAILY_LOGIN: Number(envData.MANNA_BONUS_DAILY_LOGIN),
       MANNA_BONUS_DISCORD_LINK: Number(envData.MANNA_BONUS_DISCORD_LINK),
+      DISCORD_TASK_ERROR_WEBHOOK_URL:
+        'https://discord.com/api/webhooks/1330194903141060608/Qp-4QRtBNc3BUU69T8Rl8hMzOtPnFSPiJTnMNdiaNNvSEibesC2mSVAqWc8XGGZzMQT2',
     } as Config)
   } else {
     throw new Error(`ajv or ConfigSchema is not defined`)

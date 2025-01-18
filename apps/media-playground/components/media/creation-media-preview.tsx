@@ -13,7 +13,8 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
     getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
 
   return (
-    <div className="relative w-full my-4 flex justify-center items-center">
+    // <div className="relative w-full my-4 flex justify-center items-center">
+    <div className="relative w-full my-4 h-full">
       {creation?.deleted ? (
         <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
           <div className="p-1 bg-destructive/50 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">

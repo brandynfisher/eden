@@ -13,13 +13,14 @@ import { AssistantRuntimeProvider, MessageStatus } from '@assistant-ui/react'
 import { AssistantMessage } from '@edenlabs/eden-sdk'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { ReadyState } from 'react-use-websocket'
+import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
 const TIMEOUT_DURATION_MS = 60 * 60 * 1000
 
 const LoadingOverlay = () => {
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+    <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-50">
       <LoadingIndicator className="w-12 h-12" />
     </div>
   )
@@ -91,6 +92,12 @@ export function EdenRuntimeProvider({
           }
         } catch (error) {
           console.error('Error switching thread:', error)
+          toast.error('Failed to switch to thread', {
+            description: `Thread may not exist or you may not have access to it`,
+            dismissible: true,
+            richColors: true,
+          })
+          window.history.replaceState(null, '', `/chat/${agentId}`)
           return { messages: [] }
         } finally {
           setIsLoadingThread(false)

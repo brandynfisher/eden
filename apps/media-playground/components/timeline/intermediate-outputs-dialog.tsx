@@ -40,6 +40,7 @@ export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
           fileType: getFileTypeByMimeType(
             mediaResult.mediaAttributes?.mimeType,
           ),
+          allowDownload: true,
         })),
       )
     : []

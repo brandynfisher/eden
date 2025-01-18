@@ -1,14 +1,29 @@
+'use client'
+
+import ArrowNavigation from '@/components/modal/arrow-navigation'
 import FullScreenModal from '@/components/modal/full-screen-modal'
 import ModelDetail from '@/features/detail/model-detail'
+import { useState } from 'react'
 
 type Props = {
   params: { id: string }
 }
 
-export default function ModelsModalPage({ params: { id: modelId } }: Props) {
+export default function ModelsModalPage({ params: { id } }: Props) {
+  const [currentId, setCurrentId] = useState(id)
+
   return (
-    <FullScreenModal className="p-0">
-      <ModelDetail id={modelId} isModal={true} />
-    </FullScreenModal>
+    <>
+      <FullScreenModal
+        className="p-0 relative"
+        components={{
+          OverlayComponent: () => (
+            <ArrowNavigation basePath="/models" onIdChange={setCurrentId} />
+          ),
+        }}
+      >
+        <ModelDetail id={currentId} isModal={true} />
+      </FullScreenModal>
+    </>
   )
 }

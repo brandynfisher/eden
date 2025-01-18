@@ -227,6 +227,16 @@ export const getThread = async (
         path: 'agent',
         select: '_id username userImage',
       })
+      .populate({
+        path: 'messages.tool_calls.result.output.creation',
+        model: 'creations3',
+        select: '_id user mediaAttributes tool filename',
+        populate: {
+          path: 'user',
+          model: 'users3',
+          select: '_id username userImage',
+        },
+      })
 
     // console.log(thread)
 

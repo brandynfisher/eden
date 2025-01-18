@@ -28,7 +28,6 @@ export const ToolFallback: ToolCallContentPartComponent = ({
   args,
   result,
 }) => {
-  delete args.seed
   const { status: toolStatus, error: toolError } = result as TaskResultToolArgs
 
   const [isCollapsed, setIsCollapsed] = useState(true)
@@ -101,7 +100,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
               </ModelMiniCard>
             </Suspense>
           ) : null}
-          <ParameterTable args={args} hideHeader={true} />
+          <ParameterTable className="w-auto" args={args} hideHeader={true} />
         </div>
       )}
       {toolStatus === TaskV2Status.Failed ? (
