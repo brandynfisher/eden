@@ -12,27 +12,33 @@ import paginate from 'mongoose-paginate-v2'
 
 export interface TaskV2Schema {
   user: UserDocument
+  requester: UserDocument
   tool: string
   args: TaskV2Args
   output_type: ToolOutputTypeV2
   result: TaskV2Result[]
   status: TaskV2Status
-  // cost: number
+  cost?: number
   error?: string
   progress?: number
+  handler_id?: string
+  performance?: { [key: string]: number }
   createdAt: Date
   updatedAt: Date
 }
 
 export interface TaskV2Input {
   user: ObjectId
+  requester: ObjectId
   tool: string
   args: TaskV2Args
   output_type: ToolOutputTypeV2
   result: TaskV2Result[]
   status?: TaskV2Status
-  // cost: number
+  cost?: number
+  performance?: { [key: string]: number }
   error?: string
+  handler_id?: string
   progress?: number
 }
 
@@ -41,6 +47,10 @@ export interface TaskV2Document extends TaskV2Schema, Document {}
 export const taskSchema = new Schema<TaskV2Document>(
   {
     user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+    },
+    requester: {
       type: Schema.Types.ObjectId,
       ref: 'users3',
     },
@@ -56,6 +66,12 @@ export const taskSchema = new Schema<TaskV2Document>(
       type: Schema.Types.Mixed,
       default: {},
     },
+    cost: {
+      type: Schema.Types.Number,
+    },
+    handler_id: {
+      type: Schema.Types.String,
+    },
     status: {
       type: Schema.Types.String,
       enum: Object.values(TaskV2Status),
@@ -64,6 +80,9 @@ export const taskSchema = new Schema<TaskV2Document>(
     error: {
       type: Schema.Types.String,
       default: null,
+    },
+    performance: {
+      type: Schema.Types.Mixed,
     },
     progress: {
       type: Schema.Types.Number,

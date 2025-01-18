@@ -1,7 +1,5 @@
 'use client'
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import {
   CompleteAttachment,
@@ -38,16 +36,8 @@ const contentToParts = (
     ) {
       return [
         {
-          type: 'ui' as const,
-          display: (
-            <Alert variant="destructive">
-              <AlertTitle>Failed response!</AlertTitle>
-              <AlertDescription className="flex flex-col gap-2">
-                <Separator />
-                <div>{content}</div>
-              </AlertDescription>
-            </Alert>
-          ),
+          type: 'text' as const,
+          text: `Failed Response! \`\`\`${content}\`\`\` `,
         },
       ]
     }

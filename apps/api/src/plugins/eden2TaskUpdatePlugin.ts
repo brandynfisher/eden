@@ -1,3 +1,4 @@
+import { sendDiscordNotification } from '../lib/discord'
 import { handleTaskUpdateStreamEvent } from '../lib/eden2'
 import { TaskV2Document } from '../models/v2/TaskV2'
 import { FastifyPluginAsync } from 'fastify'
@@ -26,24 +27,31 @@ export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
       'change',
       async (data: ChangeStreamDocument<TaskV2Document>) => {
         try {
-          // fastify.log.info({
-          //   msg: 'Task change stream event received',
-          //   operationType: data.operationType,
-          // })
+          fastify.log.info({
+            msg: 'Task change stream event received',
+            operationType: data.operationType,
+          })
 
           if (
             data.operationType === 'insert' ||
             data.operationType === 'update'
           ) {
-            // fastify.log.info({
-            //   msg: `Task DB event: ${data.operationType} `,
-            //   doc: data.fullDocument,
-            // })
+            fastify.log.info({
+              msg: `Task DB event: ${data.operationType} `,
+              doc: data.fullDocument,
+            })
 
             const updatedFields =
               data.operationType === 'update'
                 ? (data.updateDescription as UpdateDescription).updatedFields
                 : undefined
+
+            if (
+              fastify.config.NODE_ENV === 'production' &&
+              data.fullDocument?.status === 'failed'
+            ) {
+              sendDiscordNotification(fastify, data.fullDocument)
+            }
 
             await handleTaskUpdateStreamEvent(
               fastify,

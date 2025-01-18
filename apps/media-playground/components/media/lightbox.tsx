@@ -193,7 +193,7 @@ export const LightboxTrigger = React.forwardRef<
         setOpen(true)
       }}
     >
-      {slide?.url.endsWith('.mp4') ? (
+      {slide?.url?.endsWith('.mp4') ? (
         <LightboxVideoTrigger
           src={slide.url}
           duration={slide.duration}
