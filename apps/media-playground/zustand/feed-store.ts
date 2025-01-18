@@ -68,6 +68,10 @@ const createFeedStore = () =>
       const activeIndex = activeIndexMap[feedId] ?? 0
 
       const increaseActiveIndex = () => {
+        if (activeIndex + 1 >= items.length) {
+          return
+        }
+
         set({
           activeIndexMap: {
             ...activeIndexMap,
@@ -83,8 +87,8 @@ const createFeedStore = () =>
 
         if (newItems && newItems.length > 0) {
           setItems([...items, ...newItems])
-          increaseActiveIndex()
         }
+        increaseActiveIndex()
       } else {
         increaseActiveIndex()
       }
