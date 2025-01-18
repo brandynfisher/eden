@@ -58,14 +58,14 @@ async function sendDiscordNotification(
             },
             {
               name: 'User',
-              value: `[${task.user?.toString()}](https://${
+              value: `[${task.user?.toString()}](${
                 fastify.config.FRONTEND_URL
               }/creators/${task.user?.toString()})`,
               inline: true,
             },
             {
               name: 'Requester',
-              value: `[${task.requester?.toString()}](https://${
+              value: `[${task.requester?.toString()}](${
                 fastify.config.FRONTEND_URL
               }/creators/${task.requester?.toString()})`,
               inline: true,
