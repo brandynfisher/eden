@@ -34,17 +34,18 @@ COPY packages/eden-sdk/package.json ./packages/eden-sdk/
 COPY packages/tsconfig/package.json ./packages/tsconfig/
 
 # Install dependencies with cache
-RUN --mount=type=cache,target=/root/.yarn/berry/cache \
-    --mount=type=cache,target=/root/.cache/yarn \
-    YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
+COPY . .
+RUN YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
+RUN rm -rf .git .github apps packages
 
 # Builder stage
-FROM deps AS builder
+FROM base AS builder
 WORKDIR /app
 
 # Copy node_modules and yarn state from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/.yarn ./.yarn
+COPY --from=deps /app/.pnp.* ./
 
 # Copy source files
 COPY . .

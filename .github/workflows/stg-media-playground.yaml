@@ -94,6 +94,7 @@ jobs:
   notify:
     needs: [build-and-push-to-ghcr]
     runs-on: ubuntu-latest
+    if: always()
     steps:
       - name: Discord Success Notification
         if: needs.build-and-push-to-ghcr.result == 'success'
@@ -108,7 +109,7 @@ jobs:
             Branch: ${{ github.ref_name }}
 
       - name: Discord Failure Notification
-        if: needs.build-and-push-to-ghcr.result != 'success'
+        if: needs.build-and-push-to-ghcr.result == 'failure' || needs.build-and-push-to-ghcr.result == 'cancelled'
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
