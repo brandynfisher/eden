@@ -58,10 +58,9 @@ jobs:
           context: .
           file: ./apps/media-playground/Dockerfile
           push: true
-          tags:
-            ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
+          cache-from: ${{ steps.prep.outputs.image }}:latest
+          cache-to: type=inline
           build-args: |
             "NEXT_PUBLIC_APP_ENV=staging"
             "NEXT_PUBLIC_HOST=https://staging2.app.eden.art"
