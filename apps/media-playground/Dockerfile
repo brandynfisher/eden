@@ -23,8 +23,8 @@ RUN --mount=type=cache,target=/var/cache/apk \
     freetype-dev \
     libpng-dev
 
-# Install turbo globally
-RUN yarn global add turbo
+# Enable corepack and use correct yarn version
+RUN corepack enable && corepack prepare yarn@4.5.1 --activate
 
 # First copy only package.json files to leverage module cache
 COPY package.json yarn.lock turbo.json ./
@@ -36,8 +36,7 @@ COPY packages/tsconfig/package.json ./packages/tsconfig/
 # Install dependencies with cache
 RUN --mount=type=cache,target=/root/.yarn/berry/cache \
     --mount=type=cache,target=/root/.cache/yarn \
-    yarn config set enableImmutableInstalls false && \
-    yarn install --frozen-lockfile
+    yarn install --immutable
 
 # Builder stage
 FROM deps AS builder
