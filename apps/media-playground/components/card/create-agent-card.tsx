@@ -31,7 +31,7 @@ export function CreateAgentCard({ className }: CreateAgentCardProps) {
             </div>
             <div className="ml-3 flex flex-col w-full">
               <span className="font-semibold mr-auto">
-                Create your own Agent
+                Create your own agent
               </span>
               <div className="text-xs text-accent-foreground line-clamp-3 mt-2">
                 Create and deploy your own custom agent with unique personality
