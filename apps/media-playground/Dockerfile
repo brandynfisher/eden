@@ -1,10 +1,10 @@
 FROM node:20-alpine AS base
 
-# Single stage for building and installing
-FROM base AS builder
+# Install dependencies only when needed
+FROM base AS deps
 WORKDIR /app
 
-# Install all dependencies in one layer with cache
+# Install system dependencies
 RUN --mount=type=cache,target=/var/cache/apk \
     apk add --no-cache \
     libc6-compat \
@@ -26,48 +26,58 @@ RUN --mount=type=cache,target=/var/cache/apk \
 # Install turbo globally
 RUN yarn global add turbo
 
-# Copy files needed for turbo prune
-COPY . .
-RUN turbo prune --scope=media-playground --docker
+# First copy only package.json files to leverage module cache
+COPY package.json yarn.lock turbo.json ./
+COPY apps/media-playground/package.json ./apps/media-playground/
+COPY packages/config/package.json ./packages/config/
+COPY packages/eden-sdk/package.json ./packages/eden-sdk/
+COPY packages/tsconfig/package.json ./packages/tsconfig/
 
-# Install and build in a single layer with shared cache
-FROM base AS installer
+# Install dependencies with cache
+RUN --mount=type=cache,target=/root/.yarn/berry/cache \
+    --mount=type=cache,target=/root/.cache/yarn \
+    yarn config set enableImmutableInstalls false && \
+    yarn install --frozen-lockfile
+
+# Builder stage
+FROM deps AS builder
 WORKDIR /app
 
-# Install ALL build dependencies
+# Copy source files
+COPY . .
+
+# Build with turborepo cache
+RUN --mount=type=cache,target=/root/.yarn/berry/cache \
+    --mount=type=cache,target=/root/.cache/yarn \
+    --mount=type=cache,target=/root/.turbo \
+    yarn turbo run build --filter=media-playground...
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+# Install runtime dependencies only
 RUN --mount=type=cache,target=/var/cache/apk \
     apk add --no-cache \
-    libc6-compat \
-    git \
-    g++ \
-    make \
-    python3 \
-    build-base \
     cairo-dev \
     jpeg-dev \
     pango-dev \
     giflib-dev \
-    librsvg-dev \
-    pixman-dev \
-    pkgconfig \
-    freetype-dev \
-    libpng-dev
+    librsvg-dev
 
-# Copy pruned files
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/yarn.lock ./yarn.lock
-COPY --from=builder /app/out/full/ .
-COPY turbo.json turbo.json
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+USER nextjs
 
-# Single layer for install and build with shared cache
-RUN --mount=type=cache,target=/build-cache \
-    YARN_CACHE_FOLDER=/build-cache/yarn \
-    TURBO_CACHE_DIR=/build-cache/turbo \
-    yarn config set enableImmutableInstalls false && \
-    yarn install --network-timeout 1000000 && \
-    yarn turbo run build --filter=media-playground...
+# Copy only necessary files
+COPY --from=builder /app/apps/media-playground/next.config.js .
+COPY --from=builder /app/apps/media-playground/package.json .
+COPY --from=builder --chown=nextjs:nodejs /app/apps/media-playground/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/media-playground/.next/static ./apps/media-playground/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/media-playground/public ./apps/media-playground/public
 
-# Build args
+# Build arguments and environment variables
 ARG NEXT_PUBLIC_APP_ENV
 ARG NEXT_PUBLIC_HOST
 ARG NEXT_PUBLIC_EDEN_API_URL
@@ -106,30 +116,5 @@ ENV NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV} \
     NEXT_PUBLIC_CLERK_SIGN_IN_URL=${NEXT_PUBLIC_CLERK_SIGN_IN_URL} \
     NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL} \
     NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL}
-
-# Production image
-FROM base AS runner
-WORKDIR /app
-
-# Install only runtime dependencies
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk add --no-cache \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    librsvg-dev
-
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
-USER nextjs
-
-# Copy only necessary files
-COPY --from=installer /app/apps/media-playground/next.config.js .
-COPY --from=installer /app/apps/media-playground/package.json .
-COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/static ./apps/media-playground/.next/static
-COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/public ./apps/media-playground/public
 
 CMD node apps/media-playground/server.js

@@ -59,8 +59,12 @@ jobs:
           file: ./apps/media-playground/Dockerfile
           push: true
           tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-from: |
+            type=local,src=/tmp/.buildx-cache
+            type=gha,scope=${{ github.workflow }}
+          cache-to: |
+            type=local,dest=/tmp/.buildx-cache-new,mode=max
+            type=gha,scope=${{ github.workflow }},mode=max
           build-args: |
             "NEXT_PUBLIC_APP_ENV=staging"
             "NEXT_PUBLIC_HOST=https://staging2.app.eden.art"
