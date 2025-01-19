@@ -10,12 +10,18 @@ RUN --mount=type=cache,target=/var/cache/apk \
     libc6-compat \
     git \
     g++ \
+    make \
+    python3 \
     build-base \
     cairo-dev \
     jpeg-dev \
     pango-dev \
     giflib-dev \
-    librsvg-dev
+    librsvg-dev \
+    pixman-dev \
+    pkgconfig \
+    freetype-dev \
+    libpng-dev
 
 # Install turbo globally
 RUN yarn global add turbo
@@ -28,15 +34,24 @@ RUN turbo prune --scope=media-playground --docker
 FROM base AS installer
 WORKDIR /app
 
-# Install runtime dependencies
+# Install ALL build dependencies
 RUN --mount=type=cache,target=/var/cache/apk \
     apk add --no-cache \
     libc6-compat \
+    git \
+    g++ \
+    make \
+    python3 \
+    build-base \
     cairo-dev \
     jpeg-dev \
     pango-dev \
     giflib-dev \
-    librsvg-dev
+    librsvg-dev \
+    pixman-dev \
+    pkgconfig \
+    freetype-dev \
+    libpng-dev
 
 # Copy pruned files
 COPY --from=builder /app/out/json/ .
@@ -48,7 +63,8 @@ COPY turbo.json turbo.json
 RUN --mount=type=cache,target=/build-cache \
     YARN_CACHE_FOLDER=/build-cache/yarn \
     TURBO_CACHE_DIR=/build-cache/turbo \
-    yarn install --frozen-lockfile --network-timeout 1000000 && \
+    yarn config set enableImmutableInstalls false && \
+    yarn install --network-timeout 1000000 && \
     yarn turbo run build --filter=media-playground...
 
 # Build args
