@@ -33,22 +33,25 @@ COPY packages/config/package.json ./packages/config/
 COPY packages/eden-sdk/package.json ./packages/eden-sdk/
 COPY packages/tsconfig/package.json ./packages/tsconfig/
 
-# Install dependencies with cache
-COPY . .
+# Copy workspace files needed for build
+COPY packages ./packages
+COPY apps/media-playground ./apps/media-playground
+COPY tsconfig.json .
+
+# Install dependencies
 RUN YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
-RUN rm -rf .git .github apps packages
 
 # Builder stage
 FROM base AS builder
 WORKDIR /app
 
-# Copy node_modules and yarn state from deps stage
+# Copy all files from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/.yarn ./.yarn
 COPY --from=deps /app/.pnp.* ./
-
-# Copy source files
-COPY . .
+COPY --from=deps /app/packages ./packages
+COPY --from=deps /app/apps ./apps
+COPY --from=deps /app/tsconfig.json ./
 
 # Build with turborepo cache
 RUN --mount=type=cache,target=/root/.yarn/berry/cache \
