@@ -42,7 +42,7 @@ const MyAssistantActionBar: FC = () => {
       hideWhenRunning
       autohide="not-last"
       autohideFloat="single-branch"
-      className="flex items-center gap-2 w-full z-10 max-w-xl"
+      className="flex items-center gap-2 w-full z-10"
     >
       {/*<AssistantActionBar.SpeechControl />*/}
       <AssistantActionBar.Copy />

@@ -214,6 +214,7 @@ export type Creator = {
   userId: string
   username?: string
   userImage?: string
+  type?: 'agent' | 'user'
   email?: string
   normalizedEmail?: string
   creations?: string[]

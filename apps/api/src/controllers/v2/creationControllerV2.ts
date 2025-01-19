@@ -28,7 +28,7 @@ export const getCreation = async (
     })
     .populate({
       path: 'user',
-      select: '_id userId username userImage',
+      select: '_id userId username userImage type',
       model: 'users3',
     })) as CreationV2Document & {
     reactions?: Map<ReactionType, boolean>

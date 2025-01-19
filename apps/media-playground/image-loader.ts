@@ -27,11 +27,10 @@ function changeExtension(filename: string, format: Formats): string {
   return filename.replace(EXTENSION_PATTERN, `.${format}`)
 }
 
-export default function customImageLoader({
-  src,
-  width,
-  format = Formats.WEBP,
-}: ImageLoaderProps): string {
+export default function customImageLoader(args: ImageLoaderProps): string {
+  // console.log(args)
+  const { src, width, format, quality } = args || {}
+
   // use url as is
   if (
     src.startsWith('https://') &&
@@ -49,8 +48,19 @@ export default function customImageLoader({
     return src.replace('_1024', `_${selectedSize}`)
   }
 
-  const srcWithSize = src.replace(EXTENSION_PATTERN, `_${selectedSize}$1`)
-  const finalSrc = changeExtension(srcWithSize, format)
+  const srcWithCDNPrefix = src.startsWith('/')
+    ? `${process.env.NEXT_PUBLIC_AWS_CLOUDFRONT_URL}/${src}`
+    : src
+
+  if (quality === 100) {
+    return srcWithCDNPrefix
+  }
+
+  const srcWithSize = srcWithCDNPrefix.replace(
+    EXTENSION_PATTERN,
+    `_${selectedSize}$1`,
+  )
+  const finalSrc = changeExtension(srcWithSize, format || Formats.WEBP)
 
   // prepend cloudfront url
   return getCloudfrontUrl(finalSrc)

@@ -93,7 +93,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
   return (
     <Thread.Root config={config}>
-      <Thread.Viewport className="pt-0">
+      <Thread.Viewport className="pt-0 px-1 md:px-2">
         <ThreadWelcomeComponent />
         <Thread.Messages
           components={{

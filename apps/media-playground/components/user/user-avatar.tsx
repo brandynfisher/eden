@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import customImageLoader from '@/image-loader'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 
@@ -17,8 +18,10 @@ const UserAvatar = ({ image, name, className }: Props) => {
     >
       {image ? (
         <Image
+          loader={customImageLoader}
           src={image}
           alt="logo"
+          quality={100}
           width={64}
           height={64}
           className={cn(['group-hover:brightness-105', className])}

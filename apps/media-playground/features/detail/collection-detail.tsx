@@ -243,6 +243,7 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
             <UserAvatarLink
               name={collection?.user.username || collection?.user._id}
               image={collection?.user.userImage}
+              isAgent={collection?.user.type === 'agent'}
             />
           </span>
         </div>

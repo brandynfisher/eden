@@ -53,6 +53,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               <UserAvatarLink
                 name={item.user.username || item.user._id}
                 image={item.user.userImage}
+                isAgent={item?.user?.type === 'agent'}
               />
               <Suspense>
                 {type === 'creation' ? (

@@ -5,12 +5,18 @@ export type UserAvatarLinkProps = {
   name: string
   image?: string
   hideName?: boolean
+  isAgent?: boolean
 }
 
-const UserAvatarLink = ({ name, image, hideName }: UserAvatarLinkProps) => {
+const UserAvatarLink = ({
+  name,
+  image,
+  hideName,
+  isAgent,
+}: UserAvatarLinkProps) => {
   return (
     <Link
-      href={`/creators/${name}`}
+      href={`/${isAgent ? 'agents' : 'creators'}/${name}`}
       className="group flex gap-2 items-center cursor-pointer"
     >
       <UserAvatar image={image} name={name} className="h-8 w-8" />

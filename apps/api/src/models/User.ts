@@ -15,6 +15,7 @@ export interface UserSchema extends BaseUserSchema {
   stripeSubscriptionId?: string
   lastDailyLoginBonus?: Date
   discordLinkBonusClaimed?: boolean
+  type?: 'agent' | 'user'
 }
 
 export type UserInput = {
@@ -26,6 +27,7 @@ export type UserInput = {
   isAdmin?: boolean
   email?: string
   normalizedEmail?: string
+  type?: 'agent' | 'user'
 }
 
 export interface UserDocument extends UserSchema, BaseUserDocument {}
