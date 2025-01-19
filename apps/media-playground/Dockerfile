@@ -9,11 +9,7 @@ RUN --mount=type=cache,target=/var/cache/apk \
     apk add --no-cache \
     libc6-compat
 
-# Copy package files for turbo installation
 RUN yarn global add turbo
-RUN corepack enable && \
-    corepack prepare yarn@4.5.1 --activate && \
-    YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
 # Copy all files for pruning
 COPY . .
