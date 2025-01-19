@@ -102,6 +102,7 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
           title: "🚀 Build - Eden Create - STAGING"
+          status: "Success"
           color: 0x00ff00
           description: |
             Successfully built and deployed media-playground to staging
@@ -114,6 +115,7 @@ jobs:
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
           title: "❌ Build - Eden Create - STAGING"
+          status: "Failed"
           color: 0xff0000
           description: |
             Failed to build media-playground-staging
