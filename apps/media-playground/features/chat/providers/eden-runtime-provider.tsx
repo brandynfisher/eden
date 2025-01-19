@@ -333,9 +333,9 @@ export function EdenRuntimeProvider({
   // Only render loading overlay after client mount
   const showLoadingOverlay = isClientMounted && isLoadingThread
 
-  if (!isClientMounted) {
-    return null
-  }
+  // if (!isClientMounted) {
+  //   return null
+  // }
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
