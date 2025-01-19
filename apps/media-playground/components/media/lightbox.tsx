@@ -262,6 +262,28 @@ export function LightboxVideoTrigger({
   const { hovered, ref: hoverRef } = useHover()
   const width = props?.width ? +props.width : 1024
   const height = props?.height ? +props.height : 1024
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+
+  // Handle play/pause with error catching
+  const handlePlay = async () => {
+    try {
+      if (videoRef.current) {
+        await videoRef.current.play()
+      }
+    } catch (error) {
+      // Silently handle abort errors
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Video playback error:', error)
+      }
+    }
+  }
+
+  const handlePause = () => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+    }
+  }
 
   return (
     <div ref={hoverRef} className="relative h-full w-full">
@@ -278,6 +300,7 @@ export function LightboxVideoTrigger({
         <MediaDurationBadge duration={duration} isLoading={false} />
       ) : null}
       <video
+        ref={videoRef}
         src={src}
         muted
         playsInline
@@ -288,13 +311,8 @@ export function LightboxVideoTrigger({
           'flex w-full h-full object-contain relative z-10',
           className,
         )}
-        onMouseEnter={e => {
-          e.currentTarget.play()
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.pause()
-          e.currentTarget.currentTime = 0
-        }}
+        onMouseEnter={handlePlay}
+        onMouseLeave={handlePause}
         {...props}
       />
     </div>
