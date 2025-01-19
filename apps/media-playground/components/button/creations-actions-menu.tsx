@@ -102,7 +102,7 @@ const CreationActionsContent = ({
 
   const creationData = creationResponse || creation
 
-  console.log({ creationData, creationResponse, creation })
+  // console.log({ creationData, creationResponse, creation })
 
   const handleAddToCollectionClick = () => {
     dispatch(
