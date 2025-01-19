@@ -42,6 +42,10 @@ RUN --mount=type=cache,target=/root/.yarn/berry/cache \
 FROM deps AS builder
 WORKDIR /app
 
+# Copy node_modules and yarn state from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/.yarn ./.yarn
+
 # Copy source files
 COPY . .
 
@@ -116,4 +120,4 @@ ENV NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV} \
     NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL} \
     NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL}
 
-CMD node apps/media-playground/server.js
+CMD ["node", "apps/media-playground/server.js"]
