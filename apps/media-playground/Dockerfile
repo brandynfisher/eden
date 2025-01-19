@@ -10,14 +10,14 @@ RUN --mount=type=cache,target=/var/cache/apk \
     libc6-compat
 
 # Copy package files for turbo installation
-COPY package.json yarn.lock turbo.json ./
+RUN yarn global add turbo
 RUN corepack enable && \
     corepack prepare yarn@4.5.1 --activate && \
     YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
 # Copy all files for pruning
 COPY . .
-RUN yarn turbo prune --scope=media-playground --docker
+RUN turbo prune --scope=media-playground --docker
 
 # Install stage - install dependencies and build
 FROM base AS installer
@@ -52,7 +52,7 @@ RUN --mount=type=cache,target=/root/.yarn/berry/cache \
     --mount=type=cache,target=/root/.cache/yarn \
     --mount=type=cache,target=/root/.turbo \
     YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install && \
-    yarn turbo run build --filter=media-playground...
+    turbo run build --filter=media-playground...
 
 # Production image
 FROM base AS runner
