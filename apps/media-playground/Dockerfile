@@ -51,8 +51,8 @@ RUN corepack enable && corepack prepare yarn@4.5.1 --activate
 RUN --mount=type=cache,target=/root/.yarn/berry/cache \
     --mount=type=cache,target=/root/.cache/yarn \
     --mount=type=cache,target=/root/.turbo \
-    YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install && \
-    turbo run build --filter=media-playground...
+    yarn install && \
+    yarn turbo run build --filter=media-playground...
 
 # Production image
 FROM base AS runner
