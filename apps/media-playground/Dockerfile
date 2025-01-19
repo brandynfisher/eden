@@ -9,11 +9,13 @@ RUN --mount=type=cache,target=/var/cache/apk \
     apk add --no-cache \
     libc6-compat
 
-RUN yarn global add turbo
+# Copy package files for turbo installation
+COPY package.json yarn.lock turbo.json ./
+RUN corepack enable && corepack prepare yarn@4.5.1 --activate && yarn install --frozen-lockfile
 
 # Copy all files for pruning
 COPY . .
-RUN turbo prune --scope=media-playground --docker
+RUN yarn turbo prune --scope=media-playground --docker
 
 # Install stage - install dependencies and build
 FROM base AS installer
