@@ -36,7 +36,8 @@ COPY packages/tsconfig/package.json ./packages/tsconfig/
 # Copy workspace files needed for build
 COPY packages ./packages
 COPY apps/media-playground ./apps/media-playground
-COPY tsconfig.json .
+COPY tsconfig*.json ./
+COPY .eslintrc.js .prettierrc.js ./
 
 # Install dependencies
 RUN YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
@@ -51,7 +52,9 @@ COPY --from=deps /app/.yarn ./.yarn
 COPY --from=deps /app/.pnp.* ./
 COPY --from=deps /app/packages ./packages
 COPY --from=deps /app/apps ./apps
-COPY --from=deps /app/tsconfig.json ./
+COPY --from=deps /app/tsconfig*.json ./
+COPY --from=deps /app/.eslintrc.js ./
+COPY --from=deps /app/.prettierrc.js ./
 
 # Build with turborepo cache
 RUN --mount=type=cache,target=/root/.yarn/berry/cache \
