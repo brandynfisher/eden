@@ -59,8 +59,8 @@ jobs:
           file: ./apps/media-playground/Dockerfile
           push: true
           tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
-          cache-from: ${{ steps.prep.outputs.image }}:latest
-          cache-to: type=inline
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
           build-args: |
             "NEXT_PUBLIC_APP_ENV=production"
             "NEXT_PUBLIC_HOST=https://beta.eden.art"
@@ -80,13 +80,19 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
-  notify:
-    needs: [build-and-push-to-ghcr]
-    runs-on: ubuntu-latest
-    if: ${{ always() }}
 
-    steps:
-      - name: Discord Webhook Trigger
-        uses: sarisia/actions-status-discord@v1
-        with:
-          webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+notify:
+  needs: [build-and-push-to-ghcr]
+  runs-on: ubuntu-latest
+  if: ${{ always() }}
+
+  steps:
+    - name: Discord Webhook Trigger
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
