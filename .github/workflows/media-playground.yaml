@@ -1,12 +1,12 @@
-name: 'Build / Deploy - Eden Create - PROD'
+name: "Build / Deploy - Eden Create - PROD"
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - 'apps/media-playground/**'
-      - '.github/workflows/media-playground.yaml'
+      - "apps/media-playground/**"
+      - ".github/workflows/media-playground.yaml"
 
 env:
   REGISTRY: ghcr.io
@@ -86,13 +86,13 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-notify:
-  needs: [build-and-push-to-ghcr]
-  runs-on: ubuntu-latest
-  if: ${{ always() }}
+  notify:
+    needs: [build-and-push-to-ghcr]
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
 
-  steps:
-    - name: Discord Webhook Trigger
-      uses: sarisia/actions-status-discord@v1
-      with:
-        webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
+    steps:
+      - name: Discord Webhook Trigger
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
