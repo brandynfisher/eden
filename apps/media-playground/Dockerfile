@@ -36,7 +36,7 @@ COPY packages/tsconfig/package.json ./packages/tsconfig/
 # Install dependencies with cache
 RUN --mount=type=cache,target=/root/.yarn/berry/cache \
     --mount=type=cache,target=/root/.cache/yarn \
-    yarn install --immutable
+    YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
 
 # Builder stage
 FROM deps AS builder
@@ -49,7 +49,7 @@ COPY . .
 RUN --mount=type=cache,target=/root/.yarn/berry/cache \
     --mount=type=cache,target=/root/.cache/yarn \
     --mount=type=cache,target=/root/.turbo \
-    yarn turbo run build --filter=media-playground...
+    YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn turbo run build --filter=media-playground...
 
 # Production image
 FROM base AS runner
