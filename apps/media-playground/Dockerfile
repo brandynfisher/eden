@@ -1,32 +1,29 @@
-FROM node:20-alpine AS base
+FROM node:18-alpine AS base
 
-# Builder stage to prune the monorepo
+# This Dockerfile is copy-pasted into our main docs at /docs/handbook/deploying-with-docker.
+# Make sure you update both files!
+
 FROM base AS builder
-WORKDIR /app
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
+RUN apk update
 
-# Install system dependencies
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk add --no-cache \
-    libc6-compat
+# Set working directory
+WORKDIR /app
+# Install node-canvas deps
 
 RUN yarn global add turbo
-
-# Copy all files for pruning
 COPY . .
 RUN turbo prune --scope=media-playground --docker
 
-# Install stage - install dependencies and build
+# Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
+RUN apk add --no-cache libc6-compat git
+RUN apk update
 WORKDIR /app
 
-# Install system dependencies
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk add --no-cache \
-    libc6-compat \
-    git \
+RUN apk add --update --no-cache \
     g++ \
-    make \
-    python3 \
     build-base \
     cairo-dev \
     jpeg-dev \
@@ -34,85 +31,101 @@ RUN --mount=type=cache,target=/var/cache/apk \
     giflib-dev \
     librsvg-dev
 
-# Copy pruned files
+# First install the dependencies (as they change less often)
+COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/yarn.lock ./yarn.lock
+RUN yarn install
+
+# Build the project
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
-# Enable corepack and use correct yarn version
-RUN corepack enable && corepack prepare yarn@4.5.1 --activate
+# Uncomment and use build args to enable remote caching
+# ARG TURBO_TEAM
+# ENV TURBO_TEAM=$TURBO_TEAM
 
-# Install and build
-RUN --mount=type=cache,target=/root/.yarn/berry/cache \
-    --mount=type=cache,target=/root/.cache/yarn \
-    --mount=type=cache,target=/root/.turbo \
-    yarn install && \
-    yarn turbo run build --filter=media-playground...
+# ARG TURBO_TOKEN
+# ENV TURBO_TOKEN=$TURBO_TOKEN
 
-# Production image
+
+ARG NEXT_PUBLIC_HOST
+ENV NEXT_PUBLIC_HOST ${NEXT_PUBLIC_HOST}
+ARG NEXT_PUBLIC_EDEN_API_URL
+ENV NEXT_PUBLIC_EDEN_API_URL ${NEXT_PUBLIC_EDEN_API_URL}
+ARG NEXT_PUBLIC_EDEN_SSE_URL
+ENV NEXT_PUBLIC_EDEN_SSE_URL ${NEXT_PUBLIC_EDEN_SSE_URL}
+ARG NEXT_PUBLIC_APP_ENV
+ENV NEXT_PUBLIC_APP_ENV ${NEXT_PUBLIC_APP_ENV}
+ARG NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL
+ENV NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL ${NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL}
+
+ARG NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
+ENV NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID ${NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID}
+
+# AWS
+ARG NEXT_PUBLIC_AWS_CLOUDFRONT_URL
+ENV NEXT_PUBLIC_AWS_CLOUDFRONT_URL ${NEXT_PUBLIC_AWS_CLOUDFRONT_URL}
+
+# Clerk
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+
+ARG NEXT_PUBLIC_CLERK_SIGN_IN_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_IN_URL ${NEXT_PUBLIC_CLERK_SIGN_IN_URL}
+ARG NEXT_PUBLIC_CLERK_SIGN_UP_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_UP_URL ${NEXT_PUBLIC_CLERK_SIGN_UP_URL}
+
+ARG NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL ${NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL}
+ARG NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL ${NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL}
+
+# Discord
+ARG NEXT_PUBLIC_DISCORD_CLIENT_ID
+ENV NEXT_PUBLIC_DISCORD_CLIENT_ID ${NEXT_PUBLIC_DISCORD_CLIENT_ID}
+
+# Analytics
+ARG NEXT_PUBLIC_GOOGLE_GTM_ID
+ENV NEXT_PUBLIC_GOOGLE_GTM_ID ${NEXT_PUBLIC_GOOGLE_GTM_ID}
+ARG NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID
+ENV NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID ${NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID}
+
+# Sentry
+ARG NEXT_PUBLIC_SENTRY_DSN
+ENV NEXT_PUBLIC_SENTRY_DSN ${NEXT_PUBLIC_SENTRY_DSN}
+ARG SENTRY_AUTH_TOKEN
+ENV SENTRY_AUTH_TOKEN ${SENTRY_AUTH_TOKEN}
+ARG SENTRY_IGNORE_API_RESOLUTION_ERROR
+ENV SENTRY_IGNORE_API_RESOLUTION_ERROR ${SENTRY_IGNORE_API_RESOLUTION_ERROR}
+
+RUN yarn turbo run build --filter=media-playground...
+
 FROM base AS runner
 WORKDIR /app
 
-# Install runtime dependencies only
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk add --no-cache \
+RUN apk add --update --no-cache \
+    g++ \
+    build-base \
     cairo-dev \
     jpeg-dev \
     pango-dev \
     giflib-dev \
     librsvg-dev
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
+# Don't run production as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 USER nextjs
 
-# Copy only necessary files
 COPY --from=installer /app/apps/media-playground/next.config.js .
 COPY --from=installer /app/apps/media-playground/package.json .
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/.next/static ./apps/media-playground/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/media-playground/public ./apps/media-playground/public
 
-# Build arguments and environment variables
-ARG NEXT_PUBLIC_APP_ENV
-ARG NEXT_PUBLIC_HOST
-ARG NEXT_PUBLIC_EDEN_API_URL
-ARG NEXT_PUBLIC_EDEN_SSE_URL
-ARG NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL
-ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-ARG NEXT_PUBLIC_SENTRY_DSN
-ARG NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
-ARG NEXT_PUBLIC_DISCORD_CLIENT_ID
-ARG NEXT_PUBLIC_GOOGLE_GTM_ID
-ARG NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID
-ARG NEXT_PUBLIC_AWS_CLOUDFRONT_URL
-ARG SENTRY_AUTH_TOKEN
-ARG SENTRY_IGNORE_API_RESOLUTION_ERROR
-ARG NEXT_PUBLIC_CLERK_SIGN_UP_URL
-ARG NEXT_PUBLIC_CLERK_SIGN_IN_URL
-ARG NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL
-ARG NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL
 
-# Set env vars
-ENV NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV} \
-    NEXT_PUBLIC_HOST=${NEXT_PUBLIC_HOST} \
-    NEXT_PUBLIC_EDEN_API_URL=${NEXT_PUBLIC_EDEN_API_URL} \
-    NEXT_PUBLIC_EDEN_SSE_URL=${NEXT_PUBLIC_EDEN_SSE_URL} \
-    NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=${NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL} \
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY} \
-    NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN} \
-    NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=${NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID} \
-    NEXT_PUBLIC_DISCORD_CLIENT_ID=${NEXT_PUBLIC_DISCORD_CLIENT_ID} \
-    NEXT_PUBLIC_GOOGLE_GTM_ID=${NEXT_PUBLIC_GOOGLE_GTM_ID} \
-    NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID=${NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID} \
-    NEXT_PUBLIC_AWS_CLOUDFRONT_URL=${NEXT_PUBLIC_AWS_CLOUDFRONT_URL} \
-    SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN} \
-    SENTRY_IGNORE_API_RESOLUTION_ERROR=${SENTRY_IGNORE_API_RESOLUTION_ERROR} \
-    NEXT_PUBLIC_CLERK_SIGN_UP_URL=${NEXT_PUBLIC_CLERK_SIGN_UP_URL} \
-    NEXT_PUBLIC_CLERK_SIGN_IN_URL=${NEXT_PUBLIC_CLERK_SIGN_IN_URL} \
-    NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL} \
-    NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=${NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL}
-
-CMD ["node", "apps/media-playground/server.js"]
+CMD node apps/media-playground/server.js

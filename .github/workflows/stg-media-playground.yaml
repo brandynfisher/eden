@@ -34,16 +34,16 @@ jobs:
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=image::${IMAGE}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+      # - name: Cache Docker layers
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: /tmp/.buildx-cache
+      #     key: ${{ runner.os }}-buildx-${{ github.sha }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-buildx-
 
       - name: Log in to GHCR
         if: github.event_name != 'pull_request'
@@ -60,12 +60,12 @@ jobs:
           file: ./apps/media-playground/Dockerfile
           push: true
           tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
-          cache-from: |
-            type=local,src=/tmp/.buildx-cache
-            type=gha,scope=${{ github.workflow }}
-          cache-to: |
-            type=local,dest=/tmp/.buildx-cache-new,mode=max
-            type=gha,scope=${{ github.workflow }},mode=max
+          # cache-from: |
+          #   type=local,src=/tmp/.buildx-cache
+          #   type=gha,scope=${{ github.workflow }}
+          # cache-to: |
+          #   type=local,dest=/tmp/.buildx-cache-new,mode=max
+          #   type=gha,scope=${{ github.workflow }},mode=max
           build-args: |
             "NEXT_PUBLIC_APP_ENV=staging"
             "NEXT_PUBLIC_HOST=https://staging2.app.eden.art"
@@ -86,10 +86,10 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/create"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
 
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      # - name: Move cache
+      #   run: |
+      #     rm -rf /tmp/.buildx-cache
+      #     mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   notify:
     needs: [build-and-push-to-ghcr]
