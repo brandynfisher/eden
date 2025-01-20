@@ -19,7 +19,13 @@ export const createThreadMessage = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { thread_id, agent_id, content, attachments } =
     request.body as ThreadsCreateArguments
 
@@ -131,7 +137,12 @@ export const listThreads = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
 
   const user = await User.findById(userId)
   if (!user) {
@@ -204,7 +215,13 @@ export const getThread = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { thread_id } = request.params as ThreadsGetArguments
 
   const user = await User.findById(userId)
@@ -301,7 +318,13 @@ export const addThreadMessageReaction = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { message_id, reaction } = request.body as ThreadsMessageReactArguments
 
   const user = await User.findById(userId)

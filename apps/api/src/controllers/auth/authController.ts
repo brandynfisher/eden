@@ -144,7 +144,12 @@ export const disconnectDiscord = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
 
   const user = await User.findById(userId)
 

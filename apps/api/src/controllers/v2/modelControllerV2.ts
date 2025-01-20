@@ -13,7 +13,13 @@ export const listModels = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { modelId, limit, page, sort } = request.query as ModelsV2ListArguments
 
   const user = await User.findById(userId)
@@ -96,7 +102,13 @@ export const modelUpdate = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { modelId } = request.params as ModelsV2PatchArguments
   const { public: isPublic, deleted } = request.body as ModelsV2PatchArguments
 

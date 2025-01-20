@@ -63,7 +63,13 @@ export const creationUpdate = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { creationId } = request.params as CreationsV2PatchArguments
   const { public: isPublic, deleted } =
     request.body as CreationsV2PatchArguments
@@ -127,7 +133,13 @@ export const creationBulkUpdate = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const {
     creationIds,
     public: isPublic,
