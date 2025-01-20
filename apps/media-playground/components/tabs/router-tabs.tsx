@@ -181,8 +181,8 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
           ) : null}
 
           {sharedFilterMenu ? (
-            <div className="flex gap-4 ml-auto xs:ml-0">
-              <Separator orientation="vertical" className="hidden xs:block" />
+            <div className="flex gap-4">
+              <Separator orientation="vertical" className="hidden md:block" />
               {sharedFilterMenu({
                 initialFilter: baseQuery,
                 onChange: handleGlobalFilterChange,
