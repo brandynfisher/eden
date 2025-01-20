@@ -311,7 +311,7 @@ const injectResultUrls = (
     return result
   }
 
-  if (result.output) {
+  if (Array.isArray(result.output)) {
     result.output = result.output.map(output => {
       const thumbnailName = isModelResult
         ? output.thumbnail || ''
