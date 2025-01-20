@@ -63,5 +63,7 @@ export default async function AgentDetailPage({ params: { id } }: Props) {
     throw new Error(`Error loading agent: ${response.error}`)
   }
 
+  // console.log('response', response.agent)
+
   return <AgentDetail id={id} agentSSRData={response.agent} />
 }

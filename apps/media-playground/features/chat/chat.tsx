@@ -32,8 +32,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { EditIcon } from 'lucide-react'
 import Link from 'next/link'
-import * as React from 'react'
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useState } from 'react'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const threads = useThreadList().threads
@@ -115,7 +114,7 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
 }
 
 const LeftBarSheet: FC = () => {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const handleCloseSheet = () => setOpen(false)
 
   return (
@@ -185,17 +184,29 @@ type Props = {
 }
 
 const Chat: FC<Props> = ({ agentId, threadId }) => {
+  const [isMounted, setIsMounted] = useState(false)
+
   const { agent, isError, error } = useAgentQuery({
     key: agentId,
     enabled: !!agentId,
   })
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    setIsMounted(true)
+
     document.body.classList.add('overflow-hidden')
     return () => {
       document.body.classList.remove('overflow-hidden')
     }
   }, [])
+
+  if (!isMounted) {
+    return null
+  }
 
   return (
     <EdenRuntimeProvider agentId={agentId} threadId={threadId}>

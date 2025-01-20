@@ -41,14 +41,14 @@ export const TaskResultTool = makeAssistantToolUI<
           args={args}
           argsText={argsText}
           status={status}
-          addResult={() => console.log('adding result', result)}
+          addResult={() => true}
         />
         <ErrorBoundary>
           <LightboxGallery>
             <div
               className={cn([
                 toolResults && toolResults.length > 1 && 'grid',
-                'grid-cols-2 gap-4',
+                'grid-cols-2 gap-2 md:gap-4 mt-4 mb-4',
               ])}
             >
               {toolResults
@@ -58,6 +58,7 @@ export const TaskResultTool = makeAssistantToolUI<
                         result.output.map((output, outputIndex) => (
                           <div
                             key={`${index}-${outputIndex}-${output.filename}`}
+                            className="group"
                           >
                             {getFileTypeByMimeType(
                               output.mediaAttributes?.mimeType,
@@ -96,7 +97,7 @@ export const TaskResultTool = makeAssistantToolUI<
                                 }}
                                 startIndex={index}
                                 imageProps={{
-                                  // loading: 'lazy',
+                                  loading: 'lazy',
                                   blurhash: output.mediaAttributes?.blurhash,
                                   className: 'max-h-[420px]',
                                 }}
@@ -105,20 +106,6 @@ export const TaskResultTool = makeAssistantToolUI<
                                 }}
                               />
                             )}
-                            {/* <Button
-                            size="sm"
-                            variant="outline"
-                            type="button"
-                            asChild
-                          >
-                            <Link
-                              href={`/creations/${output.creation}`}
-                              prefetch={false}
-                              className="absolute top-2 right-2"
-                            >
-                              <ExternalLinkIcon className="h-4 w-4" />
-                            </Link>
-                          </Button> */}
                             {output.creation && (
                               <CreationActionsMenu
                                 creation={{
@@ -126,7 +113,7 @@ export const TaskResultTool = makeAssistantToolUI<
                                   // @ts-expect-error faked taskv2
                                   task: { args },
                                 }}
-                                className="ml-auto absolute top-2 right-2"
+                                className="ml-auto absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
                                 queryKey={['creations', output.creation?._id]}
                               />
                             )}

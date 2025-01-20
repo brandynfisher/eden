@@ -144,7 +144,12 @@ export const disconnectDiscord = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
 
   const user = await User.findById(userId)
 
@@ -165,7 +170,15 @@ export const claimDailyLoginBonus = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const user = await User.findById(request.user.userId)
+  const { userId } = request.user || {}
+
+  if (!userId) {
+    return reply.status(401).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const user = await User.findById(userId)
 
   if (!user) {
     return reply.status(400).send({

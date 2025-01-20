@@ -99,6 +99,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
                 <UserAvatarLink
                   name={creation.user.username || creation.user._id}
                   image={creation.user.userImage}
+                  isAgent={creation?.user?.type === 'agent'}
                 />
               </div>
               <div

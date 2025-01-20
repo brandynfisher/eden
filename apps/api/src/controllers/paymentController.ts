@@ -689,7 +689,13 @@ export const createCheckoutSession = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { priceId, paymentMode, analyticsClientId, returnUrl } =
     request.body as PaymentsCreateArguments
 
@@ -756,7 +762,13 @@ export const createSubscriptionSession = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { stripeCustomerId, returnUrl } =
     request.body as PaymentsSubscriptionArguments
 

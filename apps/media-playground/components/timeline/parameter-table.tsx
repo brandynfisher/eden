@@ -76,20 +76,20 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
             <TableHead className="h-10 py-2 w-1/3 md:w-[150px]">
               Parameter
             </TableHead>
-            <TableHead className="h-10 py-2 w-2/3 md:w-auto">Value</TableHead>
+            <TableHead className="h-10 py-2 w-full">Value</TableHead>
           </TableRow>
         </TableHeader>
       ) : null}
       <TableBody className="bg-popover/20">
         {allArgs.map(taskArg => (
           <TableRow key={taskArg[0]} className="cursor-pointer text-xs">
-            <TableCell className="flex items-center gap-1 px-2 py-2 text-muted-foreground w-1/3 md:w-[125px] truncate align-top">
+            <TableCell className="flex items-center gap-1 px-2 py-2 text-muted-foreground w-[125px] truncate align-top">
               {taskArg[0]}
               {taskArg[0] === 'lora_training_urls' ? (
                 <LockKeyholeIcon className="relative h-3.5 w-3.5 flex-shrink-0" />
               ) : null}
             </TableCell>
-            <TableCell className="pl-0 pr-2 py-2 w-2/3 md:w-auto">
+            <TableCell className="pl-0 pr-2 py-2 w-full">
               {imageInputParameterNames.includes(taskArg[0]) ? (
                 <div className="flex gap-2">
                   <LightboxGallery>

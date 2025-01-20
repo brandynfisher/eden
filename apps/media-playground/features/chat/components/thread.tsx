@@ -93,7 +93,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
   return (
     <Thread.Root config={config}>
-      <Thread.Viewport>
+      <Thread.Viewport className="pt-0 px-1 md:px-2">
         <ThreadWelcomeComponent />
         <Thread.Messages
           components={{
@@ -103,7 +103,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
           }}
         />
         <ThreadFollowupSuggestions />
-        <Thread.ViewportFooter>
+        <Thread.ViewportFooter className="z-20">
           {showConnectionLost ? (
             <div className="w-full bg-accent mb-4 mt-2 rounded-lg overflow-hidden">
               <AlertDestructive title="Network connection lost" />

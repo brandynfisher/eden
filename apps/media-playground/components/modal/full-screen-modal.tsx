@@ -81,7 +81,7 @@ const FullScreenModal = ({
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
         </VisuallyHidden>
-        <div className="absolute inset-0">{children}</div>
+        <div>{children}</div>
       </DialogContentScrollable>
     </Dialog>
   )

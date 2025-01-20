@@ -55,7 +55,14 @@ export const createTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { tool, args } = request.body as TasksV2CreateArguments
   const toolDocument = await ToolV2.findOne({ key: tool })
 
@@ -160,7 +167,14 @@ export const listTasks = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const {
     // type,
     tool,
@@ -311,7 +325,7 @@ const injectResultUrls = (
     return result
   }
 
-  if (result.output) {
+  if (Array.isArray(result.output)) {
     result.output = result.output.map(output => {
       const thumbnailName = isModelResult
         ? output.thumbnail || ''
@@ -353,7 +367,13 @@ export const getTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { taskId } = request.params as TasksV2GetArguments
 
   const user = await User.findById(userId)
@@ -423,7 +443,13 @@ export const subscribeTaskUpdates = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { taskId } = request.query as {
     taskId?: string
   }
@@ -898,7 +924,13 @@ export const cancelTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { taskId } = request.body as TasksV2CancelArguments
 
   if (!taskId) {

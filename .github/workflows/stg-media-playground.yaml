@@ -1,12 +1,12 @@
-name: 'Build / Deploy - Eden Create - STAGING'
+name: "Build / Deploy - Eden Create - STAGING"
 
 on:
   workflow_dispatch:
   push:
-    branches: [ staging ]
+    branches: [staging]
     paths:
-      - 'apps/media-playground/**'
-      - '.github/workflows/stg-media-playground.yaml'
+      - "apps/media-playground/**"
+      - ".github/workflows/stg-media-playground.yaml"
 
 env:
   REGISTRY: ghcr.io
@@ -22,6 +22,7 @@ jobs:
       packages: write
     outputs:
       tag: ${{ steps.prep.outputs.tag }}
+      status: ${{ job.status }}
     steps:
       - uses: actions/checkout@v4
 
@@ -58,10 +59,9 @@ jobs:
           context: .
           file: ./apps/media-playground/Dockerfile
           push: true
-          tags:
-            ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
           build-args: |
             "NEXT_PUBLIC_APP_ENV=staging"
             "NEXT_PUBLIC_HOST=https://staging2.app.eden.art"
@@ -81,13 +81,40 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
             "NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/create"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
   notify:
     needs: [build-and-push-to-ghcr]
     runs-on: ubuntu-latest
-    if: ${{ always() }}
-
+    if: always()
     steps:
-      - name: Discord Webhook Trigger
+      - name: Discord Success Notification
+        if: needs.build-and-push-to-ghcr.result == 'success'
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
+          title: "🚀 Build - Eden Create - STAGING"
+          status: "Success"
+          color: 0x00ff00
+          description: |
+            Successfully built and deployed media-playground to staging
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+
+      - name: Discord Failure Notification
+        if: needs.build-and-push-to-ghcr.result == 'failure' || needs.build-and-push-to-ghcr.result == 'cancelled'
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
+          title: "❌ Build - Eden Create - STAGING"
+          status: "Failed"
+          color: 0xff0000
+          description: |
+            Failed to build media-playground-staging
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+            Please check the workflow logs for details.

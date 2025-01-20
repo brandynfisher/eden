@@ -45,6 +45,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   const agent = agentClientData || agentSSRData
 
+  // console.log('agent', agent)
+
   const onDeleteAgent = async () => {
     const handleDelete = async () => {
       try {
@@ -89,7 +91,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     )
   }
 
-  if (!agent || (!isSignedIn && !user)) return null
+  if (!agent) return null
 
   return (
     <>

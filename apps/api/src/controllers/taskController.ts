@@ -83,7 +83,13 @@ export const getTaskCost = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { generatorName, versionId, config } =
     request.body as TasksCreateArguments
 
@@ -293,7 +299,13 @@ export const listTasks = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { type, status, taskId, limit, page, sort } =
     request.query as TasksListArguments
 
@@ -383,7 +395,13 @@ export const subscribeTaskUpdates = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { taskId } = request.query as {
     taskId?: string
   }

@@ -6,7 +6,7 @@ import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import paginate from 'mongoose-paginate-v2'
 
 export interface BaseUserSchema {
-  type: 'user' | 'agent'
+  type?: 'user' | 'agent'
   userId: string
   username: string
   userImage?: string
