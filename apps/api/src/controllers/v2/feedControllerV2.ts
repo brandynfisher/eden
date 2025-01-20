@@ -1,3 +1,5 @@
+import { VIDEO_MIME_TYPES } from '../../lib/constants'
+import { IMAGE_MIME_TYPES } from '../../lib/constants'
 import { getSimilarCreationIds } from '../../lib/similar'
 import { Agent } from '../../models/Agent'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
@@ -78,7 +80,7 @@ type FilterItem = {
 }
 
 type CustomFilters = {
-  'mediaAttributes.type'?: {
+  'mediaAttributes.mimeType'?: {
     $in: (
       | string
       | ObjectId
@@ -128,7 +130,7 @@ type GenericFilters = {
 const createCursorMatch = (cursor: string) => {
   // If a cursor is provided, convert it to an ObjectId, otherwise match all
   const lastSeenIdMatch = cursor ? { _id: { $lt: new ObjectId(cursor) } } : {}
-  return [lastSeenIdMatch] || []
+  return Object.keys(lastSeenIdMatch).length > 0 ? [lastSeenIdMatch] : []
 }
 
 const maybeAddCursorFilterStage = (
@@ -233,7 +235,6 @@ const handleArguments = async ({
 }) => {
   const { filter, sort } = query || {}
 
-  // console.log({ filter, sort, authUserId })
   const filterMap: FilterItem[] = []
   if (filter) {
     (Array.isArray(filter) ? filter : [filter]).map(filterGroup => {
@@ -283,7 +284,7 @@ const handleArguments = async ({
   let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
-    tool?: string[] | ObjectId[] | string | ObjectId
+    tool?: string[]
     base_model?: string[] | string
     _id?: string[] | ObjectId[] | string | ObjectId
     output_type?: string[]
@@ -396,12 +397,11 @@ const handleArguments = async ({
           }
 
           if (field === 'tool') {
-            if (!customFilterOptions['tool']) {
-              customFilterOptions['tool'] = [value]
-            } else {
-              // @ts-ignore
-              customFilterOptions['tool'].push(value)
-            }
+            customFilterOptions.tool = [
+              value,
+              ...(customFilterOptions['tool'] || []),
+            ]
+
             return []
           }
 
@@ -426,11 +426,14 @@ const handleArguments = async ({
           }
 
           if (field === 'output_type') {
-            if (!customFilterOptions['output_type']) {
-              customFilterOptions['output_type'] = [value]
-            } else {
-              customFilterOptions['output_type'].push(value)
-            }
+            const mimeTypes =
+              value === 'image' ? IMAGE_MIME_TYPES : VIDEO_MIME_TYPES
+
+            customFilterOptions.output_type = [
+              ...mimeTypes,
+              ...(customFilterOptions['output_type'] || []),
+            ]
+
             return []
           }
 
@@ -494,18 +497,14 @@ const handleArguments = async ({
     if (fieldValues === undefined) continue
 
     if (fieldName === 'output_type') {
-      customFilterMap['mediaAttributes.type'] = {
+      customFilterMap['mediaAttributes.mimeType'] = {
         // @ts-ignore
-        $in: Array.isArray(fieldValues) ? fieldValues : [fieldValues],
+        $in: fieldValues,
       }
     } else if (fieldName === 'tool') {
       // @ts-ignore
       customFilterMap['tool'] = {
-        $in: Array.isArray(fieldValues)
-          ? // @ts-ignore
-            fieldValues.map(val => new ObjectId(val))
-          : // @ts-ignore
-            [new ObjectId(fieldValues)],
+        $in: fieldValues,
       }
     } else if (fieldName === 'base_model') {
       // @ts-ignore

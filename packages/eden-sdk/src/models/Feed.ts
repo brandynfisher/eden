@@ -24,7 +24,7 @@ export interface FeedCreationsBaseArguments extends WebAPICallOptions {
   conceptId?: string | string[]
   generatorId?: string | string[]
   outputType?: string | string[]
-  output_type?: string | string[]
+  output_type?: string[]
   isPrivate?: string
   name?: string
   maxDate?: string
@@ -75,9 +75,9 @@ export type FeedCursorRouteQueryParams = {
     collection?: string | string[]
     creation?: string | string[]
     generator?: string | string[]
-    tool?: string | string[]
+    tool?: string[]
     outputType?: string | string[]
-    output_type?: string | string[]
+    output_type?: string[]
     concept?: string | string[]
     isPrivate?: boolean
     visibility?: 'all' | 'public' | 'private'
