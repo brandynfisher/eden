@@ -41,7 +41,7 @@ export const TaskResultTool = makeAssistantToolUI<
           args={args}
           argsText={argsText}
           status={status}
-          addResult={() => console.log('adding result', result)}
+          addResult={() => true}
         />
         <ErrorBoundary>
           <LightboxGallery>

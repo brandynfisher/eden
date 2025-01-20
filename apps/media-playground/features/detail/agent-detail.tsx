@@ -45,7 +45,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   const agent = agentClientData || agentSSRData
 
-  console.log('agent', agent)
+  // console.log('agent', agent)
 
   const onDeleteAgent = async () => {
     const handleDelete = async () => {
