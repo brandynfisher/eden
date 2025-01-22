@@ -284,6 +284,7 @@ const handleArguments = async ({
   let useFollowingPreAggregate = false
   const preAggregateFilterOptions: GenericFilters = {}
   const customFilterOptions: {
+    search?: string
     tool?: string[]
     base_model?: string[] | string
     _id?: string[] | ObjectId[] | string | ObjectId
@@ -347,6 +348,11 @@ const handleArguments = async ({
         (Array.isArray(filter) ? filter : [filter]).map(filterOption => {
           const [field, value] = filterOption.split(';')
           // console.log({filterOption, field, value})
+
+          if (field === 'search') {
+            customFilterOptions['search'] = value
+            return []
+          }
 
           if (
             field === 'user' ||
@@ -1127,8 +1133,10 @@ export const getAgentsFeedCursor = async (
     server,
     reply,
     authUserId,
-    query: ownerQuery as CursorPaginatedFeedQuery,
+    query: ownerQuery as unknown as CursorPaginatedFeedQuery,
   })
+
+  const { search } = customFilterOptions
 
   const { cursor, limit } = query as CursorPaginatedFeedQuery
 
@@ -1153,11 +1161,52 @@ export const getAgentsFeedCursor = async (
     },
   })
 
-  const feedPipeline = [
-    { $match: filters },
-    ...pipeline,
-    ...lateLookupStages,
-  ].filter(Boolean)
+  const feedPipeline: PipelineStage[] = []
+
+  if (search) {
+    feedPipeline.push({
+      $search: {
+        index: 'user_username_name',
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: search,
+                path: 'username',
+              },
+            },
+            {
+              text: {
+                query: search,
+                path: 'username',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+            {
+              autocomplete: {
+                query: search,
+                path: 'name',
+              },
+            },
+            {
+              text: {
+                query: search,
+                path: 'name',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+        },
+      },
+    })
+  }
+
+  feedPipeline.push({ $match: filters }, ...pipeline, ...lateLookupStages)
 
   // console.log(JSON.stringify(feedPipeline, null, 2))
 

@@ -48,6 +48,7 @@ const baseCursorPaginationProperties = {
   sort: { type: ['string', 'array'] },
   limit: { type: 'number' },
   filter: { type: ['string', 'array'] },
+  search: { type: 'string' },
 }
 
 export const paginationProperties = () => {

@@ -1,17 +1,14 @@
 'use client'
 
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
+import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
+import debounce from 'lodash/debounce'
+import { SearchIcon } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import {
-  ReactElement,
-  cloneElement,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { ReactElement, cloneElement, useEffect, useMemo, useState } from 'react'
 
 export type FilterMenuProps = {
   initialFilter?: FeedCursorRouteQueryParams['filter']
@@ -29,6 +26,7 @@ export type RouterTab = {
   content: ReactElement
   filterMenu?: (props: FilterMenuProps) => ReactElement
   sortMenu?: (props: SortMenuProps) => ReactElement
+  canSearch?: boolean
 }
 
 type Props = {
@@ -45,6 +43,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   const router = useRouter()
   const initialTab = searchParams.get('tab') || defaultTabName
   const [activeTab, setActiveTab] = useState(initialTab)
+  const [search, setSearch] = useState('')
 
   const [tabCaches, setTabCaches] = useState<{
     [key: string]: {
@@ -63,6 +62,14 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
+    if (search) {
+      setSearch('')
+      setTabCaches(prevCache => {
+        const updatedCache = { ...prevCache }
+        delete updatedCache[activeTab]
+        return updatedCache
+      })
+    }
 
     // Update router URL for tab change without triggering content rerender yet
     router.push(`${pathname}${value === defaultTabName ? '' : `?tab=${value}`}`)
@@ -111,6 +118,25 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     })
   }
 
+  const handleSearch = (value: string) => {
+    setSearch(value)
+    setTabFilterQuery(prevQuery => {
+      return {
+        ...prevQuery,
+        search: value,
+      }
+    })
+
+    // Invalidate cache for active tab since the tab-specific filter changed
+    setTabCaches(prevCache => {
+      const updatedCache = { ...prevCache }
+      delete updatedCache[activeTab]
+      return updatedCache
+    })
+  }
+
+  const debouncedSearch = debounce(handleSearch, 500)
+
   useEffect(() => {
     // Ensure that caching occurs only when filters are fully ready and content is rendered
     const tab = tabs.find(t => t.key === activeTab)
@@ -118,6 +144,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
       const updatedQuery = {
         ...globalFilterQuery,
         ...tabFilterQuery,
+        search,
       }
 
       if (!tabCaches[activeTab]) {
@@ -187,6 +214,20 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
                 initialFilter: baseQuery,
                 onChange: handleGlobalFilterChange,
               })}
+            </div>
+          ) : null}
+
+          {activeRouterTab?.canSearch ? (
+            <div className="flex items-center mb-4">
+              <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted">
+                <SearchIcon className="w-4 h-4" />
+              </div>
+              <Input
+                className="rounded-l-none border-l-0"
+                placeholder="Search"
+                defaultValue={search}
+                onChange={e => debouncedSearch(e.target.value)}
+              />
             </div>
           ) : null}
         </div>

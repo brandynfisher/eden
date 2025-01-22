@@ -84,6 +84,7 @@ export type FeedCursorRouteQueryParams = {
     maxDate?: string
     minDate?: string
     base_model?: BaseModelName | BaseModelName[]
+    search?: string
   }
 }
 

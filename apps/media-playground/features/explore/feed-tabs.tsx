@@ -35,6 +35,7 @@ const FeedTabs = () => {
     {
       key: 'agents',
       title: 'Agents',
+      canSearch: true,
       content: (
         <AgentsFeed
           minCols={1}
