@@ -69,8 +69,8 @@ const DEFAULT_SUGGESTIONS: Suggestion[] = [
     icon: <ImageIcon className="h-4 w-4" />,
   },
   {
-    text: 'Make cute cat images',
-    prompt: 'Can you create some cute cat images for me?',
+    text: 'Make sketches into art',
+    prompt: 'I have a sketch, can you make it into an art piece?',
     icon: <CatIcon className="h-4 w-4" />,
   },
   {
@@ -236,7 +236,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
               <FormItem className="w-full relative">
                 <FormControl id={'message'}>
                   <AutosizeTextarea
-                    className="w-full mb-2 !border-none !ring-0 !outline-none !ring-offset-0"
+                    className="w-full mb-4 !border-none !ring-0 !outline-none !ring-offset-0"
                     placeholder="Type your message here..."
                     rows={4}
                     minHeight={96}
@@ -258,7 +258,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
                 <FormMessage />
                 <div
                   className={cn(
-                    'absolute bottom-4 right-2 flex items-center gap-1.5 text-xs text-muted-foreground transition-all duration-200',
+                    'absolute bottom-0 right-0 flex items-center gap-1.5 text-xs text-muted-foreground transition-all duration-200',
                     shouldShowHint
                       ? 'opacity-100 translate-y-0'
                       : 'opacity-0 translate-y-2 pointer-events-none',

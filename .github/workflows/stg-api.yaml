@@ -16,13 +16,13 @@ env:
 jobs:
   build-and-push-to-ghcr:
     name: Build
-    # runs-on: ubuntu-20.04
-    runs-on: self-hosted
+    runs-on: [self-hosted, ubuntu-20.04]
     permissions:
       contents: read
       packages: write
     outputs:
       tag: ${{ steps.prep.outputs.tag }}
+      status: ${{ job.status }}
     steps:
       - uses: actions/checkout@v4
 
@@ -83,8 +83,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
   notify:
     needs: [build-and-push-to-ghcr]
-    # runs-on: ubuntu-20.04
-    runs-on: self-hosted
+    runs-on: [self-hosted, ubuntu-20.04]
     if: ${{ always() }}
 
     steps:
