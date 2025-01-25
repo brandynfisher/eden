@@ -1,11 +1,19 @@
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { ChatMockWidget } from '@/features/chat/chat-mock-widget'
+import TrainingFeatureCard from '@/features/landing/training-feature-card'
 import { getAgentCached } from '@/lib/actions/agent'
 import { siteConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
-import { BrainCircuitIcon, PaletteIcon, UsersIcon } from 'lucide-react'
+import {
+  ArrowBigDownDashIcon,
+  BrainCircuitIcon,
+  PaletteIcon,
+  PlayIcon,
+  UsersIcon,
+} from 'lucide-react'
 import { Metadata, ResolvingMetadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -103,47 +111,110 @@ const HomePage = async () => {
               >
                 Get started for free!
               </Link>
+              <div className="relative flex justify-center items-center max-w-lg mx-auto mt-6">
+                <Image
+                  src="/temp/eve_splash.png"
+                  alt="eve_splash"
+                  width={2048}
+                  height={2048}
+                  className="rounded-lg"
+                />
+                <div className="absolute flex justify-center items-center bg-accent/60 rounded-full p-2">
+                  <PlayIcon className="h-8 w-8 " />
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         <section>
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
-              Train custom models that learn:
+              Train Custom Models That Learn...
             </TypographyH4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex flex-col items-center p-4 rounded-lg border border-border bg-card">
-                <div className="mb-2">
-                  <BrainCircuitIcon className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="font-semibold mb-2">Your Style</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Train models that understand and replicate your unique
-                  artistic style
-                </p>
-              </div>
+              <TrainingFeatureCard
+                icon={<UsersIcon className="h-8 w-8 text-purple-600" />}
+                title="Your Characters"
+                content={
+                  <>
+                    <Image
+                      src="/temp/banny_train.png"
+                      alt="banny_train"
+                      width={2048}
+                      height={2048}
+                      className="rounded-lg"
+                    />
+                    <ArrowBigDownDashIcon className="h-9 w-9 my-2" />
+                    <Image
+                      src="/temp/banny.png"
+                      alt="Characters"
+                      width={1024}
+                      height={1024}
+                      className="rounded-lg"
+                    />
+                    <p className="mt-4 text-sm text-muted-foreground text-center">
+                      Create models that bring your characters to life
+                    </p>
+                  </>
+                }
+              />
 
-              <div className="flex flex-col items-center p-4 rounded-lg border border-border bg-card">
-                <div className="mb-2">
-                  <PaletteIcon className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="font-semibold mb-2">Your Brand</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Create consistent brand assets with AI that knows your
-                  guidelines
-                </p>
-              </div>
+              <TrainingFeatureCard
+                title="Your Style"
+                icon={<PaletteIcon className="h-8 w-8 text-purple-600" />}
+                content={
+                  <>
+                    <Image
+                      src="/temp/does_train.png"
+                      alt="does_train"
+                      width={2048}
+                      height={2048}
+                      className="rounded-lg"
+                    />
+                    <ArrowBigDownDashIcon className="h-9 w-9 my-2" />
+                    <Image
+                      src="/temp/does_out.png"
+                      alt="does art style"
+                      width={2048}
+                      height={2048}
+                      className="rounded-lg"
+                    />
+                    <p className="mt-4 text-sm text-muted-foreground text-center">
+                      Train models that understand and replicate your unique
+                      artistic style
+                    </p>
+                  </>
+                }
+              />
 
-              <div className="flex flex-col items-center p-4 rounded-lg border border-border bg-card">
-                <div className="mb-2">
-                  <UsersIcon className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="font-semibold mb-2">Your Characters</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  Develop AI models that bring your characters to life
-                </p>
-              </div>
+              <TrainingFeatureCard
+                title="Your Brand"
+                icon={<BrainCircuitIcon className="h-8 w-8 text-purple-600" />}
+                content={
+                  <>
+                    <Image
+                      src="/temp/xander_train.png"
+                      alt="xander_train"
+                      width={1024}
+                      height={1024}
+                      className="rounded-lg"
+                    />
+                    <ArrowBigDownDashIcon className="h-9 w-9 my-2 " />
+                    <Image
+                      src="/temp/xander.png"
+                      alt="xander face"
+                      width={1024}
+                      height={1024}
+                      className="rounded-lg"
+                    />
+                    <p className="mt-4 text-sm text-muted-foreground text-center">
+                      Create consistent brand assets with AI that knows your
+                      guidelines
+                    </p>
+                  </>
+                }
+              />
             </div>
             <p className="text-center text-muted-foreground mt-6">
               Every artist or brand has their own unique style—that's why
@@ -175,6 +246,13 @@ const HomePage = async () => {
                 Start building your first agent today!
               </Link>
             </p>
+            <Image
+              src="/temp/banny_chat_1.png"
+              alt="banny_chat"
+              width={2048}
+              height={2048}
+              className="rounded-lg mt-6 max-w-lg mx-auto"
+            />
           </div>
         </section>
 
