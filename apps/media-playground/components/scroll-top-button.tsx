@@ -16,7 +16,7 @@ const ScrollTopButton = () => {
       data-test-id="scroll-top-button"
       variant="outline"
       size="icon"
-      className="rounded-full sticky left-4 bottom-4"
+      className="rounded-full sticky left-4 bottom-4 pointer-events-auto"
       onClick={() => scrollTo({ top: 0 })}
     >
       <ArrowUpIcon className="h-5 w-5" />

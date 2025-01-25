@@ -239,7 +239,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
                     className="w-full mb-4 !border-none !ring-0 !outline-none !ring-offset-0"
                     placeholder="Type your message here..."
                     rows={4}
-                    minHeight={96}
+                    minHeight={64}
                     autoFocus={true}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
@@ -258,7 +258,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
                 <FormMessage />
                 <div
                   className={cn(
-                    'absolute bottom-0 right-0 flex items-center gap-1.5 text-xs text-muted-foreground transition-all duration-200',
+                    'absolute bottom-0 right-0 flex items-center gap-1.5 text-xs text-muted-foreground transition-all duration-200 [@media(pointer:coarse)]:hidden',
                     shouldShowHint
                       ? 'opacity-100 translate-y-0'
                       : 'opacity-0 translate-y-2 pointer-events-none',
