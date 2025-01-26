@@ -101,7 +101,6 @@ jobs:
           status: "Success"
           color: 0x00ff00
           description: |
-            Successfully built and deployed media-playground to staging
             Commit: ${{ github.sha }}
             Branch: ${{ github.ref_name }}
 
@@ -114,7 +113,6 @@ jobs:
           status: "Failed"
           color: 0xff0000
           description: |
-            Failed to build media-playground-staging
             Commit: ${{ github.sha }}
             Branch: ${{ github.ref_name }}
             Please check the workflow logs for details.

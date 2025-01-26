@@ -158,9 +158,7 @@ export class EdenClient extends Methods {
   async createV2(args: TasksV2CreateArguments, awaitResult: boolean = true) {
     // Submit the task and get the ID
     const res = await this.tasks.createV2(args)
-
-    const { task } = res as { task: TaskV2 }
-    console.log('tasks.createV2', task._id, { task })
+    const { task, timing } = (res as { task: TaskV2; timing: string }) || {}
 
     if (!task) {
       const { error, message } = res
@@ -168,7 +166,7 @@ export class EdenClient extends Methods {
     }
 
     if (!awaitResult) {
-      return task
+      return { ...task, timing }
     }
 
     // Subscribe to task updates
@@ -221,6 +219,6 @@ export class EdenClient extends Methods {
     response: AxiosResponse,
   ): Promise<WebAPICallResult> {
     const result = response.data
-    return result
+    return { ...result, timing: response.headers['server-timing'] || '' }
   }
 }

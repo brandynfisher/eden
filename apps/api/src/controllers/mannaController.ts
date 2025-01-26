@@ -65,6 +65,12 @@ interface MannaVoucherCreateRequestBody {
   action?: VoucherAction
 }
 
+const validActions = [
+  VoucherAction.AddManna,
+  VoucherAction.GrantEden2Access,
+  VoucherAction.SubscriptionTrialPro30d,
+]
+
 export const createMannaVoucher = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -73,10 +79,7 @@ export const createMannaVoucher = async (
     request.body as MannaVoucherCreateRequestBody
 
   if (action) {
-    if (
-      action !== VoucherAction.AddManna &&
-      action !== VoucherAction.GrantEden2Access
-    ) {
+    if (!validActions.includes(action)) {
       return reply
         .status(400)
         .send({ message: `Unknown voucher action ${action}` })

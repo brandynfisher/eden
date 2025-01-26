@@ -15,6 +15,7 @@ const createTask = async (
       args,
     })
     .then(response => {
+      console.log('response', response.task, response.timing)
       if (!response || response.message) {
         return new NextResponse(
           JSON.stringify({
@@ -39,10 +40,14 @@ const createTask = async (
         )
       }
 
-      return NextResponse.json(response.task)
+      return NextResponse.json(response.task, {
+        status: 200,
+        headers: {
+          'Server-Timing': (response.timing as string) || '',
+        },
+      })
     })
     .catch(error => {
-      // console.log(error.response.data)
       return new NextResponse(
         JSON.stringify({
           message: error?.response?.data
@@ -115,7 +120,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json(createdTaskJson)
+    return NextResponse.json(createdTaskJson, {
+      status: 200,
+      headers: {
+        'Server-Timing': createdTaskResponse.headers.get('Server-Timing') || '',
+      },
+    })
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response && error.response.data) {
