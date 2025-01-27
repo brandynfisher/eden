@@ -129,6 +129,9 @@ export const createCursorPaginationRoute = (
       filters.push(userFilter)
     }
   }
+  if (query.search && query.search.length > 0) {
+    filters.push({ search: String(query.search) })
+  }
   if (query.name && query.name.length > 0) {
     filters.push({ name: String(query.name) })
   }

@@ -1,14 +1,13 @@
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 import { FilterIcon } from 'lucide-react'
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 
 type Props = {
   options: {
@@ -20,43 +19,35 @@ type Props = {
 }
 
 export const Filter = ({ options, onChange }: Props) => {
-  // console.log({ options })
-  const handleFilterChange = (value: string) => {
-    const selectedOption = options.find(
-      option => JSON.stringify(option.value) === value,
-    )
-    if (selectedOption) {
-      onChange(selectedOption.value) // Pass the complex object to the parent
-    }
+  const [selectedValue, setSelectedValue] = useState(options[0])
+
+  const handleFilterChange = (option: (typeof options)[0]) => {
+    setSelectedValue(option)
+    onChange(option.value)
   }
 
   return (
     <div className="flex items-center">
-      <Select
-        onValueChange={handleFilterChange}
-        defaultValue={JSON.stringify(options[0].value)}
-      >
-        <SelectTrigger className="flex gap-2 min-w-36 justify-end">
+      <DropdownMenu>
+        <DropdownMenuTrigger className="flex items-center gap-2 min-w-36 justify-end px-3 py-2 h-9 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground">
           <FilterIcon className="h-3 w-3 text-muted-foreground" />
           <Separator orientation="vertical" />
-          <div className="mr-auto">
-            <SelectValue placeholder="Feed" />
-          </div>
-        </SelectTrigger>
-        <SelectContent>
+          <div className="mr-auto">{selectedValue.label}</div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
           {options.map((option, index) => (
-            <SelectItem
+            <DropdownMenuItem
               key={`${option.value}_${index}`}
-              value={JSON.stringify(option.value)}
+              onClick={() => handleFilterChange(option)}
             >
               <div className="flex items-center">
                 {option.icon}
                 {option.label}
               </div>
-            </SelectItem>
+            </DropdownMenuItem>
           ))}
-        </SelectContent>
-      </Select>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }

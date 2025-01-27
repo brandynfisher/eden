@@ -3,35 +3,18 @@
 import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
+import { CreationsFilter } from '@/features/feed/creations-filter'
 import ModelsFeed from '@/features/feed/models-feed'
-import { ClockArrowDownIcon, StarIcon } from 'lucide-react'
+import { SortMenu } from '@/features/feed/sort-menu'
 
 const FeedTabs = () => {
-  const creationsBaseQuery = process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID
-    ? {
-        collection: process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
-      }
-    : undefined
-
   const tabs: RouterTab[] = [
     {
       key: 'creations',
       title: 'Creations',
-      content: <CreationsFeed query={creationsBaseQuery} maxCols={7} />,
-      filterOptions: [
-        {
-          label: 'Featured',
-          value: 'featured',
-          icon: <StarIcon className="h-3 w-3 mr-2" />,
-          query: creationsBaseQuery,
-        },
-        {
-          label: 'Latest',
-          value: 'latest',
-          icon: <ClockArrowDownIcon className="h-3 w-3 mr-2" />,
-          query: {},
-        },
-      ],
+      content: <CreationsFeed maxCols={7} />,
+      sortMenu: SortMenu,
+      filterMenu: CreationsFilter,
     },
     {
       key: 'models',
@@ -52,6 +35,7 @@ const FeedTabs = () => {
     {
       key: 'agents',
       title: 'Agents',
+      canSearch: true,
       content: (
         <AgentsFeed
           minCols={1}
