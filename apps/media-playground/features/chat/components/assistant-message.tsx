@@ -67,7 +67,7 @@ const MyAssistantMessage: FC = () => {
   const isEmpty = !content || content.length === 0
   const isRunning = status?.type === 'running'
 
-  console.log({ isEmpty, isRunning, content, status })
+  // console.log({ isEmpty, isRunning, content, status })
 
   return (
     <AssistantMessage.Root

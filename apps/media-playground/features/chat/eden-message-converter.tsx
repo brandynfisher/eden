@@ -53,7 +53,21 @@ export const convertEdenMessage = (message: EdenMessage) => {
 export const edenMessageConverter = (
   message: EdenMessage,
 ): ThreadMessageLike => {
+  // console.log('convertEdenMessage', 'assistant', message)
+  // console.log('convertEdenMessage', message.tool_calls?.[message.tool_calls.length - 1]?.result?.status)
+  let pendingToolCalls = false
   // console.log("edenMessageConverter CALLED", message)
+
+  if (message.role === 'assistant' && message.tool_calls?.length) {
+    pendingToolCalls = message?.tool_calls?.some(
+      toolCall =>
+        !toolCall.status ||
+        toolCall.status === null ||
+        toolCall.status === 'pending' ||
+        toolCall.status === 'running',
+    )
+  }
+
   switch (message.role) {
     case 'system':
       return {
@@ -91,7 +105,6 @@ export const edenMessageConverter = (
         createdAt: message.createdAt,
       }
     case 'assistant':
-      // console.log('convertEdenMessage', 'assistant', message)
       return {
         id: message.id,
         role: 'assistant',
@@ -114,8 +127,7 @@ export const edenMessageConverter = (
             }),
           ) ?? []),
         ],
-        // status: getToolCallStatus(message),
-        status: message.status,
+        status: pendingToolCalls ? { type: 'running' } : message.status,
         createdAt: message.createdAt,
       }
   }
