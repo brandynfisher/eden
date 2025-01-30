@@ -322,7 +322,9 @@ export function EdenRuntimeProvider({
         status: activeMessageIds?.length ? { type: 'running' } : msg.status,
       }
 
+      //@ts-expect-error status is not typed
       messageEmitterRef.current?.emit(newMsg)
+      //@ts-expect-error status is not typed
       addOrUpdateMessage(newMsg)
     })
 
