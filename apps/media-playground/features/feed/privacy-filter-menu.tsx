@@ -5,11 +5,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
-import {
-  FilterIcon,
-  LockIcon,
-  LockOpenIcon,
-} from 'lucide-react'
+import { FilterIcon, LockIcon, LockOpenIcon } from 'lucide-react'
 import { useState } from 'react'
 
 const privacyOptions = [
@@ -42,7 +38,7 @@ export const PrivacyFilterMenu = ({ onChange, initialFilter }: Props) => {
   return (
     <div className="flex items-center">
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 min-w-36 w-full justify-end px-3 py-2 h-9 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground">
+        <DropdownMenuTrigger className="flex items-center gap-2 min-w-36 w-full justify-end px-2 py-1.5 h-9 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground">
           <FilterIcon className="h-3 w-3 text-muted-foreground" />
           <div className="mr-auto text-sm flex items-center">
             {privacyOptions.find(option => option.value === baseFilter)
