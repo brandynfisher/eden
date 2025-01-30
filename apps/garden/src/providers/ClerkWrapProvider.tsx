@@ -16,8 +16,8 @@ const ClerkWrapProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ClerkProvider
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      afterSignInUrl={afterSignInUrl}
-      afterSignUpUrl={afterSignInUrl}
+      signInFallbackRedirectUrl={afterSignInUrl}
+      signUpFallbackRedirectUrl={afterSignInUrl}
       appearance={{
         baseTheme: dark,
         layout: {
