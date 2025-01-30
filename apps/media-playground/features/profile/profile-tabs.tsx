@@ -5,10 +5,9 @@ import AgentsFeed from '@/features/feed/agents-feed'
 import CollectionsFeed from '@/features/feed/collections-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
+import { PrivacyFilterMenu } from '@/features/feed/privacy-filter-menu'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { LockClosedIcon } from '@radix-ui/react-icons'
-import { LockOpenIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 
 const ProfileTabs = () => {
@@ -25,34 +24,6 @@ const ProfileTabs = () => {
   }
 
   const isOwnProfile = user?._id === creator._id
-
-  const globalFilterOptions = isOwnProfile
-    ? [
-        {
-          label: 'All',
-          value: 'all',
-          query: baseQuery,
-        },
-        {
-          label: 'Private',
-          value: 'private',
-          icon: <LockClosedIcon className="h-3 w-3 mr-2" />,
-          query: {
-            ...baseQuery,
-            isPrivate: true,
-          },
-        },
-        {
-          label: 'Public',
-          value: 'public',
-          icon: <LockOpenIcon className="h-3 w-3 mr-2" />,
-          query: {
-            ...baseQuery,
-            isPrivate: false,
-          },
-        },
-      ]
-    : undefined
 
   const tabs: RouterTab[] = [
     {
@@ -86,7 +57,7 @@ const ProfileTabs = () => {
   return (
     <RouterTabs
       tabs={tabs}
-      globalFilterOptions={globalFilterOptions}
+      sharedFilterMenu={isOwnProfile ? PrivacyFilterMenu : undefined}
       baseQuery={baseQuery}
     />
   )

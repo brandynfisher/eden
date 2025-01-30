@@ -69,6 +69,8 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const [showSettings, setShowSettings] = useState(false)
 
+  const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
+
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
     defaultValues,
@@ -119,6 +121,8 @@ const CreationUIContainer = ({ tool }: Props) => {
       })
 
       await refetchMe()
+
+      setMobileIsFormVisible(false)
     } catch (err) {
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
@@ -392,7 +396,13 @@ const CreationUIContainer = ({ tool }: Props) => {
       </div>
 
       {/* // Mobile: hidden on larger screens */}
-      <CreationUIMobile tool={tool}>{formContent}</CreationUIMobile>
+      <CreationUIMobile
+        open={mobileIsFormVisible}
+        onOpenChange={setMobileIsFormVisible}
+        tool={tool}
+      >
+        {formContent}
+      </CreationUIMobile>
     </>
   )
 }

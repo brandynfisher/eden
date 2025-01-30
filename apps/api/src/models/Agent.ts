@@ -11,6 +11,9 @@ export interface AgentSchema extends BaseUserSchema {
   discordId?: string
   model?: ModelV2Document
   public?: boolean
+  threadCount?: number
+  userCount?: number
+  messageCount?: number
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}

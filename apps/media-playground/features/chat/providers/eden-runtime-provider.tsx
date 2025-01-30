@@ -54,9 +54,12 @@ export function EdenRuntimeProvider({
       agentId,
       threadId: threadIdRef.current,
       onSwitchToNewThread: async () => {
+        setIsStreamActive(false)
+        setIsRunning(false)
         setIsLoadingThread(true)
-        // abortController.current.abort()
-        // abortController.current = new AbortController()
+        abortController.current?.abort()
+        abortController.current = new AbortController()
+        messageEmitterRef.current = new MessageEmitter()
         threadIdRef.current = undefined
         if (typeof window !== 'undefined')
           window.history.pushState(null, '', `/chat/${agentId}`)
@@ -71,7 +74,7 @@ export function EdenRuntimeProvider({
 
         try {
           threadIdRef.current = newThreadId
-          const threadFetch = await getThread(newThreadId)
+          // await getThread(newThreadId)
 
           if (typeof window !== 'undefined')
             window.history.pushState(
@@ -80,13 +83,7 @@ export function EdenRuntimeProvider({
               `/chat/${agentId}/${newThreadId}`,
             )
 
-          // if (threadFetch.active && threadFetch.active.length > 0) {
-          //   setIsStreamActive(true)
-          // } else {
-          //   setIsStreamActive(false)
-          //   setIsRunning(false)
-          // }
-          checkThreadStatus()
+          const threadFetch = await checkThreadStatus(false)
           return {
             messages: (threadFetch?.messages as EdenMessage[]) ?? [],
           }
@@ -184,44 +181,57 @@ export function EdenRuntimeProvider({
       },
     })
 
-  const checkThreadStatus = useCallback(async () => {
-    if (!threadIdRef.current || !messageEmitterRef.current) return
+  const checkThreadStatus = useCallback(
+    async (shouldSetMessages = true) => {
+      if (!threadIdRef.current || !messageEmitterRef.current) return
 
-    try {
-      const thread = await getThread(threadIdRef.current)
-      if (!thread) return
+      try {
+        const thread = await getThread(threadIdRef.current)
+        if (!thread) return
 
-      if (wasDisconnected && messageEmitterRef.current) {
-        messageEmitterRef.current = new MessageEmitter()
-      }
+        if (wasDisconnected && messageEmitterRef.current) {
+          messageEmitterRef.current = new MessageEmitter()
+        }
 
-      // Update messages and ensure they're properly converted
-      if (thread.messages) {
+        // Update messages and ensure they're properly converted
+        // if (thread.messages) {
+        //   // console.log(
+        //   //   'thread.messages',
+        //   //   thread.messages[thread.messages.length - 1],
+        //   // )
+        //   setMessages(thread.messages as EdenMessage[])
+        // }
+
+        // Check if thread has active messages
+        const hasActiveMessages = thread.active && thread.active.length > 0
         // console.log(
-        //   'thread.messages',
-        //   thread.messages[thread.messages.length - 1],
+        //   'hasActiveMessages',
+        //   hasActiveMessages,
+        //   thread.active,
+        //   thread.active?.length,
         // )
-        setMessages(thread.messages as EdenMessage[])
+        setIsStreamActive(hasActiveMessages ?? false)
+        setIsRunning(hasActiveMessages ?? false)
+
+        // if (hasActiveMessages) {
+        //   abortController.current = new AbortController()
+        // }
+
+        if (shouldSetMessages && thread.messages) {
+          // console.log(
+          //   'thread.messages',
+          //   thread.messages[thread.messages.length - 1],
+          // )
+          setMessages(thread.messages as EdenMessage[])
+        }
+
+        return thread
+      } catch (error) {
+        console.error('Error checking thread status:', error)
       }
-
-      // Check if thread has active messages
-      const hasActiveMessages = thread.active && thread.active.length > 0
-      // console.log(
-      //   'hasActiveMessages',
-      //   hasActiveMessages,
-      //   thread.active,
-      //   thread.active?.length,
-      // )
-      setIsStreamActive(hasActiveMessages ?? false)
-      setIsRunning(hasActiveMessages ?? false)
-
-      // if (hasActiveMessages) {
-      //   abortController.current = new AbortController()
-      // }
-    } catch (error) {
-      console.error('Error checking thread status:', error)
-    }
-  }, [wasDisconnected, setMessages, setIsRunning])
+    },
+    [wasDisconnected, setMessages, setIsRunning],
+  )
 
   // Simplified initial load and thread switching
   useEffect(() => {
@@ -238,7 +248,7 @@ export function EdenRuntimeProvider({
         threadIdRef.current = threadId
 
         if (threadIdRef.current) {
-          runtime.switchToThread(threadIdRef.current)
+          runtime.threads.switchToThread(threadIdRef.current)
           await checkThreadStatus()
         }
       } catch (error) {
@@ -306,8 +316,16 @@ export function EdenRuntimeProvider({
 
     // Process new messages
     newMessages.forEach(msg => {
-      messageEmitterRef.current?.emit(msg)
-      addOrUpdateMessage(msg)
+      console.log('newMessages', msg)
+      const newMsg = {
+        ...msg,
+        status: activeMessageIds?.length ? { type: 'running' } : msg.status,
+      }
+
+      //@ts-expect-error status is not typed
+      messageEmitterRef.current?.emit(newMsg)
+      //@ts-expect-error status is not typed
+      addOrUpdateMessage(newMsg)
     })
 
     // Check if stream should be ended

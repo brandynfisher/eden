@@ -11,20 +11,20 @@ import { ToolV2 } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { ArrowLeftIcon, PlusIcon } from 'lucide-react'
 import * as React from 'react'
-import { PropsWithChildren, useState } from 'react'
+import { PropsWithChildren } from 'react'
 
 type Props = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
   tool: ToolV2
 } & PropsWithChildren
 
-const CreationUiMobile = ({ tool, children }: Props) => {
-  const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
-
+const CreationUiMobile = ({ open, onOpenChange, tool, children }: Props) => {
   return (
-    <Dialog open={mobileIsFormVisible} onOpenChange={setMobileIsFormVisible}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <div className="lg:hidden fixed bottom-0 flex z-10 bg-accent p-2 w-full justify-center items-center gap-2">
-          <Button onClick={() => setMobileIsFormVisible(true)}>
+          <Button onClick={() => onOpenChange(true)}>
             <PlusIcon className="h-4 w-4 mr-1" />
             Create
           </Button>

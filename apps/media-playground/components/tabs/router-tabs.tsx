@@ -1,40 +1,41 @@
 'use client'
 
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
+import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Filter } from '@/features/feed/filter'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
+import debounce from 'lodash/debounce'
+import { SearchIcon } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import {
-  ReactElement,
-  ReactNode,
-  cloneElement,
-  useEffect,
-  useState,
-} from 'react'
+import { ReactElement, cloneElement, useEffect, useMemo, useState } from 'react'
 
-export type FilterOption = {
-  label: string
-  value: string
-  icon?: ReactNode
-  query: FeedCursorRouteQueryParams['filter']
+export type FilterMenuProps = {
+  initialFilter?: FeedCursorRouteQueryParams['filter']
+  onChange: (filter: FeedCursorRouteQueryParams['filter']) => void
+}
+
+export type SortMenuProps = {
+  initialSort?: string
+  onChange: (sort: string) => void
 }
 
 export type RouterTab = {
   key: string
   title: string
   content: ReactElement
-  filterOptions?: FilterOption[]
+  filterMenu?: (props: FilterMenuProps) => ReactElement
+  sortMenu?: (props: SortMenuProps) => ReactElement
+  canSearch?: boolean
 }
 
 type Props = {
   tabs: RouterTab[]
-  globalFilterOptions?: FilterOption[]
+  sharedFilterMenu?: (props: FilterMenuProps) => ReactElement
   baseQuery?: FeedCursorRouteQueryParams['filter']
 }
 
-const RouterTabs = ({ tabs, globalFilterOptions, baseQuery }: Props) => {
+const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   const defaultTabName = tabs[0].key
 
   const pathname = usePathname()
@@ -42,36 +43,36 @@ const RouterTabs = ({ tabs, globalFilterOptions, baseQuery }: Props) => {
   const router = useRouter()
   const initialTab = searchParams.get('tab') || defaultTabName
   const [activeTab, setActiveTab] = useState(initialTab)
+  const [search, setSearch] = useState('')
 
-  // Cache for storing content and prevent unnecessary re-fetching
-  const [cachedTabContents, setCachedTabContents] = useState<{
-    [key: string]: ReactElement
+  const [tabCaches, setTabCaches] = useState<{
+    [key: string]: {
+      filterQuery: FeedCursorRouteQueryParams['filter']
+      content: ReactElement
+    }
   }>({})
 
   // Filters management
   const [globalFilterQuery, setGlobalFilterQuery] = useState<
     FeedCursorRouteQueryParams['filter'] | undefined
-  >(globalFilterOptions ? globalFilterOptions[0].query : baseQuery)
+  >(baseQuery || {})
   const [tabFilterQuery, setTabFilterQuery] = useState<
     FeedCursorRouteQueryParams['filter'] | undefined
-  >(
-    tabs.find(tab => tab.key === initialTab)?.filterOptions?.[0].query ||
-      baseQuery,
-  )
+  >(baseQuery || {})
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
+    if (search) {
+      setSearch('')
+      setTabCaches(prevCache => {
+        const updatedCache = { ...prevCache }
+        delete updatedCache[activeTab]
+        return updatedCache
+      })
+    }
 
     // Update router URL for tab change without triggering content rerender yet
     router.push(`${pathname}${value === defaultTabName ? '' : `?tab=${value}`}`)
-
-    // Set tab-specific filter query only if new tab has filterOptions
-    const activeTabObj = tabs.find(tab => tab.key === value)
-    if (activeTabObj?.filterOptions) {
-      setTabFilterQuery(activeTabObj.filterOptions[0].query)
-    } else {
-      setTabFilterQuery(undefined) // Set to undefined for tabs without specific filters
-    }
   }
 
   const handleGlobalFilterChange = (
@@ -80,32 +81,79 @@ const RouterTabs = ({ tabs, globalFilterOptions, baseQuery }: Props) => {
     setGlobalFilterQuery(filter)
 
     // Invalidate cache for all tabs since the global filter changed
-    setCachedTabContents({})
+    setTabCaches({})
   }
 
   const handleTabFilterChange = (
     filter: FeedCursorRouteQueryParams['filter'],
   ) => {
-    setTabFilterQuery(filter)
+    setTabFilterQuery(prevQuery => {
+      return {
+        ...prevQuery,
+        ...filter,
+      }
+    })
 
     // Invalidate cache for active tab since the tab-specific filter changed
-    setCachedTabContents(prevCache => {
+    setTabCaches(prevCache => {
       const updatedCache = { ...prevCache }
       delete updatedCache[activeTab]
       return updatedCache
     })
   }
 
+  const handleTabSortChange = (sort: string) => {
+    setTabFilterQuery(prevQuery => {
+      return {
+        ...prevQuery,
+        sort,
+      }
+    })
+
+    // Invalidate cache for active tab since the tab-specific filter changed
+    setTabCaches(prevCache => {
+      const updatedCache = { ...prevCache }
+      delete updatedCache[activeTab]
+      return updatedCache
+    })
+  }
+
+  const handleSearch = (value: string) => {
+    setSearch(value)
+    setTabFilterQuery(prevQuery => {
+      return {
+        ...prevQuery,
+        search: value,
+      }
+    })
+
+    // Invalidate cache for active tab since the tab-specific filter changed
+    setTabCaches(prevCache => {
+      const updatedCache = { ...prevCache }
+      delete updatedCache[activeTab]
+      return updatedCache
+    })
+  }
+
+  const debouncedSearch = debounce(handleSearch, 500)
+
   useEffect(() => {
     // Ensure that caching occurs only when filters are fully ready and content is rendered
     const tab = tabs.find(t => t.key === activeTab)
     if (tab) {
-      const updatedQuery = { ...globalFilterQuery, ...tabFilterQuery }
+      const updatedQuery = {
+        ...globalFilterQuery,
+        ...tabFilterQuery,
+        search,
+      }
 
-      if (!cachedTabContents[activeTab]) {
-        setCachedTabContents(prevCache => ({
+      if (!tabCaches[activeTab]) {
+        setTabCaches(prevCache => ({
           ...prevCache,
-          [activeTab]: cloneElement(tab.content, { query: updatedQuery }),
+          [activeTab]: {
+            filterQuery: updatedQuery,
+            content: cloneElement(tab.content, { query: updatedQuery }),
+          },
         }))
       }
     }
@@ -116,6 +164,10 @@ const RouterTabs = ({ tabs, globalFilterOptions, baseQuery }: Props) => {
     setActiveTab(initialTab)
   }, [initialTab])
 
+  const activeRouterTab = useMemo(() => {
+    return tabs.find(tab => tab.key === activeTab)
+  }, [tabs, activeTab])
+
   return (
     <Tabs
       value={activeTab}
@@ -123,7 +175,7 @@ const RouterTabs = ({ tabs, globalFilterOptions, baseQuery }: Props) => {
       onValueChange={handleTabChange}
       className="w-full max-w-full"
     >
-      <div className="flex flex-col xs:flex-row gap-4 w-full mb-4">
+      <div className="flex flex-col md:flex-row gap-4 w-full mb-4">
         <TabsList className="flex justify-stretch min-w-[328px] w-full md:w-auto md:min-w-[420px]">
           {tabs.map(tab => (
             <TabsTrigger key={tab.key} value={tab.key} className="w-full">
@@ -132,42 +184,60 @@ const RouterTabs = ({ tabs, globalFilterOptions, baseQuery }: Props) => {
           ))}
         </TabsList>
 
-        {globalFilterOptions ? (
-          <div className="flex gap-4 ml-auto xs:ml-0">
-            <Separator orientation="vertical" className="hidden xs:block" />
-            <Filter
-              options={globalFilterOptions.map(({ label, icon, query }) => ({
-                label,
-                icon,
-                value: query, // Directly use the query object for global filter
-              }))}
-              onChange={handleGlobalFilterChange}
-            />
-          </div>
-        ) : null}
+        <div className="flex gap-4">
+          {activeRouterTab?.sortMenu || activeRouterTab?.filterMenu ? (
+            <Separator orientation="vertical" className="hidden md:block" />
+          ) : null}
 
-        {tabs.find(tab => tab.key === activeTab)?.filterOptions ? (
-          <div className="flex gap-4 ml-auto xs:ml-0">
-            <Separator orientation="vertical" className="hidden xs:block" />
-            <Filter
-              options={tabs
-                .find(tab => tab.key === activeTab)!
-                .filterOptions!.map(({ label, icon, query }) => ({
-                  label,
-                  icon,
-                  value: query, // Directly use the query object for tab-specific filter
-                }))}
-              onChange={handleTabFilterChange}
-            />
-          </div>
-        ) : null}
+          {activeRouterTab?.sortMenu ? (
+            <div className="flex-1">
+              <activeRouterTab.sortMenu
+                initialSort={tabCaches[activeTab]?.filterQuery?.sort as string}
+                onChange={handleTabSortChange}
+              />
+            </div>
+          ) : null}
+
+          {activeRouterTab?.filterMenu ? (
+            <div className="flex-1">
+              <activeRouterTab.filterMenu
+                initialFilter={tabCaches[activeTab]?.filterQuery}
+                onChange={handleTabFilterChange}
+              />
+            </div>
+          ) : null}
+
+          {sharedFilterMenu ? (
+            <div className="flex gap-4">
+              <Separator orientation="vertical" className="hidden md:block" />
+              {sharedFilterMenu({
+                initialFilter: baseQuery,
+                onChange: handleGlobalFilterChange,
+              })}
+            </div>
+          ) : null}
+
+          {activeRouterTab?.canSearch ? (
+            <div className="flex items-center mb-4">
+              <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted">
+                <SearchIcon className="w-4 h-4" />
+              </div>
+              <Input
+                className="rounded-l-none border-l-0"
+                placeholder="Search"
+                defaultValue={search}
+                onChange={e => debouncedSearch(e.target.value)}
+              />
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {tabs.map(tab => (
         <TabsContent key={tab.key} value={tab.key}>
-          {cachedTabContents[tab.key] ? (
+          {tabCaches[tab.key] ? (
             // Render cached content if available
-            cachedTabContents[tab.key]
+            tabCaches[tab.key].content
           ) : (
             // Show loading indicator until the content is properly cached
             <MasonrySkeleton />
