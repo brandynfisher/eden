@@ -172,7 +172,6 @@ export const LightboxTrigger = React.forwardRef<
         width: slide.width,
         height: slide.height,
         src: slide.url,
-        loading: slide.loading,
         // title: slide.title,
         description: slide.description,
       })
