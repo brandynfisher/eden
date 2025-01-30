@@ -45,7 +45,7 @@ export const SortMenu = ({ onChange, initialSort }: Props) => {
               checked={baseSort === option.value}
               onCheckedChange={() => handleSortChange(option.value)}
             >
-              <div className="flex items-center gap-2 [&>svg]:size-3.5">
+              <div className="flex items-center gap-2 [&>svg]:size-4">
                 {option.icon}
                 {option.label}
               </div>

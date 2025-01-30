@@ -112,7 +112,7 @@ export const CreationsFilter = ({ onChange, initialFilter }: Props) => {
               onSelect={handleSelectFeatured}
             >
               <div className="flex items-center">
-                <StarIcon className="h-3 w-3 mr-2" />
+                <StarIcon className="h-4 w-4 mr-2" />
                 Featured
               </div>
             </DropdownMenuCheckboxItem>
@@ -125,7 +125,7 @@ export const CreationsFilter = ({ onChange, initialFilter }: Props) => {
                 onSelect={e => e.preventDefault()}
               >
                 <div className="flex items-center">
-                  <ImageIcon className="h-3 w-3 mr-2" />
+                  <ImageIcon className="h-4 w-4 mr-2" />
                   Image
                 </div>
               </DropdownMenuCheckboxItem>
@@ -135,7 +135,7 @@ export const CreationsFilter = ({ onChange, initialFilter }: Props) => {
                 onSelect={e => e.preventDefault()}
               >
                 <div className="flex items-center">
-                  <VideoIcon className="h-3 w-3 mr-2" />
+                  <VideoIcon className="h-4 w-4 mr-2" />
                   Video
                 </div>
               </DropdownMenuCheckboxItem>
