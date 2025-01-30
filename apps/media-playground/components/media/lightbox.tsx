@@ -172,6 +172,7 @@ export const LightboxTrigger = React.forwardRef<
         width: slide.width,
         height: slide.height,
         src: slide.url,
+        loading: slide.loading,
         // title: slide.title,
         description: slide.description,
       })
@@ -219,6 +220,7 @@ type LightboxImageTriggerProps = {
   src?: string
   alt?: string
   blurhash?: string
+  loading?: 'eager' | 'lazy'
 } & Omit<ImageProps, 'src' | 'alt'>
 
 export function LightboxImageTrigger({
@@ -226,6 +228,7 @@ export function LightboxImageTrigger({
   alt = '',
   blurhash,
   className,
+  loading,
   ...props
 }: LightboxImageTriggerProps) {
   const width = props?.width ? +props.width : 1024
@@ -240,7 +243,7 @@ export function LightboxImageTrigger({
       className={cn('object-contain w-full h-full !bg-contain', className)}
       blurDataURL={blurDataUrl}
       placeholder={blurDataUrl ? 'blur' : undefined}
-      loading={props.loading ?? 'eager'}
+      loading={loading ?? 'eager'}
       {...props}
       width={width}
       height={height}

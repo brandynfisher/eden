@@ -4,20 +4,15 @@ import { Button } from '@/components/ui/button'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { ChatMockWidget } from '@/features/chat/chat-mock-widget'
 import { Footer } from '@/features/landing/footer'
+import SectionAgents from '@/features/landing/section_agents'
+import SectionEve from '@/features/landing/section_eve'
 import TrainingFeatureCard from '@/features/landing/training-feature-card'
 import { getAgentCached } from '@/lib/actions/agent'
 import { siteConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
-import {
-  ArrowBigDownDashIcon,
-  BrainCircuitIcon,
-  PaletteIcon,
-  PlayIcon,
-  UsersIcon,
-} from 'lucide-react'
+import { BrainCircuitIcon, PaletteIcon, UsersIcon } from 'lucide-react'
 import { Metadata, ResolvingMetadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -101,34 +96,7 @@ const HomePage = async () => {
         </section>
 
         <section className="bg-accent/60 py-12 px-4">
-          <div className="max-w-3xl mx-auto">
-            <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
-              The Best Creative AI Tools, All in One Place
-            </TypographyH4>
-            <div className="text-center text-muted-foreground">
-              Our AI agents have mastered every tool in our creative tool suite,
-              so you don't have to. Just share your vision, and let AI handle
-              the rest.{' '}
-              <Link
-                href="/create"
-                className=" text-purple-600 font-bold inline-flex items-center hover:text-purple-400"
-              >
-                Get started for free!
-              </Link>
-              <div className="relative flex justify-center items-center max-w-lg mx-auto mt-6">
-                <Image
-                  src="/temp/eve_splash.png"
-                  alt="eve_splash"
-                  width={2048}
-                  height={2048}
-                  className="rounded-lg"
-                />
-                <div className="absolute flex justify-center items-center bg-accent/60 rounded-full p-2">
-                  <PlayIcon className="h-8 w-8 " />
-                </div>
-              </div>
-            </div>
-          </div>
+          <SectionEve />
         </section>
 
         <section>
@@ -140,84 +108,31 @@ const HomePage = async () => {
               <TrainingFeatureCard
                 icon={<UsersIcon className="h-8 w-8 text-purple-600" />}
                 title="Your Characters"
-                content={
-                  <>
-                    <Image
-                      src="/temp/banny_train.png"
-                      alt="banny_train"
-                      width={2048}
-                      height={2048}
-                      className="rounded-lg"
-                    />
-                    <ArrowBigDownDashIcon className="h-9 w-9 my-2" />
-                    <Image
-                      src="/temp/banny.png"
-                      alt="Characters"
-                      width={2048}
-                      height={2048}
-                      className="rounded-lg"
-                    />
-                    <p className="mt-4 text-sm text-muted-foreground text-center">
-                      Create models that bring your characters to life
-                    </p>
-                  </>
-                }
+                inputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/banny_train_v1.jpg"
+                inputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/banny_train_thumb_v1.jpg"
+                outputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/banny_v1.jpg"
+                outputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/banny_thumb_v1.jpg"
+                subtitle="Create models that bring your characters to life"
               />
 
               <TrainingFeatureCard
-                title="Your Style"
                 icon={<PaletteIcon className="h-8 w-8 text-purple-600" />}
-                content={
-                  <>
-                    <Image
-                      src="/temp/does_train.png"
-                      alt="does_train"
-                      width={2048}
-                      height={2048}
-                      className="rounded-lg"
-                    />
-                    <ArrowBigDownDashIcon className="h-9 w-9 my-2" />
-                    <Image
-                      src="/temp/does_out.png"
-                      alt="does art style"
-                      width={2048}
-                      height={2048}
-                      className="rounded-lg"
-                    />
-                    <p className="mt-4 text-sm text-muted-foreground text-center">
-                      Train models that understand and replicate your unique
-                      artistic style
-                    </p>
-                  </>
-                }
+                title="Your Style"
+                inputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/does_train_v1.jpg"
+                inputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/does_train_thumb_v1.jpg"
+                outputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/does_v1.jpg"
+                outputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/does_thumb_v1.jpg"
+                subtitle="Train models that understand and replicate your unique artistic style"
               />
 
               <TrainingFeatureCard
-                title="Your Brand"
                 icon={<BrainCircuitIcon className="h-8 w-8 text-purple-600" />}
-                content={
-                  <>
-                    <Image
-                      src="/temp/xander_train.png"
-                      alt="xander_train"
-                      width={2048}
-                      height={2048}
-                      className="rounded-lg"
-                    />
-                    <ArrowBigDownDashIcon className="h-9 w-9 my-2 " />
-                    <Image
-                      src="/temp/xander.png"
-                      alt="xander face"
-                      width={2048}
-                      height={2048}
-                      className="rounded-lg"
-                    />
-                    <p className="mt-4 text-sm text-muted-foreground text-center">
-                      Create consistent brand assets with AI that knows your
-                      guidelines
-                    </p>
-                  </>
-                }
+                title="Your Brand"
+                inputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/xander_train_v1.jpg"
+                inputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/xander_train_thumb_v1.jpg"
+                outputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/xander_v1.jpg"
+                outputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/xander_thumb_v1.jpg"
+                subtitle="Create consistent brand assets with AI that knows your guidelines"
               />
             </div>
             <p className="text-center text-muted-foreground mt-6 px-4">
@@ -233,32 +148,7 @@ const HomePage = async () => {
         </section>
 
         <section className="bg-accent/60 py-12 px-4">
-          <div className="max-w-3xl mx-auto">
-            <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
-              Create Custom AI Agents
-            </TypographyH4>
-            <p className="text-center text-muted-foreground mb-4">
-              Eden Agents are chat agents who are given a unique personality,
-              set of tools & instructions and a custom visual model.
-            </p>
-            <p className="text-center text-muted-foreground">
-              They can be crafted to act as creative assistants, coaches,
-              storytellers, brand ambassadors and more. <br />
-              <Link
-                href="/explore?tab=agents&create=true"
-                className="group text-purple-600 font-bold inline-flex items-center hover:text-purple-400"
-              >
-                Build your first agent right now!
-              </Link>
-            </p>
-            <Image
-              src="/temp/banny_chat_1.png"
-              alt="banny_chat"
-              width={2048}
-              height={2048}
-              className="rounded-lg mt-6 max-w-lg mx-auto w-full border border-secondary"
-            />
-          </div>
+          <SectionAgents />
         </section>
 
         <section className="mb-12 px-4">

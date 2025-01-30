@@ -238,7 +238,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
                   <AutosizeTextarea
                     className="w-full mb-4 !border-none !ring-0 !outline-none !ring-offset-0"
                     placeholder="Type your message here..."
-                    rows={4}
+                    // rows={4}
                     minHeight={64}
                     autoFocus={true}
                     onChange={field.onChange}
