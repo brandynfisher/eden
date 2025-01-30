@@ -248,7 +248,7 @@ export function EdenRuntimeProvider({
         threadIdRef.current = threadId
 
         if (threadIdRef.current) {
-          runtime.switchToThread(threadIdRef.current)
+          runtime.threads.switchToThread(threadIdRef.current)
           await checkThreadStatus()
         }
       } catch (error) {
@@ -316,8 +316,14 @@ export function EdenRuntimeProvider({
 
     // Process new messages
     newMessages.forEach(msg => {
-      messageEmitterRef.current?.emit(msg)
-      addOrUpdateMessage(msg)
+      console.log('newMessages', msg)
+      const newMsg = {
+        ...msg,
+        status: activeMessageIds?.length ? { type: 'running' } : msg.status,
+      }
+
+      messageEmitterRef.current?.emit(newMsg)
+      addOrUpdateMessage(newMsg)
     })
 
     // Check if stream should be ended
