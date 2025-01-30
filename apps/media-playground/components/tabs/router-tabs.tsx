@@ -235,8 +235,8 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
           ) : null}
 
           {activeRouterTab?.canSearch ? (
-            <div className="flex items-center mb-4 w-full">
-              <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted md:ml-auto">
+            <div className="flex items-center mb-4 md:mb-0 w-full">
+              <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted/40 md:ml-auto">
                 <SearchIcon className="w-4 h-4" />
               </div>
               <Input
@@ -248,7 +248,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
               <Button
                 variant="outline"
                 size="icon"
-                className={cn(['rounded-l-none'])}
+                className={cn(['rounded-l-none bg-muted/40'])}
                 onClick={handleSearchReset}
                 disabled={!searchInput}
               >
