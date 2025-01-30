@@ -4,7 +4,7 @@ import { getCloudfrontOriginalUrl } from '@/lib/media'
 import {
   CompleteAttachment,
   MessageStatus,
-  useExternalMessageConverter,
+  ThreadMessageLike,
 } from '@assistant-ui/react'
 import { ToolCallContentPart } from '@assistant-ui/react'
 import {
@@ -46,9 +46,14 @@ const contentToParts = (
   return [{ type: 'text' as const, text: content }]
 }
 
-export const edenMessageConverter: useExternalMessageConverter.Callback<
-  EdenMessage
-> = message => {
+export const convertEdenMessage = (message: EdenMessage) => {
+  return edenMessageConverter(message)
+}
+
+export const edenMessageConverter = (
+  message: EdenMessage,
+): ThreadMessageLike => {
+  // console.log("edenMessageConverter CALLED", message)
   switch (message.role) {
     case 'system':
       return {

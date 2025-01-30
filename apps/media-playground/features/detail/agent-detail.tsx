@@ -3,6 +3,8 @@
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+// import { Separator } from '@/components/ui/separator'
+// import { Badge } from '@/components/ui/badge'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentFormSheet from '@/features/agent/agent-form-sheet'
@@ -44,8 +46,6 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
-
-  // console.log('agent', agent)
 
   const onDeleteAgent = async () => {
     const handleDelete = async () => {
@@ -146,6 +146,27 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
             />
           </span>
         </div>
+        {/* <Separator className="my-4" />
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent-foreground/5 rounded-md p-2">
+          <div>
+            Threads
+            <Badge variant="outline" className="bg-muted-darker">
+              {agent.threadCount}
+            </Badge>
+          </div>
+          <div>
+            Messages
+            <Badge variant="outline" className="bg-muted-darker">
+              {agent.threadCount}
+            </Badge>
+          </div>
+          <div>
+            Users
+            <Badge variant="outline" className="bg-muted-darker">
+              {agent.threadCount}
+            </Badge>
+          </div>
+        </div> */}
       </div>
       <div className="p-4">
         {isSignedIn ? (

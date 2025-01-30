@@ -66,6 +66,7 @@ function StringArrayInput({
             type="text"
             value={fieldValue}
             onChange={e => handleInputChange(e, index)}
+            className="text-base"
           />
           {fields.length > minLength ? (
             <Button
