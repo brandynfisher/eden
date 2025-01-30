@@ -740,10 +740,10 @@ export const createCheckoutSession = async (
     customer: user.stripeCustomerId,
     client_reference_id: user.userId,
     success_url: `${
-      returnUrl ? returnUrl : server.config.FRONTEND_URL
+      returnUrl ? returnUrl : server.config.EDEN2_FRONTEND_URL
     }/order/success?session_id={CHECKOUT_SESSION_ID}&gacid=${analyticsClientId}`,
     cancel_url: `${
-      returnUrl ? returnUrl : server.config.FRONTEND_URL
+      returnUrl ? returnUrl : server.config.EDEN2_FRONTEND_URL
     }/order/cancelled?session_id={CHECKOUT_SESSION_ID}&gacid=${analyticsClientId}`,
     metadata: {
       analyticsClientId: analyticsClientId || '',

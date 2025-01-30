@@ -85,7 +85,9 @@ export const discordOAuth = async (
       }),
     )
 
-    return reply.redirect(`${server.config.FRONTEND_URL}/settings/integrations`)
+    return reply.redirect(
+      `${server.config.EDEN2_FRONTEND_URL}/settings/integrations`,
+    )
   } catch (error) {
     console.error(error)
     return reply
