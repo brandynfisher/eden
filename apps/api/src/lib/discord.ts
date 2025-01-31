@@ -59,14 +59,14 @@ async function sendDiscordNotification(
             {
               name: 'User',
               value: `[${task.user?.toString()}](${
-                fastify.config.FRONTEND_URL
+                fastify.config.EDEN2_FRONTEND_URL
               }/creators/${task.user?.toString()})`,
               inline: true,
             },
             {
               name: 'Requester',
               value: `[${task.requester?.toString()}](${
-                fastify.config.FRONTEND_URL
+                fastify.config.EDEN2_FRONTEND_URL
               }/creators/${task.requester?.toString()})`,
               inline: true,
             },

@@ -3,6 +3,7 @@ import TwitterIcon from '@/components/icons/twitter'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { Button } from '@/components/ui/button'
 import { siteConfig } from '@/lib/config'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import Link from 'next/link'
 import { FC } from 'react'
 
@@ -16,21 +17,22 @@ export const Footer: FC = () => {
             © 2025 Eden Labs, Inc.
             <br />
             <Link
-              className="text-xs hover:underline text-muted-foreground"
+              className="text-xs hover:underline text-muted-foreground/60"
               href={`https://docs.eden.art/docs/overview/tos`}
               prefetch={false}
+              target="_blank"
             >
               <span>Terms</span>
             </Link>
-            {/* / {' '} <Link
-              className="text-xs hover:underline text-muted-foreground"
-              href={`https://docs.eden.art/docs/overview/tos`}
+            <span className="text-xs mx-1">|</span>
+            <Link
+              className="text-xs hover:underline text-muted-foreground/60"
+              href={`https://docs.eden.art/docs/overview/privacy`}
               prefetch={false}
+              target="_blank"
             >
-              <span>Terms</span>
-            </Link> */}
-            {/*  /  {' '}<br /><a className="hover:underline" href="/coc">Code of Conduct</a>  /  {' '} */}
-            {/* <a className="hover:underline" target="_blank" href="https://status.runwayml.com/">System Status</a> */}
+              <span>Privacy Policy</span>
+            </Link>
           </div>
         </div>
         <div className="flex gap-1 items-center">
@@ -40,6 +42,7 @@ export const Footer: FC = () => {
               target="_blank"
               className="filter grayscale hover:grayscale-0"
             >
+              <VisuallyHidden>Discord</VisuallyHidden>
               <DiscordIcon size={20} />
             </Link>
           </Button>
@@ -49,6 +52,7 @@ export const Footer: FC = () => {
               target="_blank"
               className="group grayscale hover:grayscale-0 hover:text-white"
             >
+              <VisuallyHidden>X</VisuallyHidden>
               <TwitterIcon
                 size={18}
                 className="brightness-50 group-hover:!brightness-100"
