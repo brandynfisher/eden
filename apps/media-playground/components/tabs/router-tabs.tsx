@@ -78,6 +78,10 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
       })
     }
 
+    // Reset tab-specific filters when changing tabs
+    const newTab = tabs.find(t => t.key === value)
+    setTabFilterQuery(newTab?.initialFilter || {})
+
     // Update router URL for tab change without triggering content rerender yet
     router.push(`${pathname}${value === defaultTabName ? '' : `?tab=${value}`}`)
   }

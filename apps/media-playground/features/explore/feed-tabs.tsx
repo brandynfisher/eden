@@ -5,6 +5,7 @@ import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
 import ModelsFeed from '@/features/feed/models-feed'
+import { ModelsFilter } from '@/features/feed/models-filter'
 import { SortMenu } from '@/features/feed/sort-menu'
 
 const FeedTabs = () => {
@@ -37,6 +38,7 @@ const FeedTabs = () => {
           ]}
         />
       ),
+      filterMenu: ModelsFilter,
     },
     {
       key: 'agents',
