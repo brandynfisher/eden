@@ -186,6 +186,25 @@ export const createTask = async (
   }
 }
 
+function getTypeQuery(tool: string | undefined, minDate: boolean | undefined) {
+  // If minDate is provided, return empty query
+  if (minDate) {
+    return {}
+  }
+
+  const isModelTask = tool === 'lora_trainer' || tool === 'flux_trainer'
+
+  // If tool is provided and is a model task, filter by that tool
+  if (tool && isModelTask) {
+    return { tool }
+  }
+
+  // Otherwise exclude model tasks
+  return {
+    tool: { $nin: ['lora_trainer', 'flux_trainer'] },
+  }
+}
+
 export const listTasks = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -200,7 +219,6 @@ export const listTasks = async (
   }
 
   const {
-    // type,
     tool,
     status,
     taskId,
@@ -217,13 +235,7 @@ export const listTasks = async (
     })
   }
 
-  const isModelTaskQuery =
-    tool && (tool === 'lora_trainer' || tool === 'flux_trainer')
-  const typeQuery = !isModelTaskQuery
-    ? {
-        tool: { $nin: ['lora_trainer', 'flux_trainer'] },
-      }
-    : {}
+  const typeQuery = getTypeQuery(tool, minDate)
 
   const tasksRepository = new TaskV2Repository(TaskV2Model)
 
@@ -231,7 +243,7 @@ export const listTasks = async (
     user?: string
     status?: string | string[]
     taskId?: string | string[]
-    tool?: string | { $nin: string[] }
+    tool?: string | { $nin?: string[]; $in?: string[] }
     createdAt?: { $gte: Date }
   } = {
     user: user._id.toString(),
@@ -244,10 +256,6 @@ export const listTasks = async (
 
   if (taskId) {
     query.taskId = taskId
-  }
-
-  if (tool) {
-    query.tool = tool
   }
 
   if (minDate) {
