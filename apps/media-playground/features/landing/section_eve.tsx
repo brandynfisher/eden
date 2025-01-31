@@ -16,7 +16,7 @@ export default function SectionEve() {
         you don't have to. Just share your vision, and let AI handle the rest.{' '}
         <Link
           href="/create"
-          className=" text-purple-600 font-bold inline-flex items-center hover:text-purple-400"
+          className=" text-purple-500 font-bold inline-flex items-center hover:text-purple-400"
         >
           Get started for free!
         </Link>

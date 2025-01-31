@@ -19,7 +19,7 @@ export default function SectionAgents() {
         storytellers, brand ambassadors and more. <br />
         <Link
           href="/explore?tab=agents&create=true"
-          className="group text-purple-600 font-bold inline-flex items-center hover:text-purple-400"
+          className="group text-purple-500 font-bold inline-flex items-center hover:text-purple-400"
         >
           Build your first agent right now!
         </Link>

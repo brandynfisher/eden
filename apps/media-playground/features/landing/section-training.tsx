@@ -47,7 +47,10 @@ export default function SectionTraining() {
         personalization is at the core of what we do.
         <br />
         Don't just use our models—
-        <Link href="/train" className="text-purple-600 font-bold">
+        <Link
+          href="/train"
+          className="text-purple-500 font-bold hover:text-purple-400"
+        >
           train your own!
         </Link>
       </p>

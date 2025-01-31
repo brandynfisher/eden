@@ -3,6 +3,7 @@ import TwitterIcon from '@/components/icons/twitter'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { Button } from '@/components/ui/button'
 import { siteConfig } from '@/lib/config'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import Link from 'next/link'
 import { FC } from 'react'
 
@@ -41,6 +42,7 @@ export const Footer: FC = () => {
               target="_blank"
               className="filter grayscale hover:grayscale-0"
             >
+              <VisuallyHidden>Discord</VisuallyHidden>
               <DiscordIcon size={20} />
             </Link>
           </Button>
@@ -50,6 +52,7 @@ export const Footer: FC = () => {
               target="_blank"
               className="group grayscale hover:grayscale-0 hover:text-white"
             >
+              <VisuallyHidden>X</VisuallyHidden>
               <TwitterIcon
                 size={18}
                 className="brightness-50 group-hover:!brightness-100"

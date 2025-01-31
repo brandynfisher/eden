@@ -5,6 +5,7 @@ import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { siteConfig } from '@/lib/config'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import Link from 'next/link'
 
 export default function SectionDeploy() {
@@ -26,6 +27,7 @@ export default function SectionDeploy() {
             target="_blank"
             className="filter flex flex-col p-4 rounded-lg border border-border bg-card h-16 w-16"
           >
+            <VisuallyHidden>Discord</VisuallyHidden>
             <DiscordIcon size={64} />
           </Link>
         </Button>
@@ -35,6 +37,7 @@ export default function SectionDeploy() {
             target="_blank"
             className="group  flex flex-col p-4 rounded-lg border border-border bg-card h-16 w-16"
           >
+            <VisuallyHidden>X</VisuallyHidden>
             <TwitterIcon size={64} />
           </Link>
         </Button>

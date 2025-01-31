@@ -168,6 +168,7 @@ export const AgentLink: FC<{ agent?: Agent; className?: string }> = ({
         )}
       >
         <AvatarImage
+          alt={agent?.name}
           className={'object-cover'}
           src={getCloudfrontOriginalUrl(agent?.userImage)}
         />

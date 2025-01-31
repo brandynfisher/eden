@@ -287,6 +287,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
             )}
           >
             <Button
+              aria-label="Send message"
               variant="secondary"
               type="submit"
               disabled={isSubmitting || !form.formState.isValid}
@@ -302,6 +303,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
         <div className="mt-6 mb-2 flex gap-2 flex-wrap justify-center">
           {DEFAULT_SUGGESTIONS.map((suggestion, index) => (
             <Button
+              aria-label={suggestion.text}
               key={index}
               variant="outline"
               type="button"
