@@ -39,6 +39,7 @@ export default function TrainingFeatureCard({
               }}
               startIndex={0}
               imageProps={{
+                customLoader: false,
                 loading: 'lazy',
                 unoptimized: true,
                 className: 'relative rounded-lg',
@@ -56,6 +57,7 @@ export default function TrainingFeatureCard({
               }}
               startIndex={1}
               imageProps={{
+                customLoader: false,
                 loading: 'lazy',
                 unoptimized: true,
                 className: 'relative rounded-lg',

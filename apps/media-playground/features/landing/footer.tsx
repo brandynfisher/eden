@@ -16,21 +16,22 @@ export const Footer: FC = () => {
             © 2025 Eden Labs, Inc.
             <br />
             <Link
-              className="text-xs hover:underline text-muted-foreground"
+              className="text-xs hover:underline text-muted-foreground/60"
               href={`https://docs.eden.art/docs/overview/tos`}
               prefetch={false}
+              target="_blank"
             >
               <span>Terms</span>
             </Link>
-            {/* / {' '} <Link
-              className="text-xs hover:underline text-muted-foreground"
-              href={`https://docs.eden.art/docs/overview/tos`}
+            <span className="text-xs mx-1">|</span>
+            <Link
+              className="text-xs hover:underline text-muted-foreground/60"
+              href={`https://docs.eden.art/docs/overview/privacy`}
               prefetch={false}
+              target="_blank"
             >
-              <span>Terms</span>
-            </Link> */}
-            {/*  /  {' '}<br /><a className="hover:underline" href="/coc">Code of Conduct</a>  /  {' '} */}
-            {/* <a className="hover:underline" target="_blank" href="https://status.runwayml.com/">System Status</a> */}
+              <span>Privacy Policy</span>
+            </Link>
           </div>
         </div>
         <div className="flex gap-1 items-center">

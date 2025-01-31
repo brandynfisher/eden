@@ -196,6 +196,7 @@ export const LightboxTrigger = React.forwardRef<
       {slide?.url?.endsWith('.mp4') ? (
         <LightboxVideoTrigger
           src={slide.url}
+          thumbnail={slide.thumbnail}
           duration={slide.duration}
           width={slide.width}
           height={slide.height}
@@ -203,7 +204,7 @@ export const LightboxTrigger = React.forwardRef<
         />
       ) : (
         <LightboxImageTrigger
-          src={slide.url}
+          src={slide.thumbnail ?? slide.url}
           width={slide.width}
           height={slide.height}
           {...imageProps}
@@ -220,6 +221,7 @@ type LightboxImageTriggerProps = {
   alt?: string
   blurhash?: string
   loading?: 'eager' | 'lazy'
+  customLoader?: boolean
 } & Omit<ImageProps, 'src' | 'alt'>
 
 export function LightboxImageTrigger({
@@ -228,6 +230,7 @@ export function LightboxImageTrigger({
   blurhash,
   className,
   loading,
+  customLoader,
   ...props
 }: LightboxImageTriggerProps) {
   const width = props?.width ? +props.width : 1024
@@ -236,7 +239,7 @@ export function LightboxImageTrigger({
 
   return (
     <NextImage
-      loader={customImageLoader}
+      loader={customLoader ? customImageLoader : undefined}
       src={src}
       alt={alt}
       className={cn('object-contain w-full h-full !bg-contain', className)}
@@ -252,11 +255,13 @@ export function LightboxImageTrigger({
 
 // Video Trigger Component
 type LightboxVideoTriggerProps = {
+  thumbnail?: string
   duration?: number | null
 } & React.VideoHTMLAttributes<HTMLVideoElement>
 
 export function LightboxVideoTrigger({
   src,
+  thumbnail,
   className,
   duration,
   ...props
@@ -290,7 +295,7 @@ export function LightboxVideoTrigger({
   return (
     <div ref={hoverRef} className="relative h-full w-full">
       <LightboxImageTrigger
-        src={src}
+        src={thumbnail ?? src}
         width={width}
         height={height}
         className={cn(
