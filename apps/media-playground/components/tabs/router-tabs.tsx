@@ -29,6 +29,7 @@ export type RouterTab = {
   filterMenu?: (props: FilterMenuProps) => ReactElement
   sortMenu?: (props: SortMenuProps) => ReactElement
   canSearch?: boolean
+  initialFilter?: FeedCursorRouteQueryParams['filter']
 }
 
 type Props = {
@@ -61,7 +62,10 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   >(baseQuery || {})
   const [tabFilterQuery, setTabFilterQuery] = useState<
     FeedCursorRouteQueryParams['filter'] | undefined
-  >(baseQuery || {})
+  >(() => {
+    const activeTab = tabs.find(t => t.key === initialTab)
+    return activeTab?.initialFilter || baseQuery || {}
+  })
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -105,21 +109,21 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     })
   }
 
-  const handleTabSortChange = (sort: string) => {
-    setTabFilterQuery(prevQuery => {
-      return {
-        ...prevQuery,
-        sort,
-      }
-    })
+  // const handleTabSortChange = (sort: string) => {
+  //   setTabFilterQuery(prevQuery => {
+  //     return {
+  //       ...prevQuery,
+  //       sort,
+  //     }
+  //   })
 
-    // Invalidate cache for active tab since the tab-specific filter changed
-    setTabCaches(prevCache => {
-      const updatedCache = { ...prevCache }
-      delete updatedCache[activeTab]
-      return updatedCache
-    })
-  }
+  //   // Invalidate cache for active tab since the tab-specific filter changed
+  //   setTabCaches(prevCache => {
+  //     const updatedCache = { ...prevCache }
+  //     delete updatedCache[activeTab]
+  //     return updatedCache
+  //   })
+  // }
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -206,23 +210,26 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
             <Separator orientation="vertical" className="hidden md:block" />
           ) : null}
 
-          {activeRouterTab?.sortMenu ? (
+          {activeRouterTab?.filterMenu ? (
+            <div className="flex-1">
+              <activeRouterTab.filterMenu
+                initialFilter={
+                  activeRouterTab.initialFilter ||
+                  tabCaches[activeTab]?.filterQuery
+                }
+                onChange={handleTabFilterChange}
+              />
+            </div>
+          ) : null}
+
+          {/* {activeRouterTab?.sortMenu ? (
             <div className="flex-1">
               <activeRouterTab.sortMenu
                 initialSort={tabCaches[activeTab]?.filterQuery?.sort as string}
                 onChange={handleTabSortChange}
               />
             </div>
-          ) : null}
-
-          {activeRouterTab?.filterMenu ? (
-            <div className="flex-1">
-              <activeRouterTab.filterMenu
-                initialFilter={tabCaches[activeTab]?.filterQuery}
-                onChange={handleTabFilterChange}
-              />
-            </div>
-          ) : null}
+          ) : null} */}
 
           {sharedFilterMenu ? (
             <div className="flex gap-4">

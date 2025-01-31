@@ -295,6 +295,7 @@ export function LightboxVideoTrigger({
   return (
     <div ref={hoverRef} className="relative h-full w-full">
       <LightboxImageTrigger
+        customLoader={true}
         src={thumbnail ?? src}
         width={width}
         height={height}

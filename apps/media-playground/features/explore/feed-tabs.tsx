@@ -8,6 +8,11 @@ import ModelsFeed from '@/features/feed/models-feed'
 import { SortMenu } from '@/features/feed/sort-menu'
 
 const FeedTabs = () => {
+  // Define initial filter for creations tab
+  const initialCreationsFilter = {
+    collection: process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
+  }
+
   const tabs: RouterTab[] = [
     {
       key: 'creations',
@@ -15,6 +20,7 @@ const FeedTabs = () => {
       content: <CreationsFeed maxCols={7} />,
       sortMenu: SortMenu,
       filterMenu: CreationsFilter,
+      initialFilter: initialCreationsFilter,
     },
     {
       key: 'models',
