@@ -239,7 +239,7 @@ export function LightboxImageTrigger({
 
   return (
     <NextImage
-      loader={customLoader ? customImageLoader : undefined}
+      loader={!customLoader ? undefined : customImageLoader}
       src={src}
       alt={alt}
       className={cn('object-contain w-full h-full !bg-contain', className)}

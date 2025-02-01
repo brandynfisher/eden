@@ -35,12 +35,12 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_HOST),
-  title: 'Eden Create',
-  applicationName: 'Eden Create',
+  title: 'Eden',
+  applicationName: 'Eden',
   description: 'The Garden of Artificial Delights',
   openGraph: {
-    title: 'Eden Create',
-    siteName: 'Eden Create',
+    title: 'Eden',
+    siteName: 'Eden',
     description: 'The Garden of Artificial Delights',
     type: 'website',
     images: ['/logo_badge_square.png'],

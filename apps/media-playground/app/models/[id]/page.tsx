@@ -49,7 +49,7 @@ export async function generateMetadata(
 
   const { model } = response
 
-  const title = `Model by ${model?.user.username} | Eden Create`
+  const title = `Model by ${model?.user.username} | Eden`
   const description = ``
   const media: { images?: string[]; videos?: string[] } = {}
   media.images = model?.thumbnail

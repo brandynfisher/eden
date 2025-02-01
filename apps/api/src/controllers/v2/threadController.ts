@@ -216,25 +216,26 @@ export const getThread = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user || {}
-  if (!userId) {
-    return reply.status(400).send({
-      message: 'User missing from request',
-    })
-  }
+  // if (!userId) {
+  //   return reply.status(400).send({
+  //     message: 'User missing from request',
+  //   })
+  // }
 
   const { thread_id } = request.params as ThreadsGetArguments
 
-  const user = await User.findById(userId)
-  if (!user) {
-    return reply.status(400).send({
-      message: 'User not found',
-    })
-  }
+  const authUser = userId ? await User.findById(userId) : null
+
+  // if (!user) {
+  //   return reply.status(400).send({
+  //     message: 'User not found',
+  //   })
+  // }
 
   try {
     const thread = await ThreadModel.findOne({
       _id: new ObjectId(thread_id),
-      user: userId,
+      // user: userId,
     })
       .populate({
         path: 'user',
@@ -262,6 +263,15 @@ export const getThread = async (
         message: 'Thread not found',
       })
     }
+
+    const isReadOnly =
+      !authUser || thread.user._id.toString() !== authUser?._id.toString()
+    console.log({
+      isReadOnly,
+      thread: thread._id,
+      authUser,
+      threadUser: thread.user,
+    })
 
     const extendedMessages = thread.messages.map((msg, index) => {
       if (msg.role !== 'assistant') {

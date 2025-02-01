@@ -27,7 +27,7 @@ export const env = {
 }
 
 export const siteConfig: SiteConfig = {
-  name: 'Eden Create',
+  name: 'Eden',
   author: 'edenlabs',
   description: 'Garden of Artificial Delights',
   keywords: [

@@ -195,15 +195,26 @@ const Header: FC = () => {
 type Props = {
   agentId: string
   threadId?: string
+  agentSSRData?: Agent
 }
 
-const Chat: FC<Props> = ({ agentId, threadId }) => {
-  const [isMounted, setIsMounted] = useState(false)
-
-  const { agent, isError, error } = useAgentQuery({
+const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
+  const {
+    agent: agentClientData,
+    isError,
+    error,
+  } = useAgentQuery({
     key: agentId,
-    enabled: !!agentId,
+    initialData: agentSSRData
+      ? {
+          agent: agentSSRData,
+        }
+      : undefined,
   })
+
+  const agent = agentClientData || agentSSRData
+
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') {

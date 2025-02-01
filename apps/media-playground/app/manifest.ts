@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Eden Create',
-    short_name: 'Eden Create',
+    name: 'Eden',
+    short_name: 'Eden',
     description: 'The Garden of Artificial Delights',
     start_url: '/',
     display: 'fullscreen',
