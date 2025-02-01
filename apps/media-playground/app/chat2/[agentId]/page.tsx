@@ -1,4 +1,4 @@
-import Chat from '@/features/chat_v2/chat'
+// import Chat from '@/features/chat_v2/chat'
 
 type Props = {
   params: {
@@ -7,7 +7,8 @@ type Props = {
 }
 
 const ChatAgentPage = async ({ params: { agentId } }: Props) => {
-  return <Chat agentId={agentId} />
+  // return <Chat agentId={agentId} />
+  return <div>soon {agentId}</div>
 }
 
 export default ChatAgentPage
