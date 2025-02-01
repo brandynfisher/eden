@@ -49,7 +49,7 @@ export async function generateMetadata(
   // optionally access and extend (rather than replace) parent metadata
   const previousOg: OpenGraph | {} = (await parent).openGraph || {}
 
-  const title = `${response.tool?.key} | Eden Create`
+  const title = `${response.tool?.key} | Eden`
   const description = response.tool?.description
   const media: { images?: string[]; videos?: string[] } = {}
 

@@ -29,8 +29,9 @@ export async function generateMetadata(
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `Chat with ${response.agent.name} | Eden Create`
-  const description = response.agent.description?.substring(0, 320) || ''
+  const title = `Eden | Creative AI Suite`
+  const description =
+    'Express your ideas with Eden, a comprehensive collection of creative AI tools for generating and editing images, video, and audio. '
 
   const ogImage = response.agent.userImage
     ? getCloudfrontOriginalUrl(response.agent.userImage)

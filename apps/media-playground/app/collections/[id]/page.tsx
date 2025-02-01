@@ -70,7 +70,7 @@ export async function generateMetadata(
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `Collection: ${response.collection?.name} by ${response.collection?.user.username} | Eden Create`
+  const title = `Collection: ${response.collection?.name} by ${response.collection?.user.username} | Eden`
   const baseDescription = `Check out this collection by ${response.collection?.user.username}!`
   const description = response.collection?.description
 
