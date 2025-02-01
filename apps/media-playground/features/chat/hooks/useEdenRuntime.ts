@@ -169,7 +169,7 @@ export const useEdenRuntime = ({
             },
           ],
           async (newThreadId?: string) => {
-            console.log('callback', agentId, threadId, newThreadId)
+            // console.log('callback', agentId, threadId, newThreadId)
             if (typeof window !== 'undefined')
               window.history.pushState(
                 null,
@@ -196,7 +196,7 @@ export function useEdenRuntimeExtras<T>(
   return useThread(t => {
     const extras = t.extras as EdenExtras
     // console.log('t', t)
-    console.log('extras', t.metadata.id, extras)
+    // console.log('extras', t.metadata.id, extras)
     // if (!extras[symbolEdenExtras])
     //   throw new Error(
     //     'useEdenRuntimeExtras can only be used inside a Eden runtime',
