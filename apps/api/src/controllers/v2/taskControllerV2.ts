@@ -362,6 +362,7 @@ const injectResultUrls = (
       const thumbnailName = isModelResult
         ? output.thumbnail || ''
         : output.filename
+
       const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
 
       return {

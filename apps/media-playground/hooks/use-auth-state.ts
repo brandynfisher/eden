@@ -17,6 +17,7 @@ export function useAuthState() {
     subscriptionBalance,
     hasMinimumSubscriptionTier,
     invalidate,
+    isLoading,
   } = useMe({ isAuthenticated: !!isSignedIn })
 
   const verifyAuth = async () => {
@@ -39,6 +40,7 @@ export function useAuthState() {
     subscriptionBalance,
     hasMinimumSubscriptionTier,
     isSignedIn,
+    isLoading,
     refetchMe: invalidate,
   }
 }
