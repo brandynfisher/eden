@@ -91,11 +91,11 @@ export const MyComposer: FC = () => {
 
   if (isReadOnly === null || isReadOnly) {
     return (
-      <div className="flex items-center gap-3 py-2 h-[58px]">
+      <div className="flex items-center gap-3 py-2 px-4 h-[58px] border border-secondary rounded-lg bg-muted-darker">
         {isReadOnly === true ? (
           <>
             <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm ">
               This is a read-only view of another user's conversation.
             </p>
           </>
