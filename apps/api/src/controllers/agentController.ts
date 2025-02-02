@@ -59,16 +59,8 @@ export const createAgent = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const {
-    name,
-    key,
-    description,
-    image,
-    instructions,
-    tools,
-    discordId,
-    modelId,
-  } = request.body as AgentsCreateArguments
+  const { name, key, description, image, modelId } =
+    request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
 
@@ -85,14 +77,9 @@ export const createAgent = async (
     name: name,
     userImage: imageFilename,
     description,
-    instructions,
-    tools,
-    discordId,
-    model: modelId,
+    model: modelId || undefined,
     featureFlags: [FeatureFlag.FreeTools],
   })
-
-  // console.log(agent)
 
   try {
     await agent.save()
@@ -125,11 +112,8 @@ export const updateAgent = async (
     key,
     description,
     image,
-    instructions,
-    tools,
-    discordId,
-    public: isPublic,
     modelId,
+    public: isPublic,
   } = request.body as AgentsUpdateArguments
 
   if (!agentId) {
@@ -142,9 +126,6 @@ export const updateAgent = async (
     username: key,
     name: name,
     description,
-    instructions,
-    tools,
-    discordId,
     public: isPublic,
   }
 

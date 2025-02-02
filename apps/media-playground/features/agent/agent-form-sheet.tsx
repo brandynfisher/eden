@@ -4,12 +4,6 @@ import ModelMiniCard from '@/components/card/model-mini-card'
 import FileUploader from '@/components/media/file-uploader'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   Form,
@@ -30,21 +24,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { useToolsListQuery } from '@/hooks/query/use-tools-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { slugifyName } from '@/utils/slug.util'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Edit2Icon, PlusIcon, XIcon } from 'lucide-react'
-import { ChevronDown } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-
-const DEFAULT_TOOL_KEYS = ['flux_dev_lora']
 
 export const agentSchema = z.object({
   name: z.string().min(1).max(42),
@@ -58,10 +48,7 @@ export const agentSchema = z.object({
     }),
   image: z.string().optional(),
   description: z.string().min(1).max(10000),
-  instructions: z.string().min(1).max(10000),
-  discordId: z.string().optional(),
   modelId: z.string().optional(),
-  tools: z.string().optional(),
 })
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -80,28 +67,7 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
   )
 }
 
-function groupToolsByOutputType(
-  tools: Array<{ key: string; name: string; output_type: string }>,
-) {
-  return tools?.reduce((acc, tool) => {
-    const group = tool.output_type || 'Other'
-    if (!acc[group]) {
-      acc[group] = []
-    }
-    acc[group].push({
-      key: tool.key,
-      label: tool.name,
-    })
-    return acc
-  }, {} as Record<string, Array<{ key: string; label: string }>>)
-}
-
 const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
-  const { tools } = useToolsListQuery()
-  const AVAILABLE_TOOLS = tools?.map(tool => ({
-    label: tool.name,
-    key: tool.key,
-  }))
   const { user } = useAuthState()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -114,6 +80,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
       ? hasCreateParam === 'true'
       : false,
   )
+  const [isKeyEditMode, setIsKeyEditMode] = useState(false)
   const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
   const isUpdateMode = hasEditParam || mode === 'update'
 
@@ -125,23 +92,18 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
           key: agent?.username || '',
           image: agent?.userImage,
           description: agent?.description,
-          instructions: agent?.instructions,
-          discordId: agent?.discordId ?? '',
           modelId: agent?.model ?? '',
-          // tools: agent?.tools as unknown as string ?? '',
         }
       : {
           name: '',
           key: '',
           description: '',
-          instructions: '',
-          // discordId: '',
-          // modelId: '',
-          // tools: '',
+          modelId: '',
         },
   })
 
   const name = form.watch('name')
+  const key = form.watch('key')
 
   useEffect(() => {
     if (!isManualKeyEdit && name && !isUpdateMode) {
@@ -232,7 +194,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
             className="w-full space-y-4 py-4"
             onSubmit={form.handleSubmit(handleSubmit)}
           >
-            {/** Name Field */}
+            {/** Name Field with Key */}
             <FormField
               control={form.control}
               name="name"
@@ -249,84 +211,53 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                       }}
                     />
                   </FormControl>
-                  <div className="flex gap-2 flex-wrap">
-                    {!isUpdateMode && (
-                      <FormDescription>
-                        Friendly Name of your agent. This will be displayed to
-                        users.
-                      </FormDescription>
-                    )}
-                    <CharacterCount
-                      current={field.value?.length || 0}
-                      max={42}
-                    />
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/** Key Field */}
-            <FormField
-              control={form.control}
-              name="key"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Name*</FormLabel>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 text-xs"
-                      onClick={() => setIsManualKeyEdit(!isManualKeyEdit)}
-                    >
-                      {isManualKeyEdit ? 'Auto Generate' : 'Manual Edit'}
-                    </Button>
-                  </div>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="helpful-agent-1"
-                      {...field}
-                      onChange={e => {
-                        if (isManualKeyEdit) {
-                          const value = e.target.value
-                            .toLowerCase()
-                            .slice(0, 42)
-                          field.onChange(value)
-                        } else {
-                          field.onChange(e.target.value)
-                        }
-                      }}
-                      onBlur={e => {
-                        if (isManualKeyEdit) {
-                          field.onChange(
-                            slugifyName(e.target.value.slice(0, 42)),
-                          )
-                        }
-                        field.onBlur()
-                      }}
-                      readOnly={!isManualKeyEdit}
-                      className={!isManualKeyEdit ? 'bg-accent' : ''}
-                      disabled={!isManualKeyEdit}
-                    />
-                  </FormControl>
-                  <div className="flex gap-2 flex-wrap">
+                  {field.value && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="text-sm text-muted-foreground flex-1">
+                        {isKeyEditMode ? (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="text"
+                              value={key}
+                              placeholder="unique-name"
+                              onChange={e => {
+                                const value = e.target.value
+                                  .toLowerCase()
+                                  .slice(0, 42)
+                                form.setValue('key', value)
+                                setIsManualKeyEdit(true)
+                              }}
+                              onBlur={e => {
+                                form.setValue(
+                                  'key',
+                                  slugifyName(e.target.value),
+                                )
+                                setIsKeyEditMode(false)
+                              }}
+                              className="h-7 text-sm"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span>Auto generated unique name: {key}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={() => setIsKeyEditMode(true)}
+                            >
+                              <Edit2Icon size={12} />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex gap-2 flex-wrap mt-1">
                     <FormDescription>
-                      {isManualKeyEdit ? (
-                        <>
-                          Enter a unique name for your agent.
-                          <span className="block mt-1 text-xs text-muted-foreground">
-                            Lowercase letters, numbers, and dashes only.
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          Unique name of your agent. Auto-generated from display
-                          name
-                        </>
-                      )}
+                      Friendly Name of your agent. This will be displayed to
+                      users.
                     </FormDescription>
                     <CharacterCount
                       current={field.value?.length || 0}
@@ -387,28 +318,6 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
               )}
             />
 
-            {/** Instructions Field */}
-            <FormField
-              control={form.control}
-              name="instructions"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Instructions*</FormLabel>
-                  <FormControl>
-                    <AutosizeTextarea
-                      placeholder="Instruct your agent how to act"
-                      {...field}
-                    />
-                  </FormControl>
-                  <CharacterCount
-                    current={field.value?.length || 0}
-                    max={20000}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             {/** Model Field */}
             <FormField
               control={form.control}
@@ -453,160 +362,6 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
                   </div>
                 </FormItem>
               )}
-            />
-
-            {/** Discord ID Field */}
-            <FormField
-              control={form.control}
-              name="discordId"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Discord ID (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter the Discord ID of your agent"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/** Tools Field */}
-            <FormField
-              control={form.control}
-              name="tools"
-              render={({ field }) => {
-                const selectedTools = field.value
-                  ? field.value.split(',')
-                  : DEFAULT_TOOL_KEYS
-                const groupedTools = groupToolsByOutputType(tools || [])
-
-                const handleSelectAll = () => {
-                  field.onChange(AVAILABLE_TOOLS?.map(t => t.key).join(','))
-                }
-
-                const handleSelectNone = () => {
-                  field.onChange('')
-                }
-
-                const handleResetToDefault = () => {
-                  field.onChange(DEFAULT_TOOL_KEYS.join(','))
-                }
-
-                return (
-                  <Collapsible
-                    defaultOpen={false}
-                    className="p-2 bg-secondary rounded-lg space-y-2 hidden" //@TODO: temporarily hidden
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CollapsibleTrigger className="hover:opacity-80">
-                          <ChevronDown className="h-4 w-4" />
-                        </CollapsibleTrigger>
-                        <FormLabel className="hover:cursor-pointer">
-                          Tools{' '}
-                          <span className="text-xs text-muted-foreground">
-                            ({selectedTools.length}/{AVAILABLE_TOOLS?.length})
-                          </span>
-                        </FormLabel>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 text-xs"
-                          onClick={handleSelectAll}
-                        >
-                          Select All
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 text-xs"
-                          onClick={handleSelectNone}
-                        >
-                          Select None
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 text-xs"
-                          onClick={handleResetToDefault}
-                        >
-                          Reset to Default
-                        </Button>
-                      </div>
-                    </div>
-
-                    <CollapsibleContent className="space-y-4">
-                      <FormDescription>
-                        Configure which tools this agent can use.
-                      </FormDescription>
-
-                      {Object.entries(groupedTools).map(
-                        ([groupName, groupTools]) => (
-                          <Collapsible
-                            key={groupName}
-                            defaultOpen={false}
-                            className="space-y-2"
-                          >
-                            <CollapsibleTrigger className="flex items-center gap-2 w-full hover:opacity-80">
-                              <ChevronDown className="h-4 w-4" />
-                              <div className="flex justify-between w-full">
-                                <span className="text-sm font-medium">
-                                  {groupName}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  (
-                                  {
-                                    groupTools.filter(t =>
-                                      selectedTools.includes(t.key),
-                                    ).length
-                                  }
-                                  /{groupTools.length})
-                                </span>
-                              </div>
-                            </CollapsibleTrigger>
-
-                            <CollapsibleContent className="space-y-2 pl-6">
-                              {groupTools.map(tool => (
-                                <div
-                                  key={tool.key}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <Checkbox
-                                    id={tool.key}
-                                    checked={selectedTools.includes(tool.key)}
-                                    onCheckedChange={checked => {
-                                      const updatedTools = checked
-                                        ? [...selectedTools, tool.key]
-                                        : selectedTools.filter(
-                                            t => t !== tool.key,
-                                          )
-                                      field.onChange(updatedTools.join(','))
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={tool.key}
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
-                                    {tool.label}
-                                  </label>
-                                </div>
-                              ))}
-                            </CollapsibleContent>
-                          </Collapsible>
-                        ),
-                      )}
-                    </CollapsibleContent>
-                  </Collapsible>
-                )
-              }}
             />
 
             <SheetFooter>

@@ -34,11 +34,12 @@ const AgentSchema = new Schema<AgentDocument>(
     instructions: {
       type: String,
       maxlength: 20000,
-      required: true,
+      required: false,
     },
     tools: {
       type: Schema.Types.Mixed,
       default: {},
+      required: false,
     },
     model: {
       type: Schema.Types.ObjectId,
