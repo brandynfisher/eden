@@ -187,7 +187,10 @@ export const LightboxTrigger = React.forwardRef<
       onDragStart={e => {
         e.dataTransfer.setData('text/plain', slide.url || '')
       }}
-      className={cn('rounded-md overflow-hidden cursor-zoom-in', className)}
+      className={cn(
+        'rounded-md overflow-hidden cursor-zoom-in w-full h-full',
+        className,
+      )}
       onClick={() => {
         setStartIndex(startIndex ?? 0)
         setOpen(true)
