@@ -11,12 +11,14 @@ import {
 import { useAuthState } from '@/hooks/use-auth-state'
 import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
+import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
 import { Edit2Icon, ExternalLinkIcon, Share2Icon } from 'lucide-react'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import React, { useMemo, useState } from 'react'
 
 type Props = {
   agent: Agent
@@ -28,9 +30,31 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
   const { user } = useAuthState()
   const dispatch = useAppDispatch()
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Include pathname in feedId to differentiate between same queries in different routes
+  const feedId = useMemo(
+    () => JSON.stringify({ queryKey, path: pathname }),
+    [queryKey, pathname],
+  )
+
+  const feedStore = useFeedStore(feedId)
+  const { addToHistory } = useActiveFeedStore()
 
   if (!agent) {
     return null
+  }
+
+  const handleViewDetails = (evt: React.MouseEvent) => {
+    evt.preventDefault()
+    const index = feedStore.items.findIndex(item => item._id === agent._id)
+    if (index !== -1) {
+      feedStore.setActiveIndex(index)
+      addToHistory(feedId)
+    }
+    setIsOpen(false)
+    router.push(`/agents/${agent.username}`)
   }
 
   const handleShareClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
@@ -56,14 +80,14 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
         <>
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link
-                href={`/agents/${agent.username}`}
-                prefetch={false}
-                className="cursor-pointer"
+              <button
+                type="button"
+                className="w-full cursor-pointer"
+                onClick={handleViewDetails}
               >
                 <ExternalLinkIcon className="mr-2 h-4 w-4" />
                 View Details
-              </Link>
+              </button>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href={`/chat/${agent.username}`} className="cursor-pointer">
