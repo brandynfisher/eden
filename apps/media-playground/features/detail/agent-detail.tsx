@@ -96,55 +96,65 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   return (
     <>
       <div className="relative p-6 bg-muted-darker rounded-md mx-4 mt-4">
-        {user?._id === agent?.owner._id && (
-          <div className="absolute right-6 flex gap-x-2">
-            <AgentFormSheet
-              mode={'update'}
-              agent={agent}
-              onAction={onUpdateAgent}
-            />
-            <Button variant="destructive" size="icon" onClick={onDeleteAgent}>
-              <TrashIcon size={18} />
-            </Button>
-          </div>
-        )}
-        <div className="flex gap-4 items-center mb-4">
-          <Avatar className="size-24">
+        <div className="relative flex">
+          <Avatar className="h-full aspect-[9/16] max-h-40 rounded-lg flex-shrink-0">
             {agent.userImage ? (
-              <AvatarImage className={'object-cover'} src={agent.userImage} />
+              <AvatarImage
+                className="object-cover rounded-lg"
+                src={agent.userImage}
+              />
             ) : (
-              <AvatarFallback>{agent.name[0]}</AvatarFallback>
+              <AvatarFallback className="rounded-lg">
+                {agent.name[0]}
+              </AvatarFallback>
             )}
           </Avatar>
-        </div>
 
-        <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
-          <h1 className="text-2xl font-semibold">{agent?.name}</h1>
-          <div className="flex gap-x-2">
-            <Button variant="outline" size="icon" onClick={onShareAgent}>
-              <Share2Icon size={18} />
-            </Button>
-            <Button variant="secondary" asChild>
-              <Link href={`/chat/${agent._id}`}>
-                <ChatBubbleIcon className="mr-2 h-4 w-4" />
-                Start Chat
-              </Link>
-            </Button>
-          </div>
-        </div>
+          <div className="ml-4 flex flex-col flex-grow">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-semibold">{agent?.name}</h1>
+              <div className="flex gap-x-2">
+                {user?._id === agent?.owner._id && (
+                  <>
+                    <AgentFormSheet
+                      mode={'update'}
+                      agent={agent}
+                      onAction={onUpdateAgent}
+                    />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={onDeleteAgent}
+                    >
+                      <TrashIcon size={18} />
+                    </Button>
+                  </>
+                )}
+                <Button variant="outline" size="icon" onClick={onShareAgent}>
+                  <Share2Icon size={18} />
+                </Button>
+                <Button variant="secondary" asChild>
+                  <Link href={`/chat/${agent._id}`}>
+                    <ChatBubbleIcon className="mr-2 h-4 w-4" />
+                    Start Chat
+                  </Link>
+                </Button>
+              </div>
+            </div>
 
-        <TextClampMore
-          text={agent?.description}
-          className="text-sm break-words mt-2 text-muted-darker-foreground"
-        />
-        <div className="flex items-center gap-x-2 mt-2 text-sm text-muted-foreground">
-          by{' '}
-          <span>
-            <UserAvatarLink
-              name={agent.owner.username || agent.owner._id}
-              image={agent.owner.userImage}
+            <TextClampMore
+              lines={3}
+              text={agent?.description}
+              className="text-sm break-words mt-4 text-muted-darker-foreground"
             />
-          </span>
+
+            <div className="flex items-center mt-2 gap-x-1 text-sm text-muted-foreground">
+              by
+              <Link href={`/creators/${agent.owner.username}`}>
+                {agent.owner.username}
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
       <div className="p-4">
