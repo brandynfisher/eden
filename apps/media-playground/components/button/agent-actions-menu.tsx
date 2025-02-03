@@ -15,7 +15,13 @@ import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
-import { Edit2Icon, ExternalLinkIcon, Share2Icon } from 'lucide-react'
+import {
+  Edit2Icon,
+  ExternalLinkIcon,
+  RocketIcon,
+  Share2Icon,
+  ShipIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { useMemo, useState } from 'react'
@@ -110,6 +116,17 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
           </DropdownMenuGroup>
           {agent.owner._id === user?._id && (
             <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`/agents/${agent.username}?deployments=true`}
+                  prefetch={false}
+                  className="cursor-pointer"
+                >
+                  <RocketIcon className="mr-2 h-4 w-4" />
+                  Deployments
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link

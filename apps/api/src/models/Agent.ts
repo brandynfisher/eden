@@ -1,4 +1,5 @@
 import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
+import { DeploymentDocument } from './Deployment'
 import { ModelV2Document } from './v2/ModelV2'
 import { Schema } from 'mongoose'
 
@@ -7,6 +8,7 @@ export interface AgentSchema extends BaseUserSchema {
   name: string
   description?: string
   instructions: string
+  deployments: DeploymentDocument[]
   tools?: string[]
   discordId?: string
   model?: ModelV2Document
@@ -36,6 +38,12 @@ const AgentSchema = new Schema<AgentDocument>(
       maxlength: 20000,
       required: false,
     },
+    deployments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'deployments',
+      },
+    ],
     tools: {
       type: Schema.Types.Mixed,
       default: {},

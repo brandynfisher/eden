@@ -73,6 +73,24 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   modelId?: string
 }
 
+interface AgentDeploymentConfig {
+  enabled: boolean
+  config?: {
+    token: string
+    allowedChannels: {
+      id: string
+      note: string
+    }[]
+  }
+}
+
+export interface AgentsUpdateDeploymentsArguments extends WebAPICallOptions {
+  agentId: string
+  discord?: AgentDeploymentConfig
+  telegram?: AgentDeploymentConfig
+  farcaster?: AgentDeploymentConfig
+}
+
 export interface AgentsDeleteArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -107,6 +125,16 @@ export const agentsUpdateRequestConfig = (
   }
 }
 
+export const agentsUpdateDeploymentsRequestConfig = (
+  args: AgentsUpdateDeploymentsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `v2/agents/${args.agentId}/deployments`,
+    data: args,
+  }
+}
+
 export const agentsDeleteRequestConfig = (
   args: AgentsDeleteArguments,
 ): AxiosRequestConfig => {
@@ -128,6 +156,11 @@ export type AgentsCreateResponse = WebAPICallResult & {
 }
 
 export type AgentsUpdateResponse = WebAPICallResult & {
+  agent: Agent
+  error?: string
+}
+
+export type AgentsUpdateDeploymentsResponse = WebAPICallResult & {
   agent: Agent
   error?: string
 }

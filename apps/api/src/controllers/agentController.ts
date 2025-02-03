@@ -42,10 +42,21 @@ export const getAgent = async (
     })
   }
 
-  await Agent.populate(agent, {
-    path: 'owner',
-    select: '_id userId username userImage',
-  })
+  const populateFields = [
+    {
+      path: 'owner',
+      select: '_id userId username userImage',
+    },
+  ]
+
+  if (agent.deployments?.length > 0) {
+    populateFields.push({
+      path: 'deployments',
+      select: 'platform',
+    })
+  }
+
+  await Agent.populate(agent, populateFields)
 
   if (agent.userImage) {
     agent.userImage = forceCloudfrontUrl(server, agent.userImage)
@@ -176,6 +187,46 @@ export const updateAgent = async (
   return reply.status(200).send({
     agentId,
   })
+}
+
+export const updateAgentDeployment = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { agentId } = request.params as { agentId: string }
+  const deploymentData = request.body as {
+    discord: {
+      enabled: boolean
+      config?: {
+        token: string
+        allowedChannels: Array<{ id: string; note?: string }>
+      }
+    }
+    telegram: {
+      enabled: boolean
+      config?: {
+        token: string
+        allowedChannels: Array<{ id: string; note?: string }>
+      }
+    }
+    farcaster: {
+      enabled: boolean
+      config?: {
+        token: string
+        allowedChannels: Array<{ id: string; note?: string }>
+      }
+    }
+  }
+
+  if (!agentId) {
+    return reply.status(422).send({
+      error: 'Missing agentId',
+    })
+  }
+
+  // TODO: Implement eve api calls
 }
 
 export const deleteAgent = async (

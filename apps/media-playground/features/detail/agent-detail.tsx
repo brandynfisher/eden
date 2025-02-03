@@ -4,7 +4,7 @@ import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
-import UserAvatarLink from '@/components/user/user-avatar-link'
+import AgentDeploymentFormSheet from '@/features/agent/agent-deployment-form-sheet'
 import AgentFormSheet from '@/features/agent/agent-form-sheet'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
@@ -44,6 +44,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
+
+  console.log({ agent })
 
   // console.log('agent', agent)
 
@@ -119,6 +121,11 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     <AgentFormSheet
                       mode={'update'}
                       agent={agent}
+                      onAction={onUpdateAgent}
+                    />
+                    <AgentDeploymentFormSheet
+                      mode={'update'}
+                      agentId={agent._id}
                       onAction={onUpdateAgent}
                     />
                     <Button
