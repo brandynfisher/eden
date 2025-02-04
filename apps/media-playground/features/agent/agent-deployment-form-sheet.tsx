@@ -28,10 +28,12 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
+import { useAgentDeploymentFormSheet } from '@/stores/dialogs/dialogs.selector'
+import { updateAgentDeploymentFormSheet } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { ChevronDownIcon, PlusIcon, RocketIcon, TrashIcon } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { UseFormReturn, useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -61,13 +63,6 @@ const deploymentSchema = z.object({
 })
 
 type DeploymentFormDto = z.infer<typeof deploymentSchema>
-
-type DeploymentSheetProps = {
-  mode: 'create' | 'update'
-  agentId: string
-  deployment?: DeploymentFormDto
-  onAction: () => Promise<void>
-}
 
 interface ErrorResponse {
   message: string
@@ -202,17 +197,9 @@ const CollapsibleField = ({
   )
 }
 
-const AgentDeploymentFormSheet = ({
-  mode,
-  agentId,
-  deployment,
-  onAction,
-}: DeploymentSheetProps) => {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const hasDeploymentParam = searchParams.get('deployments')
-  const [isOpen, setIsOpen] = useState(hasDeploymentParam === 'true')
-  const isUpdateMode = hasDeploymentParam || mode === 'update'
+const AgentDeploymentFormSheet = () => {
+  const { isOpen, agent, onAction } = useAgentDeploymentFormSheet()
+  const dispatch = useAppDispatch()
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(deploymentSchema),
@@ -229,47 +216,28 @@ const AgentDeploymentFormSheet = ({
     },
   })
 
-  console.log({ errors: form.formState.errors })
-  console.log({ values: form.getValues() })
-
   const handleSubmit = async (data: DeploymentFormDto) => {
     try {
-      if (isUpdateMode) {
-        await axios.patch(`/api/agents/${agentId}/deploymens`, data)
-        toast.success('Deployment updated successfully', {
-          description: 'Agent deployment configuration has been updated',
-          richColors: true,
-          dismissible: true,
-        })
-      } else {
-        await axios.post(`/api/agents/${agentId}/deployments`, data)
-        toast.success('Deployment created successfully', {
-          description: 'Agent deployment configuration has been created',
-          richColors: true,
-          dismissible: true,
-        })
-      }
-      onOpenChange(false)
-      await onAction()
+      await axios.post(`/api/agents/${agent?._id}/deployments`, data)
+      toast.success('Deployments configured successfully', {
+        description: 'Agent deployments have been configured',
+        richColors: true,
+        dismissible: true,
+      })
+      onAction?.()
     } catch (error) {
-      toast.error(
-        `${isUpdateMode ? 'Deployment update' : 'Deployment creation'} failed`,
-        {
-          description:
-            (error as AxiosError<ErrorResponse>).response?.data?.message ||
-            'Unknown Error has occurred',
-          richColors: true,
-          dismissible: true,
-        },
-      )
+      toast.error(`Deployment configuration failed`, {
+        description:
+          (error as AxiosError<ErrorResponse>).response?.data?.message ||
+          'Unknown Error has occurred',
+        richColors: true,
+        dismissible: true,
+      })
     }
   }
 
   const onOpenChange = (open: boolean) => {
-    setIsOpen(open)
-    if (hasDeploymentParam && !open) {
-      router.replace(`/agents/${agentId}`)
-    }
+    dispatch(updateAgentDeploymentFormSheet({ isOpen: open }))
   }
 
   const discordChannels = useFieldArray({
@@ -358,9 +326,7 @@ const AgentDeploymentFormSheet = ({
         className="overflow-y-auto w-full sm:!max-w-2xl"
       >
         <SheetHeader>
-          <SheetTitle>
-            {isUpdateMode ? 'Update Deployment' : 'Configure Deployment'}
-          </SheetTitle>
+          <SheetTitle>Configure Deployment</SheetTitle>
           <SheetDescription>
             Configure your agent's deployment settings across different
             platforms.
@@ -400,7 +366,7 @@ const AgentDeploymentFormSheet = ({
 
             <SheetFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {isUpdateMode ? 'Update Deployment' : 'Create Deployment'}
+                Configure Deployments
               </Button>
             </SheetFooter>
           </form>

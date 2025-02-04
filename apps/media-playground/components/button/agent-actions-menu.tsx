@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
+  updateAgentDeploymentFormSheet,
   updateAgentFormSheet,
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
@@ -97,6 +98,14 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
     )
   }
 
+  const handleConfigureDeployments = (
+    evt: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    evt.preventDefault()
+    setIsOpen(false)
+    dispatch(updateAgentDeploymentFormSheet({ isOpen: true, agent }))
+  }
+
   return (
     <ActionsDropdown
       open={isOpen}
@@ -138,15 +147,15 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
           {agent.owner._id === user?._id && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/agents/${agent.username}?deployments=true`}
-                  prefetch={false}
-                  className="cursor-pointer"
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <button
+                  type="button"
+                  onClick={handleConfigureDeployments}
+                  className="w-full"
                 >
                   <RocketIcon className="mr-2 h-4 w-4" />
                   Deployments
-                </Link>
+                </button>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="cursor-pointer">

@@ -41,3 +41,8 @@ export const useAgentFormSheet = () => {
   const dialogs = useAppSelector(selectDialogs)
   return dialogs.agentFormSheet
 }
+
+export const useAgentDeploymentFormSheet = () => {
+  const dialogs = useAppSelector(selectDialogs)
+  return dialogs.agentDeploymentFormSheet
+}

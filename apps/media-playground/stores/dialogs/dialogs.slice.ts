@@ -35,6 +35,11 @@ export interface DialogsState {
     agent?: Agent
     onAction?: () => Promise<void>
   }
+  agentDeploymentFormSheet: {
+    isOpen: boolean
+    agent?: Agent
+    onAction?: () => Promise<void>
+  }
 }
 
 const initialState: DialogsState = {
@@ -66,6 +71,10 @@ const initialState: DialogsState = {
   agentFormSheet: {
     isOpen: false,
     mode: 'create',
+    agent: undefined,
+  },
+  agentDeploymentFormSheet: {
+    isOpen: false,
     agent: undefined,
   },
 }
@@ -190,6 +199,26 @@ const dialogsSlice = createSlice({
         state.agentFormSheet.onAction = action.payload.onAction
       }
     },
+    updateAgentDeploymentFormSheet(
+      state,
+      action: {
+        payload: {
+          isOpen: boolean
+          agent?: Agent
+          onAction?: () => Promise<void>
+        }
+      },
+    ) {
+      if (!action.payload.isOpen) {
+        state.agentDeploymentFormSheet.isOpen = false
+        delete state.agentDeploymentFormSheet.agent
+        delete state.agentDeploymentFormSheet.onAction
+      } else {
+        state.agentDeploymentFormSheet.isOpen = action.payload.isOpen
+        state.agentDeploymentFormSheet.agent = action.payload.agent
+        state.agentDeploymentFormSheet.onAction = action.payload.onAction
+      }
+    },
   },
 })
 
@@ -201,6 +230,7 @@ export const {
   toggleCreateCollectionModal,
   updateDeleteDialog,
   updateAgentFormSheet,
+  updateAgentDeploymentFormSheet,
   closeAllQuickCreateModals,
 } = dialogsSlice.actions
 

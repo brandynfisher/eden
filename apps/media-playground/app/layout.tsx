@@ -12,6 +12,7 @@ import { PreloadResources } from '@/components/preload-resources'
 import ScrollTopButton from '@/components/scroll-top-button'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Toaster } from '@/components/ui/sonner'
+import AgentDeploymentFormSheet from '@/features/agent/agent-deployment-form-sheet'
 import AgentFormSheet from '@/features/agent/agent-form-sheet'
 import { env } from '@/lib/config'
 import { cn } from '@/lib/utils'
@@ -127,6 +128,7 @@ export default function RootLayout({
             <QuickUpscaleDialog />
             <DeleteConfirmationDialog />
             <AgentFormSheet />
+            <AgentDeploymentFormSheet />
 
             <div id="modal-root" />
           </Providers>

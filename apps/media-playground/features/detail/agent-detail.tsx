@@ -9,6 +9,7 @@ import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
+  updateAgentDeploymentFormSheet,
   updateAgentFormSheet,
   updateDeleteDialog,
   updateShareModal,
@@ -18,7 +19,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { AvatarFallback } from '@radix-ui/react-avatar'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
-import { Edit2Icon, Share2Icon, TrashIcon } from 'lucide-react'
+import { Edit2Icon, RocketIcon, Share2Icon, TrashIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
@@ -104,8 +105,16 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     )
   }
 
-  if (!agent) return null
+  const handleConfigureDeployments = () => {
+    dispatch(
+      updateAgentDeploymentFormSheet({
+        isOpen: true,
+        agent,
+      }),
+    )
+  }
 
+  if (!agent) return null
   return (
     <>
       <div className="relative p-6 bg-muted-darker rounded-md mx-4 mt-4">
@@ -136,11 +145,13 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     >
                       <Edit2Icon size={18} />
                     </Button>
-                    <AgentDeploymentFormSheet
-                      mode={'update'}
-                      agentId={agent._id}
-                      onAction={onUpdateAgent}
-                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleConfigureDeployments}
+                    >
+                      <RocketIcon size={18} />
+                    </Button>
                     <Button
                       variant="destructive"
                       size="icon"
