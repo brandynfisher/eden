@@ -36,3 +36,8 @@ export const useDeleteDialog = () => {
   const dialogs = useAppSelector(selectDialogs)
   return dialogs.deleteDialog
 }
+
+export const useAgentFormSheet = () => {
+  const dialogs = useAppSelector(selectDialogs)
+  return dialogs.agentFormSheet
+}

@@ -22,15 +22,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from '@/components/ui/sheet'
-import { useAuthState } from '@/hooks/use-auth-state'
+import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
+import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { slugifyName } from '@/utils/slug.util'
-import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Edit2Icon, PlusIcon, XIcon } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { Edit2Icon, XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -53,12 +52,6 @@ export const agentSchema = z.object({
 
 type AgentFormDto = z.infer<typeof agentSchema>
 
-type AgentSheetProps = {
-  mode: 'create' | 'update'
-  agent?: Agent
-  onAction: () => Promise<void>
-}
-
 function CharacterCount({ current, max }: { current: number; max: number }) {
   return (
     <div className="ml-auto text-xs text-muted-foreground flex-shrink-0 text-right">
@@ -67,53 +60,49 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
   )
 }
 
-const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
-  const { user } = useAuthState()
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const hasEditParam = searchParams.get('edit')
-  const hasCreateParam = searchParams.get('create')
-  const [isOpen, setIsOpen] = useState(
-    hasEditParam !== null
-      ? hasEditParam === 'true'
-      : false || hasCreateParam !== null
-      ? hasCreateParam === 'true'
-      : false,
-  )
+const AgentFormSheet = () => {
+  const { isOpen, mode, agent, onAction } = useAgentFormSheet()
+
+  const dispatch = useAppDispatch()
+
   const [isKeyEditMode, setIsKeyEditMode] = useState(false)
   const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
-  const isUpdateMode = hasEditParam || mode === 'update'
 
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
-    defaultValues: isUpdateMode
-      ? {
-          name: agent?.name,
-          key: agent?.username || '',
-          image: agent?.userImage,
-          description: agent?.description,
-          modelId: agent?.model ?? '',
-        }
-      : {
-          name: '',
-          key: '',
-          description: '',
-          modelId: '',
-        },
+    defaultValues: {
+      name: agent?.name || '',
+      key: agent?.username || '',
+      image: agent?.userImage || '',
+      description: agent?.description || '',
+      modelId: agent?.model || '',
+    },
   })
 
   const name = form.watch('name')
   const key = form.watch('key')
 
   useEffect(() => {
-    if (!isManualKeyEdit && name && !isUpdateMode) {
+    if (agent) {
+      form.reset({
+        name: agent.name,
+        key: agent.username,
+        image: agent.userImage,
+        description: agent.description,
+        modelId: agent.model,
+      })
+    }
+  }, [agent, form])
+
+  useEffect(() => {
+    if (!isManualKeyEdit && name && mode === 'create') {
       form.setValue('key', slugifyName(name))
     }
-  }, [form, name, isManualKeyEdit, isUpdateMode])
+  }, [form, name, isManualKeyEdit, mode])
 
   const handleSubmit = async (data: AgentFormDto) => {
     try {
-      if (isUpdateMode) {
+      if (mode === 'update') {
         await axios.patch(`/api/agents/${agent?._id}`, data)
         toast.success('Agent updated successfully', {
           description: `"${data.name}" has been updated successfully`,
@@ -128,11 +117,17 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
           dismissible: true,
         })
       }
-      onOpenChange(false)
-      await onAction()
+      dispatch(
+        updateAgentFormSheet({
+          isOpen: false,
+          mode: 'create',
+          agent: undefined,
+        }),
+      )
+      await onAction?.()
     } catch (error) {
       toast.error(
-        `${isUpdateMode ? 'Agent update' : 'Agent creation'} failed`,
+        `${mode === 'update' ? 'Agent update' : 'Agent creation'} failed`,
         {
           description:
             // @ts-expect-error needs proper typings
@@ -145,46 +140,37 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
     }
   }
 
-  const onOpenChange = (open: boolean) => {
-    setIsOpen(open)
-    if ((hasCreateParam || hasEditParam) && !open) {
-      if (agent) {
-        router.replace(`/agents/${agent?.username}`)
-      } else {
-        router.replace(`/creators/${user?.username}?tab=agents`)
-      }
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      dispatch(
+        updateAgentFormSheet({
+          isOpen: false,
+          mode: 'create',
+          agent: undefined,
+        }),
+      )
+      form.reset({
+        name: '',
+        key: '',
+        image: '',
+        description: '',
+        modelId: '',
+      })
     }
-    // form.reset()
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size={isUpdateMode ? 'icon' : 'default'}
-          className={isUpdateMode ? '' : 'gap-x-2'}
-        >
-          {isUpdateMode ? (
-            <Edit2Icon size={18} />
-          ) : (
-            <>
-              <PlusIcon className="size-4" />
-              <div className="text-sm font-semibold">Create Agent</div>
-            </>
-          )}
-        </Button>
-      </SheetTrigger>
+    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetContent
         side="left"
         className="overflow-y-auto w-full sm:!max-w-2xl"
       >
         <SheetHeader>
           <SheetTitle>
-            {isUpdateMode ? 'Update Agent' : 'Create an Agent'}
+            {mode === 'update' ? 'Update Agent' : 'Create an Agent'}
           </SheetTitle>
           <SheetDescription>
-            {isUpdateMode
+            {mode === 'update'
               ? 'Update your agent'
               : 'Create an agent to help you with your tasks.'}
           </SheetDescription>
@@ -366,7 +352,7 @@ const AgentFormSheet = ({ mode, agent, onAction }: AgentSheetProps) => {
 
             <SheetFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {isUpdateMode ? 'Update Agent' : 'Create Agent'}
+                {mode === 'update' ? 'Update Agent' : 'Create Agent'}
               </Button>
             </SheetFooter>
           </form>

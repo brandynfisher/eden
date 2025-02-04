@@ -1,5 +1,6 @@
 'use client'
 
+import { getQueryClient } from '@/app/get-query-client'
 import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
@@ -9,7 +10,10 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
+import {
+  updateAgentFormSheet,
+  updateShareModal,
+} from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -20,7 +24,6 @@ import {
   ExternalLinkIcon,
   RocketIcon,
   Share2Icon,
-  ShipIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -72,6 +75,24 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
       updateShareModal({
         isOpen: true,
         shareUrl: shareUrl,
+      }),
+    )
+  }
+
+  const onUpdate = async () => {
+    const queryClient = getQueryClient()
+    await queryClient.invalidateQueries({ queryKey })
+  }
+
+  const handleEditClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault()
+    setIsOpen(false)
+    dispatch(
+      updateAgentFormSheet({
+        isOpen: true,
+        mode: 'update',
+        agent,
+        onAction: onUpdate,
       }),
     )
   }
@@ -128,15 +149,15 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/agents/${agent.username}?edit=true`}
-                  prefetch={false}
-                  className="cursor-pointer"
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <button
+                  type="button"
+                  onClick={handleEditClick}
+                  className="w-full"
                 >
                   <Edit2Icon className="mr-2 h-4 w-4" />
                   Edit
-                </Link>
+                </button>
               </DropdownMenuItem>
               <DropdownMenuGroup>
                 <PrivacyActionItem

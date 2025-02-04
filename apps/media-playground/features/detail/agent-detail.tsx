@@ -5,11 +5,11 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import AgentDeploymentFormSheet from '@/features/agent/agent-deployment-form-sheet'
-import AgentFormSheet from '@/features/agent/agent-form-sheet'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
+  updateAgentFormSheet,
   updateDeleteDialog,
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
@@ -18,7 +18,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { AvatarFallback } from '@radix-ui/react-avatar'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
-import { Share2Icon, TrashIcon } from 'lucide-react'
+import { Edit2Icon, Share2Icon, TrashIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
@@ -93,6 +93,17 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     )
   }
 
+  const handleEditClick = () => {
+    dispatch(
+      updateAgentFormSheet({
+        isOpen: true,
+        mode: 'update',
+        agent,
+        onAction: onUpdateAgent,
+      }),
+    )
+  }
+
   if (!agent) return null
 
   return (
@@ -118,11 +129,13 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               <div className="flex gap-x-2">
                 {user?._id === agent?.owner._id && (
                   <>
-                    <AgentFormSheet
-                      mode={'update'}
-                      agent={agent}
-                      onAction={onUpdateAgent}
-                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleEditClick}
+                    >
+                      <Edit2Icon size={18} />
+                    </Button>
                     <AgentDeploymentFormSheet
                       mode={'update'}
                       agentId={agent._id}

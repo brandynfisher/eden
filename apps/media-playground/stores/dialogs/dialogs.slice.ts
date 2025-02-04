@@ -1,4 +1,4 @@
-import { CreationV2 } from '@edenlabs/eden-sdk'
+import { Agent, CreationV2 } from '@edenlabs/eden-sdk'
 import { createSlice } from '@reduxjs/toolkit'
 import { isMobile } from 'react-device-detect'
 import { toast } from 'sonner'
@@ -29,6 +29,12 @@ export interface DialogsState {
     description: string
     onDelete: () => void
   }
+  agentFormSheet: {
+    isOpen: boolean
+    mode?: 'create' | 'update'
+    agent?: Agent
+    onAction?: () => Promise<void>
+  }
 }
 
 const initialState: DialogsState = {
@@ -56,6 +62,11 @@ const initialState: DialogsState = {
     title: '',
     description: '',
     onDelete: () => {},
+  },
+  agentFormSheet: {
+    isOpen: false,
+    mode: 'create',
+    agent: undefined,
   },
 }
 
@@ -156,6 +167,29 @@ const dialogsSlice = createSlice({
         }
       }
     },
+    updateAgentFormSheet(
+      state,
+      action: {
+        payload: {
+          isOpen: boolean
+          mode?: 'create' | 'update'
+          agent?: Agent
+          onAction?: () => Promise<void>
+        }
+      },
+    ) {
+      if (!action.payload.isOpen) {
+        state.agentFormSheet.isOpen = false
+        delete state.agentFormSheet.mode
+        delete state.agentFormSheet.agent
+        delete state.agentFormSheet.onAction
+      } else {
+        state.agentFormSheet.isOpen = action.payload.isOpen
+        state.agentFormSheet.mode = action.payload.mode
+        state.agentFormSheet.agent = action.payload.agent
+        state.agentFormSheet.onAction = action.payload.onAction
+      }
+    },
   },
 })
 
@@ -166,6 +200,7 @@ export const {
   updateAddToCollectionModal,
   toggleCreateCollectionModal,
   updateDeleteDialog,
+  updateAgentFormSheet,
   closeAllQuickCreateModals,
 } = dialogsSlice.actions
 
