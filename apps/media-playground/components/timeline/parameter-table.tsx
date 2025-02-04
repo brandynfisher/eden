@@ -33,7 +33,7 @@ const imageInputParameterNames = [
   'lora_training_urls',
 ]
 
-const videoInputParameterNames = ['video', 'input_video']
+const videoInputParameterNames = ['video', 'input_video', 'video1', 'video2']
 
 type Props = {
   taskId?: TaskV2['_id']

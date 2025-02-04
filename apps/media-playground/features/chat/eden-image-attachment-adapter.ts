@@ -39,7 +39,7 @@ const uploadAsset = async (
 }
 
 const edenImageAttachmentAdapter: AttachmentAdapter = {
-  accept: 'image/*',
+  accept: 'image/*,video/*,audio/*',
   async add({ file }) {
     const cancelSource = axios.CancelToken.source()
     const asset = await uploadAsset(

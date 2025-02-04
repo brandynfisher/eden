@@ -4,6 +4,7 @@ import AlertDestructive from '@/components/alert/alert-destructive'
 import MyAssistantMessage from '@/features/chat/components/assistant-message'
 import MyEditComposer from '@/features/chat/components/edit-composer'
 import MyUserMessage from '@/features/chat/components/user-message'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import {
   Composer,
@@ -55,6 +56,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const [connectionLost, setConnectionLost] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const { readyState } = useWebSocketContext()
+  const { isSignedIn } = useAuthState()
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -89,7 +91,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   }, [readyState])
 
   // Only render connection status after mount
-  const showConnectionLost = isMounted && connectionLost
+  const showConnectionLost = isMounted && isSignedIn && connectionLost
 
   return (
     <Thread.Root config={config}>

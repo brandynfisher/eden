@@ -98,11 +98,7 @@ export default function RootLayout({
             fontSans.className,
           )}
         >
-          <HolyLoader
-            color="#9333ea"
-            height="1px"
-            // ignoreSearchParams={true}
-          />
+          <HolyLoader color="#9333ea" height="1px" />
           <Providers>
             <div className="flex min-h-screen w-full flex-col">
               <Header />
