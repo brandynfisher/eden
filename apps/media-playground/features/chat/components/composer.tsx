@@ -5,6 +5,7 @@ import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import {
   Composer,
@@ -12,7 +13,7 @@ import {
   useComposerRuntime,
 } from '@assistant-ui/react'
 import { BotIcon, PencilOffIcon } from 'lucide-react'
-import React, { FC, useState } from 'react'
+import React, { FC, FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 
 type ComposerAttachmentDropzoneProps = {
@@ -43,6 +44,7 @@ export const ComposerAttachmentDropzone: FC<
 }
 
 export const MyComposer: FC = () => {
+  const { isSignedIn, verifyAuth } = useAuthState()
   const isReadOnly = useEdenRuntimeExtras(extras => extras.isReadOnly)
   const [isDragging, setIsDragging] = useState(false)
   const composerRuntime = useComposerRuntime()
@@ -111,6 +113,13 @@ export const MyComposer: FC = () => {
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      onSubmit={async (evt: FormEvent<HTMLFormElement>) => {
+        if (!isSignedIn) {
+          evt.preventDefault()
+          await verifyAuth()
+          return
+        }
+      }}
     >
       <ComposerAttachmentDropzone isDragging={isDragging} accept={accept} />
 
