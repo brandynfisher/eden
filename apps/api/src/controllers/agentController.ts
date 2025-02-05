@@ -4,12 +4,14 @@ import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import { generateBlurhash } from '../utils/blurhash'
 import {
   AgentGetArguments,
+  AgentsConfigureDeploymentsArguments,
   AgentsCreateArguments,
   AgentsDeleteArguments,
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
 import { ObjectId } from '@fastify/mongodb'
+import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateResult } from 'mongodb'
 import { UpdateQuery } from 'mongoose'
@@ -189,36 +191,14 @@ export const updateAgent = async (
   })
 }
 
-export const updateAgentDeployment = async (
+export const configureAgentDeployments = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
   const { agentId } = request.params as { agentId: string }
-  const deploymentData = request.body as {
-    discord: {
-      enabled: boolean
-      config?: {
-        token: string
-        allowedChannels: Array<{ id: string; note?: string }>
-      }
-    }
-    telegram: {
-      enabled: boolean
-      config?: {
-        token: string
-        allowedChannels: Array<{ id: string; note?: string }>
-      }
-    }
-    farcaster: {
-      enabled: boolean
-      config?: {
-        token: string
-        allowedChannels: Array<{ id: string; note?: string }>
-      }
-    }
-  }
+  const deploymentData = request.body as AgentsConfigureDeploymentsArguments
 
   if (!agentId) {
     return reply.status(422).send({
@@ -226,7 +206,104 @@ export const updateAgentDeployment = async (
     })
   }
 
-  // TODO: Implement eve api calls
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to configure deployments for this agent',
+    })
+  }
+
+  const discordToken = deploymentData.discord?.token
+  const telegramToken = deploymentData.telegram?.token
+  const farcasterMnemonic = deploymentData.farcaster?.mnemonic
+  const farcasterNeynarWebhookSecret =
+    deploymentData.farcaster?.neynarWebhookSecret
+
+  try {
+    await axios.post(
+      'https://edenartlab--api-stage-fastapi-app.modal.run/deployments/configure',
+      {
+        agent_username: agent.username,
+        secrets: {
+          client_discord_token: discordToken,
+          client_telegram_token: telegramToken,
+          client_farcaster_mnemonic: farcasterMnemonic,
+          client_farcaster_neynar_webhook_secret: farcasterNeynarWebhookSecret,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    // TODO: Set allowed channels for each platform
+
+    return reply.status(200).send({
+      agentId: agent._id,
+    })
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({
+      error: 'An error occurred while configuring the agent deployments',
+    })
+  }
+}
+
+export const deployAgent = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { agentId } = request.params as { agentId: string }
+  const { platform } = request.body as { platform: string }
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to deploy this agent',
+    })
+  }
+
+  try {
+    await axios.post(
+      'https://edenartlab--api-stage-fastapi-app.modal.run/deployments/create',
+      {
+        agent_username: agent.username,
+        platform,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    return reply.status(200).send({
+      agentId: agent._id,
+    })
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({
+      error: 'An error occurred while deploying the agent',
+    })
+  }
 }
 
 export const deleteAgent = async (

@@ -1,6 +1,7 @@
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { ModelV2 } from 'src/models/v2'
+import { Deployment } from 'src/models/v2/Deployments'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 // Types
@@ -21,6 +22,7 @@ export type Agent = Omit<
   userImage: string
   instructions: string
   tools?: { [key: string]: string[] }
+  deployments?: Deployment[]
   discordId?: string
   model?: ModelV2
   discordUsername?: string
@@ -73,22 +75,40 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   modelId?: string
 }
 
-interface AgentDeploymentConfig {
+interface DiscordDeploymentConfig {
   enabled: boolean
-  config?: {
-    token: string
-    allowedChannels: {
-      id: string
-      note: string
-    }[]
-  }
+  token: string
+  allowedChannels: {
+    id: string
+    note: string
+  }[]
 }
 
-export interface AgentsUpdateDeploymentsArguments extends WebAPICallOptions {
+interface TelegramDeploymentConfig {
+  enabled: boolean
+  token: string
+  allowedTopics: {
+    id: string
+    note: string
+  }[]
+}
+
+interface FarcasterDeploymentConfig {
+  enabled: boolean
+  mnemonic: string
+  neynarWebhookSecret: string
+}
+
+export interface AgentsConfigureDeploymentsArguments extends WebAPICallOptions {
   agentId: string
-  discord?: AgentDeploymentConfig
-  telegram?: AgentDeploymentConfig
-  farcaster?: AgentDeploymentConfig
+  discord?: DiscordDeploymentConfig
+  telegram?: TelegramDeploymentConfig
+  farcaster?: FarcasterDeploymentConfig
+}
+
+export interface AgentsDeployArguments extends WebAPICallOptions {
+  agentId: string
+  platform: AgentClientType
 }
 
 export interface AgentsDeleteArguments extends WebAPICallOptions {
@@ -125,16 +145,25 @@ export const agentsUpdateRequestConfig = (
   }
 }
 
-export const agentsUpdateDeploymentsRequestConfig = (
-  args: AgentsUpdateDeploymentsArguments,
+export const agentsConfigureDeploymentsRequestConfig = (
+  args: AgentsConfigureDeploymentsArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'PATCH',
-    url: `v2/agents/${args.agentId}/deployments`,
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/deployments/configure`,
     data: args,
   }
 }
 
+export const agentsDeployRequestConfig = (
+  args: AgentsDeployArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/deployments`,
+    data: args,
+  }
+}
 export const agentsDeleteRequestConfig = (
   args: AgentsDeleteArguments,
 ): AxiosRequestConfig => {
@@ -160,8 +189,13 @@ export type AgentsUpdateResponse = WebAPICallResult & {
   error?: string
 }
 
-export type AgentsUpdateDeploymentsResponse = WebAPICallResult & {
-  agent: Agent
+export type AgentsConfigureDeploymentsResponse = WebAPICallResult & {
+  agentId: string
+  error?: string
+}
+
+export type AgentsDeployResponse = WebAPICallResult & {
+  agentId: string
   error?: string
 }
 

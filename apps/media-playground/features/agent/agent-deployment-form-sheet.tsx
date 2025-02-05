@@ -1,6 +1,7 @@
 'use client'
 
 import FormItemHead from '@/components/form/form-item-head'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -39,27 +40,65 @@ import { UseFormReturn, useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const platformSchema = z
-  .object({
-    enabled: z.boolean(),
-    token: z.string().optional(),
-    allowedChannels: z.array(
-      z.object({
-        id: z.string().min(1, 'Channel ID is required'),
-        note: z.string().optional(),
-      }),
-    ),
-  })
-  .refine(data => {
-    if (!data.enabled) {
-      return true
-    }
-  })
-
 const deploymentSchema = z.object({
-  discord: platformSchema,
-  telegram: platformSchema,
-  farcaster: platformSchema,
+  discord: z
+    .object({
+      enabled: z.boolean(),
+      token: z.string().optional(),
+      allowedChannels: z.array(
+        z.object({
+          id: z.string(),
+          note: z.string(),
+        }),
+      ),
+    })
+    .refine(
+      data => {
+        if (!data.enabled) return true
+        return !!data.token
+      },
+      {
+        path: ['token'],
+        message: 'Token is required',
+      },
+    ),
+  telegram: z
+    .object({
+      enabled: z.boolean(),
+      token: z.string().optional(),
+      allowedChannels: z.array(
+        z.object({
+          id: z.string(),
+          note: z.string(),
+        }),
+      ),
+    })
+    .refine(
+      data => {
+        if (!data.enabled) return true
+        return !!data.token
+      },
+      {
+        path: ['token'],
+        message: 'Token is required',
+      },
+    ),
+  farcaster: z
+    .object({
+      enabled: z.boolean(),
+      mnemonic: z.string().optional(),
+      neynarWebhookSecret: z.string().optional(),
+    })
+    .refine(
+      data => {
+        if (!data.enabled) return true
+        return !!data.mnemonic && !!data.neynarWebhookSecret
+      },
+      {
+        path: ['mnemonic', 'neynarWebhookSecret'],
+        message: 'Mnemonic and Neynar webhook secret are required',
+      },
+    ),
 })
 
 type DeploymentFormDto = z.infer<typeof deploymentSchema>
@@ -72,14 +111,15 @@ type ChannelFieldArray = ReturnType<typeof useFieldArray<DeploymentFormDto>>
 
 type CollapsibleFieldProps = {
   form: UseFormReturn<DeploymentFormDto>
-  channels: ReturnType<typeof useFieldArray<DeploymentFormDto>>
-  renderChannelList: (
-    platform: 'discord' | 'telegram' | 'farcaster',
+  channels?: ReturnType<typeof useFieldArray<DeploymentFormDto>>
+  renderChannelList?: (
+    platform: 'discord' | 'telegram',
     fieldArray: ChannelFieldArray,
   ) => React.ReactElement
   platform: 'discord' | 'telegram' | 'farcaster'
   label: string
   description: string
+  isDeployed?: boolean
 }
 
 const CollapsibleField = ({
@@ -89,6 +129,7 @@ const CollapsibleField = ({
   platform,
   label,
   description,
+  isDeployed,
 }: CollapsibleFieldProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -121,6 +162,7 @@ const CollapsibleField = ({
           platformWatch.enabled
             ? 'bg-muted-foreground/5 border-gray-400/20'
             : '',
+          isDeployed ? 'border-success' : '',
         ])}
       >
         <FormField
@@ -143,6 +185,16 @@ const CollapsibleField = ({
                 }
                 label={label}
                 description={description}
+                badge={
+                  isDeployed && (
+                    <Badge
+                      variant="outline"
+                      className="bg-success/20 text-success-foreground border-success"
+                    >
+                      Deployed
+                    </Badge>
+                  )
+                }
               />
               <FormControl id={platform} className="ml-4">
                 <SwitchNoButton
@@ -161,37 +213,56 @@ const CollapsibleField = ({
           isOpen
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2 p-4'
             : '',
+          isDeployed ? 'border-success' : '',
         ])}
       >
-        <FormField
-          control={form.control}
-          name={`${platform}.token`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                {platform === 'farcaster' ? 'API Token' : 'Bot Token'}
-              </FormLabel>
-              <FormControl>
+        {(platform === 'discord' || platform === 'telegram') && (
+          <>
+            <FormField
+              control={form.control}
+              name={`${platform}.token`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Token</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder={`Enter your ${platform} token`}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Your {platform} token. This must be unique and can only be
+                    used by one agent.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {channels && renderChannelList?.(platform, channels)}
+          </>
+        )}
+        {platform === 'farcaster' && (
+          <>
+            <FormField
+              control={form.control}
+              name={`${platform}.mnemonic`}
+              render={({ field }) => (
+                <Input placeholder="Enter your Farcaster mnemonic" {...field} />
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`${platform}.neynarWebhookSecret`}
+              render={({ field }) => (
                 <Input
-                  type="password"
-                  placeholder={`Enter your ${
-                    platform === 'farcaster'
-                      ? 'Farcaster API'
-                      : `${platform} bot`
-                  } token`}
+                  placeholder="Enter your Neynar webhook secret"
                   {...field}
                 />
-              </FormControl>
-              <FormDescription>
-                Your{' '}
-                {platform === 'farcaster' ? 'Farcaster API' : `${platform} bot`}{' '}
-                token. This must be unique and can only be used by one agent.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        {renderChannelList(platform, channels)}
+              )}
+            />
+          </>
+        )}
       </CollapsibleContent>
     </Collapsible>
   )
@@ -205,25 +276,73 @@ const AgentDeploymentFormSheet = () => {
     resolver: zodResolver(deploymentSchema),
     defaultValues: {
       discord: {
-        enabled: false,
+        enabled: agent?.deployments?.some(
+          deployment => deployment.platform === 'discord',
+        ),
       },
       telegram: {
-        enabled: false,
+        enabled: agent?.deployments?.some(
+          deployment => deployment.platform === 'telegram',
+        ),
       },
       farcaster: {
-        enabled: false,
+        enabled: agent?.deployments?.some(
+          deployment => deployment.platform === 'farcaster',
+        ),
       },
     },
   })
 
   const handleSubmit = async (data: DeploymentFormDto) => {
     try {
-      await axios.post(`/api/agents/${agent?._id}/deployments`, data)
+      await axios.post(`/api/agents/${agent?._id}/deployments/configure`, data)
       toast.success('Deployments configured successfully', {
         description: 'Agent deployments have been configured',
         richColors: true,
         dismissible: true,
       })
+      if (data.discord.enabled) {
+        toast.promise(
+          axios.post(`/api/agents/${agent?._id}/deployments`, {
+            platform: 'discord',
+          }),
+          {
+            loading: 'Deploying to Discord...',
+            success: 'Deployed to Discord successfully',
+            error: 'Deployment to Discord failed',
+            richColors: true,
+            dismissible: true,
+          },
+        )
+      }
+      if (data.telegram.enabled) {
+        toast.promise(
+          axios.post(`/api/agents/${agent?._id}/deployments`, {
+            platform: 'telegram',
+          }),
+          {
+            loading: 'Deploying to Telegram...',
+            success: 'Deployed to Telegram successfully',
+            error: 'Deployment to Telegram failed',
+            richColors: true,
+            dismissible: true,
+          },
+        )
+      }
+      if (data.farcaster.enabled) {
+        toast.promise(
+          axios.post(`/api/agents/${agent?._id}/deployments`, {
+            platform: 'farcaster',
+          }),
+          {
+            loading: 'Deploying to Farcaster...',
+            success: 'Deployed to Farcaster successfully',
+            error: 'Deployment to Farcaster failed',
+            richColors: true,
+            dismissible: true,
+          },
+        )
+      }
       onAction?.()
     } catch (error) {
       toast.error(`Deployment configuration failed`, {
@@ -238,12 +357,12 @@ const AgentDeploymentFormSheet = () => {
 
   const onOpenChange = (open: boolean) => {
     dispatch(updateAgentDeploymentFormSheet({ isOpen: open }))
+    form.reset()
   }
 
   const discordChannels = useFieldArray({
     control: form.control,
     name: 'discord.allowedChannels',
-    shouldUnregister: true,
   })
 
   const telegramChannels = useFieldArray({
@@ -251,19 +370,15 @@ const AgentDeploymentFormSheet = () => {
     name: 'telegram.allowedChannels',
   })
 
-  const farcasterChannels = useFieldArray({
-    control: form.control,
-    name: 'farcaster.allowedChannels',
-    shouldUnregister: true,
-  })
-
   const renderChannelList = (
-    platform: 'discord' | 'telegram' | 'farcaster',
+    platform: 'discord' | 'telegram',
     fieldArray: ChannelFieldArray,
   ) => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium">Allowed Channels</h4>
+        <h4 className="text-sm font-medium">
+          Allowed {platform === 'discord' ? 'Channels' : 'Topics'}
+        </h4>
         <Button
           type="button"
           variant="outline"
@@ -271,7 +386,7 @@ const AgentDeploymentFormSheet = () => {
           onClick={() => fieldArray.append({ id: '', note: '' })}
         >
           <PlusIcon className="h-4 w-4 mr-2" />
-          Add Channel
+          Add {platform === 'discord' ? 'Channel' : 'Topic'}
         </Button>
       </div>
       {fieldArray.fields.map((field, index) => (
@@ -282,7 +397,12 @@ const AgentDeploymentFormSheet = () => {
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormControl>
-                  <Input placeholder="Channel ID" {...field} />
+                  <Input
+                    placeholder={
+                      platform === 'discord' ? 'Channel ID' : 'Topic'
+                    }
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -344,6 +464,7 @@ const AgentDeploymentFormSheet = () => {
                 renderChannelList={renderChannelList}
                 platform="discord"
                 label="Discord"
+                isDeployed={true}
                 description="Deploy your agent to Discord servers"
               />
               <CollapsibleField
@@ -356,8 +477,6 @@ const AgentDeploymentFormSheet = () => {
               />
               <CollapsibleField
                 form={form}
-                channels={farcasterChannels}
-                renderChannelList={renderChannelList}
                 platform="farcaster"
                 label="Farcaster"
                 description="Deploy your agent to Farcaster channels"

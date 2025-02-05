@@ -1,9 +1,10 @@
 import {
+  configureAgentDeployments,
   createAgent,
   deleteAgent,
+  deployAgent,
   getAgent,
   updateAgent,
-  updateAgentDeployment,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -88,10 +89,10 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => updateAgent(server, request, reply),
   })
 
-  server.patch('/v2/agents/:agentId/deployment', {
+  server.post('/v2/agents/:agentId/deployments/configure', {
     schema: {
       tags: ['Agents'],
-      description: 'Update agent deployment settings',
+      description: 'Configure agent deployments',
       security: [
         {
           apiKey: [],
@@ -103,45 +104,18 @@ const agentRoutes: FastifyPluginAsync = async server => {
       body: Type.Object({
         discord: Type.Object({
           enabled: Type.Boolean(),
-          config: Type.Optional(
-            Type.Object({
-              token: Type.String(),
-              allowedChannels: Type.Array(
-                Type.Object({
-                  id: Type.String(),
-                  note: Type.Optional(Type.String()),
-                }),
-              ),
-            }),
-          ),
+          token: Type.Optional(Type.String()),
+          allowedChannels: Type.Optional(Type.Array(Type.String())),
         }),
         telegram: Type.Object({
           enabled: Type.Boolean(),
-          config: Type.Optional(
-            Type.Object({
-              token: Type.String(),
-              allowedChannels: Type.Array(
-                Type.Object({
-                  id: Type.String(),
-                  note: Type.Optional(Type.String()),
-                }),
-              ),
-            }),
-          ),
+          token: Type.Optional(Type.String()),
+          allowedChannels: Type.Optional(Type.Array(Type.String())),
         }),
         farcaster: Type.Object({
           enabled: Type.Boolean(),
-          config: Type.Optional(
-            Type.Object({
-              token: Type.String(),
-              allowedChannels: Type.Array(
-                Type.Object({
-                  id: Type.String(),
-                  note: Type.Optional(Type.String()),
-                }),
-              ),
-            }),
-          ),
+          mnemonic: Type.Optional(Type.String()),
+          neynarWebhookSecret: Type.Optional(Type.String()),
         }),
       }),
       response: {
@@ -151,7 +125,33 @@ const agentRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => updateAgentDeployment(server, request, reply),
+    handler: (request, reply) =>
+      configureAgentDeployments(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/deployments', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Configure agent deployments',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        agentId: Type.String(),
+      },
+      body: Type.Object({
+        platform: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          agentId: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => deployAgent(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId', {

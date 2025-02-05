@@ -1,13 +1,13 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { getAuth } from '@clerk/nextjs/server'
 import {
-  AgentsUpdateDeploymentsArguments,
-  AgentsUpdateDeploymentsResponse,
+  AgentsDeployArguments,
+  AgentsDeployResponse,
   EdenClient,
 } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function PATCH(
+export async function POST(
   request: NextRequest,
   { params: { id } }: { params: { id: string } },
 ) {
@@ -27,8 +27,8 @@ export async function PATCH(
   }
 
   const requestJson = await request.json()
-  const { discord, telegram, farcaster } =
-    requestJson as AgentsUpdateDeploymentsArguments
+
+  const { platform } = requestJson as AgentsDeployArguments
 
   try {
     const eden = new EdenClient({
@@ -36,23 +36,21 @@ export async function PATCH(
       token: authToken,
     })
 
-    const res = await eden.agents.updateDeployments({
+    const res = await eden.agents.deploy({
       agentId: id,
-      discord,
-      telegram,
-      farcaster,
+      platform,
     })
 
     if (!res) {
       return new NextResponse(
-        JSON.stringify({ message: 'Agent update error' }),
+        JSON.stringify({ message: 'Agent deployment error' }),
         {
           status: 500,
         },
       )
     }
 
-    return NextResponse.json<AgentsUpdateDeploymentsResponse>(res)
+    return NextResponse.json<AgentsDeployResponse>(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

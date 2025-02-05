@@ -208,8 +208,10 @@ import {
   tasksListRequestConfig,
 } from './models'
 import {
-  AgentsUpdateDeploymentsArguments,
-  AgentsUpdateDeploymentsResponse,
+  AgentsConfigureDeploymentsArguments,
+  AgentsConfigureDeploymentsResponse,
+  AgentsDeployArguments,
+  AgentsDeployResponse,
   CollectionsV2AddCreationsArguments,
   CollectionsV2AddCreationsResponse,
   CollectionsV2CreateArguments,
@@ -258,7 +260,8 @@ import {
   ToolsGetResponseV2,
   ToolsListArgumentsV2,
   ToolsListResponseV2,
-  agentsUpdateDeploymentsRequestConfig,
+  agentsConfigureDeploymentsRequestConfig,
+  agentsDeployRequestConfig,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -542,10 +545,14 @@ export abstract class Methods {
       this,
       agentsUpdateRequestConfig,
     ),
-    updateDeployments: bindApiCall<
-      AgentsUpdateDeploymentsArguments,
-      AgentsUpdateDeploymentsResponse
-    >(this, agentsUpdateDeploymentsRequestConfig),
+    configureDeployments: bindApiCall<
+      AgentsConfigureDeploymentsArguments,
+      AgentsConfigureDeploymentsResponse
+    >(this, agentsConfigureDeploymentsRequestConfig),
+    deploy: bindApiCall<AgentsDeployArguments, AgentsDeployResponse>(
+      this,
+      agentsDeployRequestConfig,
+    ),
     delete: bindApiCall<AgentsDeleteArguments, AgentsDeleteResponse>(
       this,
       agentsDeleteRequestConfig,
