@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Separator } from '@/components/ui/separator'
-import { AgentLink } from '@/features/chat/chat'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { AgentBasicInfo } from '@/lib/actions/agent'
 import { cn } from '@/lib/utils'
@@ -274,7 +273,17 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
       </div>
       <div className="flex-1 flex flex-col rounded-lg bg-muted-darker/80">
         <div className="p-4 flex items-center gap-4 w-full shrink-0">
-          <AgentLink agent={agent} className="!h-11 !w-11" hideName={true} />
+          <Avatar className="w-10 h-10">
+            {agent?.userImage && (
+              <AvatarImage
+                src={agent?.userImage}
+                className="object-cover object-top"
+              />
+            )}
+            <AvatarFallback delayMs={250} className="">
+              {agent?.name?.charAt(0).toUpperCase() || ''}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex flex-col">
             <div className="font-medium">{agent?.name}</div>
             <div className="text-sm text-muted-foreground line-clamp-1">

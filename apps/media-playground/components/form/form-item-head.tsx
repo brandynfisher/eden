@@ -12,13 +12,14 @@ type Props = {
   label: string
   description: string | ReactNode
   icon?: ReactNode
+  badge?: ReactNode
 }
 
-const FormItemHead = ({ icon, label, description }: Props) => {
+const FormItemHead = ({ icon, label, description, badge }: Props) => {
   const { formItemId } = useFormField()
 
   return (
-    <div className="space-y-0.5 flex items-center">
+    <div className="gap-y-0.5 flex items-center">
       <FormLabel
         id={`${formItemId}-label`}
         className="flex items-center text-sm first-letter:uppercase mr-2 cursor-pointer"
@@ -42,6 +43,7 @@ const FormItemHead = ({ icon, label, description }: Props) => {
           </Tooltip>
         </TooltipProvider>
       </FormDescription>
+      <div className="ml-4 ">{badge}</div>
     </div>
   )
 }

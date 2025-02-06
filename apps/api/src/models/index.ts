@@ -6,6 +6,7 @@ import { Character, CharacterDocument } from './Character'
 import { Collection, CollectionDocument } from './Collection'
 import { Concept, ConceptDocument } from './Concept'
 import { Creation, CreationDocument } from './Creation'
+import { Deployment, DeploymentDocument } from './Deployment'
 import { DiscordAgent, DiscordAgentDocument } from './DiscordAgent'
 import { Embedding, EmbeddingDocument } from './Embedding'
 import { Follow, FollowDocument } from './Follow'
@@ -41,6 +42,7 @@ export interface Database {
   Thread: Model<ThreadDocument>
   Creation: Model<CreationDocument>
   CreationV2: Model<CreationV2Document>
+  Deployment: Model<DeploymentDocument>
   Embedding: Model<EmbeddingDocument>
   Concept: Model<ConceptDocument>
   ModelV2: Model<ModelV2Document>
@@ -73,6 +75,7 @@ export const models: Database = {
   Creation,
   CreationV2,
   Concept,
+  Deployment,
   ModelV2,
   Reaction,
   Collection,

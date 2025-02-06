@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button'
 // import { Separator } from '@/components/ui/separator'
 // import { Badge } from '@/components/ui/badge'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
-import UserAvatarLink from '@/components/user/user-avatar-link'
-import AgentFormSheet from '@/features/agent/agent-form-sheet'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
+  updateAgentDeploymentFormSheet,
+  updateAgentFormSheet,
   updateDeleteDialog,
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
@@ -20,7 +20,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { AvatarFallback } from '@radix-ui/react-avatar'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
-import { Share2Icon, TrashIcon } from 'lucide-react'
+import { Edit2Icon, RocketIcon, Share2Icon, TrashIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
@@ -91,60 +91,98 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     )
   }
 
-  if (!agent) return null
+  const handleEditClick = () => {
+    dispatch(
+      updateAgentFormSheet({
+        isOpen: true,
+        mode: 'update',
+        agent,
+        onAction: onUpdateAgent,
+      }),
+    )
+  }
 
+  const handleConfigureDeployments = () => {
+    dispatch(
+      updateAgentDeploymentFormSheet({
+        isOpen: true,
+        agent,
+      }),
+    )
+  }
+
+  if (!agent) return null
   return (
     <>
       <div className="relative p-6 bg-muted-darker rounded-md mx-4 mt-4">
-        {user?._id === agent?.owner._id && (
-          <div className="absolute right-6 flex gap-x-2">
-            <AgentFormSheet
-              mode={'update'}
-              agent={agent}
-              onAction={onUpdateAgent}
-            />
-            <Button variant="destructive" size="icon" onClick={onDeleteAgent}>
-              <TrashIcon size={18} />
-            </Button>
-          </div>
-        )}
-        <div className="flex gap-4 items-center mb-4">
-          <Avatar className="size-24">
+        <div className="relative flex">
+          <Avatar className="h-full aspect-[9/16] max-h-40 rounded-lg flex-shrink-0">
             {agent.userImage ? (
-              <AvatarImage className={'object-cover'} src={agent.userImage} />
+              <AvatarImage
+                className="object-cover rounded-lg"
+                src={agent.userImage}
+              />
             ) : (
-              <AvatarFallback>{agent.name[0]}</AvatarFallback>
+              <AvatarFallback className="rounded-lg">
+                {agent.name[0]}
+              </AvatarFallback>
             )}
           </Avatar>
-        </div>
 
-        <div className="flex flex-wrap gap-4 justify-between items-center mb-4">
-          <h1 className="text-2xl font-semibold">{agent?.name}</h1>
-          <div className="flex gap-x-2">
-            <Button variant="outline" size="icon" onClick={onShareAgent}>
-              <Share2Icon size={18} />
-            </Button>
-            <Button variant="secondary" asChild>
-              <Link href={`/chat/${agent._id}`}>
-                <ChatBubbleIcon className="mr-2 h-4 w-4" />
-                Start Chat
-              </Link>
-            </Button>
-          </div>
-        </div>
+          <div className="ml-4 flex flex-col flex-grow">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-semibold">{agent?.name}</h1>
+              <div className="flex gap-x-2">
+                {user?._id === agent?.owner._id && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleEditClick}
+                    >
+                      <Edit2Icon size={18} />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleConfigureDeployments}
+                    >
+                      <RocketIcon size={18} />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      onClick={onDeleteAgent}
+                    >
+                      <TrashIcon size={18} />
+                    </Button>
+                  </>
+                )}
+                <Button variant="outline" size="icon" onClick={onShareAgent}>
+                  <Share2Icon size={18} />
+                </Button>
+                <Button variant="secondary" asChild>
+                  <Link href={`/chat/${agent._id}`}>
+                    <ChatBubbleIcon className="mr-2 h-4 w-4" />
+                    Start Chat
+                  </Link>
+                </Button>
+              </div>
+            </div>
 
-        <TextClampMore
-          text={agent?.description}
-          className="text-sm break-words mt-2 text-muted-darker-foreground"
-        />
-        <div className="flex items-center gap-x-2 mt-2 text-sm text-muted-foreground">
-          by{' '}
-          <span>
-            <UserAvatarLink
-              name={agent.owner.username || agent.owner._id}
-              image={agent.owner.userImage}
+            <TextClampMore
+              lines={3}
+              text={agent?.description}
+              className="text-sm break-words mt-4 text-muted-darker-foreground"
             />
-          </span>
+
+            <div className="flex items-center mt-2 gap-x-1 text-sm text-muted-foreground">
+              by
+              <Link href={`/creators/${agent.owner.username}`}>
+                {agent.owner.username}
+              </Link>
+            </div>
+          </div>
         </div>
         {/* <Separator className="my-4" />
         <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent-foreground/5 rounded-md p-2">
