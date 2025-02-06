@@ -131,9 +131,14 @@ const MyAttachment: FC = () => {
           }}
           imageProps={{
             className: canRemove
-              ? 'object-cover flex-shrink-0 max-w-16 h-12'
-              : 'object-contain w-full max-h-48 max-w-48 flex-shrink-0',
+              ? 'object-cover flex-shrink-0 max-w-24 h-16'
+              : 'object-contain w-full max-h-64 max-w-64 flex-shrink-0',
             unoptimized: true,
+          }}
+          videoProps={{
+            className: canRemove
+              ? 'object-cover flex-shrink-0 max-w-24 h-16'
+              : 'object-contain w-full max-h-64 max-w-64 flex-shrink-0',
           }}
         />
       </div>

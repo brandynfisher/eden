@@ -21,6 +21,9 @@ export interface AgentSchema extends BaseUserSchema {
     note: string
   }[]
   public?: boolean
+  threadCount?: number
+  userCount?: number
+  messageCount?: number
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}

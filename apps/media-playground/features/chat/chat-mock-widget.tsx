@@ -242,7 +242,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
                   <AutosizeTextarea
                     className="w-full mb-4 !border-none !ring-0 !outline-none !ring-offset-0"
                     placeholder="Type your message here..."
-                    rows={4}
+                    // rows={4}
                     minHeight={64}
                     autoFocus={true}
                     onChange={field.onChange}
@@ -291,6 +291,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
             )}
           >
             <Button
+              aria-label="Send message"
               variant="secondary"
               type="submit"
               disabled={isSubmitting || !form.formState.isValid}
@@ -306,6 +307,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
         <div className="mt-6 mb-2 flex gap-2 flex-wrap justify-center">
           {DEFAULT_SUGGESTIONS.map((suggestion, index) => (
             <Button
+              aria-label={suggestion.text}
               key={index}
               variant="outline"
               type="button"

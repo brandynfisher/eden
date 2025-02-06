@@ -55,68 +55,73 @@ export const createTask = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user || {}
-
-  if (!userId) {
-    return reply.status(400).send({
-      message: 'User missing from request',
-    })
-  }
-
-  const { tool, args } = request.body as TasksV2CreateArguments
-  const toolDocument = await ToolV2.findOne({ key: tool })
-
-  if (!toolDocument) {
-    return reply.status(404).send({
-      message: `Tool ${tool} not available`,
-    })
-  }
-
-  const userDocument = await User.findById(userId)
-  if (!userDocument) {
-    return reply.status(404).send({
-      message: `User not found`,
-    })
-  }
-
-  const rateLimitCheckResult = await taskRateLimitCheck(
-    request,
-    toolDocument.output_type,
-  )
-  if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
-    if (server.Sentry) {
-      server.Sentry.captureMessage(
-        `taskRateLimitCheck failed for user:${userId} | message:${rateLimitCheckResult.message}`,
-      )
-    }
-    return reply.status(429).send({
-      message: rateLimitCheckResult.message,
-    })
-  }
-
-  const modalRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/create`,
-    data: {
-      tool,
-      args,
-      user_id: userId,
-    },
-  }
-
-  server.log.info('> modal::request::create')
-  server.log.info(modalRequest)
-
-  if (args.lora) {
-    const lora = await ModelV2.findById(args.lora)
-    const isOwner = lora?.user.toString() === userId.toString()
-    if (!isOwner && !lora?.public) {
-      args.use_lora = false
-      delete args.lora
-      delete args.lora_strength
-    }
+  const timing = {
+    start: performance.now(),
+    modalStart: 0,
+    modalEnd: 0,
   }
 
   try {
+    // Add Server-Timing header
+    reply.header('Server-Timing', '')
+
+    const { userId } = request.user || {}
+    if (!userId) {
+      return reply.status(400).send({
+        message: 'User missing from request',
+      })
+    }
+
+    const { tool, args } = request.body as TasksV2CreateArguments
+    const toolDocument = await ToolV2.findOne({ key: tool })
+    if (!toolDocument) {
+      return reply.status(404).send({
+        message: `Tool ${tool} not available`,
+      })
+    }
+
+    const userDocument = await User.findById(userId)
+    if (!userDocument) {
+      return reply.status(404).send({
+        message: `User not found`,
+      })
+    }
+
+    const rateLimitCheckResult = await taskRateLimitCheck(
+      request,
+      toolDocument.output_type,
+    )
+    if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
+      if (server.Sentry) {
+        server.Sentry.captureMessage(
+          `taskRateLimitCheck failed for user:${userId} | message:${rateLimitCheckResult.message}`,
+        )
+      }
+      return reply.status(429).send({
+        message: rateLimitCheckResult.message,
+      })
+    }
+
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/create`,
+      data: {
+        tool,
+        args,
+        user_id: userId,
+      },
+    }
+
+    if (args.lora) {
+      const lora = await ModelV2.findById(args.lora)
+      const isOwner = lora?.user.toString() === userId.toString()
+      if (!isOwner && !lora?.public) {
+        args.use_lora = false
+        delete args.lora
+        delete args.lora_strength
+      }
+    }
+
+    timing.modalStart = performance.now()
     const modalResponse = await axios.post(
       modalRequest.endpoint,
       modalRequest.data,
@@ -126,9 +131,7 @@ export const createTask = async (
         },
       },
     )
-
-    server.log.info('< modal::response::create')
-    server.log.info(modalResponse.data)
+    timing.modalEnd = performance.now()
 
     if (!modalResponse || !modalResponse.data) {
       console.log('malformed response', modalResponse)
@@ -149,6 +152,20 @@ export const createTask = async (
           }
         : task
 
+    const end = performance.now()
+    const internalDuration = timing.modalStart - timing.start
+    const modalDuration = timing.modalEnd - timing.modalStart
+    const totalDuration = end - timing.start
+
+    reply.header(
+      'Server-Timing',
+      `total;dur=${totalDuration.toFixed(
+        2,
+      )}, internal;dur=${internalDuration.toFixed(
+        2,
+      )}, modal;dur=${modalDuration.toFixed(2)}`,
+    )
+
     return reply.status(200).send({ task: taskWithUrls })
   } catch (e) {
     const error = e as { response?: { data?: string } }
@@ -157,8 +174,34 @@ export const createTask = async (
         ? error.response.data
         : 'Unknown Error'
 
+    const end = performance.now()
+    const totalDuration = end - timing.start
+    reply.header(
+      'Server-Timing',
+      `total;dur=${totalDuration.toFixed(2)};desc="Error"`,
+    )
+
     server.log.error({ message: 'Failed to create task', error: errorMessage })
     return reply.status(500).send({ error: errorMessage })
+  }
+}
+
+function getTypeQuery(tool: string | undefined, minDate: boolean | undefined) {
+  // If minDate is provided, return empty query
+  if (minDate) {
+    return {}
+  }
+
+  const isModelTask = tool === 'lora_trainer' || tool === 'flux_trainer'
+
+  // If tool is provided and is a model task, filter by that tool
+  if (tool && isModelTask) {
+    return { tool }
+  }
+
+  // Otherwise exclude model tasks
+  return {
+    tool: { $nin: ['lora_trainer', 'flux_trainer'] },
   }
 }
 
@@ -176,7 +219,6 @@ export const listTasks = async (
   }
 
   const {
-    // type,
     tool,
     status,
     taskId,
@@ -193,13 +235,7 @@ export const listTasks = async (
     })
   }
 
-  const isModelTaskQuery =
-    tool && (tool === 'lora_trainer' || tool === 'flux_trainer')
-  const typeQuery = !isModelTaskQuery
-    ? {
-        tool: { $nin: ['lora_trainer', 'flux_trainer'] },
-      }
-    : {}
+  const typeQuery = getTypeQuery(tool, minDate)
 
   const tasksRepository = new TaskV2Repository(TaskV2Model)
 
@@ -207,7 +243,7 @@ export const listTasks = async (
     user?: string
     status?: string | string[]
     taskId?: string | string[]
-    tool?: string | { $nin: string[] }
+    tool?: string | { $nin?: string[]; $in?: string[] }
     createdAt?: { $gte: Date }
   } = {
     user: user._id.toString(),
@@ -220,10 +256,6 @@ export const listTasks = async (
 
   if (taskId) {
     query.taskId = taskId
-  }
-
-  if (tool) {
-    query.tool = tool
   }
 
   if (minDate) {
@@ -330,6 +362,7 @@ const injectResultUrls = (
       const thumbnailName = isModelResult
         ? output.thumbnail || ''
         : output.filename
+
       const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
 
       return {

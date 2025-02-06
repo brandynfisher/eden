@@ -1,17 +1,19 @@
 'use client'
 
+import { useEdenRuntimeExtras } from '../hooks/useEdenRuntime'
 import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import {
   Composer,
   ThreadPrimitive,
   useComposerRuntime,
 } from '@assistant-ui/react'
-import { BotIcon } from 'lucide-react'
-import React, { FC, useState } from 'react'
+import { BotIcon, PencilOffIcon } from 'lucide-react'
+import React, { FC, FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 
 type ComposerAttachmentDropzoneProps = {
@@ -42,8 +44,11 @@ export const ComposerAttachmentDropzone: FC<
 }
 
 export const MyComposer: FC = () => {
+  const { isSignedIn, verifyAuth } = useAuthState()
+  const isReadOnly = useEdenRuntimeExtras(extras => extras.isReadOnly)
   const [isDragging, setIsDragging] = useState(false)
   const composerRuntime = useComposerRuntime()
+  // console.log('isReadOnly', composerRuntime.getState())
   const accept = composerRuntime.getAttachmentAccept()
 
   const handleFilesDropped = async (files: File[]) => {
@@ -51,7 +56,7 @@ export const MyComposer: FC = () => {
     const acceptedFiles = files.filter(file => fileMatchesAccept(file, accept))
 
     if (!acceptedFiles.length) {
-      console.log('No accepted files in drop')
+      // console.log('No accepted files in drop')
       toast.error(`Failed to upload!`, {
         description: `No accepted files in drop. Only type/s '${accept}' allowed here`,
         dismissible: true,
@@ -86,6 +91,21 @@ export const MyComposer: FC = () => {
     setIsDragging(true)
   }
 
+  if (isReadOnly === null || isReadOnly) {
+    return (
+      <div className="flex items-center gap-3 py-2 px-4 h-[58px] border border-secondary rounded-lg bg-muted-darker">
+        {isReadOnly === true ? (
+          <>
+            <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
+            <p className="text-sm ">
+              This is a read-only view of another user's conversation.
+            </p>
+          </>
+        ) : null}
+      </div>
+    )
+  }
+
   return (
     <Composer.Root
       className="relative"
@@ -93,6 +113,13 @@ export const MyComposer: FC = () => {
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      onSubmit={async (evt: FormEvent<HTMLFormElement>) => {
+        if (!isSignedIn) {
+          evt.preventDefault()
+          await verifyAuth()
+          return
+        }
+      }}
     >
       <ComposerAttachmentDropzone isDragging={isDragging} accept={accept} />
 

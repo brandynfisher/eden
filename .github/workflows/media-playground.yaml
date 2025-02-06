@@ -79,8 +79,8 @@ jobs:
             "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"
             "NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up"
             "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
-            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
-            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/create"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
 
       - name: Move cache
         run: |
@@ -101,7 +101,6 @@ jobs:
           status: "Success"
           color: 0x00ff00
           description: |
-            Successfully built media-playground to production
             Commit: ${{ github.sha }}
             Branch: ${{ github.ref_name }}
 
@@ -114,7 +113,6 @@ jobs:
           status: "Failed"
           color: 0xff0000
           description: |
-            Failed to build media-playground-prod
             Commit: ${{ github.sha }}
             Branch: ${{ github.ref_name }}
             Please check the workflow logs for details.

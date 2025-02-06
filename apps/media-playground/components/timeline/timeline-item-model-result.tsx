@@ -29,6 +29,7 @@ const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
               width={1024}
               height={1024}
               className="w-full h-full"
+              loading="lazy"
             />
           </Link>
           <TimelineItemResultTools

@@ -73,7 +73,7 @@ export const TaskResultTool = makeAssistantToolUI<
                               </audio>
                             ) : (
                               <LightboxTrigger
-                                // className="w-full h-full"
+                                className="w-full h-full"
                                 slide={{
                                   url: getCloudfrontOriginalUrl(
                                     output.filename,
@@ -102,7 +102,9 @@ export const TaskResultTool = makeAssistantToolUI<
                                   className: 'max-h-[420px]',
                                 }}
                                 videoProps={{
-                                  className: 'max-h-[420px]',
+                                  duration:
+                                    output.mediaAttributes?.duration || 1,
+                                  className: 'max-h-[420px w-full h-full',
                                 }}
                               />
                             )}
