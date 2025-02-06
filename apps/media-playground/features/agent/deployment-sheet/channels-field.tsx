@@ -11,7 +11,29 @@ interface ChannelsFieldProps {
   name: string
   label: string
   description: string
-  allowList: UseFieldArrayReturn<any>
+  allowList:
+    | UseFieldArrayReturn<
+        {
+          token: string
+          allowedChannels: {
+            id: string
+            note?: string | undefined
+          }[]
+        },
+        'allowedChannels',
+        'id'
+      >
+    | UseFieldArrayReturn<
+        {
+          token: string
+          allowedTopics: {
+            id: string
+            note?: string | undefined
+          }[]
+        },
+        'allowedTopics',
+        'id'
+      >
   form: UseFormReturn<any>
 }
 
