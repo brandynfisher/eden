@@ -68,7 +68,7 @@ const HomePage = async () => {
       <div className="flex flex-col flex-grow justify-center w-full gap-12 ">
         {response?.agent ? (
           <section className="mt-6 md:mt-12">
-            <SectionChatMock agentSSRData={response.agent} />
+            <SectionChatMock />
           </section>
         ) : null}
 
