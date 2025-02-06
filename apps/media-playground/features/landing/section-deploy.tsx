@@ -3,9 +3,11 @@
 import DiscordIcon from '@/components/icons/discord'
 import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
+import TypographyH5 from '@/components/ui/typography/TypographyH5'
 import { siteConfig } from '@/lib/config'
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import Link from 'next/link'
 
 export default function SectionDeploy() {
@@ -21,32 +23,43 @@ export default function SectionDeploy() {
         channels.
       </p>
       <div className="flex justify-center items-center gap-4">
-        <Button variant="ghost" size={'icon'} asChild>
-          <Link
-            href={siteConfig.links.discord}
-            target="_blank"
-            className="filter flex flex-col p-4 rounded-lg border border-border bg-card h-16 w-16"
-          >
-            <VisuallyHidden>Discord</VisuallyHidden>
-            <DiscordIcon size={64} />
-          </Link>
-        </Button>
-        <Button variant="ghost" size={'icon'} asChild>
-          <Link
-            href={siteConfig.links.twitter}
-            target="_blank"
-            className="group  flex flex-col p-4 rounded-lg border border-border bg-card h-16 w-16"
-          >
-            <VisuallyHidden>X</VisuallyHidden>
-            <TwitterIcon size={64} />
-          </Link>
-        </Button>
-        {/* <div className="flex flex-col p-4 rounded-lg border border-border bg-card">
-                TG
-              </div>
-              <div className="flex flex-col p-4 rounded-lg border border-border bg-card">
-                FC
-              </div> */}
+        <div className="flex flex-col items-center gap-2">
+          <Button variant="ghost" size={'icon'} asChild>
+            <Link
+              href={siteConfig.links.discord}
+              target="_blank"
+              className="filter flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20"
+            >
+              <DiscordIcon size={64} />
+            </Link>
+          </Button>
+          <div className="text-muted-foreground font-medium">Discord</div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <Button variant="ghost" size={'icon'} asChild>
+            <Link
+              href={siteConfig.links.twitter}
+              target="_blank"
+              className="group  flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20"
+            >
+              <TwitterIcon size={64} />
+            </Link>
+          </Button>
+          <div className="text-muted-foreground font-medium">X</div>
+        </div>
+      </div>
+      <div className="mt-6 flex flex-col justify-center items-center bg-secondary/50 rounded-lg">
+        <Skeleton className="w-full aspect-video" />
+        <Separator className="w-full" />
+        <div className="p-4">
+          <TypographyH5 className="font-semibold m-0 mb-2">
+            Watch Your Agent in Action
+          </TypographyH5>
+          <div className="text-muted-foreground">
+            See how our agents seamlessly integrate across different platforms,
+            maintaining their unique personality and capabilities.
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -1,10 +1,9 @@
-import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { ChatMockWidget } from '@/features/chat/chat-mock-widget'
 import { Footer } from '@/features/landing/footer'
+import SectionAgents from '@/features/landing/section-agents'
+import SectionChatMock from '@/features/landing/section-chat-mock'
 import SectionDeploy from '@/features/landing/section-deploy'
+import SectionEve from '@/features/landing/section-eve'
 import SectionTraining from '@/features/landing/section-training'
-import SectionAgents from '@/features/landing/section_agents'
-import SectionEve from '@/features/landing/section_eve'
 import { getAgentCached } from '@/lib/actions/agent'
 import { siteConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
@@ -69,37 +68,24 @@ const HomePage = async () => {
       <div className="flex flex-col flex-grow justify-center w-full gap-12 ">
         {response?.agent ? (
           <section className="mt-6 md:mt-12">
-            <div className="max-w-3xl mx-auto px-4">
-              <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
-                Meet Eve: your AI assistant for transforming ideas into art and
-                stories.
-              </TypographyH4>
-              <div className="flex justify-center">
-                <div className="max-w-lg min-w-[320px] md:mx-0 flex flex-col p-4 border border-purple-600/40 rounded-lg bg-muted-darker/50">
-                  <ChatMockWidget
-                    agentId={siteConfig.featured.agents[0]}
-                    agentSSRData={response.agent}
-                  />
-                </div>
-              </div>
-            </div>
+            <SectionChatMock agentSSRData={response.agent} />
           </section>
         ) : null}
 
         <section className="bg-accent/60 py-12 px-4">
-          <SectionEve />
+          <SectionDeploy />
         </section>
 
         <section>
-          <SectionTraining />
+          <SectionEve />
         </section>
 
         <section className="bg-accent/60 py-12 px-4">
-          <SectionAgents />
+          <SectionTraining />
         </section>
 
         <section className="mb-12 px-4">
-          <SectionDeploy />
+          <SectionAgents />
         </section>
       </div>
       <Footer />

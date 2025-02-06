@@ -1,5 +1,6 @@
 'use client'
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
@@ -10,10 +11,10 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
+import { Separator } from '@/components/ui/separator'
 import { AgentLink } from '@/features/chat/chat'
-import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { siteConfig } from '@/lib/config'
+import { AgentBasicInfo } from '@/lib/actions/agent'
 import { cn } from '@/lib/utils'
 import {
   Agent,
@@ -23,87 +24,80 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError, AxiosInstance } from 'axios'
 import {
-  CatIcon,
-  ImageIcon,
+  ExternalLinkIcon,
   Keyboard,
-  ListIcon,
   Loader2Icon,
-  PersonStandingIcon,
+  PlusIcon,
   SendIcon,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FC, ReactNode, useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-export const chatMockSchema = z.object({
+export interface AgentConfig extends Agent {
+  greeting: string
+}
+
+interface Suggestion {
+  text: string
+  prompt: string
+}
+
+type Props = {
+  agents: AgentBasicInfo[]
+  initialAgentId?: string
+}
+
+const chatMockSchema = z.object({
   message: z.string().min(1).max(30000),
   attachments: z.array(z.string()).optional(),
 })
 
 type FormData = z.infer<typeof chatMockSchema>
-type Props = {
-  agentId: string
-  agentSSRData?: Agent
-}
 
 const FORM_STORAGE_KEY = 'chat-mock-form-state'
-
-interface Suggestion {
-  text: string
-  prompt: string
-  icon: ReactNode
-}
 
 const DEFAULT_SUGGESTIONS: Suggestion[] = [
   {
     text: 'What tools can you use?',
     prompt: 'Can you list all the tools and capabilities you have access to?',
-    icon: <ListIcon className="h-4 w-4" />,
   },
   {
     text: 'Animate my logo',
     prompt:
       'I would like to animate my company logo. Can you help me with that?',
-    icon: <ImageIcon className="h-4 w-4" />,
   },
   {
     text: 'Make sketches into art',
     prompt: 'I have a sketch, can you make it into an art piece?',
-    icon: <CatIcon className="h-4 w-4" />,
   },
   {
     text: 'Help me draft a character',
     prompt: 'I need help creating a character design. Can you assist me?',
-    icon: <PersonStandingIcon className="h-4 w-4" />,
   },
 ]
 
-export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
-  const { agent: agentClientData } = useAgentQuery({
-    key: agentId,
-    initialData: agentSSRData
-      ? {
-          agent: agentSSRData,
-        }
-      : undefined,
-  })
+export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
+  const [selectedAgentId, setSelectedAgentId] = useState(
+    initialAgentId || agents[0]?._id,
+  )
+  const { user } = useAuthState()
 
-  const agent = agentClientData || agentSSRData
+  const agent = agents.find(a => a._id === selectedAgentId)
 
   const { verifyAuth, isSignedIn } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
   const [shouldShowHint, setShouldShowHint] = useState(false)
 
-  //@todo: use defaults to repopulate on return from auth redirect - if any
   const defaultValues: FormData = {
     message: '',
     attachments: [],
   }
 
-  // Move the stored data check to a separate effect that runs once
   const [initialFormData, setInitialFormData] =
     useState<FormData>(defaultValues)
   const [hasStoredData, setHasStoredData] = useState(false)
@@ -113,7 +107,6 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
     defaultValues: initialFormData,
   })
 
-  // Load stored data and reset form when found
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -123,27 +116,22 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
         const parsed = JSON.parse(stored)
         setInitialFormData(parsed)
         setHasStoredData(true)
-        // Reset form with stored data
         form.reset(parsed)
       }
     } catch (e) {
       console.error('Error reading stored form state:', e)
     }
-  }, []) // Empty dependency array - runs once on mount
+  }, [])
 
   const message = form.watch('message')
 
-  // Add this effect to handle hint visibility
   useEffect(() => {
     const messageLength = message?.length || 0
     setShouldShowHint(messageLength > 3)
   }, [message])
 
-  // Store form state before auth redirect
   const handleSubmit = async (formData: FormData) => {
-    console.log('handleSubmit', formData)
     if (!(await verifyAuth())) {
-      // Save form state before redirect
       const currentFormData = form.getValues()
       localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(currentFormData))
       return
@@ -157,7 +145,7 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
         { data: ThreadsCreateResponse },
         ThreadsCreateArguments
       >('/api/threads', {
-        agent_id: siteConfig.featured.agents[0],
+        agent_id: selectedAgentId,
         content: formData.message,
         attachments: formData.attachments,
       })
@@ -185,13 +173,11 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
         richColors: true,
       })
     } finally {
-      // Clean up storage after successful submission
       localStorage.removeItem(FORM_STORAGE_KEY)
       setHasStoredData(false)
     }
   }
 
-  // Auto-submit effect
   useEffect(() => {
     const shouldAutoSubmit = isSignedIn && hasStoredData && !isSubmitting
 
@@ -203,12 +189,11 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
     }
   }, [isSignedIn, hasStoredData, isSubmitting])
 
-  // Separate cleanup effect
   useEffect(() => {
     return () => {
       localStorage.removeItem(FORM_STORAGE_KEY)
     }
-  }, []) // Empty dependency array for cleanup on unmount
+  }, [])
 
   const handleSuggestionClick = (prompt: string) => {
     form.setValue('message', prompt)
@@ -216,107 +201,206 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
   }
 
   return (
-    <div data-testid="chat-mock-widget">
-      <div className="mb-6 flex justify-around">
-        <div className="flex flex-col items-center w-fit">
-          <AgentLink agent={agent} className="h-12 w-12 md:h-16 md:w-16" />
-          <div className="inline-flex ml-16 p-2 mt-2 bg-purple-600/40 rounded-lg rounded-tl-none">
-            How can I help you today?
-          </div>
-        </div>
-      </div>
-      <Form {...form}>
-        <form
-          className="flex gap-2 w-full bg-popover border border-secondary rounded-lg p-2"
-          onSubmit={form.handleSubmit(handleSubmit)}
-        >
-          <FormField
-            name="message"
-            render={({ field }) => (
-              <FormItem className="w-full relative">
-                <FormControl id={'message'}>
-                  <AutosizeTextarea
-                    className="w-full mb-4 !border-none !ring-0 !outline-none !ring-offset-0"
-                    placeholder="Type your message here..."
-                    // rows={4}
-                    minHeight={64}
-                    autoFocus={true}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    value={field.value || ''}
-                    disabled={isSubmitting}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        if (form.formState.isValid && !isSubmitting) {
-                          form.handleSubmit(handleSubmit)()
-                        }
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-                <div
-                  className={cn(
-                    'absolute bottom-0 right-0 flex items-center gap-1.5 text-xs text-muted-foreground transition-all duration-200 [@media(pointer:coarse)]:hidden',
-                    shouldShowHint
-                      ? 'opacity-100 translate-y-0'
-                      : 'opacity-0 translate-y-2 pointer-events-none',
-                  )}
-                >
-                  <Keyboard className="h-3 w-3" />
-                  <span className="opacity-70">
-                    <Badge variant="outline" className="rounded-sm px-1.5">
-                      Enter
-                    </Badge>{' '}
-                    to send,{' '}
-                    <Badge variant="outline" className="px-1.5 rounded-sm">
-                      Shift+Enter
-                    </Badge>{' '}
-                    for new line
-                  </span>
-                </div>
-              </FormItem>
-            )}
-          />
-          <div
+    <div
+      data-testid="chat-mock-widget"
+      className="flex flex-wrap md:flex-nowrap gap-4 h-full"
+    >
+      <div className="min-w-[320px] md:max-w-[320px] rounded-lg bg-muted-darker/50 p-4 flex flex-col gap-4">
+        {agents.map((agentConfig, index) => (
+          <Button
+            variant="ghost"
+            key={`${agentConfig._id}-${index}`}
+            onClick={() => setSelectedAgentId(agentConfig?._id)}
             className={cn(
-              'flex justify-end transition-all origin-center opacity-0 translate-y-4',
-              isSubmitting && 'opacity-50 translate-y-0',
-              form.formState.isValid && 'opacity-100 translate-y-0 ',
+              'flex text-left gap-4 p-2 rounded-lg transition-colors h-auto text-wrap',
+              'hover:bg-secondary/30 border border-transparent group',
+              selectedAgentId === agentConfig._id
+                ? ' border-purple-600/40 bg-secondary/70'
+                : '',
             )}
           >
-            <Button
-              aria-label="Send message"
-              variant="secondary"
-              type="submit"
-              disabled={isSubmitting || !form.formState.isValid}
-            >
-              {isSubmitting ? (
-                <Loader2Icon className="h-4 w-4 animate-spin" />
-              ) : (
-                <SendIcon className="h-4 w-4" />
-              )}
-            </Button>
+            <div className="flex-shrink-0">
+              <Avatar className="w-10 h-10">
+                {agentConfig?.userImage && (
+                  <AvatarImage
+                    src={agentConfig?.userImage}
+                    className="object-cover object-top"
+                  />
+                )}
+                <AvatarFallback delayMs={250} className="">
+                  {agentConfig?.name?.charAt(0).toUpperCase() || ''}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="flex flex-col flex-grow">
+              <div
+                className={cn(
+                  'text-base font-bold ',
+                  selectedAgentId === agentConfig._id ? 'text-purple-600' : '',
+                )}
+              >
+                {agentConfig?.name}
+              </div>
+              <div className="text-sm text-muted-foreground line-clamp-2">
+                {agentConfig?.description}
+              </div>
+            </div>
+          </Button>
+        ))}
+        <Link
+          href={
+            user
+              ? `/creators/${user.username}?tab=agents&create=true`
+              : '/sign-in'
+          }
+          className={cn(
+            'flex items-center justify-center gap-3 p-2 h-[82px] rounded-lg transition-colors border-2 border-dashed ',
+            ' hover:border-primary/40 group',
+            'hover:bg-secondary/50',
+          )}
+        >
+          <div className="flex items-center justify-center transition-colors rounded-full w-10 h-10 bg-secondary flex-shrink-0">
+            <PlusIcon className="h-8 w-8 text-accent-foreground group-hover:text-purple-600" />
           </div>
-        </form>
-        <div className="mt-6 mb-2 flex gap-2 flex-wrap justify-center">
-          {DEFAULT_SUGGESTIONS.map((suggestion, index) => (
-            <Button
-              aria-label={suggestion.text}
-              key={index}
-              variant="outline"
-              type="button"
-              className="flex gap-2 rounded-full"
-              onClick={() => handleSuggestionClick(suggestion.prompt)}
-              disabled={isSubmitting}
+          <div className="flex flex-col flex-grow">
+            <div className="text-base font-bold group-hover:text-accent-foreground">
+              Create Your Agent
+            </div>
+            <div className="text-sm text-muted-foreground ">
+              Design your own custom AI assistant or character.
+            </div>
+          </div>
+        </Link>
+      </div>
+      <div className="flex-1 flex flex-col rounded-lg bg-muted-darker/50">
+        <div className="p-4 flex items-center gap-4 w-full shrink-0">
+          <AgentLink agent={agent} className="!h-11 !w-11" hideName={true} />
+          <div className="flex flex-col">
+            <div className="font-medium">{agent?.name}</div>
+            <div className="text-sm text-muted-foreground line-clamp-1">
+              {agent?.description}
+            </div>
+          </div>
+          <Button size="sm" variant="ghost" asChild>
+            <Link
+              key={`agent-details-${agent?.username}`}
+              href={`/agents/${agent?.username}`}
+              className="flex bg-accent shrink-0 items-center gap-1 text-xs text-accent-foreground hover:text-muted-foreground"
             >
-              {suggestion.icon}
-              {suggestion.text}
-            </Button>
-          ))}
+              <span className="hidden md:block">Details</span>
+              <ExternalLinkIcon className="w-4 h-4" />
+            </Link>
+          </Button>
         </div>
-      </Form>
+        <Separator className="shrink-0" />
+        <div className="flex flex-col flex-1 p-4 items-center">
+          <div className="inline-flex p-2 bg-purple-600/40 rounded-lg max-w-[80%]">
+            {agent?.greeting || 'How can I help you today?'}
+          </div>
+        </div>
+        <Separator className="shrink-0" />
+        <div className="p-4 shrink-0">
+          <Form {...form}>
+            <form
+              className="flex gap-2 w-full bg-popover border border-secondary rounded-lg p-2"
+              onSubmit={form.handleSubmit(handleSubmit)}
+            >
+              <FormField
+                name="message"
+                render={({ field }) => (
+                  <FormItem className="w-full relative">
+                    <FormControl id={'message'}>
+                      <AutosizeTextarea
+                        className="w-full !border-none !ring-0 !outline-none !ring-offset-0"
+                        placeholder="Type your message here..."
+                        rows={1}
+                        // minHeight={64}
+                        autoFocus={true}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        value={field.value || ''}
+                        disabled={isSubmitting}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            if (form.formState.isValid && !isSubmitting) {
+                              form.handleSubmit(handleSubmit)()
+                            }
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <div
+                      className={cn(
+                        'absolute bottom-0 right-0 flex items-center gap-1.5 text-xs text-muted-foreground transition-all duration-200 [@media(pointer:coarse)]:hidden',
+                        shouldShowHint
+                          ? 'opacity-100 translate-y-0'
+                          : 'opacity-0 translate-y-2 pointer-events-none',
+                      )}
+                    >
+                      <Keyboard className="h-3 w-3" />
+                      <span className="opacity-70">
+                        <Badge variant="outline" className="rounded-sm px-1.5">
+                          Enter
+                        </Badge>{' '}
+                        to send,{' '}
+                        <Badge variant="outline" className="px-1.5 rounded-sm">
+                          Shift+Enter
+                        </Badge>{' '}
+                        for new line
+                      </span>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <div
+                className={cn(
+                  'flex justify-end transition-all opacity-50',
+                  isSubmitting && 'opacity-75',
+                  form.formState.isValid && 'opacity-100 ',
+                )}
+              >
+                <Button
+                  aria-label="Send message"
+                  variant="secondary"
+                  type="submit"
+                  disabled={isSubmitting || !form.formState.isValid}
+                >
+                  {isSubmitting ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <SendIcon className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </form>
+
+            <div className="mt-4 border border-secondary rounded-lg p-4 bg-secondary/30">
+              <div className="text-sm text-muted-foreground mb-4">
+                Suggested prompts
+              </div>
+              <div className="grid md:grid-cols-2 gap-2">
+                {(agent?.suggestions || DEFAULT_SUGGESTIONS).map(suggestion => {
+                  return (
+                    <Button
+                      aria-label={suggestion.text}
+                      key={`${agent?._id || 'default'}-${suggestion.text}`}
+                      variant="outline"
+                      type="button"
+                      className="flex gap-2 rounded-full"
+                      onClick={() => handleSuggestionClick(suggestion.prompt)}
+                      disabled={isSubmitting}
+                    >
+                      {suggestion.text}
+                    </Button>
+                  )
+                })}
+              </div>
+            </div>
+          </Form>
+        </div>
+      </div>
     </div>
   )
 }

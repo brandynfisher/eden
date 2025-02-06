@@ -25,10 +25,10 @@ export default function SectionTraining() {
         <TrainingFeatureCard
           icon={<PaletteIcon className="h-8 w-8 text-purple-600" />}
           title="Your Style"
-          inputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/does_train_thumb_v1.jpg"
-          inputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/does_train_v1.jpg"
-          outputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/does_thumb_v1.jpg"
-          outputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/does_v1.jpg"
+          inputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/ygor_train_thumb_v1.jpg"
+          inputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/ygor_train_v1.jpg"
+          outputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/ygor_thumb_v1.jpg"
+          outputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/ygor_v1.jpg"
           subtitle="Train models that understand and replicate your unique artistic style"
         />
 

@@ -104,6 +104,7 @@ export const LightboxGallery = ({
         captions={{
           showToggle: true,
           descriptionMaxLines: 2,
+          hidden: true,
         }}
         // counter={{ container: { style: { top: 'unset', bottom: 80 } } }}
         open={open}

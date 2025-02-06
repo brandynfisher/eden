@@ -21,6 +21,7 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { EdenRuntimeProvider } from '@/features/chat/providers/eden-runtime-provider'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { AgentBasicInfo } from '@/lib/actions/agent'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import {
@@ -151,10 +152,11 @@ const LeftBarSheet: FC = () => {
   )
 }
 
-export const AgentLink: FC<{ agent?: Agent; className?: string }> = ({
-  agent,
-  className,
-}) => {
+export const AgentLink: FC<{
+  agent?: AgentBasicInfo | Agent
+  className?: string
+  hideName?: boolean
+}> = ({ agent, className, hideName }) => {
   return (
     <Link
       className="w-fit md:ml-0 flex self-start items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
@@ -179,7 +181,7 @@ export const AgentLink: FC<{ agent?: Agent; className?: string }> = ({
           {agent?.name}
         </AvatarFallback>
       </Avatar>
-      {agent?.name}
+      {!hideName && agent?.name}
     </Link>
   )
 }
@@ -278,14 +280,14 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
             welcome={{
               suggestions: [
                 {
-                  text: 'List of tools',
+                  text: 'List your tools',
                   prompt:
                     'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
                 },
                 {
-                  text: 'Make some cat images',
+                  text: 'Make something beautiful',
                   prompt:
-                    'Make 2 images of a cute little cats wearing funky hats ',
+                    'Make a beautiful image of the first thing that comes to mind',
                 },
               ],
               message: 'What do you want to create today?',
