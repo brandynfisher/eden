@@ -1,8 +1,8 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { getAuth } from '@clerk/nextjs/server'
 import {
-  AgentsConfigureDeploymentsArguments,
-  AgentsConfigureDeploymentsResponse,
+  AgentsStopDeploymentArguments,
+  AgentsStopDeploymentResponse,
   EdenClient,
 } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
@@ -28,8 +28,7 @@ export async function POST(
 
   const requestJson = await request.json()
 
-  const { discord, telegram, farcaster } =
-    requestJson as AgentsConfigureDeploymentsArguments
+  const { platform } = requestJson as AgentsStopDeploymentArguments
 
   try {
     const eden = new EdenClient({
@@ -37,23 +36,21 @@ export async function POST(
       token: authToken,
     })
 
-    const res = await eden.agents.configureDeployments({
+    const res = await eden.agents.stopDeployment({
       agentId: id,
-      discord,
-      telegram,
-      farcaster,
+      platform,
     })
 
     if (!res) {
       return new NextResponse(
-        JSON.stringify({ message: 'Agent deployments configuration error' }),
+        JSON.stringify({ message: 'Agent deployment error' }),
         {
           status: 500,
         },
       )
     }
 
-    return NextResponse.json<AgentsConfigureDeploymentsResponse>(res)
+    return NextResponse.json<AgentsStopDeploymentResponse>(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

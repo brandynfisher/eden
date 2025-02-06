@@ -1,9 +1,11 @@
 import {
-  configureAgentDeployments,
   createAgent,
   deleteAgent,
+  deleteAgentDeployment,
   deployAgent,
   getAgent,
+  getAgentDeployments,
+  stopAgentDeployment,
   updateAgent,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
@@ -89,50 +91,19 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => updateAgent(server, request, reply),
   })
 
-  server.post('/v2/agents/:agentId/deployments/configure', {
+  server.get('/v2/agents/:agentId/deployments', {
     schema: {
       tags: ['Agents'],
-      description: 'Configure agent deployments',
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      params: {
-        agentId: Type.String(),
-      },
-      body: Type.Object({
-        discord: Type.Object({
-          enabled: Type.Boolean(),
-          token: Type.Optional(Type.String()),
-          allowedChannels: Type.Optional(Type.Array(Type.String())),
-        }),
-        telegram: Type.Object({
-          enabled: Type.Boolean(),
-          token: Type.Optional(Type.String()),
-          allowedChannels: Type.Optional(Type.Array(Type.String())),
-        }),
-        farcaster: Type.Object({
-          enabled: Type.Boolean(),
-          mnemonic: Type.Optional(Type.String()),
-          neynarWebhookSecret: Type.Optional(Type.String()),
-        }),
-      }),
-      response: {
-        200: Type.Object({
-          agentId: Type.String(),
-        }),
-      },
+      description: 'Get agent deployments',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) =>
-      configureAgentDeployments(server, request, reply),
+    handler: (request, reply) => getAgentDeployments(request, reply),
   })
 
   server.post('/v2/agents/:agentId/deployments', {
     schema: {
       tags: ['Agents'],
-      description: 'Configure agent deployments',
+      description: 'Deploys or updates an agent deployment',
       security: [
         {
           apiKey: [],
@@ -143,6 +114,38 @@ const agentRoutes: FastifyPluginAsync = async server => {
       },
       body: Type.Object({
         platform: Type.String(),
+        discord: Type.Optional(
+          Type.Object({
+            token: Type.String(),
+            allowedChannels: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  id: Type.String(),
+                  note: Type.String(),
+                }),
+              ),
+            ),
+          }),
+        ),
+        telegram: Type.Optional(
+          Type.Object({
+            token: Type.String(),
+            allowedTopics: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  id: Type.String(),
+                  note: Type.String(),
+                }),
+              ),
+            ),
+          }),
+        ),
+        farcaster: Type.Optional(
+          Type.Object({
+            mnemonic: Type.String(),
+            neynarWebhookSecret: Type.String(),
+          }),
+        ),
       }),
       response: {
         200: Type.Object({
@@ -152,6 +155,24 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deployAgent(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/deployments/stop', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Stop an agent deployment',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => stopAgentDeployment(server, request, reply),
+  })
+
+  server.delete('/v2/agents/:agentId/deployments/:platform', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Delete an agent deployment',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => deleteAgentDeployment(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId', {

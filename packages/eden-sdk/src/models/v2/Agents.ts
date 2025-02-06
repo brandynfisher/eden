@@ -24,6 +24,14 @@ export type Agent = Omit<
   instructions: string
   tools?: { [key: string]: string[] }
   deployments?: Deployment[]
+  discordChannelAllowlist?: {
+    id: string
+    note: string
+  }[]
+  telegramTopicAllowlist?: {
+    id: string
+    note: string
+  }[]
   discordId?: string
   model?: ModelV2
   discordUsername?: string
@@ -41,13 +49,6 @@ export type AgentDeployCredentials = {
 }
 
 // Arguments
-export interface AgentDeployArguments extends WebAPICallResult {
-  agent_key: Agent['username']
-  platform: AgentClientType
-  command: AgentDeployCommand
-  credentials: AgentDeployCredentials
-}
-
 export interface AgentGetArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -79,7 +80,6 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
 }
 
 interface DiscordDeploymentConfig {
-  enabled: boolean
   token: string
   allowedChannels: {
     id: string
@@ -88,7 +88,6 @@ interface DiscordDeploymentConfig {
 }
 
 interface TelegramDeploymentConfig {
-  enabled: boolean
   token: string
   allowedTopics: {
     id: string
@@ -97,19 +96,28 @@ interface TelegramDeploymentConfig {
 }
 
 interface FarcasterDeploymentConfig {
-  enabled: boolean
   mnemonic: string
   neynarWebhookSecret: string
 }
 
-export interface AgentsConfigureDeploymentsArguments extends WebAPICallOptions {
+export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
   agentId: string
+}
+
+export interface AgentsDeployArguments extends WebAPICallOptions {
+  agentId: string
+  platform: AgentClientType
   discord?: DiscordDeploymentConfig
   telegram?: TelegramDeploymentConfig
   farcaster?: FarcasterDeploymentConfig
 }
 
-export interface AgentsDeployArguments extends WebAPICallOptions {
+export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
+  agentId: string
+  platform: AgentClientType
+}
+
+export interface AgentsDeleteDeploymentArguments extends WebAPICallOptions {
   agentId: string
   platform: AgentClientType
 }
@@ -148,13 +156,12 @@ export const agentsUpdateRequestConfig = (
   }
 }
 
-export const agentsConfigureDeploymentsRequestConfig = (
-  args: AgentsConfigureDeploymentsArguments,
+export const agentsGetDeploymentsRequestConfig = (
+  args: AgentsGetDeploymentsArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: `v2/agents/${args.agentId}/deployments/configure`,
-    data: args,
+    method: 'GET',
+    url: `v2/agents/${args.agentId}/deployments`,
   }
 }
 
@@ -167,6 +174,24 @@ export const agentsDeployRequestConfig = (
     data: args,
   }
 }
+
+export const agentsStopDeploymentRequestConfig = (
+  args: AgentsStopDeploymentArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/deployments/stop`,
+  }
+}
+export const agentsDeleteDeploymentRequestConfig = (
+  args: AgentsDeleteDeploymentArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `v2/agents/${args.agentId}/deployments/${args.platform}`,
+  }
+}
+
 export const agentsDeleteRequestConfig = (
   args: AgentsDeleteArguments,
 ): AxiosRequestConfig => {
@@ -177,6 +202,23 @@ export const agentsDeleteRequestConfig = (
 }
 
 // Responses
+export type AgentsGetDeploymentsResponse = WebAPICallResult & {
+  deployments: {
+    discord: {
+      deployment: Deployment
+      allowedChannels: Agent['discordChannelAllowlist']
+    }
+    telegram: {
+      deployment: Deployment
+      allowedTopics: Agent['telegramTopicAllowlist']
+    }
+    farcaster: {
+      deployment: Deployment
+    }
+  }
+  error?: string
+}
+
 export type AgentGetResponse = WebAPICallResult & {
   agent: Agent
   error?: string
@@ -192,13 +234,18 @@ export type AgentsUpdateResponse = WebAPICallResult & {
   error?: string
 }
 
-export type AgentsConfigureDeploymentsResponse = WebAPICallResult & {
+export type AgentsDeployResponse = WebAPICallResult & {
   agentId: string
   error?: string
 }
 
-export type AgentsDeployResponse = WebAPICallResult & {
-  agentId: string
+export type AgentsStopDeploymentResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+export type AgentsDeleteDeploymentResponse = WebAPICallResult & {
+  success: boolean
   error?: string
 }
 
