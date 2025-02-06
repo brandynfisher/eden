@@ -1,6 +1,8 @@
 import { Agent, AgentDocument } from '../models/Agent'
+import { Deployment } from '../models/Deployment'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
+import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import {
   AgentGetArguments,
@@ -34,31 +36,25 @@ export const getAgent = async (
     })
   }
 
-  // const currentUserId = request.user ? request.user.userId : undefined
-  // const isOwnAgent =
-  //   currentUserId && agent.owner.toString() === currentUserId.toString()
+  const currentUserId = request.user ? request.user.userId : undefined
+  const isOwnAgent =
+    currentUserId && agent.owner.toString() === currentUserId.toString()
 
-  // if (!isOwnAgent && !agent.public) {
-  //   return reply.status(401).send({
-  //     error: 'User not authorized to view this agent',
-  //   })
-  // }
+  const agentRepository = new AgentRepository(Agent)
 
-  const populateFields = [
-    {
+  await Promise.all([
+    agentRepository.model.populate(agent, {
       path: 'owner',
       select: '_id userId username userImage',
-    },
-  ]
-
-  if (agent.deployments?.length > 0) {
-    populateFields.push({
-      path: 'deployments',
-      select: 'platform',
-    })
-  }
-
-  await Agent.populate(agent, populateFields)
+    }),
+    isOwnAgent && agent.deployments && agent.deployments.length > 0
+      ? agentRepository.model.populate(agent, {
+          path: 'deployments',
+          select: '_id platform',
+          model: Deployment,
+        })
+      : Promise.resolve(),
+  ])
 
   if (agent.userImage) {
     agent.userImage = forceCloudfrontUrl(server, agent.userImage)

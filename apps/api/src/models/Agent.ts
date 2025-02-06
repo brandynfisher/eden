@@ -8,7 +8,7 @@ export interface AgentSchema extends BaseUserSchema {
   name: string
   description?: string
   instructions: string
-  deployments: DeploymentDocument[]
+  deployments?: DeploymentDocument[]
   tools?: string[]
   discordId?: string
   model?: ModelV2Document
@@ -42,6 +42,7 @@ const AgentSchema = new Schema<AgentDocument>(
       {
         type: Schema.Types.ObjectId,
         ref: 'deployments',
+        default: [],
       },
     ],
     tools: {
