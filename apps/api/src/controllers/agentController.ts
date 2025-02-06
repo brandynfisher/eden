@@ -28,21 +28,21 @@ export const getAgent = async (
     : { username: agentId }
   const agent = await Agent.findOne(query)
 
-  if (!agent || agent.deleted) {
+  if (!agent) {
     return reply.status(404).send({
       error: 'Agent not found',
     })
   }
 
-  const currentUserId = request.user ? request.user.userId : undefined
-  const isOwnAgent =
-    currentUserId && agent.owner.toString() === currentUserId.toString()
+  // const currentUserId = request.user ? request.user.userId : undefined
+  // const isOwnAgent =
+  //   currentUserId && agent.owner.toString() === currentUserId.toString()
 
-  if (!isOwnAgent && !agent.public) {
-    return reply.status(401).send({
-      error: 'User not authorized to view this agent',
-    })
-  }
+  // if (!isOwnAgent && !agent.public) {
+  //   return reply.status(401).send({
+  //     error: 'User not authorized to view this agent',
+  //   })
+  // }
 
   const populateFields = [
     {
