@@ -6,9 +6,10 @@ import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import {
   AgentGetArguments,
-  AgentsConfigureDeploymentsArguments,
   AgentsCreateArguments,
   AgentsDeleteArguments,
+  AgentsDeleteDeploymentArguments,
+  AgentsDeployArguments,
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
@@ -187,21 +188,12 @@ export const updateAgent = async (
   })
 }
 
-export const configureAgentDeployments = async (
-  server: FastifyInstance,
+export const getAgentDeployments = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const currentUserId = request.user.userId
   const { agentId } = request.params as { agentId: string }
-  const deploymentData = request.body as AgentsConfigureDeploymentsArguments
-
-  if (!agentId) {
-    return reply.status(422).send({
-      error: 'Missing agentId',
-    })
-  }
-
+  const currentUserId = request.user.userId
   const agent = await Agent.findById(agentId)
 
   if (!agent) {
@@ -212,46 +204,17 @@ export const configureAgentDeployments = async (
 
   if (agent.owner.toString() !== currentUserId.toString()) {
     return reply.status(401).send({
-      error: 'User not authorized to configure deployments for this agent',
+      error: 'User not authorized to view deployments for this agent',
     })
   }
 
-  const discordToken = deploymentData.discord?.token
-  const telegramToken = deploymentData.telegram?.token
-  const farcasterMnemonic = deploymentData.farcaster?.mnemonic
-  const farcasterNeynarWebhookSecret =
-    deploymentData.farcaster?.neynarWebhookSecret
+  const deployments = await Deployment.find({
+    agent: agentId,
+  })
 
-  try {
-    await axios.post(
-      'https://edenartlab--api-stage-fastapi-app.modal.run/deployments/configure',
-      {
-        agent_username: agent.username,
-        secrets: {
-          client_discord_token: discordToken,
-          client_telegram_token: telegramToken,
-          client_farcaster_mnemonic: farcasterMnemonic,
-          client_farcaster_neynar_webhook_secret: farcasterNeynarWebhookSecret,
-        },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-      },
-    )
-
-    // TODO: Set allowed channels for each platform
-
-    return reply.status(200).send({
-      agentId: agent._id,
-    })
-  } catch (error) {
-    console.error(error)
-    return reply.status(500).send({
-      error: 'An error occurred while configuring the agent deployments',
-    })
-  }
+  return reply.status(200).send({
+    deployments,
+  })
 }
 
 export const deployAgent = async (
@@ -260,8 +223,9 @@ export const deployAgent = async (
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
-  const { agentId } = request.params as { agentId: string }
-  const { platform } = request.body as { platform: string }
+  const { agentId } = request.params as AgentsDeployArguments
+  const { platform, discord, telegram, farcaster } =
+    request.body as AgentsDeployArguments
 
   const agent = await Agent.findById(agentId)
 
@@ -279,7 +243,26 @@ export const deployAgent = async (
 
   try {
     await axios.post(
-      'https://edenartlab--api-stage-fastapi-app.modal.run/deployments/create',
+      `${server.config.EDEN_COMPUTE_API_URL}/deployments/configure`,
+      {
+        agent_username: agent.username,
+        secrets: {
+          client_discord_token: discord?.token,
+          client_telegram_token: telegram?.token,
+          client_farcaster_mnemonic: farcaster?.mnemonic,
+          client_farcaster_neynar_webhook_secret:
+            farcaster?.neynarWebhookSecret,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/deployments/create`,
       {
         agent_username: agent.username,
         platform,
@@ -300,6 +283,52 @@ export const deployAgent = async (
       error: 'An error occurred while deploying the agent',
     })
   }
+}
+
+export const deleteAgentDeployment = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { agentId, platform } =
+    request.params as AgentsDeleteDeploymentArguments
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to delete this deployment',
+    })
+  }
+
+  try {
+    await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/deployments/delete`,
+      {
+        agent_username: agent.username,
+        platform,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({
+      error: 'An error occurred while deleting the deployment',
+    })
+  }
+
+  return reply.status(200).send()
 }
 
 export const deleteAgent = async (

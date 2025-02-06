@@ -1,0 +1,152 @@
+'use client'
+
+import { getQueryClient } from '@/app/get-query-client'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { AgentClientType, AgentsDeployArguments } from '@edenlabs/eden-sdk'
+import axios from 'axios'
+import { RocketIcon, SaveIcon, TrashIcon } from 'lucide-react'
+import { useState } from 'react'
+import { UseFormReturn } from 'react-hook-form'
+import { toast } from 'sonner'
+
+interface DeploymentFormFooterProps {
+  form: UseFormReturn<any>
+  agentId: string
+  isDeployed: boolean
+  platform: string
+}
+
+export const DeploymentFormFooter = ({
+  form,
+  agentId,
+  platform,
+  isDeployed,
+}: DeploymentFormFooterProps) => {
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    const queryClient = getQueryClient()
+    setIsDeleting(true)
+    try {
+      await axios.delete(`/api/agents/${agentId}/deployments`, {
+        data: { platform },
+      })
+      toast.success('Deployment deleted successfully', {
+        description: `The ${platform} deployment has been deleted successfully.`,
+        richColors: true,
+        dismissible: true,
+      })
+    } catch (error) {
+      toast.error('Failed to delete deployment', {
+        description: `The ${platform} deployment could not be deleted. Please try again.`,
+        richColors: true,
+        dismissible: true,
+      })
+    } finally {
+      queryClient.invalidateQueries({
+        queryKey: ['agents', agentId, 'deployments'],
+      })
+      setIsDeleting(false)
+    }
+  }
+
+  const handleSubmit = async (data: any) => {
+    const queryClient = getQueryClient()
+    const loadingMessage = isDeployed
+      ? `Updating ${platform} deployment`
+      : `Deploying agent to ${platform}`
+
+    const successMessage = isDeployed
+      ? `Deployment updated successfully`
+      : `Deployed to ${platform} successfully`
+
+    const errorMessage = isDeployed
+      ? `Failed to update ${platform} deployment`
+      : `Failed to deploy agent to ${platform}`
+
+    const toastId = toast.loading(loadingMessage)
+
+    try {
+      const payload: AgentsDeployArguments = {
+        agentId,
+        platform: platform as AgentClientType,
+      }
+
+      if (platform === 'discord') {
+        payload.discord = {
+          token: data.token,
+          allowedChannels: data.allowedChannels,
+        }
+      }
+
+      if (platform === 'telegram') {
+        payload.telegram = {
+          token: data.token,
+          allowedTopics: data.allowedTopics,
+        }
+      }
+
+      if (platform === 'farcaster') {
+        payload.farcaster = {
+          mnemonic: data.mnemonic,
+          neynarWebhookSecret: data.neynarWebhookSecret,
+        }
+      }
+
+      await axios.post(`/api/agents/${agentId}/deployments`, payload)
+
+      toast.success(successMessage, {
+        id: toastId,
+        richColors: true,
+        dismissible: true,
+      })
+    } catch (error) {
+      console.error(error)
+      toast.error(errorMessage, {
+        id: toastId,
+        richColors: true,
+        dismissible: true,
+      })
+    } finally {
+      queryClient.invalidateQueries({
+        queryKey: ['agents', agentId, 'deployments'],
+      })
+    }
+  }
+
+  return (
+    <>
+      <Separator className="my-4" />
+      <div className="flex items-center gap-2 self-end">
+        {isDeployed && (
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={form.formState.isSubmitting || isDeleting}
+          >
+            <TrashIcon className="size-4 mr-2" />
+            Delete
+          </Button>
+        )}
+        <Button
+          type="submit"
+          onClick={form.handleSubmit(handleSubmit)}
+          disabled={
+            form.formState.isSubmitting || isDeleting || !form.formState.isDirty
+          }
+        >
+          {isDeployed ? (
+            <SaveIcon className="size-4 mr-2" />
+          ) : (
+            <RocketIcon className="size-4 mr-2" />
+          )}
+          {isDeployed ? 'Update' : 'Deploy'}
+        </Button>
+      </div>
+    </>
+  )
+}
