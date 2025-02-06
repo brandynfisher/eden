@@ -32,10 +32,10 @@ import {
 } from '@assistant-ui/react'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
-import { Edit2Icon, EditIcon } from 'lucide-react'
+import { EditIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
 import * as React from 'react'
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const threads = useThreadList().threads
@@ -144,57 +144,36 @@ const LeftBarSheet: FC = () => {
 export const AgentLink: FC<{
   agent?: Agent
   className?: string
-  invalidate?: () => Promise<void>
-}> = ({ agent, className, invalidate }) => {
-  const dispatch = useAppDispatch()
-
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agent,
-        onAction: async () => {
-          await invalidate?.()
-        },
-      }),
-    )
-  }
+  avatarClassName?: string
+}> = ({ agent, className, avatarClassName }) => {
   return (
-    <div className="flex items-center justify-between gap-2 w-full">
-      <Link
-        className="md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
-        title="View Agent profile"
-        href={`/agents/${agent?.username}`}
+    <Link
+      className={cn(
+        'w-fit md:ml-0 flex self-center items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground',
+        className,
+      )}
+      title="View Agent profile"
+      href={`/agents/${agent?.username}`}
+    >
+      <Avatar
+        className={cn(
+          'w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1',
+          avatarClassName,
+        )}
       >
-        <Avatar
-          className={cn(
-            'w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1',
-            className,
-          )}
+        <AvatarImage
+          className={'object-cover'}
+          src={getCloudfrontOriginalUrl(agent?.userImage)}
+        />
+        <AvatarFallback
+          delayMs={250}
+          className={cn(['w-6 h-6 md:w-8 md:h-8', className])}
         >
-          <AvatarImage
-            className={'object-cover'}
-            src={getCloudfrontOriginalUrl(agent?.userImage)}
-          />
-          <AvatarFallback
-            delayMs={250}
-            className={cn(['w-6 h-6 md:w-8 md:h-8', className])}
-          >
-            {agent?.name[0]}
-          </AvatarFallback>
-        </Avatar>
-        <span className="truncate max-w-[140px]">{agent?.name}</span>
-      </Link>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="shrink-0 size-8"
-        onClick={handleEditClick}
-      >
-        <Edit2Icon className="size-4" />
-      </Button>
-    </div>
+          {agent?.name[0]}
+        </AvatarFallback>
+      </Avatar>
+      <span className="truncate">{agent?.name}</span>
+    </Link>
   )
 }
 
@@ -212,12 +191,27 @@ type Props = {
 }
 
 const Chat: FC<Props> = ({ agentId, threadId }) => {
+  const dispatch = useAppDispatch()
   const [isMounted, setIsMounted] = useState(false)
+  const { user } = useAuthState()
 
   const { agent, isError, error, invalidate } = useAgentQuery({
     key: agentId,
     enabled: !!agentId,
   })
+
+  const handleEditClick = () => {
+    dispatch(
+      updateAgentFormSheet({
+        isOpen: true,
+        mode: 'update',
+        agent,
+        onAction: async () => {
+          await invalidate()
+        },
+      }),
+    )
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -231,6 +225,10 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
       document.body.classList.remove('overflow-hidden')
     }
   }, [])
+
+  const isOwner = useMemo(() => {
+    return user?._id === agent?.owner._id
+  }, [user, agent])
 
   if (!isMounted) {
     return null
@@ -253,15 +251,45 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
         {/* MOBILE-ONLY HEADER */}
         <div className="bg-muted/40 border-b px-3 py-2 md:hidden flex items-center gap-2">
           <Header />
-          <div className="ml-auto">
-            <AgentLink agent={agent} invalidate={invalidate} />
+          <div className="ml-auto flex items-center gap-2">
+            <AgentLink
+              agent={agent}
+              className={cn(
+                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
+              )}
+            />
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 size-8"
+                onClick={handleEditClick}
+              >
+                <SettingsIcon className="size-4" />
+              </Button>
+            )}
           </div>
         </div>
 
         {/* DESKTOP-ONLY SIDEBAR */}
         <aside className="hidden bg-muted/40 border-r px-3 py-2 md:flex md:flex-col">
-          <div className="ml-2">
-            <AgentLink agent={agent} invalidate={invalidate} />
+          <div className="flex items-center justify-between gap-2 ml-2">
+            <AgentLink
+              agent={agent}
+              className={cn(
+                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
+              )}
+            />
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 size-8"
+                onClick={handleEditClick}
+              >
+                <SettingsIcon className="size-4" />
+              </Button>
+            )}
           </div>
           <Separator orientation="horizontal" className="my-2 mb-1" />
 

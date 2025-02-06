@@ -219,7 +219,11 @@ export const ChatMockWidget: FC<Props> = ({ agentId, agentSSRData }) => {
     <div data-testid="chat-mock-widget">
       <div className="mb-6 flex justify-around">
         <div className="flex flex-col items-center w-fit">
-          <AgentLink agent={agent} className="h-12 w-12 md:h-16 md:w-16" />
+          <AgentLink
+            agent={agent}
+            className="self-start"
+            avatarClassName="h-12 w-12 md:h-16 md:w-16"
+          />
           <div className="inline-flex ml-16 p-2 mt-2 bg-purple-600/40 rounded-lg rounded-tl-none">
             How can I help you today?
           </div>
