@@ -205,7 +205,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
       data-testid="chat-mock-widget"
       className="flex flex-wrap md:flex-nowrap gap-4 h-full"
     >
-      <div className="min-w-[320px] md:max-w-[320px] rounded-lg bg-muted-darker/50 p-4 flex flex-col gap-4">
+      <div className="min-w-[320px] md:max-w-[320px] rounded-lg bg-muted-darker/80 p-4 flex flex-col gap-4">
         {agents.map((agentConfig, index) => (
           <Button
             variant="ghost"
@@ -272,7 +272,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
           </div>
         </Link>
       </div>
-      <div className="flex-1 flex flex-col rounded-lg bg-muted-darker/50">
+      <div className="flex-1 flex flex-col rounded-lg bg-muted-darker/80">
         <div className="p-4 flex items-center gap-4 w-full shrink-0">
           <AgentLink agent={agent} className="!h-11 !w-11" hideName={true} />
           <div className="flex flex-col">
@@ -285,9 +285,8 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
             <Link
               key={`agent-details-${agent?.username}`}
               href={`/agents/${agent?.username}`}
-              className="flex bg-accent shrink-0 items-center gap-1 text-xs text-accent-foreground hover:text-muted-foreground"
+              className="flex bg-muted-foreground/10 shrink-0 items-center text-xs text-accent-foreground hover:text-muted-foreground"
             >
-              <span className="hidden md:block">Details</span>
               <ExternalLinkIcon className="w-4 h-4" />
             </Link>
           </Button>

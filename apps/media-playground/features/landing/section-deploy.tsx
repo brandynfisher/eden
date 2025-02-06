@@ -14,13 +14,11 @@ export default function SectionDeploy() {
   return (
     <div className="max-w-3xl mx-auto">
       <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
-        Deploy Your Agent Wherever Your Audience Is
+        Export Your Agent Anywhere
       </TypographyH4>
       <p className="text-center text-muted-foreground mb-6">
-        Once you've built your custom agent on Eden, you can deploy it to
-        platforms like Discord, X, Telegram, and Farcaster. Create consistent,
-        scalable content and keep your audience engaged across all your favorite
-        channels.
+        Take your AI agents beyond Eden - deploy them across multiple platforms
+        to engage with your audience where you want.
       </p>
       <div className="flex justify-center items-center gap-4">
         <div className="flex flex-col items-center gap-2">
