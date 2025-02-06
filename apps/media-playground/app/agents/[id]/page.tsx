@@ -22,7 +22,7 @@ export async function generateMetadata(
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `Agent: ${response.agent.name} | Eden Create`
+  const title = `Agent: ${response.agent.name} | Eden`
   const description = response.agent.description?.substring(0, 320) || ''
 
   const ogImage = response.agent.userImage

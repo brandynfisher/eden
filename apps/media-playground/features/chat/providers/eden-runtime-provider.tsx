@@ -1,5 +1,3 @@
-'use client'
-
 import LoadingIndicator from '@/components/loading-indicator'
 import {
   MessageEmitter,
@@ -8,6 +6,7 @@ import {
 import { getThread, sendMessage } from '@/features/chat/chat-api'
 import { EdenMessage } from '@/features/chat/eden-message-converter'
 import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider, MessageStatus } from '@assistant-ui/react'
 import { AssistantMessage } from '@edenlabs/eden-sdk'
@@ -40,7 +39,8 @@ export function EdenRuntimeProvider({
   const threadIdRef = useRef<string | undefined>(undefined)
   const abortController = useRef<AbortController | null>(null)
   const messageEmitterRef = useRef<MessageEmitter | null>(null)
-
+  const { user, isLoading: isAuthLoading } = useAuthState()
+  const [isReadOnly, setIsReadOnly] = useState(false)
   const { message: websocketMessage, readyState } = useWebSocketMessage({
     eventType: 'thread-update',
     abortSignal: abortController.current?.signal,
@@ -52,18 +52,23 @@ export function EdenRuntimeProvider({
   const { runtime, setIsRunning, setMessages, addOrUpdateMessage } =
     useEdenRuntime({
       agentId,
+      isReadOnly: !isAuthLoading ? isReadOnly : null,
       threadId: threadIdRef.current,
       onSwitchToNewThread: async () => {
+        setIsStreamActive(false)
+        setIsRunning(false)
         setIsLoadingThread(true)
-        // abortController.current.abort()
-        // abortController.current = new AbortController()
+        abortController.current?.abort()
+        abortController.current = new AbortController()
+        messageEmitterRef.current = new MessageEmitter()
         threadIdRef.current = undefined
         if (typeof window !== 'undefined')
           window.history.pushState(null, '', `/chat/${agentId}`)
         setIsLoadingThread(false)
+        setIsReadOnly(false)
       },
       onSwitchToThread: async newThreadId => {
-        console.log('onSwitchToThread', newThreadId)
+        // console.log('onSwitchToThread', newThreadId)
         setIsLoadingThread(true)
         // abortController.current.abort()
         // abortController.current = new AbortController()
@@ -71,7 +76,7 @@ export function EdenRuntimeProvider({
 
         try {
           threadIdRef.current = newThreadId
-          const threadFetch = await getThread(newThreadId)
+          // await getThread(newThreadId)
 
           if (typeof window !== 'undefined')
             window.history.pushState(
@@ -80,18 +85,12 @@ export function EdenRuntimeProvider({
               `/chat/${agentId}/${newThreadId}`,
             )
 
-          // if (threadFetch.active && threadFetch.active.length > 0) {
-          //   setIsStreamActive(true)
-          // } else {
-          //   setIsStreamActive(false)
-          //   setIsRunning(false)
-          // }
-          checkThreadStatus()
+          const threadFetch = await checkThreadStatus(false)
           return {
             messages: (threadFetch?.messages as EdenMessage[]) ?? [],
           }
         } catch (error) {
-          console.error('Error switching thread:', error)
+          // console.error('Error switching thread:', error)
           toast.error('Failed to switch to thread', {
             description: `Thread may not exist or you may not have access to it`,
             dismissible: true,
@@ -158,7 +157,7 @@ export function EdenRuntimeProvider({
             for await (const message of messageIterable) {
               const assistantMessage = message as AssistantMessage
 
-              console.log('assistantMessage', assistantMessage)
+              // console.log('assistantMessage', assistantMessage)
 
               yield {
                 data: {
@@ -184,46 +183,82 @@ export function EdenRuntimeProvider({
       },
     })
 
-  const checkThreadStatus = useCallback(async () => {
-    if (!threadIdRef.current || !messageEmitterRef.current) return
+  const checkThreadStatus = useCallback(
+    async (shouldSetMessages = true) => {
+      // console.log('checkThreadStatus', {
+      //   threadId: threadIdRef.current,
+      //   isAuthLoading,
+      // })
+      if (!threadIdRef.current || !messageEmitterRef.current) return
 
-    try {
-      const thread = await getThread(threadIdRef.current)
-      if (!thread) return
-
-      if (wasDisconnected && messageEmitterRef.current) {
-        messageEmitterRef.current = new MessageEmitter()
+      // If auth is still loading, delay the check
+      if (isAuthLoading) {
+        // console.log('Auth still loading, delaying thread status check')
+        return
       }
 
-      // Update messages and ensure they're properly converted
-      if (thread.messages) {
+      try {
+        const thread = await getThread(threadIdRef.current)
+        if (!thread) return
+
+        const isThreadReadOnly =
+          !user || thread.user._id.toString() !== user?._id.toString()
+        // console.log('Setting read-only state:', { isThreadReadOnly, threadUser: thread.user._id, currentUser: user?._id })
+        setIsReadOnly(isThreadReadOnly)
+
+        if (wasDisconnected && messageEmitterRef.current) {
+          messageEmitterRef.current = new MessageEmitter()
+        }
+
+        // Update messages and ensure they're properly converted
+        // if (thread.messages) {
+        //   // console.log(
+        //   //   'thread.messages',
+        //   //   thread.messages[thread.messages.length - 1],
+        //   // )
+        //   setMessages(thread.messages as EdenMessage[])
+        // }
+
+        // Check if thread has active messages
+        const hasActiveMessages = thread.active && thread.active.length > 0
         // console.log(
-        //   'thread.messages',
-        //   thread.messages[thread.messages.length - 1],
+        //   'hasActiveMessages',
+        //   hasActiveMessages,
+        //   thread.active,
+        //   thread.active?.length,
         // )
-        setMessages(thread.messages as EdenMessage[])
+        setIsStreamActive(hasActiveMessages ?? false)
+        setIsRunning(hasActiveMessages ?? false)
+
+        // if (hasActiveMessages) {
+        //   abortController.current = new AbortController()
+        // }
+
+        if (shouldSetMessages && thread.messages) {
+          // console.log(
+          //   'thread.messages',
+          //   thread.messages[thread.messages.length - 1],
+          // )
+          setMessages(thread.messages as EdenMessage[])
+        }
+
+        return thread
+      } catch (error) {
+        console.error('Error checking thread status:', error)
       }
+    },
+    [wasDisconnected, setMessages, setIsRunning, user, isAuthLoading],
+  )
 
-      // Check if thread has active messages
-      const hasActiveMessages = thread.active && thread.active.length > 0
-      // console.log(
-      //   'hasActiveMessages',
-      //   hasActiveMessages,
-      //   thread.active,
-      //   thread.active?.length,
-      // )
-      setIsStreamActive(hasActiveMessages ?? false)
-      setIsRunning(hasActiveMessages ?? false)
-
-      // if (hasActiveMessages) {
-      //   abortController.current = new AbortController()
-      // }
-    } catch (error) {
-      console.error('Error checking thread status:', error)
+  // Add an effect to recheck thread status when auth state changes
+  useEffect(() => {
+    if (!isAuthLoading && threadIdRef.current) {
+      // console.log('Auth state changed, rechecking thread status')
+      checkThreadStatus()
     }
-  }, [wasDisconnected, setMessages, setIsRunning])
+  }, [isAuthLoading, user, checkThreadStatus])
 
-  // Simplified initial load and thread switching
+  // Modify the initial thread loading effect
   useEffect(() => {
     const loadThread = async () => {
       if (!threadId && !threadIdRef.current) {
@@ -238,8 +273,11 @@ export function EdenRuntimeProvider({
         threadIdRef.current = threadId
 
         if (threadIdRef.current) {
-          runtime.switchToThread(threadIdRef.current)
-          await checkThreadStatus()
+          runtime.threads.switchToThread(threadIdRef.current)
+          // Only check thread status if auth is loaded
+          if (!isAuthLoading) {
+            await checkThreadStatus()
+          }
         }
       } catch (error) {
         console.error('Error loading thread:', error)
@@ -249,7 +287,7 @@ export function EdenRuntimeProvider({
     }
 
     loadThread()
-  }, [threadId, runtime, checkThreadStatus])
+  }, [threadId, runtime, checkThreadStatus, isAuthLoading])
 
   // Connection monitoring effect remains the same but uses the restored checkThreadStatus
   useEffect(() => {
@@ -306,8 +344,16 @@ export function EdenRuntimeProvider({
 
     // Process new messages
     newMessages.forEach(msg => {
-      messageEmitterRef.current?.emit(msg)
-      addOrUpdateMessage(msg)
+      console.log('newMessages', msg)
+      const newMsg = {
+        ...msg,
+        status: activeMessageIds?.length ? { type: 'running' } : msg.status,
+      }
+
+      //@ts-expect-error status is not typed
+      messageEmitterRef.current?.emit(newMsg)
+      //@ts-expect-error status is not typed
+      addOrUpdateMessage(newMsg)
     })
 
     // Check if stream should be ended

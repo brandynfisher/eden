@@ -1,3 +1,5 @@
+'use client'
+
 import EdenFeedbackAdapter from '@/features/chat/eden-feedback-adapter'
 import edenImageAttachmentAdapter from '@/features/chat/eden-image-attachment-adapter'
 import {
@@ -22,6 +24,7 @@ const symbolEdenExtras = Symbol('eden-extras')
 export type EdenExtras = {
   [symbolEdenExtras]: true
   threadTitle: string
+  isReadOnly?: boolean
 }
 
 export const useEdenRuntime = ({
@@ -31,6 +34,7 @@ export const useEdenRuntime = ({
   onSwitchToNewThread,
   onSwitchToThread,
   onRename,
+  isReadOnly,
 }: {
   agentId?: string
   threadId?: string
@@ -41,6 +45,7 @@ export const useEdenRuntime = ({
   onSwitchToNewThread?: () => Promise<void> | void
   onSwitchToThread?: (threadId: string) => Promise<{ messages: EdenMessage[] }>
   onRename?: (threadId: string, newTitle: string) => Promise<void>
+  isReadOnly?: boolean | null
 }) => {
   // const [threadTitle, setThreadTitle] = useState('')
   const [isRunning, setIsRunning] = useState(false)
@@ -52,13 +57,15 @@ export const useEdenRuntime = ({
     enabled: isSignedIn,
   })
 
+  // console.log('useEdenRuntime', threadId, 'isReadOnly', isReadOnly)
+
   // Add mounted ref to prevent state updates after unmount
   const isMounted = useRef(true)
 
   useEffect(() => {
-    console.log('useEdenRuntime mounted')
+    // console.log('useEdenRuntime mounted')
     return () => {
-      console.log('useEdenRuntime unmounting')
+      // console.log('useEdenRuntime unmounting')
       isMounted.current = false
     }
   }, [])
@@ -67,19 +74,25 @@ export const useEdenRuntime = ({
     messages: EdenMessage[],
     callback?: (thread_id?: string) => Promise<void>,
   ) => {
+    // Don't allow sending messages in read-only mode
+    if (isReadOnly) {
+      console.warn('Attempted to send message in read-only mode')
+      return
+    }
+
     try {
-      console.log('handleSendMessage start')
+      // console.log('handleSendMessage start')
       setIsRunning(true)
       await sendMessage(messages, callback)
-      console.log('handleSendMessage complete')
+      // console.log('handleSendMessage complete')
     } catch (error) {
       console.error('Error streaming messages:', error)
     } finally {
-      console.log('handleSendMessage cleanup, isMounted:', isMounted.current)
+      // console.log('handleSendMessage cleanup, isMounted:', isMounted.current)
       if (isMounted.current) {
         setIsRunning(false)
       } else {
-        console.warn('Prevented setState after unmount in handleSendMessage')
+        // console.warn('Prevented setState after unmount in handleSendMessage')
       }
     }
   }
@@ -100,6 +113,9 @@ export const useEdenRuntime = ({
       //@ts-expect-error: Type error: Type 'ThreadMessage[]' is not assignable to type 'EdenMessage[]'
       messages: threadMessages,
       setMessages,
+      extras: {
+        isReadOnly,
+      },
       adapters: {
         feedback: EdenFeedbackAdapter,
         attachments: new CompositeAttachmentAdapter([
@@ -107,6 +123,7 @@ export const useEdenRuntime = ({
         ]),
         threadList: {
           threadId,
+          //@ts-expect-error: Type error: Type 'Thread[]' is not assignable to type 'ExternalStoreThreadData<"regular">[]'
           threads: threads?.map(thread => ({
             threadId: thread._id,
             title: thread.title,
@@ -133,6 +150,12 @@ export const useEdenRuntime = ({
         },
       },
       onNew: async msg => {
+        // Don't allow new messages in read-only mode
+        if (isReadOnly) {
+          console.warn('Attempted to create new message in read-only mode')
+          return
+        }
+
         return handleSendMessage(
           [
             {
@@ -146,7 +169,7 @@ export const useEdenRuntime = ({
             },
           ],
           async (newThreadId?: string) => {
-            console.log('callback', agentId, threadId, newThreadId)
+            // console.log('callback', agentId, threadId, newThreadId)
             if (typeof window !== 'undefined')
               window.history.pushState(
                 null,
@@ -172,10 +195,12 @@ export function useEdenRuntimeExtras<T>(
 ): T {
   return useThread(t => {
     const extras = t.extras as EdenExtras
-    if (!extras[symbolEdenExtras])
-      throw new Error(
-        'useEdenRuntimeExtras can only be used inside a Eden runtime',
-      )
+    // console.log('t', t)
+    // console.log('extras', t.metadata.id, extras)
+    // if (!extras[symbolEdenExtras])
+    //   throw new Error(
+    //     'useEdenRuntimeExtras can only be used inside a Eden runtime',
+    //   )
 
     return selector(extras)
   })

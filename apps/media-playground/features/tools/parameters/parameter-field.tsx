@@ -92,6 +92,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                       e.target.value ? parseInt(e.target.value) : undefined,
                     )
                   }
+                  className="text-base"
                   onBlur={onBlur}
                   value={parsedValue}
                 />
@@ -205,7 +206,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   <AutosizeTextarea
                     spellCheck={false}
                     placeholder={parameter.description}
-                    className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg ${
+                    className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg text-base ${
                       parameter.required
                         ? '!outline-none !p-4 !pt-2 !mt-0'
                         : 'rounded-lg border p-2 '
@@ -242,6 +243,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   onChange={onChange}
                   onBlur={onBlur}
                   value={value || ''}
+                  className="text-base"
                 />
               )}
             </FormItemWrap>
@@ -267,6 +269,8 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   base_model={
                     tool.base_model === 'sdxl'
                       ? ['sdxl', 'JuggernautXL_v6']
+                      : tool.base_model === 'flux-schnell'
+                      ? ['flux-dev']
                       : tool.base_model
                   }
                   value={parsedValue}
@@ -450,6 +454,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                 onChange={onChange}
                 onBlur={onBlur}
                 value={value === null ? '' : value}
+                className="text-base"
               />
             </>
           </FormItemWrap>

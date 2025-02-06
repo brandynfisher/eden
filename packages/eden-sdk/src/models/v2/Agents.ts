@@ -20,6 +20,7 @@ export type Agent = Omit<
   username: string
   description: string
   userImage: string
+  suggestions?: { text: string; prompt: string }[]
   instructions: string
   tools?: { [key: string]: string[] }
   deployments?: Deployment[]
@@ -55,6 +56,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   name: string
   key: string
   description?: string
+  suggestions?: { text: string; prompt: string }[]
   image: string
   instructions?: string
   tools?: { [key: string]: string[] }
@@ -67,6 +69,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   name?: string
   key?: string
   description?: string
+  suggestions?: { text: string; prompt: string }[]
   image?: string
   instructions?: string
   tools?: { [key: string]: string[] }

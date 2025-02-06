@@ -22,6 +22,7 @@ export interface MannaVoucherInput {
 export enum VoucherAction {
   AddManna = 'manna',
   GrantEden2Access = 'eden2_access',
+  SubscriptionTrialPro30d = 'subscription_trial_pro_30d',
 }
 
 export interface MannaVoucherDocument extends MannaVoucherSchema, Document {}

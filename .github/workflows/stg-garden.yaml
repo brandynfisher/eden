@@ -1,12 +1,12 @@
-name: 'Build / Deploy - Garden - STAGING'
+name: "Build / Deploy - Garden - STAGING"
 
 on:
   workflow_dispatch:
   push:
     branches: [staging]
     paths:
-      - 'apps/garden/**'
-      - '.github/workflows/garden.yaml'
+      - "apps/garden/**"
+      - ".github/workflows/garden.yaml"
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -57,8 +57,7 @@ jobs:
           context: .
           file: ./apps/garden/Dockerfile
           push: true
-          tags:
-            ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
+          tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
           build-args: |
             "NEXT_PUBLIC_APP_ENV=staging"
             "NEXT_PUBLIC_HOST=https://staging.app.eden.art"
@@ -67,6 +66,8 @@ jobs:
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STG }}"
             "NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up"
             "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}"
             "NEXT_PUBLIC_DISCORD_CLIENT_ID=1006127431389822997"
             "NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=65e8da9a6d2f63925c73a89d"

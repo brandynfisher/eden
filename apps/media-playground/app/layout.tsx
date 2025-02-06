@@ -37,12 +37,12 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_HOST),
-  title: 'Eden Create',
-  applicationName: 'Eden Create',
+  title: 'Eden',
+  applicationName: 'Eden',
   description: 'The Garden of Artificial Delights',
   openGraph: {
-    title: 'Eden Create',
-    siteName: 'Eden Create',
+    title: 'Eden',
+    siteName: 'Eden',
     description: 'The Garden of Artificial Delights',
     type: 'website',
     images: ['/logo_badge_square.png'],
@@ -100,11 +100,7 @@ export default function RootLayout({
             fontSans.className,
           )}
         >
-          <HolyLoader
-            color="#9333ea"
-            height="1px"
-            // ignoreSearchParams={true}
-          />
+          <HolyLoader color="#9333ea" height="1px" />
           <Providers>
             <div className="flex min-h-screen w-full flex-col">
               <Header />

@@ -4,7 +4,7 @@ import {
   getThread,
   listThreads,
 } from '../../controllers/v2/threadController'
-import { isAuth } from '../../middleware/authMiddleware'
+import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -132,7 +132,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getThread(server, request, reply),
   })
 }

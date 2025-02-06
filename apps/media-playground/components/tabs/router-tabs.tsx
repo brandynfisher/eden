@@ -1,12 +1,14 @@
 'use client'
 
+import { Button } from '../ui/button'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { cn } from '@/lib/utils'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 import debounce from 'lodash/debounce'
-import { SearchIcon } from 'lucide-react'
+import { SearchIcon, XIcon } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ReactElement, cloneElement, useEffect, useMemo, useState } from 'react'
 
@@ -27,6 +29,7 @@ export type RouterTab = {
   filterMenu?: (props: FilterMenuProps) => ReactElement
   sortMenu?: (props: SortMenuProps) => ReactElement
   canSearch?: boolean
+  initialFilter?: FeedCursorRouteQueryParams['filter']
 }
 
 type Props = {
@@ -44,6 +47,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   const initialTab = searchParams.get('tab') || defaultTabName
   const [activeTab, setActiveTab] = useState(initialTab)
   const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
 
   const [tabCaches, setTabCaches] = useState<{
     [key: string]: {
@@ -58,7 +62,10 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   >(baseQuery || {})
   const [tabFilterQuery, setTabFilterQuery] = useState<
     FeedCursorRouteQueryParams['filter'] | undefined
-  >(baseQuery || {})
+  >(() => {
+    const activeTab = tabs.find(t => t.key === initialTab)
+    return activeTab?.initialFilter || baseQuery || {}
+  })
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -70,6 +77,10 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
         return updatedCache
       })
     }
+
+    // Reset tab-specific filters when changing tabs
+    const newTab = tabs.find(t => t.key === value)
+    setTabFilterQuery(newTab?.initialFilter || {})
 
     // Update router URL for tab change without triggering content rerender yet
     router.push(`${pathname}${value === defaultTabName ? '' : `?tab=${value}`}`)
@@ -102,21 +113,21 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     })
   }
 
-  const handleTabSortChange = (sort: string) => {
-    setTabFilterQuery(prevQuery => {
-      return {
-        ...prevQuery,
-        sort,
-      }
-    })
+  // const handleTabSortChange = (sort: string) => {
+  //   setTabFilterQuery(prevQuery => {
+  //     return {
+  //       ...prevQuery,
+  //       sort,
+  //     }
+  //   })
 
-    // Invalidate cache for active tab since the tab-specific filter changed
-    setTabCaches(prevCache => {
-      const updatedCache = { ...prevCache }
-      delete updatedCache[activeTab]
-      return updatedCache
-    })
-  }
+  //   // Invalidate cache for active tab since the tab-specific filter changed
+  //   setTabCaches(prevCache => {
+  //     const updatedCache = { ...prevCache }
+  //     delete updatedCache[activeTab]
+  //     return updatedCache
+  //   })
+  // }
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -135,7 +146,21 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     })
   }
 
-  const debouncedSearch = debounce(handleSearch, 500)
+  const debouncedSearch = useMemo(
+    () => debounce((value: string) => handleSearch(value), 500),
+    [activeTab], // Recreate debounced function when tab changes
+  )
+
+  const handleSearchInput = (value: string) => {
+    setSearchInput(value)
+    debouncedSearch(value)
+  }
+
+  const handleSearchReset = () => {
+    setSearchInput('')
+    setSearch('')
+    handleSearch('')
+  }
 
   useEffect(() => {
     // Ensure that caching occurs only when filters are fully ready and content is rendered
@@ -189,23 +214,26 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
             <Separator orientation="vertical" className="hidden md:block" />
           ) : null}
 
-          {activeRouterTab?.sortMenu ? (
+          {activeRouterTab?.filterMenu ? (
+            <div className="flex-1">
+              <activeRouterTab.filterMenu
+                initialFilter={
+                  activeRouterTab.initialFilter ||
+                  tabCaches[activeTab]?.filterQuery
+                }
+                onChange={handleTabFilterChange}
+              />
+            </div>
+          ) : null}
+
+          {/* {activeRouterTab?.sortMenu ? (
             <div className="flex-1">
               <activeRouterTab.sortMenu
                 initialSort={tabCaches[activeTab]?.filterQuery?.sort as string}
                 onChange={handleTabSortChange}
               />
             </div>
-          ) : null}
-
-          {activeRouterTab?.filterMenu ? (
-            <div className="flex-1">
-              <activeRouterTab.filterMenu
-                initialFilter={tabCaches[activeTab]?.filterQuery}
-                onChange={handleTabFilterChange}
-              />
-            </div>
-          ) : null}
+          ) : null} */}
 
           {sharedFilterMenu ? (
             <div className="flex gap-4">
@@ -218,16 +246,25 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
           ) : null}
 
           {activeRouterTab?.canSearch ? (
-            <div className="flex items-center mb-4">
-              <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted">
+            <div className="flex items-center mb-4 md:mb-0 w-full">
+              <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted/40 md:ml-auto">
                 <SearchIcon className="w-4 h-4" />
               </div>
               <Input
-                className="rounded-l-none border-l-0"
+                className="rounded-none border-l-transparent border-r-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-purple-600/40"
                 placeholder="Search"
-                defaultValue={search}
-                onChange={e => debouncedSearch(e.target.value)}
+                value={searchInput}
+                onChange={e => handleSearchInput(e.target.value)}
               />
+              <Button
+                variant="outline"
+                size="icon"
+                className={cn(['rounded-l-none bg-muted/40'])}
+                onClick={handleSearchReset}
+                disabled={!searchInput}
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
             </div>
           ) : null}
         </div>

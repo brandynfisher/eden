@@ -46,7 +46,7 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
                 {item.title}
               </NavigationMenuTrigger>
               <NavigationMenuContent
-                className={'max-h-[calc(100dvh_-_126px)] overflow-y-scroll'}
+                className={'max-h-[calc(100dvh_-_126px)] overflow-y-auto'}
               >
                 <Suspense fallback={<LoadingIndicator />}>
                   <ul className="grid gap-3 p-4 w-[350px] md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">

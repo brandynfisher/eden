@@ -30,10 +30,8 @@ export const getAgent = async (
     : { username: agentId }
   const agent = await Agent.findOne(query)
 
-  if (!agent) {
-    return reply.status(404).send({
-      error: 'Agent not found',
-    })
+  if (!agent || agent.deleted) {
+    return reply.status(404).send({ error: 'Agent not found' })
   }
 
   const currentUserId = request.user ? request.user.userId : undefined

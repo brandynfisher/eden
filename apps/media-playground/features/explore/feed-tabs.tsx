@@ -5,9 +5,15 @@ import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
 import ModelsFeed from '@/features/feed/models-feed'
+import { ModelsFilter } from '@/features/feed/models-filter'
 import { SortMenu } from '@/features/feed/sort-menu'
 
 const FeedTabs = () => {
+  // Define initial filter for creations tab
+  const initialCreationsFilter = {
+    collection: process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
+  }
+
   const tabs: RouterTab[] = [
     {
       key: 'creations',
@@ -15,6 +21,7 @@ const FeedTabs = () => {
       content: <CreationsFeed maxCols={7} />,
       sortMenu: SortMenu,
       filterMenu: CreationsFilter,
+      initialFilter: initialCreationsFilter,
     },
     {
       key: 'models',
@@ -31,6 +38,7 @@ const FeedTabs = () => {
           ]}
         />
       ),
+      filterMenu: ModelsFilter,
     },
     {
       key: 'agents',

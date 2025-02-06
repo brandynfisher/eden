@@ -66,6 +66,7 @@ export type BaseModelName =
   | 'sd15'
   | 'flux'
   | 'flux-dev'
+  | 'flux-schnell'
   | 'flux_dev'
   | 'JuggernautXL_v6'
 

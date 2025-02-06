@@ -21,6 +21,7 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { EdenRuntimeProvider } from '@/features/chat/providers/eden-runtime-provider'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { AgentBasicInfo } from '@/lib/actions/agent'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -28,7 +29,7 @@ import { useAppDispatch } from '@/stores/store'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
-  useThreadList,
+  useThreadListItem,
 } from '@assistant-ui/react'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
@@ -38,11 +39,8 @@ import * as React from 'react'
 import { FC, useEffect, useState } from 'react'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
-  const threads = useThreadList().threads
-  const isLoading = threads && threads[0] === 'DEFAULT_THREAD_ID'
-  const isNewSelected = useThreadList(
-    t => t.mainThreadId === 'DEFAULT_THREAD_ID',
-  )
+  const isNewSelected = useThreadListItem(t => t.id === 'DEFAULT_THREAD_ID')
+  const isLoading = false
 
   return (
     <ThreadListPrimitive.New asChild>
@@ -63,24 +61,40 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-// This version of ThreadListItem receives `onItemClick` from props
+const ThreadListItemTrigger: FC<{ onItemClick?: () => void }> = ({
+  onItemClick,
+}) => {
+  // const thread = useThreadListItem()
+  // console.log("thread", thread)
+  return (
+    <ThreadListItemPrimitive.Trigger
+      className="flex-grow text-start truncate px-3 py-2 w-full"
+      onClick={onItemClick}
+    >
+      <ThreadListItemPrimitive.Title fallback="Untitled" />
+    </ThreadListItemPrimitive.Trigger>
+  )
+}
+
 const ThreadListItem: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   return (
     <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all pr-3">
-      <ThreadListItemPrimitive.Trigger
+      {/* <ThreadListItemPrimitive.Trigger
         className="flex-grow text-start truncate px-3 py-2 w-full"
         onClick={onItemClick}
       >
         <ThreadListItemPrimitive.Title fallback="Untitled" />
-      </ThreadListItemPrimitive.Trigger>
+      </ThreadListItemPrimitive.Trigger> */}
+      <ThreadListItemTrigger onItemClick={onItemClick} />
     </ThreadListItemPrimitive.Root>
   )
 }
 
 const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
-  const threads = useThreadList().threads
-  const isLoading = isSignedIn && threads && threads[0] === 'DEFAULT_THREAD_ID'
+  // const threads = useThreadList().threads
+  // const isLoading = isSignedIn && threads && threads[0] === 'DEFAULT_THREAD_ID'
+  const isLoading = false
 
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
@@ -142,18 +156,18 @@ const LeftBarSheet: FC = () => {
 }
 
 export const AgentLink: FC<{
-  agent?: Agent
+  agent?: AgentBasicInfo | Agent
   className?: string
+  hideName?: boolean
   invalidate?: () => Promise<void>
-}> = ({ agent, className, invalidate }) => {
+}> = ({ agent, className, hideName, invalidate }) => {
   const dispatch = useAppDispatch()
-
   const handleEditClick = () => {
     dispatch(
       updateAgentFormSheet({
         isOpen: true,
         mode: 'update',
-        agent,
+        agent: agent as Agent,
         onAction: async () => {
           await invalidate?.()
         },
@@ -174,6 +188,7 @@ export const AgentLink: FC<{
           )}
         >
           <AvatarImage
+            alt={agent?.name}
             className={'object-cover'}
             src={getCloudfrontOriginalUrl(agent?.userImage)}
           />
@@ -184,7 +199,9 @@ export const AgentLink: FC<{
             {agent?.name[0]}
           </AvatarFallback>
         </Avatar>
-        <span className="truncate max-w-[140px]">{agent?.name}</span>
+        <span className="truncate max-w-[140px]">
+          {!hideName && agent?.name}
+        </span>
       </Link>
       <Button
         variant="ghost"
@@ -209,15 +226,27 @@ const Header: FC = () => {
 type Props = {
   agentId: string
   threadId?: string
+  agentSSRData?: Agent
 }
 
-const Chat: FC<Props> = ({ agentId, threadId }) => {
-  const [isMounted, setIsMounted] = useState(false)
-
-  const { agent, isError, error, invalidate } = useAgentQuery({
+const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
+  const {
+    agent: agentClientData,
+    isError,
+    error,
+    invalidate,
+  } = useAgentQuery({
     key: agentId,
-    enabled: !!agentId,
+    initialData: agentSSRData
+      ? {
+          agent: agentSSRData,
+        }
+      : undefined,
   })
+
+  const agent = agentClientData || agentSSRData
+
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -281,14 +310,14 @@ const Chat: FC<Props> = ({ agentId, threadId }) => {
             welcome={{
               suggestions: [
                 {
-                  text: 'List of tools',
+                  text: 'List your tools',
                   prompt:
                     'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
                 },
                 {
-                  text: 'Make some cat images',
+                  text: 'Make something beautiful',
                   prompt:
-                    'Make 2 images of a cute little cats wearing funky hats ',
+                    'Make a beautiful image of the first thing that comes to mind',
                 },
               ],
               message: 'What do you want to create today?',
