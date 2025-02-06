@@ -10,6 +10,7 @@ import {
   AgentsDeleteArguments,
   AgentsDeleteDeploymentArguments,
   AgentsDeployArguments,
+  AgentsStopDeploymentArguments,
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
@@ -322,6 +323,37 @@ export const deployAgent = async (
     return reply.status(500).send({
       error: 'An error occurred while deploying the agent',
     })
+  }
+}
+
+export const stopAgentDeployment = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { agentId, platform } = request.params as AgentsStopDeploymentArguments
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to stop this deployment',
+    })
+  }
+
+  try {
+    {
+      /* TODO: Eve api call */
+    }
+  } catch (error) {
+    console.error(error)
   }
 }
 

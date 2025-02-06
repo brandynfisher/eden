@@ -109,6 +109,11 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
   farcaster?: FarcasterDeploymentConfig
 }
 
+export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
+  agentId: string
+  platform: AgentClientType
+}
+
 export interface AgentsDeleteDeploymentArguments extends WebAPICallOptions {
   agentId: string
   platform: AgentClientType
@@ -167,6 +172,14 @@ export const agentsDeployRequestConfig = (
   }
 }
 
+export const agentsStopDeploymentRequestConfig = (
+  args: AgentsStopDeploymentArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/deployments/stop`,
+  }
+}
 export const agentsDeleteDeploymentRequestConfig = (
   args: AgentsDeleteDeploymentArguments,
 ): AxiosRequestConfig => {
@@ -220,6 +233,11 @@ export type AgentsUpdateResponse = WebAPICallResult & {
 
 export type AgentsDeployResponse = WebAPICallResult & {
   agentId: string
+  error?: string
+}
+
+export type AgentsStopDeploymentResponse = WebAPICallResult & {
+  success: boolean
   error?: string
 }
 

@@ -5,6 +5,7 @@ import {
   deployAgent,
   getAgent,
   getAgentDeployments,
+  stopAgentDeployment,
   updateAgent,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
@@ -154,6 +155,15 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deployAgent(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/deployments/stop', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Stop an agent deployment',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => stopAgentDeployment(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId/deployments/:platform', {

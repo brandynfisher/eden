@@ -6,6 +6,7 @@ import { getQueryClient } from '@/app/get-query-client'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { AgentClientType, AgentsDeployArguments } from '@edenlabs/eden-sdk'
+import { StopIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
 import { RocketIcon, SaveIcon, TrashIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -26,6 +27,7 @@ export const DeploymentFormFooter = ({
   isDeployed,
 }: DeploymentFormFooterProps) => {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeploying, setIsDeploying] = useState(false)
 
   const handleDelete = async () => {
     const queryClient = getQueryClient()
@@ -54,6 +56,7 @@ export const DeploymentFormFooter = ({
   }
 
   const handleSubmit = async (data: any) => {
+    setIsDeploying(true)
     const queryClient = getQueryClient()
     const loadingMessage = isDeployed
       ? `Updating ${platform} deployment`
@@ -114,6 +117,27 @@ export const DeploymentFormFooter = ({
       queryClient.invalidateQueries({
         queryKey: ['agents', agentId, 'deployments'],
       })
+      setIsDeploying(false)
+    }
+  }
+
+  const handleStop = async () => {
+    const queryClient = getQueryClient()
+    try {
+      await axios.post(`/api/agents/${agentId}/deployments/stop`, {
+        platform,
+      })
+      toast.success('Deployment stopped successfully', {
+        description: `The ${platform} deployment has been stopped successfully.`,
+        richColors: true,
+        dismissible: true,
+      })
+    } catch (error) {
+      console.error(error)
+    } finally {
+      queryClient.invalidateQueries({
+        queryKey: ['agents', agentId, 'deployments'],
+      })
     }
   }
 
@@ -132,20 +156,25 @@ export const DeploymentFormFooter = ({
             Delete
           </Button>
         )}
-        <Button
-          type="submit"
-          onClick={form.handleSubmit(handleSubmit)}
-          disabled={
-            form.formState.isSubmitting || isDeleting || !form.formState.isDirty
-          }
-        >
-          {isDeployed ? (
-            <SaveIcon className="size-4 mr-2" />
-          ) : (
-            <RocketIcon className="size-4 mr-2" />
-          )}
-          {isDeployed ? 'Update' : 'Deploy'}
-        </Button>
+        {isDeploying ? (
+          <Button type="button" onClick={handleStop}>
+            <StopIcon className="size-4 mr-2" />
+            Stop
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            onClick={form.handleSubmit(handleSubmit)}
+            disabled={isDeploying || !form.formState.isDirty}
+          >
+            {isDeployed ? (
+              <SaveIcon className="size-4 mr-2" />
+            ) : (
+              <RocketIcon className="size-4 mr-2" />
+            )}
+            {isDeployed ? 'Update' : 'Deploy'}
+          </Button>
+        )}
       </div>
     </>
   )

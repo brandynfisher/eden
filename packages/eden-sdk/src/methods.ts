@@ -214,6 +214,8 @@ import {
   AgentsDeployResponse,
   AgentsGetDeploymentsArguments,
   AgentsGetDeploymentsResponse,
+  AgentsStopDeploymentArguments,
+  AgentsStopDeploymentResponse,
   CollectionsV2AddCreationsArguments,
   CollectionsV2AddCreationsResponse,
   CollectionsV2CreateArguments,
@@ -265,6 +267,7 @@ import {
   agentsDeleteDeploymentRequestConfig,
   agentsDeployRequestConfig,
   agentsGetDeploymentsRequestConfig,
+  agentsStopDeploymentRequestConfig,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -552,6 +555,10 @@ export abstract class Methods {
       AgentsGetDeploymentsArguments,
       AgentsGetDeploymentsResponse
     >(this, agentsGetDeploymentsRequestConfig),
+    stopDeployment: bindApiCall<
+      AgentsStopDeploymentArguments,
+      AgentsStopDeploymentResponse
+    >(this, agentsStopDeploymentRequestConfig),
     deploy: bindApiCall<AgentsDeployArguments, AgentsDeployResponse>(
       this,
       agentsDeployRequestConfig,
