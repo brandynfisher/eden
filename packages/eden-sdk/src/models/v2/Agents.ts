@@ -23,6 +23,14 @@ export type Agent = Omit<
   instructions: string
   tools?: { [key: string]: string[] }
   deployments?: Deployment[]
+  discordChannelAllowlist?: {
+    id: string
+    note: string
+  }[]
+  telegramTopicAllowlist?: {
+    id: string
+    note: string
+  }[]
   discordId?: string
   model?: ModelV2
   discordUsername?: string
@@ -179,7 +187,19 @@ export const agentsDeleteRequestConfig = (
 
 // Responses
 export type AgentsGetDeploymentsResponse = WebAPICallResult & {
-  deployments: Deployment[]
+  deployments: {
+    discord: {
+      deployment: Deployment
+      allowedChannels: Agent['discordChannelAllowlist']
+    }
+    telegram: {
+      deployment: Deployment
+      allowedTopics: Agent['telegramTopicAllowlist']
+    }
+    farcaster: {
+      deployment: Deployment
+    }
+  }
   error?: string
 }
 

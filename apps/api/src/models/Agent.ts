@@ -12,6 +12,14 @@ export interface AgentSchema extends BaseUserSchema {
   tools?: string[]
   discordId?: string
   model?: ModelV2Document
+  discordChannelAllowlist?: {
+    id: string
+    note: string
+  }[]
+  telegramTopicAllowlist?: {
+    id: string
+    note: string
+  }[]
   public?: boolean
 }
 
@@ -42,6 +50,18 @@ const AgentSchema = new Schema<AgentDocument>(
       {
         type: Schema.Types.ObjectId,
         ref: 'deployments',
+        default: [],
+      },
+    ],
+    discordChannelAllowlist: [
+      {
+        type: Schema.Types.Mixed,
+        default: [],
+      },
+    ],
+    telegramTopicAllowlist: [
+      {
+        type: Schema.Types.Mixed,
         default: [],
       },
     ],

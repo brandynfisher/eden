@@ -7,14 +7,15 @@ import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
+import { AgentsGetDeploymentsResponse } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 const schema = z.object({
   token: z.string(),
-  allowedChannels: z.array(
+  allowedTopics: z.array(
     z.object({
       id: z.string(),
       note: z.string().optional(),
@@ -26,12 +27,12 @@ type DeploymentFormDto = z.infer<typeof schema>
 
 interface TelegramDeploymentFormProps {
   agentId: string
-  isDeployed?: boolean
+  deployment?: AgentsGetDeploymentsResponse['deployments']['telegram']
 }
 
 export const TelegramDeploymentForm = ({
   agentId,
-  isDeployed,
+  deployment,
 }: TelegramDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -39,13 +40,17 @@ export const TelegramDeploymentForm = ({
     resolver: zodResolver(schema),
     defaultValues: {
       token: '',
-      allowedChannels: [],
+      allowedTopics: deployment?.allowedTopics ?? [],
     },
   })
 
-  const allowedChannels = useFieldArray({
+  const isDeployed = useMemo(() => {
+    return deployment !== undefined
+  }, [deployment])
+
+  const allowedTopics = useFieldArray({
     control: form.control,
-    name: 'allowedChannels',
+    name: 'allowedTopics',
   })
 
   return (
@@ -73,7 +78,14 @@ export const TelegramDeploymentForm = ({
               label="Token"
               description="Your Telegram bot token."
             />
-            <ChannelsField form={form} allowedChannels={allowedChannels} />
+            <ChannelsField
+              form={form}
+              name="allowedTopics"
+              allowList={allowedTopics}
+              label="Allowed Topics"
+              description="The topics your agent will be deployed to. If you want to deploy to
+          all topics, leave the list empty."
+            />
             <DeploymentFormFooter
               form={form}
               agentId={agentId}

@@ -7,8 +7,9 @@ import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
+import { Agent, AgentsGetDeploymentsResponse } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -25,13 +26,13 @@ const schema = z.object({
 type DeploymentFormDto = z.infer<typeof schema>
 
 interface DiscordDeploymentFormProps {
-  agentId: string
-  isDeployed?: boolean
+  agentId: Agent['_id']
+  deployment?: AgentsGetDeploymentsResponse['deployments']['discord']
 }
 
 export const DiscordDeploymentForm = ({
   agentId,
-  isDeployed,
+  deployment,
 }: DiscordDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -39,7 +40,7 @@ export const DiscordDeploymentForm = ({
     resolver: zodResolver(schema),
     defaultValues: {
       token: '',
-      allowedChannels: [],
+      allowedChannels: deployment?.allowedChannels ?? [],
     },
   })
 
@@ -47,6 +48,10 @@ export const DiscordDeploymentForm = ({
     control: form.control,
     name: 'allowedChannels',
   })
+
+  const isDeployed = useMemo(() => {
+    return deployment !== undefined
+  }, [deployment])
 
   return (
     <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
@@ -73,7 +78,14 @@ export const DiscordDeploymentForm = ({
               label="Token"
               description="Your Discord bot token."
             />
-            <ChannelsField form={form} allowedChannels={allowedChannels} />
+            <ChannelsField
+              form={form}
+              name="allowedChannels"
+              allowList={allowedChannels}
+              label="Allowed Channels"
+              description="The channels your agent will be deployed to. If you want to deploy to
+          all channels, leave the list empty."
+            />
             <DeploymentFormFooter
               agentId={agentId}
               platform="discord"

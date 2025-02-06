@@ -30,6 +30,10 @@ const AgentDeploymentFormSheet = () => {
     dispatch(updateAgentDeploymentFormSheet({ isOpen: open }))
   }
 
+  if (!agent) {
+    return null
+  }
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
@@ -65,21 +69,15 @@ const AgentDeploymentFormSheet = () => {
           <div className="space-y-4 mt-4">
             <DiscordDeploymentForm
               agentId={agent?._id || ''}
-              isDeployed={deploymentsQuery.deployments?.some(
-                deployment => deployment.platform === 'discord',
-              )}
+              deployment={deploymentsQuery.deployments?.discord}
             />
             <TelegramDeploymentForm
               agentId={agent?._id || ''}
-              isDeployed={deploymentsQuery.deployments?.some(
-                deployment => deployment.platform === 'telegram',
-              )}
+              deployment={deploymentsQuery.deployments?.telegram}
             />
             <FarcasterDeploymentForm
               agentId={agent?._id || ''}
-              isDeployed={deploymentsQuery.deployments?.some(
-                deployment => deployment.platform === 'farcaster',
-              )}
+              deployment={deploymentsQuery.deployments?.farcaster}
             />
           </div>
         )}

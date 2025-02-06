@@ -70,7 +70,8 @@ export async function POST(
 
   const requestJson = await request.json()
 
-  const { platform } = requestJson as AgentsDeployArguments
+  const { platform, discord, telegram, farcaster } =
+    requestJson as AgentsDeployArguments
 
   try {
     const eden = new EdenClient({
@@ -81,6 +82,9 @@ export async function POST(
     const res = await eden.agents.deploy({
       agentId: id,
       platform,
+      discord,
+      telegram,
+      farcaster,
     })
 
     if (!res) {

@@ -208,9 +208,39 @@ export const getAgentDeployments = async (
     })
   }
 
-  const deployments = await Deployment.find({
+  const deploymentsFromDb = await Deployment.find({
     agent: agentId,
   })
+
+  const discordDeployment = deploymentsFromDb.find(
+    deployment => deployment.platform === 'discord',
+  )
+  const telegramDeployment = deploymentsFromDb.find(
+    deployment => deployment.platform === 'telegram',
+  )
+  const farcasterDeployment = deploymentsFromDb.find(
+    deployment => deployment.platform === 'farcaster',
+  )
+
+  const deployments = {
+    discord: discordDeployment
+      ? {
+          deployment: discordDeployment,
+          allowedChannels: agent.discordChannelAllowlist,
+        }
+      : undefined,
+    telegram: telegramDeployment
+      ? {
+          deployment: telegramDeployment,
+          allowedTopics: agent.telegramTopicAllowlist,
+        }
+      : undefined,
+    farcaster: farcasterDeployment
+      ? {
+          deployment: farcasterDeployment,
+        }
+      : undefined,
+  }
 
   return reply.status(200).send({
     deployments,
@@ -242,37 +272,49 @@ export const deployAgent = async (
   }
 
   try {
-    await axios.post(
-      `${server.config.EDEN_COMPUTE_API_URL}/deployments/configure`,
-      {
-        agent_username: agent.username,
-        secrets: {
-          client_discord_token: discord?.token,
-          client_telegram_token: telegram?.token,
-          client_farcaster_mnemonic: farcaster?.mnemonic,
-          client_farcaster_neynar_webhook_secret:
-            farcaster?.neynarWebhookSecret,
-        },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-      },
-    )
+    {
+      /* TODO: Eve api call */
+    }
+    // await axios.post(
+    //   `${server.config.EDEN_COMPUTE_API_URL}/deployments/configure`,
+    //   {
+    //     agent_username: agent.username,
+    //     secrets: {
+    //       client_discord_token: discord?.token,
+    //       client_telegram_token: telegram?.token,
+    //       client_farcaster_mnemonic: farcaster?.mnemonic,
+    //       client_farcaster_neynar_webhook_secret:
+    //         farcaster?.neynarWebhookSecret,
+    //     },
+    //   },
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+    //     },
+    //   },
+    // )
 
-    await axios.post(
-      `${server.config.EDEN_COMPUTE_API_URL}/deployments/create`,
-      {
-        agent_username: agent.username,
-        platform,
+    // await axios.post(
+    //   `${server.config.EDEN_COMPUTE_API_URL}/deployments/create`,
+    //   {
+    //     agent_username: agent.username,
+    //     platform,
+    //   },
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+    //     },
+    //   },
+    // )
+
+    await agent.updateOne({
+      $set: {
+        discordChannelAllowlist: discord?.allowedChannels,
+        telegramTopicAllowlist: telegram?.allowedTopics,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-      },
-    )
+    })
+
+    await agent.save()
 
     return reply.status(200).send({
       agentId: agent._id,
@@ -309,18 +351,21 @@ export const deleteAgentDeployment = async (
   }
 
   try {
-    await axios.post(
-      `${server.config.EDEN_COMPUTE_API_URL}/deployments/delete`,
-      {
-        agent_username: agent.username,
-        platform,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-      },
-    )
+    {
+      /* TODO: Eve api call */
+    }
+    // await axios.post(
+    //   `${server.config.EDEN_COMPUTE_API_URL}/deployments/delete`,
+    //   {
+    //     agent_username: agent.username,
+    //     platform,
+    //   },
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+    //     },
+    //   },
+    // )
   } catch (error) {
     console.error(error)
     return reply.status(500).send({

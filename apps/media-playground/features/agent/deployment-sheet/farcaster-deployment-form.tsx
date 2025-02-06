@@ -6,8 +6,9 @@ import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
+import { AgentsGetDeploymentsResponse } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -19,13 +20,13 @@ const schema = z.object({
 type DeploymentFormDto = z.infer<typeof schema>
 
 interface FarcasterDeploymentFormProps {
-  isDeployed?: boolean
   agentId: string
+  deployment?: AgentsGetDeploymentsResponse['deployments']['farcaster']
 }
 
 export const FarcasterDeploymentForm = ({
-  isDeployed,
   agentId,
+  deployment,
 }: FarcasterDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -36,6 +37,10 @@ export const FarcasterDeploymentForm = ({
       neynarWebhookSecret: '',
     },
   })
+
+  const isDeployed = useMemo(() => {
+    return deployment
+  }, [deployment])
 
   return (
     <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>

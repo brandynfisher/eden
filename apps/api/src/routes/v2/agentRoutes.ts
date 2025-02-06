@@ -116,13 +116,27 @@ const agentRoutes: FastifyPluginAsync = async server => {
         discord: Type.Optional(
           Type.Object({
             token: Type.String(),
-            allowedChannels: Type.Optional(Type.Array(Type.String())),
+            allowedChannels: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  id: Type.String(),
+                  note: Type.String(),
+                }),
+              ),
+            ),
           }),
         ),
         telegram: Type.Optional(
           Type.Object({
             token: Type.String(),
-            allowedChannels: Type.Optional(Type.Array(Type.String())),
+            allowedTopics: Type.Optional(
+              Type.Array(
+                Type.Object({
+                  id: Type.String(),
+                  note: Type.String(),
+                }),
+              ),
+            ),
           }),
         ),
         farcaster: Type.Optional(

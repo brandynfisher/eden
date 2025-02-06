@@ -8,28 +8,31 @@ import { TrashIcon } from 'lucide-react'
 import { UseFieldArrayReturn, UseFormReturn } from 'react-hook-form'
 
 interface ChannelsFieldProps {
-  allowedChannels: UseFieldArrayReturn<any>
+  name: string
+  label: string
+  description: string
+  allowList: UseFieldArrayReturn<any>
   form: UseFormReturn<any>
 }
 
 export const ChannelsField = ({
-  allowedChannels,
+  name,
+  label,
+  description,
+  allowList,
   form,
 }: ChannelsFieldProps) => {
   return (
     <div className="space-y-4 mt-8">
       <div className="flex flex-col gap-2">
-        <h4 className="text-sm font-medium">Allowed Channels (optional)</h4>
-        <FormDescription>
-          The channels your agent will be deployed to. If you want to deploy to
-          all channels, leave the list empty.
-        </FormDescription>
+        <h4 className="text-sm font-medium">{label}</h4>
+        <FormDescription>{description}</FormDescription>
       </div>
-      {allowedChannels.fields.map((field, index) => (
+      {allowList.fields.map((field, index) => (
         <div key={field.id} className="flex gap-2">
           <FormField
             control={form.control}
-            name={`allowedChannels.${index}.id`}
+            name={`${name}.${index}.id`}
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormControl>
@@ -41,7 +44,7 @@ export const ChannelsField = ({
           />
           <FormField
             control={form.control}
-            name={`allowedChannels.${index}.note`}
+            name={`${name}.${index}.note`}
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormControl>
@@ -55,7 +58,7 @@ export const ChannelsField = ({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => allowedChannels.remove(index)}
+            onClick={() => allowList.remove(index)}
             className="flex-shrink-0"
           >
             <TrashIcon className="h-4 w-4" />
@@ -66,10 +69,10 @@ export const ChannelsField = ({
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => allowedChannels.append({ id: '', note: '' })}
+        onClick={() => allowList.append({ id: '', note: '' })}
       >
         <PlusIcon className="h-4 w-4 mr-2" />
-        Add Channel
+        Add
       </Button>
     </div>
   )
