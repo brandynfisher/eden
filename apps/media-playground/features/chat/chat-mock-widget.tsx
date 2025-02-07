@@ -405,7 +405,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
                       variant="outline"
                       type="button"
                       size="sm"
-                      className="text-xs rounded-xl shrink-0 min-w-[49%]"
+                      className="text-xs justify-start w-fit rounded-xl shrink-0 md:min-w-[49%]"
                       onClick={() => handleSuggestionClick(suggestion.prompt)}
                       disabled={isSubmitting}
                     >
