@@ -1,6 +1,7 @@
 'use client'
 
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
+import VideoResult from '@/components/media/video-result'
 import { ArrowBigDownDashIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
@@ -12,6 +13,7 @@ interface TrainingFeatureCardProps {
   inputImageThumbnail?: string
   outputImage?: string
   outputImageThumbnail?: string
+  video?: string
 }
 
 export default function TrainingFeatureCard({
@@ -22,6 +24,7 @@ export default function TrainingFeatureCard({
   inputImageThumbnail,
   outputImage,
   outputImageThumbnail,
+  video,
 }: TrainingFeatureCardProps) {
   return (
     <div className="flex flex-col items-center p-4 rounded-lg border border-border bg-muted-darker/80">
@@ -48,7 +51,7 @@ export default function TrainingFeatureCard({
               }}
             />
           )}
-          <ArrowBigDownDashIcon className="h-14 w-14 my-2" />
+          <ArrowBigDownDashIcon className="h-16 w-16 my-2" />
           {outputImage && (
             <LightboxTrigger
               className="hover:brightness-105 cursor-zoom-in"
@@ -65,6 +68,20 @@ export default function TrainingFeatureCard({
                 className: 'relative rounded-lg object-cover',
               }}
             />
+          )}
+          {video && (
+            <>
+              <ArrowBigDownDashIcon className="h-16 w-16 my-2" />
+              <VideoResult
+                videoUrl={video}
+                className="relative rounded-lg object-cover w-full"
+                controls={true}
+                muted={false}
+                loop={true}
+                autoPlay={false}
+                preload="metadata"
+              />
+            </>
           )}
         </LightboxGallery>
         {subtitle && (

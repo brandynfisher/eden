@@ -335,7 +335,6 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
                         placeholder="Type your message here..."
                         rows={1}
                         // minHeight={64}
-                        autoFocus={true}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
                         value={field.value || ''}

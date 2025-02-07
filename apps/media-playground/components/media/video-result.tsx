@@ -12,6 +12,7 @@ type VideoProps = {
   allowDownload?: boolean
   width?: number
   height?: number
+  preload?: 'auto' | 'metadata' | 'none'
   onPlay?: () => void
 }
 
@@ -27,6 +28,7 @@ const VideoResult: React.FC<VideoProps> = ({
   controls = true,
   muted = true,
   allowDownload = false,
+  preload = 'auto',
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -48,6 +50,7 @@ const VideoResult: React.FC<VideoProps> = ({
       className={cn(['w-full h-full outline-none', className])}
       poster={posterUrl}
       onPlay={onPlay}
+      preload={preload}
     >
       <source src={videoUrl} type="video/mp4" />
     </video>
