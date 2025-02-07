@@ -119,6 +119,9 @@ export const updateAgent = async (
     name,
     key,
     description,
+    persona,
+    greeting,
+    suggestions,
     image,
     modelId,
     public: isPublic,
@@ -134,6 +137,9 @@ export const updateAgent = async (
     username: key,
     name: name,
     description,
+    persona,
+    greeting,
+    suggestions,
     public: isPublic,
   }
 

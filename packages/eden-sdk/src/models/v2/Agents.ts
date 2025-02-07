@@ -4,6 +4,11 @@ import { ModelV2 } from 'src/models/v2'
 import { Deployment } from 'src/models/v2/Deployments'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
+export type AgentSuggestion = {
+  text: string
+  prompt: string
+}
+
 // Types
 export type Agent = Omit<
   Creator,
@@ -19,9 +24,10 @@ export type Agent = Omit<
   name: string
   username: string
   description: string
+  persona?: string
   userImage: string
-  suggestions?: { text: string; prompt: string }[]
-  instructions: string
+  greeting?: string
+  suggestions?: AgentSuggestion[]
   tools?: { [key: string]: string[] }
   deployments?: Deployment[]
   discordChannelAllowlist?: {
@@ -57,9 +63,10 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   name: string
   key: string
   description?: string
-  suggestions?: { text: string; prompt: string }[]
+  persona?: string
+  greeting?: string
+  suggestions?: AgentSuggestion[]
   image: string
-  instructions?: string
   tools?: { [key: string]: string[] }
   discordId?: string
   modelId?: string
@@ -70,9 +77,10 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   name?: string
   key?: string
   description?: string
-  suggestions?: { text: string; prompt: string }[]
+  persona?: string
+  greeting?: string
+  suggestions?: AgentSuggestion[]
   image?: string
-  instructions?: string
   tools?: { [key: string]: string[] }
   discordId?: string
   public?: boolean

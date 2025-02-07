@@ -385,9 +385,6 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
             </form>
 
             <div className="mt-4 border border-secondary rounded-lg p-4 bg-secondary/30">
-              <div className="text-sm text-muted-foreground mb-4">
-                Suggested prompts
-              </div>
               <div className="grid md:grid-cols-2 gap-2">
                 {(agent?.suggestions || DEFAULT_SUGGESTIONS).map(suggestion => {
                   return (
