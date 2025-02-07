@@ -24,7 +24,7 @@ export default function TrainingFeatureCard({
   outputImageThumbnail,
 }: TrainingFeatureCardProps) {
   return (
-    <div className="flex flex-col items-center p-4 rounded-lg border border-border bg-card">
+    <div className="flex flex-col items-center p-4 rounded-lg border border-border bg-muted-darker/80">
       <div className="flex items-center gap-2 mb-4">
         {icon}
         {title && <h3 className="font-semibold">{title}</h3>}
@@ -48,7 +48,7 @@ export default function TrainingFeatureCard({
               }}
             />
           )}
-          <ArrowBigDownDashIcon className="h-11 w-11 my-2" />
+          <ArrowBigDownDashIcon className="h-14 w-14 my-2" />
           {outputImage && (
             <LightboxTrigger
               className="hover:brightness-105 cursor-zoom-in"
