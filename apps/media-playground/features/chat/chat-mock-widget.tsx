@@ -57,6 +57,10 @@ const chatMockSchema = z.object({
 
 type FormData = z.infer<typeof chatMockSchema>
 
+interface StoredFormData extends FormData {
+  selectedAgentId?: string
+}
+
 const FORM_STORAGE_KEY = 'chat-mock-form-state'
 
 const DEFAULT_SUGGESTIONS: Suggestion[] = [
@@ -112,10 +116,14 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
     try {
       const stored = localStorage.getItem(FORM_STORAGE_KEY)
       if (stored) {
-        const parsed = JSON.parse(stored)
-        setInitialFormData(parsed)
+        const parsed: StoredFormData = JSON.parse(stored)
+        const { selectedAgentId: storedAgentId, ...formData } = parsed
+        setInitialFormData(formData)
+        if (storedAgentId) {
+          setSelectedAgentId(storedAgentId)
+        }
         setHasStoredData(true)
-        form.reset(parsed)
+        form.reset(formData)
       }
     } catch (e) {
       console.error('Error reading stored form state:', e)
@@ -132,7 +140,11 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
   const handleSubmit = async (formData: FormData) => {
     if (!(await verifyAuth())) {
       const currentFormData = form.getValues()
-      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(currentFormData))
+      const storedData: StoredFormData = {
+        ...currentFormData,
+        selectedAgentId,
+      }
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(storedData))
       return
     }
 
