@@ -2,16 +2,20 @@
 
 import AlertDestructive from '@/components/alert/alert-destructive'
 import MyAssistantMessage from '@/features/chat/components/assistant-message'
+import {
+  ComposerAttachmentDropzone,
+  MyComposer,
+} from '@/features/chat/components/composer'
 import MyEditComposer from '@/features/chat/components/edit-composer'
 import MyUserMessage from '@/features/chat/components/user-message'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import {
-  Composer,
   Thread,
   ThreadConfig,
   ThreadPrimitive,
   ThreadWelcome,
+  useComposerRuntime,
   useThread,
 } from '@assistant-ui/react'
 import { FC, useEffect, useState } from 'react'
@@ -48,7 +52,7 @@ type ThreadConfigWithExtras = ThreadConfig & {
 const MyThread: FC<ThreadConfigWithExtras> = config => {
   const {
     components: {
-      Composer: ComposerComponent = Composer,
+      Composer: ComposerComponent = MyComposer,
       ThreadWelcome: ThreadWelcomeComponent = ThreadWelcome,
     } = {},
   } = config
@@ -57,6 +61,9 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const [isMounted, setIsMounted] = useState(false)
   const { readyState } = useWebSocketContext()
   const { isSignedIn } = useAuthState()
+  const [isDragging, setIsDragging] = useState(false)
+  const composerRuntime = useComposerRuntime()
+  const accept = composerRuntime?.getAttachmentAccept()
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -95,7 +102,15 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
   return (
     <Thread.Root config={config}>
-      <Thread.Viewport className="pt-0 px-1 md:px-2">
+      <Thread.Viewport className="pt-0 px-1 md:px-2 relative">
+        {accept && (
+          <div className="fixed top-16 left-0 right-0 bottom-0 pointer-events-none z-30">
+            <ComposerAttachmentDropzone
+              isDragging={isDragging}
+              accept={accept}
+            />
+          </div>
+        )}
         <ThreadWelcomeComponent />
         <Thread.Messages
           components={{
@@ -112,7 +127,10 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
             </div>
           ) : null}
           <Thread.ScrollToBottom />
-          <ComposerComponent />
+          <ComposerComponent
+            {...config.composer}
+            setIsDragging={setIsDragging}
+          />
         </Thread.ViewportFooter>
       </Thread.Viewport>
     </Thread.Root>

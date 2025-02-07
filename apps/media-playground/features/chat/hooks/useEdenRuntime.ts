@@ -23,7 +23,8 @@ const symbolEdenExtras = Symbol('eden-extras')
 
 export type EdenExtras = {
   [symbolEdenExtras]: true
-  threadTitle: string
+  agentId: string
+  threadId: string
   isReadOnly?: boolean
 }
 
@@ -115,6 +116,8 @@ export const useEdenRuntime = ({
       setMessages,
       extras: {
         isReadOnly,
+        agentId,
+        threadId,
       },
       adapters: {
         feedback: EdenFeedbackAdapter,
