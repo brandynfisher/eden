@@ -20,6 +20,7 @@ import {
   useThread,
 } from '@assistant-ui/react'
 import { FC, useEffect, useState } from 'react'
+import React from 'react'
 import { ReadyState } from 'react-use-websocket'
 
 const ThreadFollowupSuggestions: FC = () => {
@@ -67,6 +68,15 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime?.getAttachmentAccept()
 
+  // Debounce connection status changes to prevent rapid remounts
+  const handleConnectionChange = React.useCallback((isOnline: boolean) => {
+    // Only update if the status actually changed
+    setConnectionLost(prev => {
+      if (prev === !isOnline) return prev
+      return !isOnline
+    })
+  }, [])
+
   useEffect(() => {
     if (typeof window === 'undefined') {
       return
@@ -74,33 +84,40 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
     setIsMounted(true)
 
-    const handleOnline = () => setConnectionLost(false)
-    const handleOffline = () => setConnectionLost(true)
+    const handleOnline = () => handleConnectionChange(true)
+    const handleOffline = () => handleConnectionChange(false)
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
     if (navigator) {
       // Check connection status after mount
-      if (
+      const isOffline =
         !navigator.onLine ||
         readyState === ReadyState.CLOSED ||
         readyState === ReadyState.CLOSING
-      ) {
-        setConnectionLost(true)
-      } else {
-        setConnectionLost(false)
-      }
+
+      handleConnectionChange(!isOffline)
     }
 
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
-  }, [readyState])
+  }, [readyState, handleConnectionChange])
 
   // Only render connection status after mount
   const showConnectionLost = isMounted && isSignedIn && connectionLost
+
+  // Memoize the composer to prevent remounts
+  const memoizedComposer = React.useMemo(
+    () => (
+      <LightboxGallery galleryKey={config.threadId}>
+        <ComposerComponent {...config.composer} setIsDragging={setIsDragging} />
+      </LightboxGallery>
+    ),
+    [config.threadId, config.composer, setIsDragging],
+  )
 
   return (
     <Thread.Root config={config}>
@@ -129,12 +146,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
             </div>
           ) : null}
           <Thread.ScrollToBottom />
-          <LightboxGallery galleryKey={config.threadId}>
-            <ComposerComponent
-              {...config.composer}
-              setIsDragging={setIsDragging}
-            />
-          </LightboxGallery>
+          {memoizedComposer}
         </Thread.ViewportFooter>
       </Thread.Viewport>
     </Thread.Root>
