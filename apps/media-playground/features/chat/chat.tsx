@@ -33,7 +33,7 @@ import {
 } from '@assistant-ui/react'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
-import { Edit2Icon, EditIcon, SettingsIcon } from 'lucide-react'
+import { EditIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
 import * as React from 'react'
 import { FC, useEffect, useMemo, useState } from 'react'
@@ -160,57 +160,36 @@ export const AgentLink: FC<{
   className?: string
   hideName?: boolean
   avatarClassName?: string
-  invalidate?: () => Promise<void>
-}> = ({ agent, className, hideName, invalidate, avatarClassName }) => {
-  const dispatch = useAppDispatch()
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agent: agent as Agent,
-        onAction: async () => {
-          await invalidate?.()
-        },
-      }),
-    )
-  }
+}> = ({ agent, className, hideName, avatarClassName }) => {
   return (
-    <div className="flex items-center justify-between gap-2 w-full">
-      <Link
-        className="md:ml-0 flex items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
-        title="View Agent profile"
-        href={`/agents/${agent?.username}`}
+    <Link
+      className={cn(
+        'w-full md:ml-0 flex self-center items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground',
+        className,
+      )}
+      title="View Agent profile"
+      href={`/agents/${agent?.username}`}
+    >
+      <Avatar
+        className={cn(
+          'w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1',
+          avatarClassName,
+        )}
       >
-        <Avatar
-          className={cn(
-            'w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1',
-            avatarClassName,
-          )}
+        <AvatarImage
+          alt={agent?.name}
+          className={'object-cover'}
+          src={getCloudfrontOriginalUrl(agent?.userImage)}
+        />
+        <AvatarFallback
+          delayMs={250}
+          className={cn(['w-6 h-6 md:w-8 md:h-8', avatarClassName])}
         >
-          <AvatarImage
-            alt={agent?.name}
-            className={'object-cover'}
-            src={getCloudfrontOriginalUrl(agent?.userImage)}
-          />
-          <AvatarFallback
-            delayMs={250}
-            className={cn(['w-6 h-6 md:w-8 md:h-8', className])}
-          >
-            {agent?.name[0]}
-          </AvatarFallback>
-        </Avatar>
-        {!hideName && <span className="truncate">{agent?.name}</span>}
-      </Link>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="shrink-0 size-8"
-        onClick={handleEditClick}
-      >
-        <Edit2Icon className="size-4" />
-      </Button>
-    </div>
+          {agent?.name[0]}
+        </AvatarFallback>
+      </Avatar>
+      {!hideName && <span className="truncate">{agent?.name}</span>}
+    </Link>
   )
 }
 
@@ -290,11 +269,14 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         // On md+: 2 columns (sidebar + content).
         className="
         grid
-        h-[calc(100dvh_-_64px)]
         w-full
         grid-rows-[auto_1fr]
         md:grid-rows-1
         md:grid-cols-[250px_1fr]
+        fixed
+        inset-x-0
+        bottom-0
+        top-16
       "
       >
         {/* MOBILE-ONLY HEADER */}
@@ -303,9 +285,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           <div className="ml-auto flex items-center gap-2">
             <AgentLink
               agent={agent}
-              className={cn(
-                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
-              )}
+              className={cn(isOwner ? 'max-w-[120px]' : 'max-w-full')}
             />
             {isOwner && (
               <Button
@@ -349,7 +329,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         </aside>
 
         {/* MAIN CONTENT (occupies the entire space on mobile, column 2 on md) */}
-        <main className="bg-background overflow-hidden">
+        <main className="bg-background overflow-hidden flex flex-col">
           <Thread
             components={{
               ThreadWelcome: MyThreadWelcome,
@@ -368,7 +348,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                     'Make a beautiful image of the first thing that comes to mind',
                 },
               ],
-              message: 'What do you want to create today?',
+              message: agent?.greeting || 'What do you want to create today?',
             }}
             assistantAvatar={{
               src: getCloudfrontOriginalUrl(agent?.userImage),

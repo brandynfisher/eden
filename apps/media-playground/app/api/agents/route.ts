@@ -18,8 +18,17 @@ export async function POST(request: NextRequest) {
   }
 
   const requestJson = await request.json()
-  const { name, key, description, image, instructions, discordId, modelId } =
-    requestJson as AgentsCreateArguments
+  const {
+    name,
+    key,
+    description,
+    image,
+    persona,
+    greeting,
+    suggestions,
+    discordId,
+    modelId,
+  } = requestJson as AgentsCreateArguments
 
   try {
     const eden = new EdenClient({
@@ -32,7 +41,9 @@ export async function POST(request: NextRequest) {
       key,
       description,
       image,
-      instructions,
+      persona,
+      greeting,
+      suggestions,
       discordId,
       modelId,
     })

@@ -20,7 +20,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { AvatarFallback } from '@radix-ui/react-avatar'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
-import { Edit2Icon, RocketIcon, Share2Icon, TrashIcon } from 'lucide-react'
+import { RocketIcon, SettingsIcon, Share2Icon, TrashIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
@@ -140,7 +140,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                       size="icon"
                       onClick={handleEditClick}
                     >
-                      <Edit2Icon size={18} />
+                      <SettingsIcon size={18} />
                     </Button>
                     <Button
                       variant="outline"
