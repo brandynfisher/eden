@@ -2,18 +2,26 @@
 
 import TrainingFeatureCard from './training-feature-card'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { BrainCircuitIcon, PaletteIcon, UsersIcon } from 'lucide-react'
+import { Building2Icon, PaletteIcon, UsersIcon } from 'lucide-react'
 import Link from 'next/link'
 
 export default function SectionTraining() {
   return (
     <div className="max-w-5xl mx-auto">
       <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
-        Train Custom Models That Learn:
+        Give Your Agent a Unique Visual Style
       </TypographyH4>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mx-4">
+      <p className="text-center text-muted-foreground mb-6">
+        Personalize your agent by training a custom model on your own aesthetic,
+        character, or brand assets.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mx-2 md:mx-4">
         <TrainingFeatureCard
-          icon={<UsersIcon className="h-8 w-8 text-purple-600" />}
+          icon={
+            <div className="bg-purple-600/20 p-2 rounded-full">
+              <UsersIcon className="h-7 w-7 text-purple-600" />
+            </div>
+          }
           title="Your Characters"
           inputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/banny_train_thumb_v1.jpg"
           inputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/banny_train_v1.jpg"
@@ -23,7 +31,11 @@ export default function SectionTraining() {
         />
 
         <TrainingFeatureCard
-          icon={<PaletteIcon className="h-8 w-8 text-purple-600" />}
+          icon={
+            <div className="bg-blue-600/20 p-2 rounded-full">
+              <PaletteIcon className="h-7 w-7 text-blue-600" />
+            </div>
+          }
           title="Your Style"
           inputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/ygor_train_thumb_v1.jpg"
           inputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/ygor_train_v1.jpg"
@@ -33,7 +45,11 @@ export default function SectionTraining() {
         />
 
         <TrainingFeatureCard
-          icon={<BrainCircuitIcon className="h-8 w-8 text-purple-600" />}
+          icon={
+            <div className="bg-green-600/20 p-2 rounded-full">
+              <Building2Icon className="h-7 w-7 text-green-600" />
+            </div>
+          }
           title="Your Brand"
           inputImageThumbnail="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/xander_train_thumb_v1.jpg"
           inputImage="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/xander_train_v1.jpg"

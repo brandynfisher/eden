@@ -5,7 +5,7 @@ import { ArrowBigDownDashIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
 interface TrainingFeatureCardProps {
-  icon?: ReactNode
+  icon: ReactNode
   title?: ReactNode
   subtitle?: ReactNode
   inputImage?: string
@@ -25,8 +25,10 @@ export default function TrainingFeatureCard({
 }: TrainingFeatureCardProps) {
   return (
     <div className="flex flex-col items-center p-4 rounded-lg border border-border bg-card">
-      {icon && <div className="mb-2">{icon}</div>}
-      {title && <h3 className="font-semibold mb-4">{title}</h3>}
+      <div className="flex items-center gap-2 mb-4">
+        {icon}
+        {title && <h3 className="font-semibold">{title}</h3>}
+      </div>
       <div className="text-sm text-muted-foreground text-center flex flex-col items-center">
         <LightboxGallery>
           {inputImage && (
@@ -42,11 +44,11 @@ export default function TrainingFeatureCard({
                 customLoader: false,
                 loading: 'lazy',
                 unoptimized: true,
-                className: 'relative rounded-lg',
+                className: 'relative rounded-lg object-cover',
               }}
             />
           )}
-          <ArrowBigDownDashIcon className="h-9 w-9 my-2" />
+          <ArrowBigDownDashIcon className="h-11 w-11 my-2" />
           {outputImage && (
             <LightboxTrigger
               className="hover:brightness-105 cursor-zoom-in"
@@ -60,7 +62,7 @@ export default function TrainingFeatureCard({
                 customLoader: false,
                 loading: 'lazy',
                 unoptimized: true,
-                className: 'relative rounded-lg',
+                className: 'relative rounded-lg object-cover',
               }}
             />
           )}
