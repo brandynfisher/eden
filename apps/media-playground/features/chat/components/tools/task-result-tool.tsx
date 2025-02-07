@@ -44,7 +44,11 @@ export const TaskResultTool = makeAssistantToolUI<
           addResult={() => true}
         />
         <ErrorBoundary>
-          <LightboxGallery>
+          <LightboxGallery
+            galleryKey={`${tool}-${toolResults
+              ?.map(r => r?.output?.[0]?.filename)
+              .join('-')}`}
+          >
             <div
               className={cn([
                 toolResults && toolResults.length > 1 && 'grid',
@@ -63,7 +67,11 @@ export const TaskResultTool = makeAssistantToolUI<
                             {getFileTypeByMimeType(
                               output.mediaAttributes?.mimeType,
                             ) === 'audio' ? (
-                              <audio controls className="w-full max-w-2xl">
+                              <audio
+                                controls
+                                loop={true}
+                                className="w-full max-w-2xl"
+                              >
                                 <source
                                   src={getCloudfrontOriginalUrl(
                                     output.filename,

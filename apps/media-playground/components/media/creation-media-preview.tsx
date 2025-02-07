@@ -24,7 +24,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
       ) : null}
       {fileType === 'audio' ? (
         <div className="flex w-full h-full items-center justify-center min-h-64">
-          <audio src={creation.url} controls={true} />
+          <audio src={creation.url} controls={true} loop={true} />
         </div>
       ) : (
         <LightboxGallery>

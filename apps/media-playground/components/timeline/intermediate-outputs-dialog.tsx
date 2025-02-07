@@ -106,7 +106,7 @@ export const IntermediateOutputsDialog = ({ intermediateOutputs }: Props) => {
                 <div className="relative flex justify-center bg-muted-darker p-2 rounded-b-md">
                   {slide.fileType === 'audio' ? (
                     <div className="flex w-full h-full items-center justify-center min-h-64">
-                      <audio src={slide.url} controls={true} />
+                      <audio src={slide.url} controls={true} loop={true} />
                     </div>
                   ) : (
                     <LightboxTrigger slide={slide} startIndex={index} />

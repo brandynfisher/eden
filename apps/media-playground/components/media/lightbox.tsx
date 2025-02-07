@@ -56,15 +56,24 @@ export type LightboxGalleryProps = {
   children?: ReactNode
   enableDownload?: boolean
   startIndex?: number
+  galleryKey?: string
 }
 
 export const LightboxGallery = ({
   children,
   enableDownload = false,
+  galleryKey,
 }: LightboxGalleryProps) => {
   const [open, setOpen] = useState(false)
   const [startIndex, setStartIndex] = useState(0)
   const [slides, setSlides] = useState<Slide[]>([])
+
+  // Clear slides when component unmounts or key changes
+  React.useEffect(() => {
+    return () => {
+      setSlides([])
+    }
+  }, [galleryKey])
 
   const addSlide = React.useCallback((slide: Slide) => {
     setSlides(prev => {
@@ -308,7 +317,7 @@ export function LightboxVideoTrigger({
           className,
         )}
       />
-      {duration && !hovered ? (
+      {typeof duration === 'number' && !hovered ? (
         <MediaDurationBadge duration={duration} isLoading={false} />
       ) : null}
       <video
