@@ -161,10 +161,13 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                 <Button variant="outline" size="icon" onClick={onShareAgent}>
                   <Share2Icon size={18} />
                 </Button>
-                <Button variant="secondary" asChild>
-                  <Link href={`/chat/${agent._id}`}>
-                    <ChatBubbleIcon className="mr-2 h-4 w-4" />
-                    Start Chat
+                <Button variant="outline" asChild>
+                  <Link
+                    href={`/chat/${agent.username}`}
+                    className=" bg-purple-600/20 border-purple-600"
+                  >
+                    <ChatBubbleIcon className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Chat with this agent</span>
                   </Link>
                 </Button>
               </div>

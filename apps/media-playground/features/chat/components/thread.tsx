@@ -1,6 +1,7 @@
 'use client'
 
 import AlertDestructive from '@/components/alert/alert-destructive'
+import { LightboxGallery } from '@/components/media/lightbox'
 import MyAssistantMessage from '@/features/chat/components/assistant-message'
 import {
   ComposerAttachmentDropzone,
@@ -47,6 +48,7 @@ const ThreadFollowupSuggestions: FC = () => {
 
 type ThreadConfigWithExtras = ThreadConfig & {
   connectionLost?: boolean
+  threadId?: string
 }
 
 const MyThread: FC<ThreadConfigWithExtras> = config => {
@@ -104,7 +106,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     <Thread.Root config={config}>
       <Thread.Viewport className="pt-0 px-1 md:px-2 relative">
         {accept && (
-          <div className="fixed top-16 left-0 right-0 bottom-0 pointer-events-none z-30">
+          <div className="fixed top-16 right-0 bottom-0 left-0 md:left-[250px] pointer-events-none z-30">
             <ComposerAttachmentDropzone
               isDragging={isDragging}
               accept={accept}
@@ -127,10 +129,12 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
             </div>
           ) : null}
           <Thread.ScrollToBottom />
-          <ComposerComponent
-            {...config.composer}
-            setIsDragging={setIsDragging}
-          />
+          <LightboxGallery galleryKey={config.threadId}>
+            <ComposerComponent
+              {...config.composer}
+              setIsDragging={setIsDragging}
+            />
+          </LightboxGallery>
         </Thread.ViewportFooter>
       </Thread.Viewport>
     </Thread.Root>

@@ -333,6 +333,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           <Thread
             components={{
               ThreadWelcome: MyThreadWelcome,
+              // @ts-expect-error We're extending composer hackishly with drag and drop
               Composer: MyComposer,
             }}
             welcome={{

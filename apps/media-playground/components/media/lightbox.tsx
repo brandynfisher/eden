@@ -9,6 +9,7 @@ import customImageLoader from '@/image-loader'
 import { siteConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
+import { AudioLinesIcon } from 'lucide-react'
 import NextImage, { ImageProps } from 'next/image'
 import React from 'react'
 import { ReactNode, createContext, useContext, useState } from 'react'
@@ -26,6 +27,8 @@ type LightboxContextType = {
   setOpen: (open: boolean) => void
   setStartIndex: (index: number) => void
   addSlide: (slide: Slide) => void
+  setSlides: (updater: (slides: Slide[]) => Slide[]) => void
+  galleryKey?: string | number
 }
 
 const LightboxContext = createContext<LightboxContextType | undefined>(
@@ -33,13 +36,16 @@ const LightboxContext = createContext<LightboxContextType | undefined>(
 )
 
 // Hook for using the context
-function useLightbox() {
+export function useLightbox() {
   const context = useContext(LightboxContext)
   if (!context) {
     throw new Error('useLightbox must be used within a LightboxProvider')
   }
   return context
 }
+
+// Global map to store slides for each gallery instance
+const gallerySlidesMap = new Map<string | number, Slide[]>()
 
 export type LightboxGallerySlide = {
   url: string
@@ -49,14 +55,35 @@ export type LightboxGallerySlide = {
   duration?: number
   title?: string
   description?: string
+  type?: 'image' | 'video' | 'audio'
 }
+
+// Audio Component for Lightbox
+const AudioComponent = React.forwardRef<
+  HTMLVideoElement,
+  { src: string; poster?: string; ref?: React.Ref<HTMLVideoElement> }
+>((props, ref) => {
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-full bg-background/80 backdrop-blur-sm">
+      <AudioLinesIcon className="w-24 h-24 mb-4 text-muted-foreground" />
+      <audio
+        ref={ref as React.Ref<HTMLAudioElement>}
+        controls
+        loop
+        className="w-full max-w-md"
+        src={props.src}
+      />
+    </div>
+  )
+})
+AudioComponent.displayName = 'AudioComponent'
 
 // Main Lightbox Gallery component
 export type LightboxGalleryProps = {
   children?: ReactNode
   enableDownload?: boolean
   startIndex?: number
-  galleryKey?: string
+  galleryKey?: string | number
 }
 
 export const LightboxGallery = ({
@@ -70,19 +97,52 @@ export const LightboxGallery = ({
 
   // Clear slides when component unmounts or key changes
   React.useEffect(() => {
+    if (galleryKey) {
+      // Initialize slides from the map if they exist
+      const existingSlides = gallerySlidesMap.get(galleryKey)
+      if (existingSlides) {
+        setSlides(existingSlides)
+      } else {
+        setSlides([])
+      }
+    }
+
     return () => {
-      setSlides([])
+      if (galleryKey) {
+        // Clear slides for this gallery key when unmounting
+        gallerySlidesMap.delete(galleryKey)
+      }
     }
   }, [galleryKey])
 
-  const addSlide = React.useCallback((slide: Slide) => {
-    setSlides(prev => {
-      if (!prev.some(s => JSON.stringify(s) === JSON.stringify(slide))) {
-        return [...prev, slide]
-      }
-      return prev
-    })
-  }, [])
+  const addSlide = React.useCallback(
+    (slide: Slide) => {
+      setSlides(prev => {
+        if (!prev.some(s => JSON.stringify(s) === JSON.stringify(slide))) {
+          const newSlides = [...prev, slide]
+          if (galleryKey) {
+            gallerySlidesMap.set(galleryKey, newSlides)
+          }
+          return newSlides
+        }
+        return prev
+      })
+    },
+    [galleryKey],
+  )
+
+  const setGallerySlides = React.useCallback(
+    (updater: (slides: Slide[]) => Slide[]) => {
+      setSlides(prev => {
+        const newSlides = updater(prev)
+        if (galleryKey) {
+          gallerySlidesMap.set(galleryKey, newSlides)
+        }
+        return newSlides
+      })
+    },
+    [galleryKey],
+  )
 
   const plugins = [
     Captions,
@@ -101,6 +161,8 @@ export const LightboxGallery = ({
         startIndex,
         setStartIndex,
         addSlide,
+        setSlides: setGallerySlides,
+        galleryKey,
       }}
     >
       {children}
@@ -126,6 +188,16 @@ export const LightboxGallery = ({
         render={{
           buttonPrev: slides.length === 1 ? () => null : undefined,
           buttonNext: slides.length === 1 ? () => null : undefined,
+          // video: (props: { src: string; poster?: string }) => {
+          //   // If this is an audio slide (we'll use a special data attribute)
+          //   const slideProps = props as { src: string; poster?: string; isAudio?: boolean }
+          //   if (slideProps.isAudio) {
+          //     return <AudioComponent {...props} />
+          //   }
+          //   // Otherwise render default video
+          //   const videoPlugin = Video()
+          //   return videoPlugin.render?.video?.(props)
+          // },
         }}
         on={{
           entered: () => {
@@ -133,6 +205,11 @@ export const LightboxGallery = ({
           },
           exited: () => {
             window.dispatchEvent(new Event(`lightbox-close`))
+            // Clear slides when lightbox is closed
+            // if (galleryKey) {
+            //   gallerySlidesMap.delete(galleryKey)
+            //   setSlides([])
+            // }
           },
         }}
       />
@@ -157,23 +234,25 @@ export const LightboxTrigger = React.forwardRef<
   React.useEffect(() => {
     if (!slide) return
 
-    if (slide.url?.endsWith('.mp4')) {
+    if (slide.type === 'audio') {
+      addSlide({
+        // poster: slide.thumbnail,
+        sources: [
+          { src: getCloudfrontUrl(slide.url) || '', type: 'audio/mpeg' },
+        ],
+      })
+    } else if (slide.url?.endsWith('.mp4')) {
       addSlide({
         type: 'video',
         width: slide.width,
         height: slide.height,
-        controls: true,
-        playsInline: true,
-        autoPlay: true,
-        muted: false,
-        loop: true,
+        poster: slide.thumbnail,
         sources: [
           {
             src: getCloudfrontUrl(slide.url) || '',
             type: 'video/mp4',
           },
         ],
-        // title: slide.title,
         description: slide.description,
       })
     } else {
@@ -182,7 +261,6 @@ export const LightboxTrigger = React.forwardRef<
         width: slide.width,
         height: slide.height,
         src: slide.url,
-        // title: slide.title,
         description: slide.description,
       })
     }
@@ -206,7 +284,9 @@ export const LightboxTrigger = React.forwardRef<
         setOpen(true)
       }}
     >
-      {slide?.url?.endsWith('.mp4') ? (
+      {slide.type === 'audio' ? (
+        <LightboxAudioTrigger className={className} duration={slide.duration} />
+      ) : slide.url?.endsWith('.mp4') ? (
         <LightboxVideoTrigger
           src={slide.url}
           thumbnail={slide.thumbnail}
@@ -336,6 +416,35 @@ export function LightboxVideoTrigger({
         onMouseLeave={handlePause}
         {...props}
       />
+    </div>
+  )
+}
+
+// Audio Trigger Component
+type LightboxAudioTriggerProps = {
+  className?: string
+  duration?: number | null
+}
+
+export function LightboxAudioTrigger({
+  className,
+  duration,
+}: LightboxAudioTriggerProps) {
+  const { hovered, ref: hoverRef } = useHover()
+
+  return (
+    <div ref={hoverRef} className="relative h-full w-full">
+      <div
+        className={cn(
+          'flex items-center justify-center p-4 bg-muted rounded-md',
+          className,
+        )}
+      >
+        <AudioLinesIcon className="w-8 h-8 text-muted-foreground" />
+      </div>
+      {typeof duration === 'number' && !hovered ? (
+        <MediaDurationBadge duration={duration} isLoading={false} />
+      ) : null}
     </div>
   )
 }

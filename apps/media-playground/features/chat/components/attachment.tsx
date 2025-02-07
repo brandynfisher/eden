@@ -2,7 +2,7 @@
 
 import { getSuspectedMediaType } from '../utils/files'
 import LoadingIndicator from '@/components/loading-indicator'
-import { LightboxTrigger } from '@/components/media/lightbox'
+import { LightboxTrigger, useLightbox } from '@/components/media/lightbox'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
 import { Progress } from '@/components/ui/progress'
 import { siteConfig } from '@/lib/config'
@@ -17,6 +17,7 @@ import {
 } from '@assistant-ui/react'
 import { CircleXIcon } from 'lucide-react'
 import React, { FC, useEffect, useState } from 'react'
+import type { Slide } from 'yet-another-react-lightbox'
 import { useShallow } from 'zustand/shallow'
 
 const useFileSrc = (file: File | undefined) => {
@@ -78,28 +79,34 @@ const AttachmentRemove: FC = () => {
 
 const MyAttachment: FC = () => {
   const canRemove = useAttachment(a => a.source !== 'message')
-
   const uploadProgress = useAttachment(a =>
     a.status.type === 'running' ? a.status.progress : 1,
   )
   const attachment = useAttachment()
-
-  // console.log({ attachment })
+  const { setSlides } = useLightbox()
 
   // @ts-expect-error attachment.file is not always defined
   const fileUrl = attachment.file ? attachment.file.fileUrl : attachment.name
   const src = useAttachmentSrc()
 
   const attachments = useComposer(s => s.attachments)
-  // console.log({ attachments, attachment })
-
   const attachmentIndex = canRemove
     ? attachments.findIndex(a => a.id === attachment.id)
     : Number(attachment.id)
 
-  // console.log({ fileUrl, attachment })
   const mediaType = getSuspectedMediaType(fileUrl)
-  // console.log({ attachmentIndex })
+
+  useEffect(() => {
+    return () => {
+      if (canRemove) {
+        // Clear this slide from lightbox when attachment is removed
+        setSlides((prev: Slide[]) =>
+          prev.filter((_, idx: number) => idx !== attachmentIndex),
+        )
+      }
+    }
+  }, [canRemove, attachmentIndex, setSlides])
+
   return (
     <AttachmentPrimitive.Root
       className={cn([
@@ -126,13 +133,12 @@ const MyAttachment: FC = () => {
         {mediaType === 'image' || mediaType === 'video' ? (
           <LightboxTrigger
             startIndex={attachmentIndex}
-            className="flex items-center justify-center"
+            className="flex items-center justify-center z-0"
             slide={{
               duration: mediaType === 'video' ? 0 : undefined,
               url: canRemove
                 ? getCloudfrontOriginalUrl(fileUrl)
                 : src ?? siteConfig.mediaErrorUrl,
-              thumbnail: src ?? siteConfig.mediaErrorUrl,
             }}
             imageProps={{
               className: canRemove
