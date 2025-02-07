@@ -130,14 +130,20 @@ const MyAttachment: FC = () => {
           canRemove ? 'p-0.5' : 'max-h-48 items-center',
         ])}
       >
-        {mediaType === 'image' || mediaType === 'video' ? (
+        {/* {mediaType} - {attachmentIndex} */}
+        {mediaType === 'image' ||
+        mediaType === 'video' ||
+        mediaType === 'audio' ? (
           <LightboxTrigger
             startIndex={attachmentIndex}
             className="flex items-center justify-center z-0"
             slide={{
+              type: mediaType,
               duration: mediaType === 'video' ? 0 : undefined,
               url: canRemove
-                ? getCloudfrontOriginalUrl(fileUrl)
+                ? mediaType === 'audio'
+                  ? fileUrl
+                  : getCloudfrontOriginalUrl(fileUrl)
                 : src ?? siteConfig.mediaErrorUrl,
             }}
             imageProps={{
@@ -153,9 +159,9 @@ const MyAttachment: FC = () => {
                 : 'object-contain w-full max-h-64 max-w-64 flex-shrink-0',
             }}
           />
-        ) : mediaType === 'audio' ? (
-          <audio src={fileUrl} controls loop={true} className="block" />
         ) : (
+          // ) : mediaxType === 'audio' ? (
+          // <audio src={fileUrl} controls loop={true} className="block" />
           'n/a'
         )}
       </div>

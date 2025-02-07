@@ -17,6 +17,7 @@ import { AgentBasicInfo } from '@/lib/actions/agent'
 import { cn } from '@/lib/utils'
 import {
   Agent,
+  AgentSuggestion,
   ThreadsCreateArguments,
   ThreadsCreateResponse,
 } from '@edenlabs/eden-sdk'
@@ -40,11 +41,6 @@ export interface AgentConfig extends Agent {
   greeting: string
 }
 
-interface Suggestion {
-  text: string
-  prompt: string
-}
-
 type Props = {
   agents: AgentBasicInfo[]
   initialAgentId?: string
@@ -63,22 +59,22 @@ interface StoredFormData extends FormData {
 
 const FORM_STORAGE_KEY = 'chat-mock-form-state'
 
-const DEFAULT_SUGGESTIONS: Suggestion[] = [
+const DEFAULT_SUGGESTIONS: AgentSuggestion[] = [
   {
-    text: 'What tools can you use?',
+    label: 'What tools can you use?',
     prompt: 'Can you list all the tools and capabilities you have access to?',
   },
   {
-    text: 'Animate my logo',
+    label: 'Animate my logo',
     prompt:
       'I would like to animate my company logo. Can you help me with that?',
   },
   {
-    text: 'Make sketches into art',
+    label: 'Make sketches into art',
     prompt: 'I have a sketch, can you make it into an art piece?',
   },
   {
-    text: 'Help me draft a character',
+    label: 'Help me draft a character',
     prompt: 'I need help creating a character design. Can you assist me?',
   },
 ]
@@ -397,22 +393,26 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
 
             <div className="mt-4 border border-secondary rounded-lg p-4 bg-secondary/30">
               <div className="flex flex-wrap gap-2">
-                {(agent?.suggestions || DEFAULT_SUGGESTIONS).map(suggestion => {
-                  return (
-                    <Button
-                      aria-label={suggestion.text}
-                      key={`${agent?._id || 'default'}-${suggestion.text}`}
-                      variant="outline"
-                      type="button"
-                      size="sm"
-                      className="text-xs justify-start w-fit rounded-xl shrink-0 md:min-w-[49%]"
-                      onClick={() => handleSuggestionClick(suggestion.prompt)}
-                      disabled={isSubmitting}
-                    >
-                      {suggestion.text}
-                    </Button>
-                  )
-                })}
+                {(agent?.suggestions || DEFAULT_SUGGESTIONS).map(
+                  (suggestion, index) => {
+                    return (
+                      <Button
+                        aria-label={suggestion.label}
+                        key={`${agent?._id || 'default'}-${
+                          suggestion.label
+                        }-${index}`}
+                        variant="outline"
+                        type="button"
+                        size="sm"
+                        className="text-xs justify-start w-fit rounded-xl shrink-0 md:min-w-[49%]"
+                        onClick={() => handleSuggestionClick(suggestion.prompt)}
+                        disabled={isSubmitting}
+                      >
+                        {suggestion.label}
+                      </Button>
+                    )
+                  },
+                )}
               </div>
             </div>
           </Form>

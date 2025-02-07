@@ -5,7 +5,7 @@ import { Deployment } from 'src/models/v2/Deployments'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 export type AgentSuggestion = {
-  text: string
+  label: string
   prompt: string
 }
 

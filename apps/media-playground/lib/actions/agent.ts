@@ -1,7 +1,7 @@
 'use server'
 
 import { fetcher } from '@/lib/fetcher'
-import { AgentGetResponse } from '@edenlabs/eden-sdk'
+import { AgentGetResponse, AgentSuggestion } from '@edenlabs/eden-sdk'
 import { cookies } from 'next/headers'
 import { cache } from 'react'
 
@@ -33,10 +33,7 @@ export interface AgentBasicInfo {
   userImage?: string
   description: string
   greeting: string
-  suggestions: {
-    text: string
-    prompt: string
-  }[]
+  suggestions: AgentSuggestion[]
 }
 
 export const getMultipleAgents = async (

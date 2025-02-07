@@ -11,21 +11,21 @@ export const AGENT_CONFIGS = [
       "Hi! I'm Eve, your creative AI companion. What would you like to create today?",
     suggestions: [
       {
-        text: 'What tools can you use?',
+        label: 'What tools can you use?',
         prompt:
           'Can you list all the tools and capabilities you have access to?',
       },
       {
-        text: 'Animate my logo',
+        label: 'Animate my logo',
         prompt:
           'I would like to animate my company logo. Can you help me with that?',
       },
       {
-        text: 'Make sketches into art',
+        label: 'Make sketches into art',
         prompt: 'I have a sketch, can you make it into an art piece?',
       },
       {
-        text: 'Help me draft a character',
+        label: 'Help me draft a character',
         prompt: 'I need help creating a character design. Can you assist me?',
       },
     ],
@@ -38,11 +38,11 @@ export const AGENT_CONFIGS = [
       "Hello! I'm Abraham, ready to help you craft amazing stories and develop compelling characters.",
     suggestions: [
       {
-        text: 'Write a story',
+        label: 'Write a story',
         prompt: 'Can you help me write a short story?',
       },
       {
-        text: 'Character development',
+        label: 'Character development',
         prompt: 'I need help developing a character for my story',
       },
     ],
@@ -55,11 +55,11 @@ export const AGENT_CONFIGS = [
       "Hey there! I'm VJ Master, ready to help you create amazing videos and visual effects.",
     suggestions: [
       {
-        text: 'Create a video',
+        label: 'Create a video',
         prompt: 'I want to create a video from my images. Can you help?',
       },
       {
-        text: 'Add effects',
+        label: 'Add effects',
         prompt: 'I need to add some special effects to my video',
       },
     ],
@@ -72,11 +72,11 @@ export const AGENT_CONFIGS = [
       "Welcome! I'm Verdelis, your AI art director. Let's create something beautiful together.",
     suggestions: [
       {
-        text: 'Brand design',
+        label: 'Brand design',
         prompt: 'I need help creating a visual brand identity',
       },
       {
-        text: 'Style guide',
+        label: 'Style guide',
         prompt: 'Can you help me create a style guide for my brand?',
       },
     ],
@@ -93,9 +93,7 @@ export default async function SectionChatMock() {
     return {
       ...fetchedData,
       greeting: config.greeting,
-      suggestions: config.suggestions.map(suggestion => ({
-        ...suggestion,
-      })),
+      suggestions: config.suggestions,
     }
   })
 

@@ -20,6 +20,7 @@ export const useWebSocketConnection = (
       onClose: e => console.log('WebSocket closed', e),
       onError: e => console.error('WebSocket error', e),
       onMessage: onMessage ? event => onMessage(event) : undefined,
+      reconnectAttempts: Infinity,
       shouldReconnect: () => shouldConnect,
       heartbeat: {
         message: () => JSON.stringify({ event: 'ping', ts: Date.now() }),

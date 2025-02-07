@@ -130,9 +130,11 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
           </Avatar>
 
           <div className="ml-4 flex flex-col flex-grow">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold">{agent?.name}</h1>
-              <div className="flex gap-x-2">
+            <div className="flex flex-wrap items-center justify-between">
+              <h1 className="text-2xl font-semibold mb-2 md:mb-0">
+                {agent?.name}
+              </h1>
+              <div className="flex flex-wrap gap-2">
                 {user?._id === agent?.owner._id && (
                   <>
                     <Button
@@ -167,7 +169,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     className=" bg-purple-600/20 border-purple-600"
                   >
                     <ChatBubbleIcon className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Chat with this agent</span>
+                    <span className="text-sm">Chat</span>
                   </Link>
                 </Button>
               </div>

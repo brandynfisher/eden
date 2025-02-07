@@ -60,16 +60,21 @@ export type LightboxGallerySlide = {
 
 // Audio Component for Lightbox
 const AudioComponent = React.forwardRef<
-  HTMLVideoElement,
-  { src: string; poster?: string; ref?: React.Ref<HTMLVideoElement> }
+  HTMLAudioElement,
+  {
+    src: string
+    autoPlay?: boolean
+    ref?: React.Ref<HTMLAudioElement>
+  }
 >((props, ref) => {
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full bg-background/80 backdrop-blur-sm">
+    <div className="audio-component flex flex-col items-center justify-center w-full h-full bg-background/80 backdrop-blur-sm">
       <AudioLinesIcon className="w-24 h-24 mb-4 text-muted-foreground" />
       <audio
-        ref={ref as React.Ref<HTMLAudioElement>}
+        ref={ref}
         controls
         loop
+        autoPlay={props.autoPlay}
         className="w-full max-w-md"
         src={props.src}
       />
@@ -152,6 +157,7 @@ export const LightboxGallery = ({
     ...(enableDownload ? [Download] : []),
   ]
   const hasSingleSlide = slides.length <= 1
+  // console.log('slides', slides)
 
   return (
     <LightboxContext.Provider
@@ -188,28 +194,80 @@ export const LightboxGallery = ({
         render={{
           buttonPrev: slides.length === 1 ? () => null : undefined,
           buttonNext: slides.length === 1 ? () => null : undefined,
-          // video: (props: { src: string; poster?: string }) => {
-          //   // If this is an audio slide (we'll use a special data attribute)
-          //   const slideProps = props as { src: string; poster?: string; isAudio?: boolean }
-          //   if (slideProps.isAudio) {
-          //     return <AudioComponent {...props} />
-          //   }
-          //   // Otherwise render default video
-          //   const videoPlugin = Video()
-          //   return videoPlugin.render?.video?.(props)
-          // },
+          slide: props => {
+            // @ts-expect-error slide.src is not always defined
+            if (props.slide.type === 'audio') {
+              // @ts-expect-error slide.src is not always defined
+              return (
+                <AudioComponent
+                  src={props.slide.src}
+                  autoPlay={props.offset === 0}
+                />
+              )
+            }
+            return null
+          },
         }}
         on={{
+          view: props => {
+            // Handle both audio and video elements
+            const audios = document.querySelectorAll(
+              '.audio-component audio',
+            ) as NodeListOf<HTMLAudioElement>
+            const videos = document.querySelectorAll(
+              'video',
+            ) as NodeListOf<HTMLVideoElement>
+
+            // Handle audio elements
+            audios.forEach(audio => {
+              const currentSlide = slides[props.index]
+              if (!currentSlide || !('src' in currentSlide)) {
+                audio.pause()
+                audio.currentTime = 0
+                return
+              }
+              if (audio.src === currentSlide.src) {
+                audio.play().catch(() => {
+                  // Handle autoplay policy errors silently
+                })
+                audio.currentTime = 0
+              } else {
+                audio.pause()
+                audio.currentTime = 0
+              }
+            })
+
+            // Handle video elements
+            videos.forEach(video => {
+              const currentSlide = slides[props.index]
+              if (!currentSlide || !('sources' in currentSlide)) {
+                video.pause()
+                video.currentTime = 0
+                return
+              }
+              const currentVideoSrc = currentSlide.sources?.[0]?.src
+              if (video.src === currentVideoSrc) {
+                // Enable audio for videos in lightbox
+                video.muted = false
+                video.play().catch(() => {
+                  // If autoplay fails due to browser policy, mute and try again
+                  video.muted = true
+                  video.play().catch(() => {
+                    // Handle final autoplay failure silently
+                  })
+                })
+                video.currentTime = 0
+              } else {
+                video.pause()
+                video.currentTime = 0
+              }
+            })
+          },
           entered: () => {
             window.dispatchEvent(new Event(`lightbox-open`))
           },
           exited: () => {
             window.dispatchEvent(new Event(`lightbox-close`))
-            // Clear slides when lightbox is closed
-            // if (galleryKey) {
-            //   gallerySlidesMap.delete(galleryKey)
-            //   setSlides([])
-            // }
           },
         }}
       />
@@ -236,10 +294,9 @@ export const LightboxTrigger = React.forwardRef<
 
     if (slide.type === 'audio') {
       addSlide({
-        // poster: slide.thumbnail,
-        sources: [
-          { src: getCloudfrontUrl(slide.url) || '', type: 'audio/mpeg' },
-        ],
+        // @ts-expect-error slide.type is not always defined
+        type: 'audio',
+        src: slide.url,
       })
     } else if (slide.url?.endsWith('.mp4')) {
       addSlide({
@@ -264,7 +321,7 @@ export const LightboxTrigger = React.forwardRef<
         description: slide.description,
       })
     }
-  }, [])
+  }, [slide, addSlide])
 
   if (!slide) return null
 
@@ -285,7 +342,11 @@ export const LightboxTrigger = React.forwardRef<
       }}
     >
       {slide.type === 'audio' ? (
-        <LightboxAudioTrigger className={className} duration={slide.duration} />
+        <LightboxAudioTrigger
+          src={slide.url}
+          className={className}
+          duration={slide.duration}
+        />
       ) : slide.url?.endsWith('.mp4') ? (
         <LightboxVideoTrigger
           src={slide.url}
@@ -387,16 +448,18 @@ export function LightboxVideoTrigger({
 
   return (
     <div ref={hoverRef} className="relative h-full w-full">
-      <LightboxImageTrigger
-        customLoader={true}
-        src={thumbnail ?? src}
-        width={width}
-        height={height}
-        className={cn(
-          'absolute inset-0 flex w-full h-full object-contain',
-          className,
-        )}
-      />
+      {thumbnail && (
+        <LightboxImageTrigger
+          customLoader={true}
+          src={thumbnail}
+          width={width}
+          height={height}
+          className={cn(
+            'absolute inset-0 flex w-full h-full object-contain',
+            className,
+          )}
+        />
+      )}
       {typeof duration === 'number' && !hovered ? (
         <MediaDurationBadge duration={duration} isLoading={false} />
       ) : null}
@@ -422,25 +485,53 @@ export function LightboxVideoTrigger({
 
 // Audio Trigger Component
 type LightboxAudioTriggerProps = {
+  src?: string
   className?: string
   duration?: number | null
+  autoPlay?: boolean
 }
 
 export function LightboxAudioTrigger({
+  src,
   className,
   duration,
 }: LightboxAudioTriggerProps) {
   const { hovered, ref: hoverRef } = useHover()
+  const audioRef = React.useRef<HTMLAudioElement>(null)
+  const { setOpen } = useLightbox()
+
+  const handleClick = () => {
+    // Stop audio playback when opening lightbox
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+    }
+    setOpen(true)
+  }
 
   return (
-    <div ref={hoverRef} className="relative h-full w-full">
+    <div
+      ref={hoverRef}
+      className="relative h-full w-full"
+      onClick={handleClick}
+    >
       <div
         className={cn(
-          'flex items-center justify-center p-4 bg-muted rounded-md',
+          'flex items-center justify-center bg-muted rounded-md',
           className,
         )}
       >
-        <AudioLinesIcon className="w-8 h-8 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center w-full h-full bg-background/80 backdrop-blur-sm">
+          <AudioLinesIcon className="w-24 h-24 text-muted-foreground" />
+          <audio
+            ref={audioRef}
+            controls
+            loop
+            autoPlay={false}
+            className="px-2"
+            src={src}
+          />
+        </div>
       </div>
       {typeof duration === 'number' && !hovered ? (
         <MediaDurationBadge duration={duration} isLoading={false} />
