@@ -72,7 +72,7 @@ const HomePage = async () => {
           </section>
         ) : null}
 
-        <section className="bg-accent/60 py-12 px-4">
+        <section className="bg-accent/60 py-12 px-2 md:px-4">
           <SectionDeploy />
         </section>
 
@@ -80,11 +80,11 @@ const HomePage = async () => {
           <SectionEve />
         </section>
 
-        <section className="bg-accent/60 py-12 px-4">
+        <section className="bg-accent/60 py-12 px-2 md:px-4">
           <SectionTraining />
         </section>
 
-        <section className="mb-12 px-4">
+        <section className="mb-12 px-2 md:px-4">
           <SectionAgents />
         </section>
       </div>

@@ -11,7 +11,7 @@ export interface SectionChatMockProps {
 
 export function SectionChatMockClient({ agents }: SectionChatMockProps) {
   return (
-    <div className="max-w-5xl mx-auto px-4">
+    <div className="max-w-5xl mx-auto px-2 md:px-4">
       <TypographyH4 className="text-3xl font-bold mb-4 text-center">
         A Garden of Artificial Delights
       </TypographyH4>

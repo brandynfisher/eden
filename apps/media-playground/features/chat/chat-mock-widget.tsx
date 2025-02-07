@@ -202,9 +202,9 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
   return (
     <div
       data-testid="chat-mock-widget"
-      className="flex flex-wrap md:flex-nowrap gap-4 h-full"
+      className="flex flex-col-reverse md:flex-row gap-4 h-full"
     >
-      <div className="min-w-[320px] md:max-w-[320px] rounded-lg bg-muted-darker/80 p-4 flex flex-col gap-4">
+      <div className="w-full md:min-w-[320px] md:max-w-[320px] rounded-lg bg-muted-darker/80 px-2 md:px-4 p-4 flex flex-col gap-4">
         {agents.map((agentConfig, index) => (
           <Button
             variant="ghost"
@@ -272,7 +272,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
         </Link>
       </div>
       <div className="flex-1 flex flex-col rounded-lg bg-muted-darker/80">
-        <div className="p-4 flex items-center gap-4 w-full shrink-0">
+        <div className="px-2 md:px-4 p-4 flex items-center gap-4 w-full shrink-0">
           <Avatar className="w-10 h-10">
             {agent?.userImage && (
               <AvatarImage
@@ -301,13 +301,13 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
           </Button>
         </div>
         <Separator className="shrink-0" />
-        <div className="flex flex-col flex-1 p-4 items-center">
-          <div className="inline-flex p-2 bg-purple-600/40 rounded-lg max-w-[80%]">
+        <div className="flex flex-col flex-1 p-4  px-2 md:px-4 items-center md:mb-12">
+          <div className="inline-flex p-2 bg-purple-600/40 rounded-lg md:max-w-[80%]">
             {agent?.greeting || 'How can I help you today?'}
           </div>
         </div>
         <Separator className="shrink-0" />
-        <div className="p-4 shrink-0">
+        <div className="px-2 md:px-4 p-4 shrink-0">
           <Form {...form}>
             <form
               className="flex gap-2 w-full bg-popover border border-secondary rounded-lg p-2"
@@ -385,7 +385,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
             </form>
 
             <div className="mt-4 border border-secondary rounded-lg p-4 bg-secondary/30">
-              <div className="grid md:grid-cols-2 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {(agent?.suggestions || DEFAULT_SUGGESTIONS).map(suggestion => {
                   return (
                     <Button
@@ -393,7 +393,8 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
                       key={`${agent?._id || 'default'}-${suggestion.text}`}
                       variant="outline"
                       type="button"
-                      className="flex gap-2 rounded-full"
+                      size="sm"
+                      className="text-xs rounded-xl shrink-0 min-w-[49%]"
                       onClick={() => handleSuggestionClick(suggestion.prompt)}
                       disabled={isSubmitting}
                     >

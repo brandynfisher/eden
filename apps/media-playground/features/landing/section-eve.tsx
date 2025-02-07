@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 export default function SectionEve() {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto px-2 md:px-4">
       <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
         The Best Creative AI Tools, All in One Place
       </TypographyH4>
