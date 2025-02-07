@@ -49,7 +49,7 @@ const ConfigSchema = Type.Strict(
     STRIPE_DISCOUNT_CODE_BASIC: Type.Optional(Type.String()),
     STRIPE_DISCOUNT_CODE_PRO: Type.Optional(Type.String()),
     STRIPE_DISCOUNT_CODE_BELIEVER: Type.Optional(Type.String()),
-    SENTRY_DSN: Type.String(),
+    SENTRY_DSN: Type.Optional(Type.String()),
     CLERK_PUBLISHABLE_KEY: Type.Optional(Type.String()),
     CLERK_SECRET_KEY: Type.Optional(Type.String()),
     CLERK_WEBHOOK_SECRET: Type.Optional(Type.String()),

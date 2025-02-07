@@ -79,23 +79,37 @@ export const DeploymentFormFooter = ({
       }
 
       if (platform === 'discord') {
-        payload.discord = {
-          token: data.token,
-          allowedChannels: data.allowedChannels,
+        payload.secrets = {
+          discord: {
+            token: data.token,
+          },
+        }
+        payload.config = {
+          discord: {
+            allowedChannels: data.allowedChannels,
+          },
         }
       }
 
       if (platform === 'telegram') {
-        payload.telegram = {
-          token: data.token,
-          allowedTopics: data.allowedTopics,
+        payload.secrets = {
+          telegram: {
+            token: data.token,
+          },
+        }
+        payload.config = {
+          telegram: {
+            allowedTopics: data.allowedTopics,
+          },
         }
       }
 
       if (platform === 'farcaster') {
-        payload.farcaster = {
-          mnemonic: data.mnemonic,
-          neynarWebhookSecret: data.neynarWebhookSecret,
+        payload.secrets = {
+          farcaster: {
+            mnemonic: data.mnemonic,
+            neynarWebhookSecret: data.neynarWebhookSecret,
+          },
         }
       }
 
@@ -134,6 +148,11 @@ export const DeploymentFormFooter = ({
       })
     } catch (error) {
       console.error(error)
+      toast.error('Failed to stop deployment', {
+        description: `The ${platform} deployment could not be stopped. Please try again.`,
+        richColors: true,
+        dismissible: true,
+      })
     } finally {
       queryClient.invalidateQueries({
         queryKey: ['agents', agentId, 'deployments'],
