@@ -5,7 +5,6 @@ import {
   deployAgent,
   getAgent,
   getAgentDeployments,
-  stopAgentDeployment,
   updateAgent,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
@@ -114,56 +113,63 @@ const agentRoutes: FastifyPluginAsync = async server => {
       },
       body: Type.Object({
         platform: Type.String(),
-        discord: Type.Optional(
+        secrets: Type.Optional(
           Type.Object({
-            token: Type.String(),
-            allowedChannels: Type.Optional(
-              Type.Array(
-                Type.Object({
-                  id: Type.String(),
-                  note: Type.String(),
-                }),
-              ),
+            discord: Type.Optional(
+              Type.Object({
+                token: Type.String(),
+              }),
+            ),
+            telegram: Type.Optional(
+              Type.Object({
+                token: Type.String(),
+              }),
+            ),
+            farcaster: Type.Optional(
+              Type.Object({
+                mnemonic: Type.String(),
+                neynarWebhookSecret: Type.String(),
+              }),
             ),
           }),
         ),
-        telegram: Type.Optional(
+        config: Type.Optional(
           Type.Object({
-            token: Type.String(),
-            allowedTopics: Type.Optional(
-              Type.Array(
-                Type.Object({
-                  id: Type.String(),
-                  note: Type.String(),
-                }),
-              ),
+            discord: Type.Optional(
+              Type.Object({
+                allowedChannels: Type.Optional(
+                  Type.Array(
+                    Type.Object({
+                      id: Type.String(),
+                      note: Type.String(),
+                    }),
+                  ),
+                ),
+              }),
             ),
-          }),
-        ),
-        farcaster: Type.Optional(
-          Type.Object({
-            mnemonic: Type.String(),
-            neynarWebhookSecret: Type.String(),
+            telegram: Type.Optional(
+              Type.Object({
+                allowedTopics: Type.Optional(
+                  Type.Array(
+                    Type.Object({
+                      id: Type.String(),
+                      note: Type.String(),
+                    }),
+                  ),
+                ),
+              }),
+            ),
           }),
         ),
       }),
       response: {
         200: Type.Object({
-          agentId: Type.String(),
+          deploymentId: Type.String(),
         }),
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deployAgent(server, request, reply),
-  })
-
-  server.post('/v2/agents/:agentId/deployments/stop', {
-    schema: {
-      tags: ['Agents'],
-      description: 'Stop an agent deployment',
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => stopAgentDeployment(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId/deployments/:platform', {

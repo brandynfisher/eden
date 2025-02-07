@@ -8,13 +8,16 @@ import {
   AgentGetArguments,
   AgentsCreateArguments,
   AgentsDeleteArguments,
-  AgentsDeleteDeploymentArguments,
   AgentsDeployArguments,
+  AgentsDeployResponse,
   AgentsStopDeploymentArguments,
+  AgentsStopDeploymentResponse,
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
+import { AgentsDeleteDeploymentResponse } from '@edenlabs/eden-sdk/src/models/v2/Agents'
 import { ObjectId } from '@fastify/mongodb'
+import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateResult } from 'mongodb'
 import { UpdateQuery } from 'mongoose'
@@ -252,14 +255,13 @@ export const getAgentDeployments = async (
 }
 
 export const deployAgent = async (
-  _server: FastifyInstance,
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
   const { agentId } = request.params as AgentsDeployArguments
-  // const { platform, discord, telegram, farcaster } = request.body as AgentsDeployArguments
-  const { discord, telegram } = request.body as AgentsDeployArguments
+  const { platform, secrets, config } = request.body as AgentsDeployArguments
 
   const agent = await Agent.findById(agentId)
 
@@ -276,52 +278,31 @@ export const deployAgent = async (
   }
 
   try {
-    {
-      /* TODO: Eve api call */
-    }
-    // await axios.post(
-    //   `${server.config.EDEN_COMPUTE_API_URL}/deployments/configure`,
-    //   {
-    //     agent_username: agent.username,
-    //     secrets: {
-    //       client_discord_token: discord?.token,
-    //       client_telegram_token: telegram?.token,
-    //       client_farcaster_mnemonic: farcaster?.mnemonic,
-    //       client_farcaster_neynar_webhook_secret:
-    //         farcaster?.neynarWebhookSecret,
-    //     },
-    //   },
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-    //     },
-    //   },
-    // )
-
-    // await axios.post(
-    //   `${server.config.EDEN_COMPUTE_API_URL}/deployments/create`,
-    //   {
-    //     agent_username: agent.username,
-    //     platform,
-    //   },
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-    //     },
-    //   },
-    // )
-
-    await agent.updateOne({
-      $set: {
-        discordChannelAllowlist: discord?.allowedChannels,
-        telegramTopicAllowlist: telegram?.allowedTopics,
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/create`,
+      data: {
+        agent: agentId,
+        user: currentUserId,
+        platform,
+        secrets,
+        config,
       },
-    })
+    }
 
-    await agent.save()
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const deployment = modalResponse.data as AgentsDeployResponse
 
     return reply.status(200).send({
-      agentId: agent._id,
+      deploymentId: deployment.deployment_id,
     })
   } catch (error) {
     console.error(error)
@@ -331,14 +312,13 @@ export const deployAgent = async (
   }
 }
 
-export const stopAgentDeployment = async (
-  _server: FastifyInstance,
+export const deleteAgentDeployment = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
-  // const { agentId, platform } = request.params as AgentsStopDeploymentArguments
-  const { agentId } = request.params as AgentsStopDeploymentArguments
+  const { agentId, platform } = request.params as AgentsStopDeploymentArguments
 
   const agent = await Agent.findById(agentId)
 
@@ -355,61 +335,35 @@ export const stopAgentDeployment = async (
   }
 
   try {
-    {
-      /* TODO: Eve api call */
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/delete`,
+      data: {
+        agent: agentId,
+        platform,
+      },
     }
-  } catch (error) {
-    console.error(error)
-  }
-}
 
-export const deleteAgentDeployment = async (
-  _server: FastifyInstance,
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const currentUserId = request.user.userId
-  // const { agentId, platform } = request.params as AgentsDeleteDeploymentArguments
-  const { agentId } = request.params as AgentsDeleteDeploymentArguments
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
 
-  const agent = await Agent.findById(agentId)
+    const response = modalResponse.data as AgentsStopDeploymentResponse
 
-  if (!agent) {
-    return reply.status(404).send({
-      error: 'Agent not found',
+    return reply.status(200).send({
+      success: response.success,
     })
-  }
-
-  if (agent.owner.toString() !== currentUserId.toString()) {
-    return reply.status(401).send({
-      error: 'User not authorized to delete this deployment',
-    })
-  }
-
-  try {
-    {
-      /* TODO: Eve api call */
-    }
-    // await axios.post(
-    //   `${server.config.EDEN_COMPUTE_API_URL}/deployments/delete`,
-    //   {
-    //     agent_username: agent.username,
-    //     platform,
-    //   },
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-    //     },
-    //   },
-    // )
   } catch (error) {
     console.error(error)
     return reply.status(500).send({
-      error: 'An error occurred while deleting the deployment',
+      error: 'An error occurred while stopping the deployment',
     })
   }
-
-  return reply.status(200).send()
 }
 
 export const deleteAgent = async (

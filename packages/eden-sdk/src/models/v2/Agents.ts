@@ -88,22 +88,28 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
 }
 
 interface DiscordDeploymentConfig {
-  token: string
-  allowedChannels: {
+  allowed_channels: {
     id: string
     note: string
   }[]
 }
 
 interface TelegramDeploymentConfig {
-  token: string
-  allowedTopics: {
+  allowed_topics: {
     id: string
     note: string
   }[]
 }
 
-interface FarcasterDeploymentConfig {
+interface DiscordDeploymentSecrets {
+  token: string
+}
+
+interface TelegramDeploymentSecrets {
+  token: string
+}
+
+interface FarcasterDeploymentSecrets {
   mnemonic: string
   neynarWebhookSecret: string
 }
@@ -115,9 +121,15 @@ export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
 export interface AgentsDeployArguments extends WebAPICallOptions {
   agentId: string
   platform: AgentClientType
-  discord?: DiscordDeploymentConfig
-  telegram?: TelegramDeploymentConfig
-  farcaster?: FarcasterDeploymentConfig
+  config?: {
+    discord?: DiscordDeploymentConfig
+    telegram?: TelegramDeploymentConfig
+  }
+  secrets?: {
+    discord?: DiscordDeploymentSecrets
+    telegram?: TelegramDeploymentSecrets
+    farcaster?: FarcasterDeploymentSecrets
+  }
 }
 
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
@@ -243,7 +255,7 @@ export type AgentsUpdateResponse = WebAPICallResult & {
 }
 
 export type AgentsDeployResponse = WebAPICallResult & {
-  agentId: string
+  deployment_id: string
   error?: string
 }
 
