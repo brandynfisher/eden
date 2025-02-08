@@ -13,7 +13,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@assistant-ui/react": "^0.7.53",
+    "@assistant-ui/react": "^0.7.69",
     "@assistant-ui/react-markdown": "^0.7.11",
     "@assistant-ui/react-syntax-highlighter": "^0.7.9",
     "@clerk/nextjs": "^6.10.4",

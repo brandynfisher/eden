@@ -237,6 +237,7 @@ export const LightboxTrigger = React.forwardRef<
     if (slide.type === 'audio') {
       addSlide({
         // poster: slide.thumbnail,
+        type: 'video',
         sources: [
           { src: getCloudfrontUrl(slide.url) || '', type: 'audio/mpeg' },
         ],
