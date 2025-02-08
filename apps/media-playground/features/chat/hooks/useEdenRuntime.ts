@@ -126,11 +126,11 @@ export const useEdenRuntime = ({
         ]),
         threadList: {
           threadId,
-          //@ts-expect-error: Type error: Type 'Thread[]' is not assignable to type 'ExternalStoreThreadData<"regular">[]'
           threads: threads?.map(thread => ({
             threadId: thread._id,
             title: thread.title,
             state: 'regular',
+            status: 'regular',
           })),
           onSwitchToNewThread: !onSwitchToNewThread
             ? undefined

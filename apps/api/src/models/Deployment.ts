@@ -4,11 +4,15 @@ export enum DeploymentPlatform {
   DISCORD = 'discord',
   TELEGRAM = 'telegram',
   FARCASTER = 'farcaster',
+  TWITTER = 'twitter',
 }
 
 export interface DeploymentSchema {
   agent: ObjectId
+  user: ObjectId
   platform: DeploymentPlatform
+  secrets: Record<string, any>
+  config: Record<string, any>
 }
 
 export interface DeploymentDocument extends DeploymentSchema {}
@@ -20,10 +24,21 @@ const DeploymentSchema = new Schema<DeploymentDocument>(
       ref: 'users3',
       required: true,
     },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      required: true,
+    },
     platform: {
       type: String,
       required: true,
       enum: Object.values(DeploymentPlatform),
+    },
+    secrets: {
+      type: Object,
+    },
+    config: {
+      type: Object,
     },
   },
   {

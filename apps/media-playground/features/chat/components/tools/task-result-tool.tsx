@@ -23,6 +23,7 @@ export type TaskResultToolArgs = {
 }
 
 export const TaskResultTool = makeAssistantToolUI<
+  // @ts-expect-error faked taskv2
   TaskResultToolArgs,
   TaskResultToolArgs
 >({
