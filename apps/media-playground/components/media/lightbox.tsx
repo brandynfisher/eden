@@ -1,4 +1,3 @@
-import 'yet-another-react-lightbox/plugins/captions.css'
 import 'yet-another-react-lightbox/plugins/counter.css'
 import 'yet-another-react-lightbox/styles.css'
 
@@ -287,7 +286,6 @@ export const LightboxTrigger = React.forwardRef<
   HTMLDivElement,
   LightboxTriggerProps
 >(({ className, slide, startIndex, videoProps, imageProps }, ref) => {
-  console.log({ className, slide, startIndex, videoProps, imageProps })
   const { setOpen, setStartIndex, addSlide } = useLightbox()
 
   React.useEffect(() => {

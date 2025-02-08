@@ -87,7 +87,7 @@ const AgentFormSheet = () => {
       image: agent?.userImage || '',
       description: agent?.description || '',
       persona: agent?.persona || '',
-      knowledge: agent?.knowledge || '',
+      knowledge: agent?.knowledge ?? '',
       greeting: agent?.greeting || '',
       modelId: agent?.model || '',
       suggestions: agent?.suggestions || [],
@@ -105,8 +105,8 @@ const AgentFormSheet = () => {
         image: agent.userImage,
         description: agent.description,
         persona: agent.persona,
-        knowledge: agent.knowledge,
-        greeting: agent.greeting,
+        knowledge: agent.knowledge ?? '',
+        greeting: agent.greeting || '',
         modelId: agent.model,
         suggestions: agent.suggestions,
       })
@@ -377,27 +377,33 @@ const AgentFormSheet = () => {
                 </FormItem>
               )}
             />
+
             {/** Knowledge Field */}
-            {/* <FormField
+            <FormField
               control={form.control}
               name="knowledge"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Knowledge*</FormLabel>
+                  <FormLabel>Knowledge</FormLabel>
+                  <FormDescription>
+                    Additional knowledge or context for the agent.
+                  </FormDescription>
                   <FormControl>
                     <AutosizeTextarea
-                      placeholder="Abraham is a helpful agent"
+                      placeholder="Add any specific knowledge or context for the agent..."
                       {...field}
+                      value={field.value ?? ''}
+                      onChange={e => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <CharacterCount
-                    current={field.value?.length || 0}
+                    current={field.value?.length ?? 0}
                     max={100000}
                   />
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
 
             {/** Model Field */}
             <FormField
