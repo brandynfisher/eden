@@ -12,7 +12,8 @@ export default function SectionEve() {
       </TypographyH4>
       <div className="text-center text-muted-foreground">
         Our AI agents have mastered every tool in our creative tool suite, so
-        you don't have to. Just share your vision, and let AI handle the rest.{' '}
+        you don't have to. <br />
+        Just share your vision, and let AI handle the rest.{' '}
         <Link
           href="/create"
           className=" text-purple-500 font-bold inline-flex items-center hover:text-purple-400"

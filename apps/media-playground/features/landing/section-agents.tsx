@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 export default function SectionAgents() {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
         Create Custom AI Agents
       </TypographyH4>
