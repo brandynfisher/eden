@@ -22,10 +22,7 @@ export type TaskResultToolArgs = {
   // }
 }
 
-export const TaskResultTool = makeAssistantToolUI<
-  TaskResultToolArgs,
-  TaskResultToolArgs
->({
+export const TaskResultTool = makeAssistantToolUI({
   toolName: 'task_result',
   render: ({ args, argsText, status, result }) => {
     const { tool, result: toolResults } = result as TaskResultToolArgs
