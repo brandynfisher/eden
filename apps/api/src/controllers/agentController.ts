@@ -15,7 +15,6 @@ import {
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
-import { AgentsDeleteDeploymentResponse } from '@edenlabs/eden-sdk/src/models/v2/Agents'
 import { ObjectId } from '@fastify/mongodb'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
