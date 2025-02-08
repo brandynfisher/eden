@@ -40,8 +40,8 @@ const TRAINING_FEATURES: TrainingFeatureConfig[] = [
     subtitle: 'Create models that bring your characters to life',
     images: {
       input: {
-        full: `${ASSET_BASE_URL}/banny_train_v1.jpg`,
-        thumb: `${ASSET_BASE_URL}/banny_train_thumb_v1.jpg`,
+        full: `${ASSET_BASE_URL}/banny_train_v2.jpg`,
+        thumb: `${ASSET_BASE_URL}/banny_train_thumb_v2.jpg`,
       },
       output: {
         full: `${ASSET_BASE_URL}/banny_v1.jpg`,
@@ -61,8 +61,8 @@ const TRAINING_FEATURES: TrainingFeatureConfig[] = [
       'Train models that understand and replicate your unique artistic style',
     images: {
       input: {
-        full: `${ASSET_BASE_URL}/ygor_train_v1.jpg`,
-        thumb: `${ASSET_BASE_URL}/ygor_train_thumb_v1.jpg`,
+        full: `${ASSET_BASE_URL}/ygor_train_v2.jpg`,
+        thumb: `${ASSET_BASE_URL}/ygor_train_thumb_v2.jpg`,
       },
       output: {
         full: `${ASSET_BASE_URL}/ygor_v1.jpg`,
@@ -82,8 +82,8 @@ const TRAINING_FEATURES: TrainingFeatureConfig[] = [
       'Create consistent brand assets with AI that knows your guidelines',
     images: {
       input: {
-        full: `${ASSET_BASE_URL}/xander_train_v1.jpg`,
-        thumb: `${ASSET_BASE_URL}/xander_train_thumb_v1.jpg`,
+        full: `${ASSET_BASE_URL}/xander_train_v2.jpg`,
+        thumb: `${ASSET_BASE_URL}/xander_train_thumb_v2.jpg`,
       },
       output: {
         full: `${ASSET_BASE_URL}/xander_v1.jpg`,
@@ -123,7 +123,7 @@ export default function SectionTraining() {
         Personalize your agent by training a custom model on your own aesthetic,
         character, or brand assets.
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 md:mx-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         {TRAINING_FEATURES.map(feature => {
           const colorClasses = getIconColorClasses(feature.icon.color)
           return (
