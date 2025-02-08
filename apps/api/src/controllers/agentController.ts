@@ -264,6 +264,12 @@ export const deployAgent = async (
 
   const agent = await Agent.findById(agentId)
 
+  if (!request.user.featureFlags.includes(FeatureFlag.Preview)) {
+    return reply.status(401).send({
+      error: 'You are not authorized to use this feature.',
+    })
+  }
+
   if (!agent) {
     return reply.status(404).send({
       error: 'Agent not found',
