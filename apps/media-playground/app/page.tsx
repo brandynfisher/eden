@@ -73,11 +73,11 @@ const HomePage = async () => {
         ) : null}
 
         <section className="bg-accent/60 py-12 px-2 md:px-4">
-          <SectionDeploy />
+          <SectionEve />
         </section>
 
         <section>
-          <SectionEve />
+          <SectionDeploy />
         </section>
 
         <section className="bg-accent/60 py-12 px-2 md:px-4">

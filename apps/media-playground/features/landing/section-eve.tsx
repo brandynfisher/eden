@@ -1,8 +1,7 @@
 'use client'
 
+import VideoResult from '@/components/media/video-result'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { PlayIcon } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 
 export default function SectionEve() {
@@ -20,17 +19,18 @@ export default function SectionEve() {
         >
           Get started for free!
         </Link>
-        <div className="relative flex justify-center items-center max-w-lg mx-auto mt-6">
-          <Image
-            src="/temp/eve_splash.png"
-            alt="eve_splash"
+        <div className="relative flex justify-center items-center max-w-full mx-auto mt-6">
+          <VideoResult
+            videoUrl="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/PRODUCT_TRAILER-4.mp4"
+            posterUrl="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/PRODUCT_TRAILER-4_poster.webp"
             width={2048}
-            height={2048}
-            className="rounded-lg"
+            height={1153}
+            className="rounded-lg "
+            autoPlay={false}
+            muted={false}
+            loop={false}
+            controls={true}
           />
-          <div className="absolute flex justify-center items-center bg-accent/60 rounded-full p-2">
-            <PlayIcon className="h-8 w-8 " />
-          </div>
         </div>
       </div>
     </div>

@@ -3,10 +3,7 @@
 import DiscordIcon from '@/components/icons/discord'
 import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import TypographyH5 from '@/components/ui/typography/TypographyH5'
 import { siteConfig } from '@/lib/config'
 import Link from 'next/link'
 
@@ -46,7 +43,7 @@ export default function SectionDeploy() {
           <div className="text-muted-foreground font-medium">X</div>
         </div>
       </div>
-      <div className="mt-6 flex flex-col justify-center items-center bg-secondary/50 rounded-lg">
+      {/* <div className="mt-6 flex flex-col justify-center items-center bg-secondary/50 rounded-lg">
         <Skeleton className="w-full aspect-video" />
         <Separator className="w-full" />
         <div className="p-4">
@@ -58,7 +55,7 @@ export default function SectionDeploy() {
             maintaining their unique personality and capabilities.
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
