@@ -77,7 +77,7 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      <AssistantMessage.Content key={id} />
+      <AssistantMessage.Content key={id} className="max-md:max-w-aui-thread" />
       <BranchPicker />
       <MyAssistantActionBar />
       {!isEmpty && isRunning && (

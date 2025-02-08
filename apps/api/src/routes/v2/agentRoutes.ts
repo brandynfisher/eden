@@ -49,6 +49,17 @@ const agentRoutes: FastifyPluginAsync = async server => {
         description: Type.String(),
         image: Type.String(),
         modelId: Type.Optional(Type.String()),
+        persona: Type.Optional(Type.String()),
+        greeting: Type.Optional(Type.String()),
+        knowledge: Type.Optional(Type.String()),
+        suggestions: Type.Optional(
+          Type.Array(
+            Type.Object({
+              label: Type.String(),
+              prompt: Type.String(),
+            }),
+          ),
+        ),
       }),
       response: {
         200: {
@@ -79,6 +90,17 @@ const agentRoutes: FastifyPluginAsync = async server => {
         image: Type.Optional(Type.String()),
         public: Type.Optional(Type.Boolean()),
         modelId: Type.Optional(Type.String()),
+        persona: Type.Optional(Type.String()),
+        greeting: Type.Optional(Type.String()),
+        knowledge: Type.Optional(Type.String()),
+        suggestions: Type.Optional(
+          Type.Array(
+            Type.Object({
+              label: Type.String(),
+              prompt: Type.String(),
+            }),
+          ),
+        ),
       }),
       response: {
         200: Type.Object({

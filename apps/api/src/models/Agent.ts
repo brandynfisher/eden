@@ -10,6 +10,7 @@ export interface AgentSchema extends BaseUserSchema {
   description?: string
   persona?: string
   greeting?: string
+  knowledge?: string
   suggestions?: AgentSuggestion[]
   deployments?: DeploymentDocument[]
   tools?: string[]
@@ -45,15 +46,21 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     description: {
       type: String,
-      maxlength: 5000,
+      maxlength: 140,
+      default: '',
+    },
+    greeting: {
+      type: String,
+      maxlength: 140,
     },
     persona: {
       type: String,
       maxlength: 30000,
     },
-    greeting: {
+    knowledge: {
       type: String,
-      maxlength: 140,
+      maxlength: 100000,
+      required: false,
     },
     suggestions: [
       {

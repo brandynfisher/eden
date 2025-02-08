@@ -1,4 +1,3 @@
-import 'yet-another-react-lightbox/plugins/captions.css'
 import 'yet-another-react-lightbox/plugins/counter.css'
 import 'yet-another-react-lightbox/styles.css'
 
@@ -214,9 +213,9 @@ export const LightboxGallery = ({
             const audios = document.querySelectorAll(
               '.audio-component audio',
             ) as NodeListOf<HTMLAudioElement>
-            const videos = document.querySelectorAll(
-              'video',
-            ) as NodeListOf<HTMLVideoElement>
+            // const videos = document.querySelectorAll(
+            //   'video',
+            // ) as NodeListOf<HTMLVideoElement>
 
             // Handle audio elements
             audios.forEach(audio => {
@@ -238,30 +237,30 @@ export const LightboxGallery = ({
             })
 
             // Handle video elements
-            videos.forEach(video => {
-              const currentSlide = slides[props.index]
-              if (!currentSlide || !('sources' in currentSlide)) {
-                video.pause()
-                video.currentTime = 0
-                return
-              }
-              const currentVideoSrc = currentSlide.sources?.[0]?.src
-              if (video.src === currentVideoSrc) {
-                // Enable audio for videos in lightbox
-                video.muted = false
-                video.play().catch(() => {
-                  // If autoplay fails due to browser policy, mute and try again
-                  video.muted = true
-                  video.play().catch(() => {
-                    // Handle final autoplay failure silently
-                  })
-                })
-                video.currentTime = 0
-              } else {
-                video.pause()
-                video.currentTime = 0
-              }
-            })
+            // videos.forEach(video => {
+            //   const currentSlide = slides[props.index]
+            //   if (!currentSlide || !('sources' in currentSlide)) {
+            //     video.pause()
+            //     video.currentTime = 0
+            //     return
+            //   }
+            //   const currentVideoSrc = currentSlide.sources?.[0]?.src
+            //   if (video.src === currentVideoSrc) {
+            //     // Enable audio for videos in lightbox
+            //     video.muted = false
+            //     video.play().catch(() => {
+            //       // If autoplay fails due to browser policy, mute and try again
+            //       video.muted = true
+            //       video.play().catch(() => {
+            //         // Handle final autoplay failure silently
+            //       })
+            //     })
+            //     video.currentTime = 0
+            //   } else {
+            //     video.pause()
+            //     video.currentTime = 0
+            //   }
+            // })
           },
           entered: () => {
             window.dispatchEvent(new Event(`lightbox-open`))
@@ -297,13 +296,17 @@ export const LightboxTrigger = React.forwardRef<
         // @ts-expect-error slide.type is not always defined
         type: 'audio',
         src: slide.url,
+        autoPlay: true,
       })
     } else if (slide.url?.endsWith('.mp4')) {
       addSlide({
         type: 'video',
         width: slide.width,
         height: slide.height,
-        poster: slide.thumbnail,
+        poster: slide.thumbnail?.endsWith('.mp4')
+          ? slide.thumbnail.replace('.mp4', '_1024.webp')
+          : undefined,
+        autoPlay: true,
         sources: [
           {
             src: getCloudfrontUrl(slide.url) || '',
@@ -451,7 +454,11 @@ export function LightboxVideoTrigger({
       {thumbnail && (
         <LightboxImageTrigger
           customLoader={true}
-          src={thumbnail}
+          src={
+            thumbnail?.endsWith('.mp4')
+              ? thumbnail.replace('.mp4', '_1024.webp')
+              : undefined
+          }
           width={width}
           height={height}
           className={cn(

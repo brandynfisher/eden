@@ -46,8 +46,19 @@ export const agentSchema = z.object({
         'Key must only contain lowercase letters, numbers, underscores and dashes.',
     }),
   image: z.string().optional(),
-  description: z.string().min(1).max(10000),
+  description: z.string().min(1).max(140),
+  greeting: z.string().max(140).optional(),
   modelId: z.string().optional(),
+  persona: z.string().max(30000).optional(),
+  knowledge: z.string().max(100000).optional(),
+  suggestions: z
+    .array(
+      z.object({
+        label: z.string().min(1).max(140),
+        prompt: z.string().min(1).max(10000),
+      }),
+    )
+    .optional(),
 })
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -75,7 +86,11 @@ const AgentFormSheet = () => {
       key: agent?.username || '',
       image: agent?.userImage || '',
       description: agent?.description || '',
+      persona: agent?.persona || '',
+      knowledge: agent?.knowledge ?? '',
+      greeting: agent?.greeting || '',
       modelId: agent?.model || '',
+      suggestions: agent?.suggestions || [],
     },
   })
 
@@ -89,7 +104,11 @@ const AgentFormSheet = () => {
         key: agent.username,
         image: agent.userImage,
         description: agent.description,
+        persona: agent.persona,
+        knowledge: agent.knowledge ?? '',
+        greeting: agent.greeting || '',
         modelId: agent.model,
+        suggestions: agent.suggestions,
       })
     }
   }, [agent, form])
@@ -289,15 +308,97 @@ const AgentFormSheet = () => {
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
                   <FormLabel>Description*</FormLabel>
+                  <FormDescription>
+                    Short description of the agent shown on profile and cards.
+                  </FormDescription>
                   <FormControl>
                     <AutosizeTextarea
-                      placeholder="Abraham is a helpful agent"
+                      placeholder="This agent helps you with your tasks"
                       {...field}
                     />
                   </FormControl>
                   <CharacterCount
                     current={field.value?.length || 0}
-                    max={20000}
+                    max={140}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/** Persona Field */}
+            <FormField
+              control={form.control}
+              name="persona"
+              render={({ field }) => (
+                <FormItem className="p-2 bg-secondary rounded-lg">
+                  <FormLabel>Persona*</FormLabel>
+                  <FormDescription>
+                    Personality and behaviour of the agent. This won't be
+                    visible to others.
+                  </FormDescription>
+                  <FormControl>
+                    <AutosizeTextarea
+                      placeholder="You are a helpful agent, always ready to help users with their tasks"
+                      {...field}
+                    />
+                  </FormControl>
+                  <CharacterCount
+                    current={field.value?.length || 0}
+                    max={30000}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/** Greeting Field */}
+            <FormField
+              control={form.control}
+              name="greeting"
+              render={({ field }) => (
+                <FormItem className="p-2 bg-secondary rounded-lg">
+                  <FormLabel>Greeting*</FormLabel>
+                  <FormDescription>
+                    This will be displayed to users when they first interact
+                    with the agent.
+                  </FormDescription>
+                  <FormControl>
+                    <AutosizeTextarea
+                      placeholder="Hello, how can I help you today?"
+                      {...field}
+                    />
+                  </FormControl>
+                  <CharacterCount
+                    current={field.value?.length || 0}
+                    max={140}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/** Knowledge Field */}
+            <FormField
+              control={form.control}
+              name="knowledge"
+              render={({ field }) => (
+                <FormItem className="p-2 bg-secondary rounded-lg">
+                  <FormLabel>Knowledge</FormLabel>
+                  <FormDescription>
+                    Additional knowledge or context for the agent.
+                  </FormDescription>
+                  <FormControl>
+                    <AutosizeTextarea
+                      placeholder="Add any specific knowledge or context for the agent..."
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={e => field.onChange(e.target.value)}
+                    />
+                  </FormControl>
+                  <CharacterCount
+                    current={field.value?.length ?? 0}
+                    max={100000}
                   />
                   <FormMessage />
                 </FormItem>

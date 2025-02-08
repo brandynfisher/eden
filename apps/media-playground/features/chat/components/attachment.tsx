@@ -160,8 +160,6 @@ const MyAttachment: FC = () => {
             }}
           />
         ) : (
-          // ) : mediaxType === 'audio' ? (
-          // <audio src={fileUrl} controls loop={true} className="block" />
           'n/a'
         )}
       </div>

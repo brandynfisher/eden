@@ -27,6 +27,7 @@ export type Agent = Omit<
   persona?: string
   userImage: string
   greeting?: string
+  knowledge?: string
   suggestions?: AgentSuggestion[]
   tools?: { [key: string]: string[] }
   deployments?: Deployment[]
@@ -65,6 +66,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   description?: string
   persona?: string
   greeting?: string
+  knowledge?: string
   suggestions?: AgentSuggestion[]
   image: string
   tools?: { [key: string]: string[] }
@@ -79,6 +81,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   description?: string
   persona?: string
   greeting?: string
+  knowledge?: string
   suggestions?: AgentSuggestion[]
   image?: string
   tools?: { [key: string]: string[] }
