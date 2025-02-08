@@ -137,7 +137,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
           Type.Object({
             discord: Type.Optional(
               Type.Object({
-                allowedChannels: Type.Optional(
+                channel_allowlist: Type.Optional(
                   Type.Array(
                     Type.Object({
                       id: Type.String(),
@@ -149,7 +149,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
             ),
             telegram: Type.Optional(
               Type.Object({
-                allowedTopics: Type.Optional(
+                topic_allowlist: Type.Optional(
                   Type.Array(
                     Type.Object({
                       id: Type.String(),
