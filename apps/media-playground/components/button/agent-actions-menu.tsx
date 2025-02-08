@@ -17,7 +17,7 @@ import {
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
 import {
@@ -42,6 +42,9 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
+  const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
+    FeatureFlag.FeatureDeployments,
+  )
 
   // Include pathname in feedId to differentiate between same queries in different routes
   const feedId = useMemo(
@@ -146,18 +149,22 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
           </DropdownMenuGroup>
           {agent.owner._id === user?._id && (
             <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <button
-                  type="button"
-                  onClick={handleConfigureDeployments}
-                  className="w-full"
-                >
-                  <RocketIcon className="mr-2 h-4 w-4" />
-                  Deployments
-                </button>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              {isFeatureDeploymentsEnabled && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <button
+                      type="button"
+                      onClick={handleConfigureDeployments}
+                      className="w-full"
+                    >
+                      <RocketIcon className="mr-2 h-4 w-4" />
+                      Deployments
+                    </button>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem asChild className="cursor-pointer">
                 <button
                   type="button"

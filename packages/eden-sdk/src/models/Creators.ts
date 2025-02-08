@@ -251,4 +251,5 @@ export enum FeatureFlag {
   LimitsAdmin = 'limits_Admin',
   AssistantAccess = 'assistant_access',
   FreeTools = 'freeTools',
+  FeatureDeployments = 'feature_Deployments',
 }
