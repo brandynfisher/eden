@@ -42,9 +42,7 @@ export const TaskResultTool = makeAssistantToolUI({
         />
         <ErrorBoundary>
           <LightboxGallery
-            galleryKey={`${tool}-${toolResults
-              ?.map(r => r?.output?.[0]?.filename)
-              .join('-')}`}
+          // galleryKey={tool}
           >
             <div
               className={cn([
@@ -80,6 +78,7 @@ export const TaskResultTool = makeAssistantToolUI({
                               <LightboxTrigger
                                 className="w-full h-full"
                                 slide={{
+                                  type: 'video',
                                   url: getCloudfrontOriginalUrl(
                                     output.filename,
                                   ),
@@ -107,12 +106,11 @@ export const TaskResultTool = makeAssistantToolUI({
                                   className: 'max-h-[420px]',
                                 }}
                                 videoProps={{
-                                  duration:
-                                    output.mediaAttributes?.duration || 0,
-                                  className: 'max-h-[420px w-full h-full',
+                                  className: 'max-h-[420px]',
                                 }}
                               />
                             )}
+                            {getCloudfrontOriginalUrl(output.filename)}
                             {output.creation && (
                               <CreationActionsMenu
                                 creation={{

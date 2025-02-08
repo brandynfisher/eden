@@ -69,8 +69,17 @@ export const createAgent = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { name, key, description, image, modelId } =
-    request.body as AgentsCreateArguments
+  const {
+    name,
+    key,
+    description,
+    image,
+    modelId,
+    persona,
+    greeting,
+    knowledge,
+    suggestions,
+  } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
 
@@ -87,6 +96,10 @@ export const createAgent = async (
     name: name,
     userImage: imageFilename,
     description,
+    persona,
+    greeting,
+    knowledge,
+    suggestions,
     model: modelId || undefined,
     featureFlags: [FeatureFlag.FreeTools],
   })
@@ -123,6 +136,7 @@ export const updateAgent = async (
     description,
     persona,
     greeting,
+    knowledge,
     suggestions,
     image,
     modelId,
@@ -141,6 +155,7 @@ export const updateAgent = async (
     description,
     persona,
     greeting,
+    knowledge,
     suggestions,
     public: isPublic,
   }
