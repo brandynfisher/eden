@@ -197,9 +197,9 @@ export const LightboxGallery = ({
           slide: props => {
             // @ts-expect-error slide.src is not always defined
             if (props.slide.type === 'audio') {
-              // @ts-expect-error slide.src is not always defined
               return (
                 <AudioComponent
+                  // @ts-expect-error slide.src is not always defined
                   src={props.slide.src}
                   autoPlay={props.offset === 0}
                 />
