@@ -21,6 +21,7 @@ export interface FilterSection {
     name: string
     icon?: ReactNode
   }[]
+  canHaveMultipleValues: boolean
 }
 
 interface BaseFilterProps {
@@ -46,11 +47,15 @@ export function BaseFilter({
     }, 0)
   }, [baseFilter])
 
-  const handleItemChange = (sectionId: string, itemId: string) => {
+  const handleItemChange = (
+    sectionId: string,
+    itemId: string,
+    canHaveMultipleValues?: boolean,
+  ) => {
     const currentValue = baseFilter?.[sectionId as keyof typeof baseFilter]
     let newValue: string | string[]
 
-    if (sectionId === 'collection') {
+    if (!canHaveMultipleValues) {
       // Handle collection as a single string value
       newValue = currentValue === itemId ? '' : itemId
     } else {
@@ -92,7 +97,7 @@ export function BaseFilter({
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-          <ScrollArea className="max-h-80">
+          <ScrollArea className="max-h-80 overflow-y-auto">
             {sections.map((section, index) => (
               <div key={section.id}>
                 {index > 0 && <DropdownMenuSeparator />}
@@ -102,14 +107,18 @@ export function BaseFilter({
                     <DropdownMenuCheckboxItem
                       key={item.id}
                       checked={
-                        section.id === 'collection'
+                        !section.canHaveMultipleValues
                           ? baseFilter?.[section.id] === item.id
                           : (
                               baseFilter?.[section.id] as string[] | undefined
                             )?.includes(item.id) ?? false
                       }
                       onCheckedChange={() =>
-                        handleItemChange(section.id, item.id)
+                        handleItemChange(
+                          section.id,
+                          item.id,
+                          section.canHaveMultipleValues,
+                        )
                       }
                       onSelect={e => e.preventDefault()}
                     >

@@ -15,6 +15,7 @@ const modelSections: FilterSection[] = [
         name: 'SDXL',
       },
     ],
+    canHaveMultipleValues: true,
   },
 ]
 
