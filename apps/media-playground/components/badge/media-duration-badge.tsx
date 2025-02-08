@@ -12,11 +12,15 @@ export const MediaDurationBadge = ({ isLoading, duration }: Props) => {
     <div className="absolute inset-0 z-20 rounded-full h-8 flex justify-center items-center pointer-events-none">
       <div className="text-xs text-popover-foreground bg-opacity-70 text-opacity-85 flex items-center bg-popover px-2 py-1 rounded-xl">
         {isLoading ? (
-          <LoadingIndicator className="mr-1 h-3 w-3" />
+          <LoadingIndicator className="h-3 w-3" />
         ) : (
-          <PlayIcon className="mr-1 h-3 w-3" />
+          <PlayIcon className="h-3 w-3" />
         )}
-        <div>{duration ? formatDuration(duration) : '0:00'}</div>
+        {typeof duration === 'number' && duration !== 0 && (
+          <div className="ml-1">
+            {duration ? formatDuration(duration) : '0:00'}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -1,7 +1,10 @@
 import {
   createAgent,
   deleteAgent,
+  deleteAgentDeployment,
+  deployAgent,
   getAgent,
+  getAgentDeployments,
   updateAgent,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
@@ -45,9 +48,6 @@ const agentRoutes: FastifyPluginAsync = async server => {
         key: Type.String(),
         description: Type.String(),
         image: Type.String(),
-        instructions: Type.String(),
-        tools: Type.Optional(Type.Object(Type.Any())),
-        discordId: Type.Optional(Type.String()),
         modelId: Type.Optional(Type.String()),
       }),
       response: {
@@ -77,9 +77,6 @@ const agentRoutes: FastifyPluginAsync = async server => {
         key: Type.Optional(Type.String()),
         description: Type.Optional(Type.String()),
         image: Type.Optional(Type.String()),
-        instructions: Type.Optional(Type.String()),
-        tools: Type.Optional(Type.Object(Type.Any())),
-        discordId: Type.Optional(Type.String()),
         public: Type.Optional(Type.Boolean()),
         modelId: Type.Optional(Type.String()),
       }),
@@ -91,6 +88,97 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateAgent(server, request, reply),
+  })
+
+  server.get('/v2/agents/:agentId/deployments', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get agent deployments',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAgentDeployments(request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/deployments', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Deploys or updates an agent deployment',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        agentId: Type.String(),
+      },
+      body: Type.Object({
+        platform: Type.String(),
+        secrets: Type.Optional(
+          Type.Object({
+            discord: Type.Optional(
+              Type.Object({
+                token: Type.String(),
+              }),
+            ),
+            telegram: Type.Optional(
+              Type.Object({
+                token: Type.String(),
+              }),
+            ),
+            farcaster: Type.Optional(
+              Type.Object({
+                mnemonic: Type.String(),
+                neynarWebhookSecret: Type.String(),
+              }),
+            ),
+          }),
+        ),
+        config: Type.Optional(
+          Type.Object({
+            discord: Type.Optional(
+              Type.Object({
+                allowedChannels: Type.Optional(
+                  Type.Array(
+                    Type.Object({
+                      id: Type.String(),
+                      note: Type.String(),
+                    }),
+                  ),
+                ),
+              }),
+            ),
+            telegram: Type.Optional(
+              Type.Object({
+                allowedTopics: Type.Optional(
+                  Type.Array(
+                    Type.Object({
+                      id: Type.String(),
+                      note: Type.String(),
+                    }),
+                  ),
+                ),
+              }),
+            ),
+          }),
+        ),
+      }),
+      response: {
+        200: Type.Object({
+          deploymentId: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => deployAgent(server, request, reply),
+  })
+
+  server.delete('/v2/agents/:agentId/deployments/:platform', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Delete an agent deployment',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => deleteAgentDeployment(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId', {

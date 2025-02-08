@@ -174,7 +174,6 @@ const LightboxGallery = ({
 }: LightboxGalleryProps) => {
   const handleOnBeforeOpen = (psInstance: PhotoSwipe) => {
     const ds = psInstance?.options?.dataSource
-    // console.log({ds})
     if (Array.isArray(ds)) {
       for (let idx = 0, len = ds.length; idx < len; idx++) {
         const item = ds[idx]
@@ -189,29 +188,20 @@ const LightboxGallery = ({
     }
   }
 
-  const handleOnOpen = (psInstance: PhotoSwipe) => {
-    console.log({ psInstance })
-  }
+  // const handleOnOpen = (psInstance: PhotoSwipe) => {
+  //   console.log({ psInstance })
+  // }
 
   return (
     <Gallery
       options={{
         bgOpacity: 1,
         preloaderDelay: 1000,
-        // getViewportSizeFn: function(options, pswp) {
-        //   const size = {
-        //     x: document.documentElement.clientWidth - 200,
-        //     y: window.innerHeight,
-        //   }
-        //
-        //   console.log({size})
-        //
-        //   return size
-        // },
+        closeOnVerticalDrag: true,
       }}
       withDownloadButton={withDownloadButton}
       onBeforeOpen={sizeOnLoad ? handleOnBeforeOpen : undefined}
-      onOpen={sizeOnLoad ? handleOnOpen : undefined}
+      // onOpen={sizeOnLoad ? handleOnOpen : undefined}
     >
       {children}
     </Gallery>

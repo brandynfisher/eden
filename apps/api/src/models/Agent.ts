@@ -1,15 +1,28 @@
 import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
+import { DeploymentDocument } from './Deployment'
 import { ModelV2Document } from './v2/ModelV2'
+import { AgentSuggestion } from '@edenlabs/eden-sdk'
 import { Schema } from 'mongoose'
 
 export interface AgentSchema extends BaseUserSchema {
   owner: string
   name: string
   description?: string
-  instructions: string
+  persona?: string
+  greeting?: string
+  suggestions?: AgentSuggestion[]
+  deployments?: DeploymentDocument[]
   tools?: string[]
   discordId?: string
   model?: ModelV2Document
+  discordChannelAllowlist?: {
+    id: string
+    note: string
+  }[]
+  telegramTopicAllowlist?: {
+    id: string
+    note: string
+  }[]
   public?: boolean
   threadCount?: number
   userCount?: number
@@ -32,16 +45,45 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     description: {
       type: String,
-      maxlength: 20000,
+      maxlength: 5000,
     },
-    instructions: {
+    persona: {
       type: String,
-      maxlength: 20000,
-      required: true,
+      maxlength: 30000,
     },
+    greeting: {
+      type: String,
+      maxlength: 140,
+    },
+    suggestions: [
+      {
+        type: Schema.Types.Mixed,
+        default: [],
+      },
+    ],
+    deployments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'deployments',
+        default: [],
+      },
+    ],
+    discordChannelAllowlist: [
+      {
+        type: Schema.Types.Mixed,
+        default: [],
+      },
+    ],
+    telegramTopicAllowlist: [
+      {
+        type: Schema.Types.Mixed,
+        default: [],
+      },
+    ],
     tools: {
       type: Schema.Types.Mixed,
       default: {},
+      required: false,
     },
     model: {
       type: Schema.Types.ObjectId,

@@ -15,7 +15,7 @@ const createTask = async (
       args,
     })
     .then(response => {
-      console.log('response', response.task, response.timing)
+      // console.log('response', response.task, response.timing)
       if (!response || response.message) {
         return new NextResponse(
           JSON.stringify({

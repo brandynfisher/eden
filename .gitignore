@@ -29,6 +29,7 @@ build
 .idea/
 .lh/
 .vscode
+.cursor/
 .history/
 scripts/xander_cmds.txt 
 

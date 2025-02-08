@@ -83,6 +83,7 @@ export const siteConfig: SiteConfig = {
             '675fd3af79e00297cdac1324', // eve
             '675f87f379e00297cd9b4396', // oppenheimer
             '675f880079e00297cd9b45d9', // Eden444
+            '675fd3c379e00297cdac16fb', // Verdelis
           ],
   },
 }

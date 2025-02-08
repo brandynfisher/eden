@@ -22,10 +22,7 @@ export type TaskResultToolArgs = {
   // }
 }
 
-export const TaskResultTool = makeAssistantToolUI<
-  TaskResultToolArgs,
-  TaskResultToolArgs
->({
+export const TaskResultTool = makeAssistantToolUI({
   toolName: 'task_result',
   render: ({ args, argsText, status, result }) => {
     const { tool, result: toolResults } = result as TaskResultToolArgs
@@ -44,7 +41,11 @@ export const TaskResultTool = makeAssistantToolUI<
           addResult={() => true}
         />
         <ErrorBoundary>
-          <LightboxGallery>
+          <LightboxGallery
+            galleryKey={`${tool}-${toolResults
+              ?.map(r => r?.output?.[0]?.filename)
+              .join('-')}`}
+          >
             <div
               className={cn([
                 toolResults && toolResults.length > 1 && 'grid',
@@ -63,7 +64,11 @@ export const TaskResultTool = makeAssistantToolUI<
                             {getFileTypeByMimeType(
                               output.mediaAttributes?.mimeType,
                             ) === 'audio' ? (
-                              <audio controls className="w-full max-w-2xl">
+                              <audio
+                                controls
+                                loop={true}
+                                className="w-full max-w-2xl"
+                              >
                                 <source
                                   src={getCloudfrontOriginalUrl(
                                     output.filename,
@@ -103,7 +108,7 @@ export const TaskResultTool = makeAssistantToolUI<
                                 }}
                                 videoProps={{
                                   duration:
-                                    output.mediaAttributes?.duration || 1,
+                                    output.mediaAttributes?.duration || 0,
                                   className: 'max-h-[420px w-full h-full',
                                 }}
                               />
@@ -115,7 +120,7 @@ export const TaskResultTool = makeAssistantToolUI<
                                   // @ts-expect-error faked taskv2
                                   task: { args },
                                 }}
-                                className="ml-auto absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
+                                className="ml-auto z-50 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
                                 queryKey={['creations', output.creation?._id]}
                               />
                             )}

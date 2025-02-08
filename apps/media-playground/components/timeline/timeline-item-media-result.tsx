@@ -56,7 +56,11 @@ export const MediaResultOutput = ({
       ) : null}
       {task.output_type === 'audio' ? (
         <div className="flex w-full h-full items-center justify-center">
-          <audio src={output.url || output.filename} controls={true} />
+          <audio
+            src={output.url || output.filename}
+            controls={true}
+            loop={true}
+          />
         </div>
       ) : (
         <LightboxTrigger

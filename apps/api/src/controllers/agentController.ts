@@ -1,15 +1,22 @@
 import { Agent, AgentDocument } from '../models/Agent'
+import { Deployment } from '../models/Deployment'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
+import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import {
   AgentGetArguments,
   AgentsCreateArguments,
   AgentsDeleteArguments,
+  AgentsDeployArguments,
+  AgentsDeployResponse,
+  AgentsStopDeploymentArguments,
+  AgentsStopDeploymentResponse,
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
 import { ObjectId } from '@fastify/mongodb'
+import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateResult } from 'mongodb'
 import { UpdateQuery } from 'mongoose'
@@ -34,16 +41,21 @@ export const getAgent = async (
   const isOwnAgent =
     currentUserId && agent.owner.toString() === currentUserId.toString()
 
-  if (!isOwnAgent && !agent.public) {
-    return reply.status(401).send({
-      error: 'User not authorized to view this agent',
-    })
-  }
+  const agentRepository = new AgentRepository(Agent)
 
-  await Agent.populate(agent, {
-    path: 'owner',
-    select: '_id userId username userImage',
-  })
+  await Promise.all([
+    agentRepository.model.populate(agent, {
+      path: 'owner',
+      select: '_id userId username userImage',
+    }),
+    isOwnAgent && agent.deployments && agent.deployments.length > 0
+      ? agentRepository.model.populate(agent, {
+          path: 'deployments',
+          select: '_id platform',
+          model: Deployment,
+        })
+      : Promise.resolve(),
+  ])
 
   if (agent.userImage) {
     agent.userImage = forceCloudfrontUrl(server, agent.userImage)
@@ -57,16 +69,8 @@ export const createAgent = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const {
-    name,
-    key,
-    description,
-    image,
-    instructions,
-    tools,
-    discordId,
-    modelId,
-  } = request.body as AgentsCreateArguments
+  const { name, key, description, image, modelId } =
+    request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
 
@@ -83,14 +87,9 @@ export const createAgent = async (
     name: name,
     userImage: imageFilename,
     description,
-    instructions,
-    tools,
-    discordId,
-    model: modelId,
+    model: modelId || undefined,
     featureFlags: [FeatureFlag.FreeTools],
   })
-
-  // console.log(agent)
 
   try {
     await agent.save()
@@ -122,12 +121,12 @@ export const updateAgent = async (
     name,
     key,
     description,
+    persona,
+    greeting,
+    suggestions,
     image,
-    instructions,
-    tools,
-    discordId,
-    public: isPublic,
     modelId,
+    public: isPublic,
   } = request.body as AgentsUpdateArguments
 
   if (!agentId) {
@@ -140,9 +139,9 @@ export const updateAgent = async (
     username: key,
     name: name,
     description,
-    instructions,
-    tools,
-    discordId,
+    persona,
+    greeting,
+    suggestions,
     public: isPublic,
   }
 
@@ -193,6 +192,183 @@ export const updateAgent = async (
   return reply.status(200).send({
     agentId,
   })
+}
+
+export const getAgentDeployments = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const currentUserId = request.user.userId
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to view deployments for this agent',
+    })
+  }
+
+  const deploymentsFromDb = await Deployment.find({
+    agent: agentId,
+  })
+
+  const discordDeployment = deploymentsFromDb.find(
+    deployment => deployment.platform === 'discord',
+  )
+  const telegramDeployment = deploymentsFromDb.find(
+    deployment => deployment.platform === 'telegram',
+  )
+  const farcasterDeployment = deploymentsFromDb.find(
+    deployment => deployment.platform === 'farcaster',
+  )
+
+  const deployments = {
+    discord: discordDeployment
+      ? {
+          deployment: discordDeployment,
+          allowedChannels: agent.discordChannelAllowlist,
+        }
+      : undefined,
+    telegram: telegramDeployment
+      ? {
+          deployment: telegramDeployment,
+          allowedTopics: agent.telegramTopicAllowlist,
+        }
+      : undefined,
+    farcaster: farcasterDeployment
+      ? {
+          deployment: farcasterDeployment,
+        }
+      : undefined,
+  }
+
+  return reply.status(200).send({
+    deployments,
+  })
+}
+
+export const deployAgent = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { agentId } = request.params as AgentsDeployArguments
+  const { platform, secrets, config } = request.body as AgentsDeployArguments
+
+  const agent = await Agent.findById(agentId)
+
+  if (!request.user.featureFlags.includes(FeatureFlag.FeatureDeployments)) {
+    return reply.status(401).send({
+      error: 'You are not authorized to use this feature.',
+    })
+  }
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to deploy this agent',
+    })
+  }
+
+  try {
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/create`,
+      data: {
+        agent: agentId,
+        user: currentUserId,
+        platform,
+        secrets,
+        config,
+      },
+    }
+
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const deployment = modalResponse.data as AgentsDeployResponse
+
+    return reply.status(200).send({
+      deploymentId: deployment.deployment_id,
+    })
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({
+      error: 'An error occurred while deploying the agent',
+    })
+  }
+}
+
+export const deleteAgentDeployment = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { agentId, platform } = request.params as AgentsStopDeploymentArguments
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to stop this deployment',
+    })
+  }
+
+  try {
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/delete`,
+      data: {
+        agent: agentId,
+        platform,
+      },
+    }
+
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const response = modalResponse.data as AgentsStopDeploymentResponse
+
+    return reply.status(200).send({
+      success: response.success,
+    })
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({
+      error: 'An error occurred while stopping the deployment',
+    })
+  }
 }
 
 export const deleteAgent = async (

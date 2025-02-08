@@ -21,8 +21,11 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { EdenRuntimeProvider } from '@/features/chat/providers/eden-runtime-provider'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { AgentBasicInfo } from '@/lib/actions/agent'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
+import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
@@ -30,9 +33,10 @@ import {
 } from '@assistant-ui/react'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
-import { EditIcon } from 'lucide-react'
+import { EditIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
-import { FC, useEffect, useState } from 'react'
+import * as React from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const isNewSelected = useThreadListItem(t => t.id === 'DEFAULT_THREAD_ID')
@@ -151,20 +155,25 @@ const LeftBarSheet: FC = () => {
   )
 }
 
-export const AgentLink: FC<{ agent?: Agent; className?: string }> = ({
-  agent,
-  className,
-}) => {
+export const AgentLink: FC<{
+  agent?: AgentBasicInfo | Agent
+  className?: string
+  hideName?: boolean
+  avatarClassName?: string
+}> = ({ agent, className, hideName, avatarClassName }) => {
   return (
     <Link
-      className="w-fit md:ml-0 flex self-start items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground"
+      className={cn(
+        'w-full md:ml-0 flex self-center items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground',
+        className,
+      )}
       title="View Agent profile"
       href={`/agents/${agent?.username}`}
     >
       <Avatar
         className={cn(
           'w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1',
-          className,
+          avatarClassName,
         )}
       >
         <AvatarImage
@@ -174,12 +183,12 @@ export const AgentLink: FC<{ agent?: Agent; className?: string }> = ({
         />
         <AvatarFallback
           delayMs={250}
-          className={cn(['w-6 h-6 md:w-8 md:h-8', className])}
+          className={cn(['w-6 h-6 md:w-8 md:h-8', avatarClassName])}
         >
-          {agent?.name}
+          {agent?.name[0]}
         </AvatarFallback>
       </Avatar>
-      {agent?.name}
+      {!hideName && <span className="truncate">{agent?.name}</span>}
     </Link>
   )
 }
@@ -199,10 +208,15 @@ type Props = {
 }
 
 const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
+  const dispatch = useAppDispatch()
+  const [isMounted, setIsMounted] = useState(false)
+  const { user } = useAuthState()
+
   const {
     agent: agentClientData,
     isError,
     error,
+    invalidate,
   } = useAgentQuery({
     key: agentId,
     initialData: agentSSRData
@@ -212,9 +226,20 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
       : undefined,
   })
 
-  const agent = agentClientData || agentSSRData
+  const handleEditClick = () => {
+    dispatch(
+      updateAgentFormSheet({
+        isOpen: true,
+        mode: 'update',
+        agent,
+        onAction: async () => {
+          await invalidate()
+        },
+      }),
+    )
+  }
 
-  const [isMounted, setIsMounted] = useState(false)
+  const agent = agentClientData || agentSSRData
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -229,6 +254,10 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
     }
   }, [])
 
+  const isOwner = useMemo(() => {
+    return user?._id === agent?.owner._id
+  }, [user, agent])
+
   if (!isMounted) {
     return null
   }
@@ -240,25 +269,56 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         // On md+: 2 columns (sidebar + content).
         className="
         grid
-        h-[calc(100dvh_-_64px)]
         w-full
         grid-rows-[auto_1fr]
         md:grid-rows-1
         md:grid-cols-[250px_1fr]
+        fixed
+        inset-x-0
+        bottom-0
+        top-16
       "
       >
         {/* MOBILE-ONLY HEADER */}
         <div className="bg-muted/40 border-b px-3 py-2 md:hidden flex items-center gap-2">
           <Header />
-          <div className="ml-auto">
-            <AgentLink agent={agent} />
+          <div className="ml-auto flex items-center gap-2">
+            <AgentLink
+              agent={agent}
+              className={cn(isOwner ? 'max-w-[120px]' : 'max-w-full')}
+            />
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 size-8"
+                onClick={handleEditClick}
+              >
+                <SettingsIcon className="size-4" />
+              </Button>
+            )}
           </div>
         </div>
 
         {/* DESKTOP-ONLY SIDEBAR */}
         <aside className="hidden bg-muted/40 border-r px-3 py-2 md:flex md:flex-col">
-          <div className="ml-2">
-            <AgentLink agent={agent} />
+          <div className="flex items-center justify-between gap-2 ml-2">
+            <AgentLink
+              agent={agent}
+              className={cn(
+                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
+              )}
+            />
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 size-8"
+                onClick={handleEditClick}
+              >
+                <SettingsIcon className="size-4" />
+              </Button>
+            )}
           </div>
           <Separator orientation="horizontal" className="my-2 mb-1" />
 
@@ -269,26 +329,27 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         </aside>
 
         {/* MAIN CONTENT (occupies the entire space on mobile, column 2 on md) */}
-        <main className="bg-background overflow-hidden">
+        <main className="bg-background overflow-hidden flex flex-col">
           <Thread
             components={{
               ThreadWelcome: MyThreadWelcome,
+              // @ts-expect-error We're extending composer hackishly with drag and drop
               Composer: MyComposer,
             }}
             welcome={{
               suggestions: [
                 {
-                  text: 'List of tools',
+                  text: 'List your tools',
                   prompt:
                     'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
                 },
                 {
-                  text: 'Make some cat images',
+                  text: 'Make something beautiful',
                   prompt:
-                    'Make 2 images of a cute little cats wearing funky hats ',
+                    'Make a beautiful image of the first thing that comes to mind',
                 },
               ],
-              message: 'What do you want to create today?',
+              message: agent?.greeting || 'What do you want to create today?',
             }}
             assistantAvatar={{
               src: getCloudfrontOriginalUrl(agent?.userImage),

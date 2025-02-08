@@ -166,9 +166,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@assistant-ui/react@npm:^0.7.53":
-  version: 0.7.53
-  resolution: "@assistant-ui/react@npm:0.7.53"
+"@assistant-ui/react@npm:^0.7.69":
+  version: 0.7.69
+  resolution: "@assistant-ui/react@npm:0.7.69"
   dependencies:
     "@ai-sdk/provider": "npm:^1.0.4"
     "@radix-ui/primitive": "npm:^1.1.1"
@@ -206,7 +206,7 @@ __metadata:
       optional: true
     tailwindcss:
       optional: true
-  checksum: 10c0/0498cf1a9d6daf2abff14421d0082c522c7127e28af9d3bb8b2da107eba7e2ef571844d9f227cd595862c4a9ddb22c8378bc933841b87eafb064492019acf046
+  checksum: 10c0/b81ec68c82627720a3eea70990d3615018d168011ab4a9afa96c1f84376f422050bc402e4645394edf3d1b2e4eee5614851f49714f963b25dd3ef6bad10a5105
   languageName: node
   linkType: hard
 
@@ -21230,7 +21230,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "media-playground@workspace:apps/media-playground"
   dependencies:
-    "@assistant-ui/react": "npm:^0.7.53"
+    "@assistant-ui/react": "npm:^0.7.69"
     "@assistant-ui/react-markdown": "npm:^0.7.11"
     "@assistant-ui/react-syntax-highlighter": "npm:^0.7.9"
     "@chromatic-com/storybook": "npm:^3.2.3"

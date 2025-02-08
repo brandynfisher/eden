@@ -23,7 +23,8 @@ const symbolEdenExtras = Symbol('eden-extras')
 
 export type EdenExtras = {
   [symbolEdenExtras]: true
-  threadTitle: string
+  agentId: string
+  threadId: string
   isReadOnly?: boolean
 }
 
@@ -115,6 +116,8 @@ export const useEdenRuntime = ({
       setMessages,
       extras: {
         isReadOnly,
+        agentId,
+        threadId,
       },
       adapters: {
         feedback: EdenFeedbackAdapter,
@@ -123,11 +126,11 @@ export const useEdenRuntime = ({
         ]),
         threadList: {
           threadId,
-          //@ts-expect-error: Type error: Type 'Thread[]' is not assignable to type 'ExternalStoreThreadData<"regular">[]'
           threads: threads?.map(thread => ({
             threadId: thread._id,
             title: thread.title,
             state: 'regular',
+            status: 'regular',
           })),
           onSwitchToNewThread: !onSwitchToNewThread
             ? undefined

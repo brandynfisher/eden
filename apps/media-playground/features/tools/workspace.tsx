@@ -40,7 +40,7 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
         </Suspense>
       </div>
 
-      <div className="mb-8 lg:pt-4 flex flex-col gap-y-4 w-full">
+      <div className="mb-8 px-2 sm:px-4 lg:px-0 lg:pt-4 flex flex-col gap-y-4 w-full">
         <Suspense>
           <ErrorBoundary>
             <Timeline tool={tool} />

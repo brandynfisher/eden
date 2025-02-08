@@ -1,9 +1,10 @@
 'use client'
 
-import { useEdenRuntimeExtras } from '../hooks/useEdenRuntime'
 import { LightboxGallery } from '@/components/media/lightbox'
+import { Button } from '@/components/ui/button'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
+import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
@@ -12,8 +13,10 @@ import {
   ThreadPrimitive,
   useComposerRuntime,
 } from '@assistant-ui/react'
+import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { BotIcon, PencilOffIcon } from 'lucide-react'
-import React, { FC, FormEvent, useState } from 'react'
+import Link from 'next/link'
+import React, { FC, FormEvent, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 
 type ComposerAttachmentDropzoneProps = {
@@ -27,15 +30,19 @@ export const ComposerAttachmentDropzone: FC<
   return (
     <div
       className={cn([
-        'absolute w-full opacity-0 h-full z-10 left-0 pointer-events-none bg-muted/50 border border-purple-600 rounded-md overflow-hidden',
+        'absolute inset-0 opacity-0 pointer-events-none bg-muted/50 border border-purple-600 rounded-md overflow-hidden',
         isDragging ? 'opacity-100' : '',
       ])}
     >
       {isDragging && (
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <p className="text-sm text-purple-600">Drop attachments here</p>
-          <div className="text-xs text-muted-foreground">
-            Accepted: <span className="font-semibold">{accept}</span>
+          <div className="bg-muted-darker border border-purple-600/50 rounded-lg p-6 backdrop-blur-sm text-center">
+            <p className="text-base md:text-lg text-purple-600 font-medium">
+              Drop attachments here
+            </p>
+            <div className="text-sm md:text-base text-muted-foreground mt-2">
+              <span className="font-semibold">{accept}</span>
+            </div>
           </div>
         </div>
       )}
@@ -43,63 +50,109 @@ export const ComposerAttachmentDropzone: FC<
   )
 }
 
-export const MyComposer: FC = () => {
+type MyComposerProps = {
+  setIsDragging: (isDragging: boolean) => void
+}
+
+export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const isReadOnly = useEdenRuntimeExtras(extras => extras.isReadOnly)
-  const [isDragging, setIsDragging] = useState(false)
+  const agentId = useEdenRuntimeExtras(extras => extras.agentId)
   const composerRuntime = useComposerRuntime()
-  // console.log('isReadOnly', composerRuntime.getState())
   const accept = composerRuntime.getAttachmentAccept()
 
-  const handleFilesDropped = async (files: File[]) => {
-    // accept contains mimetypes with wildcards like image/*, allow only these
-    const acceptedFiles = files.filter(file => fileMatchesAccept(file, accept))
+  const handleFilesDropped = useCallback(
+    async (files: File[]) => {
+      const acceptedFiles = files.filter(file =>
+        fileMatchesAccept(file, accept),
+      )
 
-    if (!acceptedFiles.length) {
-      // console.log('No accepted files in drop')
-      toast.error(`Failed to upload!`, {
-        description: `No accepted files in drop. Only type/s '${accept}' allowed here`,
-        dismissible: true,
-        richColors: true,
-      })
-      return
+      if (!acceptedFiles.length) {
+        toast.error(`Failed to upload!`, {
+          description: `No accepted files in drop. Only type/s '${accept}' allowed here`,
+          dismissible: true,
+          richColors: true,
+        })
+        return
+      }
+
+      await Promise.all(files.map(file => composerRuntime.addAttachment(file)))
+    },
+    [accept, composerRuntime],
+  )
+
+  useEffect(() => {
+    const viewport = document.querySelector(
+      '.aui-thread-viewport',
+    ) as HTMLElement
+    if (!viewport) return
+
+    const handleDrop = async (e: DragEvent) => {
+      e.preventDefault()
+      setIsDragging(false)
+      const files = Array.from(e.dataTransfer?.files || [])
+      await handleFilesDropped(files)
     }
 
-    await Promise.all(files.map(file => composerRuntime.addAttachment(file)))
-  }
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault()
+      setIsDragging(true)
+    }
 
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    // Convert dropped files into an array and pass to the handler
-    const files = Array.from(e.dataTransfer.files)
-    await handleFilesDropped(files)
-  }
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault()
+      const rect = viewport.getBoundingClientRect()
+      const { clientX, clientY } = e
 
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
+      // Check if the cursor has left the viewport boundaries
+      if (
+        clientX <= rect.left ||
+        clientX >= rect.right ||
+        clientY <= rect.top ||
+        clientY >= rect.bottom
+      ) {
+        setIsDragging(false)
+      }
+    }
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault()
+      setIsDragging(true)
+    }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
+    viewport.addEventListener('drop', handleDrop)
+    viewport.addEventListener('dragenter', handleDragEnter)
+    viewport.addEventListener('dragleave', handleDragLeave)
+    viewport.addEventListener('dragover', handleDragOver)
+
+    return () => {
+      viewport.removeEventListener('drop', handleDrop)
+      viewport.removeEventListener('dragenter', handleDragEnter)
+      viewport.removeEventListener('dragleave', handleDragLeave)
+      viewport.removeEventListener('dragover', handleDragOver)
+    }
+  }, [accept, handleFilesDropped, setIsDragging])
 
   if (isReadOnly === null || isReadOnly) {
     return (
-      <div className="flex items-center gap-3 py-2 px-4 h-[58px] border border-secondary rounded-lg bg-muted-darker">
+      <div className="flex items-center justify-between gap-3 py-2 px-4 h-[58px] w-full">
         {isReadOnly === true ? (
           <>
-            <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
-            <p className="text-sm ">
-              This is a read-only view of another user's conversation.
-            </p>
+            <div className="flex items-center gap-3 py-2 px-4 border border-secondary rounded-lg bg-muted-darker">
+              <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
+              <p className="text-sm ">
+                This is a read-only view of another user's thread.
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <Link
+                href={`/chat/${agentId}`}
+                className=" bg-purple-600/20 border-purple-600"
+              >
+                <ChatBubbleIcon className="w-4 h-4 mr-2" />
+                <span className="text-sm">Chat with this agent</span>
+              </Link>
+            </Button>
           </>
         ) : null}
       </div>
@@ -108,11 +161,6 @@ export const MyComposer: FC = () => {
 
   return (
     <Composer.Root
-      className="relative"
-      onDragEnter={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
       onSubmit={async (evt: FormEvent<HTMLFormElement>) => {
         if (!isSignedIn) {
           evt.preventDefault()
@@ -121,8 +169,6 @@ export const MyComposer: FC = () => {
         }
       }}
     >
-      <ComposerAttachmentDropzone isDragging={isDragging} accept={accept} />
-
       <LightboxGallery>
         <Composer.Attachments components={{ Attachment: MyAttachment }} />
       </LightboxGallery>

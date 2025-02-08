@@ -1,7 +1,8 @@
 'use client'
 
+import { getSuspectedMediaType } from '../utils/files'
 import LoadingIndicator from '@/components/loading-indicator'
-import { LightboxTrigger } from '@/components/media/lightbox'
+import { LightboxTrigger, useLightbox } from '@/components/media/lightbox'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
 import { Progress } from '@/components/ui/progress'
 import { siteConfig } from '@/lib/config'
@@ -16,6 +17,7 @@ import {
 } from '@assistant-ui/react'
 import { CircleXIcon } from 'lucide-react'
 import React, { FC, useEffect, useState } from 'react'
+import type { Slide } from 'yet-another-react-lightbox'
 import { useShallow } from 'zustand/shallow'
 
 const useFileSrc = (file: File | undefined) => {
@@ -77,25 +79,34 @@ const AttachmentRemove: FC = () => {
 
 const MyAttachment: FC = () => {
   const canRemove = useAttachment(a => a.source !== 'message')
-
   const uploadProgress = useAttachment(a =>
     a.status.type === 'running' ? a.status.progress : 1,
   )
   const attachment = useAttachment()
+  const { setSlides } = useLightbox()
 
-  // console.log({ attachment })
-
-  // @ts-ignore
-  const fileUrl = attachment.file ? attachment.file.fileUrl : ''
+  // @ts-expect-error attachment.file is not always defined
+  const fileUrl = attachment.file ? attachment.file.fileUrl : attachment.name
   const src = useAttachmentSrc()
 
   const attachments = useComposer(s => s.attachments)
-  // console.log({ attachments })
-
   const attachmentIndex = canRemove
     ? attachments.findIndex(a => a.id === attachment.id)
     : Number(attachment.id)
-  // console.log({ attachmentIndex })
+
+  const mediaType = getSuspectedMediaType(fileUrl)
+
+  useEffect(() => {
+    return () => {
+      if (canRemove) {
+        // Clear this slide from lightbox when attachment is removed
+        setSlides((prev: Slide[]) =>
+          prev.filter((_, idx: number) => idx !== attachmentIndex),
+        )
+      }
+    }
+  }, [canRemove, attachmentIndex, setSlides])
+
   return (
     <AttachmentPrimitive.Root
       className={cn([
@@ -119,28 +130,40 @@ const MyAttachment: FC = () => {
           canRemove ? 'p-0.5' : 'max-h-48 items-center',
         ])}
       >
-        {/*<AttachmentThumb />*/}
-        <LightboxTrigger
-          startIndex={attachmentIndex}
-          className="flex items-center justify-center"
-          slide={{
-            url: canRemove
-              ? getCloudfrontOriginalUrl(fileUrl)
-              : src ?? siteConfig.mediaErrorUrl,
-            thumbnail: src ?? siteConfig.mediaErrorUrl,
-          }}
-          imageProps={{
-            className: canRemove
-              ? 'object-cover flex-shrink-0 max-w-24 h-16'
-              : 'object-contain w-full max-h-64 max-w-64 flex-shrink-0',
-            unoptimized: true,
-          }}
-          videoProps={{
-            className: canRemove
-              ? 'object-cover flex-shrink-0 max-w-24 h-16'
-              : 'object-contain w-full max-h-64 max-w-64 flex-shrink-0',
-          }}
-        />
+        {/* {mediaType} - {attachmentIndex} */}
+        {mediaType === 'image' ||
+        mediaType === 'video' ||
+        mediaType === 'audio' ? (
+          <LightboxTrigger
+            startIndex={attachmentIndex}
+            className="flex items-center justify-center z-0"
+            slide={{
+              type: mediaType,
+              duration: mediaType === 'video' ? 0 : undefined,
+              url: canRemove
+                ? mediaType === 'audio'
+                  ? fileUrl
+                  : getCloudfrontOriginalUrl(fileUrl)
+                : src ?? siteConfig.mediaErrorUrl,
+            }}
+            imageProps={{
+              className: canRemove
+                ? 'object-cover flex-shrink-0 max-w-24 h-16'
+                : 'object-contain w-full max-h-64 max-w-64 flex-shrink-0',
+              unoptimized: true,
+              loading: 'lazy',
+            }}
+            videoProps={{
+              className: canRemove
+                ? 'object-cover flex-shrink-0 max-w-24 h-16'
+                : 'object-contain w-full max-h-64 max-w-64 flex-shrink-0',
+            }}
+          />
+        ) : (
+          // ) : mediaxType === 'audio' ? (
+          // <audio src={fileUrl} controls loop={true} className="block" />
+          'n/a'
+        )}
       </div>
       {canRemove && <AttachmentRemove />}
     </AttachmentPrimitive.Root>

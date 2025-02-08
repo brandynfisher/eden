@@ -4,10 +4,15 @@ import AgentCard from '@/components/card/agent-card'
 import MasonryVirtualizerVertical, {
   BreakpointConfig,
 } from '@/components/masonry/masonry-virtualizer-vertical'
-import AgentFormSheet from '@/features/agent/agent-form-sheet'
+import { Button } from '@/components/ui/button'
 import { RowItem } from '@/lib/query/cache-updates'
+import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
+import { useFeedStore } from '@/zustand/feed-store'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
+import { PlusIcon } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 import { useMemo } from 'react'
 
 type Props = {
@@ -23,6 +28,7 @@ const AgentsFeed = ({
   maxCols,
   breakpoints,
 }: Props) => {
+  const dispatch = useAppDispatch()
   const defaultQuery: FeedAgentCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -38,6 +44,19 @@ const AgentsFeed = ({
   }, [defaultQuery, queryProp])
 
   const queryKey = useMemo(() => ['agents', query], [query])
+  const pathname = usePathname()
+
+  // Include pathname in feedId to differentiate between same queries in different routes
+  const feedId = useMemo(
+    () => JSON.stringify({ queryKey, path: pathname }),
+    [queryKey, pathname],
+  )
+
+  const { setItems, setFetchNextPage } = useFeedStore(feedId)
+
+  const handleItemsLoaded = (newItems: RowItem[]) => {
+    setItems(newItems)
+  }
 
   const onCreated = async () => {
     await queryClient.invalidateQueries({
@@ -45,9 +64,26 @@ const AgentsFeed = ({
     })
   }
 
+  const handleCreateClick = () => {
+    dispatch(
+      updateAgentFormSheet({
+        isOpen: true,
+        mode: 'create',
+        onAction: onCreated,
+      }),
+    )
+  }
+
   return (
     <div className="space-y-4">
-      <AgentFormSheet mode={'create'} onAction={onCreated} />
+      <Button
+        onClick={handleCreateClick}
+        variant="outline"
+        className="gap-x-2 text-sm font-semibold"
+      >
+        <PlusIcon className="size-4" />
+        Create Agent
+      </Button>
       <MasonryVirtualizerVertical
         key={JSON.stringify(queryKey)}
         apiEndpoint={'/api/feed/agents'}
@@ -56,6 +92,8 @@ const AgentsFeed = ({
         minCols={minCols || 2}
         maxCols={maxCols || undefined}
         breakpoints={breakpoints}
+        onItemsLoaded={handleItemsLoaded}
+        setFetchNextPage={setFetchNextPage}
         render={(item: RowItem) => (
           <AgentCard agent={item as Agent} queryKey={queryKey} />
         )}
