@@ -86,7 +86,7 @@ export const DeploymentFormFooter = ({
         }
         payload.config = {
           discord: {
-            allowedChannels: data.allowedChannels,
+            allowed_channels: data.allowedChannels,
           },
         }
       }
@@ -99,7 +99,7 @@ export const DeploymentFormFooter = ({
         }
         payload.config = {
           telegram: {
-            allowedTopics: data.allowedTopics,
+            allowed_topics: data.allowedTopics,
           },
         }
       }

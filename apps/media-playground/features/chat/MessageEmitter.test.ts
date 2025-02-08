@@ -59,7 +59,7 @@ describe('MessageEmitter', () => {
 describe('createAsyncIterableFromEmitter', () => {
   it('should yield messages as they are emitted', async () => {
     const emitter = new MessageEmitter()
-    const iterable = createAsyncIterableFromEmitter(emitter, 500)
+    const iterable = createAsyncIterableFromEmitter(emitter, { timeout: 500 })
     const messages = [
       { ...baseAssistantMessage, id: '1', content: 'First' },
       { ...baseAssistantMessage, id: '2', content: 'Second' },
@@ -82,7 +82,7 @@ describe('createAsyncIterableFromEmitter', () => {
 
   it('should handle timeout', async () => {
     const emitter = new MessageEmitter()
-    const iterable = createAsyncIterableFromEmitter(emitter, 500)
+    const iterable = createAsyncIterableFromEmitter(emitter, { timeout: 500 })
     const iterator = iterable[Symbol.asyncIterator]()
 
     const nextPromise = iterator.next()
