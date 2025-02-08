@@ -88,14 +88,14 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
 }
 
 interface DiscordDeploymentConfig {
-  allowed_channels: {
+  channel_allowlist: {
     id: string
     note: string
   }[]
 }
 
 interface TelegramDeploymentConfig {
-  allowed_topics: {
+  topic_allowlist: {
     id: string
     note: string
   }[]
