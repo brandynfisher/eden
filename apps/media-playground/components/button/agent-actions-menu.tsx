@@ -42,7 +42,9 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
+    FeatureFlag.FeatureDeployments,
+  )
 
   // Include pathname in feedId to differentiate between same queries in different routes
   const feedId = useMemo(
@@ -147,7 +149,7 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
           </DropdownMenuGroup>
           {agent.owner._id === user?._id && (
             <>
-              {isPreviewUser && (
+              {isFeatureDeploymentsEnabled && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild className="cursor-pointer">
