@@ -46,7 +46,7 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     description: {
       type: String,
-      maxlength: 140,
+      maxlength: 5000,
       default: '',
     },
     greeting: {

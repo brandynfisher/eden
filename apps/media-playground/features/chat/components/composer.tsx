@@ -181,7 +181,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
       <ThreadPrimitive.If running={true}>
         <div className="flex items-center gap-3">
           <BotIcon className="animate-pulse duration-1000 text-purple-600" />
-          <Composer.Cancel />
+          {/* <Composer.Cancel /> */}
         </div>
       </ThreadPrimitive.If>
 
