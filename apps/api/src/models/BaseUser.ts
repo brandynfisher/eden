@@ -1,8 +1,12 @@
 import { CollectionDocument } from './Collection'
 import { CreationDocument } from './Creation'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
-import { Document, Schema, model } from 'mongoose'
+import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
 import paginate from 'mongoose-paginate-v2'
 
 export interface BaseUserSchema {
@@ -22,7 +26,7 @@ export interface BaseUserSchema {
   updatedAt?: Date
 }
 
-export interface BaseUserDocument extends BaseUserSchema, Document {}
+export interface BaseUserDocument extends SoftDeleteDocument, BaseUserSchema {}
 
 const BaseUserSchema = new Schema<BaseUserDocument>(
   {
@@ -86,6 +90,9 @@ const BaseUserSchema = new Schema<BaseUserDocument>(
 
 BaseUserSchema.plugin(paginate)
 BaseUserSchema.plugin(aggregatePaginate)
+BaseUserSchema.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
 
 BaseUserSchema.index({ createdAt: 1 })
 BaseUserSchema.index({ username: 1 })
@@ -93,4 +100,7 @@ BaseUserSchema.index({ followerCount: -1 })
 BaseUserSchema.index({ creationCount: -1 })
 BaseUserSchema.index({ type: 1 })
 
-export const BaseUser = model<BaseUserDocument>('users3', BaseUserSchema)
+export const BaseUser = model<BaseUserDocument>(
+  'users3',
+  BaseUserSchema,
+) as SoftDeleteModel<BaseUserDocument>

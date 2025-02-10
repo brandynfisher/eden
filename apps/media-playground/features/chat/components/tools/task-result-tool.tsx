@@ -110,7 +110,6 @@ export const TaskResultTool = makeAssistantToolUI({
                                 }}
                               />
                             )}
-                            {getCloudfrontOriginalUrl(output.filename)}
                             {output.creation && (
                               <CreationActionsMenu
                                 creation={{

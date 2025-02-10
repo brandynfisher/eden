@@ -32,8 +32,7 @@ import {
   useThreadListItem,
 } from '@assistant-ui/react'
 import { Agent } from '@edenlabs/eden-sdk'
-import { ChatBubbleIcon } from '@radix-ui/react-icons'
-import { EditIcon, SettingsIcon } from 'lucide-react'
+import { EditIcon, MessageSquareIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
 import * as React from 'react'
 import { FC, useEffect, useMemo, useState } from 'react'
@@ -139,7 +138,7 @@ const LeftBarSheet: FC = () => {
       <SheetTrigger asChild>
         <Button variant="outline" className="shrink-0 md:hidden gap-2">
           View Threads
-          <ChatBubbleIcon className="size-4" />
+          <MessageSquareIcon className="size-4" />
           <span className="sr-only">Toggle thread list menu</span>
         </Button>
       </SheetTrigger>

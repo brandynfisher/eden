@@ -13,8 +13,7 @@ import {
   ThreadPrimitive,
   useComposerRuntime,
 } from '@assistant-ui/react'
-import { ChatBubbleIcon } from '@radix-ui/react-icons'
-import { BotIcon, PencilOffIcon } from 'lucide-react'
+import { BotIcon, MessageSquareIcon, PencilOffIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { FC, FormEvent, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -149,7 +148,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
                 href={`/chat/${agentId}`}
                 className=" bg-purple-600/20 border-purple-600"
               >
-                <ChatBubbleIcon className="w-4 h-4 mr-2" />
+                <MessageSquareIcon className="w-4 h-4 mr-2" />
                 <span className="text-sm">Chat with this agent</span>
               </Link>
             </Button>

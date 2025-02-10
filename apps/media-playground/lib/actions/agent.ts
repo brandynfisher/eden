@@ -35,6 +35,7 @@ export interface AgentBasicInfo {
   persona?: string
   greeting?: string
   knowledge?: string
+  model?: string
   suggestions?: AgentSuggestion[]
 }
 
@@ -60,6 +61,7 @@ export const getMultipleAgents = async (
             description,
             persona,
             greeting,
+            model,
             knowledge,
             suggestions,
           } = response.agent
@@ -71,6 +73,7 @@ export const getMultipleAgents = async (
             userImage,
             description,
             persona,
+            model,
             greeting,
             knowledge,
             suggestions,
