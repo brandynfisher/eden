@@ -9,8 +9,6 @@ const MyUserMessage: FC = () => {
   const messageId = useMessage(m => m.id)
   const content = useMessage(m => m.content)
 
-  console.log(messageId, content)
-
   const isEmptyText =
     content.length === 1 && content[0].type === 'text' && content[0].text === ''
 

@@ -3,6 +3,7 @@ import { User } from '../../models/User'
 import { Thread as ThreadModel } from '../../models/v2/Thread'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import ThreadRepository from '../../repositories/ThreadRepository'
+import { createIdOrSlugQuery } from '../../utils/mongoUtils'
 import {
   TaskV2Status,
   ThreadsCreateArguments,
@@ -35,10 +36,7 @@ export const createThreadMessage = async (
     })
   }
 
-  const isObjectId = ObjectId.isValid(agent_id)
-  const query = isObjectId
-    ? { _id: new ObjectId(agent_id) }
-    : { username: agent_id }
+  const query = createIdOrSlugQuery(agent_id)
   const agent = await Agent.findOne(query)
 
   if (!agent) {
@@ -159,20 +157,17 @@ export const listThreads = async (
   } = request.query as ThreadsListArguments
 
   try {
-    const isObjectId = ObjectId.isValid(agent_id)
-    const agent = await Agent.findOne(
-      isObjectId ? { _id: new ObjectId(agent_id) } : { username: agent_id },
-    )
+    const query = {
+      ...createIdOrSlugQuery(agent_id),
+      user: userId,
+    }
+    const agent = await Agent.findOne(query)
+    console.log('agent', agent)
 
     if (!agent) {
       return reply.status(404).send({
         message: 'Agent not found',
       })
-    }
-
-    const query = {
-      user: user._id,
-      agent: agent._id,
     }
 
     const queryOptions: QueryOptions = {
