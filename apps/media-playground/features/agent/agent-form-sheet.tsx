@@ -48,7 +48,7 @@ export const agentSchema = z.object({
   image: z.string().optional(),
   description: z.string().min(1).max(140),
   greeting: z.string().max(140).optional(),
-  modelId: z.string().optional(),
+  model: z.string().optional(),
   persona: z.string().max(30000).optional(),
   knowledge: z.string().max(100000).optional(),
   suggestions: z
@@ -89,7 +89,7 @@ const AgentFormSheet = () => {
       persona: agent?.persona || '',
       knowledge: agent?.knowledge ?? '',
       greeting: agent?.greeting || '',
-      modelId: agent?.model || '',
+      model: agent?.model || '',
       suggestions: agent?.suggestions || [],
     },
   })
@@ -107,7 +107,7 @@ const AgentFormSheet = () => {
         persona: agent.persona,
         knowledge: agent.knowledge ?? '',
         greeting: agent.greeting || '',
-        modelId: agent.model,
+        model: agent.model,
         suggestions: agent.suggestions,
       })
     }
@@ -173,7 +173,7 @@ const AgentFormSheet = () => {
         key: '',
         image: '',
         description: '',
-        modelId: '',
+        model: '',
       })
     }
   }
@@ -408,7 +408,7 @@ const AgentFormSheet = () => {
             {/** Model Field */}
             <FormField
               control={form.control}
-              name="modelId"
+              name="model"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
                   <FormLabel>Flux LoRa (Optional)</FormLabel>

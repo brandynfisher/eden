@@ -74,7 +74,7 @@ export const createAgent = async (
     key,
     description,
     image,
-    modelId,
+    model,
     persona,
     greeting,
     knowledge,
@@ -83,8 +83,8 @@ export const createAgent = async (
 
   const currentUserId = request.user.userId
 
-  if (modelId) {
-    await verifyModelAccess(reply, modelId, currentUserId.toString())
+  if (model) {
+    await verifyModelAccess(reply, model, currentUserId.toString())
   }
 
   const imageFilename = image.split('/').pop()
@@ -100,7 +100,7 @@ export const createAgent = async (
     greeting,
     knowledge,
     suggestions,
-    model: modelId || undefined,
+    model: model || undefined,
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -139,7 +139,7 @@ export const updateAgent = async (
     knowledge,
     suggestions,
     image,
-    modelId,
+    model,
     public: isPublic,
   } = request.body as AgentsUpdateArguments
 
@@ -160,11 +160,11 @@ export const updateAgent = async (
     public: isPublic,
   }
 
-  if (!modelId) {
+  if (!model) {
     updateData.$unset = { model: 1 }
-  } else if (modelId) {
-    await verifyModelAccess(reply, modelId, currentUserId.toString())
-    updateData.model = modelId
+  } else if (model) {
+    await verifyModelAccess(reply, model, currentUserId.toString())
+    updateData.model = model
   }
 
   if (image) {

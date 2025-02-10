@@ -1,5 +1,5 @@
 import { Footer } from '@/features/landing/footer'
-import SectionAgents from '@/features/landing/section-agents'
+// import SectionAgents from '@/features/landing/section-agents'
 import SectionChatMock from '@/features/landing/section-chat-mock'
 import SectionDeploy from '@/features/landing/section-deploy'
 import SectionEve from '@/features/landing/section-eve'
@@ -83,10 +83,10 @@ const HomePage = async () => {
         <section className="bg-accent/60 py-12 px-2 md:px-4">
           <SectionTraining />
         </section>
-
+        {/* 
         <section className="mb-12 px-2 md:px-4">
           <SectionAgents />
-        </section>
+        </section> */}
       </div>
       <Footer />
     </div>

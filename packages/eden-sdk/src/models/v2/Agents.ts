@@ -71,7 +71,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   image: string
   tools?: { [key: string]: string[] }
   discordId?: string
-  modelId?: string
+  model?: string
 }
 
 export interface AgentsUpdateArguments extends WebAPICallOptions {
@@ -87,7 +87,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   tools?: { [key: string]: string[] }
   discordId?: string
   public?: boolean
-  modelId?: string
+  model?: string
 }
 
 interface DiscordDeploymentConfig {
