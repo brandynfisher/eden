@@ -76,19 +76,12 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
 
         <div className="flex flex-col justify-between ml-2 h-[132px]">
           <AgentActionsMenu agent={agent} queryKey={queryKey} />
-          <Button
-            size="icon"
-            variant="outline"
-            type="button"
-            aria-label="Chat with this agent"
-            asChild
-          >
+          <Button size="icon" variant="outline" asChild>
             <Link
               href={`/chat/${agent.username}`}
-              className="w-9 h-9 p-2 cursor-pointer"
-              title="Chat with this agent"
+              className="w-9 h-9 text-muted-foreground group-hover:text-primary"
             >
-              <MessageSquareIcon className="h-4 w-4" />
+              <MessageSquareIcon className="w-4 h-4" />
             </Link>
           </Button>
         </div>

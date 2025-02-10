@@ -8,11 +8,11 @@ export const getCostConfig = ({
   parameterValues,
 }: {
   parameterNames: ToolParameterV2['name'][]
-  parameterValues: (string[] | number[] | string[][])[]
+  parameterValues: (string[] | number[] | string[][] | number)[]
 }) => {
   return parameterNames.reduce((acc, key, i) => {
     const value = parameterValues[i]
-    if (Array.isArray(value)) {
+    if (Array.isArray(value) || typeof value === 'string') {
       acc[`${key}_length`] = value.length
     } else if (value !== undefined) {
       acc[key] = value as number
@@ -31,7 +31,11 @@ export const calculateCost = (
     ...new Set(formula.match(regex)?.map(m => m.replace('.length', '')) || []),
   ]
 
-  const parameterValues = costParameterNames.map(name => formValues[name])
+  const parameterValues = costParameterNames.map(name =>
+    typeof formValues[name] === 'string'
+      ? (formValues[name] as string).length
+      : formValues[name],
+  )
 
   const costConfig = getCostConfig({
     parameterNames: costParameterNames,
