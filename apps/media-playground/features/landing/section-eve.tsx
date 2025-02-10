@@ -8,17 +8,18 @@ export default function SectionEve() {
   return (
     <div className="max-w-5xl mx-auto px-2 md:px-4">
       <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
-        The Best Creative AI Tools, All in One Place
+        Build Creative Agents
       </TypographyH4>
       <div className="text-center text-muted-foreground">
-        Our AI agents have mastered every tool in our creative tool suite, so
-        you don't have to. <br />
-        Just share your vision, and let AI handle the rest.{' '}
+        Eden Agents are chat agents who are given a unique personality, set of
+        tools & instructions and a custom visual model. <br />
+        They can be crafted to act as creative assistants, coaches,
+        storytellers, brand ambassadors and more.
         <Link
           href="/create"
           className=" text-purple-500 font-bold inline-flex items-center hover:text-purple-400"
         >
-          Get started for free!
+          Get started here!
         </Link>
         <div className="relative flex justify-center items-center max-w-full mx-auto mt-6">
           <VideoResult

@@ -77,11 +77,11 @@ const HomePage = async () => {
         </section>
 
         <section>
-          <SectionDeploy />
+          <SectionTraining />
         </section>
 
         <section className="bg-accent/60 py-12 px-2 md:px-4">
-          <SectionTraining />
+          <SectionDeploy />
         </section>
         {/* 
         <section className="mb-12 px-2 md:px-4">
