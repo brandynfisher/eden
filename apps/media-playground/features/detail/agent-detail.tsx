@@ -1,5 +1,6 @@
 'use client'
 
+import AgentActionsMenu from '@/components/button/agent-actions-menu'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -9,22 +10,11 @@ import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import {
-  updateAgentDeploymentFormSheet,
-  updateAgentFormSheet,
-  updateDeleteDialog,
-  updateShareModal,
-} from '@/stores/dialogs/dialogs.slice'
-import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
 import { AvatarFallback } from '@radix-ui/react-avatar'
 import { ChatBubbleIcon } from '@radix-ui/react-icons'
-import axios from 'axios'
-import { RocketIcon, SettingsIcon, Share2Icon, TrashIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import React from 'react'
-import { toast } from 'sonner'
 
 type Props = {
   id: string
@@ -32,11 +22,9 @@ type Props = {
 }
 
 const AgentDetail = ({ id, agentSSRData }: Props) => {
-  const router = useRouter()
   const { isSignedIn, user } = useAuthState()
-  const dispatch = useAppDispatch()
 
-  const { agent: agentClientData, invalidate } = useAgentQuery({
+  const { agent: agentClientData } = useAgentQuery({
     key: id,
     initialData: agentSSRData
       ? {
@@ -46,70 +34,6 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
-
-  const onDeleteAgent = async () => {
-    const handleDelete = async () => {
-      try {
-        await axios.delete(`/api/agents/${id}`)
-        toast.success('Agent deleted', {
-          description: `Agent: ${agent?.name} deleted successfully`,
-          dismissible: true,
-          richColors: true,
-        })
-        router.push(`/creators/${user?.username}?tab=agents`)
-      } catch (error) {
-        toast.error('Failed to delete agent', {
-          description: `Agent: ${agent?.name} failed to delete`,
-          dismissible: true,
-          richColors: true,
-        })
-      }
-    }
-
-    dispatch(
-      updateDeleteDialog({
-        isOpen: true,
-        title: 'Delete Agent',
-        description: 'Are you sure you want to delete this agent?',
-        onDelete: handleDelete,
-      }),
-    )
-  }
-
-  const onUpdateAgent = async () => {
-    await invalidate()
-  }
-
-  const onShareAgent = () => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/agents/${agent?._id}`
-    dispatch(
-      updateShareModal({
-        isOpen: true,
-        shareUrl,
-      }),
-    )
-  }
-
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agent,
-        onAction: onUpdateAgent,
-      }),
-    )
-  }
-
-  const handleConfigureDeployments = () => {
-    dispatch(
-      updateAgentDeploymentFormSheet({
-        isOpen: true,
-        agent,
-      }),
-    )
-  }
 
   if (!agent) return null
   return (
@@ -135,34 +59,13 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                 {agent?.name}
               </h1>
               <div className="flex flex-wrap gap-2">
-                {user?._id === agent?.owner._id && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleEditClick}
-                    >
-                      <SettingsIcon size={18} />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleConfigureDeployments}
-                    >
-                      <RocketIcon size={18} />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={onDeleteAgent}
-                    >
-                      <TrashIcon size={18} />
-                    </Button>
-                  </>
-                )}
-                <Button variant="outline" size="icon" onClick={onShareAgent}>
-                  <Share2Icon size={18} />
-                </Button>
+                <AgentActionsMenu
+                  className="size-10"
+                  key={1}
+                  agent={agent}
+                  queryKey={['agents', id]}
+                  hiddenItems={['chat', 'view-details']}
+                />
                 <Button variant="outline" asChild>
                   <Link
                     href={`/chat/${agent.username}`}

@@ -34,9 +34,23 @@ type Props = {
   agent: Agent
   queryKey: QueryKey
   className?: string
+  hiddenItems?: (
+    | 'view-details'
+    | 'chat'
+    | 'share'
+    | 'edit'
+    | 'deployments'
+    | 'privacy'
+    | 'delete'
+  )[]
 }
 
-const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
+const AgentActionsMenu = ({
+  agent,
+  queryKey,
+  className,
+  hiddenItems,
+}: Props) => {
   const { user } = useAuthState()
   const dispatch = useAppDispatch()
   const [isOpen, setIsOpen] = useState(false)
@@ -118,78 +132,96 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
       {isOpen && (
         <>
           <DropdownMenuGroup>
-            <DropdownMenuItem asChild>
-              <button
-                type="button"
-                className="w-full cursor-pointer"
-                onClick={handleViewDetails}
-              >
-                <ExternalLinkIcon className="mr-2 h-4 w-4" />
-                View Details
-              </button>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/chat/${agent.username}`} className="cursor-pointer">
-                <ChatBubbleIcon className="mr-2 h-4 w-4" />
-                Chat
-              </Link>
-            </DropdownMenuItem>
+            {!hiddenItems?.includes('view-details') && (
+              <DropdownMenuItem asChild>
+                <button
+                  type="button"
+                  className="w-full cursor-pointer"
+                  onClick={handleViewDetails}
+                >
+                  <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                  View Details
+                </button>
+              </DropdownMenuItem>
+            )}
+            {!hiddenItems?.includes('chat') && (
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`/chat/${agent.username}`}
+                  className="cursor-pointer"
+                >
+                  <ChatBubbleIcon className="mr-2 h-4 w-4" />
+                  Chat
+                </Link>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuGroup>
-          <DropdownMenuGroup>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <button
-                type="button"
-                className="w-full"
-                onClick={handleShareClick}
-              >
-                <Share2Icon className="mr-2 h-4 w-4" />
-                Share
-              </button>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          {agent.owner._id === user?._id && (
-            <>
-              {isFeatureDeploymentsEnabled && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="cursor-pointer">
-                    <button
-                      type="button"
-                      onClick={handleConfigureDeployments}
-                      className="w-full"
-                    >
-                      <RocketIcon className="mr-2 h-4 w-4" />
-                      Deployments
-                    </button>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
+          {!hiddenItems?.includes('share') && (
+            <DropdownMenuGroup>
               <DropdownMenuItem asChild className="cursor-pointer">
                 <button
                   type="button"
-                  onClick={handleEditClick}
                   className="w-full"
+                  onClick={handleShareClick}
                 >
-                  <Edit2Icon className="mr-2 h-4 w-4" />
-                  Edit
+                  <Share2Icon className="mr-2 h-4 w-4" />
+                  Share
                 </button>
               </DropdownMenuItem>
-              <DropdownMenuGroup>
-                <PrivacyActionItem
-                  type="agent"
-                  item={agent}
-                  queryKey={queryKey}
-                />
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DeleteActionItem
-                  type="agent"
-                  item={agent}
-                  queryKey={queryKey}
-                />
-              </DropdownMenuGroup>
+            </DropdownMenuGroup>
+          )}
+          {agent.owner._id === user?._id && (
+            <>
+              {isFeatureDeploymentsEnabled &&
+                !hiddenItems?.includes('deployments') && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={handleConfigureDeployments}
+                        className="w-full"
+                      >
+                        <RocketIcon className="mr-2 h-4 w-4" />
+                        Deployments
+                      </button>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+              {!hiddenItems?.includes('edit') && (
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={handleEditClick}
+                    className="w-full"
+                  >
+                    <Edit2Icon className="mr-2 h-4 w-4" />
+                    Edit
+                  </button>
+                </DropdownMenuItem>
+              )}
+              {!hiddenItems?.includes('privacy') && (
+                <DropdownMenuGroup>
+                  <PrivacyActionItem
+                    type="agent"
+                    item={agent}
+                    queryKey={queryKey}
+                  />
+                </DropdownMenuGroup>
+              )}
+              {!hiddenItems?.includes('delete') && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DeleteActionItem
+                      type="agent"
+                      item={agent}
+                      queryKey={queryKey}
+                    />
+                  </DropdownMenuGroup>
+                </>
+              )}
             </>
           )}
         </>
