@@ -1,11 +1,12 @@
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { SquareMousePointerIcon } from 'lucide-react'
+import { MessageSquareIcon, SquareMousePointerIcon } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -35,7 +36,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
         </div>
       ) : null}
       <Link
-        href={`/chat/${agent.username}`}
+        href={`/agents/${agent.username}`}
         prefetch={false}
         className="relative w-full block"
       >
@@ -63,7 +64,25 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 by <span className="font-semibold">{agent.owner.username}</span>
               </div>
-              <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  type="button"
+                  aria-label="Chat with this agent"
+                  asChild
+                >
+                  <Link
+                    key={2}
+                    className="w-9 h-9 p-2 cursor-pointer "
+                    href={`/chat/${agent.username}`}
+                    title="Chat with this agent"
+                  >
+                    <MessageSquareIcon className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />
+              </div>
             </div>
           </div>
         </div>

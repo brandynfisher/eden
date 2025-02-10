@@ -1,7 +1,7 @@
 'use client'
 
 import TextClampMore from '@/components/text/text-clamp-more'
-import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 // import { Separator } from '@/components/ui/separator'
 // import { Badge } from '@/components/ui/badge'
@@ -17,10 +17,14 @@ import {
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
-import { AvatarFallback } from '@radix-ui/react-avatar'
-import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
-import { RocketIcon, SettingsIcon, Share2Icon, TrashIcon } from 'lucide-react'
+import {
+  MessageSquareIcon,
+  RocketIcon,
+  SettingsIcon,
+  Share2Icon,
+  TrashIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
@@ -168,7 +172,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     href={`/chat/${agent.username}`}
                     className=" bg-purple-600/20 border-purple-600"
                   >
-                    <ChatBubbleIcon className="w-4 h-4 mr-2" />
+                    <MessageSquareIcon className="w-4 h-4 mr-2" />
                     <span className="text-sm">Chat</span>
                   </Link>
                 </Button>
