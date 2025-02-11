@@ -5,6 +5,8 @@ import { useLayoutEffect } from 'react'
 
 // hooks/useAutosizeTextArea.ts
 
+// hooks/useAutosizeTextArea.ts
+
 interface UseAutosizeTextAreaProps {
   textAreaRef: HTMLTextAreaElement | null
   minHeight?: number
@@ -20,6 +22,13 @@ export const useAutosizeTextArea = ({
 }: UseAutosizeTextAreaProps) => {
   useLayoutEffect(() => {
     if (textAreaRef) {
+      // Find the scrollable container (Sheet)
+      const scrollContainer = textAreaRef.closest('[role="dialog"]')
+      if (!scrollContainer) return
+
+      // Store the current scroll position of the sheet
+      const scrollTop = scrollContainer.scrollTop
+
       const offsetBorder = 2 // Adjust if needed based on your styling
 
       // Reset the height to allow the textarea to shrink when needed
@@ -34,6 +43,9 @@ export const useAutosizeTextArea = ({
       } else {
         textAreaRef.style.height = `${scrollHeight + offsetBorder}px`
       }
+
+      // Restore the scroll position of the sheet
+      scrollContainer.scrollTop = scrollTop
     }
   }, [textAreaRef, triggerAutoSize, minHeight, maxHeight])
 }
