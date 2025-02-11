@@ -1,5 +1,9 @@
 import { fetcher } from '@/lib/fetcher'
-import { Agent, AgentsGetDeploymentsResponse } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  AgentsGetDeploymentsResponse,
+  Deployment,
+} from '@edenlabs/eden-sdk'
 import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query'
 
 type Props = {
@@ -36,9 +40,7 @@ export const useAgentDeploymentsQuery = ({
   const queryClient = useQueryClient()
 
   return {
-    deployments: data?.deployments as
-      | AgentsGetDeploymentsResponse['deployments']
-      | undefined,
+    deployments: data?.deployments as Deployment[],
     queryKey,
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     fetch: () => queryClient.fetchQuery({ queryKey }),

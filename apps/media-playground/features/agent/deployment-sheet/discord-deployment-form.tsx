@@ -7,7 +7,11 @@ import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
-import { Agent, AgentsGetDeploymentsResponse } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  AgentsGetDeploymentsResponse,
+  Deployment,
+} from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -27,7 +31,7 @@ type DeploymentFormDto = z.infer<typeof schema>
 
 interface DiscordDeploymentFormProps {
   agentId: Agent['_id']
-  deployment?: AgentsGetDeploymentsResponse['deployments']['discord']
+  deployment?: Deployment
 }
 
 export const DiscordDeploymentForm = ({
@@ -35,12 +39,13 @@ export const DiscordDeploymentForm = ({
   deployment,
 }: DiscordDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  console.log('xxx', deployment)
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
     defaultValues: {
       token: '',
-      allowedChannels: deployment?.allowedChannels ?? [],
+      allowedChannels: deployment?.config?.discord?.channel_allowlist ?? [],
     },
   })
 

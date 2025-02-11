@@ -16,7 +16,7 @@ import {
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   MessageSquareIcon,
@@ -39,6 +39,9 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   const router = useRouter()
   const { isSignedIn, user } = useAuthState()
   const dispatch = useAppDispatch()
+  const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
+    FeatureFlag.FeatureDeployments,
+  )
 
   const { agent: agentClientData, invalidate } = useAgentQuery({
     key: id,
@@ -148,12 +151,21 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     >
                       <SettingsIcon size={18} />
                     </Button>
+                    {isFeatureDeploymentsEnabled && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleConfigureDeployments}
+                      >
+                        <RocketIcon size={18} />
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={handleConfigureDeployments}
+                      onClick={onShareAgent}
                     >
-                      <RocketIcon size={18} />
+                      <Share2Icon size={18} />
                     </Button>
                     <Button
                       variant="destructive"
@@ -164,9 +176,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     </Button>
                   </>
                 )}
-                <Button variant="outline" size="icon" onClick={onShareAgent}>
-                  <Share2Icon size={18} />
-                </Button>
+
                 <Button variant="outline" asChild>
                   <Link
                     href={`/chat/${agent.username}`}

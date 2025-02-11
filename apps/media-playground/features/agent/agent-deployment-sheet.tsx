@@ -68,11 +68,15 @@ const AgentDeploymentFormSheet = () => {
           <div className="space-y-4 mt-4">
             <DiscordDeploymentForm
               agentId={agent?._id || ''}
-              deployment={deploymentsQuery.deployments?.discord}
+              deployment={deploymentsQuery.deployments?.find(
+                deployment => deployment.platform === 'discord',
+              )}
             />
             <TelegramDeploymentForm
               agentId={agent?._id || ''}
-              deployment={deploymentsQuery.deployments?.telegram}
+              deployment={deploymentsQuery.deployments?.find(
+                deployment => deployment.platform === 'telegram',
+              )}
             />
           </div>
         )}

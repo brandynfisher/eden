@@ -226,19 +226,7 @@ export const agentsDeleteRequestConfig = (
 
 // Responses
 export type AgentsGetDeploymentsResponse = WebAPICallResult & {
-  deployments: {
-    discord: {
-      deployment: Deployment
-      allowedChannels: Agent['discordChannelAllowlist']
-    }
-    telegram: {
-      deployment: Deployment
-      allowedTopics: Agent['telegramTopicAllowlist']
-    }
-    farcaster: {
-      deployment: Deployment
-    }
-  }
+  deployments: Deployment[]
   error?: string
 }
 

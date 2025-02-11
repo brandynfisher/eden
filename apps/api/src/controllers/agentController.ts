@@ -226,39 +226,9 @@ export const getAgentDeployments = async (
     })
   }
 
-  const deploymentsFromDb = await Deployment.find({
+  const deployments = await Deployment.find({
     agent: agentId,
   })
-
-  const discordDeployment = deploymentsFromDb.find(
-    deployment => deployment.platform === 'discord',
-  )
-  const telegramDeployment = deploymentsFromDb.find(
-    deployment => deployment.platform === 'telegram',
-  )
-  const farcasterDeployment = deploymentsFromDb.find(
-    deployment => deployment.platform === 'farcaster',
-  )
-
-  const deployments = {
-    discord: discordDeployment
-      ? {
-          deployment: discordDeployment,
-          allowedChannels: agent.discordChannelAllowlist,
-        }
-      : undefined,
-    telegram: telegramDeployment
-      ? {
-          deployment: telegramDeployment,
-          allowedTopics: agent.telegramTopicAllowlist,
-        }
-      : undefined,
-    farcaster: farcasterDeployment
-      ? {
-          deployment: farcasterDeployment,
-        }
-      : undefined,
-  }
 
   return reply.status(200).send({
     deployments,
