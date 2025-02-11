@@ -4,6 +4,7 @@ import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
+import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import {
   AgentGetArguments,
   AgentsCreateArguments,
@@ -15,7 +16,6 @@ import {
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
-import { ObjectId } from '@fastify/mongodb'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateResult } from 'mongodb'
@@ -27,10 +27,7 @@ export const getAgent = async (
   reply: FastifyReply,
 ) => {
   const { agentId } = request.params as AgentGetArguments
-  const isObjectId = ObjectId.isValid(agentId)
-  const query = isObjectId
-    ? { _id: new ObjectId(agentId) }
-    : { username: agentId }
+  const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)
 
   if (!agent || agent.deleted) {

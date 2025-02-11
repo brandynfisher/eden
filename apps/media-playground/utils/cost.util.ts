@@ -8,16 +8,18 @@ export const getCostConfig = ({
   parameterValues,
 }: {
   parameterNames: ToolParameterV2['name'][]
-  parameterValues: (string[] | number[] | string[][])[]
+  parameterValues: (number | string[] | number[] | string[][])[]
 }) => {
   return parameterNames.reduce((acc, key, i) => {
     const value = parameterValues[i]
+    // console.log({ value, key })
     if (Array.isArray(value)) {
-      acc[`${key}_length`] = value.length
+      acc[`${key}_length`] = value.length || 0
     } else if (value !== undefined) {
       acc[key] = value as number
     } else {
-      acc[`${key}_length`] = 0
+      // acc[`${key}_length`] = 0
+      acc[`${key}`] = 0
     }
     return acc
   }, {} as Record<string, number>)
@@ -31,17 +33,24 @@ export const calculateCost = (
     ...new Set(formula.match(regex)?.map(m => m.replace('.length', '')) || []),
   ]
 
-  const parameterValues = costParameterNames.map(name => formValues[name])
+  const parameterValues = costParameterNames.map(name =>
+    typeof formValues[name] === 'string'
+      ? // @ts-ignore
+        (formValues[name] as string).length
+      : formValues[name],
+  )
 
   const costConfig = getCostConfig({
     parameterNames: costParameterNames,
     parameterValues,
   })
 
+  // console.log({ costConfig, formValues })
+
   try {
     return Parser.evaluate(formula, costConfig)
   } catch (e) {
-    // console.error('Could not parse cost_estimate', e)
+    console.error('Could not parse cost_estimate', e)
     return Infinity
   }
 }

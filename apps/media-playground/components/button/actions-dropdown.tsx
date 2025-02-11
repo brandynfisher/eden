@@ -35,7 +35,7 @@ const ActionsDropdown = ({
             className,
           ])}
         >
-          <EllipsisIcon className="group-hover:text-primary" />
+          <EllipsisIcon className="text-muted-foreground group-hover:text-primary" />
           {label ? label : null}
         </Button>
       </DropdownMenuTrigger>

@@ -134,13 +134,13 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
 
   if (isReadOnly === null || isReadOnly) {
     return (
-      <div className="flex items-center justify-between gap-3 py-2 px-4 h-[58px] w-full">
+      <div className="flex items-center justify-between gap-2 md:gap-3 py-2 px-2 md:px-4 h-[58px] w-full">
         {isReadOnly === true ? (
           <>
-            <div className="flex items-center gap-3 py-2 px-4 border border-secondary rounded-lg bg-muted-darker">
+            <div className="flex flex-wrap items-center gap-2 md:gap-3 py-2 md:px-4 border border-secondary rounded-lg bg-muted-darker">
               <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
               <p className="text-sm ">
-                This is a read-only view of another user's thread.
+                Read-only view of another user's thread.
               </p>
             </div>
             <Button variant="outline" asChild>
@@ -181,7 +181,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
       <ThreadPrimitive.If running={true}>
         <div className="flex items-center gap-3">
           <BotIcon className="animate-pulse duration-1000 text-purple-600" />
-          <Composer.Cancel />
+          {/* <Composer.Cancel /> */}
         </div>
       </ThreadPrimitive.If>
 

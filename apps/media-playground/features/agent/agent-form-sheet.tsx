@@ -46,7 +46,7 @@ export const agentSchema = z.object({
         'Key must only contain lowercase letters, numbers, underscores and dashes.',
     }),
   image: z.string().optional(),
-  description: z.string().min(1).max(140),
+  description: z.string().min(1).max(5000),
   greeting: z.string().max(140).optional(),
   model: z.string().optional(),
   persona: z.string().max(30000).optional(),
@@ -319,7 +319,7 @@ const AgentFormSheet = () => {
                   </FormControl>
                   <CharacterCount
                     current={field.value?.length || 0}
-                    max={140}
+                    max={5000}
                   />
                   <FormMessage />
                 </FormItem>
