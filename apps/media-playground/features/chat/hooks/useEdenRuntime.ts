@@ -48,28 +48,50 @@ export const useEdenRuntime = ({
   onRename?: (threadId: string, newTitle: string) => Promise<void>
   isReadOnly?: boolean | null
 }) => {
-  // const [threadTitle, setThreadTitle] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const { isSignedIn } = useAuthState()
   const { messages, sendMessage, setMessages, addOrUpdateMessage } =
     useEdenMessages({ stream })
-  const { threads, invalidate } = useThreadListQuery({
-    agentId,
-    enabled: isSignedIn,
-  })
-
-  // console.log('useEdenRuntime', threadId, 'isReadOnly', isReadOnly)
+  const { threads, invalidate, hasMore, fetchNextPage, isFetchingNextPage } =
+    useThreadListQuery({
+      agentId,
+      enabled: isSignedIn,
+    })
 
   // Add mounted ref to prevent state updates after unmount
   const isMounted = useRef(true)
 
   useEffect(() => {
-    // console.log('useEdenRuntime mounted')
     return () => {
-      // console.log('useEdenRuntime unmounting')
       isMounted.current = false
     }
   }, [])
+
+  // Setup intersection observer for infinite scrolling
+  useEffect(() => {
+    if (!hasMore || !threads?.length || isFetchingNextPage) return
+
+    const target = document.getElementById('thread-list-observer-target')
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchNextPage()
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px',
+      },
+    )
+
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [hasMore, threads, isFetchingNextPage, fetchNextPage])
 
   const handleSendMessage = async (
     messages: EdenMessage[],
@@ -82,18 +104,13 @@ export const useEdenRuntime = ({
     }
 
     try {
-      // console.log('handleSendMessage start')
       setIsRunning(true)
       await sendMessage(messages, callback)
-      // console.log('handleSendMessage complete')
     } catch (error) {
       console.error('Error streaming messages:', error)
     } finally {
-      // console.log('handleSendMessage cleanup, isMounted:', isMounted.current)
       if (isMounted.current) {
         setIsRunning(false)
-      } else {
-        // console.warn('Prevented setState after unmount in handleSendMessage')
       }
     }
   }
@@ -127,9 +144,12 @@ export const useEdenRuntime = ({
         threadList: {
           threadId,
           threads: threads?.map(thread => ({
-            threadId: thread._id,
-            title: thread.title,
-            state: 'regular',
+            threadId: thread?._id || Date.now().toString(),
+            title: thread?.title || 'Untitled',
+            state:
+              isFetchingNextPage && thread === threads[threads.length - 1]
+                ? 'loading'
+                : 'regular',
             status: 'regular',
           })),
           onSwitchToNewThread: !onSwitchToNewThread
@@ -148,7 +168,6 @@ export const useEdenRuntime = ({
             ? undefined
             : async (threadId, newTitle) => {
                 await onRename(threadId, newTitle)
-                // update optimistically or trigger thread list query invalidation
               },
         },
       },
@@ -172,14 +191,12 @@ export const useEdenRuntime = ({
             },
           ],
           async (newThreadId?: string) => {
-            // console.log('callback', agentId, threadId, newThreadId)
             if (typeof window !== 'undefined')
               window.history.pushState(
                 null,
                 '',
                 `/chat/${agentId}/${newThreadId}`,
               )
-            // router.push(`/chat/${agentId}/${newThreadId}`)
             setTimeout(async () => {
               console.log('invalidated threadlist')
               await invalidate()

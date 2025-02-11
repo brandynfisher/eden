@@ -157,12 +157,14 @@ export const listThreads = async (
   } = request.query as ThreadsListArguments
 
   try {
-    const query = {
+    const agentQuery = {
       ...createIdOrSlugQuery(agent_id),
       user: userId,
     }
-    const agent = await Agent.findOne(query)
-    console.log('agent', agent)
+
+    console.log('query', agentQuery)
+
+    const agent = await Agent.findOne(agentQuery)
 
     if (!agent) {
       return reply.status(404).send({
@@ -181,8 +183,19 @@ export const listThreads = async (
       },
     }
 
+    console.log('queryOptions', queryOptions)
+
     const threadsRepository = new ThreadRepository(ThreadModel)
-    const paginatedResponse = await threadsRepository.query(query, queryOptions)
+    const threadQuery = {
+      user: userId,
+      agent: agent._id,
+    }
+    const paginatedResponse = await threadsRepository.query(
+      threadQuery,
+      queryOptions,
+    )
+
+    console.log('paginatedResponse', paginatedResponse)
 
     await threadsRepository.model.populate(paginatedResponse.docs, {
       path: 'agent',

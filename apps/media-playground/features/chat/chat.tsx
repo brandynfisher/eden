@@ -1,5 +1,6 @@
 'use client'
 
+import { useEdenRuntimeExtras } from './hooks/useEdenRuntime'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
@@ -20,6 +21,7 @@ import { TaskResultTool } from '@/features/chat/components/tools/task-result-too
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { EdenRuntimeProvider } from '@/features/chat/providers/eden-runtime-provider'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { AgentBasicInfo } from '@/lib/actions/agent'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
@@ -78,12 +80,6 @@ const ThreadListItemTrigger: FC<{ onItemClick?: () => void }> = ({
 const ThreadListItem: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   return (
     <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all pr-3">
-      {/* <ThreadListItemPrimitive.Trigger
-        className="flex-grow text-start truncate px-3 py-2 w-full"
-        onClick={onItemClick}
-      >
-        <ThreadListItemPrimitive.Title fallback="Untitled" />
-      </ThreadListItemPrimitive.Trigger> */}
       <ThreadListItemTrigger onItemClick={onItemClick} />
     </ThreadListItemPrimitive.Root>
   )
@@ -91,9 +87,11 @@ const ThreadListItem: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
 
 const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
-  // const threads = useThreadList().threads
-  // const isLoading = isSignedIn && threads && threads[0] === 'DEFAULT_THREAD_ID'
-  const isLoading = false
+  const agentId = useEdenRuntimeExtras(extras => extras.agentId)
+  const { isLoading, isFetchingNextPage } = useThreadListQuery({
+    agentId,
+    enabled: !!isSignedIn && !!agentId,
+  })
 
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
@@ -107,13 +105,22 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
       ) : (
         <>
           {isSignedIn ? (
-            <ThreadListPrimitive.Items
-              components={{
-                ThreadListItem: props => (
-                  <ThreadListItem {...props} onItemClick={onItemClick} />
-                ),
-              }}
-            />
+            <>
+              <ThreadListPrimitive.Items
+                components={{
+                  ThreadListItem: props => (
+                    <ThreadListItem {...props} onItemClick={onItemClick} />
+                  ),
+                }}
+              />
+              <div id="thread-list-observer-target" className="h-4 w-full">
+                {isFetchingNextPage && (
+                  <div className="flex justify-center py-2">
+                    <Skeleton className="w-full h-9" />
+                  </div>
+                )}
+              </div>
+            </>
           ) : (
             <Button
               className="text-muted-foreground text-center"
