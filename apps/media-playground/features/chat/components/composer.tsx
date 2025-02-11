@@ -179,7 +179,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
       <Composer.Input autoFocus className="text-base" />
 
       <ThreadPrimitive.If running={true}>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 h-full">
           <BotIcon className="animate-pulse duration-1000 text-purple-600" />
           {/* <Composer.Cancel /> */}
         </div>

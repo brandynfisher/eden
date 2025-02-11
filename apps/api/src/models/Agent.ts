@@ -25,9 +25,14 @@ export interface AgentSchema extends BaseUserSchema {
     note: string
   }[]
   public?: boolean
-  threadCount?: number
-  userCount?: number
-  messageCount?: number
+  stats?: {
+    threadCount: number
+    userCount: number
+    userMessageCount: number
+    assistantMessageCount: number
+    toolCallCount: number
+    lastUpdated: Date
+  }
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}
@@ -100,6 +105,24 @@ const AgentSchema = new Schema<AgentDocument>(
     public: {
       type: Boolean,
       default: false,
+    },
+    stats: {
+      type: {
+        threadCount: Number,
+        userCount: Number,
+        userMessageCount: Number,
+        assistantMessageCount: Number,
+        toolCallCount: Number,
+        lastUpdated: Date,
+      },
+      default: {
+        threadCount: 0,
+        userCount: 0,
+        userMessageCount: 0,
+        assistantMessageCount: 0,
+        toolCallCount: 0,
+        lastUpdated: new Date(),
+      },
     },
   },
   {

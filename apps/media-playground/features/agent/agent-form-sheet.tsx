@@ -378,7 +378,6 @@ const AgentFormSheet = () => {
                   <FormControl>
                     <AutosizeTextarea
                       placeholder="Hello, how can I help you today?"
-                      variant="sm"
                       {...field}
                     />
                   </FormControl>
@@ -404,10 +403,7 @@ const AgentFormSheet = () => {
                   <FormControl>
                     <AutosizeTextarea
                       placeholder="Add any specific knowledge or context for the agent..."
-                      variant="xl"
                       {...field}
-                      value={field.value ?? ''}
-                      onChange={e => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <CharacterCount
