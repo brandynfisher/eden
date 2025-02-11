@@ -13,6 +13,7 @@ const creationSections: FilterSection[] = [
         icon: <StarIcon className="h-4 w-4" />,
       },
     ],
+    canHaveMultipleValues: false,
   },
   {
     id: 'output_type' as keyof FeedCursorRouteQueryParams['filter'],
@@ -29,6 +30,7 @@ const creationSections: FilterSection[] = [
         icon: <VideoIcon className="h-4 w-4" />,
       },
     ],
+    canHaveMultipleValues: true,
   },
   {
     id: 'tool' as keyof FeedCursorRouteQueryParams['filter'],
@@ -47,6 +49,7 @@ const creationSections: FilterSection[] = [
       { id: 'style_transfer', name: 'Style Transfer' },
       { id: 'face_styler', name: 'Face Styler' },
     ],
+    canHaveMultipleValues: true,
   },
 ]
 
