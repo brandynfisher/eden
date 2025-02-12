@@ -110,6 +110,18 @@ const AgentFormSheet = () => {
         model: agent.model,
         suggestions: agent.suggestions,
       })
+    } else {
+      form.reset({
+        name: '',
+        key: '',
+        image: '',
+        description: '',
+        persona: '',
+        knowledge: '',
+        greeting: '',
+        model: '',
+        suggestions: [],
+      })
     }
   }, [agent, form])
 
@@ -392,8 +404,6 @@ const AgentFormSheet = () => {
                     <AutosizeTextarea
                       placeholder="Add any specific knowledge or context for the agent..."
                       {...field}
-                      value={field.value ?? ''}
-                      onChange={e => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <CharacterCount

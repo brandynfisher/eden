@@ -64,7 +64,7 @@ export const TaskResultTool = makeAssistantToolUI({
                             ) === 'audio' ? (
                               <audio
                                 controls
-                                loop={true}
+                                // loop={true}
                                 className="w-full max-w-2xl"
                               >
                                 <source

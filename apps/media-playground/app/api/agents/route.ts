@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     greeting,
     suggestions,
     discordId,
+    knowledge,
     model,
   } = requestJson as AgentsCreateArguments
 
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
       persona,
       greeting,
       suggestions,
+      knowledge,
       discordId,
       model,
     })

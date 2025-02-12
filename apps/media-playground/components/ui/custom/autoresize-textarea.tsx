@@ -9,14 +9,46 @@ import { useImperativeHandle } from 'react'
 export type AutosizeTextAreaRef = {
   textArea: HTMLTextAreaElement
   focus: () => void
-  maxHeight: number
+  maxHeight: number | undefined
   minHeight: number
 }
 
 type AutosizeTextAreaProps = {
   maxHeight?: number
   minHeight?: number
+  variant?: 'sm' | 'md' | 'lg' | 'xl'
 } & React.TextareaHTMLAttributes<HTMLTextAreaElement>
+
+const getMaxHeight = (variant?: 'sm' | 'md' | 'lg' | 'xl') => {
+  // Heights for desktop/tablet
+  if (typeof window !== 'undefined' && window.innerWidth > 768) {
+    switch (variant) {
+      case 'sm':
+        return 100 // ~4-5 lines
+      case 'md':
+        return 200 // ~8-10 lines
+      case 'lg':
+        return 400 // ~16-20 lines
+      case 'xl':
+        return 600 // ~24-30 lines
+      default:
+        return 64 // default to md
+    }
+  }
+  // Heights for mobile
+  switch (variant) {
+    case 'sm':
+      return 80 // ~3-4 lines
+    case 'md':
+      return 160 // ~6-8 lines
+    case 'lg':
+      return 240 // ~10-12 lines
+    case 'xl':
+      return 320 // ~14-16 lines
+    default:
+      return 64 // default to md
+  }
+}
 
 export const AutosizeTextarea = React.forwardRef<
   AutosizeTextAreaRef,
@@ -24,8 +56,9 @@ export const AutosizeTextarea = React.forwardRef<
 >(
   (
     {
-      maxHeight = Number.MAX_SAFE_INTEGER,
-      minHeight = 36,
+      maxHeight: propMaxHeight,
+      minHeight = 64,
+      variant = 'md',
       className,
       onChange,
       value,
@@ -36,6 +69,8 @@ export const AutosizeTextarea = React.forwardRef<
     const textAreaRef = React.useRef<HTMLTextAreaElement | null>(null)
     const [triggerAutoSize, setTriggerAutoSize] = React.useState<string>('')
     const { formItemId } = useFormField()
+
+    const maxHeight = propMaxHeight || getMaxHeight(variant)
 
     useAutosizeTextArea({
       textAreaRef: textAreaRef.current,

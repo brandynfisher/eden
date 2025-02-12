@@ -75,6 +75,7 @@ export async function PATCH(
     persona,
     greeting,
     suggestions,
+    knowledge,
     tools,
     discordId,
     model,
@@ -99,6 +100,7 @@ export async function PATCH(
       tools,
       discordId,
       model,
+      knowledge,
     })
 
     if (!res) {
