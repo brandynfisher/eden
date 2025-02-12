@@ -95,7 +95,7 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
       updateAgentFormSheet({
         isOpen: true,
         mode: 'update',
-        agent,
+        agentId: agent._id,
         onAction: onUpdate,
       }),
     )
@@ -106,7 +106,9 @@ const AgentActionsMenu = ({ agent, queryKey, className }: Props) => {
   ) => {
     evt.preventDefault()
     setIsOpen(false)
-    dispatch(updateAgentDeploymentFormSheet({ isOpen: true, agent }))
+    dispatch(
+      updateAgentDeploymentFormSheet({ isOpen: true, agentId: agent._id }),
+    )
   }
 
   return (
