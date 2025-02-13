@@ -200,7 +200,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
       onValueChange={handleTabChange}
       className="w-full max-w-full"
     >
-      <div className="flex flex-col md:flex-row gap-4 w-full mb-4">
+      <div className="flex flex-wrap flex-col md:flex-row gap-4 w-full mb-4">
         <TabsList className="flex justify-stretch min-w-[328px] w-full md:w-auto md:min-w-[420px]">
           {tabs.map(tab => (
             <TabsTrigger key={tab.key} value={tab.key} className="w-full">
@@ -210,68 +210,77 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
         </TabsList>
 
         <div className="flex gap-4">
-          {activeRouterTab?.sortMenu || activeRouterTab?.filterMenu ? (
-            <Separator orientation="vertical" className="hidden md:block" />
+          {activeRouterTab?.sortMenu ||
+          activeRouterTab?.filterMenu ||
+          activeRouterTab?.canSearch ? (
+            <Separator orientation="vertical" className="hidden lg:block" />
           ) : null}
-
-          {activeRouterTab?.filterMenu ? (
-            <div className="flex-1">
-              <activeRouterTab.filterMenu
-                initialFilter={
-                  activeRouterTab.initialFilter ||
-                  tabCaches[activeTab]?.filterQuery
-                }
-                onChange={handleTabFilterChange}
-              />
-            </div>
-          ) : null}
-
-          {activeRouterTab?.sortMenu ? (
-            <div className="flex-1">
-              <activeRouterTab.sortMenu
-                initialSort={tabCaches[activeTab]?.filterQuery?.sort as string}
-                onChange={handleTabSortChange}
-              />
-            </div>
-          ) : null}
-
-          {sharedFilterMenu ? (
-            <div className="flex gap-4">
-              <Separator orientation="vertical" className="hidden md:block" />
-              {sharedFilterMenu({
-                initialFilter: baseQuery,
-                onChange: handleGlobalFilterChange,
-              })}
-            </div>
-          ) : null}
-
-          {activeRouterTab?.canSearch ? (
-            <div className="flex items-center mb-4 md:mb-0 w-full">
-              <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted/40 md:ml-auto">
-                <SearchIcon className="w-4 h-4" />
+          <div className="flex flex-wrap gap-4">
+            {activeRouterTab?.filterMenu ? (
+              <div className="flex-1">
+                <activeRouterTab.filterMenu
+                  initialFilter={
+                    activeRouterTab.initialFilter ||
+                    tabCaches[activeTab]?.filterQuery
+                  }
+                  onChange={handleTabFilterChange}
+                />
               </div>
-              <Input
-                className="rounded-none border-l-transparent border-r-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-purple-600/40"
-                placeholder="Search"
-                value={searchInput}
-                onChange={e => handleSearchInput(e.target.value)}
-              />
-              <Button
-                variant="outline"
-                size="icon"
-                className={cn(['rounded-l-none bg-muted/40'])}
-                onClick={handleSearchReset}
-                disabled={!searchInput}
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : null}
+            ) : null}
+
+            {activeRouterTab?.sortMenu ? (
+              <div className="flex-1">
+                <activeRouterTab.sortMenu
+                  initialSort={
+                    tabCaches[activeTab]?.filterQuery?.sort as string
+                  }
+                  onChange={handleTabSortChange}
+                />
+              </div>
+            ) : null}
+
+            {sharedFilterMenu ? (
+              <div className="flex gap-4">
+                <Separator orientation="vertical" className="hidden md:block" />
+                {sharedFilterMenu({
+                  initialFilter: baseQuery,
+                  onChange: handleGlobalFilterChange,
+                })}
+              </div>
+            ) : null}
+
+            {activeRouterTab?.canSearch ? (
+              <div className="flex items-center md:mb-0 w-full md:w-auto min-w-[160px] shrink-0">
+                <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted/40 md:ml-auto">
+                  <SearchIcon className="w-4 h-4" />
+                </div>
+                <Input
+                  className="rounded-none border-l-transparent border-r-transparent focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-purple-600/40"
+                  placeholder="Search"
+                  value={searchInput}
+                  onChange={e => handleSearchInput(e.target.value)}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className={cn(['rounded-l-none bg-muted/40'])}
+                  onClick={handleSearchReset}
+                  disabled={!searchInput}
+                >
+                  <XIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 
       {tabs.map(tab => (
-        <TabsContent key={tab.key} value={tab.key}>
+        <TabsContent
+          key={tab.key}
+          value={tab.key}
+          className="!ring-0 !ring-offset-0"
+        >
           {tabCaches[tab.key] ? (
             // Render cached content if available
             tabCaches[tab.key].content

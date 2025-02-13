@@ -39,13 +39,15 @@ export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_HOST),
   title: 'Eden',
   applicationName: 'Eden',
-  description: 'The Garden of Artificial Delights',
+  description: 'A Garden Of Artificial Delights',
   openGraph: {
     title: 'Eden',
     siteName: 'Eden',
-    description: 'The Garden of Artificial Delights',
+    description: 'A Garden Of Artificial Delights',
     type: 'website',
-    images: ['/logo_badge_square.png'],
+    images: [
+      'https://d14i3advvh2bvd.cloudfront.net/app/landing/logo_badge_square.png',
+    ],
   },
   icons: [
     {

@@ -82,7 +82,7 @@ export function BaseFilter({
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            'flex items-center gap-2 min-w-36 w-full justify-end pl-2 pr-1 py-1.5 h-9 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
+            'flex items-center gap-2 min-w-40 w-full justify-end pl-2 pr-1 py-1.5 h-10 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
             numberOfFilters > 0 && 'border-purple-600',
           )}
         >

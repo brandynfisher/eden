@@ -32,7 +32,7 @@ const AgentsFeed = ({
   const defaultQuery: FeedAgentCursorArguments = useMemo(
     () => ({
       limit: 35,
-      sort: ['stats.userMessageCount;-1'],
+      sort: ['stats.userCount;-1'],
     }),
     [],
   )
@@ -79,7 +79,7 @@ const AgentsFeed = ({
       <Button
         onClick={handleCreateClick}
         variant="outline"
-        className="gap-x-2 text-sm font-semibold"
+        className="gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
       >
         <PlusIcon className="size-4" />
         Create Agent

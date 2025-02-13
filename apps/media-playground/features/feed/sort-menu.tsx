@@ -19,15 +19,13 @@ const sortOptions = [
 
 // Add new sort options specifically for agents
 const agentSortOptions = [
+  { label: 'Popular', value: 'stats.userCount;-1', icon: <StarIcon /> },
   {
     label: 'Trending',
     value: 'stats.userMessageCount;-1',
     icon: <TrendingUpIcon />,
   },
-  { label: 'Most Popular', value: 'stats.userCount;-1', icon: <StarIcon /> },
-  // { label: 'Least Active', value: 'stats.userMessageCount;1', icon: <ClockArrowUp /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
-  // { label: 'Oldest', value: 'createdAt;1', icon: <ClockArrowUp /> },
 ]
 
 // Add new sort options for users
@@ -57,9 +55,9 @@ export const SortMenu = ({
   const [baseSort, setBaseSort] = useState<string>(
     initialSort ||
       (variant === 'agent'
-        ? 'stats.userMessageCount;-1'
+        ? 'stats.userCount;-1'
         : variant === 'user'
-        ? 'stats.messageCount;-1'
+        ? 'createdAt;-1'
         : 'createdAt;-1'),
   )
 
@@ -72,7 +70,7 @@ export const SortMenu = ({
   return (
     <div className="flex items-center">
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 min-w-[168px] w-full justify-end px-2 py-1.5 h-9 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground">
+        <DropdownMenuTrigger className="flex items-center gap-2 min-w-[168px] w-full md:w-auto justify-end px-2 py-1.5 h-10 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground">
           <ArrowDownUpIcon className="h-4 w-4 text-muted-foreground" />
           <div className="mr-auto text-sm flex items-center">
             {options.find(option => option.value === baseSort)?.label || 'Sort'}

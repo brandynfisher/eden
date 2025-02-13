@@ -41,6 +41,18 @@ const uploadAsset = async (
 const edenImageAttachmentAdapter: AttachmentAdapter = {
   accept: 'image/*,video/*,audio/*',
   async add({ file }) {
+    // For pre-uploaded files, return a pending attachment that completes immediately
+    if ((file as File & { isPreUploaded?: boolean }).isPreUploaded) {
+      return {
+        id: uuidv4(),
+        file,
+        type: 'image',
+        name: file.name,
+        contentType: file.type,
+        status: { type: 'running', reason: 'uploading', progress: 1 },
+      }
+    }
+
     const cancelSource = axios.CancelToken.source()
     const asset = await uploadAsset(
       file,
@@ -59,11 +71,24 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
       type: 'image',
       name: file.name,
       contentType: file.type,
-      // status: { type: 'requires-action', reason: 'composer-send' },
       status: { type: 'running', reason: 'uploading', progress: 1 },
     }
   },
   async send(attachment) {
+    // For pre-uploaded files, use the fileUrl directly
+    if ((attachment.file as File & { isPreUploaded?: boolean }).isPreUploaded) {
+      return {
+        ...attachment,
+        content: [
+          {
+            type: 'image',
+            image: (attachment.file as File & { fileUrl: string }).fileUrl,
+          },
+        ],
+        status: { type: 'complete' },
+      }
+    }
+
     console.log(attachment)
     return {
       ...{

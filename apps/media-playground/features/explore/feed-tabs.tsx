@@ -63,7 +63,7 @@ const FeedTabs = () => {
       key: 'creators',
       title: 'Creators',
       canSearch: true,
-      sortMenu: props => <SortMenu {...props} variant="user" />,
+      // sortMenu: props => <SortMenu {...props} variant="user" />,
       content: (
         <CreatorsFeed
           minCols={1}
