@@ -32,7 +32,7 @@ const AgentsFeed = ({
   const defaultQuery: FeedAgentCursorArguments = useMemo(
     () => ({
       limit: 35,
-      sort: ['createdAt;-1'],
+      sort: ['stats.userMessageCount;-1'],
     }),
     [],
   )

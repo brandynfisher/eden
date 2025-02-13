@@ -76,14 +76,19 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
 
         <div className="flex flex-col justify-between ml-2 h-[132px]">
           <AgentActionsMenu agent={agent} queryKey={queryKey} />
-          <Button size="icon" variant="outline" asChild>
-            <Link
-              href={`/chat/${agent.username}`}
-              className="w-9 h-9 text-muted-foreground group-hover:text-primary"
-            >
-              <MessageSquareIcon className="w-4 h-4" />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-muted-foreground">
+              {agent.stats?.userMessageCount}
+            </span>
+            <Button size="icon" variant="outline" asChild>
+              <Link
+                href={`/chat/${agent.username}`}
+                className="w-9 h-9 text-muted-foreground group-hover:text-primary"
+              >
+                <MessageSquareIcon className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

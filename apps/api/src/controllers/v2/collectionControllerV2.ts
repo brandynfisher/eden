@@ -297,12 +297,14 @@ export const addCreationsToCollection = async (
 
   const isAuthorizedForCreations = creationsToAdd.every(
     creation =>
-      creation.user.toString() === currentUserId.toString() || creation.public,
+      creation.user.toString() === currentUserId.toString() ||
+      creation.requester?.toString() === currentUserId.toString() ||
+      creation.public,
   )
 
   if (!isAuthorizedForCreations) {
     return reply.status(401).send({
-      error: 'User not authorized to update creations',
+      error: 'User not authorized to update collection creations',
     })
   }
 

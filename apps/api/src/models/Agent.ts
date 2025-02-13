@@ -132,5 +132,12 @@ const AgentSchema = new Schema<AgentDocument>(
 )
 
 AgentSchema.index({ owner: 1 })
+AgentSchema.index({
+  'stats.threadCount': -1,
+  'stats.userCount': -1,
+  'stats.userMessageCount': -1,
+  'stats.assistantMessageCount': -1,
+  'stats.toolCallCount': -1,
+})
 
 export const Agent = BaseUser.discriminator<AgentDocument>('agent', AgentSchema)

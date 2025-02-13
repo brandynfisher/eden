@@ -113,21 +113,21 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     })
   }
 
-  // const handleTabSortChange = (sort: string) => {
-  //   setTabFilterQuery(prevQuery => {
-  //     return {
-  //       ...prevQuery,
-  //       sort,
-  //     }
-  //   })
+  const handleTabSortChange = (sort: string) => {
+    setTabFilterQuery(prevQuery => {
+      return {
+        ...prevQuery,
+        sort,
+      }
+    })
 
-  //   // Invalidate cache for active tab since the tab-specific filter changed
-  //   setTabCaches(prevCache => {
-  //     const updatedCache = { ...prevCache }
-  //     delete updatedCache[activeTab]
-  //     return updatedCache
-  //   })
-  // }
+    // Invalidate cache for active tab since the tab-specific filter changed
+    setTabCaches(prevCache => {
+      const updatedCache = { ...prevCache }
+      delete updatedCache[activeTab]
+      return updatedCache
+    })
+  }
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -226,14 +226,14 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
             </div>
           ) : null}
 
-          {/* {activeRouterTab?.sortMenu ? (
+          {activeRouterTab?.sortMenu ? (
             <div className="flex-1">
               <activeRouterTab.sortMenu
                 initialSort={tabCaches[activeTab]?.filterQuery?.sort as string}
                 onChange={handleTabSortChange}
               />
             </div>
-          ) : null} */}
+          ) : null}
 
           {sharedFilterMenu ? (
             <div className="flex gap-4">
