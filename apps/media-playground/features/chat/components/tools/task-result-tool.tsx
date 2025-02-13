@@ -64,7 +64,7 @@ export const TaskResultTool = makeAssistantToolUI({
                             ) === 'audio' ? (
                               <audio
                                 controls
-                                loop={true}
+                                // loop={true}
                                 className="w-full max-w-2xl"
                               >
                                 <source
@@ -75,42 +75,65 @@ export const TaskResultTool = makeAssistantToolUI({
                                 />
                               </audio>
                             ) : (
-                              <LightboxTrigger
+                              <div
+                                draggable
+                                onDragStart={(
+                                  e: React.DragEvent<HTMLDivElement>,
+                                ) => {
+                                  const url = getCloudfrontOriginalUrl(
+                                    output.filename,
+                                  )
+                                  e.dataTransfer.setData('text/plain', '') // Required for Firefox
+                                  e.dataTransfer.setData(
+                                    'application/json',
+                                    JSON.stringify({
+                                      fileUrl: url,
+                                      type:
+                                        output.mediaAttributes?.mimeType ||
+                                        'image/jpeg',
+                                      name: url, // Use the full URL as the name
+                                    }),
+                                  )
+                                  e.dataTransfer.effectAllowed = 'copy'
+                                }}
                                 className="w-full h-full"
-                                slide={{
-                                  type: 'video',
-                                  url: getCloudfrontOriginalUrl(
-                                    output.filename,
-                                  ),
-                                  thumbnail: getCloudfrontOriginalUrl(
-                                    output.filename,
-                                  ),
-                                  width: output.mediaAttributes?.width,
-                                  height: output.mediaAttributes?.height,
-                                  duration:
-                                    output.mediaAttributes?.duration ||
-                                    undefined,
-                                  description:
-                                    args && args.prompt
-                                      ? String(args.prompt)
-                                      : undefined,
-                                  title:
-                                    args && args.prompt
-                                      ? String(tool)
-                                      : undefined,
-                                }}
-                                startIndex={index}
-                                imageProps={{
-                                  loading: 'lazy',
-                                  blurhash: output.mediaAttributes?.blurhash,
-                                  className: 'max-h-[420px]',
-                                }}
-                                videoProps={{
-                                  className: 'max-h-[420px]',
-                                }}
-                              />
+                              >
+                                <LightboxTrigger
+                                  className="w-full h-full"
+                                  slide={{
+                                    type: 'video',
+                                    url: getCloudfrontOriginalUrl(
+                                      output.filename,
+                                    ),
+                                    thumbnail: getCloudfrontOriginalUrl(
+                                      output.filename,
+                                    ),
+                                    width: output.mediaAttributes?.width,
+                                    height: output.mediaAttributes?.height,
+                                    duration:
+                                      output.mediaAttributes?.duration ||
+                                      undefined,
+                                    description:
+                                      args && args.prompt
+                                        ? String(args.prompt)
+                                        : undefined,
+                                    title:
+                                      args && args.prompt
+                                        ? String(tool)
+                                        : undefined,
+                                  }}
+                                  startIndex={index}
+                                  imageProps={{
+                                    loading: 'lazy',
+                                    blurhash: output.mediaAttributes?.blurhash,
+                                    className: 'max-h-[420px]',
+                                  }}
+                                  videoProps={{
+                                    className: 'max-h-[420px]',
+                                  }}
+                                />
+                              </div>
                             )}
-                            {getCloudfrontOriginalUrl(output.filename)}
                             {output.creation && (
                               <CreationActionsMenu
                                 creation={{

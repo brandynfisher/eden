@@ -168,7 +168,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                 label={label}
                 description={parameter.description}
               />
-              <FormControl id={name} className="ml-4">
+              <FormControl id={name}>
                 <SwitchNoButton
                   className="!mt-0 data-[state=unchecked]:!bg-gray-400 data-[state=unchecked]:dark:!bg-gray-700"
                   checked={value}

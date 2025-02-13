@@ -46,9 +46,9 @@ export const agentSchema = z.object({
         'Key must only contain lowercase letters, numbers, underscores and dashes.',
     }),
   image: z.string().optional(),
-  description: z.string().min(1).max(140),
+  description: z.string().min(1).max(5000),
   greeting: z.string().max(140).optional(),
-  modelId: z.string().optional(),
+  model: z.string().optional(),
   persona: z.string().max(30000).optional(),
   knowledge: z.string().max(100000).optional(),
   suggestions: z
@@ -89,7 +89,7 @@ const AgentFormSheet = () => {
       persona: agent?.persona || '',
       knowledge: agent?.knowledge ?? '',
       greeting: agent?.greeting || '',
-      modelId: agent?.model || '',
+      model: agent?.model || '',
       suggestions: agent?.suggestions || [],
     },
   })
@@ -107,8 +107,20 @@ const AgentFormSheet = () => {
         persona: agent.persona,
         knowledge: agent.knowledge ?? '',
         greeting: agent.greeting || '',
-        modelId: agent.model,
+        model: agent.model,
         suggestions: agent.suggestions,
+      })
+    } else {
+      form.reset({
+        name: '',
+        key: '',
+        image: '',
+        description: '',
+        persona: '',
+        knowledge: '',
+        greeting: '',
+        model: '',
+        suggestions: [],
       })
     }
   }, [agent, form])
@@ -173,7 +185,7 @@ const AgentFormSheet = () => {
         key: '',
         image: '',
         description: '',
-        modelId: '',
+        model: '',
       })
     }
   }
@@ -319,7 +331,7 @@ const AgentFormSheet = () => {
                   </FormControl>
                   <CharacterCount
                     current={field.value?.length || 0}
-                    max={140}
+                    max={5000}
                   />
                   <FormMessage />
                 </FormItem>
@@ -379,11 +391,12 @@ const AgentFormSheet = () => {
             />
 
             {/** Knowledge Field */}
+            {/* //@todo: TODO: Add knowledge field back in, currently hidden due to no use */}
             <FormField
               control={form.control}
               name="knowledge"
               render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
+                <FormItem className="p-2 bg-secondary rounded-lg hidden">
                   <FormLabel>Knowledge</FormLabel>
                   <FormDescription>
                     Additional knowledge or context for the agent.
@@ -392,8 +405,6 @@ const AgentFormSheet = () => {
                     <AutosizeTextarea
                       placeholder="Add any specific knowledge or context for the agent..."
                       {...field}
-                      value={field.value ?? ''}
-                      onChange={e => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <CharacterCount
@@ -408,7 +419,7 @@ const AgentFormSheet = () => {
             {/** Model Field */}
             <FormField
               control={form.control}
-              name="modelId"
+              name="model"
               render={({ field }) => (
                 <FormItem className="p-2 bg-secondary rounded-lg">
                   <FormLabel>Flux LoRa (Optional)</FormLabel>

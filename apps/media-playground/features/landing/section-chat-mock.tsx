@@ -6,7 +6,6 @@ export const AGENT_CONFIGS = [
   {
     id: siteConfig.featured.agents[0],
     // name: 'Eve',
-    // description: 'Your creative AI companion for image generation and editing',
     greeting:
       "Hi! I'm Eve, your creative AI companion. What would you like to create today?",
     suggestions: [
@@ -32,8 +31,21 @@ export const AGENT_CONFIGS = [
   },
   {
     id: siteConfig.featured.agents[1],
-    // name: 'Abraham',
-    // description: 'Your AI assistant for creative writing and storytelling',
+    greeting:
+      "Hey there! I'm VJ Expert, ready to help you create amazing videos and visual effects.",
+    suggestions: [
+      {
+        label: 'Create a video',
+        prompt: 'I want to create a video from my images. Can you help?',
+      },
+      {
+        label: 'Add effects',
+        prompt: 'I need to add some special effects to my video',
+      },
+    ],
+  },
+  {
+    id: siteConfig.featured.agents[2],
     greeting:
       "Hello! I'm Abraham, ready to help you craft amazing stories and develop compelling characters.",
     suggestions: [
@@ -48,26 +60,8 @@ export const AGENT_CONFIGS = [
     ],
   },
   {
-    id: siteConfig.featured.agents[2],
-    // name: 'VJ Master',
-    // description: 'Your video creation and editing specialist',
-    greeting:
-      "Hey there! I'm VJ Master, ready to help you create amazing videos and visual effects.",
-    suggestions: [
-      {
-        label: 'Create a video',
-        prompt: 'I want to create a video from my images. Can you help?',
-      },
-      {
-        label: 'Add effects',
-        prompt: 'I need to add some special effects to my video',
-      },
-    ],
-  },
-  {
     id: siteConfig.featured.agents[3],
     // name: 'Verdelis',
-    // description: 'Your AI art director for visual branding and design',
     greeting:
       "Welcome! I'm Verdelis, your AI art director. Let's create something beautiful together.",
     suggestions: [
@@ -93,7 +87,10 @@ export default async function SectionChatMock() {
     return {
       ...fetchedData,
       greeting: config.greeting,
-      suggestions: config.suggestions,
+      suggestions:
+        fetchedData?.suggestions && fetchedData?.suggestions.length > 0
+          ? fetchedData?.suggestions
+          : config.suggestions,
     }
   })
 

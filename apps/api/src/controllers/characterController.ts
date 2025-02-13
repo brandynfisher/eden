@@ -5,6 +5,7 @@ import { User } from '../models/User'
 import ApiKeyRepository from '../repositories/ApiKeyRepository'
 import CharacterRepository from '../repositories/CharacterRepository'
 import CreatorRepository from '../repositories/CreatorRepository'
+import { createMultiFieldQuery } from '../utils/mongoUtils'
 import { generateApiKey } from './apiKeyController'
 import {
   CharactersCreateArguments,
@@ -19,17 +20,8 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 const findCharacterByIdOrSlug = async (id: string) => {
-  const lowerCaseId = id.toLowerCase()
-  const conditions: { slug?: { $regex: RegExp }; _id?: ObjectId }[] = [
-    { slug: { $regex: new RegExp(`^${lowerCaseId}$`, 'i') } },
-  ]
-
-  if (ObjectId.isValid(id)) {
-    conditions.push({ _id: new ObjectId(id) })
-  }
-
-  const characterDoc = await Character.findOne({ $or: conditions })
-  return characterDoc
+  const query = createMultiFieldQuery(id, ['slug'])
+  return await Character.findOne(query)
 }
 
 export const createCharacter = async (

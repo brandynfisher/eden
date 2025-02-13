@@ -1,11 +1,12 @@
 import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
 import { DeploymentDocument } from './Deployment'
+import { UserDocument } from './User'
 import { ModelV2Document } from './v2/ModelV2'
-import { AgentSuggestion } from '@edenlabs/eden-sdk'
+import { AgentStats, AgentSuggestion } from '@edenlabs/eden-sdk'
 import { Schema } from 'mongoose'
 
 export interface AgentSchema extends BaseUserSchema {
-  owner: string
+  owner: UserDocument
   name: string
   description?: string
   persona?: string
@@ -25,9 +26,7 @@ export interface AgentSchema extends BaseUserSchema {
     note: string
   }[]
   public?: boolean
-  threadCount?: number
-  userCount?: number
-  messageCount?: number
+  stats?: AgentStats
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}
@@ -46,7 +45,7 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     description: {
       type: String,
-      maxlength: 140,
+      maxlength: 5000,
       default: '',
     },
     greeting: {
@@ -101,6 +100,24 @@ const AgentSchema = new Schema<AgentDocument>(
       type: Boolean,
       default: false,
     },
+    stats: {
+      type: {
+        threadCount: Number,
+        userCount: Number,
+        userMessageCount: Number,
+        assistantMessageCount: Number,
+        toolCallCount: Number,
+        lastUpdated: Date,
+      },
+      default: {
+        threadCount: 0,
+        userCount: 0,
+        userMessageCount: 0,
+        assistantMessageCount: 0,
+        toolCallCount: 0,
+        lastUpdated: new Date(),
+      },
+    },
   },
   {
     discriminatorKey: 'type',
@@ -109,5 +126,12 @@ const AgentSchema = new Schema<AgentDocument>(
 )
 
 AgentSchema.index({ owner: 1 })
+AgentSchema.index({
+  'stats.threadCount': -1,
+  'stats.userCount': -1,
+  'stats.userMessageCount': -1,
+  'stats.assistantMessageCount': -1,
+  'stats.toolCallCount': -1,
+})
 
 export const Agent = BaseUser.discriminator<AgentDocument>('agent', AgentSchema)

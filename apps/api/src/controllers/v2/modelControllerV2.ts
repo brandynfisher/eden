@@ -1,6 +1,6 @@
 import { User } from '../../models/User'
 import { ModelV2 } from '../../models/v2/ModelV2'
-import { s3ThumbnailUrl } from '../../plugins/s3Plugin'
+import { s3Url } from '../../plugins/s3Plugin'
 import ModelV2Repository from '../../repositories/ModelV2Repository'
 import {
   ModelsV2GetArguments,
@@ -93,7 +93,7 @@ export const getModel = async (
     delete model.task.args.lora_training_urls
   }
 
-  model.thumbnail = s3ThumbnailUrl(server, model.thumbnail || '', 1024)
+  model.thumbnail = s3Url(server, model.thumbnail || '')
 
   return reply.status(200).send({ model })
 }

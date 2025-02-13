@@ -18,11 +18,11 @@ import {
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
-import { ChatBubbleIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
 import {
   Edit2Icon,
   ExternalLinkIcon,
+  MessageSquareIcon,
   RocketIcon,
   Share2Icon,
 } from 'lucide-react'
@@ -150,7 +150,7 @@ const AgentActionsMenu = ({
                   href={`/chat/${agent.username}`}
                   className="cursor-pointer"
                 >
-                  <ChatBubbleIcon className="mr-2 h-4 w-4" />
+                  <MessageSquareIcon className="mr-2 h-4 w-4" />
                   Chat
                 </Link>
               </DropdownMenuItem>

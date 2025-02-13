@@ -38,7 +38,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
   return (
     <SecondaryNavLayout
       title={'Tools'}
-      wrapClassName={'!p-0 lg:!p-4 lg:!pt-0'}
+      wrapClassName={'!p-2 lg:!p-4 lg:!pt-0'}
       baseSegment={baseSegment}
       navigation={navigation}
     >

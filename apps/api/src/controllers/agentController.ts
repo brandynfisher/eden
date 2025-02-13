@@ -4,6 +4,7 @@ import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
+import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import {
   AgentGetArguments,
   AgentsCreateArguments,
@@ -15,7 +16,6 @@ import {
   AgentsUpdateArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
-import { ObjectId } from '@fastify/mongodb'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateResult } from 'mongodb'
@@ -27,10 +27,7 @@ export const getAgent = async (
   reply: FastifyReply,
 ) => {
   const { agentId } = request.params as AgentGetArguments
-  const isObjectId = ObjectId.isValid(agentId)
-  const query = isObjectId
-    ? { _id: new ObjectId(agentId) }
-    : { username: agentId }
+  const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)
 
   if (!agent || agent.deleted) {
@@ -61,6 +58,12 @@ export const getAgent = async (
     agent.userImage = forceCloudfrontUrl(server, agent.userImage)
   }
 
+  console.log('agent.owner', agent.owner)
+
+  if (agent.owner.userImage) {
+    agent.owner.userImage = forceCloudfrontUrl(server, agent.owner.userImage)
+  }
+
   return reply.status(200).send({ agent })
 }
 
@@ -74,7 +77,7 @@ export const createAgent = async (
     key,
     description,
     image,
-    modelId,
+    model,
     persona,
     greeting,
     knowledge,
@@ -83,8 +86,8 @@ export const createAgent = async (
 
   const currentUserId = request.user.userId
 
-  if (modelId) {
-    await verifyModelAccess(reply, modelId, currentUserId.toString())
+  if (model) {
+    await verifyModelAccess(reply, model, currentUserId.toString())
   }
 
   const imageFilename = image.split('/').pop()
@@ -100,7 +103,7 @@ export const createAgent = async (
     greeting,
     knowledge,
     suggestions,
-    model: modelId || undefined,
+    model: model || undefined,
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -139,7 +142,7 @@ export const updateAgent = async (
     knowledge,
     suggestions,
     image,
-    modelId,
+    model,
     public: isPublic,
   } = request.body as AgentsUpdateArguments
 
@@ -160,11 +163,11 @@ export const updateAgent = async (
     public: isPublic,
   }
 
-  if (!modelId) {
+  if (!model) {
     updateData.$unset = { model: 1 }
-  } else if (modelId) {
-    await verifyModelAccess(reply, modelId, currentUserId.toString())
-    updateData.model = modelId
+  } else if (model) {
+    await verifyModelAccess(reply, model, currentUserId.toString())
+    updateData.model = model
   }
 
   if (image) {

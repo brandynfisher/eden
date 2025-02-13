@@ -1,7 +1,11 @@
 'use server'
 
 import { fetcher } from '@/lib/fetcher'
-import { AgentGetResponse, AgentSuggestion } from '@edenlabs/eden-sdk'
+import {
+  AgentGetResponse,
+  AgentStats,
+  AgentSuggestion,
+} from '@edenlabs/eden-sdk'
 import { cookies } from 'next/headers'
 import { cache } from 'react'
 
@@ -35,7 +39,9 @@ export interface AgentBasicInfo {
   persona?: string
   greeting?: string
   knowledge?: string
+  model?: string
   suggestions?: AgentSuggestion[]
+  stats?: AgentStats
 }
 
 export const getMultipleAgents = async (
@@ -60,8 +66,10 @@ export const getMultipleAgents = async (
             description,
             persona,
             greeting,
+            model,
             knowledge,
             suggestions,
+            stats,
           } = response.agent
 
           acc[ids[index]] = {
@@ -71,9 +79,11 @@ export const getMultipleAgents = async (
             userImage,
             description,
             persona,
+            model,
             greeting,
             knowledge,
             suggestions,
+            stats,
           }
         }
         return acc

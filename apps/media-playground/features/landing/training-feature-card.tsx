@@ -2,7 +2,7 @@
 
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import VideoResult from '@/components/media/video-result'
-import { ArrowBigDownDashIcon } from 'lucide-react'
+import { ChevronsDownIcon } from 'lucide-react'
 import { ReactNode } from 'react'
 
 interface TrainingFeatureCardProps {
@@ -35,23 +35,34 @@ export default function TrainingFeatureCard({
       <div className="text-sm text-muted-foreground text-center flex flex-col items-center">
         <LightboxGallery>
           {inputImage && (
-            <LightboxTrigger
-              className="hover:brightness-105 cursor-zoom-in"
-              slide={{
-                url: inputImage,
-                thumbnail: inputImageThumbnail,
-                description: 'Images used as dataset for training',
-              }}
-              startIndex={0}
-              imageProps={{
-                customLoader: false,
-                loading: 'lazy',
-                unoptimized: true,
-                className: 'relative rounded-lg object-cover',
-              }}
-            />
+            <>
+              <div className="flex items-center gap-2 justify-center mb-3 text-muted-foreground/60">
+                <ChevronsDownIcon className="h-5" />
+                <div>Train</div>
+                <ChevronsDownIcon className="h-5" />
+              </div>
+              <LightboxTrigger
+                className="hover:brightness-105 cursor-zoom-in"
+                slide={{
+                  url: inputImage,
+                  thumbnail: inputImageThumbnail,
+                  description: 'Images used as dataset for training',
+                }}
+                startIndex={0}
+                imageProps={{
+                  customLoader: false,
+                  loading: 'lazy',
+                  unoptimized: true,
+                  className: 'relative rounded-lg object-cover',
+                }}
+              />
+              <div className="flex items-center gap-2 justify-center my-3 text-muted-foreground/60">
+                <ChevronsDownIcon className="h-5" />
+                <div>Generate</div>
+                <ChevronsDownIcon className="h-5" />
+              </div>
+            </>
           )}
-          <ArrowBigDownDashIcon className="h-16 w-16 my-2" />
           {outputImage && (
             <LightboxTrigger
               className="hover:brightness-105 cursor-zoom-in"
@@ -71,7 +82,11 @@ export default function TrainingFeatureCard({
           )}
           {video && (
             <>
-              <ArrowBigDownDashIcon className="h-16 w-16 my-2" />
+              <div className="flex items-center gap-2 justify-center my-3 text-muted-foreground/60">
+                <ChevronsDownIcon className="h-5" />
+                <div>Animate</div>
+                <ChevronsDownIcon className="h-5" />
+              </div>
               <VideoResult
                 videoUrl={video}
                 className="relative rounded-lg object-cover w-full"

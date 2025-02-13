@@ -17,7 +17,6 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { BaseModelName, ModelV2 } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, ReactNode, useState } from 'react'
-import { toast } from 'sonner'
 
 type Props = {
   title?: ReactNode
@@ -44,23 +43,6 @@ const ModelSelectorModal = ({
 
   const handleOnChange = (model: ModelV2) => {
     onChange(model._id)
-
-    toast.info(`Model selected`, {
-      description: (
-        <div className="text-xs text-foreground">
-          <div>
-            {model.name} -{' '}
-            {model.task.args.concept_mode ? model.task.args.concept_mode : null}
-          </div>
-          {model.task.args.sd_model_version ? (
-            <div>{model.task.args.sd_model_version}</div>
-          ) : null}
-        </div>
-      ),
-      dismissible: true,
-      richColors: true,
-    })
-
     setOpen(false)
   }
 

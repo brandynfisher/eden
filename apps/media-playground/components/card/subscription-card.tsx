@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { getGAClientIdFromCookie } from '@/lib/analytics'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { Product, SubscriptionTier } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -97,10 +98,13 @@ const SubscriptionCard = ({ product }: { product: Product }) => {
 
   const handleCheckout = async (priceId: string) => {
     try {
+      const analyticsClientId = getGAClientIdFromCookie()
+
       const response = await axios.post('/api/account/payment', {
         requestType: 'checkout',
         priceId,
         paymentMode: 'subscription',
+        analyticsClientId,
       })
       const { url } = response.data
 

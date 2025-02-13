@@ -13,7 +13,7 @@ const Header = () => {
   return (
     <>
       <DiscordBanner />
-      <header className="sticky z-50 top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+      <header className="sticky z-50 top-0 flex h-16 items-center gap-4 border-b bg-background px-2 md:px-4">
         <HeaderNav />
         <div className="ml-auto flex items-center gap-2 h-10">
           <Suspense fallback={<LoadingIndicator />}>

@@ -203,7 +203,21 @@ export const createCursorPaginationRoute = (
   if (query.visibility && query.visibility !== 'all') {
     filters.push({ public: query.visibility === 'private' })
   } else if (typeof query.isPrivate !== 'undefined') {
-    filters.push({ public: !query.isPrivate })
+    let isPublic: string | boolean = ''
+    if (typeof query.isPrivate === 'string') {
+      if (query.isPrivate === '') {
+        isPublic = ''
+      } else {
+        query.isPrivate = query.isPrivate === 'true'
+        isPublic = !query.isPrivate
+      }
+    } else {
+      isPublic = !query.isPrivate
+    }
+
+    if (isPublic !== '') {
+      filters.push({ public: isPublic })
+    }
   }
 
   // if (query.orderBy) {

@@ -5,6 +5,7 @@ import {
   WebAPICallResult,
   transformArgsIntoURLParams,
 } from '../../types'
+import { Creator } from '../Creators'
 import { CursorPaginatedFeedQuery } from '../Feed'
 import { Agent } from './Agents'
 import { CollectionV2 } from './CollectionsV2'
@@ -203,6 +204,11 @@ export type FeedCollectionsV2CursorResponse = WebAPICallResult &
 
 export type FeedAgentCursorResponse = WebAPICallResult &
   PaginatedCursorResponse<Agent> & {
+    error?: string
+  }
+
+export type FeedCreatorCursorResponse = WebAPICallResult &
+  PaginatedCursorResponse<Creator> & {
     error?: string
   }
 

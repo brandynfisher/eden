@@ -309,7 +309,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
           </Button>
         </div>
         <Separator className="shrink-0" />
-        <div className="flex flex-col flex-1 p-4  px-2 md:px-4 items-center md:mb-12">
+        <div className="flex flex-col flex-1 p-4 mb-4 px-2 md:px-4 items-center md:mb-12">
           <div className="inline-flex p-2 bg-purple-600/40 rounded-lg md:max-w-[80%]">
             {agent?.greeting || 'How can I help you today?'}
           </div>

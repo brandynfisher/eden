@@ -1,11 +1,12 @@
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { SquareMousePointerIcon } from 'lucide-react'
+import { MessageSquareIcon, SquareMousePointerIcon } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -34,40 +35,62 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
           Select
         </div>
       ) : null}
-      <Link
-        href={`/chat/${agent.username}`}
-        prefetch={false}
-        className="relative w-full block"
-      >
-        <div className="relative flex p-2">
-          <CardImage
-            media={{
-              url: agent.userImage,
-              thumbnail: agent.userImage,
-              width: 512,
-              height: 512,
-              type: 'image',
-              blurhash: agent.blurhash,
-            }}
-            unoptimized={true}
-            className="object-cover rounded-lg w-[90px] h-[132px] flex-shrink-0 flex-grow-0"
-          />
-          <div className="ml-3 flex flex-col w-full">
-            <span className="font-semibold text-sm mr-auto">{agent.name}</span>
 
-            <div className="text-xs text-accent-foreground line-clamp-3 mt-2">
-              {agent.description}
-            </div>
+      <div className="relative flex p-2">
+        <div className="relative flex-grow">
+          <Link
+            href={`/agents/${agent.username}`}
+            prefetch={false}
+            className="block"
+          >
+            <div className="relative flex">
+              <CardImage
+                media={{
+                  url: agent.userImage,
+                  thumbnail: agent.userImage,
+                  width: 512,
+                  height: 512,
+                  type: 'image',
+                  blurhash: agent.blurhash,
+                }}
+                unoptimized={true}
+                className="object-cover rounded-lg w-[90px] h-[132px] flex-shrink-0 flex-grow-0"
+              />
+              <div className="ml-3 flex flex-col w-full">
+                <span className="font-semibold text-sm mr-auto">
+                  {agent.name}
+                </span>
 
-            <div className="flex items-center justify-between gap-2 flex-wrap mt-auto">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                by <span className="font-semibold">{agent.owner.username}</span>
+                <div className="text-xs text-accent-foreground line-clamp-3 mt-2">
+                  {agent.description}
+                </div>
+
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-auto">
+                  by{' '}
+                  <span className="font-semibold">{agent.owner.username}</span>
+                </div>
               </div>
-              <AgentActionsMenu key={1} agent={agent} queryKey={queryKey} />
             </div>
+          </Link>
+        </div>
+
+        <div className="flex flex-col justify-between ml-2 h-[132px]">
+          <AgentActionsMenu agent={agent} queryKey={queryKey} />
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-muted-foreground">
+              {agent.stats?.userMessageCount}
+            </span>
+            <Button size="icon" variant="outline" asChild>
+              <Link
+                href={`/chat/${agent.username}`}
+                className="w-9 h-9 text-muted-foreground group-hover:text-primary"
+              >
+                <MessageSquareIcon className="w-4 h-4" />
+              </Link>
+            </Button>
           </div>
         </div>
-      </Link>
+      </div>
     </Card>
   )
 }
