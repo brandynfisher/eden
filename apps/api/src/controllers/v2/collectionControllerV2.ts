@@ -4,7 +4,7 @@ import {
   CollectionV2Document,
 } from '../../models/v2/CollectionV2'
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
-import { s3ThumbnailUrl } from '../../plugins/s3Plugin'
+import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
 import CollectionV2Repository from '../../repositories/CollectionV2Repository'
 import { downloadZip } from '../../utils/downloader'
 import {
@@ -421,7 +421,7 @@ export const getCollectionDownloadZip = async (
   const collection: {
     creations: {
       _id: CreationV2Document['_id']
-      url: CreationV2Document['url']
+      filename: CreationV2Document['filename']
       user: {
         username: UserDocument['username']
       }
@@ -467,9 +467,9 @@ export const getCollectionDownloadZip = async (
   }
 
   const files = collection[0].creations.map(creation => ({
-    url: creation.url || '',
+    url: s3Url(server, creation.filename || ''),
     fileName: `${creation.user.username}_${creation._id}`,
-    fileExtension: creation.url?.split('.').pop() || '',
+    fileExtension: creation.filename?.split('.').pop() || '',
   }))
 
   await downloadZip(files, reply, server)
