@@ -11,6 +11,25 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { HelpCircle } from 'lucide-react'
 import React from 'react'
 
+const formatNumber = (num: number | undefined) => {
+  if (num === undefined) return '0'
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  })
+    .format(num)
+    .toLowerCase()
+}
+
+const getMagnitudeStyle = (num: number | undefined) => {
+  if (num === undefined) return ''
+  if (num >= 1000000) return 'bg-blue-600/30 border-blue-600/30'
+  if (num >= 100000) return 'bg-blue-600/25 border-blue-600/25'
+  if (num >= 50000) return 'bg-blue-600/20 border-blue-600/20'
+  if (num >= 1000) return 'bg-blue-600/15 border-blue-600/15'
+  return 'bg-blue-600/10 border-blue-600/10'
+}
+
 export default function AgentUsageStats({ agent }: { agent: Agent }) {
   const [formattedDate, setFormattedDate] = React.useState<string>('')
 
@@ -20,42 +39,70 @@ export default function AgentUsageStats({ agent }: { agent: Agent }) {
     }
   }, [agent.stats?.lastUpdated])
   const stats = [
-    { label: 'Messages', value: agent.stats?.userMessageCount },
-    { label: 'Threads', value: agent.stats?.threadCount },
-    { label: 'Users', value: agent.stats?.userCount },
-    { label: 'Replies', value: agent.stats?.assistantMessageCount },
-    { label: 'Tool calls', value: agent.stats?.toolCallCount },
+    {
+      label: 'Users',
+      value: formatNumber(agent.stats?.userCount),
+      raw: agent.stats?.userCount,
+    },
+    {
+      label: 'Messages',
+      value: formatNumber(agent.stats?.userMessageCount),
+      raw: agent.stats?.userMessageCount,
+    },
+    {
+      label: 'Threads',
+      value: formatNumber(agent.stats?.threadCount),
+      raw: agent.stats?.threadCount,
+    },
+    {
+      label: 'Replies',
+      value: formatNumber(agent.stats?.assistantMessageCount),
+      raw: agent.stats?.assistantMessageCount,
+    },
+    {
+      label: 'Tool calls',
+      value: formatNumber(agent.stats?.toolCallCount),
+      raw: agent.stats?.toolCallCount,
+    },
   ]
   return (
-    <div className="flex flex-wrap p-2 border rounded-md items-center mt-4 gap-2 text-sm text-muted-foreground">
-      <div className="flex flex-wrap gap-2">
-        {stats.map(({ label, value }) => (
+    <div className="flex flex-col rounded-md mt-4 text-sm text-muted-foreground">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-2 md:gap-4">
+        {stats.map(({ label, value, raw }) => (
           <span
             key={label}
-            className="text-xs bg-secondary p-1 pr-1.5 rounded-md"
+            className={`text-xs bg-popover p-1 pr-2 rounded-lg ${
+              label === 'Tool calls'
+                ? 'hidden md:inline-block'
+                : label === 'Replies'
+                ? 'inline-block sm:hidden md:inline-block'
+                : ''
+            }`}
           >
             <Badge
               variant="outline"
-              className="bg-popover p-1 px-2 mr-0.5 rounded-md font-medium"
+              className={`p-1 px-2 mr-1 rounded-lg font-medium transition-colors !border !border-muted ${getMagnitudeStyle(
+                raw,
+              )}`}
             >
               {value}
             </Badge>{' '}
             {label}
           </span>
         ))}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="ml-auto hidden md:block">
+              <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="text-xs">
+              Statistics may not reflect real-time data
+              <br />
+              Last update: {formattedDate}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger className="ml-auto">
-            <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-          </TooltipTrigger>
-          <TooltipContent className="text-xs">
-            May not reflect real-time data
-            <br />
-            Last update: {formattedDate}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
     </div>
   )
 }

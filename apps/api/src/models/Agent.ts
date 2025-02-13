@@ -1,11 +1,12 @@
 import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
 import { DeploymentDocument } from './Deployment'
+import { UserDocument } from './User'
 import { ModelV2Document } from './v2/ModelV2'
-import { AgentSuggestion } from '@edenlabs/eden-sdk'
+import { AgentStats, AgentSuggestion } from '@edenlabs/eden-sdk'
 import { Schema } from 'mongoose'
 
 export interface AgentSchema extends BaseUserSchema {
-  owner: string
+  owner: UserDocument
   name: string
   description?: string
   persona?: string
@@ -25,14 +26,7 @@ export interface AgentSchema extends BaseUserSchema {
     note: string
   }[]
   public?: boolean
-  stats?: {
-    threadCount: number
-    userCount: number
-    userMessageCount: number
-    assistantMessageCount: number
-    toolCallCount: number
-    lastUpdated: Date
-  }
+  stats?: AgentStats
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}
