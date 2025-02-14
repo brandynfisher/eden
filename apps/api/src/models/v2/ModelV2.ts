@@ -15,7 +15,7 @@ export interface ModelV2Schema {
   checkpoint: string
   public?: boolean
   slug: string
-  thumbnail: string
+  thumbnail: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -27,7 +27,7 @@ export interface ModelV2Input {
   checkpoint: string
   public?: boolean
   slug: string
-  thumbnail: string
+  thumbnail: string | null
 }
 
 export interface ModelV2Document extends SoftDeleteDocument, ModelV2Schema {}

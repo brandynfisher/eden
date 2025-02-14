@@ -23,7 +23,7 @@ export type MimeType =
 
 interface Media {
   url?: string
-  thumbnail?: string
+  thumbnail?: string | null
   width?: number
   height?: number
   type: FileType
