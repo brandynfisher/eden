@@ -107,6 +107,10 @@ const AgentSchema = new Schema<AgentDocument>(
         userMessageCount: Number,
         assistantMessageCount: Number,
         toolCallCount: Number,
+        userCount_7d: Number,
+        userMessageCount_7d: Number,
+        assistantMessageCount_7d: Number,
+        toolCallCount_7d: Number,
         lastUpdated: Date,
       },
       default: {
@@ -115,6 +119,10 @@ const AgentSchema = new Schema<AgentDocument>(
         userMessageCount: 0,
         assistantMessageCount: 0,
         toolCallCount: 0,
+        userCount_7d: 0,
+        userMessageCount_7d: 0,
+        assistantMessageCount_7d: 0,
+        toolCallCount_7d: 0,
         lastUpdated: new Date(),
       },
     },
@@ -132,6 +140,14 @@ AgentSchema.index({
   'stats.userMessageCount': -1,
   'stats.assistantMessageCount': -1,
   'stats.toolCallCount': -1,
+})
+
+AgentSchema.index({
+  'stats.threadCount_7d': -1,
+  'stats.userCount_7d': -1,
+  'stats.userMessageCount_7d': -1,
+  'stats.assistantMessageCount_7d': -1,
+  'stats.toolCallCount_7d': -1,
 })
 
 export const Agent = BaseUser.discriminator<AgentDocument>('agent', AgentSchema)

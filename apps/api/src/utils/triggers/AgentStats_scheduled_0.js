@@ -12,11 +12,86 @@ exports = async function () {
     {
       $facet: {
         allTime: [
-          // Count threads per agent
+          // Count messages by role, tool calls, and unique users per agent
+          { $unwind: "$messages" },
           {
             $group: {
-              _id: "$agent",
+              _id: {
+                agent: "$agent",
+                role: "$messages.role"
+              },
+              messageCount: { $sum: 1 },
+              toolCallCount: {
+                $sum: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $eq: ["$messages.role", "assistant"] },
+                        { $isArray: "$messages.tool_calls" }
+                      ]
+                    },
+                    { $size: { $ifNull: ["$messages.tool_calls", []] } },
+                    0
+                  ]
+                }
+              },
+              uniqueUsers: { $addToSet: "$user" }
+            }
+          },
+          {
+            $group: {
+              _id: "$_id.agent",
+              messageCounts: {
+                $push: {
+                  role: "$_id.role",
+                  count: "$messageCount"
+                }
+              },
+              toolCallCount: { $sum: "$toolCallCount" },
+              uniqueUsers: { $addToSet: "$uniqueUsers" },
               threadCount: { $sum: 1 }
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              threadCount: 1,
+              userMessageCount: {
+                $reduce: {
+                  input: {
+                    $filter: {
+                      input: "$messageCounts",
+                      as: "msg",
+                      cond: { $eq: ["$$msg.role", "user"] }
+                    }
+                  },
+                  initialValue: 0,
+                  in: { $add: ["$$value", "$$this.count"] }
+                }
+              },
+              assistantMessageCount: {
+                $reduce: {
+                  input: {
+                    $filter: {
+                      input: "$messageCounts",
+                      as: "msg",
+                      cond: { $eq: ["$$msg.role", "assistant"] }
+                    }
+                  },
+                  initialValue: 0,
+                  in: { $add: ["$$value", "$$this.count"] }
+                }
+              },
+              toolCallCount: 1,
+              userCount: {
+                $size: {
+                  $filter: {
+                    input: { $reduce: { input: "$uniqueUsers", initialValue: [], in: { $setUnion: ["$$value", "$$this"] } } },
+                    as: "user",
+                    cond: { $ne: ["$$user", null] }
+                  }
+                }
+              }
             }
           }
         ],
@@ -114,7 +189,7 @@ exports = async function () {
       $project: {
         combined: {
           $map: {
-            input: "$allTime.combined",
+            input: "$allTime",
             as: "allTimeStats",
             in: {
               _id: "$$allTimeStats._id",
@@ -133,7 +208,7 @@ exports = async function () {
                           $arrayElemAt: [
                             {
                               $filter: {
-                                input: "$last7Days.combined",
+                                input: "$last7Days",
                                 as: "recent",
                                 cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
                               }
@@ -157,7 +232,7 @@ exports = async function () {
                           $arrayElemAt: [
                             {
                               $filter: {
-                                input: "$last7Days.combined",
+                                input: "$last7Days",
                                 as: "recent",
                                 cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
                               }
@@ -181,7 +256,7 @@ exports = async function () {
                           $arrayElemAt: [
                             {
                               $filter: {
-                                input: "$last7Days.combined",
+                                input: "$last7Days",
                                 as: "recent",
                                 cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
                               }
@@ -205,7 +280,7 @@ exports = async function () {
                           $arrayElemAt: [
                             {
                               $filter: {
-                                input: "$last7Days.combined",
+                                input: "$last7Days",
                                 as: "recent",
                                 cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
                               }
@@ -229,7 +304,7 @@ exports = async function () {
                           $arrayElemAt: [
                             {
                               $filter: {
-                                input: "$last7Days.combined",
+                                input: "$last7Days",
                                 as: "recent",
                                 cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
                               }
@@ -261,16 +336,16 @@ exports = async function () {
       { _id: stat._id },
       {
         $set: {
-          'stats.threadCount': stat.threadCount,
-          'stats.userMessageCount': stat.userMessageCount,
-          'stats.assistantMessageCount': stat.assistantMessageCount,
-          'stats.toolCallCount': stat.toolCallCount,
           'stats.userCount': stat.userCount,
-          'stats.threadCount_7d': stat.threadCount_7d,
-          'stats.userMessageCount_7d': stat.userMessageCount_7d,
-          'stats.assistantMessageCount_7d': stat.assistantMessageCount_7d,
-          'stats.toolCallCount_7d': stat.toolCallCount_7d,
           'stats.userCount_7d': stat.userCount_7d,
+          'stats.threadCount': stat.threadCount,
+          'stats.threadCount_7d': stat.threadCount_7d,
+          'stats.userMessageCount': stat.userMessageCount,
+          'stats.userMessageCount_7d': stat.userMessageCount_7d,
+          'stats.assistantMessageCount': stat.assistantMessageCount,
+          'stats.assistantMessageCount_7d': stat.assistantMessageCount_7d,
+          'stats.toolCallCount': stat.toolCallCount,
+          'stats.toolCallCount_7d': stat.toolCallCount_7d,
           'stats.lastUpdated': new Date()
         }
       }
@@ -283,16 +358,16 @@ exports = async function () {
     {
       $set: {
         stats: {
-          threadCount: 0,
-          userMessageCount: 0,
-          assistantMessageCount: 0,
-          toolCallCount: 0,
           userCount: 0,
-          threadCount_7d: 0,
-          userMessageCount_7d: 0,
-          assistantMessageCount_7d: 0,
-          toolCallCount_7d: 0,
           userCount_7d: 0,
+          threadCount: 0,
+          threadCount_7d: 0,
+          userMessageCount: 0,
+          userMessageCount_7d: 0,
+          assistantMessageCount: 0,
+          assistantMessageCount_7d: 0,
+          toolCallCount: 0,
+          toolCallCount_7d: 0,
           lastUpdated: new Date()
         }
       }
