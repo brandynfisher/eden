@@ -14,6 +14,8 @@ import {
   AgentsStopDeploymentArguments,
   AgentsStopDeploymentResponse,
   AgentsUpdateArguments,
+  AgentsUpdateDeploymentArguments,
+  AgentsUpdateDeploymentResponse,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -295,6 +297,70 @@ export const deployAgent = async (
     console.error(error)
     return reply.status(500).send({
       error: 'An error occurred while deploying the agent',
+    })
+  }
+}
+
+export const updateAgentDeployment = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { agentId, deploymentId } =
+    request.params as AgentsUpdateDeploymentArguments
+  const { config } = request.body as AgentsUpdateDeploymentArguments
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to update this deployment',
+    })
+  }
+
+  const deployment = await Deployment.findById(deploymentId)
+
+  if (!deployment) {
+    return reply.status(404).send({
+      error: 'Deployment not found',
+    })
+  }
+
+  if (deployment.agent.toString() !== agentId) {
+    return reply.status(401).send({
+      error: 'User not authorized to update this deployment',
+    })
+  }
+
+  try {
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/update`,
+      data: {
+        deploymentId,
+        config,
+      },
+    }
+
+    await axios.post(modalRequest.endpoint, modalRequest.data, {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    })
+
+    return reply.status(200).send({
+      deploymentId,
+    })
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({
+      error: 'An error occurred while updating the deployment',
     })
   }
 }

@@ -135,6 +135,14 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
   }
 }
 
+export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
+  agentId: string
+  deploymentId: string
+  config?: {
+    discord?: DiscordDeploymentConfig
+    telegram?: TelegramDeploymentConfig
+  }
+}
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
   agentId: string
   platform: AgentClientType
@@ -198,14 +206,26 @@ export const agentsDeployRequestConfig = (
   }
 }
 
+export const agentsUpdateDeploymentRequestConfig = (
+  args: AgentsUpdateDeploymentArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/deployments/${args.deploymentId}`,
+    data: args,
+  }
+}
+
 export const agentsStopDeploymentRequestConfig = (
   args: AgentsStopDeploymentArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
     url: `v2/agents/${args.agentId}/deployments/stop`,
+    data: args,
   }
 }
+
 export const agentsDeleteDeploymentRequestConfig = (
   args: AgentsDeleteDeploymentArguments,
 ): AxiosRequestConfig => {
@@ -247,6 +267,11 @@ export type AgentsUpdateResponse = WebAPICallResult & {
 
 export type AgentsDeployResponse = WebAPICallResult & {
   deployment_id: string
+  error?: string
+}
+
+export type AgentsUpdateDeploymentResponse = WebAPICallResult & {
+  deploymentId: string
   error?: string
 }
 
