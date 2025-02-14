@@ -2,6 +2,7 @@
 
 import { useEdenRuntimeExtras } from './hooks/useEdenRuntime'
 import AlertDestructive from '@/components/alert/alert-destructive'
+import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -36,7 +37,6 @@ import {
 import { Agent } from '@edenlabs/eden-sdk'
 import { EditIcon, MessageSquareIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
-import * as React from 'react'
 import { FC, useEffect, useMemo, useState } from 'react'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
@@ -65,8 +65,6 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
 const ThreadListItemTrigger: FC<{ onItemClick?: () => void }> = ({
   onItemClick,
 }) => {
-  // const thread = useThreadListItem()
-  // console.log("thread", thread)
   return (
     <ThreadListItemPrimitive.Trigger
       className="flex-grow text-start truncate px-3 py-2 w-full"
@@ -289,19 +287,25 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         <div className="bg-muted/40 border-b px-3 py-2 md:hidden flex items-center gap-2">
           <Header />
           <div className="ml-auto flex items-center gap-2">
-            <AgentLink
-              agent={agent}
-              className={cn(isOwner ? 'max-w-[120px]' : 'max-w-full')}
-            />
-            {isOwner && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 size-8"
-                onClick={handleEditClick}
-              >
-                <SettingsIcon className="size-4" />
-              </Button>
+            {agent ? (
+              <>
+                <AgentLink
+                  agent={agent}
+                  className={cn(isOwner ? 'max-w-[120px]' : 'max-w-full')}
+                />
+                {isOwner && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 size-8"
+                    onClick={handleEditClick}
+                  >
+                    <SettingsIcon className="size-4" />
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Skeleton className="w-[120px] h-8" />
             )}
           </div>
         </div>
@@ -309,21 +313,27 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         {/* DESKTOP-ONLY SIDEBAR */}
         <aside className="hidden bg-muted/40 border-r px-3 py-2 md:flex md:flex-col">
           <div className="flex items-center justify-between gap-2 ml-2">
-            <AgentLink
-              agent={agent}
-              className={cn(
-                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
-              )}
-            />
-            {isOwner && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 size-8"
-                onClick={handleEditClick}
-              >
-                <SettingsIcon className="size-4" />
-              </Button>
+            {agent ? (
+              <>
+                <AgentLink
+                  agent={agent}
+                  className={cn(
+                    isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
+                  )}
+                />
+                {isOwner && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 size-8"
+                    onClick={handleEditClick}
+                  >
+                    <SettingsIcon className="size-4" />
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Skeleton className="w-[120px] h-8" />
             )}
           </div>
           <Separator orientation="horizontal" className="my-2 mb-1" />
@@ -335,58 +345,54 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         </aside>
 
         {/* MAIN CONTENT (occupies the entire space on mobile, column 2 on md) */}
-        <main className="bg-background overflow-hidden flex flex-col">
-          <Thread
-            components={{
-              ThreadWelcome: MyThreadWelcome,
-              // @ts-expect-error We're extending composer hackishly with drag and drop
-              Composer: MyComposer,
-            }}
-            welcome={{
-              suggestions:
-                agent?.suggestions && agent?.suggestions.length > 0
-                  ? agent?.suggestions.map(suggestion => ({
-                      text: suggestion.label,
-                      prompt: suggestion.prompt,
-                    }))
-                  : [
-                      {
-                        text: 'List your tools',
-                        prompt:
-                          'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
-                      },
-                      {
-                        text: 'Make something beautiful',
-                        prompt:
-                          'Make a beautiful image of the first thing that comes to mind',
-                      },
-                    ],
-              message: agent?.greeting ?? 'What do you want to create today?',
-            }}
-            assistantAvatar={{
-              src: getCloudfrontOriginalUrl(agent?.userImage),
-              fallback: agent?.name,
-              alt: agent?.name,
-            }}
-            assistantMessage={{
-              allowReload: false,
-              allowSpeak: false,
-              components: {
-                Text: MarkdownText,
-                ToolFallback,
-              },
-            }}
-            userMessage={{
-              allowEdit: false,
-            }}
-            branchPicker={{
-              allowBranchPicker: false,
-            }}
-            composer={{
-              allowAttachments: true,
-            }}
-            tools={[TaskResultTool]}
-          />
+        <main className="bg-accent overflow-hidden flex flex-col">
+          {!agent ? (
+            <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
+              <LoadingIndicator className="w-10 h-10 text-purple-600" />
+            </div>
+          ) : (
+            <Thread
+              components={{
+                //@ts-expect-error We're extending thread welcome hackishly with children
+                ThreadWelcome: MyThreadWelcome,
+                // @ts-expect-error We're extending composer hackishly with drag and drop
+                Composer: MyComposer,
+              }}
+              welcome={{
+                suggestions:
+                  agent?.suggestions && agent?.suggestions.length > 0
+                    ? agent?.suggestions.map(suggestion => ({
+                        text: suggestion.label,
+                        prompt: suggestion.prompt,
+                      }))
+                    : undefined,
+                message: agent?.greeting ?? 'What do you want to create today?',
+              }}
+              assistantAvatar={{
+                src: getCloudfrontOriginalUrl(agent?.userImage),
+                fallback: agent?.name,
+                alt: agent?.name,
+              }}
+              assistantMessage={{
+                allowReload: false,
+                allowSpeak: false,
+                components: {
+                  Text: MarkdownText,
+                  ToolFallback,
+                },
+              }}
+              userMessage={{
+                allowEdit: false,
+              }}
+              branchPicker={{
+                allowBranchPicker: false,
+              }}
+              composer={{
+                allowAttachments: true,
+              }}
+              tools={[TaskResultTool]}
+            />
+          )}
 
           {isError ? (
             <div className="p-4">
