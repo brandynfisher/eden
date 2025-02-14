@@ -144,6 +144,14 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
   }
 }
 
+export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
+  agentId: string
+  platform: AgentClientType
+  config?: {
+    discord?: DiscordDeploymentConfig
+    telegram?: TelegramDeploymentConfig
+  }
+}
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
   agentId: string
   platform: AgentClientType
@@ -207,14 +215,29 @@ export const agentsDeployRequestConfig = (
   }
 }
 
+export const agentsUpdateDeploymentRequestConfig = (
+  args: AgentsUpdateDeploymentArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `v2/agents/${args.agentId}/deployments`,
+    data: {
+      platform: args.platform,
+      config: args.config,
+    },
+  }
+}
+
 export const agentsStopDeploymentRequestConfig = (
   args: AgentsStopDeploymentArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
     url: `v2/agents/${args.agentId}/deployments/stop`,
+    data: args,
   }
 }
+
 export const agentsDeleteDeploymentRequestConfig = (
   args: AgentsDeleteDeploymentArguments,
 ): AxiosRequestConfig => {
@@ -235,19 +258,7 @@ export const agentsDeleteRequestConfig = (
 
 // Responses
 export type AgentsGetDeploymentsResponse = WebAPICallResult & {
-  deployments: {
-    discord: {
-      deployment: Deployment
-      allowedChannels: Agent['discordChannelAllowlist']
-    }
-    telegram: {
-      deployment: Deployment
-      allowedTopics: Agent['telegramTopicAllowlist']
-    }
-    farcaster: {
-      deployment: Deployment
-    }
-  }
+  deployments: Deployment[]
   error?: string
 }
 
@@ -268,6 +279,11 @@ export type AgentsUpdateResponse = WebAPICallResult & {
 
 export type AgentsDeployResponse = WebAPICallResult & {
   deployment_id: string
+  error?: string
+}
+
+export type AgentsUpdateDeploymentResponse = WebAPICallResult & {
+  deploymentId: string
   error?: string
 }
 
