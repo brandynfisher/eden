@@ -184,6 +184,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
 
   return (
     <Composer.Root
+      className="z-[51] bg-accent-foreground/5 items-start"
       onSubmit={async (evt: FormEvent<HTMLFormElement>) => {
         if (!isSignedIn) {
           evt.preventDefault()
@@ -200,7 +201,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
         <Composer.AddAttachment />
       </AuthClickGuard>
 
-      <Composer.Input autoFocus className="text-base" />
+      <Composer.Input autoFocus className="text-base" minRows={2} />
 
       <ThreadPrimitive.If running={true}>
         <div className="flex items-center gap-3 h-full">

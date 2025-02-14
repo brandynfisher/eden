@@ -130,7 +130,13 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
             />
           </div>
         )}
-        <ThreadWelcomeComponent />
+        {/* @ts-expect-error We're extending thread welcome hackishly with children */}
+        <ThreadWelcomeComponent>
+          <ThreadPrimitive.If empty={true}>
+            {memoizedComposer}
+          </ThreadPrimitive.If>
+        </ThreadWelcomeComponent>
+
         <Thread.Messages
           components={{
             UserMessage: MyUserMessage,
@@ -146,7 +152,10 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
             </div>
           ) : null}
           <Thread.ScrollToBottom />
-          {memoizedComposer}
+
+          <ThreadPrimitive.If empty={false}>
+            {memoizedComposer}
+          </ThreadPrimitive.If>
         </Thread.ViewportFooter>
       </Thread.Viewport>
     </Thread.Root>

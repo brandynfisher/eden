@@ -108,9 +108,7 @@ export default function RootLayout({
               <Header />
               {modal}
               {children}
-              <div className="flex justify-center w-full fixed bottom-2 pointer-events-none">
-                <ScrollTopButton />
-              </div>
+              <ScrollTopButton />
             </div>
 
             {env.NEXT_PUBLIC_APP_ENV === 'production' ? (
