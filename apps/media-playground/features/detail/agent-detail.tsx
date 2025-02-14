@@ -100,7 +100,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
       updateAgentFormSheet({
         isOpen: true,
         mode: 'update',
-        agent,
+        agentId: agent?._id,
         onAction: onUpdateAgent,
       }),
     )
@@ -110,7 +110,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     dispatch(
       updateAgentDeploymentFormSheet({
         isOpen: true,
-        agent,
+        agentId: agent?._id,
       }),
     )
   }

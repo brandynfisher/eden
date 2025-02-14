@@ -23,13 +23,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { slugifyName } from '@/utils/slug.util'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Edit2Icon, XIcon } from 'lucide-react'
+import { AlertCircle, Edit2Icon, Loader2, XIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -72,9 +73,13 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
 }
 
 const AgentFormSheet = () => {
-  const { isOpen, mode, agent, onAction } = useAgentFormSheet()
+  const { isOpen, mode, agentId, onAction } = useAgentFormSheet()
 
   const dispatch = useAppDispatch()
+  const agentQuery = useAgentQuery({
+    key: agentId || '',
+    enabled: isOpen,
+  })
 
   const [isKeyEditMode, setIsKeyEditMode] = useState(false)
   const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
@@ -82,15 +87,15 @@ const AgentFormSheet = () => {
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
     defaultValues: {
-      name: agent?.name || '',
-      key: agent?.username || '',
-      image: agent?.userImage || '',
-      description: agent?.description || '',
-      persona: agent?.persona || '',
-      knowledge: agent?.knowledge ?? '',
-      greeting: agent?.greeting || '',
-      model: agent?.model || '',
-      suggestions: agent?.suggestions || [],
+      name: agentQuery.agent?.name || '',
+      key: agentQuery.agent?.username || '',
+      image: agentQuery.agent?.userImage || '',
+      description: agentQuery.agent?.description || '',
+      persona: agentQuery.agent?.persona || '',
+      knowledge: agentQuery.agent?.knowledge ?? '',
+      greeting: agentQuery.agent?.greeting || '',
+      model: agentQuery.agent?.model || '',
+      suggestions: agentQuery.agent?.suggestions || [],
     },
   })
 
@@ -98,17 +103,17 @@ const AgentFormSheet = () => {
   const key = form.watch('key')
 
   useEffect(() => {
-    if (agent) {
+    if (agentQuery.agent) {
       form.reset({
-        name: agent.name,
-        key: agent.username,
-        image: agent.userImage,
-        description: agent.description,
-        persona: agent.persona,
-        knowledge: agent.knowledge ?? '',
-        greeting: agent.greeting || '',
-        model: agent.model,
-        suggestions: agent.suggestions,
+        name: agentQuery.agent.name,
+        key: agentQuery.agent.username,
+        image: agentQuery.agent.userImage,
+        description: agentQuery.agent.description,
+        persona: agentQuery.agent.persona,
+        knowledge: agentQuery.agent.knowledge ?? '',
+        greeting: agentQuery.agent.greeting || '',
+        model: agentQuery.agent.model,
+        suggestions: agentQuery.agent.suggestions,
       })
     } else {
       form.reset({
@@ -123,7 +128,7 @@ const AgentFormSheet = () => {
         suggestions: [],
       })
     }
-  }, [agent, form])
+  }, [agentQuery.agent, form])
 
   useEffect(() => {
     if (!isManualKeyEdit && name && mode === 'create') {
@@ -134,7 +139,7 @@ const AgentFormSheet = () => {
   const handleSubmit = async (data: AgentFormDto) => {
     try {
       if (mode === 'update') {
-        await axios.patch(`/api/agents/${agent?._id}`, data)
+        await axios.patch(`/api/agents/${agentId}`, data)
         toast.success('Agent updated successfully', {
           description: `"${data.name}" has been updated successfully`,
           richColors: true,
@@ -152,7 +157,7 @@ const AgentFormSheet = () => {
         updateAgentFormSheet({
           isOpen: false,
           mode: 'create',
-          agent: undefined,
+          agentId: undefined,
         }),
       )
       await onAction?.()
@@ -177,7 +182,7 @@ const AgentFormSheet = () => {
         updateAgentFormSheet({
           isOpen: false,
           mode: 'create',
-          agent: undefined,
+          agentId: undefined,
         }),
       )
       form.reset({
@@ -206,269 +211,284 @@ const AgentFormSheet = () => {
               : 'Create an agent to help you with your tasks.'}
           </SheetDescription>
         </SheetHeader>
-        <Form {...form}>
-          <form
-            className="w-full space-y-4 py-4"
-            onSubmit={form.handleSubmit(handleSubmit)}
-          >
-            {/** Name Field with Key */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Display Name*</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="My helpful Agent"
-                      {...field}
-                      onChange={e => {
-                        field.onChange(e.target.value.slice(0, 42))
-                      }}
+        {agentQuery.isPending && (
+          <div className="flex items-center justify-center mt-10">
+            <Loader2 className="size-4 animate-spin" />
+          </div>
+        )}
+        {agentQuery.isError && (
+          <div className="flex items-center justify-center gap-2 mt-10">
+            <AlertCircle className="size-4 text-destructive" />
+            <p className="text-destructive">
+              We were unable to fetch agent. Please try again later.
+            </p>
+          </div>
+        )}
+        {agentQuery.isSuccess && (
+          <Form {...form}>
+            <form
+              className="w-full space-y-4 py-4"
+              onSubmit={form.handleSubmit(handleSubmit)}
+            >
+              {/** Name Field with Key */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Display Name*</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="My helpful Agent"
+                        {...field}
+                        onChange={e => {
+                          field.onChange(e.target.value.slice(0, 42))
+                        }}
+                      />
+                    </FormControl>
+                    {field.value && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="text-sm text-muted-foreground flex-1">
+                          {isKeyEditMode ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="text"
+                                value={key}
+                                placeholder="unique-name"
+                                onChange={e => {
+                                  const value = e.target.value
+                                    .toLowerCase()
+                                    .slice(0, 42)
+                                  form.setValue('key', value)
+                                  setIsManualKeyEdit(true)
+                                }}
+                                onBlur={e => {
+                                  form.setValue(
+                                    'key',
+                                    slugifyName(e.target.value),
+                                  )
+                                  setIsKeyEditMode(false)
+                                }}
+                                className="h-7 text-sm"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span>Auto generated unique name: {key}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={() => setIsKeyEditMode(true)}
+                              >
+                                <Edit2Icon size={12} />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex gap-2 flex-wrap mt-1">
+                      <FormDescription>
+                        Friendly Name of your agent. This will be displayed to
+                        users.
+                      </FormDescription>
+                      <CharacterCount
+                        current={field.value?.length || 0}
+                        max={42}
+                      />
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Image Field */}
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Profile Image</FormLabel>
+                    <FormControl>
+                      <Input
+                        className={'hidden'}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        value={field.value === null ? '' : field.value || ''}
+                      />
+                    </FormControl>
+                    <FileUploader
+                      value={field.value === null ? [] : field.value || []}
+                      onChange={field.onChange}
+                      allowedFileTypes={['image']}
+                      maxFiles={1}
+                      allowMultiple={false}
                     />
-                  </FormControl>
-                  {field.value && (
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="text-sm text-muted-foreground flex-1">
-                        {isKeyEditMode ? (
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="text"
-                              value={key}
-                              placeholder="unique-name"
-                              onChange={e => {
-                                const value = e.target.value
-                                  .toLowerCase()
-                                  .slice(0, 42)
-                                form.setValue('key', value)
-                                setIsManualKeyEdit(true)
-                              }}
-                              onBlur={e => {
-                                form.setValue(
-                                  'key',
-                                  slugifyName(e.target.value),
-                                )
-                                setIsKeyEditMode(false)
-                              }}
-                              className="h-7 text-sm"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <span>Auto generated unique name: {key}</span>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Description Field */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Description*</FormLabel>
+                    <FormDescription>
+                      Short description of the agent shown on profile and cards.
+                    </FormDescription>
+                    <FormControl>
+                      <AutosizeTextarea
+                        placeholder="This agent helps you with your tasks"
+                        {...field}
+                      />
+                    </FormControl>
+                    <CharacterCount
+                      current={field.value?.length || 0}
+                      max={5000}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Persona Field */}
+              <FormField
+                control={form.control}
+                name="persona"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Persona*</FormLabel>
+                    <FormDescription>
+                      Personality and behaviour of the agent. This won't be
+                      visible to others.
+                    </FormDescription>
+                    <FormControl>
+                      <AutosizeTextarea
+                        placeholder="You are a helpful agent, always ready to help users with their tasks"
+                        {...field}
+                      />
+                    </FormControl>
+                    <CharacterCount
+                      current={field.value?.length || 0}
+                      max={30000}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Greeting Field */}
+              <FormField
+                control={form.control}
+                name="greeting"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Greeting*</FormLabel>
+                    <FormDescription>
+                      This will be displayed to users when they first interact
+                      with the agent.
+                    </FormDescription>
+                    <FormControl>
+                      <AutosizeTextarea
+                        placeholder="Hello, how can I help you today?"
+                        {...field}
+                      />
+                    </FormControl>
+                    <CharacterCount
+                      current={field.value?.length || 0}
+                      max={140}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Knowledge Field */}
+              {/* //@todo: TODO: Add knowledge field back in, currently hidden due to no use */}
+              <FormField
+                control={form.control}
+                name="knowledge"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg hidden">
+                    <FormLabel>Knowledge</FormLabel>
+                    <FormDescription>
+                      Additional knowledge or context for the agent.
+                    </FormDescription>
+                    <FormControl>
+                      <AutosizeTextarea
+                        placeholder="Add any specific knowledge or context for the agent..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <CharacterCount
+                      current={field.value?.length ?? 0}
+                      max={100000}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Model Field */}
+              <FormField
+                control={form.control}
+                name="model"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Flux LoRa (Optional)</FormLabel>
+                    <div>
+                      {field.value && (
+                        <div className="relative mb-2">
+                          <ModelMiniCard modelId={field.value}>
                             <Button
                               type="button"
                               variant="ghost"
-                              size="sm"
-                              className="h-6 w-6 p-0"
-                              onClick={() => setIsKeyEditMode(true)}
+                              className="absolute h-[calc(100%-16px)] top-2 right-2 hover:bg-destructive hover:text-destructive-foreground"
+                              size="icon"
+                              onClick={e => {
+                                e.stopPropagation()
+                                field.onChange('')
+                              }}
                             >
-                              <Edit2Icon size={12} />
+                              <XIcon className="size-4" />
                             </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  <div className="flex gap-2 flex-wrap mt-1">
-                    <FormDescription>
-                      Friendly Name of your agent. This will be displayed to
-                      users.
-                    </FormDescription>
-                    <CharacterCount
-                      current={field.value?.length || 0}
-                      max={42}
-                    />
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/** Image Field */}
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Profile Image</FormLabel>
-                  <FormControl>
-                    <Input
-                      className={'hidden'}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      value={field.value === null ? '' : field.value || ''}
-                    />
-                  </FormControl>
-                  <FileUploader
-                    value={field.value === null ? [] : field.value || []}
-                    onChange={field.onChange}
-                    allowedFileTypes={['image']}
-                    maxFiles={1}
-                    allowMultiple={false}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/** Description Field */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Description*</FormLabel>
-                  <FormDescription>
-                    Short description of the agent shown on profile and cards.
-                  </FormDescription>
-                  <FormControl>
-                    <AutosizeTextarea
-                      placeholder="This agent helps you with your tasks"
-                      {...field}
-                    />
-                  </FormControl>
-                  <CharacterCount
-                    current={field.value?.length || 0}
-                    max={5000}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/** Persona Field */}
-            <FormField
-              control={form.control}
-              name="persona"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Persona*</FormLabel>
-                  <FormDescription>
-                    Personality and behaviour of the agent. This won't be
-                    visible to others.
-                  </FormDescription>
-                  <FormControl>
-                    <AutosizeTextarea
-                      placeholder="You are a helpful agent, always ready to help users with their tasks"
-                      {...field}
-                    />
-                  </FormControl>
-                  <CharacterCount
-                    current={field.value?.length || 0}
-                    max={30000}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/** Greeting Field */}
-            <FormField
-              control={form.control}
-              name="greeting"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Greeting*</FormLabel>
-                  <FormDescription>
-                    This will be displayed to users when they first interact
-                    with the agent.
-                  </FormDescription>
-                  <FormControl>
-                    <AutosizeTextarea
-                      placeholder="Hello, how can I help you today?"
-                      {...field}
-                    />
-                  </FormControl>
-                  <CharacterCount
-                    current={field.value?.length || 0}
-                    max={140}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/** Knowledge Field */}
-            {/* //@todo: TODO: Add knowledge field back in, currently hidden due to no use */}
-            <FormField
-              control={form.control}
-              name="knowledge"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg hidden">
-                  <FormLabel>Knowledge</FormLabel>
-                  <FormDescription>
-                    Additional knowledge or context for the agent.
-                  </FormDescription>
-                  <FormControl>
-                    <AutosizeTextarea
-                      placeholder="Add any specific knowledge or context for the agent..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <CharacterCount
-                    current={field.value?.length ?? 0}
-                    max={100000}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/** Model Field */}
-            <FormField
-              control={form.control}
-              name="model"
-              render={({ field }) => (
-                <FormItem className="p-2 bg-secondary rounded-lg">
-                  <FormLabel>Flux LoRa (Optional)</FormLabel>
-                  <div>
-                    {field.value && (
-                      <div className="relative mb-2">
-                        <ModelMiniCard modelId={field.value}>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            className="absolute h-[calc(100%-16px)] top-2 right-2 hover:bg-destructive hover:text-destructive-foreground"
-                            size="icon"
-                            onClick={e => {
-                              e.stopPropagation()
-                              field.onChange('')
-                            }}
-                          >
-                            <XIcon className="size-4" />
+                          </ModelMiniCard>
+                        </div>
+                      )}
+                      <ModelSelectorModal
+                        className="p-4 md:p-8 w-full"
+                        title="Select Flux LoRa"
+                        description="Pick a Flux LoRa to use as a default model for this agent"
+                        base_model="flux-dev"
+                        currentValue={field.value || ''}
+                        onChange={field.onChange}
+                        trigger={
+                          <Button type="button" variant="outline">
+                            {field.value
+                              ? 'Change Flux LoRa'
+                              : 'Select Flux LoRa'}
                           </Button>
-                        </ModelMiniCard>
-                      </div>
-                    )}
-                    <ModelSelectorModal
-                      className="p-4 md:p-8 w-full"
-                      title="Select Flux LoRa"
-                      description="Pick a Flux LoRa to use as a default model for this agent"
-                      base_model="flux-dev"
-                      currentValue={field.value || ''}
-                      onChange={field.onChange}
-                      trigger={
-                        <Button type="button" variant="outline">
-                          {field.value
-                            ? 'Change Flux LoRa'
-                            : 'Select Flux LoRa'}
-                        </Button>
-                      }
-                    />
-                  </div>
-                </FormItem>
-              )}
-            />
+                        }
+                      />
+                    </div>
+                  </FormItem>
+                )}
+              />
 
-            <SheetFooter>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {mode === 'update' ? 'Update Agent' : 'Create Agent'}
-              </Button>
-            </SheetFooter>
-          </form>
-        </Form>
+              <SheetFooter>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {mode === 'update' ? 'Update Agent' : 'Create Agent'}
+                </Button>
+              </SheetFooter>
+            </form>
+          </Form>
+        )}
       </SheetContent>
     </Sheet>
   )

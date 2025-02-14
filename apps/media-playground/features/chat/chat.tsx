@@ -235,7 +235,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
       updateAgentFormSheet({
         isOpen: true,
         mode: 'update',
-        agent,
+        agentId: agentId,
         onAction: async () => {
           await invalidate()
         },
