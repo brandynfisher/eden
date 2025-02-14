@@ -184,7 +184,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                 {item.result && Array.isArray(item.result) && item.result.length
                   ? item.result.map((result, index) =>
                       result.output && Array.isArray(result.output) ? (
-                        result.output.map((output, outputIndex) =>
+                        result.output.map((_output, outputIndex) =>
                           item.output_type === 'lora' ? (
                             // api populates a model property with full model document
                             <TimelineItemModelResult
