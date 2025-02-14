@@ -14,6 +14,7 @@ import {
   AgentsStopDeploymentArguments,
   AgentsStopDeploymentResponse,
   AgentsUpdateArguments,
+  AgentsUpdateDeploymentArguments,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -232,39 +233,9 @@ export const getAgentDeployments = async (
     })
   }
 
-  const deploymentsFromDb = await Deployment.find({
+  const deployments = await Deployment.find({
     agent: agentId,
   })
-
-  const discordDeployment = deploymentsFromDb.find(
-    deployment => deployment.platform === 'discord',
-  )
-  const telegramDeployment = deploymentsFromDb.find(
-    deployment => deployment.platform === 'telegram',
-  )
-  const farcasterDeployment = deploymentsFromDb.find(
-    deployment => deployment.platform === 'farcaster',
-  )
-
-  const deployments = {
-    discord: discordDeployment
-      ? {
-          deployment: discordDeployment,
-          allowedChannels: agent.discordChannelAllowlist,
-        }
-      : undefined,
-    telegram: telegramDeployment
-      ? {
-          deployment: telegramDeployment,
-          allowedTopics: agent.telegramTopicAllowlist,
-        }
-      : undefined,
-    farcaster: farcasterDeployment
-      ? {
-          deployment: farcasterDeployment,
-        }
-      : undefined,
-  }
 
   return reply.status(200).send({
     deployments,
@@ -331,6 +302,72 @@ export const deployAgent = async (
     console.error(error)
     return reply.status(500).send({
       error: 'An error occurred while deploying the agent',
+    })
+  }
+}
+
+export const updateAgentDeployment = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { agentId } = request.params as AgentsUpdateDeploymentArguments
+  const { platform, config } = request.body as AgentsUpdateDeploymentArguments
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to update this deployment',
+    })
+  }
+
+  const deployment = await Deployment.findOne({
+    agent: agentId,
+    platform,
+  })
+
+  if (!deployment) {
+    return reply.status(404).send({
+      error: 'Deployment not found',
+    })
+  }
+
+  if (deployment.agent.toString() !== agentId) {
+    return reply.status(401).send({
+      error: 'User not authorized to update this deployment',
+    })
+  }
+
+  try {
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/update`,
+      data: {
+        deployment_id: deployment._id,
+        config,
+      },
+    }
+
+    await axios.post(modalRequest.endpoint, modalRequest.data, {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    })
+
+    return reply.status(200).send({
+      deploymentId: deployment._id,
+    })
+  } catch (error) {
+    console.error(error)
+    return reply.status(500).send({
+      error: 'An error occurred while updating the deployment',
     })
   }
 }
