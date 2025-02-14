@@ -5868,15 +5868,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@next/third-parties@npm:^14.2.3":
-  version: 14.2.3
-  resolution: "@next/third-parties@npm:14.2.3"
+"@next/third-parties@npm:^15.1.7":
+  version: 15.1.7
+  resolution: "@next/third-parties@npm:15.1.7"
   dependencies:
     third-party-capital: "npm:1.0.20"
   peerDependencies:
-    next: ^13.0.0 || ^14.0.0
-    react: ^18.2.0
-  checksum: 10c0/22afcd981a926efc8e88c5fecf6515e6aac031d0ea8671bf1956e690c56b7e9ff865fb15ef9e49f4b4e527c6e1db469b42fbfb68f4763adbe699b8c68d50d309
+    next: ^13.0.0 || ^14.0.0 || ^15.0.0
+    react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
+  checksum: 10c0/f73ed4d9c4f8d002defff43c98d1860bf3b39f97cd544ed83acbe5a83bba092be64a00083ec191d1fb71bdb3e97fc2fb2eb9f55996e665c15fcb74a3e58e8959
   languageName: node
   linkType: hard
 
@@ -21244,7 +21244,7 @@ __metadata:
     "@edenlabs/eden-sdk": "npm:*"
     "@edenlabs/tsconfig": "npm:*"
     "@hookform/resolvers": "npm:^3.9.0"
-    "@next/third-parties": "npm:^14.2.3"
+    "@next/third-parties": "npm:^15.1.7"
     "@radix-ui/react-accordion": "npm:^1.2.0"
     "@radix-ui/react-aspect-ratio": "npm:^1.1.0"
     "@radix-ui/react-avatar": "npm:^1.0.4"

@@ -8,6 +8,7 @@ const checkout = async (
   authToken: string,
   priceId: string,
   paymentMode: 'subscription' | 'payment',
+  analyticsClientId?: string,
 ) => {
   const eden = new EdenClient({
     edenApiUrl: env.NEXT_PUBLIC_EDEN_API_URL,
@@ -18,6 +19,7 @@ const checkout = async (
     priceId,
     paymentMode,
     returnUrl: env.NEXT_PUBLIC_HOST,
+    analyticsClientId,
   })
 
   return NextResponse.json({ url: response.url }, { status: 200 })
@@ -45,7 +47,8 @@ export async function POST(req: NextRequest) {
   const { getToken } = getAuth(req)
   const authToken = await getToken()
 
-  const { requestType, returnUrl, ...body } = await req.json()
+  const { requestType, returnUrl, analyticsClientId, ...body } =
+    await req.json()
 
   if (!authToken) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -54,7 +57,12 @@ export async function POST(req: NextRequest) {
   try {
     switch (requestType) {
       case 'checkout':
-        return checkout(authToken, body.priceId, body.paymentMode)
+        return checkout(
+          authToken,
+          body.priceId,
+          body.paymentMode,
+          analyticsClientId,
+        )
       case 'manage':
         return manage(authToken, body.stripeCustomerId, returnUrl)
     }

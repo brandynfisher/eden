@@ -6,7 +6,6 @@ import SectionEve from '@/features/landing/section-eve'
 import SectionTraining from '@/features/landing/section-training'
 import { getAgentCached } from '@/lib/actions/agent'
 import { siteConfig } from '@/lib/config'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
 import { Metadata, ResolvingMetadata } from 'next'
 
@@ -19,12 +18,6 @@ export async function generateMetadata(
   { params: _test }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
-  const response = await getAgentCached(siteConfig.featured.agents[0])
-
-  if (!response?.agent) {
-    return {}
-  }
-
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
@@ -32,22 +25,22 @@ export async function generateMetadata(
   const description =
     'Express your ideas with Eden, a comprehensive collection of creative AI tools for generating and editing images, video, and audio. '
 
-  const ogImage = response.agent.userImage
-    ? getCloudfrontOriginalUrl(response.agent.userImage)
-    : undefined
+  // const ogImage = response.agent.userImage
+  //   ? getCloudfrontOriginalUrl(response.agent.userImage)
+  //   : undefined
 
   const og: OpenGraph = {
     ...previousOg,
     title,
     description,
-    images: ogImage ? [ogImage] : undefined,
+    // images: ogImage ? [ogImage] : undefined,
   }
 
   const twitter: TwitterMetadata = {
     ...previousTwitter,
     title,
     description,
-    images: ogImage ? [ogImage] : undefined,
+    // images: ogImage ? [ogImage] : undefined,
     card: 'summary_large_image',
   }
 

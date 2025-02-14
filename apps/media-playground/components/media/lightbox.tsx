@@ -305,7 +305,7 @@ export const LightboxTrigger = React.forwardRef<
         height: slide.height,
         poster: slide.thumbnail?.endsWith('.mp4')
           ? slide.thumbnail.replace('.mp4', '_1024.webp')
-          : undefined,
+          : slide.thumbnail,
         autoPlay: true,
         sources: [
           {
@@ -457,7 +457,7 @@ export function LightboxVideoTrigger({
           src={
             thumbnail?.endsWith('.mp4')
               ? thumbnail.replace('.mp4', '_1024.webp')
-              : undefined
+              : thumbnail
           }
           width={width}
           height={height}

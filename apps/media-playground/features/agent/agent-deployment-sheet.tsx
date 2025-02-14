@@ -18,10 +18,10 @@ import { useAppDispatch } from '@/stores/store'
 import { AlertCircle, Loader2, RocketIcon } from 'lucide-react'
 
 const AgentDeploymentFormSheet = () => {
-  const { isOpen, agent } = useAgentDeploymentFormSheet()
+  const { isOpen, agentId } = useAgentDeploymentFormSheet()
   const dispatch = useAppDispatch()
   const deploymentsQuery = useAgentDeploymentsQuery({
-    key: agent?._id || '',
+    key: agentId || '',
     enabled: isOpen,
   })
 
@@ -29,7 +29,7 @@ const AgentDeploymentFormSheet = () => {
     dispatch(updateAgentDeploymentFormSheet({ isOpen: open }))
   }
 
-  if (!agent) {
+  if (!agentId) {
     return null
   }
 
@@ -67,13 +67,13 @@ const AgentDeploymentFormSheet = () => {
         {deploymentsQuery.isSuccess && (
           <div className="space-y-4 mt-4">
             <DiscordDeploymentForm
-              agentId={agent?._id || ''}
+              agentId={agentId}
               deployment={deploymentsQuery.deployments?.find(
                 deployment => deployment.platform === 'discord',
               )}
             />
             <TelegramDeploymentForm
-              agentId={agent?._id || ''}
+              agentId={agentId}
               deployment={deploymentsQuery.deployments?.find(
                 deployment => deployment.platform === 'telegram',
               )}

@@ -1,4 +1,4 @@
-import { Agent, CreationV2 } from '@edenlabs/eden-sdk'
+import { CreationV2 } from '@edenlabs/eden-sdk'
 import { createSlice } from '@reduxjs/toolkit'
 import { isMobile } from 'react-device-detect'
 import { toast } from 'sonner'
@@ -32,12 +32,12 @@ export interface DialogsState {
   agentFormSheet: {
     isOpen: boolean
     mode?: 'create' | 'update'
-    agent?: Agent
+    agentId?: string
     onAction?: () => Promise<void>
   }
   agentDeploymentFormSheet: {
     isOpen: boolean
-    agent?: Agent
+    agentId?: string
     onAction?: () => Promise<void>
   }
 }
@@ -71,11 +71,11 @@ const initialState: DialogsState = {
   agentFormSheet: {
     isOpen: false,
     mode: 'create',
-    agent: undefined,
+    agentId: undefined,
   },
   agentDeploymentFormSheet: {
     isOpen: false,
-    agent: undefined,
+    agentId: undefined,
   },
 }
 
@@ -182,7 +182,7 @@ const dialogsSlice = createSlice({
         payload: {
           isOpen: boolean
           mode?: 'create' | 'update'
-          agent?: Agent
+          agentId?: string
           onAction?: () => Promise<void>
         }
       },
@@ -190,12 +190,12 @@ const dialogsSlice = createSlice({
       if (!action.payload.isOpen) {
         state.agentFormSheet.isOpen = false
         delete state.agentFormSheet.mode
-        delete state.agentFormSheet.agent
+        delete state.agentFormSheet.agentId
         delete state.agentFormSheet.onAction
       } else {
         state.agentFormSheet.isOpen = action.payload.isOpen
         state.agentFormSheet.mode = action.payload.mode
-        state.agentFormSheet.agent = action.payload.agent
+        state.agentFormSheet.agentId = action.payload.agentId
         state.agentFormSheet.onAction = action.payload.onAction
       }
     },
@@ -204,18 +204,18 @@ const dialogsSlice = createSlice({
       action: {
         payload: {
           isOpen: boolean
-          agent?: Agent
+          agentId?: string
           onAction?: () => Promise<void>
         }
       },
     ) {
       if (!action.payload.isOpen) {
         state.agentDeploymentFormSheet.isOpen = false
-        delete state.agentDeploymentFormSheet.agent
+        delete state.agentDeploymentFormSheet.agentId
         delete state.agentDeploymentFormSheet.onAction
       } else {
         state.agentDeploymentFormSheet.isOpen = action.payload.isOpen
-        state.agentDeploymentFormSheet.agent = action.payload.agent
+        state.agentDeploymentFormSheet.agentId = action.payload.agentId
         state.agentDeploymentFormSheet.onAction = action.payload.onAction
       }
     },

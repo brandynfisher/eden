@@ -9,6 +9,14 @@ export type AgentSuggestion = {
   prompt: string
 }
 
+export type AgentStats = {
+  threadCount: number
+  userCount: number
+  userMessageCount: number
+  assistantMessageCount: number
+  toolCallCount: number
+  lastUpdated: Date
+}
 // Types
 export type Agent = Omit<
   Creator,
@@ -47,6 +55,7 @@ export type Agent = Omit<
   createdAt: Date
   updatedAt: Date
   public?: boolean
+  stats?: AgentStats
 }
 
 export type AgentClientType = 'discord' | 'telegram' | 'twitter' | 'farcaster'

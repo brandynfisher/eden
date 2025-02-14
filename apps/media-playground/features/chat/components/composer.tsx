@@ -89,8 +89,32 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
     const handleDrop = async (e: DragEvent) => {
       e.preventDefault()
       setIsDragging(false)
-      const files = Array.from(e.dataTransfer?.files || [])
-      await handleFilesDropped(files)
+
+      if (!e.dataTransfer) return
+
+      // Handle files from external sources
+      const externalFiles = Array.from(e.dataTransfer.files || [])
+      if (externalFiles.length > 0) {
+        await handleFilesDropped(externalFiles)
+        return
+      }
+
+      // Handle internally dragged attachments
+      try {
+        const attachmentData = e.dataTransfer.getData('application/json')
+        if (attachmentData) {
+          const data = JSON.parse(attachmentData)
+          // Create a minimal file object with the fileUrl property
+          const file = new File(['[uploaded]'], data.name, {
+            type: data.type,
+          }) as File & { fileUrl: string; isPreUploaded?: boolean }
+          file.fileUrl = data.fileUrl
+          file.isPreUploaded = true // Signal that this file is already on S3
+          await composerRuntime.addAttachment(file)
+        }
+      } catch (error) {
+        console.error('Error handling internal file drop:', error)
+      }
     }
 
     const handleDragEnter = (e: DragEvent) => {
@@ -160,6 +184,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
 
   return (
     <Composer.Root
+      className="z-[51] bg-accent-foreground/5 items-start"
       onSubmit={async (evt: FormEvent<HTMLFormElement>) => {
         if (!isSignedIn) {
           evt.preventDefault()
@@ -176,7 +201,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
         <Composer.AddAttachment />
       </AuthClickGuard>
 
-      <Composer.Input autoFocus className="text-base" />
+      <Composer.Input autoFocus className="text-base" minRows={2} />
 
       <ThreadPrimitive.If running={true}>
         <div className="flex items-center gap-3 h-full">
