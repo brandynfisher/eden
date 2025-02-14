@@ -61,7 +61,7 @@ const ModelCard = ({
         <CardImage
           className="rounded-md"
           media={{
-            url: model.thumbnail,
+            url: model.thumbnail ?? undefined,
             thumbnail: model.thumbnail,
             width: 256,
             height: 256,
