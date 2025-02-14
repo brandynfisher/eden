@@ -36,13 +36,13 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
         </div>
       ) : null}
 
-      <div className="relative flex p-2">
-        <div className="relative flex-grow">
-          <Link
-            href={`/agents/${agent.username}`}
-            prefetch={false}
-            className="block"
-          >
+      <Link
+        href={`/agents/${agent.username}`}
+        prefetch={false}
+        className="block"
+      >
+        <div className="relative flex p-2">
+          <div className="relative flex-grow shrink-0">
             <div className="relative flex">
               <CardImage
                 media={{
@@ -56,41 +56,45 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                 unoptimized={true}
                 className="object-cover rounded-lg w-[90px] h-[132px] flex-shrink-0 flex-grow-0"
               />
-              <div className="ml-3 flex flex-col w-full">
-                <span className="font-semibold text-sm mr-auto">
-                  {agent.name}
-                </span>
+            </div>
+          </div>
 
-                <div className="text-xs text-accent-foreground line-clamp-3 mt-2">
-                  {agent.description}
-                </div>
+          <div className="flex flex-col justify-between ml-3 w-full">
+            <div className="flex flex-col w-full">
+              <span className="font-semibold text-sm mr-auto">
+                {agent.name}
+              </span>
 
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-auto">
-                  by{' '}
-                  <span className="font-semibold">{agent.owner.username}</span>
-                </div>
+              <div className="text-xs text-accent-foreground mt-2 line-clamp-3">
+                {agent.description}
               </div>
             </div>
-          </Link>
-        </div>
 
-        <div className="flex flex-col justify-between ml-2 h-[132px]">
-          <AgentActionsMenu agent={agent} queryKey={queryKey} />
-          <div className="flex items-center gap-1">
-            <span className="text-xs text-muted-foreground">
-              {agent.stats?.userMessageCount}
-            </span>
-            <Button size="icon" variant="outline" asChild>
-              <Link
-                href={`/chat/${agent.username}`}
-                className="w-9 h-9 text-muted-foreground group-hover:text-primary"
-              >
-                <MessageSquareIcon className="w-4 h-4" />
-              </Link>
-            </Button>
+            <div className="flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                by <span className="font-semibold">{agent.owner.username}</span>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-muted-foreground">
+                    {agent.stats?.userMessageCount}
+                  </span>
+                  <Button size="icon" variant="outline" asChild>
+                    <Link
+                      href={`/chat/${agent.username}`}
+                      className="w-9 h-9 text-muted-foreground group-hover:text-primary"
+                    >
+                      <MessageSquareIcon className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                </div>
+                <AgentActionsMenu agent={agent} queryKey={queryKey} />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </Link>
     </Card>
   )
 }
