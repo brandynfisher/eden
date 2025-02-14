@@ -195,7 +195,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => deployAgent(server, request, reply),
   })
 
-  server.post('/v2/agents/:agentId/deployments/:deploymentId', {
+  server.patch('/v2/agents/:agentId/deployments', {
     schema: {
       tags: ['Agents'],
       description: 'Update an agent deployment',

@@ -181,8 +181,6 @@ const handleNewSubscription = async (
     }
 
     if (mannaAmountInt > 0) {
-      console.log('xxx update manna for user', user.userId)
-      console.log('xxx mannaAmountInt', mannaAmountInt)
       try {
         if (mannaAmountInt > 0) {
           const manna = await Manna.findOne({

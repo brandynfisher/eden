@@ -7,7 +7,7 @@ import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
-import { AgentsGetDeploymentsResponse, Deployment } from '@edenlabs/eden-sdk'
+import { Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'

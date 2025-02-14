@@ -167,13 +167,15 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                   >
                     <SettingsIcon size={18} />
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleConfigureDeployments}
-                  >
-                    <RocketIcon size={18} />
-                  </Button>
+                  {isFeatureDeploymentsEnabled && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleConfigureDeployments}
+                    >
+                      <RocketIcon size={18} />
+                    </Button>
+                  )}
                   <Button
                     variant="destructive"
                     size="icon"

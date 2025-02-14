@@ -146,7 +146,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
 
 export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
   agentId: string
-  deploymentId: string
+  platform: AgentClientType
   config?: {
     discord?: DiscordDeploymentConfig
     telegram?: TelegramDeploymentConfig
@@ -219,9 +219,12 @@ export const agentsUpdateDeploymentRequestConfig = (
   args: AgentsUpdateDeploymentArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: `v2/agents/${args.agentId}/deployments/${args.deploymentId}`,
-    data: args,
+    method: 'PATCH',
+    url: `v2/agents/${args.agentId}/deployments`,
+    data: {
+      platform: args.platform,
+      config: args.config,
+    },
   }
 }
 

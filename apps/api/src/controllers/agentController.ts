@@ -15,7 +15,6 @@ import {
   AgentsStopDeploymentResponse,
   AgentsUpdateArguments,
   AgentsUpdateDeploymentArguments,
-  AgentsUpdateDeploymentResponse,
   FeatureFlag,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -313,9 +312,8 @@ export const updateAgentDeployment = async (
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
-  const { agentId, deploymentId } =
-    request.params as AgentsUpdateDeploymentArguments
-  const { config } = request.body as AgentsUpdateDeploymentArguments
+  const { agentId } = request.params as AgentsUpdateDeploymentArguments
+  const { platform, config } = request.body as AgentsUpdateDeploymentArguments
 
   const agent = await Agent.findById(agentId)
 
@@ -331,7 +329,10 @@ export const updateAgentDeployment = async (
     })
   }
 
-  const deployment = await Deployment.findById(deploymentId)
+  const deployment = await Deployment.findOne({
+    agent: agentId,
+    platform,
+  })
 
   if (!deployment) {
     return reply.status(404).send({
@@ -349,7 +350,7 @@ export const updateAgentDeployment = async (
     const modalRequest = {
       endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/update`,
       data: {
-        deploymentId,
+        deployment_id: deployment._id,
         config,
       },
     }
@@ -361,7 +362,7 @@ export const updateAgentDeployment = async (
     })
 
     return reply.status(200).send({
-      deploymentId,
+      deploymentId: deployment._id,
     })
   } catch (error) {
     console.error(error)
