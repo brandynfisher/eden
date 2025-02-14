@@ -369,7 +369,9 @@ const injectResultUrls = (
         ...output,
         url: s3Url(server, output.filename),
         thumbnail: isModelResult
-          ? s3Url(server, output.model?.thumbnail || '')
+          ? output.model?.thumbnail
+            ? s3Url(server, output.model?.thumbnail || '')
+            : null
           : s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
       }
     })

@@ -161,10 +161,13 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
       <div className="flex items-center justify-between gap-2 md:gap-3 py-2 px-2 md:px-4 h-[58px] w-full">
         {isReadOnly === true ? (
           <>
-            <div className="flex flex-wrap items-center gap-2 md:gap-3 py-2 md:px-4 border border-secondary rounded-lg bg-muted-darker">
-              <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
+            <div className="flex flex-wrap items-center gap-2 px-2 md:gap-3 py-2 md:px-4 border border-secondary rounded-lg bg-muted-darker">
+              <PencilOffIcon className="w-4 h-4 text-muted-foreground hidden lg:block" />
               <p className="text-sm ">
-                Read-only view of another user's thread.
+                Read-only view{' '}
+                <span className="hidden lg:inline">
+                  of another user's thread.
+                </span>
               </p>
             </div>
             <Button variant="outline" asChild>

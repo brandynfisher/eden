@@ -1,5 +1,6 @@
 'use client'
 
+import AgentActionsMenu from '@/components/button/agent-actions-menu'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -12,23 +13,12 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAgentDeploymentFormSheet,
   updateAgentFormSheet,
-  updateDeleteDialog,
-  updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
-import axios from 'axios'
-import {
-  MessageSquareIcon,
-  RocketIcon,
-  SettingsIcon,
-  Share2Icon,
-  TrashIcon,
-} from 'lucide-react'
+import { MessageSquareIcon, RocketIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import React from 'react'
-import { toast } from 'sonner'
 
 type Props = {
   id: string
@@ -36,7 +26,6 @@ type Props = {
 }
 
 const AgentDetail = ({ id, agentSSRData }: Props) => {
-  const router = useRouter()
   const { isSignedIn, user } = useAuthState()
   const dispatch = useAppDispatch()
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
@@ -54,48 +43,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   const agent = agentClientData || agentSSRData
 
-  const onDeleteAgent = async () => {
-    const handleDelete = async () => {
-      try {
-        await axios.delete(`/api/agents/${id}`)
-        toast.success('Agent deleted', {
-          description: `Agent: ${agent?.name} deleted successfully`,
-          dismissible: true,
-          richColors: true,
-        })
-        router.push(`/creators/${user?.username}?tab=agents`)
-      } catch (error) {
-        toast.error('Failed to delete agent', {
-          description: `Agent: ${agent?.name} failed to delete`,
-          dismissible: true,
-          richColors: true,
-        })
-      }
-    }
-
-    dispatch(
-      updateDeleteDialog({
-        isOpen: true,
-        title: 'Delete Agent',
-        description: 'Are you sure you want to delete this agent?',
-        onDelete: handleDelete,
-      }),
-    )
-  }
-
   const onUpdateAgent = async () => {
     await invalidate()
-  }
-
-  const onShareAgent = () => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/agents/${agent?._id}`
-    dispatch(
-      updateShareModal({
-        isOpen: true,
-        shareUrl,
-      }),
-    )
   }
 
   const handleEditClick = () => {
@@ -119,6 +68,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
   }
 
   if (!agent) return null
+
   return (
     <>
       <div className="relative p-4 bg-muted-darker rounded-md mx-4 mt-4">
@@ -165,7 +115,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     size="icon"
                     onClick={handleEditClick}
                   >
-                    <SettingsIcon size={18} />
+                    <SettingsIcon className="w-4 h-4" />
                   </Button>
                   {isFeatureDeploymentsEnabled && (
                     <Button
@@ -176,13 +126,16 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                       <RocketIcon size={18} />
                     </Button>
                   )}
-                  <Button
-                    variant="destructive"
-                    size="icon"
-                    onClick={onDeleteAgent}
-                  >
-                    <TrashIcon size={18} />
+                  <Button variant="destructive" size="icon">
+                    <RocketIcon className="w-4 h-4" />
                   </Button>
+                  <AgentActionsMenu
+                    className="size-10"
+                    key={1}
+                    agent={agent}
+                    queryKey={['agents', id]}
+                    hiddenItems={['chat', 'view-details']}
+                  />
                 </>
               )}
               <Button variant="outline" asChild>
@@ -193,9 +146,6 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                   <MessageSquareIcon className="w-4 h-4 mr-2" />
                   <span className="text-sm">Chat</span>
                 </Link>
-              </Button>
-              <Button variant="outline" size="icon" onClick={onShareAgent}>
-                <Share2Icon size={18} />
               </Button>
             </div>
           </div>

@@ -998,7 +998,7 @@ export const getModelsFeedCursorV2 = async (
     }
 
     feed.docs.forEach(doc => {
-      if (doc) {
+      if (doc && doc.thumbnail) {
         doc.thumbnail = s3ThumbnailUrl(server, doc.thumbnail || '', 1024)
       }
     })

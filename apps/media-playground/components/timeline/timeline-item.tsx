@@ -185,15 +185,7 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                   ? item.result.map((result, index) =>
                       result.output && Array.isArray(result.output) ? (
                         result.output.map((output, outputIndex) =>
-                          output.model === undefined ? (
-                            <TimelineItemMediaResult
-                              queryKey={queryKey}
-                              key={`${item._id}_${index}_${outputIndex}`}
-                              index={index}
-                              task={item}
-                              result={result}
-                            />
-                          ) : (
+                          item.output_type === 'lora' ? (
                             // api populates a model property with full model document
                             <TimelineItemModelResult
                               queryKey={queryKey}
@@ -201,6 +193,14 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                               index={index}
                               result={result}
                               task={item}
+                            />
+                          ) : (
+                            <TimelineItemMediaResult
+                              queryKey={queryKey}
+                              key={`${item._id}_${index}_${outputIndex}`}
+                              index={index}
+                              task={item}
+                              result={result}
                             />
                           ),
                         )
