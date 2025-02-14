@@ -74,6 +74,7 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
 
 const AgentFormSheet = () => {
   const { isOpen, mode, agentId, onAction } = useAgentFormSheet()
+
   const dispatch = useAppDispatch()
   const agentQuery = useAgentQuery({
     key: agentId || '',
@@ -409,11 +410,12 @@ const AgentFormSheet = () => {
               />
 
               {/** Knowledge Field */}
+              {/* //@todo: TODO: Add knowledge field back in, currently hidden due to no use */}
               <FormField
                 control={form.control}
                 name="knowledge"
                 render={({ field }) => (
-                  <FormItem className="p-2 bg-secondary rounded-lg">
+                  <FormItem className="p-2 bg-secondary rounded-lg hidden">
                     <FormLabel>Knowledge</FormLabel>
                     <FormDescription>
                       Additional knowledge or context for the agent.

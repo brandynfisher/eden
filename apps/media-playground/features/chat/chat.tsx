@@ -343,19 +343,25 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
               Composer: MyComposer,
             }}
             welcome={{
-              suggestions: [
-                {
-                  text: 'List your tools',
-                  prompt:
-                    'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
-                },
-                {
-                  text: 'Make something beautiful',
-                  prompt:
-                    'Make a beautiful image of the first thing that comes to mind',
-                },
-              ],
-              message: agent?.greeting || 'What do you want to create today?',
+              suggestions:
+                agent?.suggestions && agent?.suggestions.length > 0
+                  ? agent?.suggestions.map(suggestion => ({
+                      text: suggestion.label,
+                      prompt: suggestion.prompt,
+                    }))
+                  : [
+                      {
+                        text: 'List your tools',
+                        prompt:
+                          'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
+                      },
+                      {
+                        text: 'Make something beautiful',
+                        prompt:
+                          'Make a beautiful image of the first thing that comes to mind',
+                      },
+                    ],
+              message: agent?.greeting ?? 'What do you want to create today?',
             }}
             assistantAvatar={{
               src: getCloudfrontOriginalUrl(agent?.userImage),

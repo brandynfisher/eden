@@ -58,6 +58,12 @@ export const getAgent = async (
     agent.userImage = forceCloudfrontUrl(server, agent.userImage)
   }
 
+  console.log('agent.owner', agent.owner)
+
+  if (agent.owner.userImage) {
+    agent.owner.userImage = forceCloudfrontUrl(server, agent.owner.userImage)
+  }
+
   return reply.status(200).send({ agent })
 }
 

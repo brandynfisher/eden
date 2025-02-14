@@ -29,7 +29,7 @@ export const Filter = ({ options, onChange }: Props) => {
   return (
     <div className="flex items-center">
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center gap-2 min-w-36 justify-end px-3 py-2 h-9 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground">
+        <DropdownMenuTrigger className="flex items-center gap-2 min-w-40 justify-end px-3 py-2 h-10 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground">
           <FilterIcon className="h-3 w-3 text-muted-foreground" />
           <Separator orientation="vertical" />
           <div className="mr-auto">{selectedValue.label}</div>
