@@ -1,4 +1,5 @@
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
+import { siteConfig } from '@/lib/config'
 import { ModelV2 } from '@edenlabs/eden-sdk'
 import React from 'react'
 
@@ -21,8 +22,8 @@ const ModelMediaPreview = ({ model, isModal }: Props) => {
         <LightboxTrigger
           className="flex justify-center items-center"
           slide={{
-            url: model.thumbnail,
-            thumbnail: model.thumbnail,
+            url: model.thumbnail || siteConfig.mediaErrorUrl,
+            thumbnail: model.thumbnail || undefined,
             width: 1024,
             height: 1024,
           }}
