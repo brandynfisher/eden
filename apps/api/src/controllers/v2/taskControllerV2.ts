@@ -344,7 +344,9 @@ const injectUrlsToMediaOutput = (
   return {
     ...output,
     url: s3Url(server, output.filename),
-    thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+    thumbnail: thumbnailName
+      ? s3ThumbnailUrl(server, thumbnailName, thumbnailSize)
+      : null,
   }
 }
 

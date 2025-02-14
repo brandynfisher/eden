@@ -85,7 +85,7 @@ export type ModelV2 = {
   name: string
   user: Creator
   task: TaskV2
-  thumbnail: string
+  thumbnail: string | null
   slug: string
   checkpoint: string
   createdAt: Date

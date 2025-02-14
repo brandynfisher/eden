@@ -1,24 +1,18 @@
 exports = async function () {
-  // eslint-disable-next-line no-undef
-  const mongodb = context.services.get("Cluster1");  // or your actual cluster name
-  if (!mongodb) throw new Error("Could not access MongoDB cluster");
-  
-  const db = mongodb.db("eden-stg");
-  if (!db) throw new Error("Could not access database eden-stg");
+  const mongodb = context.services.get("Cluster1")  // or your actual cluster name
+  if (!mongodb) throw new Error("Could not access MongoDB cluster")
 
-  const agentCollection = db.collection("users3");
-  const threadCollection = db.collection("threads3");
+  const db = mongodb.db("eden-stg")
+  if (!db) throw new Error("Could not access database eden-stg")
+
+  const agentCollection = db.collection("users3")
+  const threadCollection = db.collection("threads3")
 
   const agentStats = await threadCollection.aggregate([
     {
-      $match: {
-        deleted: { $ne: true }  // Exclude soft-deleted threads
-      }
-    },
-    {
       $facet: {
-        // Count threads per agent
-        threadCounts: [
+        allTime: [
+          // Count threads per agent
           {
             $group: {
               _id: "$agent",
@@ -26,8 +20,13 @@ exports = async function () {
             }
           }
         ],
-        // Count messages by role, tool calls, and unique users per agent
-        messageCounts: [
+        last7Days: [
+          {
+            $match: {
+              updatedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+            }
+          },
+          // Count messages by role, tool calls, and unique users per agent
           { $unwind: "$messages" },
           {
             $group: {
@@ -115,74 +114,135 @@ exports = async function () {
       $project: {
         combined: {
           $map: {
-            input: "$threadCounts",
-            as: "thread",
+            input: "$allTime.combined",
+            as: "allTimeStats",
             in: {
-              _id: "$$thread._id",
-              threadCount: "$$thread.threadCount",
-              userMessageCount: {
-                $let: {
-                  vars: {
-                    msgStats: {
-                      $filter: {
-                        input: "$messageCounts",
-                        as: "msg",
-                        cond: { $eq: ["$$msg._id", "$$thread._id"] }
-                      }
+              _id: "$$allTimeStats._id",
+              threadCount: "$$allTimeStats.threadCount",
+              userMessageCount: "$$allTimeStats.userMessageCount",
+              assistantMessageCount: "$$allTimeStats.assistantMessageCount",
+              toolCallCount: "$$allTimeStats.toolCallCount",
+              userCount: "$$allTimeStats.userCount",
+              // Add 7-day stats
+              threadCount_7d: {
+                $ifNull: [
+                  {
+                    $let: {
+                      vars: {
+                        matchedDoc: {
+                          $arrayElemAt: [
+                            {
+                              $filter: {
+                                input: "$last7Days.combined",
+                                as: "recent",
+                                cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
+                              }
+                            },
+                            0
+                          ]
+                        }
+                      },
+                      in: "$$matchedDoc.threadCount"
                     }
                   },
-                  in: {
-                    $ifNull: [{ $arrayElemAt: ["$$msgStats.userMessageCount", 0] }, 0]
-                  }
-                }
+                  0
+                ]
               },
-              assistantMessageCount: {
-                $let: {
-                  vars: {
-                    msgStats: {
-                      $filter: {
-                        input: "$messageCounts",
-                        as: "msg",
-                        cond: { $eq: ["$$msg._id", "$$thread._id"] }
-                      }
+              userMessageCount_7d: {
+                $ifNull: [
+                  {
+                    $let: {
+                      vars: {
+                        matchedDoc: {
+                          $arrayElemAt: [
+                            {
+                              $filter: {
+                                input: "$last7Days.combined",
+                                as: "recent",
+                                cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
+                              }
+                            },
+                            0
+                          ]
+                        }
+                      },
+                      in: "$$matchedDoc.userMessageCount"
                     }
                   },
-                  in: {
-                    $ifNull: [{ $arrayElemAt: ["$$msgStats.assistantMessageCount", 0] }, 0]
-                  }
-                }
+                  0
+                ]
               },
-              toolCallCount: {
-                $let: {
-                  vars: {
-                    msgStats: {
-                      $filter: {
-                        input: "$messageCounts",
-                        as: "msg",
-                        cond: { $eq: ["$$msg._id", "$$thread._id"] }
-                      }
+              assistantMessageCount_7d: {
+                $ifNull: [
+                  {
+                    $let: {
+                      vars: {
+                        matchedDoc: {
+                          $arrayElemAt: [
+                            {
+                              $filter: {
+                                input: "$last7Days.combined",
+                                as: "recent",
+                                cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
+                              }
+                            },
+                            0
+                          ]
+                        }
+                      },
+                      in: "$$matchedDoc.assistantMessageCount"
                     }
                   },
-                  in: {
-                    $ifNull: [{ $arrayElemAt: ["$$msgStats.toolCallCount", 0] }, 0]
-                  }
-                }
+                  0
+                ]
               },
-              userCount: {
-                $let: {
-                  vars: {
-                    msgStats: {
-                      $filter: {
-                        input: "$messageCounts",
-                        as: "msg",
-                        cond: { $eq: ["$$msg._id", "$$thread._id"] }
-                      }
+              toolCallCount_7d: {
+                $ifNull: [
+                  {
+                    $let: {
+                      vars: {
+                        matchedDoc: {
+                          $arrayElemAt: [
+                            {
+                              $filter: {
+                                input: "$last7Days.combined",
+                                as: "recent",
+                                cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
+                              }
+                            },
+                            0
+                          ]
+                        }
+                      },
+                      in: "$$matchedDoc.toolCallCount"
                     }
                   },
-                  in: {
-                    $ifNull: [{ $arrayElemAt: ["$$msgStats.userCount", 0] }, 0]
-                  }
-                }
+                  0
+                ]
+              },
+              userCount_7d: {
+                $ifNull: [
+                  {
+                    $let: {
+                      vars: {
+                        matchedDoc: {
+                          $arrayElemAt: [
+                            {
+                              $filter: {
+                                input: "$last7Days.combined",
+                                as: "recent",
+                                cond: { $eq: ["$$recent._id", "$$allTimeStats._id"] }
+                              }
+                            },
+                            0
+                          ]
+                        }
+                      },
+                      in: "$$matchedDoc.userCount"
+                    }
+                  },
+                  0
+                ]
               }
             }
           }
@@ -206,6 +266,11 @@ exports = async function () {
           'stats.assistantMessageCount': stat.assistantMessageCount,
           'stats.toolCallCount': stat.toolCallCount,
           'stats.userCount': stat.userCount,
+          'stats.threadCount_7d': stat.threadCount_7d,
+          'stats.userMessageCount_7d': stat.userMessageCount_7d,
+          'stats.assistantMessageCount_7d': stat.assistantMessageCount_7d,
+          'stats.toolCallCount_7d': stat.toolCallCount_7d,
+          'stats.userCount_7d': stat.userCount_7d,
           'stats.lastUpdated': new Date()
         }
       }
@@ -223,6 +288,11 @@ exports = async function () {
           assistantMessageCount: 0,
           toolCallCount: 0,
           userCount: 0,
+          threadCount_7d: 0,
+          userMessageCount_7d: 0,
+          assistantMessageCount_7d: 0,
+          toolCallCount_7d: 0,
+          userCount_7d: 0,
           lastUpdated: new Date()
         }
       }
