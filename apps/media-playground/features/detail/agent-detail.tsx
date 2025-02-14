@@ -10,8 +10,13 @@ import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import {
+  updateAgentDeploymentFormSheet,
+  updateAgentFormSheet,
+} from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
-import { MessageSquareIcon } from 'lucide-react'
+import { MessageSquareIcon, RocketIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -22,8 +27,9 @@ type Props = {
 
 const AgentDetail = ({ id, agentSSRData }: Props) => {
   const { isSignedIn, user } = useAuthState()
+  const dispatch = useAppDispatch()
 
-  const { agent: agentClientData } = useAgentQuery({
+  const { agent: agentClientData, invalidate } = useAgentQuery({
     key: id,
     initialData: agentSSRData
       ? {
@@ -34,7 +40,32 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   const agent = agentClientData || agentSSRData
 
+  const onUpdateAgent = async () => {
+    await invalidate()
+  }
+
+  const handleEditClick = () => {
+    dispatch(
+      updateAgentFormSheet({
+        isOpen: true,
+        mode: 'update',
+        agentId: agent?._id,
+        onAction: onUpdateAgent,
+      }),
+    )
+  }
+
+  const handleConfigureDeployments = () => {
+    dispatch(
+      updateAgentDeploymentFormSheet({
+        isOpen: true,
+        agentId: agent?._id,
+      }),
+    )
+  }
+
   if (!agent) return null
+
   return (
     <>
       <div className="relative p-4 bg-muted-darker rounded-md mx-4 mt-4">
@@ -75,13 +106,29 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
             <div className="flex flex-wrap gap-2 mt-auto">
               {user?._id === agent?.owner._id && (
-                <AgentActionsMenu
-                  className="size-10"
-                  key={1}
-                  agent={agent}
-                  queryKey={['agents', id]}
-                  hiddenItems={['chat', 'view-details']}
-                />
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleEditClick}
+                  >
+                    <SettingsIcon className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleConfigureDeployments}
+                    size="icon"
+                  >
+                    <RocketIcon className="w-4 h-4" />
+                  </Button>
+                  <AgentActionsMenu
+                    className="size-10"
+                    key={1}
+                    agent={agent}
+                    queryKey={['agents', id]}
+                    hiddenItems={['chat', 'view-details']}
+                  />
+                </>
               )}
               <Button variant="outline" asChild>
                 <Link

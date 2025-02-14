@@ -20,10 +20,10 @@ import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import {
-  Edit2Icon,
   ExternalLinkIcon,
   MessageSquareIcon,
   RocketIcon,
+  SettingsIcon,
   Share2Icon,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -198,7 +198,7 @@ const AgentActionsMenu = ({
                     onClick={handleEditClick}
                     className="w-full"
                   >
-                    <Edit2Icon className="mr-2 h-4 w-4" />
+                    <SettingsIcon className="mr-2 h-4 w-4" />
                     Edit
                   </button>
                 </DropdownMenuItem>
