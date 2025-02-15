@@ -61,7 +61,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                   blurhash: agent.blurhash,
                 }}
                 unoptimized={true}
-                className="object-cover object-top rounded-lg h-32 w-32 flex-shrink-0 flex-grow-0"
+                className="object-cover rounded-lg aspect-square h-[128px] flex-shrink-0 flex-grow-0"
               />
             </div>
           </div>
@@ -76,46 +76,45 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                 {agent.description}
               </div>
             </div>
-
-            <div className="flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                by <span className="font-semibold">{agent.owner.username}</span>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <div className="flex items-center gap-1">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-xs text-muted-foreground">
-                          {agent.stats?.userMessageCount}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <AgentUsageStats
-                          className="mt-0"
-                          agent={agent}
-                          showTooltipAsText={true}
-                        />
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  <Button size="icon" variant="outline" asChild>
-                    <Link
-                      href={`/chat/${agent.username}`}
-                      className="w-9 h-9 text-muted-foreground group-hover:text-primary"
-                    >
-                      <MessageSquareIcon className="w-4 h-4" />
-                    </Link>
-                  </Button>
-                </div>
-                <AgentActionsMenu agent={agent} queryKey={queryKey} />
-              </div>
-            </div>
           </div>
         </div>
       </Link>
+      <div className="absolute bottom-0 right-0 p-2 w-[calc(100%-140px)] flex items-center justify-between shrink-0">
+        <div className="hidden items-center gap-1 text-xs text-muted-foreground md:flex">
+          by <span className="font-semibold">{agent.owner.username}</span>
+        </div>
+
+        <div className="flex items-center gap-1 ml-auto">
+          <div className="flex items-center gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-xs text-muted-foreground">
+                    {agent.stats?.userMessageCount}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <AgentUsageStats
+                    className="mt-0"
+                    agent={agent}
+                    showTooltipAsText={true}
+                  />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <Button size="icon" variant="outline" asChild>
+              <Link
+                href={`/chat/${agent.username}`}
+                className="w-9 h-9 text-muted-foreground group-hover:text-primary"
+              >
+                <MessageSquareIcon className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
+          <AgentActionsMenu agent={agent} queryKey={queryKey} />
+        </div>
+      </div>
     </Card>
   )
 }
