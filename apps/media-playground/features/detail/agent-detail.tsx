@@ -71,7 +71,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   return (
     <>
-      <div className="relative p-4 bg-muted-darker rounded-md mx-4 mt-4">
+      <div className="relative lg:flex lg:justify-between lg:gap-x-4 p-4 bg-muted-darker rounded-md mx-4 mt-4">
         <div className="relative flex flex-col sm:flex-row">
           <Avatar className="aspect-square h-40 md:h-52 rounded-lg flex-shrink-0">
             {agent.userImage ? (
@@ -147,7 +147,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
             </div>
           </div>
         </div>
-        <AgentUsageStats agent={agent} />
+        <AgentUsageStats agent={agent} className="mt-4 lg:mt-0 gap-2" />
       </div>
       <div className="p-4">
         {isSignedIn ? (

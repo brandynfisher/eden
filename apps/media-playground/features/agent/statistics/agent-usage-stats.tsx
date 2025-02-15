@@ -1,6 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 import {
   Tooltip,
   TooltipContent,
@@ -9,8 +10,7 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
-import { HelpCircle } from 'lucide-react'
-import React from 'react'
+import { useEffect, useState } from 'react'
 
 const formatNumber = (num: number | undefined) => {
   if (num === undefined) return '0'
@@ -22,13 +22,13 @@ const formatNumber = (num: number | undefined) => {
     .toLowerCase()
 }
 
-const getMagnitudeStyle = (num: number | undefined) => {
-  if (num === undefined) return ''
-  if (num >= 1000000) return 'bg-blue-600/30 border-blue-600/30'
-  if (num >= 100000) return 'bg-blue-600/25 border-blue-600/25'
-  if (num >= 50000) return 'bg-blue-600/20 border-blue-600/20'
-  if (num >= 1000) return 'bg-blue-600/15 border-blue-600/15'
-  return 'bg-blue-600/10 border-blue-600/10'
+const StatsHintContent = ({ formattedDate }: { formattedDate: string }) => {
+  return (
+    <div>
+      Statistics may not reflect real-time data.
+      <br /> Last update: {formattedDate}
+    </div>
+  )
 }
 
 export default function AgentUsageStats({
@@ -40,9 +40,9 @@ export default function AgentUsageStats({
   className?: string
   showTooltipAsText?: boolean
 }) {
-  const [formattedDate, setFormattedDate] = React.useState<string>('')
+  const [formattedDate, setFormattedDate] = useState<string>('')
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (agent.stats?.lastUpdated) {
       setFormattedDate(new Date(agent.stats.lastUpdated).toLocaleString())
     }
@@ -77,7 +77,7 @@ export default function AgentUsageStats({
       raw7d: agent.stats?.assistantMessageCount_7d,
     },
     {
-      label: 'Tool calls',
+      label: 'Tool Calls',
       value: formatNumber(agent.stats?.toolCallCount),
       raw: agent.stats?.toolCallCount,
       value7d: formatNumber(agent.stats?.toolCallCount_7d),
@@ -87,59 +87,46 @@ export default function AgentUsageStats({
   return (
     <div
       className={cn(
-        'flex flex-col rounded-md mt-4 text-sm text-muted-foreground',
+        'flex flex-wrap lg:flex-col rounded-md text-sm text-muted-foreground',
         className,
       )}
     >
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-2 md:gap-4">
-        {stats.map(({ label, value, raw, value7d }) => (
-          <TooltipProvider key={label}>
-            <Tooltip>
-              <TooltipTrigger
-                className={`text-xs bg-popover p-1 pr-2 rounded-lg ${
-                  label === 'Tool calls'
-                    ? 'hidden md:inline-block'
-                    : label === 'Replies'
-                    ? 'inline-block sm:hidden md:inline-block'
-                    : ''
-                }`}
+      {stats.map(({ label, value, value7d }) => (
+        <TooltipProvider key={label}>
+          <Tooltip>
+            <TooltipTrigger
+              className={cn(
+                'flex justify-items-start flex-shrink-0 items-center gap-x-2 text-xs bg-muted p-1 pr-2 rounded-lg border border-secondary',
+                !showTooltipAsText && label === 'Tool Calls'
+                  ? 'hidden md:flex'
+                  : '',
+                !showTooltipAsText && label === 'Replies'
+                  ? 'hidden sm:flex'
+                  : '',
+                !showTooltipAsText && label === 'Threads'
+                  ? 'hidden xs:flex'
+                  : '',
+              )}
+            >
+              <Badge
+                variant="outline"
+                className="p-1 px-2 w-14 flex justify-end rounded-lg font-medium font-mono transition-colors bg-muted-darker"
               >
-                <Badge
-                  variant="outline"
-                  className={`p-1 px-2 mr-1 rounded-lg font-medium transition-colors !border !border-muted ${getMagnitudeStyle(
-                    raw,
-                  )}`}
-                >
-                  {value}
-                </Badge>{' '}
-                {label}
-              </TooltipTrigger>
-              <TooltipContent className="flex flex-col gap-1 text-xs">
-                <div>Last 24h: {value}</div>
-                <div>Last 7d: {value7d}</div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ))}
-        {!showTooltipAsText && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger className="ml-auto hidden md:block">
-                <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="text-xs">
-                Statistics may not reflect real-time data
-                <br />
-                Last update: {formattedDate}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-      </div>
+                {value}
+              </Badge>{' '}
+              <span className="text-xs shrink-0">{label}</span>
+            </TooltipTrigger>
+            <TooltipContent className="flex flex-col gap-1 text-xs">
+              <div>Last 24h: {value}</div>
+              <div>Last 7d: {value7d}</div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ))}
       {showTooltipAsText && (
-        <span className="mt-2 text-xs text-muted-foreground hidden md:block">
-          Statistics may not reflect real-time data. Last update:{' '}
-          {formattedDate}
+        <span className="text-xs text-muted-foreground text-center">
+          <Separator className="mt-0 mb-2" />
+          <StatsHintContent formattedDate={formattedDate} />
         </span>
       )}
     </div>

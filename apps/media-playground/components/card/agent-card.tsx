@@ -61,41 +61,40 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                   blurhash: agent.blurhash,
                 }}
                 unoptimized={true}
-                className="object-cover rounded-lg aspect-square h-[128px] flex-shrink-0 flex-grow-0"
+                className="object-cover rounded-lg aspect-square h-[140px] flex-shrink-0 flex-grow-0"
               />
             </div>
           </div>
 
-          <div className="flex flex-col justify-between ml-3 w-full">
-            <div className="flex flex-col w-full">
+          <div className="flex gap-2 flex-col ml-3 w-full">
+            <div className="flex gap-1 flex-col w-full">
               <span className="font-semibold text-sm mr-auto">
                 {agent.name}
               </span>
 
-              <div className="text-xs text-accent-foreground mt-2 line-clamp-3">
+              <div className="text-xs text-accent-foreground line-clamp-3">
                 {agent.description}
               </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground w-full">
+              by <span className="font-semibold">{agent.owner.username}</span>
             </div>
           </div>
         </div>
       </Link>
       <div className="absolute bottom-0 right-0 p-2 w-[calc(100%-140px)] flex items-center justify-between shrink-0">
-        <div className="hidden items-center gap-1 text-xs text-muted-foreground md:flex">
-          by <span className="font-semibold">{agent.owner.username}</span>
-        </div>
-
-        <div className="flex items-center gap-1 ml-auto">
+        <div className="flex items-center gap-1 ml-auto pointer-events-none">
           <div className="flex items-center gap-1">
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger asChild className="pointer-events-auto">
                   <span className="text-xs text-muted-foreground">
                     {agent.stats?.userMessageCount}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
                   <AgentUsageStats
-                    className="mt-0"
+                    className="my-0 gap-2 !flex-col"
                     agent={agent}
                     showTooltipAsText={true}
                   />
@@ -103,7 +102,12 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
               </Tooltip>
             </TooltipProvider>
 
-            <Button size="icon" variant="outline" asChild>
+            <Button
+              size="icon"
+              variant="outline"
+              asChild
+              className="pointer-events-auto"
+            >
               <Link
                 href={`/chat/${agent.username}`}
                 className="w-9 h-9 text-muted-foreground group-hover:text-primary"
