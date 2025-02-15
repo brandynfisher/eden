@@ -61,7 +61,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                   blurhash: agent.blurhash,
                 }}
                 unoptimized={true}
-                className="object-cover rounded-lg w-[90px] h-[132px] flex-shrink-0 flex-grow-0"
+                className="object-cover rounded-lg aspect-square h-[128px] flex-shrink-0 flex-grow-0"
               />
             </div>
           </div>
@@ -79,7 +79,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
           </div>
         </div>
       </Link>
-      <div className="absolute bottom-0 right-0 p-2 w-[calc(100%-102px)] flex items-center justify-between shrink-0">
+      <div className="absolute bottom-0 right-0 p-2 w-[calc(100%-140px)] flex items-center justify-between shrink-0">
         <div className="hidden items-center gap-1 text-xs text-muted-foreground md:flex">
           by <span className="font-semibold">{agent.owner.username}</span>
         </div>
