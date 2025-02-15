@@ -7,6 +7,7 @@ import { createIdOrSlugQuery } from '../../utils/mongoUtils'
 import {
   TaskV2Status,
   ThreadsCreateArguments,
+  ThreadsDeleteArguments,
   ThreadsGetArguments,
   ThreadsListArguments,
   ThreadsMessageReactArguments,
@@ -458,4 +459,38 @@ export const addThreadMessageReaction = async (
     })
     return reply.status(500).send({ error: errorMessage })
   }
+}
+
+export const deleteThread = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  const { thread_id } = request.params as ThreadsDeleteArguments
+
+  const thread = await ThreadModel.findOne({
+    _id: new ObjectId(thread_id),
+  })
+
+  if (!thread || thread.deleted) {
+    return reply.status(404).send({
+      error: 'Thread not found',
+    })
+  }
+
+  if (thread.user.toString() !== userId.toString()) {
+    return reply.status(401).send({
+      error: 'You are not allowed to delete this thread',
+    })
+  }
+
+  await thread.delete()
+
+  return reply.status(200).send({ success: true })
 }
