@@ -216,6 +216,8 @@ import {
   AgentsGetDeploymentsResponse,
   AgentsStopDeploymentArguments,
   AgentsStopDeploymentResponse,
+  AgentsUpdateDeploymentArguments,
+  AgentsUpdateDeploymentResponse,
   CollectionsV2AddCreationsArguments,
   CollectionsV2AddCreationsResponse,
   CollectionsV2CreateArguments,
@@ -252,6 +254,8 @@ import {
   TasksV2ListResponse,
   ThreadsCreateArguments,
   ThreadsCreateResponse,
+  ThreadsDeleteArguments,
+  ThreadsDeleteResponse,
   ThreadsGetArguments,
   ThreadsGetResponse,
   ThreadsListArguments,
@@ -268,6 +272,7 @@ import {
   agentsDeployRequestConfig,
   agentsGetDeploymentsRequestConfig,
   agentsStopDeploymentRequestConfig,
+  agentsUpdateDeploymentRequestConfig,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -287,6 +292,7 @@ import {
   tasksV2GetRequestConfig,
   tasksV2ListRequestConfig,
   threadsCreateRequestConfig,
+  threadsDeleteRequestConfig,
   threadsGetRequestConfig,
   threadsListRequestConfig,
   threadsMessageReactRequestConfig,
@@ -555,6 +561,10 @@ export abstract class Methods {
       AgentsGetDeploymentsArguments,
       AgentsGetDeploymentsResponse
     >(this, agentsGetDeploymentsRequestConfig),
+    updateDeployment: bindApiCall<
+      AgentsUpdateDeploymentArguments,
+      AgentsUpdateDeploymentResponse
+    >(this, agentsUpdateDeploymentRequestConfig),
     stopDeployment: bindApiCall<
       AgentsStopDeploymentArguments,
       AgentsStopDeploymentResponse
@@ -803,6 +813,10 @@ export abstract class Methods {
       ThreadsMessageReactArguments,
       ThreadsMessageReactResponse
     >(this, threadsMessageReactRequestConfig),
+    delete: bindApiCall<ThreadsDeleteArguments, ThreadsDeleteResponse>(
+      this,
+      threadsDeleteRequestConfig,
+    ),
   }
 
   public readonly tasks = {

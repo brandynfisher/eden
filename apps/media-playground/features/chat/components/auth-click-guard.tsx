@@ -4,7 +4,10 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import React, { PropsWithChildren } from 'react'
 import { toast } from 'sonner'
 
-export const AuthClickGuard = ({ children }: PropsWithChildren) => {
+export const AuthClickGuard = ({
+  children,
+  className,
+}: PropsWithChildren<{ className?: string }>) => {
   const { verifyAuth } = useAuthState()
   return (
     <div
@@ -16,6 +19,7 @@ export const AuthClickGuard = ({ children }: PropsWithChildren) => {
           toast.error('You must be logged in to perform this action!')
         }
       }}
+      className={className}
     >
       {children}
     </div>

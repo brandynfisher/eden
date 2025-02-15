@@ -75,40 +75,64 @@ export const TaskResultTool = makeAssistantToolUI({
                                 />
                               </audio>
                             ) : (
-                              <LightboxTrigger
+                              <div
+                                draggable
+                                onDragStart={(
+                                  e: React.DragEvent<HTMLDivElement>,
+                                ) => {
+                                  const url = getCloudfrontOriginalUrl(
+                                    output.filename,
+                                  )
+                                  e.dataTransfer.setData('text/plain', '') // Required for Firefox
+                                  e.dataTransfer.setData(
+                                    'application/json',
+                                    JSON.stringify({
+                                      fileUrl: url,
+                                      type:
+                                        output.mediaAttributes?.mimeType ||
+                                        'image/jpeg',
+                                      name: url, // Use the full URL as the name
+                                    }),
+                                  )
+                                  e.dataTransfer.effectAllowed = 'copy'
+                                }}
                                 className="w-full h-full"
-                                slide={{
-                                  type: 'video',
-                                  url: getCloudfrontOriginalUrl(
-                                    output.filename,
-                                  ),
-                                  thumbnail: getCloudfrontOriginalUrl(
-                                    output.filename,
-                                  ),
-                                  width: output.mediaAttributes?.width,
-                                  height: output.mediaAttributes?.height,
-                                  duration:
-                                    output.mediaAttributes?.duration ||
-                                    undefined,
-                                  description:
-                                    args && args.prompt
-                                      ? String(args.prompt)
-                                      : undefined,
-                                  title:
-                                    args && args.prompt
-                                      ? String(tool)
-                                      : undefined,
-                                }}
-                                startIndex={index}
-                                imageProps={{
-                                  loading: 'lazy',
-                                  blurhash: output.mediaAttributes?.blurhash,
-                                  className: 'max-h-[420px]',
-                                }}
-                                videoProps={{
-                                  className: 'max-h-[420px]',
-                                }}
-                              />
+                              >
+                                <LightboxTrigger
+                                  className="w-full h-full"
+                                  slide={{
+                                    type: 'video',
+                                    url: getCloudfrontOriginalUrl(
+                                      output.filename,
+                                    ),
+                                    thumbnail: getCloudfrontOriginalUrl(
+                                      output.filename,
+                                    ),
+                                    width: output.mediaAttributes?.width,
+                                    height: output.mediaAttributes?.height,
+                                    duration:
+                                      output.mediaAttributes?.duration ||
+                                      undefined,
+                                    description:
+                                      args && args.prompt
+                                        ? String(args.prompt)
+                                        : undefined,
+                                    title:
+                                      args && args.prompt
+                                        ? String(tool)
+                                        : undefined,
+                                  }}
+                                  startIndex={index}
+                                  imageProps={{
+                                    loading: 'lazy',
+                                    blurhash: output.mediaAttributes?.blurhash,
+                                    className: 'max-h-[420px]',
+                                  }}
+                                  videoProps={{
+                                    className: 'max-h-[420px]',
+                                  }}
+                                />
+                              </div>
                             )}
                             {output.creation && (
                               <CreationActionsMenu
@@ -117,7 +141,7 @@ export const TaskResultTool = makeAssistantToolUI({
                                   // @ts-expect-error faked taskv2
                                   task: { args },
                                 }}
-                                className="ml-auto z-50 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
+                                className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
                                 queryKey={['creations', output.creation?._id]}
                               />
                             )}

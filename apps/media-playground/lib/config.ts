@@ -29,8 +29,12 @@ export const env = {
 export const siteConfig: SiteConfig = {
   name: 'Eden',
   author: 'edenlabs',
-  description: 'Garden of Artificial Delights',
+  description: 'A Garden Of Artificial Delights',
   keywords: [
+    'agent',
+    'agents',
+    'assistant',
+    'character',
     'sdxl',
     'flux',
     'artist',
@@ -38,6 +42,15 @@ export const siteConfig: SiteConfig = {
     'stablediffusion',
     'generative art',
     'digital art',
+    'ai',
+    'ai art',
+    'ai image generation',
+    'ai image editing',
+    'ai image to video',
+    'ai video generation',
+    'ai video editing',
+    'ai video to image',
+    'ai image to video',
   ],
   url: {
     base: env.NEXT_PUBLIC_HOST,
@@ -51,7 +64,7 @@ export const siteConfig: SiteConfig = {
     github: 'https://github.com/edenartlabs/eden',
     discord: 'https://discord.com/invite/4dSYwDT',
   },
-  ogImage: `${env.NEXT_PUBLIC_HOST}/logo_badge_square.png`,
+  ogImage: `https://d14i3advvh2bvd.cloudfront.net/app/landing/logo_badge_square.png`,
   mediaErrorUrl:
     'https://d14i3advvh2bvd.cloudfront.net/7c31e443f964e9d0e99c2fd45bf0b042999045e224aa7e38cb91049dc8340c93.jpeg',
   publicRoutes: [

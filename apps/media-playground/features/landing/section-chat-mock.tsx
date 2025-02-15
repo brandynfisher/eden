@@ -87,7 +87,10 @@ export default async function SectionChatMock() {
     return {
       ...fetchedData,
       greeting: config.greeting,
-      suggestions: config.suggestions,
+      suggestions:
+        fetchedData?.suggestions && fetchedData?.suggestions.length > 0
+          ? fetchedData?.suggestions
+          : config.suggestions,
     }
   })
 

@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import customImageLoader from '@/image-loader'
+import { siteConfig } from '@/lib/config'
 import { ErrorName } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
@@ -90,7 +91,7 @@ const ModelMiniCard = ({ modelId, children, className }: Props) => {
         <Image
           className="max-w-16"
           loader={customImageLoader}
-          src={model?.thumbnail}
+          src={model?.thumbnail || siteConfig.mediaErrorUrl}
           alt={model?.name}
           width={64}
           height={64}

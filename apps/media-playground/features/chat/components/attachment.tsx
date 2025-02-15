@@ -109,6 +109,25 @@ const MyAttachment: FC = () => {
 
   return (
     <AttachmentPrimitive.Root
+      draggable
+      onDragStart={e => {
+        const url = canRemove
+          ? mediaType === 'audio'
+            ? fileUrl
+            : getCloudfrontOriginalUrl(fileUrl)
+          : src ?? siteConfig.mediaErrorUrl
+
+        e.dataTransfer.setData('text/plain', '') // Required for Firefox
+        e.dataTransfer.setData(
+          'application/json',
+          JSON.stringify({
+            fileUrl: url,
+            type: attachment.contentType || 'image/jpeg',
+            name: url, // Use the full URL as the name
+          }),
+        )
+        e.dataTransfer.effectAllowed = 'copy'
+      }}
       className={cn([
         'relative rounded-md border border-secondary cursor-pointer ',
         canRemove ? ' mt-2 hover:bg-accent' : 'w-auto items-center',

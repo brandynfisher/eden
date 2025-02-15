@@ -1,34 +1,24 @@
 'use client'
 
+import AgentActionsMenu from '@/components/button/agent-actions-menu'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-// import { Separator } from '@/components/ui/separator'
-// import { Badge } from '@/components/ui/badge'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
+import UserAvatarLink from '@/components/user/user-avatar-link'
+import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAgentDeploymentFormSheet,
   updateAgentFormSheet,
-  updateDeleteDialog,
-  updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { Agent } from '@edenlabs/eden-sdk'
-import axios from 'axios'
-import {
-  MessageSquareIcon,
-  RocketIcon,
-  SettingsIcon,
-  Share2Icon,
-  TrashIcon,
-} from 'lucide-react'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { MessageSquareIcon, RocketIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import React from 'react'
-import { toast } from 'sonner'
 
 type Props = {
   id: string
@@ -36,9 +26,11 @@ type Props = {
 }
 
 const AgentDetail = ({ id, agentSSRData }: Props) => {
-  const router = useRouter()
   const { isSignedIn, user } = useAuthState()
   const dispatch = useAppDispatch()
+  const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
+    FeatureFlag.FeatureDeployments,
+  )
 
   const { agent: agentClientData, invalidate } = useAgentQuery({
     key: id,
@@ -51,48 +43,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   const agent = agentClientData || agentSSRData
 
-  const onDeleteAgent = async () => {
-    const handleDelete = async () => {
-      try {
-        await axios.delete(`/api/agents/${id}`)
-        toast.success('Agent deleted', {
-          description: `Agent: ${agent?.name} deleted successfully`,
-          dismissible: true,
-          richColors: true,
-        })
-        router.push(`/creators/${user?.username}?tab=agents`)
-      } catch (error) {
-        toast.error('Failed to delete agent', {
-          description: `Agent: ${agent?.name} failed to delete`,
-          dismissible: true,
-          richColors: true,
-        })
-      }
-    }
-
-    dispatch(
-      updateDeleteDialog({
-        isOpen: true,
-        title: 'Delete Agent',
-        description: 'Are you sure you want to delete this agent?',
-        onDelete: handleDelete,
-      }),
-    )
-  }
-
   const onUpdateAgent = async () => {
     await invalidate()
-  }
-
-  const onShareAgent = () => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/agents/${agent?._id}`
-    dispatch(
-      updateShareModal({
-        isOpen: true,
-        shareUrl,
-      }),
-    )
   }
 
   const handleEditClick = () => {
@@ -100,7 +52,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
       updateAgentFormSheet({
         isOpen: true,
         mode: 'update',
-        agent,
+        agentId: agent?._id,
         onAction: onUpdateAgent,
       }),
     )
@@ -110,20 +62,21 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     dispatch(
       updateAgentDeploymentFormSheet({
         isOpen: true,
-        agent,
+        agentId: agent?._id,
       }),
     )
   }
 
   if (!agent) return null
+
   return (
     <>
-      <div className="relative p-6 bg-muted-darker rounded-md mx-4 mt-4">
-        <div className="relative flex">
-          <Avatar className="h-full aspect-[9/16] max-h-40 rounded-lg flex-shrink-0">
+      <div className="relative lg:flex lg:justify-between lg:gap-x-4 p-4 bg-muted-darker rounded-md mx-2 md:mx-4 mt-4">
+        <div className="relative flex flex-col sm:flex-row">
+          <Avatar className="aspect-square h-40 md:h-52 rounded-lg flex-shrink-0">
             {agent.userImage ? (
               <AvatarImage
-                className="object-cover rounded-lg"
+                className="object-cover rounded-lg shadow-md"
                 src={agent.userImage}
               />
             ) : (
@@ -133,21 +86,38 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
             )}
           </Avatar>
 
-          <div className="ml-4 flex flex-col flex-grow">
+          <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col flex-grow max-w-2xl">
             <div className="flex flex-wrap items-center justify-between">
-              <h1 className="text-2xl font-semibold mb-2 md:mb-0">
+              <h1 className="text-2xl font-semibold mb-2 sm:mb-0">
                 {agent?.name}
               </h1>
-              <div className="flex flex-wrap gap-2">
-                {user?._id === agent?.owner._id && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleEditClick}
-                    >
-                      <SettingsIcon size={18} />
-                    </Button>
+            </div>
+
+            <TextClampMore
+              lines={3}
+              text={agent?.description}
+              className="text-sm break-words sm:mt-4 text-muted-darker-foreground"
+            />
+
+            <div className="flex items-center mt-2 gap-x-1 text-sm text-muted-foreground mb-4">
+              <span className="mr-1">by</span>
+              <UserAvatarLink
+                name={agent.owner.username}
+                image={agent.owner.userImage}
+              />
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-auto">
+              {user?._id === agent?.owner._id && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleEditClick}
+                  >
+                    <SettingsIcon className="w-4 h-4" />
+                  </Button>
+                  {isFeatureDeploymentsEnabled && (
                     <Button
                       variant="outline"
                       size="icon"
@@ -155,65 +125,29 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     >
                       <RocketIcon size={18} />
                     </Button>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={onDeleteAgent}
-                    >
-                      <TrashIcon size={18} />
-                    </Button>
-                  </>
-                )}
-                <Button variant="outline" size="icon" onClick={onShareAgent}>
-                  <Share2Icon size={18} />
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link
-                    href={`/chat/${agent.username}`}
-                    className=" bg-purple-600/20 border-purple-600"
-                  >
-                    <MessageSquareIcon className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Chat</span>
-                  </Link>
-                </Button>
-              </div>
-            </div>
-
-            <TextClampMore
-              lines={3}
-              text={agent?.description}
-              className="text-sm break-words mt-4 text-muted-darker-foreground"
-            />
-
-            <div className="flex items-center mt-2 gap-x-1 text-sm text-muted-foreground">
-              by
-              <Link href={`/creators/${agent.owner.username}`}>
-                {agent.owner.username}
-              </Link>
+                  )}
+                  <AgentActionsMenu
+                    className="size-10"
+                    key={1}
+                    agent={agent}
+                    queryKey={['agents', id]}
+                    hiddenItems={['chat', 'view-details']}
+                  />
+                </>
+              )}
+              <Button variant="outline" asChild>
+                <Link
+                  href={`/chat/${agent.username}`}
+                  className=" bg-purple-600/20 border-purple-600"
+                >
+                  <MessageSquareIcon className="w-4 h-4 mr-2" />
+                  <span className="text-sm">Chat</span>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
-        {/* <Separator className="my-4" />
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent-foreground/5 rounded-md p-2">
-          <div>
-            Threads
-            <Badge variant="outline" className="bg-muted-darker">
-              {agent.threadCount}
-            </Badge>
-          </div>
-          <div>
-            Messages
-            <Badge variant="outline" className="bg-muted-darker">
-              {agent.threadCount}
-            </Badge>
-          </div>
-          <div>
-            Users
-            <Badge variant="outline" className="bg-muted-darker">
-              {agent.threadCount}
-            </Badge>
-          </div>
-        </div> */}
+        <AgentUsageStats agent={agent} className="mt-4 lg:mt-0 gap-2" />
       </div>
       <div className="p-4">
         {isSignedIn ? (

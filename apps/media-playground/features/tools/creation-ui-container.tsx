@@ -14,6 +14,7 @@ import ParameterGroupCollapse from '@/features/tools/parameters/parameter-group-
 import { groupParameters } from '@/features/tools/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useToolPreset } from '@/hooks/use-tool-preset'
+import { trackTaskCreate } from '@/lib/analytics'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { cn } from '@/lib/utils'
 import { calculateCost } from '@/utils/cost.util'
@@ -121,6 +122,8 @@ const CreationUIContainer = ({ tool }: Props) => {
         dismissible: true,
         richColors: true,
       })
+
+      trackTaskCreate(tool.key, cost)
 
       await refetchMe()
 

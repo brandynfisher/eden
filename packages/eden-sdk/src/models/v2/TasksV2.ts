@@ -180,7 +180,7 @@ export type TaskV2Args = {
 
 export type MediaOutput = {
   url?: string
-  thumbnail?: string
+  thumbnail?: string | null
   filename: string
   mediaAttributes?: MediaAttributes
 }

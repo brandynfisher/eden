@@ -9,6 +9,19 @@ export type AgentSuggestion = {
   prompt: string
 }
 
+export type AgentStats = {
+  threadCount: number
+  userCount: number
+  userMessageCount: number
+  assistantMessageCount: number
+  toolCallCount: number
+  threadCount_7d: number
+  userCount_7d: number
+  userMessageCount_7d: number
+  assistantMessageCount_7d: number
+  toolCallCount_7d: number
+  lastUpdated: Date
+}
 // Types
 export type Agent = Omit<
   Creator,
@@ -47,6 +60,7 @@ export type Agent = Omit<
   createdAt: Date
   updatedAt: Date
   public?: boolean
+  stats?: AgentStats
 }
 
 export type AgentClientType = 'discord' | 'telegram' | 'twitter' | 'farcaster'
@@ -135,6 +149,14 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
   }
 }
 
+export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
+  agentId: string
+  platform: AgentClientType
+  config?: {
+    discord?: DiscordDeploymentConfig
+    telegram?: TelegramDeploymentConfig
+  }
+}
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
   agentId: string
   platform: AgentClientType
@@ -198,14 +220,29 @@ export const agentsDeployRequestConfig = (
   }
 }
 
+export const agentsUpdateDeploymentRequestConfig = (
+  args: AgentsUpdateDeploymentArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `v2/agents/${args.agentId}/deployments`,
+    data: {
+      platform: args.platform,
+      config: args.config,
+    },
+  }
+}
+
 export const agentsStopDeploymentRequestConfig = (
   args: AgentsStopDeploymentArguments,
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
     url: `v2/agents/${args.agentId}/deployments/stop`,
+    data: args,
   }
 }
+
 export const agentsDeleteDeploymentRequestConfig = (
   args: AgentsDeleteDeploymentArguments,
 ): AxiosRequestConfig => {
@@ -226,19 +263,7 @@ export const agentsDeleteRequestConfig = (
 
 // Responses
 export type AgentsGetDeploymentsResponse = WebAPICallResult & {
-  deployments: {
-    discord: {
-      deployment: Deployment
-      allowedChannels: Agent['discordChannelAllowlist']
-    }
-    telegram: {
-      deployment: Deployment
-      allowedTopics: Agent['telegramTopicAllowlist']
-    }
-    farcaster: {
-      deployment: Deployment
-    }
-  }
+  deployments: Deployment[]
   error?: string
 }
 
@@ -259,6 +284,11 @@ export type AgentsUpdateResponse = WebAPICallResult & {
 
 export type AgentsDeployResponse = WebAPICallResult & {
   deployment_id: string
+  error?: string
+}
+
+export type AgentsUpdateDeploymentResponse = WebAPICallResult & {
+  deploymentId: string
   error?: string
 }
 

@@ -1,5 +1,6 @@
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
 import customImageLoader from '@/image-loader'
+import { siteConfig } from '@/lib/config'
 import { TaskV2, TaskV2Result } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import Image from 'next/image'
@@ -24,7 +25,7 @@ const TimelineItemModelResult = ({ result, task, index, queryKey }: Props) => {
           >
             <Image
               loader={customImageLoader}
-              src={output.thumbnail || ''}
+              src={output.thumbnail || siteConfig.mediaErrorUrl}
               alt={task.args.name || ''}
               width={1024}
               height={1024}

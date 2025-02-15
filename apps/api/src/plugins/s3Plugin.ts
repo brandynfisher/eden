@@ -308,6 +308,28 @@ export const forceCloudfrontUrl = (
   server: FastifyInstance,
   url: string,
 ): string => {
+  // console.log('url', url)
+  // console.log('server.config.AWS_CLOUDFRONT_URL', server.config.AWS_CLOUDFRONT_URL)
+  if (url.startsWith('https://')) {
+    if (
+      server.config.AWS_CLOUDFRONT_URL &&
+      url.startsWith(server.config.AWS_CLOUDFRONT_URL)
+    ) {
+      // console.log('returning cloudfront url', url)
+      return url
+    }
+
+    if (
+      server.config.AWS_S3_BUCKET &&
+      !url.includes(server.config.AWS_S3_BUCKET)
+    ) {
+      // console.log('returning non-s3 url', url)
+      return url
+    }
+  }
+
+  // console.log('returning cloudfront formatted url', url)
+
   const baseUrl = s3BaseUrl(server)
 
   // Construct a full URL if the provided string is a relative URL, does nothing otherwise
@@ -319,6 +341,8 @@ export const forceCloudfrontUrl = (
 
   // Create the new CloudFront URL by appending the filename to the base URL
   const cloudfrontUrl = `${baseUrl}/${filename}`
+
+  // console.log('cloudfrontUrl', cloudfrontUrl)
 
   return cloudfrontUrl
 }

@@ -73,47 +73,57 @@ export const DeploymentFormFooter = ({
     const toastId = toast.loading(loadingMessage)
 
     try {
-      const payload: AgentsDeployArguments = {
-        agentId,
-        platform: platform as AgentClientType,
-      }
-
+      let config = {}
       if (platform === 'discord') {
-        payload.secrets = {
-          discord: {
-            token: data.token,
-          },
-        }
-        payload.config = {
+        config = {
           discord: {
             channel_allowlist: data.allowedChannels,
           },
         }
-      }
-
-      if (platform === 'telegram') {
-        payload.secrets = {
-          telegram: {
-            token: data.token,
-          },
-        }
-        payload.config = {
+      } else if (platform === 'telegram') {
+        config = {
           telegram: {
             topic_allowlist: data.allowedTopics,
           },
         }
       }
 
-      if (platform === 'farcaster') {
-        payload.secrets = {
-          farcaster: {
-            mnemonic: data.mnemonic,
-            neynarWebhookSecret: data.neynarWebhookSecret,
-          },
+      if (isDeployed) {
+        await axios.patch(`/api/agents/${agentId}/deployments`, {
+          agentId,
+          platform,
+          config,
+        })
+      } else {
+        const payload: AgentsDeployArguments = {
+          agentId,
+          platform: platform as AgentClientType,
+          config,
         }
-      }
 
-      await axios.post(`/api/agents/${agentId}/deployments`, payload)
+        if (platform === 'discord') {
+          payload.secrets = {
+            discord: {
+              token: data.token,
+            },
+          }
+        } else if (platform === 'telegram') {
+          payload.secrets = {
+            telegram: {
+              token: data.token,
+            },
+          }
+        } else if (platform === 'farcaster') {
+          payload.secrets = {
+            farcaster: {
+              mnemonic: data.mnemonic,
+              neynarWebhookSecret: data.neynarWebhookSecret,
+            },
+          }
+        }
+
+        await axios.post(`/api/agents/${agentId}/deployments`, payload)
+      }
 
       toast.success(successMessage, {
         id: toastId,

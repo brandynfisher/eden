@@ -32,7 +32,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
             className="flex justify-center items-center h-full"
             slide={{
               url: creation.url!,
-              thumbnail: creation.thumbnail,
+              thumbnail: creation.thumbnail || undefined,
               width: creation.mediaAttributes?.width,
               height: creation.mediaAttributes?.height,
               duration: creation.mediaAttributes?.duration || undefined,
@@ -48,6 +48,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
                   : undefined,
             }}
             imageProps={{
+              customLoader: true,
               className: isModal
                 ? 'max-h-[calc(100dvh_-_130px)]'
                 : 'max-h-[calc(100dvh_-_230px)]',
@@ -57,7 +58,7 @@ const CreationMediaPreview = ({ creation, isModal }: Props) => {
               className: isModal
                 ? 'max-h-[calc(100dvh_-_130px)]'
                 : 'max-h-[calc(100dvh_-_230px)]',
-              poster: creation.thumbnail,
+              poster: creation.thumbnail || undefined,
               duration: null,
               controls: true,
               autoPlay: true,

@@ -3,6 +3,7 @@ import { IMAGE_MIME_TYPES } from '../../lib/constants'
 import { getSimilarCreationIds } from '../../lib/similar'
 import { Agent } from '../../models/Agent'
 import { Embedding, EmbeddingDocument } from '../../models/Embedding'
+import { User } from '../../models/User'
 import {
   CollectionV2,
   CollectionV2Document,
@@ -18,6 +19,7 @@ import {
 import {
   CursorPaginatedFeedQuery,
   FeedAgentCursorResponse,
+  FeedCreatorCursorResponse,
   ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -996,7 +998,7 @@ export const getModelsFeedCursorV2 = async (
     }
 
     feed.docs.forEach(doc => {
-      if (doc) {
+      if (doc && doc.thumbnail) {
         doc.thumbnail = s3ThumbnailUrl(server, doc.thumbnail || '', 1024)
       }
     })
@@ -1152,10 +1154,6 @@ export const getAgentsFeedCursor = async (
       owner: 1,
       name: 1,
       description: 1,
-      persona: 1,
-      greeting: 1,
-      knowledge: 1,
-      suggestions: 1,
       model: 1,
       username: 1,
       userImage: 1,
@@ -1163,6 +1161,7 @@ export const getAgentsFeedCursor = async (
       updatedAt: 1,
       public: 1,
       deleted: 1,
+      stats: 1,
     },
   })
 
@@ -1235,6 +1234,113 @@ export const getAgentsFeedCursor = async (
         doc.userImage = forceCloudfrontUrl(server, doc.userImage || '')
       }
     })
+
+    reply.send(feed)
+  } catch (error) {
+    reply.code(500).send({ error: 'Internal Server Error' })
+  }
+}
+
+export const getCreatorsFeedCursor = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { query } = request
+  const { userId: authUserId } = request.user || {}
+
+  const { filters, sortOptions, customFilterOptions } = await handleArguments({
+    server,
+    reply,
+    authUserId,
+    query: query as CursorPaginatedFeedQuery,
+    usesPrivacy: false,
+  })
+
+  const { search } = customFilterOptions
+
+  const { cursor, limit } = query as CursorPaginatedFeedQuery
+
+  let results = []
+
+  const pipeline = await createPipeline({
+    limit: limit ?? 100,
+    sortOptions: { ...sortOptions, _id: -1 },
+    cursor,
+  })
+
+  const feedPipeline: PipelineStage[] = []
+
+  if (search) {
+    feedPipeline.push({
+      $search: {
+        index: 'user_username_name',
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: search,
+                path: 'username',
+              },
+            },
+            {
+              text: {
+                query: search,
+                path: 'username',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+            {
+              autocomplete: {
+                query: search,
+                path: 'name',
+              },
+            },
+            {
+              text: {
+                query: search,
+                path: 'name',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+        },
+      },
+    })
+  }
+
+  feedPipeline.push(
+    { $match: { ...filters, userId: { $ne: null } } },
+    ...pipeline,
+  )
+
+  console.log(JSON.stringify(feedPipeline, null, 2))
+
+  results = await User.aggregate(feedPipeline)
+
+  const feed: FeedCreatorCursorResponse = {
+    docs: results,
+  }
+
+  try {
+    feed.nextCursor =
+      results && results.length && results[results.length - 1]._id
+
+    if (customFilterOptions.createdAt) {
+      feed.nextValue =
+        results && results.length && results[results.length - 1].createdAt
+    }
+
+    // feed.docs?.forEach(doc => {
+    //   if (doc && doc.userImage) {
+    //     doc.userImage = forceCloudfrontUrl(server, doc.userImage || '')
+    //   }
+    // })
 
     reply.send(feed)
   } catch (error) {

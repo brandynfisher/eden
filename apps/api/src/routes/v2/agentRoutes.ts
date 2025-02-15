@@ -6,6 +6,7 @@ import {
   getAgent,
   getAgentDeployments,
   updateAgent,
+  updateAgentDeployment,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -192,6 +193,15 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deployAgent(server, request, reply),
+  })
+
+  server.patch('/v2/agents/:agentId/deployments', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Update an agent deployment',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateAgentDeployment(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId/deployments/:platform', {

@@ -344,7 +344,9 @@ const injectUrlsToMediaOutput = (
   return {
     ...output,
     url: s3Url(server, output.filename),
-    thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+    thumbnail: thumbnailName
+      ? s3ThumbnailUrl(server, thumbnailName, thumbnailSize)
+      : null,
   }
 }
 
@@ -360,7 +362,7 @@ const injectResultUrls = (
   if (Array.isArray(result.output)) {
     result.output = result.output.map(output => {
       const thumbnailName = isModelResult
-        ? output.thumbnail || ''
+        ? output.model?.thumbnail || ''
         : output.filename
 
       const thumbnailSize = 1024 // get rid of this special handling once model thumbnails are in line with creations
@@ -368,7 +370,11 @@ const injectResultUrls = (
       return {
         ...output,
         url: s3Url(server, output.filename),
-        thumbnail: s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
+        thumbnail: isModelResult
+          ? output.model?.thumbnail
+            ? s3Url(server, output.model?.thumbnail || '')
+            : null
+          : s3ThumbnailUrl(server, thumbnailName, thumbnailSize),
       }
     })
   }
@@ -391,6 +397,8 @@ const injectResultUrls = (
       ),
     )
   }
+
+  console.log(JSON.stringify(result, null, 2))
 
   return result
 }

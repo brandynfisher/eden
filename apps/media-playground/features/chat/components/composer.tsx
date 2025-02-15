@@ -89,8 +89,32 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
     const handleDrop = async (e: DragEvent) => {
       e.preventDefault()
       setIsDragging(false)
-      const files = Array.from(e.dataTransfer?.files || [])
-      await handleFilesDropped(files)
+
+      if (!e.dataTransfer) return
+
+      // Handle files from external sources
+      const externalFiles = Array.from(e.dataTransfer.files || [])
+      if (externalFiles.length > 0) {
+        await handleFilesDropped(externalFiles)
+        return
+      }
+
+      // Handle internally dragged attachments
+      try {
+        const attachmentData = e.dataTransfer.getData('application/json')
+        if (attachmentData) {
+          const data = JSON.parse(attachmentData)
+          // Create a minimal file object with the fileUrl property
+          const file = new File(['[uploaded]'], data.name, {
+            type: data.type,
+          }) as File & { fileUrl: string; isPreUploaded?: boolean }
+          file.fileUrl = data.fileUrl
+          file.isPreUploaded = true // Signal that this file is already on S3
+          await composerRuntime.addAttachment(file)
+        }
+      } catch (error) {
+        console.error('Error handling internal file drop:', error)
+      }
     }
 
     const handleDragEnter = (e: DragEvent) => {
@@ -137,10 +161,13 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
       <div className="flex items-center justify-between gap-2 md:gap-3 py-2 px-2 md:px-4 h-[58px] w-full">
         {isReadOnly === true ? (
           <>
-            <div className="flex flex-wrap items-center gap-2 md:gap-3 py-2 md:px-4 border border-secondary rounded-lg bg-muted-darker">
-              <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
+            <div className="flex flex-wrap items-center gap-2 px-2 md:gap-3 py-2 md:px-4 border border-secondary rounded-lg bg-muted-darker">
+              <PencilOffIcon className="w-4 h-4 text-muted-foreground hidden lg:block" />
               <p className="text-sm ">
-                Read-only view of another user's thread.
+                Read-only view{' '}
+                <span className="hidden lg:inline">
+                  of another user's thread.
+                </span>
               </p>
             </div>
             <Button variant="outline" asChild>
@@ -160,6 +187,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
 
   return (
     <Composer.Root
+      className="relative z-[51] bg-accent-foreground/5 items-start"
       onSubmit={async (evt: FormEvent<HTMLFormElement>) => {
         if (!isSignedIn) {
           evt.preventDefault()
@@ -176,7 +204,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
         <Composer.AddAttachment />
       </AuthClickGuard>
 
-      <Composer.Input autoFocus className="text-base" />
+      <Composer.Input autoFocus className="text-base" minRows={2} />
 
       <ThreadPrimitive.If running={true}>
         <div className="flex items-center gap-3 h-full">

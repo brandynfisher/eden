@@ -2,10 +2,17 @@
 
 import { useEdenRuntimeExtras } from './hooks/useEdenRuntime'
 import AlertDestructive from '@/components/alert/alert-destructive'
+import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
@@ -31,13 +38,21 @@ import { useAppDispatch } from '@/stores/store'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
+  useAssistantRuntime,
   useThreadListItem,
 } from '@assistant-ui/react'
 import { Agent } from '@edenlabs/eden-sdk'
-import { EditIcon, MessageSquareIcon, SettingsIcon } from 'lucide-react'
+import axios from 'axios'
+import {
+  EditIcon,
+  MessageSquareIcon,
+  MoreHorizontal,
+  SettingsIcon,
+  TrashIcon,
+} from 'lucide-react'
 import Link from 'next/link'
-import * as React from 'react'
 import { FC, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const isNewSelected = useThreadListItem(t => t.id === 'DEFAULT_THREAD_ID')
@@ -62,24 +77,76 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-const ThreadListItemTrigger: FC<{ onItemClick?: () => void }> = ({
-  onItemClick,
-}) => {
-  // const thread = useThreadListItem()
-  // console.log("thread", thread)
+const ThreadListItemTrigger: FC<{
+  onItemClick?: () => void
+}> = ({ onItemClick }) => {
+  const id = useThreadListItem(t => t.id)
+  const agentId = useEdenRuntimeExtras(extras => extras.agentId)
+  const { invalidate } = useThreadListQuery({ agentId })
+  const runtime = useAssistantRuntime()
+
+  const deleteThread = async (threadId: string) => {
+    try {
+      await axios.delete(`/api/threads/${threadId}`)
+
+      if (threadId === id) {
+        runtime.threads.switchToNewThread()
+      }
+
+      await invalidate()
+
+      toast.success('Thread deleted', {
+        description: 'Your thread has been deleted.',
+        dismissible: true,
+        richColors: true,
+      })
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to delete thread', {
+        description: 'Please try again later.',
+        dismissible: true,
+        richColors: true,
+      })
+    }
+  }
+
   return (
     <ThreadListItemPrimitive.Trigger
-      className="flex-grow text-start truncate px-3 py-2 w-full"
+      className="relative flex group items-center justify-between flex-grow w-full gap-1"
       onClick={onItemClick}
     >
-      <ThreadListItemPrimitive.Title fallback="Untitled" />
+      <div className="overflow-hidden whitespace-nowrap text-ellipsis px-3 py-2 ">
+        <ThreadListItemPrimitive.Title fallback="Untitled" />
+      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 h-6 w-6 mr-1 hidden [&[data-state=open]]:flex group-hover:flex [@media(pointer:coarse)]:flex"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="[&[data-state=closed]]:hidden">
+          <DropdownMenuItem
+            className="flex items-center gap-2 text-destructive hover:!text-destructive"
+            onClick={() => deleteThread(id)}
+          >
+            <TrashIcon className="size-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </ThreadListItemPrimitive.Trigger>
   )
 }
 
-const ThreadListItem: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
+const ThreadListItem: FC<{
+  onItemClick?: () => void
+}> = ({ onItemClick }) => {
   return (
-    <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all pr-3">
+    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all">
       <ThreadListItemTrigger onItemClick={onItemClick} />
     </ThreadListItemPrimitive.Root>
   )
@@ -237,7 +304,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
       updateAgentFormSheet({
         isOpen: true,
         mode: 'update',
-        agent,
+        agentId: agentId,
         onAction: async () => {
           await invalidate()
         },
@@ -289,19 +356,25 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         <div className="bg-muted/40 border-b px-3 py-2 md:hidden flex items-center gap-2">
           <Header />
           <div className="ml-auto flex items-center gap-2">
-            <AgentLink
-              agent={agent}
-              className={cn(isOwner ? 'max-w-[120px]' : 'max-w-full')}
-            />
-            {isOwner && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 size-8"
-                onClick={handleEditClick}
-              >
-                <SettingsIcon className="size-4" />
-              </Button>
+            {agent ? (
+              <>
+                <AgentLink
+                  agent={agent}
+                  className={cn(isOwner ? 'max-w-[120px]' : 'max-w-full')}
+                />
+                {isOwner && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 size-8"
+                    onClick={handleEditClick}
+                  >
+                    <SettingsIcon className="size-4" />
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Skeleton className="w-[120px] h-8" />
             )}
           </div>
         </div>
@@ -309,21 +382,27 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         {/* DESKTOP-ONLY SIDEBAR */}
         <aside className="hidden bg-muted/40 border-r px-3 py-2 md:flex md:flex-col">
           <div className="flex items-center justify-between gap-2 ml-2">
-            <AgentLink
-              agent={agent}
-              className={cn(
-                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
-              )}
-            />
-            {isOwner && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 size-8"
-                onClick={handleEditClick}
-              >
-                <SettingsIcon className="size-4" />
-              </Button>
+            {agent ? (
+              <>
+                <AgentLink
+                  agent={agent}
+                  className={cn(
+                    isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
+                  )}
+                />
+                {isOwner && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 size-8"
+                    onClick={handleEditClick}
+                  >
+                    <SettingsIcon className="size-4" />
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Skeleton className="w-[120px] h-8" />
             )}
           </div>
           <Separator orientation="horizontal" className="my-2 mb-1" />
@@ -335,52 +414,54 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         </aside>
 
         {/* MAIN CONTENT (occupies the entire space on mobile, column 2 on md) */}
-        <main className="bg-background overflow-hidden flex flex-col">
-          <Thread
-            components={{
-              ThreadWelcome: MyThreadWelcome,
-              // @ts-expect-error We're extending composer hackishly with drag and drop
-              Composer: MyComposer,
-            }}
-            welcome={{
-              suggestions: [
-                {
-                  text: 'List your tools',
-                  prompt:
-                    'Provide a short and concise list of all tools you have access to. Add a very brief description / use case for each.',
+        <main className="bg-accent overflow-hidden flex flex-col">
+          {!agent ? (
+            <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
+              <LoadingIndicator className="w-10 h-10 text-purple-600" />
+            </div>
+          ) : (
+            <Thread
+              components={{
+                //@ts-expect-error We're extending thread welcome hackishly with children
+                ThreadWelcome: MyThreadWelcome,
+                // @ts-expect-error We're extending composer hackishly with drag and drop
+                Composer: MyComposer,
+              }}
+              welcome={{
+                suggestions:
+                  agent?.suggestions && agent?.suggestions.length > 0
+                    ? agent?.suggestions.map(suggestion => ({
+                        text: suggestion.label,
+                        prompt: suggestion.prompt,
+                      }))
+                    : undefined,
+                message: agent?.greeting ?? 'What do you want to create today?',
+              }}
+              assistantAvatar={{
+                src: getCloudfrontOriginalUrl(agent?.userImage),
+                fallback: agent?.name,
+                alt: agent?.name,
+              }}
+              assistantMessage={{
+                allowReload: false,
+                allowSpeak: false,
+                components: {
+                  Text: MarkdownText,
+                  ToolFallback,
                 },
-                {
-                  text: 'Make something beautiful',
-                  prompt:
-                    'Make a beautiful image of the first thing that comes to mind',
-                },
-              ],
-              message: agent?.greeting || 'What do you want to create today?',
-            }}
-            assistantAvatar={{
-              src: getCloudfrontOriginalUrl(agent?.userImage),
-              fallback: agent?.name,
-              alt: agent?.name,
-            }}
-            assistantMessage={{
-              allowReload: false,
-              allowSpeak: false,
-              components: {
-                Text: MarkdownText,
-                ToolFallback,
-              },
-            }}
-            userMessage={{
-              allowEdit: false,
-            }}
-            branchPicker={{
-              allowBranchPicker: false,
-            }}
-            composer={{
-              allowAttachments: true,
-            }}
-            tools={[TaskResultTool]}
-          />
+              }}
+              userMessage={{
+                allowEdit: false,
+              }}
+              branchPicker={{
+                allowBranchPicker: false,
+              }}
+              composer={{
+                allowAttachments: true,
+              }}
+              tools={[TaskResultTool]}
+            />
+          )}
 
           {isError ? (
             <div className="p-4">

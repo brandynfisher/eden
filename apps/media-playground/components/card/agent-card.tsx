@@ -3,6 +3,14 @@ import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
+import { formatCompactNumber } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -36,13 +44,13 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
         </div>
       ) : null}
 
-      <div className="relative flex p-2">
-        <div className="relative flex-grow">
-          <Link
-            href={`/agents/${agent.username}`}
-            prefetch={false}
-            className="block"
-          >
+      <Link
+        href={`/agents/${agent.username}`}
+        prefetch={false}
+        className="block"
+      >
+        <div className="relative flex p-2">
+          <div className="relative flex-grow shrink-0">
             <div className="relative flex">
               <CardImage
                 media={{
@@ -54,36 +62,68 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                   blurhash: agent.blurhash,
                 }}
                 unoptimized={true}
-                className="object-cover rounded-lg w-[90px] h-[132px] flex-shrink-0 flex-grow-0"
+                className="object-cover rounded-lg aspect-square h-[140px] flex-shrink-0 flex-grow-0"
               />
-              <div className="ml-3 flex flex-col w-full">
-                <span className="font-semibold text-sm mr-auto">
-                  {agent.name}
-                </span>
+            </div>
+          </div>
 
-                <div className="text-xs text-accent-foreground line-clamp-3 mt-2">
-                  {agent.description}
-                </div>
+          <div className="flex gap-2 flex-col ml-3 w-full">
+            <div className="flex gap-1 flex-col w-full">
+              <span className="font-semibold text-sm mr-auto">
+                {agent.name}
+              </span>
 
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-auto">
-                  by{' '}
-                  <span className="font-semibold">{agent.owner.username}</span>
-                </div>
+              <div className="text-xs text-accent-foreground line-clamp-3">
+                {agent.description}
               </div>
             </div>
-          </Link>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground w-full">
+              by <span className="font-semibold">{agent.owner.username}</span>
+            </div>
+          </div>
         </div>
-
-        <div className="flex flex-col justify-between ml-2 h-[132px]">
+      </Link>
+      <div className="absolute bottom-0 right-0 p-2 w-[calc(100%-140px)] flex items-center justify-between shrink-0 pointer-events-none">
+        <div className="flex items-center gap-1 ml-auto">
+          <div className="flex items-center gap-1">
+            <TooltipProvider>
+              <Tooltip>
+                <div className="flex items-stretch h-9">
+                  <TooltipTrigger
+                    asChild
+                    className="pointer-events-auto cursor-help rounded-l-lg rounded-r-none border border-r-0 px-2 flex items-center bg-muted-darker/60 hover:text-primary text-muted-foreground"
+                  >
+                    <div className="text-xs font-mono w-12 flex justify-end">
+                      {formatCompactNumber(agent.stats?.userMessageCount)}
+                    </div>
+                  </TooltipTrigger>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    asChild
+                    aria-label="Chat with agent"
+                    className="pointer-events-auto rounded-l-none h-auto"
+                  >
+                    <Link
+                      title="Chat with agent"
+                      href={`/chat/${agent.username}`}
+                      className="w-9 h-9 text-muted-foreground group-hover:text-primary"
+                    >
+                      <MessageSquareIcon className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                </div>
+                <TooltipContent>
+                  <AgentUsageStats
+                    className="my-0 gap-2 !flex-col"
+                    agent={agent}
+                    showTooltipAsText={true}
+                  />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <AgentActionsMenu agent={agent} queryKey={queryKey} />
-          <Button size="icon" variant="outline" asChild>
-            <Link
-              href={`/chat/${agent.username}`}
-              className="w-9 h-9 text-muted-foreground group-hover:text-primary"
-            >
-              <MessageSquareIcon className="w-4 h-4" />
-            </Link>
-          </Button>
         </div>
       </div>
     </Card>
