@@ -224,12 +224,6 @@ export const getThread = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user || {}
-  // if (!userId) {
-  //   return reply.status(400).send({
-  //     message: 'User missing from request',
-  //   })
-  // }
-
   const { thread_id } = request.params as ThreadsGetArguments
 
   const authUser = userId ? await User.findById(userId) : null
