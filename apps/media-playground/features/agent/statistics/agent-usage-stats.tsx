@@ -8,19 +8,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { formatCompactNumber } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { useEffect, useState } from 'react'
-
-const formatNumber = (num: number | undefined) => {
-  if (num === undefined) return '0'
-  return new Intl.NumberFormat('en-US', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  })
-    .format(num)
-    .toLowerCase()
-}
 
 const StatsHintContent = ({ formattedDate }: { formattedDate: string }) => {
   return (
@@ -50,37 +41,37 @@ export default function AgentUsageStats({
   const stats = [
     {
       label: 'Users',
-      value: formatNumber(agent.stats?.userCount),
+      value: formatCompactNumber(agent.stats?.userCount),
       raw: agent.stats?.userCount,
-      value7d: formatNumber(agent.stats?.userCount_7d),
+      value7d: formatCompactNumber(agent.stats?.userCount_7d),
       raw7d: agent.stats?.userCount_7d,
     },
     {
       label: 'Threads',
-      value: formatNumber(agent.stats?.threadCount),
+      value: formatCompactNumber(agent.stats?.threadCount),
       raw: agent.stats?.threadCount,
-      value7d: formatNumber(agent.stats?.threadCount_7d),
+      value7d: formatCompactNumber(agent.stats?.threadCount_7d),
       raw7d: agent.stats?.threadCount_7d,
     },
     {
       label: 'Messages',
-      value: formatNumber(agent.stats?.userMessageCount),
+      value: formatCompactNumber(agent.stats?.userMessageCount),
       raw: agent.stats?.userMessageCount,
-      value7d: formatNumber(agent.stats?.userMessageCount_7d),
+      value7d: formatCompactNumber(agent.stats?.userMessageCount_7d),
       raw7d: agent.stats?.userMessageCount_7d,
     },
     {
       label: 'Replies',
-      value: formatNumber(agent.stats?.assistantMessageCount),
+      value: formatCompactNumber(agent.stats?.assistantMessageCount),
       raw: agent.stats?.assistantMessageCount,
-      value7d: formatNumber(agent.stats?.assistantMessageCount_7d),
+      value7d: formatCompactNumber(agent.stats?.assistantMessageCount_7d),
       raw7d: agent.stats?.assistantMessageCount_7d,
     },
     {
       label: 'Tool Calls',
-      value: formatNumber(agent.stats?.toolCallCount),
+      value: formatCompactNumber(agent.stats?.toolCallCount),
       raw: agent.stats?.toolCallCount,
-      value7d: formatNumber(agent.stats?.toolCallCount_7d),
+      value7d: formatCompactNumber(agent.stats?.toolCallCount_7d),
       raw7d: agent.stats?.toolCallCount_7d,
     },
   ]
@@ -96,7 +87,7 @@ export default function AgentUsageStats({
           <Tooltip>
             <TooltipTrigger
               className={cn(
-                'flex justify-items-start flex-shrink-0 items-center gap-x-2 text-xs bg-muted p-1 pr-2 rounded-lg border border-secondary',
+                'cursor-help flex justify-items-start flex-shrink-0 items-center gap-x-2 text-xs bg-muted p-1 pr-2 rounded-lg border border-secondary',
                 !showTooltipAsText && label === 'Tool Calls'
                   ? 'hidden md:flex'
                   : '',
@@ -117,8 +108,8 @@ export default function AgentUsageStats({
               <span className="text-xs shrink-0">{label}</span>
             </TooltipTrigger>
             <TooltipContent className="flex flex-col gap-1 text-xs">
-              <div>Last 24h: {value}</div>
               <div>Last 7d: {value7d}</div>
+              <div>Total: {value}</div>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

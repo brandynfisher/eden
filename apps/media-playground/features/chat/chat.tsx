@@ -112,19 +112,23 @@ const ThreadListItemTrigger: FC<{
 
   return (
     <ThreadListItemPrimitive.Trigger
-      className="flex items-center justify-between flex-grow px-3 py-2 w-full"
+      className="relative flex group items-center justify-between flex-grow w-full gap-1"
       onClick={onItemClick}
     >
-      <div className="max-w-[calc(100%-2.5rem)] overflow-hidden whitespace-nowrap text-ellipsis">
+      <div className="overflow-hidden whitespace-nowrap text-ellipsis px-3 py-2 ">
         <ThreadListItemPrimitive.Title fallback="Untitled" />
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="shrink-0 size-6">
-            <MoreHorizontal className="size-4" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 h-6 w-6 mr-1 hidden [&[data-state=open]]:flex group-hover:flex [@media(pointer:coarse)]:flex"
+          >
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent className="[&[data-state=closed]]:hidden">
           <DropdownMenuItem
             className="flex items-center gap-2 text-destructive hover:!text-destructive"
             onClick={() => deleteThread(id)}

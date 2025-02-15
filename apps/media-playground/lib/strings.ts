@@ -23,3 +23,13 @@ export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
 export function capitalize<T extends string>(str: T): Capitalize<T> {
   return (str.charAt(0).toUpperCase() + str.slice(1)) as Capitalize<T>
 }
+
+export const formatCompactNumber = (num: number | undefined) => {
+  if (num === undefined) return '0'
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  })
+    .format(num)
+    .toLowerCase()
+}

@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
+import { formatCompactNumber } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -87,9 +88,12 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
           <div className="flex items-center gap-1">
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild className="pointer-events-auto">
-                  <span className="text-xs text-muted-foreground">
-                    {agent.stats?.userMessageCount}
+                <TooltipTrigger
+                  asChild
+                  className="pointer-events-auto cursor-help"
+                >
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {formatCompactNumber(agent.stats?.userMessageCount)}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
