@@ -58,9 +58,9 @@ export class AuthErrorBoundary extends Component<PropsWithChildren, State> {
 
   render() {
     if (this.state.hasError) {
-      const isTokenError = this.state.error?.message?.includes(
-        'Token refresh failed',
-      )
+      const isTokenError =
+        this.state.error?.message?.includes('Token refresh failed') ||
+        this.state.error?.message?.includes('ClerkJS: Network error')
 
       if (isTokenError && this.state.retryCount < MAX_RETRIES) {
         this.retryAuth()
