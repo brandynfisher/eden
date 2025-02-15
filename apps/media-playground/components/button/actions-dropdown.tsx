@@ -31,7 +31,7 @@ const ActionsDropdown = ({
           size={size || undefined}
           variant="outline"
           className={cn([
-            `flex group items-center justify-center cursor-pointer w-9 h-9 p-2`,
+            `flex group items-center justify-center cursor-pointer w-9 h-9 p-2 pointer-events-auto`,
             className,
           ])}
         >

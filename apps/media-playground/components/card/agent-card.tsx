@@ -83,8 +83,8 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
           </div>
         </div>
       </Link>
-      <div className="absolute bottom-0 right-0 p-2 w-[calc(100%-140px)] flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-1 ml-auto pointer-events-none">
+      <div className="absolute bottom-0 right-0 p-2 w-[calc(100%-140px)] flex items-center justify-between shrink-0 pointer-events-none">
+        <div className="flex items-center gap-1 ml-auto">
           <div className="flex items-center gap-1">
             <TooltipProvider>
               <Tooltip>
