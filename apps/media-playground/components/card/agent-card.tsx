@@ -3,6 +3,13 @@ import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -77,9 +84,23 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
 
               <div className="flex items-center gap-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-muted-foreground">
-                    {agent.stats?.userMessageCount}
-                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-xs text-muted-foreground">
+                          {agent.stats?.userMessageCount}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <AgentUsageStats
+                          className="mt-0"
+                          agent={agent}
+                          showTooltipAsText={true}
+                        />
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
                   <Button size="icon" variant="outline" asChild>
                     <Link
                       href={`/chat/${agent.username}`}

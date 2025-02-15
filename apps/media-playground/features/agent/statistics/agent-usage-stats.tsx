@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { HelpCircle } from 'lucide-react'
 import React from 'react'
@@ -30,7 +31,15 @@ const getMagnitudeStyle = (num: number | undefined) => {
   return 'bg-blue-600/10 border-blue-600/10'
 }
 
-export default function AgentUsageStats({ agent }: { agent: Agent }) {
+export default function AgentUsageStats({
+  agent,
+  className,
+  showTooltipAsText = false,
+}: {
+  agent: Agent
+  className?: string
+  showTooltipAsText?: boolean
+}) {
   const [formattedDate, setFormattedDate] = React.useState<string>('')
 
   React.useEffect(() => {
@@ -66,7 +75,12 @@ export default function AgentUsageStats({ agent }: { agent: Agent }) {
     },
   ]
   return (
-    <div className="flex flex-col rounded-md mt-4 text-sm text-muted-foreground">
+    <div
+      className={cn(
+        'flex flex-col rounded-md mt-4 text-sm text-muted-foreground',
+        className,
+      )}
+    >
       <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-2 md:gap-4">
         {stats.map(({ label, value, raw }) => (
           <span
@@ -90,19 +104,27 @@ export default function AgentUsageStats({ agent }: { agent: Agent }) {
             {label}
           </span>
         ))}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger className="ml-auto hidden md:block">
-              <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent className="text-xs">
-              Statistics may not reflect real-time data
-              <br />
-              Last update: {formattedDate}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {!showTooltipAsText && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger className="ml-auto hidden md:block">
+                <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="text-xs">
+                Statistics may not reflect real-time data
+                <br />
+                Last update: {formattedDate}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
+      {showTooltipAsText && (
+        <span className="mt-2 text-xs text-muted-foreground hidden md:block">
+          Statistics may not reflect real-time data. Last update:{' '}
+          {formattedDate}
+        </span>
+      )}
     </div>
   )
 }
