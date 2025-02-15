@@ -126,9 +126,6 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                       <RocketIcon size={18} />
                     </Button>
                   )}
-                  <Button variant="destructive" size="icon">
-                    <RocketIcon className="w-4 h-4" />
-                  </Button>
                   <AgentActionsMenu
                     className="size-10"
                     key={1}

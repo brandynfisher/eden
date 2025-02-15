@@ -40,6 +40,10 @@ export interface ThreadsGetArguments extends WebAPICallOptions {
   thread_id: string
 }
 
+export interface ThreadsDeleteArguments extends WebAPICallOptions {
+  thread_id: string
+}
+
 // Requests
 
 export const threadsCreateRequestConfig = (
@@ -98,6 +102,14 @@ export const threadsGetRequestConfig = (
   }
 }
 
+export const threadsDeleteRequestConfig = (
+  args: ThreadsDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `v2/threads/${args.thread_id}`,
+  }
+}
 // Responses
 
 export type ThreadsCreateResponse = WebAPICallResult &
@@ -136,6 +148,15 @@ export type ThreadsGetResponse = WebAPICallResult & {
   error?: string
   thread?: Thread
 }
+
+export type ThreadsDeleteResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { success: boolean }
+  )
 
 // Types
 
