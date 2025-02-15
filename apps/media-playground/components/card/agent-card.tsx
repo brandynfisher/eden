@@ -88,14 +88,31 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
           <div className="flex items-center gap-1">
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger
-                  asChild
-                  className="pointer-events-auto cursor-help"
-                >
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {formatCompactNumber(agent.stats?.userMessageCount)}
-                  </span>
-                </TooltipTrigger>
+                <div className="flex items-stretch h-9">
+                  <TooltipTrigger
+                    asChild
+                    className="pointer-events-auto cursor-help rounded-l-lg rounded-r-none border border-r-0 px-2 flex items-center bg-muted-darker/60 hover:text-primary text-muted-foreground"
+                  >
+                    <div className="text-xs font-mono w-12 flex justify-end">
+                      {formatCompactNumber(agent.stats?.userMessageCount)}
+                    </div>
+                  </TooltipTrigger>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    asChild
+                    aria-label="Chat with agent"
+                    className="pointer-events-auto rounded-l-none h-auto"
+                  >
+                    <Link
+                      title="Chat with agent"
+                      href={`/chat/${agent.username}`}
+                      className="w-9 h-9 text-muted-foreground group-hover:text-primary"
+                    >
+                      <MessageSquareIcon className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                </div>
                 <TooltipContent>
                   <AgentUsageStats
                     className="my-0 gap-2 !flex-col"
@@ -105,20 +122,6 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-
-            <Button
-              size="icon"
-              variant="outline"
-              asChild
-              className="pointer-events-auto"
-            >
-              <Link
-                href={`/chat/${agent.username}`}
-                className="w-9 h-9 text-muted-foreground group-hover:text-primary"
-              >
-                <MessageSquareIcon className="w-4 h-4" />
-              </Link>
-            </Button>
           </div>
           <AgentActionsMenu agent={agent} queryKey={queryKey} />
         </div>
