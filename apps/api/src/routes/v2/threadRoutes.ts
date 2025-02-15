@@ -1,6 +1,7 @@
 import {
   addThreadMessageReaction,
   createThreadMessage,
+  deleteThread,
   getThread,
   listThreads,
 } from '../../controllers/v2/threadController'
@@ -134,6 +135,40 @@ const threadRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getThread(server, request, reply),
+  })
+
+  server.delete('/v2/threads/:thread_id', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Delete a thread',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        thread_id: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+        }),
+      },
+      400: {
+        error: Type.Optional(Type.String()),
+        message: Type.Optional(Type.String()),
+      },
+      401: {
+        error: Type.Optional(Type.String()),
+        message: Type.Optional(Type.String()),
+      },
+      404: {
+        error: Type.Optional(Type.String()),
+        message: Type.Optional(Type.String()),
+      },
+    },
+    preHandler: [request => maybeAuth(server, request)],
+    handler: (request, reply) => deleteThread(request, reply),
   })
 }
 

@@ -254,6 +254,8 @@ import {
   TasksV2ListResponse,
   ThreadsCreateArguments,
   ThreadsCreateResponse,
+  ThreadsDeleteArguments,
+  ThreadsDeleteResponse,
   ThreadsGetArguments,
   ThreadsGetResponse,
   ThreadsListArguments,
@@ -290,6 +292,7 @@ import {
   tasksV2GetRequestConfig,
   tasksV2ListRequestConfig,
   threadsCreateRequestConfig,
+  threadsDeleteRequestConfig,
   threadsGetRequestConfig,
   threadsListRequestConfig,
   threadsMessageReactRequestConfig,
@@ -810,6 +813,10 @@ export abstract class Methods {
       ThreadsMessageReactArguments,
       ThreadsMessageReactResponse
     >(this, threadsMessageReactRequestConfig),
+    delete: bindApiCall<ThreadsDeleteArguments, ThreadsDeleteResponse>(
+      this,
+      threadsDeleteRequestConfig,
+    ),
   }
 
   public readonly tasks = {

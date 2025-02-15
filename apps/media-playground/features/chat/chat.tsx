@@ -7,6 +7,12 @@ import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
@@ -32,12 +38,21 @@ import { useAppDispatch } from '@/stores/store'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
+  useAssistantRuntime,
   useThreadListItem,
 } from '@assistant-ui/react'
 import { Agent } from '@edenlabs/eden-sdk'
-import { EditIcon, MessageSquareIcon, SettingsIcon } from 'lucide-react'
+import axios from 'axios'
+import {
+  EditIcon,
+  MessageSquareIcon,
+  MoreHorizontal,
+  SettingsIcon,
+  TrashIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { FC, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const isNewSelected = useThreadListItem(t => t.id === 'DEFAULT_THREAD_ID')
@@ -62,22 +77,72 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-const ThreadListItemTrigger: FC<{ onItemClick?: () => void }> = ({
-  onItemClick,
-}) => {
+const ThreadListItemTrigger: FC<{
+  onItemClick?: () => void
+}> = ({ onItemClick }) => {
+  const id = useThreadListItem(t => t.id)
+  const agentId = useEdenRuntimeExtras(extras => extras.agentId)
+  const { invalidate } = useThreadListQuery({ agentId })
+  const runtime = useAssistantRuntime()
+
+  const deleteThread = async (threadId: string) => {
+    try {
+      await axios.delete(`/api/threads/${threadId}`)
+
+      if (threadId === id) {
+        runtime.threads.switchToNewThread()
+      }
+
+      await invalidate()
+
+      toast.success('Thread deleted', {
+        description: 'Your thread has been deleted.',
+        dismissible: true,
+        richColors: true,
+      })
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to delete thread', {
+        description: 'Please try again later.',
+        dismissible: true,
+        richColors: true,
+      })
+    }
+  }
+
   return (
     <ThreadListItemPrimitive.Trigger
-      className="flex-grow text-start truncate px-3 py-2 w-full"
+      className="flex items-center justify-between flex-grow px-3 py-2 w-full"
       onClick={onItemClick}
     >
-      <ThreadListItemPrimitive.Title fallback="Untitled" />
+      <div className="max-w-[calc(100%-2.5rem)] overflow-hidden whitespace-nowrap text-ellipsis">
+        <ThreadListItemPrimitive.Title fallback="Untitled" />
+      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="shrink-0 size-6">
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem
+            className="flex items-center gap-2 text-destructive hover:!text-destructive"
+            onClick={() => deleteThread(id)}
+          >
+            <TrashIcon className="size-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </ThreadListItemPrimitive.Trigger>
   )
 }
 
-const ThreadListItem: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
+const ThreadListItem: FC<{
+  onItemClick?: () => void
+}> = ({ onItemClick }) => {
   return (
-    <ThreadListItemPrimitive.Root className="group hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all pr-3">
+    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all">
       <ThreadListItemTrigger onItemClick={onItemClick} />
     </ThreadListItemPrimitive.Root>
   )
