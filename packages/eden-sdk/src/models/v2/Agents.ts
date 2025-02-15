@@ -15,6 +15,7 @@ export type AgentStats = {
   userMessageCount: number
   assistantMessageCount: number
   toolCallCount: number
+  threadCount_7d: number
   userCount_7d: number
   userMessageCount_7d: number
   assistantMessageCount_7d: number

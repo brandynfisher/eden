@@ -61,7 +61,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                   blurhash: agent.blurhash,
                 }}
                 unoptimized={true}
-                className="object-cover rounded-lg h-32 w-32 flex-shrink-0 flex-grow-0"
+                className="object-cover object-top rounded-lg h-32 w-32 flex-shrink-0 flex-grow-0"
               />
             </div>
           </div>

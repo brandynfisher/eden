@@ -187,7 +187,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
 
   return (
     <Composer.Root
-      className="z-[51] bg-accent-foreground/5 items-start"
+      className="relative z-[51] bg-accent-foreground/5 items-start"
       onSubmit={async (evt: FormEvent<HTMLFormElement>) => {
         if (!isSignedIn) {
           evt.preventDefault()
