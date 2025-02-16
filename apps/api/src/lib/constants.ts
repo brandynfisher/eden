@@ -12,3 +12,11 @@ export const VIDEO_MIME_TYPES = [
   'video/quicktime',
   'image/gif',
 ]
+
+export const AUDIO_MIME_TYPES = [
+  'audio/mpeg',
+  'audio/mp3',
+  'audio/wav',
+  'audio/ogg',
+  'audio/m4a',
+]

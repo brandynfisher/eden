@@ -1,4 +1,4 @@
-import { VIDEO_MIME_TYPES } from '../../lib/constants'
+import { AUDIO_MIME_TYPES, VIDEO_MIME_TYPES } from '../../lib/constants'
 import { IMAGE_MIME_TYPES } from '../../lib/constants'
 import { getSimilarCreationIds } from '../../lib/similar'
 import { Agent } from '../../models/Agent'
@@ -435,7 +435,11 @@ const handleArguments = async ({
 
           if (field === 'output_type') {
             const mimeTypes =
-              value === 'image' ? IMAGE_MIME_TYPES : VIDEO_MIME_TYPES
+              value === 'image'
+                ? IMAGE_MIME_TYPES
+                : value === 'audio'
+                ? AUDIO_MIME_TYPES
+                : VIDEO_MIME_TYPES
 
             customFilterOptions.output_type = [
               ...mimeTypes,

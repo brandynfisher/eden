@@ -4,12 +4,26 @@ import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { NavLinkProps } from '@/components/navigation/nav-link'
 import NavLinkList from '@/components/navigation/nav-link-list'
 import { Separator } from '@/components/ui/separator'
+import { SheetClose } from '@/components/ui/sheet'
 import Link, { LinkProps } from 'next/link'
 import { useSelectedLayoutSegments } from 'next/navigation'
 import { PropsWithChildren } from 'react'
 
-const HomeNavLink = ({ ...rest }: PropsWithChildren & LinkProps) => {
-  return (
+const HomeNavLink = ({
+  inSheet,
+  ...rest
+}: PropsWithChildren & LinkProps & { inSheet?: boolean }) => {
+  return inSheet ? (
+    <SheetClose asChild>
+      <Link
+        className="relative flex items-center gap-2 text-lg font-semibold md:text-base mr-2"
+        {...rest}
+      >
+        <EdenLogoBw />
+        <span className="sr-only">Eden2.0</span>
+      </Link>
+    </SheetClose>
+  ) : (
     <Link
       className="relative flex items-center gap-2 text-lg font-semibold md:text-base mr-2"
       {...rest}
@@ -57,7 +71,7 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
 
   return (
     <>
-      <HomeNavLink href="/" />
+      <HomeNavLink href="/" inSheet={inSheet} />
       <NavLinkList items={navItemsMake} segments={segments} inSheet={inSheet} />
       <div className="md:self-stretch md:flex md:items-center">
         <Separator orientation="vertical" className="hidden md:block" />

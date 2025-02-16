@@ -1,6 +1,6 @@
 import { BaseFilter, FilterSection } from '@/components/filter/base-filter'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
-import { ImageIcon, StarIcon, VideoIcon } from 'lucide-react'
+import { AudioLinesIcon, ImageIcon, StarIcon, VideoIcon } from 'lucide-react'
 
 const creationSections: FilterSection[] = [
   {
@@ -28,6 +28,11 @@ const creationSections: FilterSection[] = [
         id: 'video',
         name: 'Video',
         icon: <VideoIcon className="h-4 w-4" />,
+      },
+      {
+        id: 'audio',
+        name: 'Audio',
+        icon: <AudioLinesIcon className="h-4 w-4" />,
       },
     ],
     canHaveMultipleValues: true,

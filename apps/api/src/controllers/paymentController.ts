@@ -657,7 +657,8 @@ const handlePaymentSuccess = async (
     currency: session.currency || '',
     value:
       session.amount_total !== null
-        ? session.amount_total - (session?.total_details?.amount_tax || 0)
+        ? (session.amount_total - (session?.total_details?.amount_tax || 0)) /
+          100
         : 0,
     tax: session?.total_details?.amount_tax || 0,
     items: session.line_items.data.map((item: Stripe.LineItem, index) => {

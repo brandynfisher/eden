@@ -10,16 +10,33 @@ exports = async function () {
 
   const agentStats = await threadCollection.aggregate([
     {
+      $match: {
+        // This helps MongoDB use an index for the initial scan
+        updatedAt: { $exists: true }
+      }
+    },
+    {
       $facet: {
         allTime: [
-          // Count messages by role, tool calls, and unique users per agent
+          // First calculate thread counts per agent
+          {
+            $group: {
+              _id: "$agent",
+              threadCount: { $sum: 1 },
+              messages: { $push: "$messages" },
+              users: { $addToSet: "$user" }
+            }
+          },
+          // Then unwind the messages array for message counting
+          { $unwind: "$messages" },
           { $unwind: "$messages" },
           {
             $group: {
               _id: {
-                agent: "$agent",
+                agent: "$_id",
                 role: "$messages.role"
               },
+              threadCount: { $first: "$threadCount" },
               messageCount: { $sum: 1 },
               toolCallCount: {
                 $sum: {
@@ -35,12 +52,13 @@ exports = async function () {
                   ]
                 }
               },
-              uniqueUsers: { $addToSet: "$user" }
+              uniqueUsers: { $first: "$users" }
             }
           },
           {
             $group: {
               _id: "$_id.agent",
+              threadCount: { $first: "$threadCount" },
               messageCounts: {
                 $push: {
                   role: "$_id.role",
@@ -48,8 +66,7 @@ exports = async function () {
                 }
               },
               toolCallCount: { $sum: "$toolCallCount" },
-              uniqueUsers: { $addToSet: "$uniqueUsers" },
-              threadCount: { $sum: 1 }
+              uniqueUsers: { $first: "$uniqueUsers" },
             }
           },
           {
@@ -86,7 +103,7 @@ exports = async function () {
               userCount: {
                 $size: {
                   $filter: {
-                    input: { $reduce: { input: "$uniqueUsers", initialValue: [], in: { $setUnion: ["$$value", "$$this"] } } },
+                    input: "$uniqueUsers",
                     as: "user",
                     cond: { $ne: ["$$user", null] }
                   }
@@ -101,14 +118,25 @@ exports = async function () {
               updatedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
             }
           },
-          // Count messages by role, tool calls, and unique users per agent
+          // First calculate thread counts per agent
+          {
+            $group: {
+              _id: "$agent",
+              threadCount: { $sum: 1 },
+              messages: { $push: "$messages" },
+              users: { $addToSet: "$user" }
+            }
+          },
+          // Then unwind the messages array for message counting
+          { $unwind: "$messages" },
           { $unwind: "$messages" },
           {
             $group: {
               _id: {
-                agent: "$agent",
+                agent: "$_id",
                 role: "$messages.role"
               },
+              threadCount: { $first: "$threadCount" },
               messageCount: { $sum: 1 },
               toolCallCount: {
                 $sum: {
@@ -124,12 +152,13 @@ exports = async function () {
                   ]
                 }
               },
-              uniqueUsers: { $addToSet: "$user" }
+              uniqueUsers: { $first: "$users" }
             }
           },
           {
             $group: {
               _id: "$_id.agent",
+              threadCount: { $first: "$threadCount" },
               messageCounts: {
                 $push: {
                   role: "$_id.role",
@@ -137,12 +166,13 @@ exports = async function () {
                 }
               },
               toolCallCount: { $sum: "$toolCallCount" },
-              uniqueUsers: { $addToSet: "$uniqueUsers" }
+              uniqueUsers: { $first: "$uniqueUsers" }
             }
           },
           {
             $project: {
               _id: 1,
+              threadCount: 1,
               userMessageCount: {
                 $reduce: {
                   input: {
@@ -173,7 +203,7 @@ exports = async function () {
               userCount: {
                 $size: {
                   $filter: {
-                    input: { $reduce: { input: "$uniqueUsers", initialValue: [], in: { $setUnion: ["$$value", "$$this"] } } },
+                    input: "$uniqueUsers",
                     as: "user",
                     cond: { $ne: ["$$user", null] }
                   }

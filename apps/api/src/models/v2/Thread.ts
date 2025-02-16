@@ -61,14 +61,14 @@ export const threadSchema = new Schema<ThreadDocument>(
   },
 )
 
-threadSchema.index({ user: -1, 'message.id': -1 })
-threadSchema.index({ agent: -1, updatedAt: -1, createdAt: -1 })
-threadSchema.index({
-  user: 1,
-  agent: 1,
-  updatedAt: -1,
-  createdAt: -1,
-})
+threadSchema.index({ updatedAt: -1 })
+threadSchema.index({ agent: 1, updatedAt: -1 })
+threadSchema.index({ user: 1, updatedAt: -1 })
+threadSchema.index({ 'messages.role': 1, agent: 1 })
+threadSchema.index({ agent: 1, user: 1, updatedAt: -1 })
+threadSchema.index({ 'messages.role': 1, 'messages.tool_calls': 1 })
+threadSchema.index({ agent: 1, 'messages.role': 1, updatedAt: -1 })
+threadSchema.index({ agent: 1, 'messages.role': 1, 'messages.tool_calls': 1 })
 threadSchema.plugin(paginate)
 threadSchema.plugin(aggregatePaginate)
 threadSchema.plugin(mongooseDelete, {

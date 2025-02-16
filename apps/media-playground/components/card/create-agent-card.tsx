@@ -26,7 +26,7 @@ export function CreateAgentCard({ className }: CreateAgentCardProps) {
           className="relative w-full block p-2"
         >
           <div className="relative flex">
-            <div className="bg-muted-darker rounded-lg w-[90px] h-[132px] flex-shrink-0 flex-grow-0 flex items-center justify-center border-2 border-purple-600/40">
+            <div className="bg-muted-darker rounded-lg aspect-square h-[140px] flex-shrink-0 flex-grow-0 flex items-center justify-center border-2 border-purple-600/40">
               <PlusCircle className="h-10 w-10 text-purple-600/60" />
             </div>
             <div className="ml-3 flex flex-col w-full">
