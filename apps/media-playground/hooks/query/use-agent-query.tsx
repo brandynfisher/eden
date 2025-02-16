@@ -6,9 +6,15 @@ type Props = {
   key: Agent['_id']
   initialData?: AgentGetResponse
   enabled?: boolean
+  refetchOnWindowFocus?: boolean
 }
 
-export const useAgentQuery = ({ key, initialData, enabled = true }: Props) => {
+export const useAgentQuery = ({
+  key,
+  initialData,
+  enabled = true,
+  refetchOnWindowFocus = true,
+}: Props) => {
   const queryKey: QueryKey = ['agents', key]
 
   const {
@@ -25,6 +31,7 @@ export const useAgentQuery = ({ key, initialData, enabled = true }: Props) => {
     enabled,
     initialData,
     queryKey,
+    refetchOnWindowFocus,
     queryFn: () => fetcher<AgentGetResponse>(`/api/agents/${key}`),
   })
 
