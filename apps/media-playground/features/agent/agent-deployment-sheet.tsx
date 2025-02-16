@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sheet'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
+import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentDeploymentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentDeploymentFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -76,6 +77,12 @@ const AgentDeploymentFormSheet = () => {
               agentId={agentId}
               deployment={deploymentsQuery.deployments?.find(
                 deployment => deployment.platform === 'telegram',
+              )}
+            />
+            <TwitterDeploymentForm
+              agentId={agentId}
+              deployment={deploymentsQuery.deployments?.find(
+                deployment => deployment.platform === 'twitter',
               )}
             />
           </div>

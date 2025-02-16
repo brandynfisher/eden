@@ -2,6 +2,14 @@
 
 import { LightboxGallery } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
@@ -13,7 +21,12 @@ import {
   ThreadPrimitive,
   useComposerRuntime,
 } from '@assistant-ui/react'
-import { BotIcon, MessageSquareIcon, PencilOffIcon } from 'lucide-react'
+import {
+  BotIcon,
+  MessageSquareIcon,
+  PencilOffIcon,
+  Settings2Icon,
+} from 'lucide-react'
 import Link from 'next/link'
 import React, { FC, FormEvent, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -162,7 +175,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
         {isReadOnly === true ? (
           <>
             <div className="flex flex-wrap items-center gap-2 px-2 md:gap-3 py-2 md:px-4 border border-secondary rounded-lg bg-muted-darker">
-              <PencilOffIcon className="w-4 h-4 text-muted-foreground hidden lg:block" />
+              <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
               <p className="text-sm ">
                 Read-only view{' '}
                 <span className="hidden lg:inline">
@@ -176,7 +189,9 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
                 className=" bg-purple-600/20 border-purple-600"
               >
                 <MessageSquareIcon className="w-4 h-4 mr-2" />
-                <span className="text-sm">Chat with this agent</span>
+                <span className="text-sm">
+                  Chat <span className="hidden lg:inline">with this agent</span>
+                </span>
               </Link>
             </Button>
           </>
@@ -200,8 +215,37 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
         <Composer.Attachments components={{ Attachment: MyAttachment }} />
       </LightboxGallery>
 
-      <AuthClickGuard>
-        <Composer.AddAttachment />
+      <AuthClickGuard className="flex gap-2 flex-col">
+        <Composer.AddAttachment className="mb-0 mt-2" />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-8 h-8 mb-2"
+              title="Agent settings"
+            >
+              <Settings2Icon className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <div className="p-4 space-y-4 w-64">
+              <div className="space-y-2 flex items-center gap-2">
+                <Switch />
+                <div className="flex items-center justify-between">
+                  <Label>Use Lora</Label>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Lora Strength</Label>
+                  <span className="text-sm text-muted-foreground">50%</span>
+                </div>
+                <Slider defaultValue={[50]} max={100} step={1} />
+              </div>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </AuthClickGuard>
 
       <Composer.Input autoFocus className="text-base" minRows={2} />

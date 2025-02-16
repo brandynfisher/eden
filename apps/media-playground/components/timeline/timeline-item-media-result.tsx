@@ -75,7 +75,7 @@ export const MediaResultOutput = ({
           }}
           startIndex={index}
           videoProps={{
-            poster: output.thumbnail || output.filename,
+            poster: output.thumbnail || undefined,
           }}
           imageProps={{
             blurhash: output.mediaAttributes?.blurhash,

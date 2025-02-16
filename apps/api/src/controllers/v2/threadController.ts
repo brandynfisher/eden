@@ -163,8 +163,6 @@ export const listThreads = async (
       user: userId,
     }
 
-    console.log('query', agentQuery)
-
     const agent = await Agent.findOne(agentQuery)
 
     if (!agent) {
@@ -184,19 +182,16 @@ export const listThreads = async (
       },
     }
 
-    console.log('queryOptions', queryOptions)
-
     const threadsRepository = new ThreadRepository(ThreadModel)
     const threadQuery = {
       user: userId,
       agent: agent._id,
     }
+
     const paginatedResponse = await threadsRepository.query(
       threadQuery,
       queryOptions,
     )
-
-    console.log('paginatedResponse', paginatedResponse)
 
     await threadsRepository.model.populate(paginatedResponse.docs, {
       path: 'agent',
@@ -224,21 +219,11 @@ export const getThread = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user || {}
   const { thread_id } = request.params as ThreadsGetArguments
-
-  const authUser = userId ? await User.findById(userId) : null
-
-  // if (!user) {
-  //   return reply.status(400).send({
-  //     message: 'User not found',
-  //   })
-  // }
 
   try {
     const thread = await ThreadModel.findOne({
       _id: new ObjectId(thread_id),
-      // user: userId,
     })
       .populate({
         path: 'user',
@@ -266,15 +251,6 @@ export const getThread = async (
         message: 'Thread not found',
       })
     }
-
-    const isReadOnly =
-      !authUser || thread.user._id.toString() !== authUser?._id.toString()
-    console.log({
-      isReadOnly,
-      thread: thread._id,
-      authUser,
-      threadUser: thread.user,
-    })
 
     const extendedMessages = thread.messages.map((msg, index) => {
       if (msg.role !== 'assistant') {

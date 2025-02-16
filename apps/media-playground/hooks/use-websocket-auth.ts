@@ -18,9 +18,13 @@ export const useWebSocketAuth = (
   const [currentAuthToken, setCurrentAuthToken] = useState<string | null>(null)
 
   const refreshToken = useCallback(async () => {
-    const newToken = await getToken()
-    if (newToken && newToken !== currentAuthToken) {
-      setCurrentAuthToken(newToken)
+    try {
+      const newToken = await getToken()
+      if (newToken && newToken !== currentAuthToken) {
+        setCurrentAuthToken(newToken)
+      }
+    } catch (error) {
+      console.error('Error refreshing token', error)
     }
   }, [getToken, currentAuthToken])
 

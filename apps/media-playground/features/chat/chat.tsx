@@ -44,8 +44,8 @@ import {
 import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
+  ChevronRightIcon,
   EditIcon,
-  MessageSquareIcon,
   MoreHorizontal,
   SettingsIcon,
   TrashIcon,
@@ -210,9 +210,13 @@ const LeftBarSheet: FC = () => {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" className="shrink-0 md:hidden gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 md:hidden gap-1"
+        >
+          <ChevronRightIcon className={'size-4'} />
           View Threads
-          <MessageSquareIcon className="size-4" />
           <span className="sr-only">Toggle thread list menu</span>
         </Button>
       </SheetTrigger>
@@ -353,14 +357,15 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
       "
       >
         {/* MOBILE-ONLY HEADER */}
-        <div className="bg-muted/40 border-b px-3 py-2 md:hidden flex items-center gap-2">
+        <div className="bg-muted/40 border-b px-2 py-2 md:hidden flex items-center gap-2">
           <Header />
           <div className="ml-auto flex items-center gap-2">
             {agent ? (
               <>
                 <AgentLink
                   agent={agent}
-                  className={cn(isOwner ? 'max-w-[120px]' : 'max-w-full')}
+                  // className={cn(isOwner ? 'max-w-[120px]' : 'sm:max-w-full', 'max-w-[120px]')}
+                  className={`max-w-[120px] xs:max-w-[300px]`}
                 />
                 {isOwner && (
                   <Button

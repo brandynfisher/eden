@@ -118,6 +118,10 @@ interface TelegramDeploymentConfig {
   }[]
 }
 
+interface TwitterDeploymentConfig {
+  username: string
+}
+
 interface DiscordDeploymentSecrets {
   token: string
 }
@@ -131,6 +135,15 @@ interface FarcasterDeploymentSecrets {
   neynarWebhookSecret: string
 }
 
+interface TwitterDeploymentSecrets {
+  user_id: string
+  bearer_token: string
+  consumer_key: string
+  consumer_secret: string
+  access_token: string
+  access_token_secret: string
+}
+
 export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -141,11 +154,13 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
   config?: {
     discord?: DiscordDeploymentConfig
     telegram?: TelegramDeploymentConfig
+    twitter?: TwitterDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
     telegram?: TelegramDeploymentSecrets
     farcaster?: FarcasterDeploymentSecrets
+    twitter?: TwitterDeploymentSecrets
   }
 }
 

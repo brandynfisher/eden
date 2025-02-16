@@ -93,7 +93,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                     asChild
                     className="pointer-events-auto cursor-help rounded-l-lg rounded-r-none border border-r-0 px-2 flex items-center bg-muted-darker/60 hover:text-primary text-muted-foreground"
                   >
-                    <div className="text-xs font-mono w-12 flex justify-end">
+                    <div className="text-xs font-mono w-14 flex justify-end">
                       {formatCompactNumber(agent.stats?.userMessageCount)}
                     </div>
                   </TooltipTrigger>

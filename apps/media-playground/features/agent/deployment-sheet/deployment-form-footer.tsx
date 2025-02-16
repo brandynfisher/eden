@@ -86,6 +86,12 @@ export const DeploymentFormFooter = ({
             topic_allowlist: data.allowedTopics,
           },
         }
+      } else if (platform === 'twitter') {
+        config = {
+          twitter: {
+            username: data.username,
+          },
+        }
       }
 
       if (isDeployed) {
@@ -118,6 +124,17 @@ export const DeploymentFormFooter = ({
             farcaster: {
               mnemonic: data.mnemonic,
               neynarWebhookSecret: data.neynarWebhookSecret,
+            },
+          }
+        } else if (platform === 'twitter') {
+          payload.secrets = {
+            twitter: {
+              user_id: data.userId,
+              bearer_token: data.bearerToken,
+              consumer_key: data.consumerKey,
+              consumer_secret: data.consumerSecret,
+              access_token: data.accessToken,
+              access_token_secret: data.accessTokenSecret,
             },
           }
         }

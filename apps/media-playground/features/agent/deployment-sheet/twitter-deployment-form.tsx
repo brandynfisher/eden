@@ -1,0 +1,133 @@
+'use client'
+
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
+import { Form } from '@/components/ui/form'
+import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
+import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
+import { TokenField } from '@/features/agent/deployment-sheet/token-field'
+import { cn } from '@/lib/utils'
+import { Agent, Deployment } from '@edenlabs/eden-sdk'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+
+const schema = z.object({
+  userId: z.string(),
+  username: z.string(),
+  bearerToken: z.string(),
+  consumerKey: z.string(),
+  consumerSecret: z.string(),
+  accessToken: z.string(),
+  accessTokenSecret: z.string(),
+})
+
+type DeploymentFormDto = z.infer<typeof schema>
+
+interface TwitterDeploymentFormProps {
+  agentId: Agent['_id']
+  deployment?: Deployment
+}
+
+export const TwitterDeploymentForm = ({
+  agentId,
+  deployment,
+}: TwitterDeploymentFormProps) => {
+  const [isOpen, setIsOpen] = useState(false)
+
+  const form = useForm<DeploymentFormDto>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      userId: '',
+      username: '',
+      bearerToken: '',
+      consumerKey: '',
+      consumerSecret: '',
+      accessToken: '',
+      accessTokenSecret: '',
+    },
+  })
+
+  const isDeployed = useMemo(() => {
+    return deployment !== undefined
+  }, [deployment])
+
+  return (
+    <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
+      <DeploymentCollapsibleTrigger
+        isOpen={isOpen}
+        isDeployed={isDeployed}
+        label="Twitter"
+        tooltip="Deploy your agent to Twitter"
+      />
+      <CollapsibleContent
+        className={cn([
+          isOpen
+            ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
+            : '',
+          isDeployed ? 'border-success' : '',
+        ])}
+      >
+        <Form {...form}>
+          <form className="flex flex-col w-full space-y-4 p-4">
+            <TokenField
+              form={form}
+              name="userId"
+              isDeployed={isDeployed}
+              label="User ID"
+              description="Your Twitter user ID."
+            />
+            <TokenField
+              form={form}
+              name="username"
+              isDeployed={isDeployed}
+              label="Username"
+              description="Your Twitter username."
+            />
+            <TokenField
+              form={form}
+              name="bearerToken"
+              isDeployed={isDeployed}
+              label="Bearer Token"
+              description="Your Twitter bearer token."
+            />
+            <TokenField
+              form={form}
+              name="consumerKey"
+              isDeployed={isDeployed}
+              label="Consumer Key"
+              description="Your Twitter consumer key."
+            />
+            <TokenField
+              form={form}
+              name="consumerSecret"
+              isDeployed={isDeployed}
+              label="Consumer Secret"
+              description="Your Twitter consumer secret."
+            />
+            <TokenField
+              form={form}
+              name="accessToken"
+              isDeployed={isDeployed}
+              label="Access Token"
+              description="Your Twitter access token."
+            />
+            <TokenField
+              form={form}
+              name="accessTokenSecret"
+              isDeployed={isDeployed}
+              label="Access Token Secret"
+              description="Your Twitter access token secret."
+            />
+            <DeploymentFormFooter
+              agentId={agentId}
+              platform="twitter"
+              form={form}
+              isDeployed={isDeployed}
+            />
+          </form>
+        </Form>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}

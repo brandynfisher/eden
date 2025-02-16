@@ -78,7 +78,8 @@ const AgentFormSheet = () => {
   const dispatch = useAppDispatch()
   const agentQuery = useAgentQuery({
     key: agentId || '',
-    enabled: isOpen,
+    enabled: agentId && isOpen ? true : false,
+    refetchOnWindowFocus: false,
   })
 
   const [isKeyEditMode, setIsKeyEditMode] = useState(false)
@@ -112,7 +113,7 @@ const AgentFormSheet = () => {
         persona: agentQuery.agent.persona,
         knowledge: agentQuery.agent.knowledge ?? '',
         greeting: agentQuery.agent.greeting || '',
-        model: agentQuery.agent.model,
+        model: agentQuery.agent.model || '',
         suggestions: agentQuery.agent.suggestions,
       })
     } else {
@@ -145,6 +146,7 @@ const AgentFormSheet = () => {
           richColors: true,
           dismissible: true,
         })
+        agentQuery.invalidate()
       } else {
         await axios.post('/api/agents', data)
         toast.success('Agent created successfully', {
@@ -211,12 +213,12 @@ const AgentFormSheet = () => {
               : 'Create an agent to help you with your tasks.'}
           </SheetDescription>
         </SheetHeader>
-        {agentQuery.isPending && (
+        {mode === 'update' && agentQuery.isPending && (
           <div className="flex items-center justify-center mt-10">
             <Loader2 className="size-4 animate-spin" />
           </div>
         )}
-        {agentQuery.isError && (
+        {mode === 'update' && agentQuery.isError && (
           <div className="flex items-center justify-center gap-2 mt-10">
             <AlertCircle className="size-4 text-destructive" />
             <p className="text-destructive">
@@ -224,7 +226,7 @@ const AgentFormSheet = () => {
             </p>
           </div>
         )}
-        {agentQuery.isSuccess && (
+        {(mode === 'create' || agentQuery.isSuccess) && (
           <Form {...form}>
             <form
               className="w-full space-y-4 py-4"

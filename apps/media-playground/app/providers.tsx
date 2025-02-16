@@ -1,4 +1,3 @@
-import { AuthErrorBoundary } from '@/components/auth/auth-error-boundary'
 import { env } from '@/lib/config'
 import { DailyLoginProvider } from '@/providers/daily-login-provider'
 import { ReactQueryProvider } from '@/providers/react-query-provider'
@@ -18,34 +17,32 @@ export default function Providers({ children }: PropsWithChildren) {
       enableSystem
       disableTransitionOnChange
     >
-      <AuthErrorBoundary>
-        <ClerkProvider
-          dynamic
-          appearance={{
-            baseTheme: dark,
-            layout: {
-              socialButtonsPlacement: 'bottom',
-              socialButtonsVariant: 'iconButton',
-              termsPageUrl: 'https://docs.eden.art/docs/overview/tos',
-              privacyPageUrl: 'https://docs.eden.art/docs/overview/privacy',
-              helpPageUrl: 'https://docs.eden.art/docs/category/overview',
-              logoImageUrl: `${env.NEXT_PUBLIC_HOST}/android-chrome-512x512.png`,
-            },
-          }}
-        >
-          <ReactQueryProvider>
-            <WebSocketProvider
-              endpoint={env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
-            >
-              <ReduxProvider>
-                <TaskStatusProvider>
-                  <DailyLoginProvider>{children}</DailyLoginProvider>
-                </TaskStatusProvider>
-              </ReduxProvider>
-            </WebSocketProvider>
-          </ReactQueryProvider>
-        </ClerkProvider>
-      </AuthErrorBoundary>
+      <ClerkProvider
+        dynamic
+        appearance={{
+          baseTheme: dark,
+          layout: {
+            socialButtonsPlacement: 'bottom',
+            socialButtonsVariant: 'iconButton',
+            termsPageUrl: 'https://docs.eden.art/docs/overview/tos',
+            privacyPageUrl: 'https://docs.eden.art/docs/overview/privacy',
+            helpPageUrl: 'https://docs.eden.art/docs/category/overview',
+            logoImageUrl: `${env.NEXT_PUBLIC_HOST}/android-chrome-512x512.png`,
+          },
+        }}
+      >
+        <ReactQueryProvider>
+          <WebSocketProvider
+            endpoint={env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || ''}
+          >
+            <ReduxProvider>
+              <TaskStatusProvider>
+                <DailyLoginProvider>{children}</DailyLoginProvider>
+              </TaskStatusProvider>
+            </ReduxProvider>
+          </WebSocketProvider>
+        </ReactQueryProvider>
+      </ClerkProvider>
     </ThemeProvider>
   )
 }
