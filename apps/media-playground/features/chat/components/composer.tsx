@@ -2,14 +2,14 @@
 
 import { LightboxGallery } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuTrigger,
+// } from '@/components/ui/dropdown-menu'
+// import { Label } from '@/components/ui/label'
+// import { Slider } from '@/components/ui/slider'
+// import { Switch } from '@/components/ui/switch'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
@@ -24,8 +24,7 @@ import {
 import {
   BotIcon,
   MessageSquareIcon,
-  PencilOffIcon,
-  Settings2Icon,
+  PencilOffIcon, // Settings2Icon,
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { FC, FormEvent, useCallback, useEffect } from 'react'
@@ -217,7 +216,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
 
       <AuthClickGuard className="flex gap-2 flex-col">
         <Composer.AddAttachment className="mb-0 mt-2" />
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -245,7 +244,7 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
               </div>
             </div>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </AuthClickGuard>
 
       <Composer.Input autoFocus className="text-base" minRows={2} />
