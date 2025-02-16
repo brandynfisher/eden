@@ -79,6 +79,7 @@ const AgentFormSheet = () => {
   const agentQuery = useAgentQuery({
     key: agentId || '',
     enabled: isOpen,
+    refetchOnWindowFocus: false,
   })
 
   const [isKeyEditMode, setIsKeyEditMode] = useState(false)
