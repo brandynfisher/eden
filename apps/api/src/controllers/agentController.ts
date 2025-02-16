@@ -151,6 +151,8 @@ export const updateAgent = async (
     })
   }
 
+  const query = createIdOrSlugQuery(agentId)
+
   const updateData: UpdateQuery<AgentDocument> = {
     username: key,
     name: name,
@@ -181,7 +183,7 @@ export const updateAgent = async (
   try {
     result = await Agent.updateOne(
       {
-        _id: agentId,
+        ...query,
         owner: currentUserId,
         deleted: false,
       },

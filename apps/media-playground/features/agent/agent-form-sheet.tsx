@@ -79,6 +79,7 @@ const AgentFormSheet = () => {
   const agentQuery = useAgentQuery({
     key: agentId || '',
     enabled: agentId && isOpen ? true : false,
+    refetchOnWindowFocus: false,
   })
 
   const [isKeyEditMode, setIsKeyEditMode] = useState(false)
@@ -112,7 +113,7 @@ const AgentFormSheet = () => {
         persona: agentQuery.agent.persona,
         knowledge: agentQuery.agent.knowledge ?? '',
         greeting: agentQuery.agent.greeting || '',
-        model: agentQuery.agent.model,
+        model: agentQuery.agent.model || '',
         suggestions: agentQuery.agent.suggestions,
       })
     } else {
@@ -145,6 +146,7 @@ const AgentFormSheet = () => {
           richColors: true,
           dismissible: true,
         })
+        agentQuery.invalidate()
       } else {
         await axios.post('/api/agents', data)
         toast.success('Agent created successfully', {
