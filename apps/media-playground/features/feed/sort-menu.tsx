@@ -22,10 +22,10 @@ const sortOptions = [
 const agentSortOptions = [
   {
     label: 'Trending',
-    value: 'stats.userCount_7d;-1',
+    value: 'stats.userMessageCount_7d;-1',
     icon: <TrendingUpIcon />,
   },
-  { label: 'Popular', value: 'stats.userCount;-1', icon: <StarIcon /> },
+  { label: 'Popular', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
 ]
 
@@ -55,7 +55,7 @@ export const SortMenu = ({
   const [baseSort, setBaseSort] = useState<string>(
     initialSort ||
       (variant === 'agent'
-        ? 'stats.userCount_7d;-1'
+        ? 'stats.userMessageCount_7d;-1'
         : variant === 'user'
         ? 'createdAt;-1'
         : 'createdAt;-1'),
