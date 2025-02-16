@@ -154,6 +154,16 @@ const agentRoutes: FastifyPluginAsync = async server => {
                 neynarWebhookSecret: Type.String(),
               }),
             ),
+            twitter: Type.Optional(
+              Type.Object({
+                user_id: Type.String(),
+                bearer_token: Type.String(),
+                consumer_key: Type.String(),
+                consumer_secret: Type.String(),
+                access_token: Type.String(),
+                access_token_secret: Type.String(),
+              }),
+            ),
           }),
         ),
         config: Type.Optional(
@@ -180,6 +190,11 @@ const agentRoutes: FastifyPluginAsync = async server => {
                     }),
                   ),
                 ),
+              }),
+            ),
+            twitter: Type.Optional(
+              Type.Object({
+                username: Type.String(),
               }),
             ),
           }),
