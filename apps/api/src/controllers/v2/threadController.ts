@@ -349,14 +349,14 @@ export const addThreadMessageReaction = async (
           return m.id.toString() === message_id
         })?.reactions?.thumbs_up || []
 
-      console.log({ existingReactions })
+      // console.log({ existingReactions })
 
       if (
         existingReactions
           .map(reactingUserId => reactingUserId?.toString())
           .includes(userId.toString())
       ) {
-        console.log('already reacted', 'remove', userId.toString())
+        // console.log('already reacted', 'remove', userId.toString())
         // User already reacted, remove the reaction
         await ThreadModel.updateOne(
           query,
@@ -368,7 +368,7 @@ export const addThreadMessageReaction = async (
           },
         )
       } else {
-        console.log('not reacted', 'add', userId.toString())
+        // console.log('not reacted', 'add', userId.toString())
         // User has not reacted, add the reaction
         await ThreadModel.updateOne(
           query,

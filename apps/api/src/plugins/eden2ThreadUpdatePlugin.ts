@@ -63,7 +63,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
     changeStream.on(
       'change',
       async (data: ChangeStreamDocument<ThreadDocument>) => {
-        fastify.log.info(`Change stream onChange: ${WATCHED_COLLECTION}`)
+        // fastify.log.info(`Change stream onChange: ${WATCHED_COLLECTION}`)
 
         // console.log(data.operationType, data)
         try {
@@ -153,7 +153,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             )
 
             if (!updatedMessages.length) {
-              console.log('update: No messages updated')
+              // console.log('update: No messages updated')
               return
             }
 
@@ -162,7 +162,7 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             })
 
             if (!filteredModifiedMessages.length) {
-              console.log('update: No non-user messages updated')
+              // console.log('update: No non-user messages updated')
               return
             }
 

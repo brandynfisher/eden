@@ -207,7 +207,7 @@ export const getMediaDownloadUrls = async (
     }
   })
 
-  console.log({ signedUrls })
+  // console.log({ signedUrls })
 
   return reply
     .status(200)
@@ -310,8 +310,8 @@ export const receiveMediaTranscodeUpdate = async (
   const ogFile = ogFileName.replace(/\.[^/.]+$/, '') // Remove the extension
   const filename = `${ogFile}.m3u8`
   const mediaUri = `${baseUrl}/transcoded/${s3key}/${filename}`
-  console.log('creationUri', creationUri)
-  console.log('mediaUri', mediaUri)
+  // console.log('creationUri', creationUri)
+  // console.log('mediaUri', mediaUri)
 
   const creation = await Creation.findOne({ uri: creationUri })
 

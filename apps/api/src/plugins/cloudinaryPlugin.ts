@@ -54,8 +54,8 @@ export const uploadCldBufferAsset = async (
         mediaType === MediaType.Image
           ? 'image'
           : mediaType === MediaType.Video
-            ? 'video'
-            : 'raw',
+          ? 'video'
+          : 'raw',
       eager:
         mediaType === MediaType.Video
           ? 'c_fill,w_1200,h_630,g_center/c_limit,w_1200/f_webp/q_auto|c_fill,w_1200,h_630,g_center/c_limit,w_1200/f_jpg/q_auto'
@@ -69,14 +69,14 @@ export const uploadCldBufferAsset = async (
         const estimatedFileSize = buffer.byteLength
 
         if (estimatedFileSize > chunkingRequiredLimit) {
-          console.log(
-            'upload: file size bigger 50MB, use upload_chunked_stream',
-            estimatedFileSize,
-          )
-          console.log('upload_chunked_stream', {
-            chunk_size: 20000000,
-            ...uploadConfig,
-          })
+          // console.log(
+          //   'upload: file size bigger 50MB, use upload_chunked_stream',
+          //   estimatedFileSize,
+          // )
+          // console.log('upload_chunked_stream', {
+          //   chunk_size: 20000000,
+          //   ...uploadConfig,
+          // })
           server.cloudinary.uploader
             .upload_chunked_stream(
               {
@@ -89,10 +89,10 @@ export const uploadCldBufferAsset = async (
                   reject(new Error(error.message))
                 }
 
-                console.log(
-                  'upload_chunked_stream done',
-                  uploadResponse?.secure_url,
-                )
+                // console.log(
+                //   'upload_chunked_stream done',
+                //   uploadResponse?.secure_url,
+                // )
                 resolve(uploadResponse)
               },
             )
@@ -203,7 +203,7 @@ export const getCldSignedDownloadUrl = (
   fileName?: string,
 ): Promise<string> => {
   return new Promise(function (resolve) {
-    console.log(assetUrl, fileName)
+    // console.log(assetUrl, fileName)
     const cloudinaryUrlSegments = assetUrl.split('/')
     const versionSegment =
       cloudinaryUrlSegments[cloudinaryUrlSegments.length - 3]

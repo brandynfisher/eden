@@ -8,7 +8,7 @@ export const discordOAuth = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  console.log('discordOAuth')
+  // console.log('discordOAuth')
 
   const { code, state } = request.query as { code: string; state: string }
 
