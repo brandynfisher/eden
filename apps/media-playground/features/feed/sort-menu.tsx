@@ -2,6 +2,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
@@ -81,6 +82,7 @@ export const SortMenu = ({
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+          <DropdownMenuLabel>Sort</DropdownMenuLabel>
           {options.map(option => (
             <DropdownMenuCheckboxItem
               key={option.value}
