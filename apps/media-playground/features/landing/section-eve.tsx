@@ -23,7 +23,7 @@ export default function SectionEve() {
         </Link>
         <div className="relative flex justify-center items-center max-w-full mx-auto mt-6">
           <VideoResult
-            videoUrl="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/trailer_v1.mp4"
+            videoUrl="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/trailer_v12_crf17.mp4"
             posterUrl="https://d14i3advvh2bvd.cloudfront.net/app/landing/home/PRODUCT_TRAILER-4_poster.webp"
             width={2048}
             height={1153}

@@ -109,10 +109,17 @@ export const creationSchema = new Schema<CreationV2Document>(
 creationSchema.index({ task: 1 })
 creationSchema.index({ createdAt: -1 })
 creationSchema.index({ deleted: -1, createdAt: -1 })
-creationSchema.index({ public: 1, deleted: 1, createdAt: -1, _id: -1 })
+creationSchema.index({
+  public: 1,
+  deleted: 1,
+  'mediaAttributes.mimeType': 1,
+  createdAt: -1,
+  _id: -1,
+})
 creationSchema.index({
   user: 1,
   requester: 1,
+  'mediaAttributes.mimeType': 1,
   task: -1,
   public: -1,
   deleted: -1,

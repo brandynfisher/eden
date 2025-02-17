@@ -62,7 +62,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                   blurhash: agent.blurhash,
                 }}
                 unoptimized={true}
-                className="object-cover rounded-lg aspect-square h-[140px] flex-shrink-0 flex-grow-0"
+                className="object-cover rounded-lg aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0"
               />
             </div>
           </div>
@@ -83,7 +83,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
           </div>
         </div>
       </Link>
-      <div className="absolute bottom-0 right-0 p-2 w-[calc(100%-140px)] flex items-center justify-between shrink-0 pointer-events-none">
+      <div className="absolute bottom-0 right-0 p-2 flex items-center justify-between shrink-0 pointer-events-none">
         <div className="flex items-center gap-1 ml-auto">
           <div className="flex items-center gap-1">
             <TooltipProvider>

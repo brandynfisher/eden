@@ -68,7 +68,7 @@ export const SortMenu = ({
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center flex-grow md:flex-grow-0">
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-2 min-w-[168px] w-full md:w-auto justify-end px-2 py-1.5 h-10 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground">
           <ArrowDownUpIcon className="h-4 w-4 text-muted-foreground" />
