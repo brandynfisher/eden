@@ -78,7 +78,7 @@ export function BaseFilter({
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center flex-grow md:flex-grow-0">
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(

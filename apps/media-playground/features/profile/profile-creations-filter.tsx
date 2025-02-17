@@ -1,7 +1,7 @@
 import { BaseFilter, FilterSection } from '@/components/filter/base-filter'
 import { profilePrivacyFilterSections } from '@/features/profile/profile-shared-privacy-filter'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
-import { ImageIcon, VideoIcon } from 'lucide-react'
+import { AudioLinesIcon, ImageIcon, VideoIcon } from 'lucide-react'
 
 const profileCreationSections: FilterSection[] = [
   profilePrivacyFilterSections,
@@ -18,6 +18,11 @@ const profileCreationSections: FilterSection[] = [
         id: 'video',
         name: 'Video',
         icon: <VideoIcon className="h-4 w-4" />,
+      },
+      {
+        id: 'audio',
+        name: 'Audio',
+        icon: <AudioLinesIcon className="h-4 w-4" />,
       },
     ],
     canHaveMultipleValues: true,

@@ -85,7 +85,7 @@ const AgentsFeed = ({
         Create Agent
       </Button>
       <MasonryVirtualizerVertical
-        key={JSON.stringify(queryKey)}
+        key={JSON.stringify({ queryKey, breakpoints })}
         apiEndpoint={'/api/feed/agents'}
         queryKey={queryKey}
         query={query}

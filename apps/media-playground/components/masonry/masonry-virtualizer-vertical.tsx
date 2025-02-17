@@ -273,6 +273,16 @@ const MasonryVirtualizerVertical = ({
     gap: MASONRY_GUTTER,
   })
 
+  // Force a recompute of column count when breakpoints change
+  useEffect(() => {
+    if (breakpoints) {
+      const timer = setTimeout(() => {
+        rowVirtualizer.measure()
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+  }, [MASONRY_COLUMN_COUNT, breakpoints, rowVirtualizer])
+
   const virtualItems = rowVirtualizer.getVirtualItems()
   const lastItem = virtualItems[virtualItems.length - 1]
   const virtualItemsStringified = JSON.stringify(

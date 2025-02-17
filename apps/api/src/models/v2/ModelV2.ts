@@ -74,7 +74,13 @@ modelSchema.index({ createdAt: -1 })
 modelSchema.index({ base_model: 1, createdAt: 1, thumbnail: 1 })
 modelSchema.index({ deleted: -1, createdAt: -1 })
 modelSchema.index({ public: -1, deleted: -1, createdAt: -1 })
-modelSchema.index({ user: 1, public: -1, deleted: -1, createdAt: -1 })
+modelSchema.index({
+  user: 1,
+  public: -1,
+  deleted: -1,
+  task: 1,
+  createdAt: -1,
+})
 modelSchema.plugin(paginate)
 modelSchema.plugin(aggregatePaginate)
 modelSchema.plugin(mongooseDelete, {
