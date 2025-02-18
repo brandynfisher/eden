@@ -99,7 +99,21 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               className="text-sm break-words sm:mt-4 text-muted-darker-foreground"
             />
 
-            <div className="flex items-center mt-2 gap-x-1 text-sm text-muted-foreground mb-4">
+            {agent?.isPersonaPublic && (
+              <div className="flex flex-col mt-4 p-4 bg-muted/50 rounded-lg border border-border/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <TypographyH6 className="text-primary">Persona</TypographyH6>
+                  <div className="h-px flex-1 bg-border/50" />
+                </div>
+                <TextClampMore
+                  lines={2}
+                  text={agent?.persona}
+                  className="text-sm italic text-muted-foreground"
+                />
+              </div>
+            )}
+
+            <div className="flex items-center mt-4 gap-x-1 text-sm text-muted-foreground mb-4">
               <span className="mr-1">by</span>
               <UserAvatarLink
                 name={agent.owner.username}
