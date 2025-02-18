@@ -1,11 +1,12 @@
 {
   "name": "@edenlabs/eden-sdk",
-  "version": "0.4.4",
+  "version": "0.4.6",
   "description": "SDK for interacting with the Eden API",
   "source": "src/index.ts",
   "main": "dist/index.js",
   "module": "dist/index.m.js",
   "unpkg": "dist/index.umd.js",
+  "browser": "dist/index.umd.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist && microbundle --tsconfig tsconfig.json --no-sourcemap",
