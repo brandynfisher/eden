@@ -51,7 +51,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
       >
         <div className="relative flex p-2">
           <div className="relative flex-grow shrink-0">
-            <div className="relative flex">
+            <div className="relative flex rounded-lg aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0">
               <CardImage
                 media={{
                   url: agent.userImage,
@@ -62,7 +62,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                   blurhash: agent.blurhash,
                 }}
                 unoptimized={true}
-                className="object-cover rounded-lg aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0"
+                className="object-cover"
               />
             </div>
           </div>

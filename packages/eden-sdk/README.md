@@ -36,10 +36,93 @@ module.exports = {
 
 ### Browser Environment (Using pre-built bundle)
 
-For browser applications, you can use our pre-built UMD bundle which includes all necessary polyfills:
+For browser applications, you can use our pre-built UMD bundle which includes all necessary polyfills. Add this script tag to your HTML:
 
 ```html
 <script src="https://unpkg.com/@edenlabs/eden-sdk@0.4.6/dist/index.umd.js"></script>
+```
+
+Then you can access the SDK through the global `eden` object:
+
+```html
+<script>
+  // Wait for the script to load
+  window.addEventListener('load', () => {
+    if (!window.eden) {
+      console.error('Eden SDK failed to load');
+      return;
+    }
+
+    // Create client instance
+    const client = new eden.EdenClient({
+      apiKey: 'your-api-key'
+    });
+
+    // Example: Create a task
+    async function createTask() {
+      try {
+        const result = await client.tasks.createV2({
+          tool: 'flux_dev',
+          args: {
+            prompt: 'Garden of Eden'
+          }
+        });
+        console.log(result);
+      } catch (error) {
+        console.error('Error creating task:', error);
+      }
+    }
+  });
+</script>
+```
+
+Here's a complete example:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Eden SDK Example</title>
+</head>
+<body>
+    <script src="https://unpkg.com/@edenlabs/eden-sdk@0.4.6/dist/index.umd.js"></script>
+    <script>
+        // Make sure the script is loaded
+        window.addEventListener('load', () => {
+            if (!window.eden) {
+                console.error('Eden SDK failed to load');
+                return;
+            }
+
+            // Create client instance
+            const client = new eden.EdenClient({
+                apiKey: 'your-api-key'
+            });
+
+            // Now you can use the client
+            client.tools.list()
+                .then(tools => console.log('Available tools:', tools))
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
+```
+
+Alternatively, you can also use the `defer` attribute to ensure the script loads before execution:
+
+```html
+<script defer src="https://unpkg.com/@edenlabs/eden-sdk@0.4.6/dist/index.umd.js"></script>
+<script defer>
+    if (!window.eden) {
+        console.error('Eden SDK failed to load');
+    } else {
+        const client = new eden.EdenClient({
+            apiKey: 'your-api-key'
+        });
+        // Use client here...
+    }
+</script>
 ```
 
 The UMD bundle is specifically built to work in browsers without any additional configuration. If you're experiencing issues with the ES module version in a browser environment, we recommend using this UMD bundle instead.
