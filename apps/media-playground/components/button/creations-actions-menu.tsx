@@ -94,21 +94,16 @@ const CreationActionsContent = ({
   const { isSignedIn } = useAuthState()
   const { creation: creationResponse } = useCreationQuery({
     key: creation._id,
-    initialData: {
-      creation,
-    },
     enabled: isOpen,
   })
 
-  const creationData = creationResponse || creation
-
-  // console.log({ creationData, creationResponse, creation })
+  const creationData = creationResponse
 
   const handleAddToCollectionClick = () => {
     dispatch(
       updateAddToCollectionModal({
         isOpen: true,
-        creationIds: [creationData._id],
+        creationIds: [creation._id],
       }),
     )
   }
@@ -123,7 +118,7 @@ const CreationActionsContent = ({
 
   const handleShareClick = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/creations/${creationData._id}`
+    const shareUrl = `${baseUrl}/creations/${creation._id}`
     dispatch(
       updateShareModal({
         isOpen: true,
@@ -133,16 +128,13 @@ const CreationActionsContent = ({
   }
 
   const fileType =
-    getFileTypeByMimeType(creationData.mediaAttributes?.mimeType) || 'image'
+    getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
 
   return (
     <>
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
-          <Link
-            className="cursor-pointer"
-            href={`/creations/${creationData._id}`}
-          >
+          <Link className="cursor-pointer" href={`/creations/${creation._id}`}>
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
             {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
@@ -192,7 +184,7 @@ const CreationActionsContent = ({
         <DropdownMenuItem asChild disabled={!isSignedIn}>
           <Link
             className="cursor-pointer flex items-center"
-            href={`/create/${fileType}/${creationData.tool}?creation=${creationData._id}`}
+            href={`/create/${fileType}/${creation.tool}?creation=${creation._id}`}
             scroll={false}
             shallow={true}
             prefetch={false}
@@ -203,13 +195,13 @@ const CreationActionsContent = ({
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>
-      {creationData.user._id === userId && (
+      {creationResponse && creationData?.user._id === userId && (
         <>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <PrivacyActionItem
               type="creation"
-              item={creationData}
+              item={creationResponse}
               queryKey={queryKey}
             />
           </DropdownMenuGroup>
@@ -217,7 +209,7 @@ const CreationActionsContent = ({
           <DropdownMenuGroup>
             <DeleteActionItem
               type="creation"
-              item={creationData}
+              item={creationResponse}
               queryKey={queryKey}
             />
           </DropdownMenuGroup>
@@ -229,11 +221,12 @@ const CreationActionsContent = ({
           <DropdownMenuGroup>
             <DownloadActionItem
               type="creation"
-              originalFileUrl={creationData.filename || ''}
+              originalFileUrl={creationResponse?.filename || ''}
               saveAsFileName={generateFilename(
-                creationData.user.username,
-                creationData.task.args?.prompt?.substring(0, 64).trim(),
-                creationData._id,
+                creationResponse?.user.username || '',
+                creationResponse?.task.args?.prompt?.substring(0, 64).trim() ||
+                  '',
+                creationResponse?._id || '',
               )}
             />
           </DropdownMenuGroup>
