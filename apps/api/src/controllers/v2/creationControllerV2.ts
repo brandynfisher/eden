@@ -64,6 +64,7 @@ export const getCreation = async (
     //@ts-expect-error This stupid overloading of ids with full docs...
     creation.user.userImage = forceCloudfrontUrl(
       server,
+      //@ts-expect-error This stupid overloading of ids with full docs...
       creation.user.userImage,
     )
   }
