@@ -23,11 +23,10 @@ import React, { RefObject } from 'react'
 type Props = {
   id: string
   agentSSRData?: Agent
-  isModal?: boolean
   scrollRef?: RefObject<HTMLDivElement>
 }
 
-const AgentDetail = ({ id, agentSSRData, isModal, scrollRef }: Props) => {
+const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   const { isSignedIn, user } = useAuthState()
   const dispatch = useAppDispatch()
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
@@ -160,7 +159,6 @@ const AgentDetail = ({ id, agentSSRData, isModal, scrollRef }: Props) => {
               </TypographyH6>
               <CreationsFeed
                 query={{ user: agent._id, requester: user?._id }}
-                isModal={isModal}
                 scrollRef={scrollRef}
               />
             </div>
