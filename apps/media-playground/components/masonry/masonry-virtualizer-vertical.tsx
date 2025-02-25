@@ -70,6 +70,14 @@ export const MasonrySkeleton = () => {
       <Skeleton className="h-full w-full aspect-square" />
       <Skeleton className="h-full w-full aspect-square" />
       <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
     </div>
   )
 }
@@ -237,7 +245,7 @@ const MasonryVirtualizerVertical = ({
     data,
     error,
     // isFetching,
-    isLoading,
+    // isLoading,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
@@ -403,7 +411,7 @@ const MasonryVirtualizerVertical = ({
         key={`${apiEndpoint}_${queryKey.join(',')}`}
         data-test-id="masonry-virtualizer-vertical"
         ref={masonryWrapRef}
-        className="flex pb-12 outline-none max-h-screen"
+        className="flex pb-12 outline-none"
       >
         <div
           ref={innerRef}
@@ -425,7 +433,7 @@ const MasonryVirtualizerVertical = ({
             </div>
           ) : null}
 
-          {isLoading ? <MasonrySkeleton /> : null}
+          {/* {status === 'pending' ? <MasonrySkeleton /> : null} */}
 
           {virtualizer
             .getVirtualItems()

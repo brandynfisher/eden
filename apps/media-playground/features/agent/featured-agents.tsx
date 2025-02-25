@@ -12,7 +12,7 @@ export const FeaturedAgents = () => {
         <div>Agents</div>
         <Link
           title="Explore agent feed"
-          href="/explore?tab=agents"
+          href="/agents"
           className="text-muted-foreground flex items-center gap-0.5 hover:text-foreground  group transition-colors duration-200"
           prefetch={false}
         >

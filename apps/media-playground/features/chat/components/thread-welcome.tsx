@@ -115,7 +115,7 @@ const MyThreadWelcomeSuggestions: FC = () => {
       >
         {suggestions.map((suggestion, index) => (
           <div
-            className={`suggestion-item flex-shrink-0 transition-opacity duration-200 ${
+            className={`text-sm suggestion-item hover:bg-secondary/20 flex-shrink-0 border border-border rounded-full bg-popover/30 transition-opacity duration-200 ${
               !showAll && index >= visibleCount
                 ? 'opacity-0 absolute pointer-events-none'
                 : 'opacity-100'

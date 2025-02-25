@@ -14,7 +14,7 @@ export default function SectionEve() {
         Eden Agents are chat agents who are given a unique personality, set of
         tools & instructions and a custom visual model. <br />
         They can be crafted to act as creative assistants, coaches,
-        storytellers, brand ambassadors and more.
+        storytellers, brand ambassadors and more.{' '}
         <Link
           href="/create"
           className=" text-purple-500 font-bold inline-flex items-center hover:text-purple-400"

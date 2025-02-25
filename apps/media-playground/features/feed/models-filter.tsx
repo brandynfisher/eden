@@ -22,11 +22,17 @@ const modelSections: FilterSection[] = [
 interface ModelsFilterProps {
   onChange: (filter: FeedCursorRouteQueryParams['filter']) => void
   initialFilter?: FeedCursorRouteQueryParams['filter']
+  className?: string
 }
 
-export function ModelsFilter({ onChange, initialFilter }: ModelsFilterProps) {
+export function ModelsFilter({
+  onChange,
+  initialFilter,
+  className,
+}: ModelsFilterProps) {
   return (
     <BaseFilter
+      className={className}
       sections={modelSections}
       onChange={onChange}
       initialFilter={initialFilter}

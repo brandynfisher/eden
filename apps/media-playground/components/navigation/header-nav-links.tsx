@@ -1,7 +1,6 @@
 'use client'
 
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
-import { NavLinkProps } from '@/components/navigation/nav-link'
 import NavLinkList from '@/components/navigation/nav-link-list'
 import { Separator } from '@/components/ui/separator'
 import { SheetClose } from '@/components/ui/sheet'
@@ -34,34 +33,6 @@ const HomeNavLink = ({
   )
 }
 
-const navItemsExplore: NavLinkProps[] = [
-  {
-    label: 'Explore',
-    segments: ['explore'],
-  },
-]
-
-const navItemsMake: NavLinkProps[] = [
-  {
-    label: 'Create',
-    segments: ['create'],
-  },
-]
-
-const navItemsTrain: NavLinkProps[] = [
-  {
-    label: 'Train Models',
-    segments: ['train'],
-  },
-]
-
-const navItemsEve: NavLinkProps[] = [
-  {
-    label: 'Eve',
-    segments: [`chat/eve`],
-  },
-]
-
 type Props = {
   inSheet?: boolean
 }
@@ -72,13 +43,13 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
   return (
     <>
       <HomeNavLink href="/" inSheet={inSheet} />
-      <NavLinkList items={navItemsMake} segments={segments} inSheet={inSheet} />
-      <div className="md:self-stretch md:flex md:items-center">
-        <Separator orientation="vertical" className="hidden md:block" />
-        <Separator orientation="horizontal" className="md:hidden" />
-      </div>
       <NavLinkList
-        items={navItemsTrain}
+        items={[
+          {
+            label: 'Agents',
+            segments: [`agents`],
+          },
+        ]}
         segments={segments}
         inSheet={inSheet}
       />
@@ -87,7 +58,12 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         <Separator orientation="horizontal" className="md:hidden" />
       </div>
       <NavLinkList
-        items={navItemsExplore}
+        items={[
+          {
+            label: 'Models',
+            segments: [`models`],
+          },
+        ]}
         segments={segments}
         inSheet={inSheet}
       />
@@ -95,7 +71,30 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         <Separator orientation="vertical" className="hidden md:block" />
         <Separator orientation="horizontal" className="md:hidden" />
       </div>
-      <NavLinkList items={navItemsEve} segments={segments} inSheet={inSheet} />
+      <NavLinkList
+        items={[
+          {
+            label: 'Creations',
+            segments: [`creations`],
+          },
+        ]}
+        segments={segments}
+        inSheet={inSheet}
+      />
+      <div className="md:self-stretch md:flex md:items-center">
+        <Separator orientation="vertical" className="hidden md:block" />
+        <Separator orientation="horizontal" className="md:hidden" />
+      </div>
+      <NavLinkList
+        items={[
+          {
+            label: 'Tools',
+            segments: [`create`, `image`, `flux_schnell`],
+          },
+        ]}
+        segments={segments}
+        inSheet={inSheet}
+      />
     </>
   )
 }
