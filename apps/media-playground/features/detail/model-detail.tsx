@@ -10,15 +10,16 @@ import CreationsFeed from '@/features/feed/creations-feed'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
-import React, { Suspense, useEffect, useRef, useState } from 'react'
+import React, { RefObject, Suspense, useEffect, useRef, useState } from 'react'
 
 type Props = {
   id: string
   modelSSRData?: ModelV2
   isModal?: boolean
+  scrollRef?: RefObject<HTMLDivElement>
 }
 
-const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
+const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
   const { model: modelClientData, queryKey } = useModelQuery({
     key: id,
     initialData: modelSSRData
@@ -107,6 +108,7 @@ const ModelDetail = ({ id, modelSSRData, isModal }: Props) => {
                       <CreationsFeed
                         query={{ concept: model._id }}
                         maxCols={5}
+                        scrollRef={scrollRef}
                       />
                     </ErrorBoundary>
                   </Suspense>

@@ -1,4 +1,4 @@
-import { DialogPortal } from '@/components/ui/dialog'
+import { DialogOverlay, DialogPortal } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { ArrowLeftIcon } from 'lucide-react'
@@ -8,7 +8,7 @@ const DialogOverlayScrollable = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
+  <DialogOverlay
     ref={ref}
     className={cn(
       'fixed grid justify-items-center md:py-2 overflow-auto inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',

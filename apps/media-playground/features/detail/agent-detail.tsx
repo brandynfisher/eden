@@ -18,14 +18,16 @@ import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { MessageSquareIcon, RocketIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { RefObject } from 'react'
 
 type Props = {
   id: string
   agentSSRData?: Agent
+  isModal?: boolean
+  scrollRef?: RefObject<HTMLDivElement>
 }
 
-const AgentDetail = ({ id, agentSSRData }: Props) => {
+const AgentDetail = ({ id, agentSSRData, isModal, scrollRef }: Props) => {
   const { isSignedIn, user } = useAuthState()
   const dispatch = useAppDispatch()
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
@@ -158,6 +160,8 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               </TypographyH6>
               <CreationsFeed
                 query={{ user: agent._id, requester: user?._id }}
+                isModal={isModal}
+                scrollRef={scrollRef}
               />
             </div>
           )
