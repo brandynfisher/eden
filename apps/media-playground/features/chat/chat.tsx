@@ -119,14 +119,11 @@ const ThreadListItemTrigger: FC<{
         <ThreadListItemPrimitive.Title fallback="Untitled" />
       </div>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0 h-6 w-6 mr-1 hidden [&[data-state=open]]:flex group-hover:flex [@media(pointer:coarse)]:flex"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+        <DropdownMenuTrigger
+          asChild
+          className="shrink-0 h-5 w-5 mr-1 hidden [&[data-state=open]]:flex group-hover:flex [@media(pointer:coarse)]:flex"
+        >
+          <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent className="[&[data-state=closed]]:hidden">
           <DropdownMenuItem
@@ -146,7 +143,10 @@ const ThreadListItem: FC<{
   onItemClick?: () => void
 }> = ({ onItemClick }) => {
   return (
-    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all">
+    <ThreadListItemPrimitive.Root
+      asChild
+      className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all"
+    >
       <ThreadListItemTrigger onItemClick={onItemClick} />
     </ThreadListItemPrimitive.Root>
   )

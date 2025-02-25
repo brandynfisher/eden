@@ -46,9 +46,7 @@ const MyThreadWelcomeSuggestion: FC<{
 }> = ({ suggestion: { text, prompt } }) => {
   return (
     <ThreadPrimitive.Suggestion prompt={prompt} method="replace" autoSend>
-      <Button variant="outline" className="px-3 py-2 rounded-full">
-        {text ?? prompt}
-      </Button>
+      <div className="px-3 py-2 rounded-full">{text ?? prompt}</div>
     </ThreadPrimitive.Suggestion>
   )
 }
