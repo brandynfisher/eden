@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
+import { handleShareClick } from '@/features/detail/agent-share-util'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -16,7 +17,12 @@ import {
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
-import { MessageSquareIcon, RocketIcon, SettingsIcon } from 'lucide-react'
+import {
+  MessageSquareIcon,
+  RocketIcon,
+  SettingsIcon,
+  Share2Icon,
+} from 'lucide-react'
 import Link from 'next/link'
 import React, { RefObject } from 'react'
 
@@ -135,6 +141,15 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                     hiddenItems={['chat', 'view-details']}
                   />
                 </>
+              )}
+              {user?._id !== agent?.owner._id && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={evt => handleShareClick(evt, agent, dispatch)}
+                >
+                  <Share2Icon className="h-4 w-4" />
+                </Button>
               )}
               <Button variant="outline" asChild>
                 <Link
