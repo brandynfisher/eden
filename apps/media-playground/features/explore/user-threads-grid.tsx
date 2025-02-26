@@ -51,7 +51,7 @@ export default function UserThreadsGrid() {
         {threads
           ?.filter(thread => thread !== undefined)
           .map(thread => (
-            <ThreadMiniCard key={thread._id} thread={thread} />
+            <ThreadMiniCard key={thread?._id} thread={thread} />
           ))}
       </div>
     </ErrorBoundary>
