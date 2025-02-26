@@ -29,7 +29,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
   return (
     <Card
       className={cn([
-        'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary hover:ring-2 ring-purple-600/40',
+        'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary/70 hover:ring-2 ring-purple-600/40',
         className,
       ])}
     >

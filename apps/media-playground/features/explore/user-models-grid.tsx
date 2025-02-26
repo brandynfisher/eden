@@ -3,16 +3,21 @@
 // import { useAuthState } from '@/hooks/use-auth-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
+import { useAuthState } from '@/hooks/use-auth-state'
+// import { useAuthState } from '@/hooks/use-auth-state'
 // import { useAgentsQuery } from '@/hooks/query/use-agents-query'
 import React from 'react'
 
 export default function UserModelsGrid() {
-  // const { user } = useAuthState()
+  const { user } = useAuthState()
 
-  // const { data: agents } = useAgentsQuery({
-  //   queryKey: ['agents', user?._id],
-  //   queryFn: () => getAgents({ user: user?._id }),
+  // const { data: models } = useModelListQuery({
+  //   enabled: !!user?._id,
+  //   owner: user?._id,
+  //   limit: 5,
   // })
+
+  if (!user) return null
 
   return (
     <>

@@ -24,7 +24,7 @@ const SortAgentsFeed = ({ initialSort }: Props) => {
 
   return (
     <>
-      <div className="flex items-center mb-6 gap-x-2">
+      <div className="flex flex-wrap items-center mb-6 gap-2">
         <div className="flex items-center justify-between mr-auto">
           <TypographyH4 className="text-2xl font-semibold text-center">
             Explore Agents

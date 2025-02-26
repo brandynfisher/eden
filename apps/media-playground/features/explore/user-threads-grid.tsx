@@ -1,55 +1,12 @@
 'use client'
 
-import CardImage from '@/components/card/components/card-image'
+import { ThreadMiniCard } from '@/components/card/thread-mini-card'
+import ErrorBoundary from '@/components/error-boundary'
 import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { Thread } from '@edenlabs/eden-sdk'
-import { useTimeAgo } from 'next-timeago'
-import Link from 'next/link'
 import React from 'react'
-
-export const ThreadMiniCard = ({ thread }: { thread: Thread }) => {
-  const { TimeAgo } = useTimeAgo()
-  return (
-    <Link
-      href={`/chat/${thread.agent.username}/${thread._id}`}
-      prefetch={false}
-      className="relative flex overflow-hidden w-full bg-muted/30 border border-border rounded-lg p-2 hover:border-purple-600/40 hover:bg-purple-600/20 transition-all duration-200"
-    >
-      {/* <div className="flex-shrink-0 flex items-center justify-center"> */}
-      <div className="relative rounded-lg overflow-hidden w-10 aspect-square">
-        <CardImage
-          media={{
-            url: getCloudfrontOriginalUrl(thread.agent.userImage),
-            thumbnail: getCloudfrontOriginalUrl(thread.agent.userImage),
-            width: 256,
-            height: 256,
-            type: 'image',
-            blurhash: thread.agent.blurhash,
-          }}
-          unoptimized={true}
-          className="object-cover "
-        />
-      </div>
-      {/* </div> */}
-
-      <div className="flex-grow min-w-0 flex flex-col gap-1 ml-2">
-        <p className="font-semibold text-sm  truncate">
-          {thread.title || 'Untitled Thread'}
-        </p>
-        <div className="flex items-center text-xs text-accent-foreground">
-          <span className="truncate">{thread.agent.name}</span>
-          <span className="text-muted-foreground ml-auto flex-shrink-0">
-            <TimeAgo date={thread.updatedAt} locale="en-short" /> ago
-          </span>
-        </div>
-      </div>
-    </Link>
-  )
-}
 
 export default function UserThreadsGrid() {
   const { user } = useAuthState()
@@ -59,8 +16,10 @@ export default function UserThreadsGrid() {
     limit: 5,
   })
 
+  if (!user) return null
+
   return (
-    <>
+    <ErrorBoundary>
       <div className="flex items-center mb-6 gap-x-2 mt-4">
         <div className="flex items-center justify-between">
           <TypographyH4 className="text-2xl font-semibold text-center">
@@ -95,6 +54,6 @@ export default function UserThreadsGrid() {
             <ThreadMiniCard key={thread._id} thread={thread} />
           ))}
       </div>
-    </>
+    </ErrorBoundary>
   )
 }
