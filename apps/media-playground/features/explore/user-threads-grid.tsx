@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { Thread } from '@edenlabs/eden-sdk'
 import React from 'react'
 
 export default function UserThreadsGrid() {
@@ -51,7 +52,7 @@ export default function UserThreadsGrid() {
         {threads
           ?.filter(thread => thread !== undefined)
           .map(thread => (
-            <ThreadMiniCard key={thread?._id} thread={thread} />
+            <ThreadMiniCard key={thread?._id} thread={thread as Thread} />
           ))}
       </div>
     </ErrorBoundary>
