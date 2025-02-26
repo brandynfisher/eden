@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useModelsListQuery } from '@/hooks/query/use-models-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useMemo } from 'react'
 
@@ -28,7 +28,7 @@ export default function UserModelsGrid() {
   if (!user) return null
 
   return (
-    <>
+    <div className="mb-12">
       <div className="flex items-center mb-6 gap-x-2 mt-4 h-9">
         <div className="flex items-center justify-between">
           <TypographyH4 className="text-xl font-semibold text-center">
@@ -39,7 +39,7 @@ export default function UserModelsGrid() {
           asChild
           size="sm"
           variant="outline"
-          className="ml-auto gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
+          className="ml-auto gap-x-2 text-sm font-medium border-gray-700 hover:bg-gray-800"
         >
           <Link
             href={`/creators/${user?.username}?tab=models`}
@@ -50,7 +50,7 @@ export default function UserModelsGrid() {
           </Link>
         </Button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {isLoading ? (
           <>
             <Skeleton className="w-full h-[82px]" />
@@ -68,6 +68,16 @@ export default function UserModelsGrid() {
           />
         ))}
       </div>
-    </>
+      <Button
+        asChild
+        variant="outline"
+        className="mt-4 gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
+      >
+        <Link href="/train" prefetch={false}>
+          <PlusIcon className="w-4 h-4" />
+          Train Model
+        </Link>
+      </Button>
+    </div>
   )
 }

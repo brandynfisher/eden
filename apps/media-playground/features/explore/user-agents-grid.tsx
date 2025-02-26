@@ -6,7 +6,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useAgentsListQuery } from '@/hooks/query/use-agents-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { ChevronRight } from 'lucide-react'
+import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
+import { useQueryClient } from '@tanstack/react-query'
+import { ChevronRight, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useMemo } from 'react'
@@ -14,6 +17,8 @@ import React, { useMemo } from 'react'
 export default function UserAgentsGrid() {
   const { user } = useAuthState()
   const pathname = usePathname()
+  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
 
   const queryOptions = useMemo(
     () => ({
@@ -32,10 +37,26 @@ export default function UserAgentsGrid() {
     [user?._id, pathname],
   )
 
+  const onCreated = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: queryKey as unknown as unknown[],
+    })
+  }
+
+  const handleCreateClick = () => {
+    dispatch(
+      updateAgentFormSheet({
+        isOpen: true,
+        mode: 'create',
+        onAction: onCreated,
+      }),
+    )
+  }
+
   if (!user) return null
 
   return (
-    <>
+    <div className="mb-12">
       <div className="flex items-center mb-6 gap-x-2 h-9">
         <div className="flex items-center justify-between">
           <TypographyH4 className="text-xl font-semibold text-center">
@@ -46,7 +67,7 @@ export default function UserAgentsGrid() {
           asChild
           size="sm"
           variant="outline"
-          className="ml-auto gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
+          className="ml-auto gap-x-2 text-sm font-medium border-gray-700 hover:bg-gray-800"
         >
           <Link
             href={`/creators/${user?.username}?tab=agents`}
@@ -57,20 +78,28 @@ export default function UserAgentsGrid() {
           </Link>
         </Button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {isLoading ? (
           <>
-            <Skeleton className="w-full h-24" />
-            <Skeleton className="w-full h-24" />
-            <Skeleton className="w-full h-24" />
-            <Skeleton className="w-full h-24" />
-            <Skeleton className="w-full h-24" />
+            <Skeleton className="w-full h-[82px]" />
+            <Skeleton className="w-full h-[82px]" />
+            <Skeleton className="w-full h-[82px]" />
+            <Skeleton className="w-full h-[82px]" />
+            <Skeleton className="w-full h-[82px]" />
           </>
         ) : null}
         {agents?.map(agent => (
           <AgentMiniCard key={agent._id} agent={agent} queryKey={queryKey} />
         ))}
       </div>
-    </>
+      <Button
+        variant="outline"
+        className="mt-4 gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
+        onClick={handleCreateClick}
+      >
+        <PlusIcon className="w-4 h-4" />
+        Create Agent
+      </Button>
+    </div>
   )
 }

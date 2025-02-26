@@ -110,7 +110,7 @@ const ModelMiniCard = ({
           </div>
         )}
       </Link>
-      <div className="text-xs flex flex-col justify-around h-full w-full py-1">
+      <div className="text-xs flex flex-col h-full w-full py-1">
         <Link href={`/models/${model._id}`} prefetch={false}>
           <div className="flex">
             {model.name}
@@ -120,6 +120,9 @@ const ModelMiniCard = ({
               </Badge>
             )}
           </div>
+          <Badge variant="secondary" className="text-xs my-1 bg-opacity-80">
+            {model.base_model}
+          </Badge>
         </Link>
         {showCreator && (
           <div className="text-muted-foreground flex gap-2">

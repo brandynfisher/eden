@@ -35,7 +35,7 @@ const RedeemVoucherForm = () => {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('try onSubmit', values)
+    // console.log('try onSubmit', values)
     setIsSubmitting(true)
 
     try {
@@ -46,7 +46,7 @@ const RedeemVoucherForm = () => {
         },
       )
 
-      console.log({ response })
+      // console.log({ response })
 
       toast.success(`Code redeemed`, {
         description: (
@@ -60,7 +60,7 @@ const RedeemVoucherForm = () => {
 
       await refetchMe()
     } catch (err) {
-      console.log(err)
+      console.error(err)
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'
