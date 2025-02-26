@@ -9,13 +9,13 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, PlusIcon } from 'lucide-react'
+import { ChevronRight, LogIn, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useMemo } from 'react'
 
 export default function UserAgentsGrid() {
-  const { user } = useAuthState()
+  const { user, verifyAuth, isLoading: isAuthLoading = false } = useAuthState()
   const pathname = usePathname()
   const dispatch = useAppDispatch()
   const queryClient = useQueryClient()
@@ -44,6 +44,11 @@ export default function UserAgentsGrid() {
   }
 
   const handleCreateClick = () => {
+    if (!user) {
+      verifyAuth()
+      return
+    }
+
     dispatch(
       updateAgentFormSheet({
         isOpen: true,
@@ -53,7 +58,11 @@ export default function UserAgentsGrid() {
     )
   }
 
-  if (!user) return null
+  // Show loading state while auth is being determined
+  const isLoadingState = isAuthLoading || isLoading
+
+  // If auth check is complete and user is not logged in, show auth prompt
+  const showAuthPrompt = !isAuthLoading && !user
 
   return (
     <div className="mb-12">
@@ -63,23 +72,25 @@ export default function UserAgentsGrid() {
             My Agents
           </TypographyH4>
         </div>
-        <Button
-          asChild
-          size="sm"
-          variant="outline"
-          className="ml-auto gap-x-2 text-sm font-medium border-gray-700 hover:bg-gray-800"
-        >
-          <Link
-            href={`/creators/${user?.username}?tab=agents`}
-            prefetch={false}
+        {user && (
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="ml-auto gap-x-2 text-sm font-medium border-gray-700 hover:bg-gray-800"
           >
-            More
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </Button>
+            <Link
+              href={`/creators/${user?.username}?tab=agents`}
+              prefetch={false}
+            >
+              More
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </Button>
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {isLoading ? (
+        {isLoadingState ? (
           <>
             <Skeleton className="w-full h-[82px]" />
             <Skeleton className="w-full h-[82px]" />
@@ -87,15 +98,32 @@ export default function UserAgentsGrid() {
             <Skeleton className="w-full h-[82px]" />
             <Skeleton className="w-full h-[82px]" />
           </>
-        ) : null}
-        {agents?.map(agent => (
-          <AgentMiniCard key={agent._id} agent={agent} queryKey={queryKey} />
-        ))}
+        ) : showAuthPrompt ? (
+          <div
+            onClick={verifyAuth}
+            className="col-span-full flex flex-col items-center justify-center p-6 text-center bg-muted/20 border border-dashed border-gray-700 rounded-md cursor-pointer transition-all hover:bg-gray-800/30 hover:border-gray-600"
+          >
+            <p className="text-muted-foreground mb-3">
+              Sign in to view your agents
+            </p>
+            <Button variant="outline" className="gap-x-2">
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Button>
+          </div>
+        ) : (
+          agents?.map(agent => (
+            <AgentMiniCard key={agent._id} agent={agent} queryKey={queryKey} />
+          ))
+        )}
       </div>
       <Button
         variant="outline"
-        className="mt-4 gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
+        className={`mt-4 gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600 ${
+          !user && !isAuthLoading ? 'opacity-0 pointer-events-none' : ''
+        }`}
         onClick={handleCreateClick}
+        disabled={!!isAuthLoading}
       >
         <PlusIcon className="w-4 h-4" />
         Create Agent
