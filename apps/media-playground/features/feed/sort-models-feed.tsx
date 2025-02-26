@@ -70,7 +70,7 @@ const SortModelsFeed = ({ initialFilter }: Props) => {
           variant="outline"
           className="gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
         >
-          View all
+          More
           <ChevronRight className="w-4 h-4" />
         </Button>
       </div>

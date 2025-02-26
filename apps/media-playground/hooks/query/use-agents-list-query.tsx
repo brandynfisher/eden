@@ -9,7 +9,10 @@ export const useAgentsListQuery = (query?: {
   limit?: number
   owner?: string
   sort?: string
+  enabled?: boolean
 }) => {
+  const { enabled, ...rest } = query ?? {}
+
   const {
     data,
     error,
@@ -21,12 +24,13 @@ export const useAgentsListQuery = (query?: {
     isSuccess,
     status,
   } = useQuery({
-    queryKey: [...listQueryKey, query?._id],
+    enabled: enabled,
+    queryKey: [...listQueryKey, query],
     queryFn: () => {
       const paginationRoute = createCursorPaginationRoute('/api/feed/agents', {
-        limit: query?.limit ?? 4,
-        sort: query?.sort ?? 'createdAt;-1',
-        ...query,
+        limit: rest?.limit ?? 4,
+        sort: rest?.sort ?? 'createdAt;-1',
+        ...rest,
         // cursor: pageParam || '',
       })
 
