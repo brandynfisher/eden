@@ -21,23 +21,12 @@ export default function UserThreadsGrid() {
 
   return (
     <ErrorBoundary>
-      <div className="flex items-center mb-6 gap-x-2 mt-4">
+      <div className="flex items-center mb-6 gap-x-2 mt-4 h-9">
         <div className="flex items-center justify-between">
           <TypographyH4 className="text-xl font-semibold text-center">
             Recent Threads
           </TypographyH4>
         </div>
-        {/* <Button
-          asChild
-          size="sm"
-          variant="outline"
-          className="ml-auto gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
-        >
-          <Link href={`/creators/${user?._id}?tab=threads`}>
-            More
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </Button> */}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-12">
         {isLoading ? (

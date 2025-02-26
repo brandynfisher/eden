@@ -36,7 +36,7 @@ export default function UserAgentsGrid() {
 
   return (
     <>
-      <div className="flex items-center mb-6 gap-x-2">
+      <div className="flex items-center mb-6 gap-x-2 h-9">
         <div className="flex items-center justify-between">
           <TypographyH4 className="text-xl font-semibold text-center">
             My Agents
@@ -48,7 +48,10 @@ export default function UserAgentsGrid() {
           variant="outline"
           className="ml-auto gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
         >
-          <Link href={`/creators/${user?._id}?tab=agents`} prefetch={false}>
+          <Link
+            href={`/creators/${user?.username}?tab=agents`}
+            prefetch={false}
+          >
             More
             <ChevronRight className="w-4 h-4" />
           </Link>

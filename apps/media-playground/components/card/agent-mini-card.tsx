@@ -61,7 +61,7 @@ export const AgentMiniCard = ({
         </div>
         <div className="font-semibold text-sm truncate ml-3">{agent.name}</div>
       </Link>
-      <div className="absolute bottom-2 right-2 flex items-center gap-1.5 z-10">
+      <div className="absolute bottom-2 right-2 flex items-center gap-1 z-10">
         <div className="flex items-center gap-1">
           <TooltipProvider>
             <Tooltip>
