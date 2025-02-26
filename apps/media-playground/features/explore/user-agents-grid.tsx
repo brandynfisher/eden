@@ -38,7 +38,7 @@ export default function UserAgentsGrid() {
     <>
       <div className="flex items-center mb-6 gap-x-2">
         <div className="flex items-center justify-between">
-          <TypographyH4 className="text-2xl font-semibold text-center">
+          <TypographyH4 className="text-xl font-semibold text-center">
             My Agents
           </TypographyH4>
         </div>

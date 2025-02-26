@@ -22,7 +22,7 @@ export default function UserModelsGrid() {
   return (
     <>
       <div className="flex items-center justify-between mt-2">
-        <TypographyH4 className="text-2xl font-semibold mb-6 text-center">
+        <TypographyH4 className="text-xl font-semibold mb-6 text-center">
           My Models
         </TypographyH4>
       </div>

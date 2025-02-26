@@ -15,7 +15,6 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { MannaVoucherRedeemResponse } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -27,7 +26,6 @@ const formSchema = z.object({
 
 const RedeemVoucherForm = () => {
   const { refetchMe } = useAuthState()
-  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,8 +59,6 @@ const RedeemVoucherForm = () => {
       })
 
       await refetchMe()
-
-      router.push('/create')
     } catch (err) {
       console.log(err)
       const errorMessage = axios.isAxiosError(err)

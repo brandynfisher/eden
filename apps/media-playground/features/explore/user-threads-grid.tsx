@@ -22,7 +22,7 @@ export default function UserThreadsGrid() {
     <ErrorBoundary>
       <div className="flex items-center mb-6 gap-x-2 mt-4">
         <div className="flex items-center justify-between">
-          <TypographyH4 className="text-2xl font-semibold text-center">
+          <TypographyH4 className="text-xl font-semibold text-center">
             Recent Threads
           </TypographyH4>
         </div>
