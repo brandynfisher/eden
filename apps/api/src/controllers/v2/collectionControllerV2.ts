@@ -442,6 +442,11 @@ export const getCollectionDownloadZip = async (
       $unwind: '$creations',
     },
     {
+      $match: {
+        'creations.deleted': { $ne: true },
+      },
+    },
+    {
       $lookup: {
         from: 'users3',
         localField: 'creations.user',
