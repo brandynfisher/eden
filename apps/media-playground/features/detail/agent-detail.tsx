@@ -151,7 +151,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                     'threadCount',
                     'userCount',
                   ]}
-                  className="mt-4 lg:mt-0 gap-2"
+                  className="lg:mt-0 gap-2"
                 />
                 {user?._id !== agent?.owner._id && (
                   <Button
