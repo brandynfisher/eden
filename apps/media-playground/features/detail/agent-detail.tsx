@@ -136,19 +136,30 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                   />
                 </>
               )}
-              <Button variant="outline" asChild>
-                <Link
-                  href={`/chat/${agent.username}`}
-                  className=" bg-purple-600/20 border-purple-600"
-                >
-                  <MessageSquareIcon className="w-4 h-4 mr-2" />
-                  <span className="text-sm">Chat</span>
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" asChild>
+                  <Link
+                    href={`/chat/${agent.username}`}
+                    className=" bg-purple-600/20 border-purple-600"
+                  >
+                    <MessageSquareIcon className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Chat</span>
+                  </Link>
+                </Button>
+                <AgentUsageStats
+                  agent={agent}
+                  hiddenStats={[
+                    'toolCallCount',
+                    'assistantMessageCount',
+                    'threadCount',
+                    'userCount',
+                  ]}
+                  className="mt-4 lg:mt-0 gap-2"
+                />
+              </div>
             </div>
           </div>
         </div>
-        <AgentUsageStats agent={agent} className="mt-4 lg:mt-0 gap-2" />
       </div>
       <div className="p-4">
         {isSignedIn ? (
