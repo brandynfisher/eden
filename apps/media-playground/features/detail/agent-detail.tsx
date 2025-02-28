@@ -5,6 +5,7 @@ import ModelMiniCard from '@/components/card/model-mini-card'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
@@ -186,10 +187,13 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
               <div className="h-px flex-1 bg-border/50" />
             </div>
             {agent?.isPersonaPublic === undefined || !agent?.isPersonaPublic ? (
-              <div className="text-sm italic text-muted-foreground flex items-center gap-2">
-                <EyeOffIcon className="w-4 h-4" />
-                This persona is not public.
-              </div>
+              <>
+                <div className="text-sm italic text-muted-foreground flex items-center gap-2 mb-2">
+                  <EyeOffIcon className="w-4 h-4" />
+                  This persona is not public.
+                </div>
+                <Separator className="mb-2" />
+              </>
             ) : null}
             {(agent?.isPersonaPublic !== undefined && agent?.isPersonaPublic) ||
             user?._id === agent?.owner._id ? (
