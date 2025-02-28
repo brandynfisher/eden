@@ -12,13 +12,11 @@ import MyUserMessage from '@/features/chat/components/user-message'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import {
-  Thread,
-  ThreadConfig,
   ThreadPrimitive,
-  ThreadWelcome,
   useComposerRuntime,
   useThread,
 } from '@assistant-ui/react'
+import { Thread, ThreadConfig, ThreadWelcome } from '@assistant-ui/react-ui'
 import { FC, useEffect, useRef, useState } from 'react'
 import React from 'react'
 import { ReadyState } from 'react-use-websocket'

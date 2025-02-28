@@ -19,6 +19,7 @@ import {
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import {
+  EyeOffIcon,
   MessageSquareIcon,
   RocketIcon,
   SettingsIcon,
@@ -151,9 +152,9 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                       'toolCallCount',
                       'assistantMessageCount',
                       'threadCount',
-                      'userCount',
+                      // 'userCount',
                     ]}
-                    className="gap-2"
+                    className="lg:mt-0 gap-2"
                   />
                   {user?._id !== agent?.owner._id && (
                     <Button
@@ -179,22 +180,29 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           </div>
         </div>
         <div className="flex flex-col md:flex-row gap-4">
-          {agent?.isPersonaPublic && (
-            <div className="flex flex-1 flex-col p-4 max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2 mb-2">
-                <TypographyH6 className="text-primary">Persona</TypographyH6>
-                <div className="h-px flex-1 bg-border/50" />
+          <div className="flex flex-1 flex-col p-4 max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
+            <div className="flex items-center gap-2 mb-2">
+              <TypographyH6 className="text-primary">Persona</TypographyH6>
+              <div className="h-px flex-1 bg-border/50" />
+            </div>
+            {agent?.isPersonaPublic === undefined || !agent?.isPersonaPublic ? (
+              <div className="text-sm italic text-muted-foreground flex items-center gap-2">
+                <EyeOffIcon className="w-4 h-4" />
+                This persona is not public.
               </div>
+            ) : null}
+            {(agent?.isPersonaPublic !== undefined && agent?.isPersonaPublic) ||
+            user?._id === agent?.owner._id ? (
               <TextClampMore
                 lines={3}
                 text={agent?.persona}
                 className="text-sm italic text-muted-foreground"
               />
-            </div>
-          )}
+            ) : null}
+          </div>
           {agent?.model && (
             <div className="flex flex-1 flex-col h-fit max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
-              <TypographyH6 className="text-primary">Model</TypographyH6>
+              <TypographyH6 className="text-primary">Models</TypographyH6>
               <ModelMiniCard modelId={agent.model} />
             </div>
           )}

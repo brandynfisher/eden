@@ -89,7 +89,8 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         items={[
           {
             label: 'Tools',
-            segments: [`create`, `image`, `flux_schnell`],
+            // segments: [`create`, `image`, `flux_schnell`],
+            segments: [`create`],
           },
         ]}
         segments={segments}
