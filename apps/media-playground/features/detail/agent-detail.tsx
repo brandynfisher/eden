@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
+import { handleShareClick } from '@/features/detail/agent-share-util'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -16,16 +17,22 @@ import {
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
-import { MessageSquareIcon, RocketIcon, SettingsIcon } from 'lucide-react'
+import {
+  MessageSquareIcon,
+  RocketIcon,
+  SettingsIcon,
+  Share2Icon,
+} from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+import React, { RefObject } from 'react'
 
 type Props = {
   id: string
   agentSSRData?: Agent
+  scrollRef?: RefObject<HTMLDivElement>
 }
 
-const AgentDetail = ({ id, agentSSRData }: Props) => {
+const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   const { isSignedIn, user } = useAuthState()
   const dispatch = useAppDispatch()
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
@@ -136,6 +143,27 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
                     />
                   </>
                 )}
+                <div className="flex items-center gap-2">
+                  <AgentUsageStats
+                    agent={agent}
+                    hiddenStats={[
+                      'toolCallCount',
+                      'assistantMessageCount',
+                      'threadCount',
+                      'userCount',
+                    ]}
+                    className="gap-2"
+                  />
+                  {user?._id !== agent?.owner._id && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={evt => handleShareClick(evt, agent, dispatch)}
+                    >
+                      <Share2Icon className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <Button variant="outline" asChild>
                   <Link
                     href={`/chat/${agent.username}`}
@@ -148,9 +176,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               </div>
             </div>
           </div>
-          <AgentUsageStats agent={agent} className="mt-4 lg:mt-0 gap-2" />
         </div>
-
         {agent?.isPersonaPublic && (
           <div className="flex flex-col p-4 bg-muted/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-2">
@@ -174,6 +200,7 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
               </TypographyH6>
               <CreationsFeed
                 query={{ user: agent._id, requester: user?._id }}
+                scrollRef={scrollRef}
               />
             </div>
           )

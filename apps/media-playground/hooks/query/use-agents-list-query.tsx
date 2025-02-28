@@ -4,7 +4,15 @@ import { useQuery } from '@tanstack/react-query'
 
 export const listQueryKey = ['agents']
 
-export const useAgentsListQuery = (query?: { _id?: string[] }) => {
+export const useAgentsListQuery = (query?: {
+  _id?: string[]
+  limit?: number
+  owner?: string
+  sort?: string
+  enabled?: boolean
+}) => {
+  const { enabled, ...rest } = query ?? {}
+
   const {
     data,
     error,
@@ -16,12 +24,14 @@ export const useAgentsListQuery = (query?: { _id?: string[] }) => {
     isSuccess,
     status,
   } = useQuery({
-    queryKey: [...listQueryKey, query?._id],
+    enabled: enabled,
+    queryKey: [...listQueryKey, query],
     queryFn: () => {
       const paginationRoute = createCursorPaginationRoute('/api/feed/agents', {
-        ...query,
+        limit: rest?.limit ?? 4,
+        sort: rest?.sort ?? 'createdAt;-1',
+        ...rest,
         // cursor: pageParam || '',
-        limit: 4,
       })
 
       // console.log({paginationRoute})

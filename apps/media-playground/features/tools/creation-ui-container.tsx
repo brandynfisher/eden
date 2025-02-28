@@ -356,7 +356,7 @@ const CreationUIContainer = ({ tool }: Props) => {
 
           <CostIndicatorV2 cost={cost} />
 
-          {!hasEnoughBalance && (
+          {isSignedIn && !hasEnoughBalance && (
             <Button
               type="button"
               size="sm"

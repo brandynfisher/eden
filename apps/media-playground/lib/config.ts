@@ -80,6 +80,8 @@ export const siteConfig: SiteConfig = {
     '/creators',
     '/creations',
     '/models',
+    '/agents',
+    '/tools',
   ],
   featured: {
     tools: ['flux_schnell', 'flux_dev', 'texture_flow', 'animate_3D'],

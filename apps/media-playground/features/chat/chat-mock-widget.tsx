@@ -3,7 +3,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
+import {
+  AutosizeTextAreaRef,
+  AutosizeTextarea,
+} from '@/components/ui/custom/autoresize-textarea'
 import {
   Form,
   FormControl,
@@ -33,6 +36,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
+import React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -105,6 +109,8 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
     resolver: zodResolver(chatMockSchema),
     defaultValues: initialFormData,
   })
+
+  const textareaRef = React.useRef<AutosizeTextAreaRef>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -203,8 +209,21 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
   }, [])
 
   const handleSuggestionClick = (prompt: string) => {
-    form.setValue('message', prompt)
-    form.handleSubmit(handleSubmit)()
+    form.setValue('message', prompt, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    })
+
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.resize()
+      }
+    }, 10)
+
+    setTimeout(() => {
+      form.handleSubmit(handleSubmit)()
+    }, 20)
   }
 
   return (
@@ -329,7 +348,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
                       <AutosizeTextarea
                         className="w-full !border-none !ring-0 !outline-none !ring-offset-0"
                         placeholder="Type your message here..."
-                        rows={1}
+                        rows={2}
                         // minHeight={64}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -343,6 +362,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
                             }
                           }
                         }}
+                        ref={textareaRef}
                       />
                     </FormControl>
                     <FormMessage />

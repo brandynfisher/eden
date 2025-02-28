@@ -2,6 +2,7 @@
 
 import LoadingIndicator from '@/components/loading-indicator'
 import { ListSkeleton } from '@/components/timeline/timeline'
+import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useElementSize } from '@/hooks/use-element-size'
 import { fetcher } from '@/lib/fetcher'
@@ -14,6 +15,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
 import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
+import { LogIn } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import React, { useCallback, useEffect, useMemo } from 'react'
 
@@ -175,10 +177,13 @@ const ListVirtualizerVertical = ({
         }}
       >
         {!user ? (
-          <div className="p-4 text-center bg-accent rounded-md">
-            Please{' '}
-            <button
-              className="underline"
+          <div className="col-span-full flex flex-col items-center justify-center p-6 text-center bg-muted/20 border border-dashed border-gray-700 rounded-md">
+            <p className="text-muted-foreground mb-3">
+              Please sign in to view your tasks.
+            </p>
+            <Button
+              variant="outline"
+              className="gap-x-2"
               onClick={() =>
                 openSignIn({
                   appearance: { baseTheme: dark },
@@ -186,9 +191,9 @@ const ListVirtualizerVertical = ({
                 })
               }
             >
-              sign in
-            </button>{' '}
-            to view your tasks.
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Button>
           </div>
         ) : !allRows.length ? (
           <div className="w-full flex flex-col gap-y-8">

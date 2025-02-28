@@ -16,10 +16,16 @@ import React, { PropsWithChildren, useMemo } from 'react'
 
 type Props = {
   modelId: ModelV2['_id']
+  showCreator?: boolean
   className?: string
 } & PropsWithChildren
 
-const ModelMiniCard = ({ modelId, children, className }: Props) => {
+const ModelMiniCard = ({
+  modelId,
+  children,
+  className,
+  showCreator = true,
+}: Props) => {
   const pathname = usePathname()
 
   const { model, isLoading, isError, error } = useModelQuery({
@@ -31,7 +37,7 @@ const ModelMiniCard = ({ modelId, children, className }: Props) => {
   const wrapperClass = useMemo(
     () =>
       cn([
-        'relative flex gap-2 items-center bg-accent border border-border rounded-lg p-2 min-h-16 overflow-hidden',
+        'relative cursor-pointer flex gap-2 items-center bg-accent border border-border rounded-lg p-2 min-h-16 overflow-hidden hover:border-purple-600/40 hover:bg-purple-600/20 transition-all duration-200 group',
         className,
       ]),
     [className],
@@ -89,7 +95,7 @@ const ModelMiniCard = ({ modelId, children, className }: Props) => {
         className="size-16"
       >
         <Image
-          className="max-w-16"
+          className="max-w-16 rounded-lg"
           loader={customImageLoader}
           src={model?.thumbnail || siteConfig.mediaErrorUrl}
           alt={model?.name}
@@ -104,7 +110,7 @@ const ModelMiniCard = ({ modelId, children, className }: Props) => {
           </div>
         )}
       </Link>
-      <div className="text-xs flex flex-col justify-around h-full w-full py-1">
+      <div className="text-xs flex flex-col h-full w-full py-1">
         <Link href={`/models/${model._id}`} prefetch={false}>
           <div className="flex">
             {model.name}
@@ -114,19 +120,24 @@ const ModelMiniCard = ({ modelId, children, className }: Props) => {
               </Badge>
             )}
           </div>
+          <Badge variant="secondary" className="text-xs my-1 bg-opacity-80">
+            {model.base_model}
+          </Badge>
         </Link>
-        <div className="text-muted-foreground flex gap-2">
-          <div>
-            by
-            <Link
-              href={`/creators/${model.user.username}`}
-              className="ml-1 font-bold"
-              prefetch={false}
-            >
-              {model.user.username}
-            </Link>
+        {showCreator && (
+          <div className="text-muted-foreground flex gap-2">
+            <div>
+              by
+              <Link
+                href={`/creators/${model.user.username}`}
+                className="ml-1 font-bold"
+                prefetch={false}
+              >
+                {model.user.username}
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </div>
       {!model.deleted && children}
     </div>

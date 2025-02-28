@@ -18,7 +18,7 @@ export default function SectionAgents() {
         They can be crafted to act as creative assistants, coaches,
         storytellers, brand ambassadors and more. <br />
         <Link
-          href="/explore?tab=agents&create=true"
+          href="/agents?create=true"
           className="group text-purple-500 font-bold inline-flex items-center hover:text-purple-400"
         >
           Build your first agent right now!

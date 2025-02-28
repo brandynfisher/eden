@@ -4,7 +4,7 @@ import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
-import CreatorsFeed from '@/features/feed/creators-feed'
+// import CreatorsFeed from '@/features/feed/creators-feed'
 import ModelsFeed from '@/features/feed/models-feed'
 import { ModelsFilter } from '@/features/feed/models-filter'
 import { SortMenu } from '@/features/feed/sort-menu'
@@ -59,24 +59,24 @@ const FeedTabs = () => {
         />
       ),
     },
-    {
-      key: 'creators',
-      title: 'Creators',
-      canSearch: true,
-      // sortMenu: props => <SortMenu {...props} variant="user" />,
-      content: (
-        <CreatorsFeed
-          minCols={1}
-          maxCols={4}
-          breakpoints={[
-            { minWidth: 1536, columns: 4 },
-            { minWidth: 1280, columns: 3 },
-            { minWidth: 640, columns: 2 },
-            { minWidth: 0, columns: 1 },
-          ]}
-        />
-      ),
-    },
+    // {
+    //   key: 'creators',
+    //   title: 'Creators',
+    //   canSearch: true,
+    //   // sortMenu: props => <SortMenu {...props} variant="user" />,
+    //   content: (
+    //     <CreatorsFeed
+    //       minCols={1}
+    //       maxCols={4}
+    //       breakpoints={[
+    //         { minWidth: 1536, columns: 4 },
+    //         { minWidth: 1280, columns: 3 },
+    //         { minWidth: 640, columns: 2 },
+    //         { minWidth: 0, columns: 1 },
+    //       ]}
+    //     />
+    //   ),
+    // },
   ]
 
   return <RouterTabs tabs={tabs} />

@@ -29,7 +29,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
   return (
     <Card
       className={cn([
-        'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary hover:ring-2 ring-purple-600/40',
+        'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary/70 hover:ring-2 ring-purple-600/40',
         className,
       ])}
     >
@@ -51,7 +51,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
       >
         <div className="relative flex p-2">
           <div className="relative flex-grow shrink-0">
-            <div className="relative flex">
+            <div className="relative flex rounded-lg overflow-hidden aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0">
               <CardImage
                 media={{
                   url: agent.userImage,
@@ -62,7 +62,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
                   blurhash: agent.blurhash,
                 }}
                 unoptimized={true}
-                className="object-cover rounded-lg aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0"
+                className="object-cover"
               />
             </div>
           </div>

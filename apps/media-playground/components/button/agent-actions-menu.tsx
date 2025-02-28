@@ -9,11 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
+import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAgentDeploymentFormSheet,
   updateAgentFormSheet,
-  updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
@@ -84,19 +84,6 @@ const AgentActionsMenu = ({
     router.push(`/agents/${agent.username}`)
   }
 
-  const handleShareClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/agents/${agent.username}`
-    setIsOpen(false)
-    dispatch(
-      updateShareModal({
-        isOpen: true,
-        shareUrl: shareUrl,
-      }),
-    )
-  }
-
   const onUpdate = async () => {
     const queryClient = getQueryClient()
     await queryClient.invalidateQueries({ queryKey })
@@ -164,7 +151,7 @@ const AgentActionsMenu = ({
                 <button
                   type="button"
                   className="w-full"
-                  onClick={handleShareClick}
+                  onClick={evt => handleShareClick(evt, agent, dispatch)}
                 >
                   <Share2Icon className="mr-2 h-4 w-4" />
                   Share

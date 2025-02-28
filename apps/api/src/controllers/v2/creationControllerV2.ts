@@ -1,5 +1,9 @@
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
-import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
+import {
+  forceCloudfrontUrl,
+  s3ThumbnailUrl,
+  s3Url,
+} from '../../plugins/s3Plugin'
 import {
   CreationsV2BulkPatchArguments,
   CreationsV2GetArguments,
@@ -54,6 +58,16 @@ export const getCreation = async (
 
   creation.url = s3Url(server, creation.filename || '')
   creation.thumbnail = s3ThumbnailUrl(server, creation.filename || '', 1024)
+
+  //@ts-expect-error This stupid overloading of ids with full docs...
+  if (creation.user.userImage) {
+    //@ts-expect-error This stupid overloading of ids with full docs...
+    creation.user.userImage = forceCloudfrontUrl(
+      server,
+      //@ts-expect-error This stupid overloading of ids with full docs...
+      creation.user.userImage,
+    )
+  }
 
   return reply.status(200).send({ creation })
 }
