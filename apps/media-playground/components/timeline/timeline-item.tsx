@@ -6,6 +6,7 @@ import { LightboxGallery } from '@/components/media/lightbox'
 import ParameterTableCollapsible from '@/components/timeline/parameter-table-collapsible'
 import TimelineItemMediaResult from '@/components/timeline/timeline-item-media-result'
 import TimelineItemModelResult from '@/components/timeline/timeline-item-model-result'
+import LoraTrainingProgress from '@/components/training/lora-training-progress'
 import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -161,15 +162,24 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                             : undefined,
                       }}
                     >
-                      <div className="absolute flex flex-col md:flex-row items-center justify-center gap-2 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse">
-                        <TaskStatusBadge
-                          status={item.status}
-                          hideText={true}
-                          output_type={item.output_type}
-                        />
-                        {item.status === 'pending'
-                          ? 'Waiting to start...'
-                          : `Generating ${item.output_type}... `}
+                      <div className="absolute flex flex-col items-center justify-center gap-4 inset-0 text-center self-center text-sm text-muted-foreground animate-pulse">
+                        <div className="flex items-center justify-center gap-2">
+                          <TaskStatusBadge
+                            status={item.status}
+                            hideText={true}
+                            output_type={item.output_type}
+                          />
+                          {item.status === 'pending'
+                            ? 'Waiting to start...'
+                            : `Generating ${item.output_type}... `}
+                        </div>
+                        {item.output_type === 'lora' &&
+                          item.status === 'running' && (
+                            <LoraTrainingProgress
+                              task={item}
+                              maxTrainSteps={item.args.max_train_steps || 200}
+                            />
+                          )}
                       </div>
                     </div>
                   </div>
