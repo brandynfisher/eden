@@ -16,14 +16,12 @@ export default function UserThreadsGrid() {
 
   const { threads, isLoading } = useThreadListQuery({
     enabled: !!user?._id,
-    limit: 5,
+    limit: 6,
   })
 
-  // Show loading state while auth is being determined
   const isLoadingState = isAuthLoading || isLoading
-
-  // If auth check is complete and user is not logged in, show auth prompt
   const showAuthPrompt = !isAuthLoading && !user
+  const filteredThreads = threads?.filter(thread => thread !== undefined) || []
 
   return (
     <ErrorBoundary>
@@ -40,8 +38,9 @@ export default function UserThreadsGrid() {
             <Skeleton className="w-full h-[58px]" />
             <Skeleton className="w-full h-[58px]" />
             <Skeleton className="w-full h-[58px]" />
-            <Skeleton className="w-full h-[58px]" />
-            <Skeleton className="w-full h-[58px]" />
+            <Skeleton className="w-full h-[58px] hidden md:flex" />
+            <Skeleton className="w-full h-[58px] hidden md:flex" />
+            <Skeleton className="w-full h-[58px] hidden md:flex" />
           </>
         ) : showAuthPrompt ? (
           <div
@@ -57,11 +56,18 @@ export default function UserThreadsGrid() {
             </Button>
           </div>
         ) : (
-          threads
-            ?.filter(thread => thread !== undefined)
-            .map(thread => (
+          <>
+            {filteredThreads.slice(0, 3).map(thread => (
               <ThreadMiniCard key={thread?._id} thread={thread as Thread} />
-            ))
+            ))}
+            {filteredThreads.slice(3, 6).map(thread => (
+              <ThreadMiniCard
+                key={thread?._id}
+                thread={thread as Thread}
+                className="hidden md:flex"
+              />
+            ))}
+          </>
         )}
       </div>
     </ErrorBoundary>

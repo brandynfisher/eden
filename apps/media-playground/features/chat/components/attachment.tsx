@@ -13,8 +13,8 @@ import {
   ImageContentPart,
   useAttachment,
   useComposer,
-  useThreadConfig,
 } from '@assistant-ui/react'
+import { useThreadConfig } from '@assistant-ui/react-ui'
 import { CircleXIcon } from 'lucide-react'
 import React, { FC, useEffect, useState } from 'react'
 import type { Slide } from 'yet-another-react-lightbox'

@@ -4,11 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import {
-  ThreadPrimitive,
-  ThreadWelcome,
-  useThreadConfig,
-} from '@assistant-ui/react'
+import { ThreadPrimitive } from '@assistant-ui/react'
+import { ThreadWelcome, useThreadConfig } from '@assistant-ui/react-ui'
 import { PlusIcon } from 'lucide-react'
 import React, {
   FC,

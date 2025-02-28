@@ -2,7 +2,8 @@
 
 import { LightboxGallery } from '@/components/media/lightbox'
 import MyAttachment from '@/features/chat/components/attachment'
-import { UserActionBar, UserMessage, useMessage } from '@assistant-ui/react'
+import { useMessage } from '@assistant-ui/react'
+import { UserActionBar, UserMessage } from '@assistant-ui/react-ui'
 import React, { FC } from 'react'
 
 const MyUserMessage: FC = () => {

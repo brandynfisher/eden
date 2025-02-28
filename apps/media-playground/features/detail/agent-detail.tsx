@@ -149,7 +149,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                     'toolCallCount',
                     'assistantMessageCount',
                     'threadCount',
-                    'userCount',
+                    // 'userCount',
                   ]}
                   className="lg:mt-0 gap-2"
                 />

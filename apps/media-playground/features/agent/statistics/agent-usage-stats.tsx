@@ -85,7 +85,7 @@ export default function AgentUsageStats({
   return (
     <div
       className={cn(
-        'flex flex-wrap lg:flex-col rounded-md text-sm text-muted-foreground',
+        'flex flex-wrap rounded-md text-sm text-muted-foreground',
         className,
       )}
     >
