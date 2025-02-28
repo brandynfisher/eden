@@ -38,6 +38,7 @@ export type Agent = Omit<
   username: string
   description: string
   persona?: string
+  isPersonaPublic?: boolean
   userImage: string
   greeting?: string
   knowledge?: string
@@ -79,6 +80,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   key: string
   description?: string
   persona?: string
+  isPersonaPublic?: boolean
   greeting?: string
   knowledge?: string
   suggestions?: AgentSuggestion[]
@@ -94,6 +96,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   key?: string
   description?: string
   persona?: string
+  isPersonaPublic?: boolean
   greeting?: string
   knowledge?: string
   suggestions?: AgentSuggestion[]

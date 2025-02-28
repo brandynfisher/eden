@@ -1,9 +1,11 @@
 'use client'
 
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
+import ModelMiniCard from '@/components/card/model-mini-card'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
@@ -18,6 +20,7 @@ import {
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import {
+  EyeOffIcon,
   MessageSquareIcon,
   RocketIcon,
   SettingsIcon,
@@ -78,102 +81,135 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
 
   return (
     <>
-      <div className="relative lg:flex lg:justify-between lg:gap-x-4 p-4 bg-muted-darker rounded-md mx-2 md:mx-4 mt-4">
-        <div className="relative flex flex-col sm:flex-row">
-          <Avatar className="aspect-square h-40 md:h-52 rounded-lg flex-shrink-0">
-            {agent.userImage ? (
-              <AvatarImage
-                className="object-cover rounded-lg shadow-md"
-                src={agent.userImage}
+      <div className="relative flex flex-col gap-4 p-4 bg-muted-darker rounded-md mx-2 md:mx-4 mt-4">
+        <div className="relative lg:flex lg:justify-between lg:gap-x-4">
+          <div className="relative flex flex-col sm:flex-row">
+            <Avatar className="aspect-square h-40 md:h-52 rounded-lg flex-shrink-0">
+              {agent.userImage ? (
+                <AvatarImage
+                  className="object-cover rounded-lg shadow-md"
+                  src={agent.userImage}
+                />
+              ) : (
+                <AvatarFallback className="rounded-lg">
+                  {agent.name[0]}
+                </AvatarFallback>
+              )}
+            </Avatar>
+
+            <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col flex-grow max-w-2xl">
+              <div className="flex flex-wrap items-center justify-between">
+                <h1 className="text-2xl font-semibold mb-2 sm:mb-0">
+                  {agent?.name}
+                </h1>
+              </div>
+
+              <TextClampMore
+                lines={3}
+                text={agent?.description}
+                className="text-sm break-words sm:mt-4 text-muted-darker-foreground"
               />
-            ) : (
-              <AvatarFallback className="rounded-lg">
-                {agent.name[0]}
-              </AvatarFallback>
-            )}
-          </Avatar>
 
-          <div className="mt-4 sm:mt-0 sm:ml-4 flex flex-col flex-grow max-w-2xl">
-            <div className="flex flex-wrap items-center justify-between">
-              <h1 className="text-2xl font-semibold mb-2 sm:mb-0">
-                {agent?.name}
-              </h1>
-            </div>
+              <div className="flex items-center mt-4 gap-x-1 text-sm text-muted-foreground mb-4">
+                <span className="mr-1">by</span>
+                <UserAvatarLink
+                  name={agent.owner.username}
+                  image={agent.owner.userImage}
+                />
+              </div>
 
-            <TextClampMore
-              lines={3}
-              text={agent?.description}
-              className="text-sm break-words sm:mt-4 text-muted-darker-foreground"
-            />
-
-            <div className="flex items-center mt-2 gap-x-1 text-sm text-muted-foreground mb-4">
-              <span className="mr-1">by</span>
-              <UserAvatarLink
-                name={agent.owner.username}
-                image={agent.owner.userImage}
-              />
-            </div>
-
-            <div className="flex flex-wrap gap-2 mt-auto">
-              {user?._id === agent?.owner._id && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleEditClick}
-                  >
-                    <SettingsIcon className="w-4 h-4" />
-                  </Button>
-                  {isFeatureDeploymentsEnabled && (
+              <div className="flex flex-wrap gap-2 mt-auto">
+                {user?._id === agent?.owner._id && (
+                  <>
                     <Button
                       variant="outline"
                       size="icon"
-                      onClick={handleConfigureDeployments}
+                      onClick={handleEditClick}
                     >
-                      <RocketIcon size={18} />
+                      <SettingsIcon className="w-4 h-4" />
+                    </Button>
+                    {isFeatureDeploymentsEnabled && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleConfigureDeployments}
+                      >
+                        <RocketIcon size={18} />
+                      </Button>
+                    )}
+                    <AgentActionsMenu
+                      className="size-10"
+                      key={1}
+                      agent={agent}
+                      queryKey={['agents', id]}
+                      hiddenItems={['chat', 'view-details']}
+                    />
+                  </>
+                )}
+                <div className="flex items-center gap-2">
+                  <AgentUsageStats
+                    agent={agent}
+                    hiddenStats={[
+                      'toolCallCount',
+                      'assistantMessageCount',
+                      'threadCount',
+                      // 'userCount',
+                    ]}
+                    className="lg:mt-0 gap-2"
+                  />
+                  {user?._id !== agent?.owner._id && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={evt => handleShareClick(evt, agent, dispatch)}
+                    >
+                      <Share2Icon className="h-4 w-4" />
                     </Button>
                   )}
-                  <AgentActionsMenu
-                    className="size-10"
-                    key={1}
-                    agent={agent}
-                    queryKey={['agents', id]}
-                    hiddenItems={['chat', 'view-details']}
-                  />
-                </>
-              )}
-              <div className="flex items-center gap-2">
-                <AgentUsageStats
-                  agent={agent}
-                  hiddenStats={[
-                    'toolCallCount',
-                    'assistantMessageCount',
-                    'threadCount',
-                    // 'userCount',
-                  ]}
-                  className="lg:mt-0 gap-2"
-                />
-                {user?._id !== agent?.owner._id && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={evt => handleShareClick(evt, agent, dispatch)}
+                </div>
+                <Button variant="outline" asChild>
+                  <Link
+                    href={`/chat/${agent.username}`}
+                    className=" bg-purple-600/20 border-purple-600"
                   >
-                    <Share2Icon className="h-4 w-4" />
-                  </Button>
-                )}
+                    <MessageSquareIcon className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Chat</span>
+                  </Link>
+                </Button>
               </div>
-              <Button variant="outline" asChild>
-                <Link
-                  href={`/chat/${agent.username}`}
-                  className=" bg-purple-600/20 border-purple-600"
-                >
-                  <MessageSquareIcon className="w-4 h-4 mr-2" />
-                  <span className="text-sm">Chat</span>
-                </Link>
-              </Button>
             </div>
           </div>
+        </div>
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-1 flex-col p-4 max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
+            <div className="flex items-center gap-2 mb-2">
+              <TypographyH6 className="text-primary">Persona</TypographyH6>
+              <div className="h-px flex-1 bg-border/50" />
+            </div>
+            {agent?.isPersonaPublic === undefined || !agent?.isPersonaPublic ? (
+              <>
+                <div className="text-sm italic text-muted-foreground flex items-center gap-2 mb-2">
+                  <EyeOffIcon className="w-4 h-4" />
+                  This persona is not public.
+                </div>
+                <Separator className="mb-2" />
+              </>
+            ) : null}
+            {(agent?.isPersonaPublic !== undefined && agent?.isPersonaPublic) ||
+            user?._id === agent?.owner._id ? (
+              <TextClampMore
+                lines={3}
+                text={agent?.persona}
+                className="text-sm italic text-muted-foreground"
+              />
+            ) : null}
+          </div>
+          {agent?.model && (
+            <div className="flex flex-1 flex-col h-fit max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
+              <TypographyH6 className="text-primary">Models</TypographyH6>
+              <ModelMiniCard modelId={agent.model} />
+            </div>
+          )}
         </div>
       </div>
       <div className="p-4">
