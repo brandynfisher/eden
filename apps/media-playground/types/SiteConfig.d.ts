@@ -14,6 +14,7 @@ export type SiteConfig = {
     linkedIn: string
     github: string
     discord: string
+    documentation: string
   }
   ogImage: string
   mediaErrorUrl: string

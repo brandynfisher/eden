@@ -16,11 +16,8 @@ import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import {
-  Composer,
-  ThreadPrimitive,
-  useComposerRuntime,
-} from '@assistant-ui/react'
+import { ThreadPrimitive, useComposerRuntime } from '@assistant-ui/react'
+import { Composer } from '@assistant-ui/react-ui'
 import {
   BotIcon,
   MessageSquareIcon,

@@ -12,14 +12,12 @@ import MyUserMessage from '@/features/chat/components/user-message'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import {
-  Thread,
-  ThreadConfig,
   ThreadPrimitive,
-  ThreadWelcome,
   useComposerRuntime,
   useThread,
 } from '@assistant-ui/react'
-import { FC, useEffect, useState } from 'react'
+import { Thread, ThreadConfig, ThreadWelcome } from '@assistant-ui/react-ui'
+import { FC, useEffect, useRef, useState } from 'react'
 import React from 'react'
 import { ReadyState } from 'react-use-websocket'
 
@@ -67,14 +65,25 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const [isDragging, setIsDragging] = useState(false)
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime?.getAttachmentAccept()
+  const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   // Debounce connection status changes to prevent rapid remounts
   const handleConnectionChange = React.useCallback((isOnline: boolean) => {
-    // Only update if the status actually changed
-    setConnectionLost(prev => {
-      if (prev === !isOnline) return prev
-      return !isOnline
-    })
+    // Clear any existing timeout
+    if (connectionTimeoutRef.current) {
+      clearTimeout(connectionTimeoutRef.current)
+    }
+
+    // Add delay before updating connection status
+    // Longer delay (2s) for showing the alert, shorter delay (500ms) for hiding it
+    const delay = isOnline ? 500 : 5000
+
+    connectionTimeoutRef.current = setTimeout(() => {
+      setConnectionLost(prev => {
+        if (prev === !isOnline) return prev
+        return !isOnline
+      })
+    }, delay)
   }, [])
 
   useEffect(() => {
@@ -103,6 +112,9 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current)
+      }
     }
   }, [readyState, handleConnectionChange])
 

@@ -206,7 +206,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                   <AutosizeTextarea
                     spellCheck={false}
                     placeholder={parameter.description}
-                    className={`!ml-0 border-0 resize-none overflow-hidden rounded-lg text-base ${
+                    className={`!ml-0 border-0 resize-none rounded-lg text-base ${
                       parameter.required
                         ? '!outline-none !p-4 !pt-2 !mt-0'
                         : 'rounded-lg border p-2 '

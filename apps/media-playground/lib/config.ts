@@ -61,8 +61,9 @@ export const siteConfig: SiteConfig = {
     instagram: 'https://instagram.com/edenartlab',
     twitter: 'https://x.com/eden_art_',
     linkedIn: 'https://www.linkedin.com/company/eden-labs-inc/',
-    github: 'https://github.com/edenartlabs/eden',
+    github: 'https://github.com/edenartlab',
     discord: 'https://discord.com/invite/4dSYwDT',
+    documentation: 'https://docs.eden.art',
   },
   ogImage: `https://d14i3advvh2bvd.cloudfront.net/app/landing/logo_badge_square.png`,
   mediaErrorUrl:
@@ -80,6 +81,8 @@ export const siteConfig: SiteConfig = {
     '/creators',
     '/creations',
     '/models',
+    '/agents',
+    '/tools',
   ],
   featured: {
     tools: ['flux_schnell', 'flux_dev', 'texture_flow', 'animate_3D'],

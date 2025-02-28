@@ -346,11 +346,7 @@ export const LightboxTrigger = React.forwardRef<
       }}
     >
       {slide.type === 'audio' ? (
-        <LightboxAudioTrigger
-          src={slide.url}
-          className={className}
-          duration={slide.duration}
-        />
+        <LightboxAudioTrigger src={slide.url} duration={slide.duration} />
       ) : slide.url?.endsWith('.mp4') ? (
         <LightboxVideoTrigger
           src={slide.url}
@@ -494,14 +490,12 @@ export function LightboxVideoTrigger({
 // Audio Trigger Component
 type LightboxAudioTriggerProps = {
   src?: string
-  className?: string
   duration?: number | null
   autoPlay?: boolean
 }
 
 export function LightboxAudioTrigger({
   src,
-  className,
   duration,
 }: LightboxAudioTriggerProps) {
   const { hovered, ref: hoverRef } = useHover()
@@ -523,24 +517,24 @@ export function LightboxAudioTrigger({
       className="relative h-full w-full"
       onClick={handleClick}
     >
-      <div
+      {/* <div
         className={cn(
           'flex items-center justify-center bg-muted rounded-md',
           className,
         )}
-      >
-        <div className="flex flex-col items-center justify-center w-full h-full bg-background/80 backdrop-blur-sm">
-          <AudioLinesIcon className="w-24 h-24 text-muted-foreground" />
-          <audio
-            ref={audioRef}
-            controls
-            loop
-            autoPlay={false}
-            className="px-2"
-            src={src}
-          />
-        </div>
-      </div>
+      > */}
+      {/* <div className="flex flex-col items-center justify-center w-full h-full bg-background/80 backdrop-blur-sm"> */}
+      {/* <AudioLinesIcon className="w-24 h-24 text-muted-foreground" /> */}
+      <audio
+        ref={audioRef}
+        controls
+        loop
+        autoPlay={false}
+        className="px-2"
+        src={src}
+      />
+      {/* </div> */}
+      {/* </div> */}
       {typeof duration === 'number' && !hovered ? (
         <MediaDurationBadge duration={duration} isLoading={false} />
       ) : null}

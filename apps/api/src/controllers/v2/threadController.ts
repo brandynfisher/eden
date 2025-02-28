@@ -159,17 +159,17 @@ export const listThreads = async (
 
   try {
     const agentQuery = {
-      ...createIdOrSlugQuery(agent_id),
+      ...(agent_id ? createIdOrSlugQuery(agent_id) : {}),
       user: userId,
     }
 
     const agent = await Agent.findOne(agentQuery)
 
-    if (!agent) {
-      return reply.status(404).send({
-        message: 'Agent not found',
-      })
-    }
+    // if (!agent) {
+    //   return reply.status(404).send({
+    //     message: 'Agent not found',
+    //   })
+    // }
 
     const queryOptions: QueryOptions = {
       select: '_id title name createdAt updatedAt user agent',
@@ -185,7 +185,7 @@ export const listThreads = async (
     const threadsRepository = new ThreadRepository(ThreadModel)
     const threadQuery = {
       user: userId,
-      agent: agent._id,
+      agent: agent_id && agent ? agent._id : undefined,
     }
 
     const paginatedResponse = await threadsRepository.query(
@@ -195,7 +195,7 @@ export const listThreads = async (
 
     await threadsRepository.model.populate(paginatedResponse.docs, {
       path: 'agent',
-      select: '_id username userImage',
+      select: '_id name username userImage',
     })
 
     return reply.status(200).send(paginatedResponse)
@@ -349,14 +349,14 @@ export const addThreadMessageReaction = async (
           return m.id.toString() === message_id
         })?.reactions?.thumbs_up || []
 
-      console.log({ existingReactions })
+      // console.log({ existingReactions })
 
       if (
         existingReactions
           .map(reactingUserId => reactingUserId?.toString())
           .includes(userId.toString())
       ) {
-        console.log('already reacted', 'remove', userId.toString())
+        // console.log('already reacted', 'remove', userId.toString())
         // User already reacted, remove the reaction
         await ThreadModel.updateOne(
           query,
@@ -368,7 +368,7 @@ export const addThreadMessageReaction = async (
           },
         )
       } else {
-        console.log('not reacted', 'add', userId.toString())
+        // console.log('not reacted', 'add', userId.toString())
         // User has not reacted, add the reaction
         await ThreadModel.updateOne(
           query,

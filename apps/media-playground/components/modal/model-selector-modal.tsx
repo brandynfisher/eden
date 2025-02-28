@@ -16,7 +16,7 @@ import ModelsFeed from '@/features/feed/models-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { BaseModelName, ModelV2 } from '@edenlabs/eden-sdk'
-import { PropsWithChildren, ReactNode, useState } from 'react'
+import { PropsWithChildren, ReactNode, useRef, useState } from 'react'
 
 type Props = {
   title?: ReactNode
@@ -46,6 +46,8 @@ const ModelSelectorModal = ({
     setOpen(false)
   }
 
+  const scrollRef = useRef<HTMLDivElement>(null)
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -56,6 +58,7 @@ const ModelSelectorModal = ({
         )}
       </DialogTrigger>
       <DialogContentScrollable
+        ref={scrollRef}
         className={cn([`overflow-x-hidden flex flex-col max-w-7xl`, className])}
       >
         <DialogHeader className="mt-4">
@@ -97,6 +100,7 @@ const ModelSelectorModal = ({
               onClick={handleOnChange}
               isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
+              scrollRef={scrollRef}
             />
           ) : (
             <ModelsFeed
@@ -106,6 +110,7 @@ const ModelSelectorModal = ({
               onClick={handleOnChange}
               isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
+              scrollRef={scrollRef}
             />
           )}
         </div>

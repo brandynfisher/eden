@@ -10,7 +10,19 @@ import {
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import EventSourcePolyfill from 'event-source-polyfill'
 
-const NodeEventSource = require('eventsource')
+// Instead of using require, we'll handle Node.js EventSource differently
+let NodeEventSource: any = null
+if (typeof process !== 'undefined' && process.release?.name === 'node') {
+  // In Node.js environment, dynamically import eventsource
+  import('eventsource')
+    .then(module => {
+      NodeEventSource = module.default
+    })
+    .catch(() => {
+      // If import fails, fallback to polyfill
+      NodeEventSource = EventSourcePolyfill
+    })
+}
 
 interface AsyncIteratorResult {
   value: TaskUpdateEvent
@@ -49,9 +61,12 @@ export class EdenClient extends Methods {
       typeof process !== 'undefined' &&
       process.release &&
       process.release.name === 'node'
-    const EventSource = isNodeEnvironment
-      ? NodeEventSource
-      : EventSourcePolyfill
+
+    // Use the appropriate EventSource implementation
+    const EventSource =
+      isNodeEnvironment && NodeEventSource
+        ? NodeEventSource
+        : EventSourcePolyfill
 
     const endpointSSE = `${this.edenApiUrl}${
       edenVersion ? `/${edenVersion}` : ''

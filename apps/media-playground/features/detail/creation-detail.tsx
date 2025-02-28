@@ -11,15 +11,16 @@ import CreationsFeed from '@/features/feed/creations-feed'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { cn } from '@/lib/utils'
 import { CreationV2 } from '@edenlabs/eden-sdk'
-import React, { Suspense, useEffect, useRef, useState } from 'react'
+import React, { RefObject, Suspense, useEffect, useRef, useState } from 'react'
 
 type Props = {
   id: string
   creationSSRData?: CreationV2
   isModal?: boolean
+  scrollRef?: RefObject<HTMLDivElement>
 }
 
-const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
+const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
   const { creation: creationClientData, queryKey } = useCreationQuery({
     key: id,
     initialData: creationSSRData
@@ -112,6 +113,7 @@ const CreationDetail = ({ id, creationSSRData, isModal }: Props) => {
                       <CreationsFeed
                         query={{ user: creation.user._id }}
                         maxCols={5}
+                        scrollRef={scrollRef}
                       />
                     </ErrorBoundary>
                   </Suspense>

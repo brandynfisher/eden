@@ -8,7 +8,7 @@ import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { FeedConceptsCursorArguments, ModelV2 } from '@edenlabs/eden-sdk'
 import { usePathname, useRouter } from 'next/navigation'
-import { useMemo } from 'react'
+import { RefObject, useMemo } from 'react'
 
 type Props = {
   query?: FeedConceptsCursorArguments
@@ -21,6 +21,7 @@ type Props = {
     name: boolean
     actions: boolean
   }
+  scrollRef?: RefObject<HTMLDivElement>
 }
 
 const ModelsFeed = ({
@@ -31,6 +32,7 @@ const ModelsFeed = ({
   onClick,
   isSelectable,
   showFooterItems,
+  scrollRef,
 }: Props) => {
   const router = useRouter()
 
@@ -74,6 +76,7 @@ const ModelsFeed = ({
 
   return (
     <MasonryVirtualizerVertical
+      scrollRef={scrollRef}
       key={JSON.stringify(queryKey)}
       apiEndpoint={'/api/feed/models'}
       queryKey={queryKey}

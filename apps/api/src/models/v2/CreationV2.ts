@@ -117,6 +117,12 @@ creationSchema.index({
   _id: -1,
 })
 creationSchema.index({
+  public: 1,
+  deleted: 1,
+  createdAt: -1,
+  _id: -1,
+})
+creationSchema.index({
   user: 1,
   requester: 1,
   'mediaAttributes.mimeType': 1,
@@ -124,6 +130,14 @@ creationSchema.index({
   public: -1,
   deleted: -1,
   createdAt: -1,
+})
+creationSchema.index({
+  user: 1,
+  requester: 1,
+  public: 1,
+  deleted: 1,
+  createdAt: -1,
+  _id: -1,
 })
 creationSchema.plugin(paginate)
 creationSchema.plugin(aggregatePaginate)

@@ -116,7 +116,7 @@ const collectionsAggregate = (
     })
   }
 
-  console.log(JSON.stringify(pipelines, null, 2))
+  // console.log(JSON.stringify(pipelines, null, 2))
   return Collection.aggregate(pipelines)
 }
 

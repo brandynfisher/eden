@@ -19,8 +19,18 @@ import {
   PaginatedCursorResponse,
 } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import {
+  VirtualItem,
+  useVirtualizer,
+  useWindowVirtualizer,
+} from '@tanstack/react-virtual'
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react'
 
 const MASONRY_GUTTER = 16
 const DEFAULT_PAGE_LIMIT = 35
@@ -47,6 +57,7 @@ type Props = {
   setFetchNextPage?: (
     fetchNext: () => Promise<PaginatedCursorResponse<RowItem>>,
   ) => void
+  scrollRef?: RefObject<HTMLDivElement>
 }
 
 export const MasonrySkeleton = () => {
@@ -59,7 +70,37 @@ export const MasonrySkeleton = () => {
       <Skeleton className="h-full w-full aspect-square" />
       <Skeleton className="h-full w-full aspect-square" />
       <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
+      <Skeleton className="h-full w-full aspect-square" />
     </div>
+  )
+}
+
+const useConditionalVirtualizer = (
+  options: {
+    count: number
+    estimateSize: () => number
+    overscan: number
+    lanes: number
+    gap: number
+  },
+  scrollRef?: RefObject<HTMLDivElement>,
+) => {
+  const windowVirtualizer = useWindowVirtualizer(options)
+  const elementVirtualizer = useVirtualizer({
+    ...options,
+    getScrollElement: () => scrollRef?.current ?? null,
+  })
+
+  return useMemo(
+    () => (scrollRef ? elementVirtualizer : windowVirtualizer),
+    [elementVirtualizer, windowVirtualizer, scrollRef],
   )
 }
 
@@ -74,9 +115,11 @@ const MasonryVirtualizerVertical = ({
   breakpoints,
   onItemsLoaded, // Callback for passing items to parent
   setFetchNextPage, // Callback for external fetch triggers
+  scrollRef,
 }: Props) => {
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
+  const innerRef = useRef<HTMLDivElement>(null)
 
   // Define individual media query hooks
   const isMin480 = useMediaQuery('(min-width: 480px)')
@@ -168,7 +211,7 @@ const MasonryVirtualizerVertical = ({
           },
         )
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
     },
     [queryKey, queryClient],
@@ -202,7 +245,7 @@ const MasonryVirtualizerVertical = ({
     data,
     error,
     // isFetching,
-    isLoading,
+    // isLoading,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
@@ -265,29 +308,30 @@ const MasonryVirtualizerVertical = ({
     }
   }, [fetchNextForExternal, setFetchNextPage])
 
-  const rowVirtualizer = useWindowVirtualizer({
-    count: hasNextPage ? allRows.length + 1 : allRows.length,
-    estimateSize: () => 156,
-    overscan: limit,
-    lanes: MASONRY_COLUMN_COUNT,
-    gap: MASONRY_GUTTER,
-  })
+  const virtualizer = useConditionalVirtualizer(
+    {
+      count: hasNextPage ? allRows.length + 1 : allRows.length,
+      estimateSize: () => 156,
+      overscan: limit + 10,
+      lanes: MASONRY_COLUMN_COUNT,
+      gap: MASONRY_GUTTER,
+    },
+    scrollRef,
+  )
 
   // Force a recompute of column count when breakpoints change
   useEffect(() => {
     if (breakpoints) {
       const timer = setTimeout(() => {
-        rowVirtualizer.measure()
+        virtualizer.measure()
       }, 0)
       return () => clearTimeout(timer)
     }
-  }, [MASONRY_COLUMN_COUNT, breakpoints, rowVirtualizer])
+  }, [MASONRY_COLUMN_COUNT, breakpoints, virtualizer])
 
-  const virtualItems = rowVirtualizer.getVirtualItems()
+  const virtualItems = virtualizer.getVirtualItems()
   const lastItem = virtualItems[virtualItems.length - 1]
-  const virtualItemsStringified = JSON.stringify(
-    rowVirtualizer.getVirtualItems(),
-  )
+  const virtualItemsStringified = JSON.stringify(virtualizer.getVirtualItems())
 
   useEffect(() => {
     if (!lastItem || hasNextPage === undefined) {
@@ -322,7 +366,7 @@ const MasonryVirtualizerVertical = ({
       return (
         <div
           key={`${apiEndpoint}_${virtualItem.index}`}
-          ref={rowVirtualizer.measureElement}
+          ref={virtualizer.measureElement}
           data-index={virtualItem.index}
           style={{
             position: 'absolute',
@@ -356,7 +400,7 @@ const MasonryVirtualizerVertical = ({
       render,
       allRows,
       hasNextPage,
-      rowVirtualizer,
+      virtualizer,
       columnWidth,
     ],
   )
@@ -370,12 +414,14 @@ const MasonryVirtualizerVertical = ({
         className="flex pb-12 outline-none"
       >
         <div
+          ref={innerRef}
           data-test-id="masonry-virtualizer-vertical-content"
           style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
+            height: `${virtualizer.getTotalSize()}px`,
             width: '100%',
             position: 'relative',
           }}
+          // className=" max-h-96"
         >
           {!allRows.length && status ? (
             <div className="w-full h-full flex justify-center rounded-lg">
@@ -387,9 +433,9 @@ const MasonryVirtualizerVertical = ({
             </div>
           ) : null}
 
-          {isLoading ? <MasonrySkeleton /> : null}
+          {/* {status === 'pending' ? <MasonrySkeleton /> : null} */}
 
-          {rowVirtualizer
+          {virtualizer
             .getVirtualItems()
             .map(virtualItem => renderItem(virtualItem))}
 

@@ -6,13 +6,14 @@ import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
 import { usePathname, useRouter } from 'next/navigation'
-import { useMemo } from 'react'
+import { RefObject, useMemo } from 'react'
 
 type Props = {
   query?: FeedCreationsCursorArguments
   minCols?: number
   maxCols?: number
   multiselect?: boolean
+  scrollRef?: RefObject<HTMLDivElement>
 }
 
 const CreationsFeed = ({
@@ -20,6 +21,7 @@ const CreationsFeed = ({
   minCols,
   maxCols,
   multiselect,
+  scrollRef,
 }: Props) => {
   const router = useRouter()
   const defaultQuery: FeedCreationsCursorArguments = useMemo(
@@ -66,6 +68,7 @@ const CreationsFeed = ({
       maxCols={maxCols || undefined}
       onItemsLoaded={handleItemsLoaded}
       setFetchNextPage={setFetchNextPage}
+      scrollRef={scrollRef}
       render={(item: RowItem, onUpdate, index) => (
         <CreationCard
           onUpdate={onUpdate}

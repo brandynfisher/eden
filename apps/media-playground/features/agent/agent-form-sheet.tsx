@@ -23,6 +23,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { Switch } from '@/components/ui/switch'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -51,6 +52,7 @@ export const agentSchema = z.object({
   greeting: z.string().max(140).optional(),
   model: z.string().optional(),
   persona: z.string().max(30000).optional(),
+  isPersonaPublic: z.boolean().optional(),
   knowledge: z.string().max(100000).optional(),
   suggestions: z
     .array(
@@ -93,6 +95,7 @@ const AgentFormSheet = () => {
       image: agentQuery.agent?.userImage || '',
       description: agentQuery.agent?.description || '',
       persona: agentQuery.agent?.persona || '',
+      isPersonaPublic: agentQuery.agent?.isPersonaPublic || false,
       knowledge: agentQuery.agent?.knowledge ?? '',
       greeting: agentQuery.agent?.greeting || '',
       model: agentQuery.agent?.model || '',
@@ -111,6 +114,7 @@ const AgentFormSheet = () => {
         image: agentQuery.agent.userImage,
         description: agentQuery.agent.description,
         persona: agentQuery.agent.persona,
+        isPersonaPublic: agentQuery.agent.isPersonaPublic,
         knowledge: agentQuery.agent.knowledge ?? '',
         greeting: agentQuery.agent.greeting || '',
         model: agentQuery.agent.model || '',
@@ -123,6 +127,7 @@ const AgentFormSheet = () => {
         image: '',
         description: '',
         persona: '',
+        isPersonaPublic: false,
         knowledge: '',
         greeting: '',
         model: '',
@@ -360,30 +365,52 @@ const AgentFormSheet = () => {
               />
 
               {/** Persona Field */}
-              <FormField
-                control={form.control}
-                name="persona"
-                render={({ field }) => (
-                  <FormItem className="p-2 bg-secondary rounded-lg">
-                    <FormLabel>Persona*</FormLabel>
-                    <FormDescription>
-                      Personality and behaviour of the agent. This won't be
-                      visible to others.
-                    </FormDescription>
-                    <FormControl>
-                      <AutosizeTextarea
-                        placeholder="You are a helpful agent, always ready to help users with their tasks"
-                        {...field}
+              <div className="p-2 bg-secondary rounded-lg flex flex-col gap-2">
+                <FormField
+                  control={form.control}
+                  name="persona"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Persona*</FormLabel>
+                      <FormDescription>
+                        Personality and behaviour of the agent. This won't be
+                        visible to others.
+                      </FormDescription>
+                      <FormControl>
+                        <AutosizeTextarea
+                          placeholder="You are a helpful agent, always ready to help users with their tasks"
+                          {...field}
+                        />
+                      </FormControl>
+                      <CharacterCount
+                        current={field.value?.length || 0}
+                        max={30000}
                       />
-                    </FormControl>
-                    <CharacterCount
-                      current={field.value?.length || 0}
-                      max={30000}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="isPersonaPublic"
+                  render={({ field }) => (
+                    <FormItem className="bg-background p-4 rounded-lg flex items-center justify-between gap-2">
+                      <div className="flex flex-col gap-1">
+                        <FormLabel>Public Persona</FormLabel>
+                        <FormDescription>
+                          Whether the persona is public to others.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {/** Greeting Field */}
               <FormField

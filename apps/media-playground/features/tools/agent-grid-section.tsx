@@ -8,7 +8,10 @@ type Props = {
 }
 
 export const AgentGridSection = ({ agentIds }: Props) => {
-  const { agents } = useAgentsListQuery({ _id: agentIds })
+  const { agents } = useAgentsListQuery({
+    _id: agentIds,
+    enabled: agentIds.length > 0,
+  })
 
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">

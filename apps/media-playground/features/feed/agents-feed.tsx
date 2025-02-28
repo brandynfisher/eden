@@ -20,6 +20,7 @@ type Props = {
   minCols?: number
   maxCols?: number
   breakpoints?: BreakpointConfig[]
+  hideCreateButton?: boolean
 }
 
 const AgentsFeed = ({
@@ -27,6 +28,7 @@ const AgentsFeed = ({
   minCols,
   maxCols,
   breakpoints,
+  hideCreateButton = false,
 }: Props) => {
   const dispatch = useAppDispatch()
   const defaultQuery: FeedAgentCursorArguments = useMemo(
@@ -76,14 +78,16 @@ const AgentsFeed = ({
 
   return (
     <div className="space-y-4">
-      <Button
-        onClick={handleCreateClick}
-        variant="outline"
-        className="gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
-      >
-        <PlusIcon className="size-4" />
-        Create Agent
-      </Button>
+      {!hideCreateButton && (
+        <Button
+          onClick={handleCreateClick}
+          variant="outline"
+          className="gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
+        >
+          <PlusIcon className="size-4" />
+          Create Agent
+        </Button>
+      )}
       <MasonryVirtualizerVertical
         key={JSON.stringify({ queryKey, breakpoints })}
         apiEndpoint={'/api/feed/agents'}

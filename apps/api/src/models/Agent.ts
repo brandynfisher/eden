@@ -10,6 +10,7 @@ export interface AgentSchema extends BaseUserSchema {
   name: string
   description?: string
   persona?: string
+  isPersonaPublic?: boolean
   greeting?: string
   knowledge?: string
   suggestions?: AgentSuggestion[]
@@ -55,6 +56,10 @@ const AgentSchema = new Schema<AgentDocument>(
     persona: {
       type: String,
       maxlength: 30000,
+    },
+    isPersonaPublic: {
+      type: Boolean,
+      default: false,
     },
     knowledge: {
       type: String,

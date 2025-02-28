@@ -3,7 +3,9 @@ import TwitterIcon from '@/components/icons/twitter'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { Button } from '@/components/ui/button'
 import { siteConfig } from '@/lib/config'
+import { GitHubLogoIcon, InstagramLogoIcon } from '@radix-ui/react-icons'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { BookOpenTextIcon } from 'lucide-react'
 import Link from 'next/link'
 import { FC } from 'react'
 
@@ -48,6 +50,16 @@ export const Footer: FC = () => {
           </Button>
           <Button variant="ghost" size={'icon'} asChild>
             <Link
+              href={siteConfig.links.instagram}
+              target="_blank"
+              className="group grayscale hover:grayscale-0 hover:text-white"
+            >
+              <VisuallyHidden>Instagram</VisuallyHidden>
+              <InstagramLogoIcon className="brightness-50 group-hover:!brightness-100 size-5" />
+            </Link>
+          </Button>
+          <Button variant="ghost" size={'icon'} asChild>
+            <Link
               href={siteConfig.links.twitter}
               target="_blank"
               className="group grayscale hover:grayscale-0 hover:text-white"
@@ -57,6 +69,26 @@ export const Footer: FC = () => {
                 size={18}
                 className="brightness-50 group-hover:!brightness-100"
               />
+            </Link>
+          </Button>
+          <Button variant="ghost" size={'icon'} asChild>
+            <Link
+              href={siteConfig.links.github}
+              target="_blank"
+              className="group grayscale hover:grayscale-0 hover:text-white"
+            >
+              <VisuallyHidden>GitHub</VisuallyHidden>
+              <GitHubLogoIcon className="brightness-50 group-hover:!brightness-100 size-5" />
+            </Link>
+          </Button>
+          <Button variant="ghost" size={'icon'} asChild>
+            <Link
+              href={siteConfig.links.documentation}
+              target="_blank"
+              className="group grayscale hover:grayscale-0 hover:text-white"
+            >
+              <VisuallyHidden>Documentation</VisuallyHidden>
+              <BookOpenTextIcon className="brightness-50 group-hover:!brightness-100 size-5" />
             </Link>
           </Button>
         </div>

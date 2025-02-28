@@ -828,7 +828,7 @@ export const getCreationsFeedCursorV2 = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    console.log(JSON.stringify(pipeline, null, 2))
+    // console.log(JSON.stringify(pipeline, null, 2))
 
     // @ts-ignore
     results = await TaskV2.aggregate(pipeline)
@@ -1323,7 +1323,7 @@ export const getCreatorsFeedCursor = async (
     ...pipeline,
   )
 
-  console.log(JSON.stringify(feedPipeline, null, 2))
+  // console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await User.aggregate(feedPipeline)
 

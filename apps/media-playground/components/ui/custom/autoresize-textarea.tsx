@@ -11,6 +11,7 @@ export type AutosizeTextAreaRef = {
   focus: () => void
   maxHeight: number | undefined
   minHeight: number
+  resize: () => void
 }
 
 type AutosizeTextAreaProps = {
@@ -62,6 +63,7 @@ export const AutosizeTextarea = React.forwardRef<
       className,
       onChange,
       value,
+      defaultValue,
       ...props
     }: AutosizeTextAreaProps,
     ref: React.Ref<AutosizeTextAreaRef>,
@@ -69,6 +71,7 @@ export const AutosizeTextarea = React.forwardRef<
     const textAreaRef = React.useRef<HTMLTextAreaElement | null>(null)
     const [triggerAutoSize, setTriggerAutoSize] = React.useState<string>('')
     const { formItemId } = useFormField()
+    const isInitialMount = React.useRef(true)
 
     const maxHeight = propMaxHeight || getMaxHeight(variant)
 
@@ -79,34 +82,82 @@ export const AutosizeTextarea = React.forwardRef<
       minHeight,
     })
 
+    // Manual resize function that can be called externally
+    const manualResize = React.useCallback(() => {
+      if (textAreaRef.current) {
+        const currentValue = textAreaRef.current.value
+        setTriggerAutoSize(currentValue)
+      }
+    }, [])
+
     useImperativeHandle(ref, () => ({
       textArea: textAreaRef.current as HTMLTextAreaElement,
       focus: () => textAreaRef.current?.focus(),
       maxHeight,
       minHeight,
+      resize: manualResize,
     }))
 
+    // Handle value changes from props - but skip empty values on initial render
     React.useEffect(() => {
-      // Trigger autosize when the component mounts and whenever the value changes
-      if (value) {
+      if (isInitialMount.current && (!value || value === '')) {
+        return
+      }
+
+      if (value !== undefined) {
         setTriggerAutoSize(value as string)
-      } else {
-        setTriggerAutoSize('')
       }
     }, [value])
+
+    // Handle defaultValue on mount - but only if it has content
+    React.useEffect(() => {
+      if (defaultValue && defaultValue !== '' && textAreaRef.current) {
+        setTriggerAutoSize(defaultValue as string)
+      }
+    }, [defaultValue])
+
+    // Mark initial mount as complete after first render
+    React.useEffect(() => {
+      isInitialMount.current = false
+    }, [])
+
+    // Force resize on mount only if there's actual content
+    React.useEffect(() => {
+      if (
+        textAreaRef.current &&
+        textAreaRef.current.value &&
+        textAreaRef.current.value.trim() !== ''
+      ) {
+        // Small delay to ensure the DOM is fully rendered
+        const timer = setTimeout(() => {
+          manualResize()
+        }, 0)
+
+        return () => clearTimeout(timer)
+      }
+    }, [manualResize])
 
     return (
       <textarea
         {...props}
         id={formItemId}
         value={value}
+        defaultValue={defaultValue}
         ref={textAreaRef}
         className={cn(
           'flex w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none',
           className,
         )}
         onChange={e => {
-          setTriggerAutoSize(e.target.value)
+          // Only trigger resize if there's actual content
+          if (e.target.value.trim() !== '') {
+            setTriggerAutoSize(e.target.value)
+          } else {
+            // For empty values, reset to minHeight without triggering the resize logic
+            if (textAreaRef.current) {
+              textAreaRef.current.style.height = `${minHeight}px`
+            }
+          }
           onChange?.(e)
         }}
       />

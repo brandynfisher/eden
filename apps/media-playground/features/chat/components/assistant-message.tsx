@@ -4,13 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
+import { useMessage } from '@assistant-ui/react'
 import {
   AssistantActionBar,
   AssistantMessage,
   BranchPicker,
-  useMessage,
   useThreadConfig,
-} from '@assistant-ui/react'
+} from '@assistant-ui/react-ui'
 import { useTimeAgo } from 'next-timeago'
 import type { FC } from 'react'
 

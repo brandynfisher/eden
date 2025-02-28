@@ -4,11 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import {
-  ThreadPrimitive,
-  ThreadWelcome,
-  useThreadConfig,
-} from '@assistant-ui/react'
+import { ThreadPrimitive } from '@assistant-ui/react'
+import { ThreadWelcome, useThreadConfig } from '@assistant-ui/react-ui'
 import { PlusIcon } from 'lucide-react'
 import React, {
   FC,
@@ -46,9 +43,7 @@ const MyThreadWelcomeSuggestion: FC<{
 }> = ({ suggestion: { text, prompt } }) => {
   return (
     <ThreadPrimitive.Suggestion prompt={prompt} method="replace" autoSend>
-      <Button variant="outline" className="px-3 py-2 rounded-full">
-        {text ?? prompt}
-      </Button>
+      <div className="px-3 py-2 rounded-full">{text ?? prompt}</div>
     </ThreadPrimitive.Suggestion>
   )
 }
@@ -117,7 +112,7 @@ const MyThreadWelcomeSuggestions: FC = () => {
       >
         {suggestions.map((suggestion, index) => (
           <div
-            className={`suggestion-item flex-shrink-0 transition-opacity duration-200 ${
+            className={`text-sm suggestion-item hover:bg-secondary/20 flex-shrink-0 border border-border rounded-full bg-popover/30 transition-opacity duration-200 ${
               !showAll && index >= visibleCount
                 ? 'opacity-0 absolute pointer-events-none'
                 : 'opacity-100'
