@@ -1,6 +1,7 @@
 'use client'
 
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
+import ModelMiniCard from '@/components/card/model-mini-card'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -177,19 +178,27 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
             </div>
           </div>
         </div>
-        {agent?.isPersonaPublic && (
-          <div className="flex flex-col p-4 bg-muted/50 rounded-lg border border-border/50">
-            <div className="flex items-center gap-2 mb-2">
-              <TypographyH6 className="text-primary">Persona</TypographyH6>
-              <div className="h-px flex-1 bg-border/50" />
+        <div className="flex flex-col md:flex-row gap-4">
+          {agent?.isPersonaPublic && (
+            <div className="flex flex-1 flex-col p-4 max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
+              <div className="flex items-center gap-2 mb-2">
+                <TypographyH6 className="text-primary">Persona</TypographyH6>
+                <div className="h-px flex-1 bg-border/50" />
+              </div>
+              <TextClampMore
+                lines={3}
+                text={agent?.persona}
+                className="text-sm italic text-muted-foreground"
+              />
             </div>
-            <TextClampMore
-              lines={2}
-              text={agent?.persona}
-              className="text-sm italic text-muted-foreground"
-            />
-          </div>
-        )}
+          )}
+          {agent?.model && (
+            <div className="flex flex-1 flex-col h-fit max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
+              <TypographyH6 className="text-primary">Model</TypographyH6>
+              <ModelMiniCard modelId={agent.model} />
+            </div>
+          )}
+        </div>
       </div>
       <div className="p-4">
         {isSignedIn ? (
