@@ -24,7 +24,9 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
+import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { ELEVENLABS_VOICES } from '@/lib/voices/elevenlabs'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -51,6 +53,7 @@ export const agentSchema = z.object({
   description: z.string().min(1).max(5000),
   greeting: z.string().max(140).optional(),
   model: z.string().optional(),
+  voice: z.string().optional(),
   persona: z.string().max(30000).optional(),
   isPersonaPublic: z.boolean().optional(),
   knowledge: z.string().max(100000).optional(),
@@ -99,6 +102,7 @@ const AgentFormSheet = () => {
       knowledge: agentQuery.agent?.knowledge ?? '',
       greeting: agentQuery.agent?.greeting || '',
       model: agentQuery.agent?.model || '',
+      voice: agentQuery.agent?.voice || '',
       suggestions: agentQuery.agent?.suggestions || [],
     },
   })
@@ -118,6 +122,7 @@ const AgentFormSheet = () => {
         knowledge: agentQuery.agent.knowledge ?? '',
         greeting: agentQuery.agent.greeting || '',
         model: agentQuery.agent.model || '',
+        voice: agentQuery.agent.voice || '',
         suggestions: agentQuery.agent.suggestions,
       })
     } else {
@@ -131,6 +136,7 @@ const AgentFormSheet = () => {
         knowledge: '',
         greeting: '',
         model: '',
+        voice: '',
         suggestions: [],
       })
     }
@@ -459,6 +465,29 @@ const AgentFormSheet = () => {
                       current={field.value?.length ?? 0}
                       max={100000}
                     />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Voice Field */}
+              <FormField
+                control={form.control}
+                name="voice"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Voice (Optional)</FormLabel>
+                    <FormDescription>
+                      Your agent will speak with this voice. Voices provided by
+                      ElevenLabs.
+                    </FormDescription>
+                    <FormControl>
+                      <VoiceSelector
+                        voices={ELEVENLABS_VOICES}
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

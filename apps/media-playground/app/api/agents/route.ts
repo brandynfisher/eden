@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     discordId,
     knowledge,
     model,
+    voice,
   } = requestJson as AgentsCreateArguments
 
   try {
@@ -50,6 +51,7 @@ export async function POST(request: NextRequest) {
       knowledge,
       discordId,
       model,
+      voice,
     })
 
     if (!res) {

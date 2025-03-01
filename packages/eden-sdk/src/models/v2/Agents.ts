@@ -55,6 +55,7 @@ export type Agent = Omit<
   }[]
   discordId?: string
   model?: ModelV2
+  voice?: string
   discordUsername?: string
   telegramId?: string
   telegramUsername?: string
@@ -88,6 +89,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   tools?: { [key: string]: string[] }
   discordId?: string
   model?: string
+  voice?: string
 }
 
 export interface AgentsUpdateArguments extends WebAPICallOptions {
@@ -105,6 +107,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   discordId?: string
   public?: boolean
   model?: string
+  voice?: string
 }
 
 interface DiscordDeploymentConfig {

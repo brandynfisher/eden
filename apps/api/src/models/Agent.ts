@@ -18,6 +18,7 @@ export interface AgentSchema extends BaseUserSchema {
   tools?: string[]
   discordId?: string
   model?: ModelV2Document
+  voice?: string
   discordChannelAllowlist?: {
     id: string
     note: string
@@ -99,6 +100,10 @@ const AgentSchema = new Schema<AgentDocument>(
     model: {
       type: Schema.Types.ObjectId,
       ref: 'models3',
+      required: false,
+    },
+    voice: {
+      type: String,
       required: false,
     },
     public: {

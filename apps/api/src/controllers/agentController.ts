@@ -82,6 +82,7 @@ export const createAgent = async (
     greeting,
     knowledge,
     suggestions,
+    voice,
   } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
@@ -105,6 +106,7 @@ export const createAgent = async (
     knowledge,
     suggestions,
     model: model || undefined,
+    voice,
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -145,6 +147,7 @@ export const updateAgent = async (
     suggestions,
     image,
     model,
+    voice,
     public: isPublic,
   } = request.body as AgentsUpdateArguments
 
@@ -165,6 +168,7 @@ export const updateAgent = async (
     greeting,
     knowledge,
     suggestions,
+    voice,
     public: isPublic,
   }
 
