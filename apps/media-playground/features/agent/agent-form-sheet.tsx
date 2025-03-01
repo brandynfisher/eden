@@ -32,6 +32,7 @@ import { slugifyName } from '@/utils/slug.util'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { AlertCircle, Edit2Icon, Loader2, XIcon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -76,6 +77,7 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
 
 const AgentFormSheet = () => {
   const { isOpen, mode, agentId, onAction } = useAgentFormSheet()
+  const router = useRouter()
 
   const dispatch = useAppDispatch()
   const agentQuery = useAgentQuery({
@@ -153,7 +155,8 @@ const AgentFormSheet = () => {
         })
         agentQuery.invalidate()
       } else {
-        await axios.post('/api/agents', data)
+        const agent = await axios.post('/api/agents', data)
+        router.push(`/agents/${agent.data.agentId}`)
         toast.success('Agent created successfully', {
           description: `"${data.name}" has been created successfully`,
           richColors: true,
