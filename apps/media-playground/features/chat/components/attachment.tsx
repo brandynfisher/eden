@@ -239,7 +239,7 @@ const MyAttachment: FC = () => {
   useEffect(() => {
     return () => {
       if (canRemove) {
-        // Clear this slide from lightbox when attachment is removed
+        //@todo: FIX THIS: Clear this slide from lightbox when attachment is removed
         setSlides((prev: Slide[]) =>
           prev.filter((_, idx: number) => idx !== attachmentIndex),
         )
