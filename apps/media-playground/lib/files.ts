@@ -45,8 +45,7 @@ export const uploadFileToS3 = async (
   maxRetries = 3,
   retryDelay = 1000,
 ) => {
-  const { file, onUploadProgress } = options
-  const cancelSource = axios.CancelToken.source()
+  const { file, onUploadProgress, cancelSource } = options
 
   const fileHash = await getFileHash(file)
   const signedUrl = await requestSignedUrl(fileHash, file.type)
@@ -78,6 +77,12 @@ export const uploadFileToS3 = async (
       throw new Error(`Upload error - status ${response.status}`)
     } catch (error) {
       lastError = error as Error
+
+      // Check if this is a cancellation error
+      if (axios.isCancel(error)) {
+        console.log('Upload cancelled by user')
+        throw error // Re-throw cancellation errors
+      }
 
       if (axios.isAxiosError(error) && error.response?.status === 503) {
         if (attempt < maxRetries - 1) {
