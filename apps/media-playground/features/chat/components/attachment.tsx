@@ -247,7 +247,7 @@ const MyAttachment: FC = () => {
     }
   }, [canRemove, attachmentIndex, setSlides])
 
-  const componentKey = `${attachment.id}-${attachment.status?.type}-${fileUrl}-${timestamp}`
+  const componentKey = `${attachment.id}-${attachment.status?.type}-${fileUrl}`
 
   // Log component render
   console.log(
@@ -310,7 +310,7 @@ const MyAttachment: FC = () => {
           mediaType === 'video' ||
           mediaType === 'audio') ? (
           <LightboxTrigger
-            key={`${attachment.id}-${attachment.status?.type}-${fileUrl}`}
+            key={`${attachment.id}-${attachment.status?.type}-${fileUrl}-${timestamp}`}
             startIndex={attachmentIndex}
             className="flex items-center justify-center z-0"
             slide={{
