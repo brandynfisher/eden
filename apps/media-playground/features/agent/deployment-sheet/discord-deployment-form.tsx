@@ -40,7 +40,11 @@ export const DiscordDeploymentForm = ({
     resolver: zodResolver(schema),
     defaultValues: {
       token: '',
-      allowedChannels: deployment?.config?.discord?.channel_allowlist ?? [],
+      allowedChannels:
+        deployment?.config?.discord?.channel_allowlist?.map(channel => ({
+          id: channel.id || '',
+          note: channel.note || '',
+        })) ?? [],
     },
   })
 
