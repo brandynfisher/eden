@@ -24,7 +24,7 @@ export default function SectionDeploy() {
         <div className="flex flex-col items-center gap-2">
           <Button variant="ghost" size={'icon'} asChild>
             <Link
-              href={siteConfig.links.discord}
+              href="https://docs.eden.art/docs/guides/discord/"
               target="_blank"
               className="filter flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#5865F2]"
             >
@@ -48,9 +48,9 @@ export default function SectionDeploy() {
         <div className="flex flex-col items-center gap-2">
           <Button variant="ghost" size={'icon'} asChild>
             <Link
-              href={'#'}
+              href="https://docs.eden.art/docs/guides/telegram/"
               target="_blank"
-              className="group flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#26A5E4]"
+              className="group flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#26A5E4] relative opacity-60"
             >
               <TelegramIcon size={64} className="text-[#26A5E4]" />
             </Link>
@@ -62,7 +62,7 @@ export default function SectionDeploy() {
             <Link
               href={'#'}
               target="_blank"
-              className="group flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#855DCD] relative opacity-60"
+              className="group flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#855DCD] relative opacity-60 pointer-events-none"
             >
               <FarcasterIcon size={64} className="text-[#855DCD]" />
               <Badge

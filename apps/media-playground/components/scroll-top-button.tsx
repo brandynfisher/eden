@@ -3,9 +3,16 @@
 import { Button } from '@/components/ui/button'
 import { useWindowScroll } from '@/hooks/use-window-scroll'
 import { ArrowUpIcon } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 
 const ScrollTopButton = () => {
   const [scroll, scrollTo] = useWindowScroll()
+  const pathname = usePathname()
+  const isHomePage = pathname === '/'
+
+  if (isHomePage) {
+    return null
+  }
 
   if (scroll.y < 700) {
     return null
