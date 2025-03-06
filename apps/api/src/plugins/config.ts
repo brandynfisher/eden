@@ -68,6 +68,9 @@ const ConfigSchema = Type.Strict(
     MANNA_BONUS_SIGNUP: Type.Number({ default: 20 }),
     MANNA_BONUS_DAILY_LOGIN: Type.Number({ default: 10 }),
     MANNA_BONUS_DISCORD_LINK: Type.Number({ default: 50 }),
+    MAILCHIMP_API_KEY: Type.Optional(Type.String()),
+    EMAIL_FROM: Type.Optional(Type.String()),
+    EMAIL_FROM_NAME: Type.Optional(Type.String()),
   }),
 )
 
