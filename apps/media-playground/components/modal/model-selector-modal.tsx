@@ -26,6 +26,7 @@ type Props = {
   currentValue: string
   base_model?: BaseModelName | BaseModelName[]
   onChange: (id: string) => void
+  selectedIds?: string[]
 } & PropsWithChildren
 
 const ModelSelectorModal = ({
@@ -35,6 +36,7 @@ const ModelSelectorModal = ({
   trigger,
   base_model,
   onChange,
+  selectedIds = [],
 }: Props) => {
   const { user } = useAuthState()
 
@@ -101,6 +103,7 @@ const ModelSelectorModal = ({
               isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
               scrollRef={scrollRef}
+              selectedIds={selectedIds}
             />
           ) : (
             <ModelsFeed
@@ -111,6 +114,7 @@ const ModelSelectorModal = ({
               isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
               scrollRef={scrollRef}
+              selectedIds={selectedIds}
             />
           )}
         </div>

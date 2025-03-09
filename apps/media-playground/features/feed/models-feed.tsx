@@ -22,6 +22,7 @@ type Props = {
     actions: boolean
   }
   scrollRef?: RefObject<HTMLDivElement>
+  selectedIds?: string[]
 }
 
 const ModelsFeed = ({
@@ -33,6 +34,7 @@ const ModelsFeed = ({
   isSelectable,
   showFooterItems,
   scrollRef,
+  selectedIds = [],
 }: Props) => {
   const router = useRouter()
 
@@ -95,6 +97,7 @@ const ModelsFeed = ({
           creator={(item as ModelV2).user}
           linkHref={`/models/${item._id}`}
           showFooterItems={showFooterItems}
+          isSelected={selectedIds.includes((item as ModelV2)._id)}
         />
       )}
     />

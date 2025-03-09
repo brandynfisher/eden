@@ -17,7 +17,10 @@ export interface AgentSchema extends BaseUserSchema {
   deployments?: DeploymentDocument[]
   tools?: string[]
   discordId?: string
-  model?: ModelV2Document
+  models?: Array<{
+    lora: ModelV2Document
+    use_when?: string
+  }>
   discordChannelAllowlist?: {
     id: string
     note: string
@@ -96,10 +99,22 @@ const AgentSchema = new Schema<AgentDocument>(
       default: {},
       required: false,
     },
-    model: {
-      type: Schema.Types.ObjectId,
-      ref: 'models3',
-      required: false,
+    models: {
+      type: [
+        {
+          lora: {
+            type: Schema.Types.ObjectId,
+            ref: 'models3',
+            required: true,
+          },
+          use_when: {
+            type: String,
+            required: false,
+            maxlength: 500,
+          },
+        },
+      ],
+      default: [],
     },
     public: {
       type: Boolean,
