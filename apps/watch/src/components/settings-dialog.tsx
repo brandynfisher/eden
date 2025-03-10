@@ -10,15 +10,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { usePlayer } from '@/contexts/player-context'
 import { useState } from 'react'
 
 interface SettingsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onEnableSound: () => void
-  onKeepMuted: () => void
-  onImageDurationChange: (duration: number) => void
-  defaultImageDuration?: number
 }
 
 function formatDuration(seconds: number): string {
@@ -43,31 +40,22 @@ function timeToSlider(seconds: number): number {
   return Math.log(seconds / tMin) / Math.log(tMax / tMin)
 }
 
-export function SettingsDialog({
-  open,
-  onOpenChange,
-  onEnableSound,
-  onKeepMuted,
-  onImageDurationChange,
-  defaultImageDuration = 15,
-}: SettingsDialogProps) {
-  const [sliderValue, setSliderValue] = useState(
-    timeToSlider(defaultImageDuration),
-  )
+export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+  const { setIsMuted, imageDuration, setImageDuration, setShowSettings } =
+    usePlayer()
+
+  const [sliderValue, setSliderValue] = useState(timeToSlider(imageDuration))
   const [soundEnabled, setSoundEnabled] = useState(false)
 
   const handleSliderChange = (value: number[]) => {
     const newValue = value[0]
     setSliderValue(newValue)
-    onImageDurationChange(sliderToTime(newValue))
+    setImageDuration(sliderToTime(newValue))
   }
 
   const handleStart = () => {
-    if (soundEnabled) {
-      onEnableSound()
-    } else {
-      onKeepMuted()
-    }
+    setIsMuted(!soundEnabled)
+    setShowSettings(false)
   }
 
   return (

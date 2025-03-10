@@ -4,39 +4,22 @@ import { collectionData } from '../../collection.data'
 import { Player } from '@/components/player'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { Button } from '@/components/ui/button'
+import { PlayerProvider, usePlayer } from '@/contexts/player-context'
 import { X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 
 export default function PlayerPage() {
   const router = useRouter()
-  const [isMuted, setIsMuted] = useState(true)
-  const [imageDuration, setImageDuration] = useState(15)
-  const [showSettings, setShowSettings] = useState(true)
 
-  // Check if collection has any videos
-  const hasVideos = collectionData.some(item =>
-    item.mediaAttributes.mimeType.startsWith('video'),
+  return (
+    <PlayerProvider initialItems={collectionData}>
+      <PlayerContent router={router} />
+    </PlayerProvider>
   )
+}
 
-  // If no videos, we can skip settings
-  if (!hasVideos && showSettings) {
-    setShowSettings(false)
-  }
-
-  const handleEnableSound = () => {
-    setIsMuted(false)
-    setShowSettings(false)
-  }
-
-  const handleKeepMuted = () => {
-    setIsMuted(true)
-    setShowSettings(false)
-  }
-
-  const handleImageDurationChange = (duration: number) => {
-    setImageDuration(duration)
-  }
+function PlayerContent({ router }: { router: ReturnType<typeof useRouter> }) {
+  const { showSettings } = usePlayer()
 
   const handleSettingsClose = (open: boolean) => {
     if (!open) {
@@ -45,25 +28,12 @@ export default function PlayerPage() {
   }
 
   if (showSettings) {
-    return (
-      <SettingsDialog
-        open={true}
-        onOpenChange={handleSettingsClose}
-        onEnableSound={handleEnableSound}
-        onKeepMuted={handleKeepMuted}
-        onImageDurationChange={handleImageDurationChange}
-        defaultImageDuration={imageDuration}
-      />
-    )
+    return <SettingsDialog open={true} onOpenChange={handleSettingsClose} />
   }
 
   return (
     <main className="w-screen h-screen bg-black relative">
-      <Player
-        items={collectionData}
-        initialMuted={isMuted}
-        imageDuration={imageDuration}
-      />
+      <Player />
 
       <Button
         onClick={() => router.back()}

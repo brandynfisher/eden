@@ -1,9 +1,9 @@
 'use client'
 
-import { CollectionItem } from '../types/collection'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CircularProgress } from '@/components/ui/circular-progress'
+import { usePlayer } from '@/contexts/player-context'
 import { cn } from '@/lib/utils'
 import {
   ChevronLeft,
@@ -13,24 +13,22 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /* eslint-disable @next/next/no-img-element */
 
-interface PlayerProps {
-  items: CollectionItem[]
-  initialMuted?: boolean
-  imageDuration?: number
-}
+export function Player() {
+  const {
+    currentIndex,
+    items,
+    isMuted,
+    setIsMuted,
+    imageDuration,
+    goToNextSlide,
+    goToPreviousSlide,
+  } = usePlayer()
 
-export function Player({
-  items,
-  initialMuted = true,
-  imageDuration = 30,
-}: PlayerProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isMuted, setIsMuted] = useState(initialMuted)
   const [progress, setProgress] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -38,14 +36,6 @@ export function Player({
 
   const currentItem = items[currentIndex]
   const isVideo = currentItem?.mediaAttributes.mimeType.startsWith('video')
-
-  const goToNextSlide = useCallback(() => {
-    setCurrentIndex(prev => (prev + 1) % items.length)
-  }, [items.length])
-
-  const goToPreviousSlide = useCallback(() => {
-    setCurrentIndex(prev => (prev - 1 + items.length) % items.length)
-  }, [items.length])
 
   const toggleFullscreen = async () => {
     if (!containerRef.current) return
