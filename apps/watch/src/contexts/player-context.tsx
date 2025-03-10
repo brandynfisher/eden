@@ -19,8 +19,10 @@ interface PlayerContextType {
   // Settings
   isMuted: boolean
   setIsMuted: (muted: boolean) => void
-  imageDuration: number
-  setImageDuration: (duration: number) => void
+  mediaDuration: number
+  setMediaDuration: (duration: number) => void
+  applyDurationToVideos: boolean
+  setApplyDurationToVideos: (apply: boolean) => void
   showSettings: boolean
   setShowSettings: (show: boolean) => void
 
@@ -41,7 +43,8 @@ export function PlayerProvider({
   // Player State
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(true)
-  const [imageDuration, setImageDuration] = useState(15)
+  const [mediaDuration, setMediaDuration] = useState(15)
+  const [applyDurationToVideos, setApplyDurationToVideos] = useState(false)
   const [showSettings, setShowSettings] = useState(true)
 
   // Check if collection has any videos
@@ -71,8 +74,10 @@ export function PlayerProvider({
         // Settings
         isMuted,
         setIsMuted,
-        imageDuration,
-        setImageDuration,
+        mediaDuration,
+        setMediaDuration,
+        applyDurationToVideos,
+        setApplyDurationToVideos,
         showSettings,
         setShowSettings,
 

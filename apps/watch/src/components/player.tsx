@@ -23,7 +23,8 @@ export function Player() {
     items,
     isMuted,
     setIsMuted,
-    imageDuration,
+    mediaDuration,
+    applyDurationToVideos,
     goToNextSlide,
     goToPreviousSlide,
   } = usePlayer()
@@ -88,7 +89,10 @@ export function Player() {
       const video = videoRef.current
       if (!video) return
 
-      const duration = currentItem.mediaAttributes.duration || 0
+      const duration = applyDurationToVideos
+        ? mediaDuration
+        : currentItem.mediaAttributes.duration || 0
+
       const updateProgress = () => {
         if (video.currentTime && duration) {
           setProgress((video.currentTime / duration) * 100)
@@ -103,6 +107,19 @@ export function Player() {
       }
 
       video.addEventListener('ended', handleVideoEnd)
+
+      // If applying custom duration to videos, set up a timer
+      if (applyDurationToVideos) {
+        const timer = setTimeout(goToNextSlide, mediaDuration * 1000)
+        return () => {
+          if (progressInterval.current) {
+            clearInterval(progressInterval.current)
+          }
+          video.removeEventListener('ended', handleVideoEnd)
+          clearTimeout(timer)
+        }
+      }
+
       return () => {
         if (progressInterval.current) {
           clearInterval(progressInterval.current)
@@ -111,7 +128,7 @@ export function Player() {
       }
     } else {
       const startTime = Date.now()
-      const duration = imageDuration * 1000 // Convert to milliseconds
+      const duration = mediaDuration * 1000 // Convert to milliseconds
 
       const updateProgress = () => {
         const elapsed = Date.now() - startTime
@@ -131,7 +148,13 @@ export function Player() {
         clearTimeout(timer)
       }
     }
-  }, [currentItem, isVideo, goToNextSlide, imageDuration])
+  }, [
+    currentItem,
+    isVideo,
+    goToNextSlide,
+    mediaDuration,
+    applyDurationToVideos,
+  ])
 
   // Handle keyboard navigation
   useEffect(() => {

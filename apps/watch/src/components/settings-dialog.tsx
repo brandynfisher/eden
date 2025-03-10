@@ -8,6 +8,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { usePlayer } from '@/contexts/player-context'
@@ -41,16 +42,23 @@ function timeToSlider(seconds: number): number {
 }
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-  const { setIsMuted, imageDuration, setImageDuration, setShowSettings } =
-    usePlayer()
+  const {
+    setIsMuted,
+    mediaDuration,
+    setMediaDuration,
+    applyDurationToVideos,
+    setApplyDurationToVideos,
+    setShowSettings,
+    hasVideos,
+  } = usePlayer()
 
-  const [sliderValue, setSliderValue] = useState(timeToSlider(imageDuration))
+  const [sliderValue, setSliderValue] = useState(timeToSlider(mediaDuration))
   const [soundEnabled, setSoundEnabled] = useState(false)
 
   const handleSliderChange = (value: number[]) => {
     const newValue = value[0]
     setSliderValue(newValue)
-    setImageDuration(sliderToTime(newValue))
+    setMediaDuration(sliderToTime(newValue))
   }
 
   const handleStart = () => {
@@ -70,7 +78,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
         <div className="space-y-6">
           <div className="space-y-4">
-            <h3 className="font-medium">Image Duration</h3>
+            <h3 className="font-medium">Media Duration</h3>
             <div className="space-y-2">
               <Slider
                 value={[sliderValue]}
@@ -80,32 +88,39 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 className="w-full"
               />
               <p className="text-sm text-muted-foreground">
-                Images will display for{' '}
+                Media will display for{' '}
                 {formatDuration(sliderToTime(sliderValue))}
               </p>
             </div>
+            {hasVideos && (
+              <div className="flex items-center space-x-2 pt-2">
+                <Switch
+                  checked={applyDurationToVideos}
+                  onCheckedChange={setApplyDurationToVideos}
+                  id="video-duration"
+                />
+                <Label htmlFor="video-duration">Apply duration to videos</Label>
+              </div>
+            )}
           </div>
 
-          <div className="space-y-4">
-            <h3 className="font-medium">Sound Settings</h3>
-            <AlertDialogDescription>
-              Would you like to enable sound for all videos in this collection?
-              You can change this later in the player.
-            </AlertDialogDescription>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={soundEnabled}
-                onCheckedChange={setSoundEnabled}
-                id="sound-mode"
-              />
-              <label
-                htmlFor="sound-mode"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Enable Sound
-              </label>
+          {hasVideos && (
+            <div className="space-y-4">
+              <h3 className="font-medium">Sound Settings</h3>
+              <AlertDialogDescription>
+                Would you like to enable sound for all videos in this
+                collection? You can change this later in the player.
+              </AlertDialogDescription>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={soundEnabled}
+                  onCheckedChange={setSoundEnabled}
+                  id="sound-mode"
+                />
+                <Label htmlFor="sound-mode">Enable Sound</Label>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-3">
