@@ -89,21 +89,40 @@ export function Player() {
       const video = videoRef.current
       if (!video) return
 
-      const duration = applyDurationToVideos
+      const videoDuration = currentItem.mediaAttributes.duration || 0
+      const targetDuration = applyDurationToVideos
         ? mediaDuration
-        : currentItem.mediaAttributes.duration || 0
+        : videoDuration
+
+      // If custom duration is longer than video duration, enable loop
+      if (applyDurationToVideos && mediaDuration > videoDuration) {
+        video.loop = true
+      } else {
+        video.loop = false
+      }
 
       const updateProgress = () => {
-        if (video.currentTime && duration) {
-          setProgress((video.currentTime / duration) * 100)
+        if (video.currentTime && targetDuration) {
+          // If video is looping, we need to calculate the actual progress including previous loops
+          if (video.loop) {
+            const elapsedTime = (Date.now() - startTime) / 1000 // Convert to seconds
+            setProgress((elapsedTime / targetDuration) * 100)
+          } else {
+            setProgress((video.currentTime / targetDuration) * 100)
+          }
         }
       }
+
+      const startTime = Date.now()
 
       // Update every 200ms
       progressInterval.current = setInterval(updateProgress, 200)
 
       const handleVideoEnd = () => {
-        goToNextSlide()
+        // Only go to next slide if we're not looping
+        if (!video.loop) {
+          goToNextSlide()
+        }
       }
 
       video.addEventListener('ended', handleVideoEnd)
