@@ -21,11 +21,22 @@ interface SettingsDialogProps {
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) {
-    return `${Math.round(seconds)} seconds`
+    const secs = Math.round(seconds)
+    return `${secs} ${secs === 1 ? 'second' : 'seconds'}`
   } else if (seconds < 3600) {
-    return `${Math.round(seconds / 60)} minutes`
+    const mins = Math.round(seconds / 60)
+    return `${mins} ${mins === 1 ? 'minute' : 'minutes'}`
   } else {
-    return `${(seconds / 3600).toFixed(1)} hours`
+    const hours = Math.floor(seconds / 3600)
+    const remainingMinutes = Math.round((seconds % 3600) / 60)
+
+    if (remainingMinutes === 0) {
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+    }
+
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ${remainingMinutes} ${
+      remainingMinutes === 1 ? 'minute' : 'minutes'
+    }`
   }
 }
 
