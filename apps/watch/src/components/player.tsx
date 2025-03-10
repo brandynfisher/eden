@@ -20,9 +20,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 interface PlayerProps {
   items: CollectionItem[]
   initialMuted?: boolean
+  imageDuration?: number
 }
 
-export function Player({ items, initialMuted = true }: PlayerProps) {
+export function Player({
+  items,
+  initialMuted = true,
+  imageDuration = 30,
+}: PlayerProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isMuted, setIsMuted] = useState(initialMuted)
@@ -116,7 +121,7 @@ export function Player({ items, initialMuted = true }: PlayerProps) {
       }
     } else {
       const startTime = Date.now()
-      const duration = 30000 // 30 seconds
+      const duration = imageDuration * 1000 // Convert to milliseconds
 
       const updateProgress = () => {
         const elapsed = Date.now() - startTime
@@ -136,7 +141,7 @@ export function Player({ items, initialMuted = true }: PlayerProps) {
         clearTimeout(timer)
       }
     }
-  }, [currentItem, isVideo, goToNextSlide])
+  }, [currentItem, isVideo, goToNextSlide, imageDuration])
 
   // Handle keyboard navigation
   useEffect(() => {
