@@ -76,7 +76,7 @@ export const createAgent = async (
     key,
     description,
     image,
-    model,
+    models,
     persona,
     isPersonaPublic,
     greeting,
@@ -87,8 +87,17 @@ export const createAgent = async (
 
   const currentUserId = request.user.userId
 
-  if (model) {
-    await verifyModelAccess(reply, model, currentUserId.toString())
+  if (models && models.length > 10) {
+    return reply.status(422).send({
+      error: 'Cannot have more than 10 models',
+    })
+  }
+
+  // Verify access to all models if provided
+  if (models && models.length > 0) {
+    for (const model of models) {
+      await verifyModelAccess(reply, model.lora, currentUserId.toString())
+    }
   }
 
   const imageFilename = image.split('/').pop()
@@ -105,8 +114,8 @@ export const createAgent = async (
     greeting,
     knowledge,
     suggestions,
-    model: model || undefined,
     voice,
+    models: models || [],
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -146,10 +155,16 @@ export const updateAgent = async (
     knowledge,
     suggestions,
     image,
-    model,
     voice,
+    models,
     public: isPublic,
   } = request.body as AgentsUpdateArguments
+
+  if (models && models.length > 10) {
+    return reply.status(422).send({
+      error: 'Cannot have more than 10 models',
+    })
+  }
 
   if (!agentId) {
     return reply.status(422).send({
@@ -172,11 +187,15 @@ export const updateAgent = async (
     public: isPublic,
   }
 
-  if (!model) {
-    updateData.$unset = { model: 1 }
-  } else if (model) {
-    await verifyModelAccess(reply, model, currentUserId.toString())
-    updateData.model = model
+  // Handle models array
+  if (!models || models.length === 0) {
+    updateData.$unset = { models: 1 }
+  } else {
+    // Verify access to all models
+    for (const model of models) {
+      await verifyModelAccess(reply, model.lora, currentUserId.toString())
+    }
+    updateData.models = models
   }
 
   if (image) {

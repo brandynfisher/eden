@@ -174,6 +174,8 @@ export type TaskV2Args = {
   lora_training_urls?: string[]
   sd_model_version?: string
   concept_mode?: string
+  mode?: string
+  lora_mode?: string
   max_train_steps?: number
   resolution?: number
 }

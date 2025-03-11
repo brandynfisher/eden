@@ -54,8 +54,11 @@ export type Agent = Omit<
     note: string
   }[]
   discordId?: string
-  model?: ModelV2
   voice?: string
+  model?: {
+    lora: ModelV2
+    use_when?: string
+  }[]
   discordUsername?: string
   telegramId?: string
   telegramUsername?: string
@@ -88,8 +91,11 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   image: string
   tools?: { [key: string]: string[] }
   discordId?: string
-  model?: string
   voice?: string
+  models?: Array<{
+    lora: string
+    use_when?: string
+  }>
 }
 
 export interface AgentsUpdateArguments extends WebAPICallOptions {
@@ -106,8 +112,11 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   tools?: { [key: string]: string[] }
   discordId?: string
   public?: boolean
-  model?: string
   voice?: string
+  models?: Array<{
+    lora: string
+    use_when?: string
+  }>
 }
 
 interface DiscordDeploymentConfig {

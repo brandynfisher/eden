@@ -204,10 +204,14 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
               />
             ) : null}
           </div>
-          {agent?.model && (
+          {agent?.models && agent.models.length > 0 && (
             <div className="flex flex-1 flex-col h-fit max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
               <TypographyH6 className="text-primary">Models</TypographyH6>
-              <ModelMiniCard modelId={agent.model} />
+              <div className="flex flex-col gap-2">
+                {agent.models.map((model: { lora: string }, index: number) => (
+                  <ModelMiniCard key={index} modelId={model.lora} />
+                ))}
+              </div>
             </div>
           )}
         </div>

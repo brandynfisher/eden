@@ -1,7 +1,13 @@
 import { Agent } from 'src/models/v2'
 
 // Types
-export type Platform = 'discord' | 'telegram' | 'farcaster' | 'twitter'
+export type Platform =
+  | 'discord'
+  | 'telegram'
+  | 'farcaster'
+  | 'twitter'
+  | 'discord_modal'
+  | 'telegram_modal'
 
 type AllowlistItem = {
   id: string

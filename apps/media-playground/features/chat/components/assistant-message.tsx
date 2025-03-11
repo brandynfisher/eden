@@ -18,7 +18,7 @@ const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
   return (
     <div className="flex items-center md:items-start">
-      <Avatar className="w-10 h-10 md:w-12 md:h-12 mx-1 md:mx-2">
+      <Avatar className="w-10 h-10 md:w-12 md:h-12">
         <AvatarImage
           className={'object-cover'}
           src={getCloudfrontOriginalUrl(avatar.src)}
@@ -77,7 +77,7 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      <AssistantMessage.Content key={id} className="max-md:max-w-aui-thread" />
+      <AssistantMessage.Content key={id} className="pl-3 !max-w-full" />
       <BranchPicker />
       <MyAssistantActionBar />
       {!isEmpty && isRunning && (

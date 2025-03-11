@@ -112,17 +112,22 @@ const ModelMiniCard = ({
       </Link>
       <div className="text-xs flex flex-col h-full w-full py-1">
         <Link href={`/models/${model._id}`} prefetch={false}>
-          <div className="flex">
-            {model.name}
-            {model.task.args.concept_mode && (
-              <Badge className="ml-2 h-4 px-2" variant="outline">
-                {model.task.args.concept_mode}
+          {model.name}
+
+          <div className="flex gap-2 mt-1">
+            <Badge variant="secondary" className="text-xs bg-opacity-80">
+              {model.base_model}
+            </Badge>
+            {(model.task.args?.concept_mode ||
+              model.task.args?.lora_mode ||
+              model.task.args?.mode) && (
+              <Badge className="text-xs" variant="outline">
+                {model.task.args?.concept_mode ??
+                  model.task.args?.lora_mode ??
+                  model.task.args?.mode}
               </Badge>
             )}
           </div>
-          <Badge variant="secondary" className="text-xs my-1 bg-opacity-80">
-            {model.base_model}
-          </Badge>
         </Link>
         {showCreator && (
           <div className="text-muted-foreground flex gap-2">

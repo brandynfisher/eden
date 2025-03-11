@@ -152,7 +152,7 @@ const ThreadListItem: FC<{
 const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const agentId = useEdenRuntimeExtras(extras => extras.agentId)
-  const { isLoading, isFetchingNextPage } = useThreadListQuery({
+  const { isLoading, hasMore, isFetchingNextPage } = useThreadListQuery({
     agentId,
     enabled: !!isSignedIn && !!agentId,
   })
@@ -177,13 +177,20 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
                   ),
                 }}
               />
-              <div id="thread-list-observer-target" className="h-4 w-full">
-                {isFetchingNextPage && (
-                  <div className="flex justify-center py-2">
-                    <Skeleton className="w-full h-9" />
+              {hasMore && (
+                <div id="thread-list-observer-target" className="h-8 w-full">
+                  <Separator orientation="horizontal" className="my-2" />
+                  <div className="flex justify-center text-muted-foreground text-sm py-2">
+                    Older Threads
                   </div>
-                )}
-              </div>
+                  <Separator orientation="horizontal" className="my-2" />
+                  {isFetchingNextPage && (
+                    <div className="flex justify-center py-2">
+                      <Skeleton className="w-full h-9" />
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           ) : (
             <Button

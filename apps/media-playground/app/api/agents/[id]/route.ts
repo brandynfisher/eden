@@ -79,8 +79,8 @@ export async function PATCH(
     knowledge,
     tools,
     discordId,
-    model,
     voice,
+    models,
   } = requestJson as AgentsUpdateArguments
 
   try {
@@ -102,7 +102,7 @@ export async function PATCH(
       suggestions,
       tools,
       discordId,
-      model,
+      models,
       knowledge,
       voice,
     })
