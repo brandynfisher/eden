@@ -66,9 +66,11 @@ const ModelSelectorModal = ({
         <DialogHeader className="mt-4">
           <div className="flex gap-4 items-center">
             <DialogTitle className="py-2">{title}</DialogTitle>
-            <Badge variant="secondary">
-              {Array.isArray(base_model) ? base_model.join(', ') : base_model}
-            </Badge>
+            {base_model && (
+              <Badge variant="secondary">
+                {Array.isArray(base_model) ? base_model.join(', ') : base_model}
+              </Badge>
+            )}
           </div>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>

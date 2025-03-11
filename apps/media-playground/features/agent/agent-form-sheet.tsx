@@ -485,7 +485,7 @@ const AgentFormSheet = () => {
                 name="models"
                 render={() => (
                   <FormItem className="p-2 bg-secondary rounded-lg">
-                    <FormLabel>Flux LoRa Models</FormLabel>
+                    <FormLabel>Flux LoRA Models</FormLabel>
                     <FormDescription>
                       Select models and specify when to use each one (max 10
                       models).
@@ -541,9 +541,8 @@ const AgentFormSheet = () => {
                       <div className="mt-4">
                         <ModelSelectorModal
                           className="p-4 md:p-8 w-full"
-                          title="Select Flux LoRa Model"
-                          description="Pick a Flux LoRa model to add to this agent"
-                          base_model="flux-dev"
+                          title="Select LoRA Model"
+                          description="Pick a LoRA model to add to this agent"
                           currentValue=""
                           selectedIds={models.fields.map(m => m.lora)}
                           onChange={id => {
@@ -569,9 +568,7 @@ const AgentFormSheet = () => {
                               disabled={models.fields.length >= 10}
                               className="w-full"
                             >
-                              Add LoRa Model{' '}
-                              {models.fields.length > 0 &&
-                                `(${models.fields.length}/10)`}
+                              Add LoRA Model
                             </Button>
                           }
                         />
