@@ -61,6 +61,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         isPersonaPublic: Type.Optional(Type.Boolean()),
         greeting: Type.Optional(Type.String()),
         knowledge: Type.Optional(Type.String()),
+        voice: Type.Optional(Type.String()),
         suggestions: Type.Optional(
           Type.Array(
             Type.Object({
@@ -110,6 +111,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         isPersonaPublic: Type.Optional(Type.Boolean()),
         greeting: Type.Optional(Type.String()),
         knowledge: Type.Optional(Type.String()),
+        voice: Type.Optional(Type.String()),
         suggestions: Type.Optional(
           Type.Array(
             Type.Object({

@@ -24,7 +24,9 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
+import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { ELEVENLABS_VOICES } from '@/lib/voices/elevenlabs'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -51,6 +53,7 @@ export const agentSchema = z.object({
   image: z.string().optional(),
   description: z.string().min(1).max(5000),
   greeting: z.string().max(140).optional(),
+  voice: z.string().optional(),
   models: z
     .array(
       z.object({
@@ -107,6 +110,7 @@ const AgentFormSheet = () => {
       isPersonaPublic: agentQuery.agent?.isPersonaPublic || false,
       knowledge: agentQuery.agent?.knowledge ?? '',
       greeting: agentQuery.agent?.greeting || '',
+      voice: agentQuery.agent?.voice || '',
       models: agentQuery.agent?.models || [],
       suggestions: agentQuery.agent?.suggestions || [],
     },
@@ -131,6 +135,7 @@ const AgentFormSheet = () => {
         isPersonaPublic: agentQuery.agent.isPersonaPublic,
         knowledge: agentQuery.agent.knowledge ?? '',
         greeting: agentQuery.agent.greeting || '',
+        voice: agentQuery.agent.voice || '',
         models: agentQuery.agent.models || [],
         suggestions: agentQuery.agent.suggestions || [],
       })
@@ -144,6 +149,7 @@ const AgentFormSheet = () => {
         isPersonaPublic: false,
         knowledge: '',
         greeting: '',
+        voice: '',
         models: [],
         suggestions: [],
       })
@@ -474,6 +480,29 @@ const AgentFormSheet = () => {
                       current={field.value?.length ?? 0}
                       max={100000}
                     />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/** Voice Field */}
+              <FormField
+                control={form.control}
+                name="voice"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Voice (Optional)</FormLabel>
+                    <FormDescription>
+                      Your agent will speak with this voice. Voices provided by
+                      ElevenLabs.
+                    </FormDescription>
+                    <FormControl>
+                      <VoiceSelector
+                        voices={ELEVENLABS_VOICES}
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
