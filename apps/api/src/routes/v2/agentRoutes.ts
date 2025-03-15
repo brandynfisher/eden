@@ -49,11 +49,19 @@ const agentRoutes: FastifyPluginAsync = async server => {
         key: Type.String(),
         description: Type.String(),
         image: Type.String(),
-        model: Type.Optional(Type.String()),
+        models: Type.Optional(
+          Type.Array(
+            Type.Object({
+              lora: Type.String(),
+              use_when: Type.Optional(Type.String()),
+            }),
+          ),
+        ),
         persona: Type.Optional(Type.String()),
         isPersonaPublic: Type.Optional(Type.Boolean()),
         greeting: Type.Optional(Type.String()),
         knowledge: Type.Optional(Type.String()),
+        voice: Type.Optional(Type.String()),
         suggestions: Type.Optional(
           Type.Array(
             Type.Object({
@@ -91,11 +99,19 @@ const agentRoutes: FastifyPluginAsync = async server => {
         description: Type.Optional(Type.String()),
         image: Type.Optional(Type.String()),
         public: Type.Optional(Type.Boolean()),
-        model: Type.Optional(Type.String()),
+        models: Type.Optional(
+          Type.Array(
+            Type.Object({
+              lora: Type.String(),
+              use_when: Type.Optional(Type.String()),
+            }),
+          ),
+        ),
         persona: Type.Optional(Type.String()),
         isPersonaPublic: Type.Optional(Type.Boolean()),
         greeting: Type.Optional(Type.String()),
         knowledge: Type.Optional(Type.String()),
+        voice: Type.Optional(Type.String()),
         suggestions: Type.Optional(
           Type.Array(
             Type.Object({

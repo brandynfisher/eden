@@ -5,6 +5,8 @@ export enum DeploymentPlatform {
   TELEGRAM = 'telegram',
   FARCASTER = 'farcaster',
   TWITTER = 'twitter',
+  DISCORD_MODAL = 'discord_modal',
+  TELEGRAM_MODAL = 'telegram_modal',
 }
 
 export interface DeploymentSchema {

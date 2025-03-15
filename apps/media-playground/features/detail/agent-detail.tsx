@@ -181,10 +181,9 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           </div>
         </div>
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex flex-1 flex-col p-4 max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
+          <div className="flex flex-1 flex-col p-4 md:max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
             <div className="flex items-center gap-2 mb-2">
               <TypographyH6 className="text-primary">Persona</TypographyH6>
-              <div className="h-px flex-1 bg-border/50" />
             </div>
             {agent?.isPersonaPublic === undefined || !agent?.isPersonaPublic ? (
               <>
@@ -204,10 +203,14 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
               />
             ) : null}
           </div>
-          {agent?.model && (
-            <div className="flex flex-1 flex-col h-fit max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
+          {agent?.models && agent.models.length > 0 && (
+            <div className="flex flex-1 flex-col h-fit md:max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
               <TypographyH6 className="text-primary">Models</TypographyH6>
-              <ModelMiniCard modelId={agent.model} />
+              <div className="flex flex-col gap-2">
+                {agent.models.map((model: { lora: string }, index: number) => (
+                  <ModelMiniCard key={index} modelId={model.lora} />
+                ))}
+              </div>
             </div>
           )}
         </div>
