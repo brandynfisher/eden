@@ -66,12 +66,12 @@ const useAttachmentSrc = () => {
   // Get object URL from file
   const objectUrl = useFileSrc(file)
 
-  // Log the sources for debugging
-  console.log('useAttachmentSrc sources:', {
-    objectUrl,
-    src,
-    fileUrl: file ? (file as File & { fileUrl?: string }).fileUrl : undefined,
-  })
+  // // Log the sources for debugging
+  // console.log('useAttachmentSrc sources:', {
+  //   objectUrl,
+  //   src,
+  //   fileUrl: file ? (file as File & { fileUrl?: string }).fileUrl : undefined,
+  // })
 
   // Return the first available source
   return (
@@ -150,11 +150,11 @@ const MyAttachment: FC = () => {
   // Force a re-render when the attachment status changes
   const [timestamp, setTimestamp] = useState(Date.now())
   const forceUpdate = () => {
-    console.log(
-      `Forcing update for attachment: ${
-        attachment.id
-      } at ${new Date().toISOString()}`,
-    )
+    // console.log(
+    //   `Forcing update for attachment: ${
+    //     attachment.id
+    //   } at ${new Date().toISOString()}`,
+    // )
     setTimestamp(Date.now())
   }
 
@@ -175,11 +175,11 @@ const MyAttachment: FC = () => {
       }>,
     ) => {
       if (event.detail.attachmentId === attachment.id) {
-        console.log(
-          `Received update event for attachment: ${attachment.id}`,
-          event,
-          attachment,
-        )
+        // console.log(
+        //   `Received update event for attachment: ${attachment.id}`,
+        //   event,
+        //   attachment,
+        // )
         // For running status, use the progress value
         if (event.detail.status.type === 'running') {
           setLocalProgress(event.detail.status.progress)
@@ -205,7 +205,7 @@ const MyAttachment: FC = () => {
         handleAttachmentUpdate as EventListener,
       )
     }
-  }, [attachment.id])
+  }, [attachment.id, attachment.file])
 
   const attachments = useComposer(s => s.attachments)
   const attachmentIndex = canRemove
@@ -217,7 +217,7 @@ const MyAttachment: FC = () => {
     ? (attachment.file as File & { fileUrl?: string }).fileUrl || ''
     : attachment.name
 
-  console.log('fileUrl', fileUrl, attachment)
+  // console.log('fileUrl', fileUrl, attachment)
   const mediaType = attachment.file
     ? getSuspectedMediaType(
         (attachment.file as File & { fileUrl?: string }).fileUrl ||
@@ -225,13 +225,13 @@ const MyAttachment: FC = () => {
       )
     : getSuspectedMediaType(attachment.name)
 
-  console.log('mediaType', mediaType)
-  console.log(
-    'imgsrc',
-    attachment.file
-      ? (attachment.file as File & { fileUrl?: string }).fileUrl
-      : null,
-  )
+  // console.log('mediaType', mediaType)
+  // console.log(
+  //   'imgsrc',
+  //   attachment.file
+  //     ? (attachment.file as File & { fileUrl?: string }).fileUrl
+  //     : null,
+  // )
   const mediaSrc = attachment.file
     ? (attachment.file as File & { fileUrl?: string }).fileUrl
     : attachment.name
@@ -250,18 +250,18 @@ const MyAttachment: FC = () => {
   const componentKey = `${attachment.id}-${attachment.status?.type}-${fileUrl}`
 
   // Log component render
-  console.log(
-    `Rendering attachment: ${attachment.id} with status: ${
-      attachment.status?.type
-    } at ${new Date().toISOString()}`,
-  )
+  // console.log(
+  //   `Rendering attachment: ${attachment.id} with status: ${
+  //     attachment.status?.type
+  //   } at ${new Date().toISOString()}`,
+  // )
 
   return (
     <AttachmentPrimitive.Root
       key={componentKey}
       draggable
       onDragStart={e => {
-        console.log('onDragStart', { mediaSrc, src, canRemove, attachment, e })
+        // console.log('onDragStart', { mediaSrc, src, canRemove, attachment, e })
         const url = canRemove
           ? mediaType === 'audio'
             ? mediaSrc
@@ -336,8 +336,8 @@ const MyAttachment: FC = () => {
             }}
           />
         ) : (
-          <div className="w-16 h-16 flex items-center justify-center text-muted-foreground">
-            {attachment.name.split('.').pop()?.toUpperCase() || 'FILE'}
+          <div className="w-16 h-16 text-xs flex items-center justify-center text-muted-foreground">
+            {attachment.name.split('.').pop()?.toUpperCase() || '?'}
           </div>
         )}
       </div>
