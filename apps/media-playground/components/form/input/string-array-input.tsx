@@ -81,7 +81,7 @@ function StringArrayInput({
           ) : null}
         </div>
       ))}
-      {fields.length <= maxLength ? (
+      {fields.length < maxLength ? (
         <Button
           onClick={handleAddClick}
           size="sm"

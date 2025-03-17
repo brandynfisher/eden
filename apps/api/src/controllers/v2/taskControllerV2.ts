@@ -111,6 +111,11 @@ export const createTask = async (
       },
     }
 
+    // if output type is lora, sanitize args.name to be url/filename safe
+    if (toolDocument.output_type === 'lora') {
+      args.name = args.name.replace(/[^a-zA-Z0-9]/g, '_')
+    }
+
     if (args.lora) {
       const lora = await ModelV2.findById(args.lora)
       const isOwner = lora?.user.toString() === userId.toString()
