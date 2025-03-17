@@ -92,6 +92,7 @@ export const TelegramDeploymentForm = ({
               form={form}
               name="token"
               isDeployed={isDeployed ?? false}
+              isSubmitting={form.formState.isSubmitting}
               label="Token"
               description="Your Telegram bot token."
             />
