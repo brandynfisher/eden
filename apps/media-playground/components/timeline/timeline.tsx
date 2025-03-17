@@ -122,9 +122,9 @@ const Timeline = ({ tool }: Props) => {
   return (
     <div className="mb-8">
       {tool.output_type !== 'lora' ? (
-        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-4 my-2 bg-muted-darker">
+        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-2 mt-1 mb-2 ">
           <div className="flex items-center justify-between gap-2">
-            <label className="text-sm" htmlFor={'show-all-tool-results'}>
+            <label className="text-xs" htmlFor={'show-all-tool-results'}>
               Show all tool results
             </label>
             <Switch

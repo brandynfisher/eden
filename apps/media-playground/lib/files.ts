@@ -1,3 +1,4 @@
+import { getCloudfrontOriginalUrl } from './media'
 import { FileType, MimeType } from '@/types/Media'
 import { downloadZip } from '@/utils/downloader.util'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
@@ -67,8 +68,10 @@ export const uploadFileToS3 = async (
         const fileObjURL = URL.createObjectURL(file)
         const fileMetadata = await getUploadedMediaMetadata(file, fileObjURL)
 
+        console.log({ fileMetadata, signedUrl })
+
         return Object.assign(file, {
-          fileUrl: signedUrl.split('?')[0],
+          fileUrl: getCloudfrontOriginalUrl(signedUrl.split('?')[0]),
           preview: fileObjURL,
           ...fileMetadata,
         })

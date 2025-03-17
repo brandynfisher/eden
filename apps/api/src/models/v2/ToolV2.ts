@@ -67,6 +67,6 @@ export const ToolV2Schema = new Schema<ToolV2Document>(
 ToolV2Schema.index({ active: 1 })
 ToolV2Schema.index({ createdAt: -1 })
 ToolV2Schema.index({ output_type: -1, createdAt: -1 })
-ToolV2Schema.index({ key: -1, visible: 1, createdAt: -1 })
+ToolV2Schema.index({ key: -1, active: 1, createdAt: -1 })
 
 export const ToolV2 = model<ToolV2Document>('tools3', ToolV2Schema)
