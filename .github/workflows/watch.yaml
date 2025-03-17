@@ -3,7 +3,7 @@ name: 'Build / Deploy - Eden Watch - PROD'
 on:
   workflow_dispatch:
   push:
-    branches: [staging]
+    branches: [main]
     paths:
       - 'apps/watch/**'
       - '.github/workflows/watch.yaml'
