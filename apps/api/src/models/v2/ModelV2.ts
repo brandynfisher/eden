@@ -18,6 +18,7 @@ export interface ModelV2Schema {
   thumbnail: string | null
   createdAt: Date
   updatedAt: Date
+  lora_trigger_text?: string
 }
 
 export interface ModelV2Input {
@@ -64,6 +65,10 @@ export const modelSchema = new Schema<ModelV2Document>(
     public: {
       type: Boolean,
       default: true,
+    },
+    lora_trigger_text: {
+      type: String,
+      default: '',
     },
   },
   {
