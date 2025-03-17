@@ -104,7 +104,7 @@ const imageRemotePatterns =
     : defaultImageRemotePatterns
 
 /** @type {import('next').NextConfig} */
-let nextConfig = {
+const nextConfig = {
   output: 'standalone',
   experimental: {
     serverActions: {

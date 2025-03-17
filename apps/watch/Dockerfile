@@ -58,4 +58,7 @@ COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/.next/static ./apps/watch/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/public ./apps/watch/public
 
+# Create a package.json in the standalone directory to override module type
+RUN echo '{"type":"commonjs"}' > apps/watch/package.json
+
 CMD node apps/watch/server.js
