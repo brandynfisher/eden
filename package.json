@@ -32,7 +32,7 @@
     "msw": "^0.36.3",
     "prettier": "^2.5.1",
     "tsc-files": "^1.1.4",
-    "turbo": "*",
+    "turbo": "1.13.2",
     "vite": "^4.3.5",
     "vitest": "^0.32.0",
     "vitest-mongodb": "^0.0.4"
@@ -47,6 +47,10 @@
       "eslint --fix --quiet"
     ],
     "apps/media-playground/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix --quiet"
+    ],
+    "apps/watch/**/*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix --quiet"
     ],
