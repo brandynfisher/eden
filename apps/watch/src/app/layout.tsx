@@ -1,17 +1,12 @@
 import './globals.css'
 
 import { AuthProvider } from '@/contexts/auth-context'
+import { QueryProvider } from '@/providers/query-provider'
 import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter } from 'next/font/google'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const inter = Inter({
   subsets: ['latin'],
 })
 
@@ -22,16 +17,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <ClerkProvider>
       <html lang="en" className="dark">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <AuthProvider>{children}</AuthProvider>
+        <body className={`${inter.className} antialiased min-h-screen`}>
+          <AuthProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </AuthProvider>
         </body>
       </html>
     </ClerkProvider>

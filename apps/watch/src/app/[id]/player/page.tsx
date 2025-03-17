@@ -1,18 +1,35 @@
 'use client'
 
-import { collectionData } from '../../collection.data'
 import { Player } from '@/components/player'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { Button } from '@/components/ui/button'
 import { PlayerProvider, usePlayer } from '@/contexts/player-context'
-import { X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useCollectionCreations } from '@/hooks/use-collection-creations'
+import { Loader2, X } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
 
 export default function PlayerPage() {
   const router = useRouter()
+  const { id } = useParams()
+
+  const { creations, isLoading: isCollectionLoading } = useCollectionCreations(
+    id as string,
+  )
+
+  if (isCollectionLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!creations.length) {
+    return null
+  }
 
   return (
-    <PlayerProvider initialItems={collectionData}>
+    <PlayerProvider initialItems={creations}>
       <PlayerContent router={router} />
     </PlayerProvider>
   )
