@@ -23,13 +23,7 @@ RUN apk update
 WORKDIR /app
 
 RUN apk add --update --no-cache \
-    g++ \
-    build-base \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    librsvg-dev
+    build-base
 
 # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
@@ -47,13 +41,8 @@ FROM base AS runner
 WORKDIR /app
 
 RUN apk add --update --no-cache \
-    g++ \
-    build-base \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    librsvg-dev
+    build-base
+
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
