@@ -24,6 +24,8 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@edenlabs/config": "*",
+    "@edenlabs/tsconfig": "*",
     "@eslint/eslintrc": "^3",
     "@types/node": "^20",
     "@types/react": "^18",
