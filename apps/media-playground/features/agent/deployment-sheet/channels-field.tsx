@@ -9,6 +9,7 @@ import { UseFieldArrayReturn, UseFormReturn } from 'react-hook-form'
 
 interface ChannelsFieldProps {
   name: string
+  type: 'channel' | 'topic'
   label: string
   description: string
   allowList:
@@ -41,11 +42,12 @@ export const ChannelsField = ({
   name,
   label,
   description,
+  type,
   allowList,
   form,
 }: ChannelsFieldProps) => {
   return (
-    <div className="space-y-4 mt-8">
+    <div className="space-y-4 mt-4">
       <div className="flex flex-col gap-2">
         <h4 className="text-sm font-medium">{label}</h4>
         <FormDescription>{description}</FormDescription>
@@ -58,7 +60,12 @@ export const ChannelsField = ({
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormControl>
-                  <Input placeholder="Channel ID" {...field} />
+                  <Input
+                    placeholder={`${
+                      type === 'channel' ? 'Channel ID' : 'Topic'
+                    }`}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -76,15 +83,17 @@ export const ChannelsField = ({
               </FormItem>
             )}
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => allowList.remove(index)}
-            className="flex-shrink-0"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
+          {allowList.fields.length > 1 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => allowList.remove(index)}
+              className="flex-shrink-0"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ))}
       <Button

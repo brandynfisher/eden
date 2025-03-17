@@ -1,3 +1,4 @@
+import { getCloudfrontOriginalUrl } from './media'
 import { FileType, MimeType } from '@/types/Media'
 import { downloadZip } from '@/utils/downloader.util'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
@@ -45,8 +46,7 @@ export const uploadFileToS3 = async (
   maxRetries = 3,
   retryDelay = 1000,
 ) => {
-  const { file, onUploadProgress } = options
-  const cancelSource = axios.CancelToken.source()
+  const { file, onUploadProgress, cancelSource } = options
 
   const fileHash = await getFileHash(file)
   const signedUrl = await requestSignedUrl(fileHash, file.type)
@@ -69,7 +69,7 @@ export const uploadFileToS3 = async (
         const fileMetadata = await getUploadedMediaMetadata(file, fileObjURL)
 
         return Object.assign(file, {
-          fileUrl: signedUrl.split('?')[0],
+          fileUrl: getCloudfrontOriginalUrl(signedUrl.split('?')[0]),
           preview: fileObjURL,
           ...fileMetadata,
         })
@@ -78,6 +78,12 @@ export const uploadFileToS3 = async (
       throw new Error(`Upload error - status ${response.status}`)
     } catch (error) {
       lastError = error as Error
+
+      // Check if this is a cancellation error
+      if (axios.isCancel(error)) {
+        // console.log('Upload cancelled by user')
+        throw error // Re-throw cancellation errors
+      }
 
       if (axios.isAxiosError(error) && error.response?.status === 503) {
         if (attempt < maxRetries - 1) {
@@ -208,7 +214,6 @@ export const downloadFile = async (url: string, fileName: string) => {
   }
 
   try {
-    // console.log({ url, fileName })
     const parsedUrl = new URL(url)
     const extension = parsedUrl.pathname.split('.').pop()
     const response = await axios.get(

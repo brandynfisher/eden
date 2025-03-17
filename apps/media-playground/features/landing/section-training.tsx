@@ -148,15 +148,13 @@ export default function SectionTraining() {
         })}
       </div>
       <p className="text-center text-muted-foreground mt-6 px-4">
-        Every artist or brand has their own unique style—that's why
-        personalization is at the core of what we do.
-        <br />
-        Don't just use our models—
+        Personalize your agent by training a custom model on your own aesthetic,
+        character, or brand assets.{' '}
         <Link
           href="/train"
           className="text-purple-500 font-bold hover:text-purple-400"
         >
-          train your own!
+          Train your own.
         </Link>
       </p>
     </div>

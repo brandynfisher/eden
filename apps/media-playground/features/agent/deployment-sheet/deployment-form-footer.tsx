@@ -41,7 +41,7 @@ export const DeploymentFormFooter = ({
         richColors: true,
         dismissible: true,
       })
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete deployment', {
         description: `The ${platform} deployment could not be deleted. Please try again.`,
         richColors: true,

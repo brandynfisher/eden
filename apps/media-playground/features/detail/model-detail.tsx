@@ -70,8 +70,8 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
         className={cn([
           `w-full flex flex-col flex-grow lg:flex-row lg:gap-4 max-h-full lg:ml-0`,
           isModal
-            ? 'lg:h-[calc(100vh_-_34px)] lg:w-[calc(100dvw_-_48px)]'
-            : 'lg:h-[calc(100vh_-_64px)] lg:w-[calc(100dvw_-_16px)]',
+            ? 'lg:h-[calc(100vh_-_34px)] lg:w-[calc(100dvw_-_146px)]'
+            : 'lg:h-[calc(100vh_-_64px)]',
         ])}
       >
         {model ? (

@@ -1,7 +1,7 @@
 'use client'
 
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Form } from '@/components/ui/form'
+import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { ChannelsField } from '@/features/agent/deployment-sheet/channels-field'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
@@ -9,18 +9,20 @@ import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 const schema = z.object({
   token: z.string(),
-  allowedChannels: z.array(
-    z.object({
-      id: z.string(),
-      note: z.string().optional(),
-    }),
-  ),
+  allowedChannels: z
+    .array(
+      z.object({
+        id: z.string().min(1, 'Channel ID is required'),
+        note: z.string().optional(),
+      }),
+    )
+    .min(1, 'At least one channel must be added to deploy your agent'),
 })
 
 type DeploymentFormDto = z.infer<typeof schema>
@@ -40,7 +42,16 @@ export const DiscordDeploymentForm = ({
     resolver: zodResolver(schema),
     defaultValues: {
       token: '',
-      allowedChannels: deployment?.config?.discord?.channel_allowlist ?? [],
+      allowedChannels:
+        deployment?.config?.discord?.channel_allowlist?.map(channel => ({
+          id: channel.id || '',
+          note: channel.note || '',
+        })) && deployment?.config?.discord?.channel_allowlist?.length > 0
+          ? deployment?.config?.discord?.channel_allowlist?.map(channel => ({
+              id: channel.id || '',
+              note: channel.note || '',
+            }))
+          : [{ id: '', note: '' }],
     },
   })
 
@@ -52,6 +63,12 @@ export const DiscordDeploymentForm = ({
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
+
+  useEffect(() => {
+    if (form.formState.submitCount > 0) {
+      form.trigger('allowedChannels')
+    }
+  }, [form.formState.submitCount, form.trigger])
 
   return (
     <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
@@ -75,16 +92,28 @@ export const DiscordDeploymentForm = ({
               form={form}
               name="token"
               isDeployed={isDeployed ?? false}
+              isSubmitting={form.formState.isSubmitting}
               label="Token"
               description="Your Discord bot token."
             />
-            <ChannelsField
-              form={form}
+            <FormField
+              control={form.control}
               name="allowedChannels"
-              allowList={allowedChannels}
-              label="Allowed Channels"
-              description="The channels your agent will be deployed to. If you want to deploy to
-          all channels, leave the list empty."
+              render={({ fieldState }) => (
+                <FormItem>
+                  <ChannelsField
+                    form={form}
+                    name="allowedChannels"
+                    type="channel"
+                    allowList={allowedChannels}
+                    label="Allowed Channels"
+                    description="The channels your agent will be deployed to. At least one channel is required."
+                  />
+                  {fieldState.error && fieldState.error.message && (
+                    <FormMessage>{fieldState.error.message}</FormMessage>
+                  )}
+                </FormItem>
+              )}
             />
             <DeploymentFormFooter
               agentId={agentId}

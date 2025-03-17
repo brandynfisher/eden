@@ -1,9 +1,9 @@
 exports = async function () {
-  const mongodb = context.services.get("Cluster1")  // or your actual cluster name
+  const mongodb = context.services.get("Cluster1")
   if (!mongodb) throw new Error("Could not access MongoDB cluster")
 
-  const db = mongodb.db("eden-stg")
-  if (!db) throw new Error("Could not access database eden-stg")
+  const db = mongodb.db("eden-prod")
+  if (!db) throw new Error("Could not access database eden-prod")
 
   const agentCollection = db.collection("users3")
   const threadCollection = db.collection("threads3")
@@ -11,33 +11,37 @@ exports = async function () {
   const agentStats = await threadCollection.aggregate([
     {
       $match: {
-        // This helps MongoDB use an index for the initial scan
         updatedAt: { $exists: true }
       }
     },
     {
       $facet: {
         allTime: [
-          // First calculate thread counts per agent
+          // Unwind messages immediately to avoid storing them
+          { $unwind: "$messages" },
           {
             $group: {
               _id: "$agent",
-              threadCount: { $sum: 1 },
-              messages: { $push: "$messages" },
-              users: { $addToSet: "$user" }
-            }
-          },
-          // Then unwind the messages array for message counting
-          { $unwind: "$messages" },
-          { $unwind: "$messages" },
-          {
-            $group: {
-              _id: {
-                agent: "$_id",
-                role: "$messages.role"
+              threadCount: { $addToSet: "$_id" },
+              users: { $addToSet: "$user" },
+              userMessages: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$messages.role", "user"] },
+                    1,
+                    0
+                  ]
+                }
               },
-              threadCount: { $first: "$threadCount" },
-              messageCount: { $sum: 1 },
+              assistantMessages: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$messages.role", "assistant"] },
+                    1,
+                    0
+                  ]
+                }
+              },
               toolCallCount: {
                 $sum: {
                   $cond: [
@@ -51,59 +55,19 @@ exports = async function () {
                     0
                   ]
                 }
-              },
-              uniqueUsers: { $first: "$users" }
-            }
-          },
-          {
-            $group: {
-              _id: "$_id.agent",
-              threadCount: { $first: "$threadCount" },
-              messageCounts: {
-                $push: {
-                  role: "$_id.role",
-                  count: "$messageCount"
-                }
-              },
-              toolCallCount: { $sum: "$toolCallCount" },
-              uniqueUsers: { $first: "$uniqueUsers" },
+              }
             }
           },
           {
             $project: {
-              _id: 1,
-              threadCount: 1,
-              userMessageCount: {
-                $reduce: {
-                  input: {
-                    $filter: {
-                      input: "$messageCounts",
-                      as: "msg",
-                      cond: { $eq: ["$$msg.role", "user"] }
-                    }
-                  },
-                  initialValue: 0,
-                  in: { $add: ["$$value", "$$this.count"] }
-                }
-              },
-              assistantMessageCount: {
-                $reduce: {
-                  input: {
-                    $filter: {
-                      input: "$messageCounts",
-                      as: "msg",
-                      cond: { $eq: ["$$msg.role", "assistant"] }
-                    }
-                  },
-                  initialValue: 0,
-                  in: { $add: ["$$value", "$$this.count"] }
-                }
-              },
+              threadCount: { $size: "$threadCount" },
+              userMessageCount: "$userMessages",
+              assistantMessageCount: "$assistantMessages",
               toolCallCount: 1,
               userCount: {
                 $size: {
                   $filter: {
-                    input: "$uniqueUsers",
+                    input: "$users",
                     as: "user",
                     cond: { $ne: ["$$user", null] }
                   }
@@ -118,26 +82,31 @@ exports = async function () {
               updatedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
             }
           },
-          // First calculate thread counts per agent
+          // Unwind messages immediately to avoid storing them
+          { $unwind: "$messages" },
           {
             $group: {
               _id: "$agent",
-              threadCount: { $sum: 1 },
-              messages: { $push: "$messages" },
-              users: { $addToSet: "$user" }
-            }
-          },
-          // Then unwind the messages array for message counting
-          { $unwind: "$messages" },
-          { $unwind: "$messages" },
-          {
-            $group: {
-              _id: {
-                agent: "$_id",
-                role: "$messages.role"
+              threadCount: { $addToSet: "$_id" },
+              users: { $addToSet: "$user" },
+              userMessages: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$messages.role", "user"] },
+                    1,
+                    0
+                  ]
+                }
               },
-              threadCount: { $first: "$threadCount" },
-              messageCount: { $sum: 1 },
+              assistantMessages: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$messages.role", "assistant"] },
+                    1,
+                    0
+                  ]
+                }
+              },
               toolCallCount: {
                 $sum: {
                   $cond: [
@@ -151,59 +120,19 @@ exports = async function () {
                     0
                   ]
                 }
-              },
-              uniqueUsers: { $first: "$users" }
-            }
-          },
-          {
-            $group: {
-              _id: "$_id.agent",
-              threadCount: { $first: "$threadCount" },
-              messageCounts: {
-                $push: {
-                  role: "$_id.role",
-                  count: "$messageCount"
-                }
-              },
-              toolCallCount: { $sum: "$toolCallCount" },
-              uniqueUsers: { $first: "$uniqueUsers" }
+              }
             }
           },
           {
             $project: {
-              _id: 1,
-              threadCount: 1,
-              userMessageCount: {
-                $reduce: {
-                  input: {
-                    $filter: {
-                      input: "$messageCounts",
-                      as: "msg",
-                      cond: { $eq: ["$$msg.role", "user"] }
-                    }
-                  },
-                  initialValue: 0,
-                  in: { $add: ["$$value", "$$this.count"] }
-                }
-              },
-              assistantMessageCount: {
-                $reduce: {
-                  input: {
-                    $filter: {
-                      input: "$messageCounts",
-                      as: "msg",
-                      cond: { $eq: ["$$msg.role", "assistant"] }
-                    }
-                  },
-                  initialValue: 0,
-                  in: { $add: ["$$value", "$$this.count"] }
-                }
-              },
+              threadCount: { $size: "$threadCount" },
+              userMessageCount: "$userMessages",
+              assistantMessageCount: "$assistantMessages",
               toolCallCount: 1,
               userCount: {
                 $size: {
                   $filter: {
-                    input: "$uniqueUsers",
+                    input: "$users",
                     as: "user",
                     cond: { $ne: ["$$user", null] }
                   }
@@ -214,7 +143,6 @@ exports = async function () {
         ]
       }
     },
-    // Combine the results
     {
       $project: {
         combined: {
@@ -228,7 +156,6 @@ exports = async function () {
               assistantMessageCount: "$$allTimeStats.assistantMessageCount",
               toolCallCount: "$$allTimeStats.toolCallCount",
               userCount: "$$allTimeStats.userCount",
-              // Add 7-day stats
               threadCount_7d: {
                 $ifNull: [
                   {
@@ -355,10 +282,10 @@ exports = async function () {
       }
     },
     { $unwind: "$combined" },
-    { $replaceRoot: { newRoot: "$combined" } },
+    { $replaceRoot: { newRoot: "$combined" } }
   ]).toArray()
 
-  // Update each agent with their statistics
+  // Rest of the function remains the same
   for (const stat of agentStats) {
     if (!stat._id) continue
 
@@ -382,7 +309,6 @@ exports = async function () {
     )
   }
 
-  // Initialize stats for agents that don't have any activity
   await agentCollection.updateMany(
     { stats: { $exists: false } },
     {
