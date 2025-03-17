@@ -68,8 +68,6 @@ export const uploadFileToS3 = async (
         const fileObjURL = URL.createObjectURL(file)
         const fileMetadata = await getUploadedMediaMetadata(file, fileObjURL)
 
-        console.log({ fileMetadata, signedUrl })
-
         return Object.assign(file, {
           fileUrl: getCloudfrontOriginalUrl(signedUrl.split('?')[0]),
           preview: fileObjURL,
@@ -83,7 +81,7 @@ export const uploadFileToS3 = async (
 
       // Check if this is a cancellation error
       if (axios.isCancel(error)) {
-        console.log('Upload cancelled by user')
+        // console.log('Upload cancelled by user')
         throw error // Re-throw cancellation errors
       }
 
@@ -216,7 +214,6 @@ export const downloadFile = async (url: string, fileName: string) => {
   }
 
   try {
-    // console.log({ url, fileName })
     const parsedUrl = new URL(url)
     const extension = parsedUrl.pathname.split('.').pop()
     const response = await axios.get(

@@ -39,6 +39,7 @@ const MyAssistantActionBar: FC = () => {
   const createdAt = useMessage(m => m.createdAt)
   return (
     <AssistantActionBar.Root
+      hideWhenRunning
       autohide="not-last"
       autohideFloat="single-branch"
       className="flex items-center gap-2 w-full z-10"
