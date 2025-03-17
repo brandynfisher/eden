@@ -103,29 +103,24 @@ const imageRemotePatterns =
     ? [...defaultImageRemotePatterns, ...devImageRemotePatterns]
     : defaultImageRemotePatterns
 
-
 /** @type {import('next').NextConfig} */
 let nextConfig = {
   output: 'standalone',
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+    serverComponentsExternalPackages: [],
+  },
   reactStrictMode: false,
   images: {
-    // loader: 'custom',
-    // loaderFile: './image-loader.ts',
     minimumCacheTTL: 2433600,
     deviceSizes: [360, 640, 768, 1024, 1280, 1536, 1920, 2560],
     remotePatterns: imageRemotePatterns,
-  },
-  experimental: {
-    staleTimes: {
-      dynamic: 0,
-      static: 180,
-    },
   },
   sassOptions: {
     silenceDeprecations: ['legacy-js-api'],
   }
 }
 
-module.exports = {
-  ...nextConfig,
-}
+module.exports = nextConfig

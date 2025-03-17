@@ -58,5 +58,4 @@ COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/.next/static ./apps/watch/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/public ./apps/watch/public
 
-
 CMD node apps/watch/server.js
