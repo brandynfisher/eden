@@ -198,7 +198,7 @@ export const useEdenRuntime = ({
                 `/chat/${agentId}/${newThreadId}`,
               )
             setTimeout(async () => {
-              console.log('invalidated threadlist')
+              // console.log('invalidated threadlist')
               await invalidate()
             }, 2000)
           },
