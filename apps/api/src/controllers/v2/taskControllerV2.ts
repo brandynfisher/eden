@@ -87,10 +87,7 @@ export const createTask = async (
       })
     }
 
-    const rateLimitCheckResult = await taskRateLimitCheck(
-      request,
-      toolDocument.output_type,
-    )
+    const rateLimitCheckResult = await taskRateLimitCheck(request, toolDocument)
     if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
       if (server.Sentry) {
         server.Sentry.captureMessage(
