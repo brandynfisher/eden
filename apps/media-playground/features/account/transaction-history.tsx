@@ -38,10 +38,9 @@ export function TransactionHistory() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Date</TableHead>
-            <TableHead className="w-[120px]">Type</TableHead>
-            <TableHead className="w-[80px]">Amount</TableHead>
-            {/* <TableHead className="w-[80px]">Code</TableHead> */}
+            <TableHead>Date</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -49,22 +48,19 @@ export function TransactionHistory() {
             Array.from({ length: 3 }).map((_, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <Skeleton className="h-4 w-[80px]" />
+                  <Skeleton className="h-4 w-[90px]" />
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-[60px]" />
                 </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-[40px]" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-[40px]" />
+                <TableCell className="text-right">
+                  <Skeleton className="ml-auto h-4 w-[30px]" />
                 </TableCell>
               </TableRow>
             ))
           ) : transactions.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-center">
+              <TableCell colSpan={3} className="text-center">
                 No transactions found
               </TableCell>
             </TableRow>
@@ -84,14 +80,14 @@ export function TransactionHistory() {
                   >
                     {transaction.type?.replace(/_/g, ' ')}
                   </TableCell>
-                  <TableCell className="whitespace-nowrap font-mono">
+                  <TableCell className="whitespace-nowrap font-mono text-right">
                     {transaction.amount}
                   </TableCell>
                 </TableRow>
               ))}
               {hasMore && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">
+                  <TableCell colSpan={3} className="text-center">
                     <Button
                       variant="ghost"
                       onClick={() => fetchNextPage()}
