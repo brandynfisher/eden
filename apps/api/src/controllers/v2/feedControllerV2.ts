@@ -902,7 +902,7 @@ export const getCreationsFeedCursorV2 = async (
     })
 
     reply.send(feed)
-  } catch (error) {
+  } catch {
     reply.code(500).send({ error: 'Internal Server Error' })
   }
 }
@@ -1008,7 +1008,7 @@ export const getModelsFeedCursorV2 = async (
     })
 
     reply.send(feed)
-  } catch (error) {
+  } catch {
     reply.code(500).send({ error: 'Internal Server Error' })
   }
 }
@@ -1115,7 +1115,7 @@ export const getCollectionsFeedCursorV2 = async (
     })
 
     reply.send(feed)
-  } catch (error) {
+  } catch {
     reply.code(500).send({ error: 'Internal Server Error' })
   }
 }
@@ -1158,7 +1158,7 @@ export const getAgentsFeedCursor = async (
       owner: 1,
       name: 1,
       description: 1,
-      model: 1,
+      models: 1,
       username: 1,
       userImage: 1,
       createdAt: 1,
@@ -1240,7 +1240,7 @@ export const getAgentsFeedCursor = async (
     })
 
     reply.send(feed)
-  } catch (error) {
+  } catch {
     reply.code(500).send({ error: 'Internal Server Error' })
   }
 }
@@ -1347,7 +1347,7 @@ export const getCreatorsFeedCursor = async (
     // })
 
     reply.send(feed)
-  } catch (error) {
+  } catch {
     reply.code(500).send({ error: 'Internal Server Error' })
   }
 }

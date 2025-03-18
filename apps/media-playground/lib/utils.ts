@@ -13,3 +13,22 @@ export function toBigInt(longObj: Long): bigint {
   const lowPart = BigInt(longObj.low)
   return highPart + lowPart
 }
+
+export function formatDate(date: string) {
+  return new Date(date).toLocaleString()
+}
+
+export function formatTransactionDate(date: string | Date) {
+  return new Date(date)
+    .toLocaleString(undefined, {
+      year: '2-digit',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    })
+    .replace(/,?\s+/g, ' ')
+    .trim() // remove commas and normalize spaces
+}

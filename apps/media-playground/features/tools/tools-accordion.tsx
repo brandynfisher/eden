@@ -64,7 +64,7 @@ const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
             {output_type.map(type => (
               <ToolsAccordionItem
                 key={type}
-                label={type}
+                label={type === 'lora' ? 'Model' : type}
                 value={type}
                 tools={eden2Tools?.filter(tool => tool.output_type === type)}
               />

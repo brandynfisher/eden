@@ -171,6 +171,8 @@ const TimelineItem = ({ item, queryKey }: Props) => {
                           />
                           {item.status === 'pending'
                             ? 'Waiting to start...'
+                            : item.output_type === 'lora'
+                            ? `Training ${item.output_type}... `
                             : `Generating ${item.output_type}... `}
                         </div>
                         {item.output_type === 'lora' &&

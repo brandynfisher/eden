@@ -25,10 +25,10 @@ import {
   BotIcon,
   ComponentIcon,
   CreditCardIcon,
+  ImageIcon,
   LogOutIcon,
   SettingsIcon,
   TicketIcon,
-  UserIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -152,8 +152,8 @@ const AccountDropdown = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/creators/${user?.username}`}>
-            <UserIcon className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+            <ImageIcon className="mr-2 h-4 w-4" />
+            <span>Creations</span>
           </Link>
           {/*<DropdownMenuShortcut>⌘B</DropdownMenuShortcut>*/}
         </DropdownMenuItem>

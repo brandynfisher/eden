@@ -33,23 +33,26 @@ const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
     <div className="relative flex px-1 items-center bg-muted-darker z-20 md:sticky md:top-16 drop-shadow-lg">
       <NavigationMenu>
         {title ? (
-          <Link href={`/${baseSegment}`} className="p-4 px-2 mr-2">
-            <TypographyH6 className="text-accent-foreground">
+          <Link
+            href={`/${baseSegment}`}
+            className="py-2 sm:py-3 px-2 mr-1 sm:mr-2"
+          >
+            <TypographyH6 className="text-accent-foreground text-sm">
               {title}
             </TypographyH6>
           </Link>
         ) : undefined}
-        <NavigationMenuList className="space-x-2">
+        <NavigationMenuList className="space-x-1 sm:space-x-2">
           {items.map(item => (
             <NavigationMenuItem key={item.title}>
-              <NavigationMenuTrigger className="relative !z-0">
+              <NavigationMenuTrigger className="relative !z-0 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3">
                 {item.title}
               </NavigationMenuTrigger>
               <NavigationMenuContent
                 className={'max-h-[calc(100dvh_-_126px)] overflow-y-auto'}
               >
                 <Suspense fallback={<LoadingIndicator />}>
-                  <ul className="grid gap-3 p-4 w-[350px] md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                  <ul className="grid gap-2 sm:gap-3 p-3 sm:p-4 w-[350px] md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                     {item.links.map(link => (
                       <ListItem
                         key={`/${link.segments.join('/')}`}
@@ -95,13 +98,15 @@ const ListItem = React.forwardRef<
           href={href || ''}
           ref={ref}
           className={cn(
-            'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+            'block select-none space-y-1 rounded-md p-2 sm:p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
             className,
           )}
           {...props}
         >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-1 md:line-clamp-2 text-sm leading-snug text-muted-foreground">
+          <div className="text-xs sm:text-sm font-medium leading-none">
+            {title}
+          </div>
+          <p className="line-clamp-1 md:line-clamp-2 text-xs sm:text-sm leading-snug text-muted-foreground">
             {children}
           </p>
         </Link>

@@ -6,7 +6,7 @@ const CreatePage = () => {
     <div className="flex flex-col gap-4 pt-4">
       {/* <FeaturedAgents /> */}
       <ToolsAccordion
-        output_type={['image', 'video', 'audio']}
+        output_type={['image', 'video', 'lora', 'audio']}
         showFeatured={true}
       />
     </div>

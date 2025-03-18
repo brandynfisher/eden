@@ -26,6 +26,7 @@ type Props = {
   currentValue: string
   base_model?: BaseModelName | BaseModelName[]
   onChange: (id: string) => void
+  selectedIds?: string[]
 } & PropsWithChildren
 
 const ModelSelectorModal = ({
@@ -35,6 +36,7 @@ const ModelSelectorModal = ({
   trigger,
   base_model,
   onChange,
+  selectedIds = [],
 }: Props) => {
   const { user } = useAuthState()
 
@@ -64,9 +66,11 @@ const ModelSelectorModal = ({
         <DialogHeader className="mt-4">
           <div className="flex gap-4 items-center">
             <DialogTitle className="py-2">{title}</DialogTitle>
-            <Badge variant="secondary">
-              {Array.isArray(base_model) ? base_model.join(', ') : base_model}
-            </Badge>
+            {base_model && (
+              <Badge variant="secondary">
+                {Array.isArray(base_model) ? base_model.join(', ') : base_model}
+              </Badge>
+            )}
           </div>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
@@ -101,6 +105,7 @@ const ModelSelectorModal = ({
               isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
               scrollRef={scrollRef}
+              selectedIds={selectedIds}
             />
           ) : (
             <ModelsFeed
@@ -111,6 +116,7 @@ const ModelSelectorModal = ({
               isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
               scrollRef={scrollRef}
+              selectedIds={selectedIds}
             />
           )}
         </div>

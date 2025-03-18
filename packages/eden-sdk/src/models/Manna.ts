@@ -1,4 +1,5 @@
 import { WebAPICallOptions, WebAPICallResult } from '../types'
+import { Creator } from './Creators'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -43,4 +44,13 @@ export type MannaVoucherRedeemResponse = WebAPICallResult & {
   action?: string
   manna: number
   transactionId: string
+}
+
+export type Manna = {
+  _id: string
+  user: Creator
+  balance: number
+  subscriptionBalance: number
+  createdAt: Date
+  updatedAt: Date
 }
