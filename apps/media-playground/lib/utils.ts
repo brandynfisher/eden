@@ -18,7 +18,7 @@ export function formatDate(date: string) {
   return new Date(date).toLocaleString()
 }
 
-export function formatTransactionDate(date: Date) {
+export function formatTransactionDate(date: string | Date) {
   return new Date(date)
     .toLocaleString(undefined, {
       year: '2-digit',

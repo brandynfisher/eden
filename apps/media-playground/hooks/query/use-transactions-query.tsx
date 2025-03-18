@@ -1,8 +1,16 @@
 'use client'
 
 import { fetcher } from '@/lib/fetcher'
-import { Transaction } from '@edenlabs/eden-sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+
+export type Transaction = {
+  _id: string
+  amount: number
+  type: string
+  createdAt: string
+  code?: string
+}
 
 interface TransactionsResponse {
   docs: Transaction[]
@@ -16,46 +24,63 @@ interface TransactionsResponse {
 
 export const useTransactionsQuery = (props?: { limit?: number }) => {
   const { limit = 10 } = props || {}
-  const queryKey = ['transactions']
+  const [page, setPage] = useState(1)
+  const queryKey = ['transactions', page, limit]
 
-  const {
-    data,
-    error,
-    isError,
-    isPending,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
+  const { data, error, isError, isLoading, isFetching } = useQuery({
     queryKey,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage: TransactionsResponse) => {
-      return lastPage.hasNextPage ? lastPage.nextPage : undefined
-    },
-    queryFn: async ({ pageParam = 1 }) => {
+    queryFn: async () => {
       return fetcher<TransactionsResponse>(
-        `/api/transactions?page=${pageParam}&limit=${limit}`,
+        `/api/transactions?page=${page}&limit=${limit}`,
       )
     },
   })
 
-  const transactions = data?.pages.flatMap(page => page.docs) ?? []
-  const lastPage = data?.pages[data.pages.length - 1]
+  const transactions = data?.docs ?? []
+  const currentPage = data?.page ?? 1
+  const totalPages = data?.pages ?? 0
+  const totalTransactions = data?.total ?? 0
+  const hasMore = data?.hasNextPage ?? false
+  const hasPrevious = page > 1
+
+  const goToNextPage = () => {
+    if (hasMore) {
+      setPage(prev => prev + 1)
+    }
+  }
+
+  const goToPreviousPage = () => {
+    if (hasPrevious) {
+      setPage(prev => prev - 1)
+    }
+  }
+
+  const goToFirstPage = () => {
+    if (page !== 1) {
+      setPage(1)
+    }
+  }
+
+  const goToLastPage = () => {
+    if (totalPages > 0 && page !== totalPages) {
+      setPage(totalPages)
+    }
+  }
 
   return {
     transactions,
-    hasMore: hasNextPage,
-    totalPages: lastPage?.pages,
-    currentPage: lastPage?.page,
-    totalTransactions: lastPage?.total,
-    fetchNextPage,
-    isFetchingNextPage,
-    error,
-    isError,
-    isPending,
+    hasMore,
+    hasPrevious,
+    goToFirstPage,
+    goToLastPage,
+    goToNextPage,
+    goToPreviousPage,
+    isFetching,
     isLoading,
-    status,
+    isError,
+    error,
+    currentPage,
+    totalPages,
+    totalTransactions,
   }
 }
