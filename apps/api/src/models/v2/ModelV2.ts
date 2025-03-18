@@ -19,6 +19,7 @@ export interface ModelV2Schema {
   createdAt: Date
   updatedAt: Date
   lora_trigger_text?: string
+  thumbnail_prompts?: string[]
 }
 
 export interface ModelV2Input {
@@ -29,6 +30,8 @@ export interface ModelV2Input {
   public?: boolean
   slug: string
   thumbnail: string | null
+  lora_trigger_text?: string
+  thumbnail_prompts?: string[]
 }
 
 export interface ModelV2Document extends SoftDeleteDocument, ModelV2Schema {}

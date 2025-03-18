@@ -1,6 +1,7 @@
 'use client'
 
 import { fetcher } from '@/lib/fetcher'
+import { Creator } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -10,6 +11,12 @@ export type Transaction = {
   type: string
   createdAt: string
   code?: string
+  task?: {
+    _id: string
+    tool: string
+    user: Creator
+    agent: Creator
+  }
 }
 
 interface TransactionsResponse {

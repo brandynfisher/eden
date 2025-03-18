@@ -266,8 +266,7 @@ const handleArguments = async ({
           item =>
             (item.name === 'user' && item.value === authUserId?.toString()) ||
             (item.name === 'owner' && item.value === authUserId?.toString()) ||
-            (item.name === 'requester' &&
-              item.value === authUserId?.toString()),
+            (item.name === 'agent' && item.value === authUserId?.toString()),
         )
         .map(item => item.value)
     : undefined
@@ -362,7 +361,7 @@ const handleArguments = async ({
             field === 'character' ||
             field === 'concept' ||
             field === 'collection' ||
-            field === 'requester'
+            field === 'agent'
           ) {
             // console.log(field, value)
             if (field === 'collection') {
@@ -665,13 +664,13 @@ const userLookup: PipelineStage[] = [
   { $unwind: '$user' },
 ]
 
-const requesterLookup: PipelineStage[] = [
+const agentLookup: PipelineStage[] = [
   {
     $lookup: {
       from: 'users3',
-      localField: 'requester',
+      localField: 'agent',
       foreignField: '_id',
-      as: 'requester',
+      as: 'agent',
       pipeline: [
         {
           $project: {
@@ -782,7 +781,7 @@ export const getCreationsFeedCursorV2 = async (
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
-  const lateLookupStages = [...userLookup, ...requesterLookup]
+  const lateLookupStages = [...userLookup, ...agentLookup]
 
   // console.log(
   //   JSON.stringify(

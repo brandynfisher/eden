@@ -46,5 +46,17 @@ export const listTransactions = async (
     { page, limit, sort: { createdAt: -1 } },
   )
 
+  await transactionRepository.model.populate(paginatedResponse.docs, {
+    path: 'task',
+    model: 'tasks3',
+    select: '_id tool user agent',
+  })
+
+  await transactionRepository.model.populate(paginatedResponse.docs, {
+    path: 'task.agent',
+    model: 'agent',
+    select: '_id username',
+  })
+
   return reply.status(200).send(paginatedResponse)
 }
