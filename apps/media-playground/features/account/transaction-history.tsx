@@ -50,7 +50,7 @@ export function TransactionHistory() {
   }
 
   // Define consistent padding for cells and headers
-  const cellPadding = 'px-4 py-2'
+  const cellPadding = 'px-3 py-2'
 
   return (
     <div className="rounded-md border">
@@ -62,7 +62,7 @@ export function TransactionHistory() {
               <TableHead className={cn('w-[150px]', cellPadding)}>
                 Date
               </TableHead>
-              <TableHead className={cn('w-[150px]', cellPadding)}>
+              <TableHead className={cn('w-[146px]', cellPadding)}>
                 Type
               </TableHead>
               <TableHead className={cn('text-right', cellPadding)}>
@@ -96,7 +96,7 @@ export function TransactionHistory() {
                     <Skeleton className="h-4 w-[120px]" />
                   </TableCell>
                   <TableCell
-                    className={cn('w-[150px] whitespace-nowrap', cellPadding)}
+                    className={cn('w-[146px] whitespace-nowrap', cellPadding)}
                   >
                     <Skeleton className="h-4 w-[80px]" />
                   </TableCell>
@@ -137,7 +137,7 @@ export function TransactionHistory() {
                     </TableCell>
                     <TableCell
                       className={cn(
-                        'w-[150px] capitalize whitespace-nowrap',
+                        'w-[146px] capitalize whitespace-nowrap',
                         cellPadding,
                         transaction.amount < 0 && 'text-red-500',
                         transaction.amount > 0 && 'text-green-500',
@@ -168,7 +168,7 @@ export function TransactionHistory() {
                         <TableCell className={cn('w-[150px]', cellPadding)}>
                           &nbsp;
                         </TableCell>
-                        <TableCell className={cn('w-[150px]', cellPadding)}>
+                        <TableCell className={cn('w-[146px]', cellPadding)}>
                           &nbsp;
                         </TableCell>
                         <TableCell className={cellPadding}>&nbsp;</TableCell>
@@ -184,7 +184,7 @@ export function TransactionHistory() {
       {/* Fixed footer */}
       <div className="flex items-center justify-between px-4 py-2 border-t bg-muted/30 text-xs">
         {totalTransactions > 0 ? (
-          <div className="text-muted-foreground min-w-[140px]">
+          <div className="text-muted-foreground min-w-[120px]">
             {totalTransactions} transactions
           </div>
         ) : null}
