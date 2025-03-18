@@ -1,4 +1,5 @@
 import { TaskV2 } from '../models/v2/TaskV2'
+import { ToolV2Document } from '../models/v2/ToolV2'
 import {
   FeatureFlag,
   SubscriptionTier,
@@ -163,12 +164,25 @@ const getUserLimitTier = (
   return subscriptionTier || SubscriptionTier.Free
 }
 
+const taskRateLimitExceptionCheck = async (tool: ToolV2Document) => {
+  if (tool.key === 'temple_abyss') {
+    return true
+  }
+  return false
+}
+
 export const taskRateLimitCheck = async (
   request: FastifyRequest,
-  output_type: ToolOutputTypeV2,
+  tool: ToolV2Document,
 ): Promise<TaskRateLimitCheckResult> => {
   const { userId, subscriptionTier } = request.user
+  const { output_type } = tool
   const type = output_type === 'image' ? 'image' : 'video'
+
+  const hasException = await taskRateLimitExceptionCheck(tool)
+  if (hasException) {
+    return { status: 'ok' }
+  }
 
   const userLimitTier = getUserLimitTier(
     subscriptionTier,
