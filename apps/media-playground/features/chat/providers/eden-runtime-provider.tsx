@@ -37,7 +37,7 @@ export function EdenRuntimeProvider({
   const [isLoadingThread, setIsLoadingThread] = useState(false)
   const [isClientMounted, setIsClientMounted] = useState(false)
 
-  const threadIdRef = useRef<string | undefined>(threadId)
+  const threadIdRef = useRef<string | undefined>(undefined)
   const messageEmitterRef = useRef<MessageEmitter | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
