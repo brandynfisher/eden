@@ -1,6 +1,7 @@
 'use client'
 
 import ToggleButton from '@/components/button/toggle-button'
+import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
@@ -42,6 +43,7 @@ const ModelSelectorModal = ({
 
   const [open, setOpen] = useState(false)
   const [currentTab, setCurrentTab] = useState<'user' | 'public'>('user')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleOnChange = (model: ModelV2) => {
     onChange(model._id)
@@ -75,30 +77,31 @@ const ModelSelectorModal = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div>
-          <div className="flex flex-col items-center sm:block">
+          <div className="flex flex-col items-center sm:flex-row gap-2 mb-4">
             <ToggleGroup
               type="single"
               value={currentTab}
-              className="border border-muted rounded-lg p-1 mb-4 flex items-center max-w-fit bg-popover"
+              className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
             >
               <ToggleButton
-                className="w-32"
+                className="w-full sm:w-32 h-8"
                 value={'user'}
                 label={'My Models'}
                 onClick={() => setCurrentTab('user')}
               />
               <ToggleButton
-                className="w-32"
+                className="w-full sm:w-32 h-8"
                 value={'public'}
                 label={'Public Models'}
                 onClick={() => setCurrentTab('public')}
               />
             </ToggleGroup>
+            <FeedSearchForm handleSearch={setSearchQuery} />
           </div>
 
           {currentTab === 'user' ? (
             <ModelsFeed
-              query={{ base_model, user: user?._id }}
+              query={{ base_model, user: user?._id, search: searchQuery }}
               minCols={2}
               maxCols={5}
               onClick={handleOnChange}
@@ -109,7 +112,7 @@ const ModelSelectorModal = ({
             />
           ) : (
             <ModelsFeed
-              query={{ base_model }}
+              query={{ base_model, search: searchQuery }}
               minCols={2}
               maxCols={5}
               onClick={handleOnChange}

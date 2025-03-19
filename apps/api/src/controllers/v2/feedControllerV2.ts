@@ -934,6 +934,8 @@ export const getModelsFeedCursorV2 = async (
     query: query as CursorPaginatedFeedQuery,
   })
 
+  const { search } = customFilterOptions
+
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
@@ -971,15 +973,52 @@ export const getModelsFeedCursorV2 = async (
   //   },
   // }
 
-  // let embeddingsTransform: PipelineStage[] = []
-  const feedPipeline = [
-    // @ts-ignore
-    // { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
-    { $match: filters },
-    //   ...embeddingsTransform,
-    ...pipeline,
-    ...lateLookupStages,
-  ].filter(Boolean)
+  const feedPipeline: PipelineStage[] = []
+
+  if (search) {
+    feedPipeline.push({
+      $search: {
+        index: 'name',
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: search,
+                path: 'name',
+              },
+            },
+            {
+              text: {
+                query: search,
+                path: 'name',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+            {
+              autocomplete: {
+                query: search,
+                path: 'name',
+              },
+            },
+            {
+              text: {
+                query: search,
+                path: 'name',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+        },
+      },
+    })
+  }
+
+  feedPipeline.push({ $match: filters }, ...pipeline, ...lateLookupStages)
 
   // console.log(JSON.stringify(feedPipeline, null, 2))
 
