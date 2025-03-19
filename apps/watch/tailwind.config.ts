@@ -134,7 +134,6 @@ const config = {
   ],
   plugins: [
     require('tailwindcss-animate'),
-    require('@assistant-ui/react-ui/tailwindcss'),
     plugin(({ matchUtilities, theme }) => {
       matchUtilities(
         {
