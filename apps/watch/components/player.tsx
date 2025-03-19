@@ -36,7 +36,7 @@ export function Player() {
   const progressInterval = useRef<ReturnType<typeof setTimeout>>()
 
   const currentItem = items[currentIndex]
-  const isVideo = currentItem?.mediaAttributes.mimeType.startsWith('video')
+  const isVideo = currentItem?.mediaAttributes?.mimeType?.startsWith('video')
 
   const toggleFullscreen = async () => {
     if (!containerRef.current) return
@@ -89,7 +89,7 @@ export function Player() {
       const video = videoRef.current
       if (!video) return
 
-      const videoDuration = currentItem.mediaAttributes.duration || 0
+      const videoDuration = currentItem.mediaAttributes?.duration || 0
       const targetDuration = applyDurationToVideos
         ? mediaDuration
         : videoDuration
@@ -213,7 +213,7 @@ export function Player() {
       ) : (
         <img
           src={currentItem.url}
-          alt={currentItem.name}
+          alt={currentItem.filename}
           className="w-full h-full object-contain"
         />
       )}
