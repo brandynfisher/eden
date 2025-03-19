@@ -164,10 +164,13 @@ const getUserLimitTier = (
   return subscriptionTier || SubscriptionTier.Free
 }
 
-const taskRateLimitExceptionCheck = async (tool: ToolV2Document) => {
-  if (tool.key === 'temple_abyss') {
+const taskRateLimitExceptionCheck = async (userId?: ObjectId) => {
+  // User-based exceptions
+  const exemptedUserIds = ['66867ea4056de0f554a34a77'] // TempleTech Abyss - dylan, dylan@tof.live
+  if (userId && exemptedUserIds.includes(userId.toString())) {
     return true
   }
+
   return false
 }
 
@@ -179,7 +182,7 @@ export const taskRateLimitCheck = async (
   const { output_type } = tool
   const type = output_type === 'image' ? 'image' : 'video'
 
-  const hasException = await taskRateLimitExceptionCheck(tool)
+  const hasException = await taskRateLimitExceptionCheck(userId)
   if (hasException) {
     return { status: 'ok' }
   }
