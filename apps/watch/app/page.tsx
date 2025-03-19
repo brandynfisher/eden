@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { appConfig } from '@/config/app-config'
+import { env } from '@/lib/config'
 import { currentUser } from '@clerk/nextjs/server'
 import { ArrowRight, Presentation } from 'lucide-react'
 import Link from 'next/link'
@@ -57,7 +57,7 @@ export default async function WatchPage() {
                 </p>
                 <Button variant="outline" asChild>
                   <Link
-                    href={`${appConfig.edenAppUrl}/creators/${user.username}?tab=collections`}
+                    href={`${env.NEXT_PUBLIC_EDEN_APP_URL}/creators/${user.username}?tab=collections`}
                     target="_blank"
                   >
                     View Collections
