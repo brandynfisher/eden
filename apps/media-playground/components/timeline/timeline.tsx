@@ -3,7 +3,7 @@
 import ListVirtualizerVertical from '@/components/masonry/list-virtualizer-vertical'
 import TimelineItem from '@/components/timeline/timeline-item'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Switch } from '@/components/ui/switch'
+// import { Switch } from '@/components/ui/switch'
 import {
   IPage,
   PageData,
@@ -13,7 +13,7 @@ import {
 import { useTaskStatus } from '@/providers/task-status-provider'
 import { TaskV2, TasksV2ListArguments, ToolV2 } from '@edenlabs/eden-sdk'
 import { QueryKey, useQueryClient } from '@tanstack/react-query'
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo } from 'react'
 
 export const ListSkeleton = () => {
   return (
@@ -32,7 +32,7 @@ type Props = {
 }
 
 const Timeline = ({ tool }: Props) => {
-  const [showAllToolResults, setShowAllToolResults] = useState(true)
+  // const [showAllToolResults, setShowAllToolResults] = useState(true)
   const queryClient = useQueryClient()
   const { subscribeToTaskUpdates } = useTaskStatus()
 
@@ -41,30 +41,20 @@ const Timeline = ({ tool }: Props) => {
     () => ({
       limit: 35,
       sort: ['createdAt;-1'],
-      tool:
-        tool.output_type === 'lora'
-          ? tool.key
-          : !showAllToolResults
-          ? tool.key
-          : undefined,
+      tool: tool.output_type === 'lora' ? tool.key : undefined,
     }),
-    [showAllToolResults, tool.output_type, tool.key],
+    [tool.output_type, tool.key],
   )
 
   // Define the query key to match what TaskStatusProvider uses
   const queryKey: QueryKey = useMemo(
     () => [
-      [
-        'tasks',
-        tool.output_type === 'lora'
-          ? tool.key
-          : !showAllToolResults
-          ? tool.key
-          : undefined,
-      ].filter(Boolean),
+      ['tasks', tool.output_type === 'lora' ? tool.key : undefined].filter(
+        Boolean,
+      ),
       query,
     ],
-    [showAllToolResults, tool.output_type, tool.key, query],
+    [tool.output_type, tool.key, query],
   )
 
   // Subscribe to task updates via TaskStatusProvider
@@ -121,8 +111,8 @@ const Timeline = ({ tool }: Props) => {
 
   return (
     <div className="mb-8">
-      {tool.output_type !== 'lora' ? (
-        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-2 mt-1 mb-2 ">
+      {/* {tool.output_type !== 'lora' ? (
+        <div className="flex ml-auto max-w-fit justify-between rounded-lg p-2 mb-2 ">
           <div className="flex items-center justify-between gap-2">
             <label className="text-xs" htmlFor={'show-all-tool-results'}>
               Show all tool results
@@ -134,7 +124,7 @@ const Timeline = ({ tool }: Props) => {
             />
           </div>
         </div>
-      ) : null}
+      ) : null} */}
 
       <div data-test-id="timeline">
         <Suspense>

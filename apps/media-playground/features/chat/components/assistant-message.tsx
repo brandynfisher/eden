@@ -77,7 +77,7 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      <AssistantMessage.Content key={id} className="pl-3 !max-w-full" />
+      <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
       <BranchPicker />
       <MyAssistantActionBar />
       {!isEmpty && isRunning && (
