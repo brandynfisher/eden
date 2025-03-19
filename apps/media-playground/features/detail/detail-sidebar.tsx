@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
+import AgentLink from '@/features/agent/agent-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getFileTypeByMimeType } from '@/lib/files'
@@ -86,6 +87,15 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
             </div>
           )}
         </div>
+
+        {type === 'creation' && (item as CreationV2).agent ? (
+          <div className="pb-4 text-sm">
+            <div className="h-9 flex items-center justify-between font-bold">
+              Made with
+            </div>
+            <AgentLink agent={(item as CreationV2).agent} hideName={false} />
+          </div>
+        ) : null}
 
         {creator?._id === user?._id ? (
           <div className="pb-3">

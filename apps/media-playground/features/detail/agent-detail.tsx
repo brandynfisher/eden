@@ -228,7 +228,12 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
             </div>
           )
         ) : (
-          <CreationsFeed query={{ user: agent._id }} />
+          <div>
+            <TypographyH6 className="mb-4">
+              Public Creations with {agent?.name}
+            </TypographyH6>
+            <CreationsFeed query={{ agent: agent._id }} scrollRef={scrollRef} />
+          </div>
         )}
       </div>
     </>
