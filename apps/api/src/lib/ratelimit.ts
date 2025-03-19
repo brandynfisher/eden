@@ -92,7 +92,7 @@ export const subscriptionTierNameMap: Record<SubscriptionTier, string> = {
 }
 
 type TaskRateLimitCheckResult = {
-  status: 'ok' | 'error'
+  status: 'ok' | 'error' | 'n/a'
   message?: string
 }
 
@@ -164,14 +164,56 @@ const getUserLimitTier = (
   return subscriptionTier || SubscriptionTier.Free
 }
 
-const taskRateLimitExceptionCheck = async (userId?: ObjectId) => {
-  // User-based exceptions
-  const exemptedUserIds = ['66867ea4056de0f554a34a77'] // TempleTech Abyss - dylan, dylan@tof.live
-  if (userId && exemptedUserIds.includes(userId.toString())) {
-    return true
+// Handles both complete exceptions and special rate limits for specific users
+const handleSpecialUserRateLimits = async (
+  userId?: ObjectId,
+  _output_type?: ToolOutputTypeV2,
+): Promise<TaskRateLimitCheckResult> => {
+  if (!userId) {
+    return { status: 'error' }
   }
 
-  return false
+  // List of users with special handling
+  const specialUsers: Record<
+    string,
+    { taskLimit: number; limitPeriod: number }
+  > = {
+    // TempleTech Abyss - dylan, dylan@tof.live -  50 tasks per minute
+    '66867ea4056de0f554a34a77': {
+      taskLimit: 50,
+      limitPeriod: 60000,
+    },
+  }
+
+  const userIdStr = userId.toString()
+  const specialUser = specialUsers[userIdStr]
+
+  if (!specialUser) {
+    return { status: 'n/a' }
+  }
+
+  // Apply special rate limit for this user
+  const limitPeriodAgo = new Date(Date.now() - specialUser.limitPeriod)
+  const numTasksCreatedInPeriod = await getTasksCount(
+    userId,
+    limitPeriodAgo,
+    [
+      TaskV2Status.Pending,
+      TaskV2Status.Running,
+      TaskV2Status.Completed,
+      TaskV2Status.Cancelled,
+    ],
+    undefined, // Apply to all tasks regardless of output type
+  )
+
+  if (numTasksCreatedInPeriod >= specialUser.taskLimit) {
+    return {
+      status: 'error',
+      message: `Special rate limit reached! Max. ${specialUser.taskLimit} tasks per minute. Try again later.`,
+    }
+  }
+
+  return { status: 'ok' }
 }
 
 export const taskRateLimitCheck = async (
@@ -182,9 +224,13 @@ export const taskRateLimitCheck = async (
   const { output_type } = tool
   const type = output_type === 'image' ? 'image' : 'video'
 
-  const hasException = await taskRateLimitExceptionCheck(userId)
-  if (hasException) {
-    return { status: 'ok' }
+  // Check for special users with custom rate limits
+  const specialUserResult = await handleSpecialUserRateLimits(
+    userId,
+    output_type,
+  )
+  if (specialUserResult && specialUserResult.status === 'ok') {
+    return specialUserResult
   }
 
   const userLimitTier = getUserLimitTier(
