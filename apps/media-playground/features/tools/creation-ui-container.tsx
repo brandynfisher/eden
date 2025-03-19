@@ -95,7 +95,7 @@ const CreationUIContainer = ({ tool }: Props) => {
     return cost <= balance
   }, [cost, balance])
 
-  console.log({ cost, hasEnoughBalance })
+  // console.log({ cost, hasEnoughBalance })
 
   async function onSubmit(formData: FormData) {
     if (!(await verifyAuth())) {

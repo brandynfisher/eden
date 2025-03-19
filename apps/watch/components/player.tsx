@@ -33,7 +33,7 @@ export function Player() {
   const [progress, setProgress] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const progressInterval = useRef<NodeJS.Timeout>()
+  const progressInterval = useRef<ReturnType<typeof setTimeout>>()
 
   const currentItem = items[currentIndex]
   const isVideo = currentItem?.mediaAttributes.mimeType.startsWith('video')

@@ -66,6 +66,7 @@ export const FarcasterDeploymentForm = ({
               isDeployed={isDeployed ?? false}
               label="Mnemonic"
               description="Your Farcaster mnemonic."
+              isSubmitting={form.formState.isSubmitting}
             />
             <TokenField
               form={form}
@@ -73,6 +74,7 @@ export const FarcasterDeploymentForm = ({
               isDeployed={isDeployed ?? false}
               label="Neynar Webhook Secret"
               description="Your Neynar webhook secret."
+              isSubmitting={form.formState.isSubmitting}
             />
             <DeploymentFormFooter
               form={form}

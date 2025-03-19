@@ -153,7 +153,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                       'toolCallCount',
                       'assistantMessageCount',
                       'threadCount',
-                      // 'userCount',
+                      'userCount',
                     ]}
                     className="lg:mt-0 gap-2"
                   />
@@ -181,33 +181,35 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           </div>
         </div>
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex flex-1 flex-col p-4 max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
-            <div className="flex items-center gap-2 mb-2">
-              <TypographyH6 className="text-primary">Persona</TypographyH6>
-              <div className="h-px flex-1 bg-border/50" />
-            </div>
-            {agent?.isPersonaPublic === undefined || !agent?.isPersonaPublic ? (
-              <>
-                <div className="text-sm italic text-muted-foreground flex items-center gap-2 mb-2">
-                  <EyeOffIcon className="w-4 h-4" />
-                  This persona is not public.
-                </div>
-                <Separator className="mb-2" />
-              </>
-            ) : null}
-            {(agent?.isPersonaPublic !== undefined && agent?.isPersonaPublic) ||
-            user?._id === agent?.owner._id ? (
+          {(agent?.isPersonaPublic || user?._id === agent?.owner._id) && (
+            <div className="flex flex-1 flex-col p-4 md:max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
+              <div className="flex items-center gap-2 mb-2">
+                <TypographyH6 className="text-primary">Persona</TypographyH6>
+              </div>
+              {!agent?.isPersonaPublic && user?._id === agent?.owner._id && (
+                <>
+                  <div className="text-sm italic text-muted-foreground flex items-center gap-2 mb-2">
+                    <EyeOffIcon className="w-4 h-4" />
+                    This persona is not public.
+                  </div>
+                  <Separator className="mb-2" />
+                </>
+              )}
               <TextClampMore
                 lines={3}
                 text={agent?.persona}
-                className="text-sm italic text-muted-foreground"
+                className="text-sm italic text-accent-foreground"
               />
-            ) : null}
-          </div>
-          {agent?.model && (
-            <div className="flex flex-1 flex-col h-fit max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
+            </div>
+          )}
+          {agent?.models && agent.models.length > 0 && (
+            <div className="flex flex-1 flex-col h-fit md:max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
               <TypographyH6 className="text-primary">Models</TypographyH6>
-              <ModelMiniCard modelId={agent.model} />
+              <div className="flex flex-col gap-2">
+                {agent.models.map((model: { lora: string }, index: number) => (
+                  <ModelMiniCard key={index} modelId={model.lora} />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -220,13 +222,18 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                 Your Creations with {agent?.name}
               </TypographyH6>
               <CreationsFeed
-                query={{ user: agent._id, requester: user?._id }}
+                query={{ user: user?._id, agent: agent?._id }}
                 scrollRef={scrollRef}
               />
             </div>
           )
         ) : (
-          <CreationsFeed query={{ user: agent._id }} />
+          <div>
+            <TypographyH6 className="mb-4">
+              Public Creations with {agent?.name}
+            </TypographyH6>
+            <CreationsFeed query={{ agent: agent._id }} scrollRef={scrollRef} />
+          </div>
         )}
       </div>
     </>

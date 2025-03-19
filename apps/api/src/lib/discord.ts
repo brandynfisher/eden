@@ -1,3 +1,5 @@
+import { Agent } from '../models/Agent'
+import { User } from '../models/User'
 import { TaskV2Document } from '../models/v2/TaskV2'
 import { FastifyInstance } from 'fastify'
 
@@ -19,6 +21,9 @@ async function sendDiscordNotification(
   })
 
   try {
+    const user = await User.findById(task.user)
+    const agent = await Agent.findById(task.agent)
+
     const taskBaseData = {
       embeds: [
         {
@@ -57,17 +62,23 @@ async function sendDiscordNotification(
               value: task.cost?.toFixed(0) || 'n/a',
             },
             {
-              name: 'User',
-              value: `[${task.user?.toString()}](${
-                fastify.config.EDEN2_FRONTEND_URL
-              }/creators/${task.user?.toString()})`,
+              name: 'Agent',
+              value:
+                task.user.toString() === task.agent.toString() ? `✅` : `☐`,
               inline: true,
             },
             {
-              name: 'Requester',
-              value: `[${task.requester?.toString()}](${
+              name: 'User',
+              value: `[${user?.username}](${
                 fastify.config.EDEN2_FRONTEND_URL
-              }/creators/${task.requester?.toString()})`,
+              }/creators/${user?.username}) - ${task.user.toString()}`,
+              inline: true,
+            },
+            {
+              name: 'Agent',
+              value: `[${agent?.username}](${
+                fastify.config.EDEN2_FRONTEND_URL
+              }/agents/${agent?.username}) - ${task.agent.toString()}`,
               inline: true,
             },
           ],

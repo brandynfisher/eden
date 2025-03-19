@@ -1,6 +1,7 @@
 'use client'
 
 import ToggleButton from '@/components/button/toggle-button'
+import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DialogContentScrollable } from '@/components/ui/custom/dialog-content-scrollable'
@@ -26,6 +27,7 @@ type Props = {
   currentValue: string
   base_model?: BaseModelName | BaseModelName[]
   onChange: (id: string) => void
+  selectedIds?: string[]
 } & PropsWithChildren
 
 const ModelSelectorModal = ({
@@ -35,11 +37,13 @@ const ModelSelectorModal = ({
   trigger,
   base_model,
   onChange,
+  selectedIds = [],
 }: Props) => {
   const { user } = useAuthState()
 
   const [open, setOpen] = useState(false)
   const [currentTab, setCurrentTab] = useState<'user' | 'public'>('user')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const handleOnChange = (model: ModelV2) => {
     onChange(model._id)
@@ -64,53 +68,58 @@ const ModelSelectorModal = ({
         <DialogHeader className="mt-4">
           <div className="flex gap-4 items-center">
             <DialogTitle className="py-2">{title}</DialogTitle>
-            <Badge variant="secondary">
-              {Array.isArray(base_model) ? base_model.join(', ') : base_model}
-            </Badge>
+            {base_model && (
+              <Badge variant="secondary">
+                {Array.isArray(base_model) ? base_model.join(', ') : base_model}
+              </Badge>
+            )}
           </div>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div>
-          <div className="flex flex-col items-center sm:block">
+          <div className="flex flex-col items-center sm:flex-row gap-2 mb-4">
             <ToggleGroup
               type="single"
               value={currentTab}
-              className="border border-muted rounded-lg p-1 mb-4 flex items-center max-w-fit bg-popover"
+              className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
             >
               <ToggleButton
-                className="w-32"
+                className="w-full sm:w-32 h-8"
                 value={'user'}
                 label={'My Models'}
                 onClick={() => setCurrentTab('user')}
               />
               <ToggleButton
-                className="w-32"
+                className="w-full sm:w-32 h-8"
                 value={'public'}
                 label={'Public Models'}
                 onClick={() => setCurrentTab('public')}
               />
             </ToggleGroup>
+            <FeedSearchForm handleSearch={setSearchQuery} />
           </div>
 
           {currentTab === 'user' ? (
             <ModelsFeed
-              query={{ base_model, user: user?._id }}
+              query={{ base_model, user: user?._id, search: searchQuery }}
               minCols={2}
               maxCols={5}
               onClick={handleOnChange}
               isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
               scrollRef={scrollRef}
+              selectedIds={selectedIds}
             />
           ) : (
             <ModelsFeed
-              query={{ base_model }}
+              query={{ base_model, search: searchQuery }}
               minCols={2}
               maxCols={5}
               onClick={handleOnChange}
               isSelectable={true}
               showFooterItems={{ name: true, actions: false }}
               scrollRef={scrollRef}
+              selectedIds={selectedIds}
             />
           )}
         </div>

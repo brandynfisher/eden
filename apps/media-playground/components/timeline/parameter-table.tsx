@@ -1,6 +1,7 @@
 import TextClampMore from '../text/text-clamp-more'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -13,9 +14,68 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Long, cn, toBigInt } from '@/lib/utils'
 import { TaskV2, TaskV2Args } from '@edenlabs/eden-sdk'
-import { LockKeyholeIcon, SquareCheckBigIcon, SquareIcon } from 'lucide-react'
-import React from 'react'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  LockKeyholeIcon,
+  SquareCheckBigIcon,
+  SquareIcon,
+} from 'lucide-react'
+import React, { useState } from 'react'
 import { toast } from 'sonner'
+
+const INITIAL_VISIBLE_IMAGES = 4
+const SHORT_STRING_LENGTH = 30
+
+const ImageGalleryCell = ({ images }: { images: string[] }) => {
+  const [showAll, setShowAll] = useState(false)
+  const visibleImages = showAll
+    ? images
+    : images.slice(0, INITIAL_VISIBLE_IMAGES)
+  const hasMore = images.length > INITIAL_VISIBLE_IMAGES
+
+  return (
+    <div className="space-y-2 mt-2">
+      <div className="flex flex-wrap gap-2">
+        <LightboxGallery>
+          {visibleImages.map((inputImageUrl, index) => (
+            <LightboxTrigger
+              className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
+              key={`${inputImageUrl}_${index}`}
+              slide={{
+                url: getCloudfrontOriginalUrl(inputImageUrl),
+                thumbnail: getCloudfrontOriginalUrl(inputImageUrl),
+              }}
+              startIndex={index}
+              imageProps={{
+                unoptimized: true,
+              }}
+            />
+          ))}
+        </LightboxGallery>
+      </div>
+      {hasMore && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowAll(!showAll)}
+          className="w-full text-xs h-8"
+        >
+          {showAll ? (
+            <>
+              Show Less <ChevronUpIcon className="ml-2 h-4 w-4" />
+            </>
+          ) : (
+            <>
+              Show {images.length - INITIAL_VISIBLE_IMAGES} More{' '}
+              <ChevronDownIcon className="ml-2 h-4 w-4" />
+            </>
+          )}
+        </Button>
+      )}
+    </div>
+  )
+}
 
 const imageInputParameterNames = [
   'image',
@@ -42,6 +102,8 @@ const videoInputParameterNames = [
   'video4',
   'video5',
 ]
+
+type ParameterValue = TaskV2Args[keyof TaskV2Args]
 
 type Props = {
   taskId?: TaskV2['_id']
@@ -76,6 +138,77 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
     ? Object.entries({ taskId, ...args })
     : Object.entries({ ...args })
 
+  const renderValue = (paramName: string, value: ParameterValue) => {
+    // Handle media types - always render below
+    if (imageInputParameterNames.includes(paramName)) {
+      return {
+        isInline: false,
+        content: (
+          <ImageGalleryCell images={[value as string].flat().filter(Boolean)} />
+        ),
+      }
+    }
+
+    if (videoInputParameterNames.includes(paramName)) {
+      return {
+        isInline: false,
+        content: (
+          <div className="flex flex-wrap gap-2">
+            {((Array.isArray(value) ? value : [value]) as string[])
+              .filter(Boolean)
+              .map(inputVideoUrl => (
+                <PreviewVideoPlayer
+                  key={inputVideoUrl}
+                  src={inputVideoUrl}
+                  width={72}
+                  height={72}
+                  className="hover:brightness-105"
+                />
+              ))}
+          </div>
+        ),
+      }
+    }
+
+    // Handle boolean values
+    if (typeof value === 'boolean') {
+      return {
+        isInline: true,
+        content: value ? (
+          <SquareCheckBigIcon size={16} />
+        ) : (
+          <SquareIcon size={16} />
+        ),
+      }
+    }
+
+    // Handle Long objects
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      return {
+        isInline: true,
+        content:
+          value !== null ? toBigInt(value as unknown as Long).toString() : '-',
+      }
+    }
+
+    // Handle strings and other values
+    const stringValue = String(value ?? '')
+    const isLongString = stringValue.length > SHORT_STRING_LENGTH
+
+    return {
+      isInline: !isLongString,
+      content: (
+        <div onClick={handleCopyString(paramName, stringValue)}>
+          <TextClampMore
+            text={stringValue}
+            lines={isLongString ? 2 : 1}
+            className="text-xs"
+          />
+        </div>
+      ),
+    }
+  }
+
   return (
     <Table className={cn([`text-xs table-fixed h-full`, className])}>
       {!hideHeader ? (
@@ -89,85 +222,35 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
         </TableHeader>
       ) : null}
       <TableBody className="bg-popover/20">
-        {allArgs.map(taskArg => (
-          <TableRow key={taskArg[0]} className="cursor-pointer text-xs">
-            <TableCell className="flex items-center gap-1 px-2 py-2 text-muted-foreground w-[125px] truncate align-top">
-              {taskArg[0]}
-              {taskArg[0] === 'lora_training_urls' ? (
-                <LockKeyholeIcon className="relative h-3.5 w-3.5 flex-shrink-0" />
-              ) : null}
-            </TableCell>
-            <TableCell className="pl-0 pr-2 py-2 w-full">
-              {imageInputParameterNames.includes(taskArg[0]) ? (
-                <div className="flex gap-2">
-                  <LightboxGallery>
-                    {[taskArg[1] as string]
-                      .flat()
-                      .filter(Boolean)
-                      .map((inputImageUrl, index) => (
-                        <LightboxTrigger
-                          className="!relative rounded-lg cursor-zoom-in hover:brightness-105 !h-20 w-auto"
-                          key={`${inputImageUrl}_${index}`}
-                          slide={{
-                            url: getCloudfrontOriginalUrl(inputImageUrl),
-                            thumbnail: getCloudfrontOriginalUrl(inputImageUrl),
-                          }}
-                          startIndex={index}
-                          imageProps={{
-                            unoptimized: true,
-                          }}
-                        />
-                      ))}
-                  </LightboxGallery>
-                </div>
-              ) : videoInputParameterNames.includes(taskArg[0]) ? (
-                <div className="flex flex-wrap gap-2">
-                  {(
-                    (Array.isArray(taskArg[1])
-                      ? taskArg[1]
-                      : [taskArg[1]]) as string[]
-                  )
-                    .filter(Boolean)
-                    .map(inputVideoUrl => (
-                      <PreviewVideoPlayer
-                        key={inputVideoUrl}
-                        src={inputVideoUrl}
-                        width={72}
-                        height={72}
-                        className="hover:brightness-105"
-                      />
-                    ))}
-                </div>
-              ) : typeof taskArg[1] === 'boolean' ? (
-                taskArg[1] ? (
-                  <SquareCheckBigIcon size={16} />
-                ) : (
-                  <SquareIcon size={16} />
-                )
-              ) : typeof taskArg[1] === 'object' &&
-                !Array.isArray(taskArg[1]) ? (
-                taskArg[1] !== null ? (
-                  toBigInt(taskArg[1] as unknown as Long).toString()
-                ) : (
-                  '-'
-                )
-              ) : (
-                <div
-                  onClick={handleCopyString(
-                    taskArg[0],
-                    String(taskArg[1] !== null ? taskArg[1] : ''),
-                  )}
-                >
-                  <TextClampMore
-                    text={taskArg[1] as string}
-                    lines={2}
-                    className="text-xs"
-                  />
-                </div>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
+        {allArgs.map(([paramName, value]) => {
+          const { isInline, content } = renderValue(paramName, value)
+
+          return (
+            <TableRow key={paramName} className="cursor-pointer text-xs">
+              <TableCell
+                className={cn(
+                  'flex items-center gap-1 px-2 py-2 text-muted-foreground truncate',
+                  isInline
+                    ? 'w-[125px] align-middle'
+                    : 'w-full pb-1 border-b-0',
+                )}
+              >
+                {paramName}
+                {paramName === 'lora_training_urls' ? (
+                  <LockKeyholeIcon className="relative h-3.5 w-3.5 flex-shrink-0" />
+                ) : null}
+              </TableCell>
+              <TableCell
+                className={cn(
+                  'pl-0 pr-2 py-2',
+                  isInline ? 'align-middle' : 'pt-0',
+                )}
+              >
+                {content}
+              </TableCell>
+            </TableRow>
+          )
+        })}
       </TableBody>
     </Table>
   )

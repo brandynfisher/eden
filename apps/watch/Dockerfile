@@ -23,13 +23,7 @@ RUN apk update
 WORKDIR /app
 
 RUN apk add --update --no-cache \
-    g++ \
-    build-base \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    librsvg-dev
+    build-base
 
 # First install the dependencies (as they change less often)
 COPY .gitignore .gitignore
@@ -47,13 +41,8 @@ FROM base AS runner
 WORKDIR /app
 
 RUN apk add --update --no-cache \
-    g++ \
-    build-base \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev \
-    librsvg-dev
+    build-base
+
 
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
@@ -69,5 +58,7 @@ COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/.next/standalone ./
 COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/.next/static ./apps/watch/.next/static
 COPY --from=installer --chown=nextjs:nodejs /app/apps/watch/public ./apps/watch/public
 
+# Create a package.json in the standalone directory to override module type
+RUN echo '{"type":"commonjs"}' > apps/watch/package.json
 
 CMD node apps/watch/server.js

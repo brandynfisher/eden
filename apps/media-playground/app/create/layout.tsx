@@ -32,6 +32,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
   const navigation = [
     createNavigationItem('Image', 'image'),
     createNavigationItem('Video', 'video'),
+    createNavigationItem('Model', 'lora'),
     createNavigationItem('Audio', 'audio'),
   ]
 
