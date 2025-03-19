@@ -298,7 +298,7 @@ export const addCreationsToCollection = async (
   const isAuthorizedForCreations = creationsToAdd.every(
     creation =>
       creation.user.toString() === currentUserId.toString() ||
-      creation.requester?.toString() === currentUserId.toString() ||
+      creation.agent?.toString() === currentUserId.toString() ||
       creation.public,
   )
 

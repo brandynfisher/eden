@@ -37,7 +37,7 @@ export function EdenRuntimeProvider({
   const [isLoadingThread, setIsLoadingThread] = useState(false)
   const [isClientMounted, setIsClientMounted] = useState(false)
 
-  const threadIdRef = useRef<string | undefined>(threadId)
+  const threadIdRef = useRef<string | undefined>(undefined)
   const messageEmitterRef = useRef<MessageEmitter | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -112,9 +112,9 @@ export function EdenRuntimeProvider({
           setIsLoadingThread(false)
         }
       },
-      onRename: async (threadId, newTitle) => {
-        console.log('rename', threadId, newTitle)
-      },
+      // onRename: async () => {
+      //   // console.log('rename', threadId, newTitle)
+      // },
       //@ts-expect-error message status is not typed
       stream: async (messages, callback) => {
         return (async function* () {
@@ -201,10 +201,10 @@ export function EdenRuntimeProvider({
 
   const checkThreadStatus = useCallback(
     async (shouldSetMessages = true) => {
-      console.log('checkThreadStatus', {
-        threadId: threadIdRef.current,
-        isAuthLoading,
-      })
+      // console.log('checkThreadStatus', {
+      //   threadId: threadIdRef.current,
+      //   isAuthLoading,
+      // })
       if (!threadIdRef.current || !messageEmitterRef.current) return
 
       // If auth is still loading, delay the check
@@ -238,7 +238,7 @@ export function EdenRuntimeProvider({
   // Add an effect to recheck thread status when auth state changes
   useEffect(() => {
     if (!isAuthLoading && threadIdRef.current) {
-      console.log('Auth state changed, rechecking thread status')
+      // console.log('Auth state changed, rechecking thread status')
       checkThreadStatus()
     }
   }, [isAuthLoading, user, checkThreadStatus])
@@ -334,7 +334,7 @@ export function EdenRuntimeProvider({
 
     // Verify message belongs to current thread
     if (threadIdRef.current && thread_id && threadIdRef.current !== thread_id) {
-      console.log('Message not for current thread, ignoring!')
+      // console.log('Message not for current thread, ignoring!')
       return
     }
 

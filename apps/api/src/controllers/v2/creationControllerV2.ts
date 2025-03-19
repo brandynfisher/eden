@@ -34,6 +34,10 @@ export const getCreation = async (
       path: 'user',
       select: '_id userId username userImage type',
       model: 'users3',
+    })
+    .populate({
+      path: 'agent',
+      select: '_id username name userImage type',
     })) as CreationV2Document & {
     reactions?: Map<ReactionType, boolean>
     bookmarked?: boolean
@@ -121,7 +125,11 @@ export const creationUpdate = async (
 
   await creation.populate({
     path: 'user',
-    select: '_id username userId userImage',
+    select: '_id username userId userImage type',
+  })
+  await creation.populate({
+    path: 'agent',
+    select: '_id username name userImage type',
   })
   await creation.populate({
     path: 'task',

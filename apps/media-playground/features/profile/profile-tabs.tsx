@@ -25,7 +25,6 @@ const ProfileTabs = () => {
 
   const baseQuery = {
     user: creator._id,
-    // requester: creator?._id,
   }
 
   const isOwnProfile = user?._id === creator._id

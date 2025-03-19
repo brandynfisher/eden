@@ -266,8 +266,7 @@ const handleArguments = async ({
           item =>
             (item.name === 'user' && item.value === authUserId?.toString()) ||
             (item.name === 'owner' && item.value === authUserId?.toString()) ||
-            (item.name === 'requester' &&
-              item.value === authUserId?.toString()),
+            (item.name === 'agent' && item.value === authUserId?.toString()),
         )
         .map(item => item.value)
     : undefined
@@ -362,7 +361,7 @@ const handleArguments = async ({
             field === 'character' ||
             field === 'concept' ||
             field === 'collection' ||
-            field === 'requester'
+            field === 'agent'
           ) {
             // console.log(field, value)
             if (field === 'collection') {
@@ -665,13 +664,13 @@ const userLookup: PipelineStage[] = [
   { $unwind: '$user' },
 ]
 
-const requesterLookup: PipelineStage[] = [
+const agentLookup: PipelineStage[] = [
   {
     $lookup: {
       from: 'users3',
-      localField: 'requester',
+      localField: 'agent',
       foreignField: '_id',
-      as: 'requester',
+      as: 'agent',
       pipeline: [
         {
           $project: {
@@ -782,7 +781,7 @@ export const getCreationsFeedCursorV2 = async (
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
-  const lateLookupStages = [...userLookup, ...requesterLookup]
+  const lateLookupStages = [...userLookup, ...agentLookup]
 
   // console.log(
   //   JSON.stringify(
@@ -935,6 +934,8 @@ export const getModelsFeedCursorV2 = async (
     query: query as CursorPaginatedFeedQuery,
   })
 
+  const { search } = customFilterOptions
+
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
@@ -972,15 +973,52 @@ export const getModelsFeedCursorV2 = async (
   //   },
   // }
 
-  // let embeddingsTransform: PipelineStage[] = []
-  const feedPipeline = [
-    // @ts-ignore
-    // { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
-    { $match: filters },
-    //   ...embeddingsTransform,
-    ...pipeline,
-    ...lateLookupStages,
-  ].filter(Boolean)
+  const feedPipeline: PipelineStage[] = []
+
+  if (search) {
+    feedPipeline.push({
+      $search: {
+        index: 'name',
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: search,
+                path: 'name',
+              },
+            },
+            {
+              text: {
+                query: search,
+                path: 'name',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+            {
+              autocomplete: {
+                query: search,
+                path: 'name',
+              },
+            },
+            {
+              text: {
+                query: search,
+                path: 'name',
+                fuzzy: {
+                  maxEdits: 2,
+                },
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+        },
+      },
+    })
+  }
+
+  feedPipeline.push({ $match: filters }, ...pipeline, ...lateLookupStages)
 
   // console.log(JSON.stringify(feedPipeline, null, 2))
 

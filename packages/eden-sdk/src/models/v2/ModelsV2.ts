@@ -94,4 +94,5 @@ export type ModelV2 = {
   public?: boolean
   base_model?: BaseModelName
   lora_trigger_text?: string
+  thumbnail_prompts?: string[]
 }
