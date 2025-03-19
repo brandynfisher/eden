@@ -1,6 +1,6 @@
 'use client'
 
-import { CollectionItem } from '@/types/collection'
+import { CreationV2 } from '@edenlabs/eden-sdk'
 import {
   ReactNode,
   createContext,
@@ -27,7 +27,7 @@ interface PlayerContextType {
   setShowSettings: (show: boolean) => void
 
   // Collection Data
-  items: CollectionItem[]
+  items: CreationV2[]
   hasVideos: boolean
 }
 
@@ -38,7 +38,7 @@ export function PlayerProvider({
   initialItems,
 }: {
   children: ReactNode
-  initialItems: CollectionItem[]
+  initialItems: CreationV2[]
 }) {
   // Player State
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -49,7 +49,7 @@ export function PlayerProvider({
 
   // Check if collection has any videos
   const hasVideos = initialItems.some(item =>
-    item.mediaAttributes.mimeType.startsWith('video'),
+    item.mediaAttributes?.mimeType?.startsWith('video'),
   )
 
   const goToNextSlide = useCallback(() => {
