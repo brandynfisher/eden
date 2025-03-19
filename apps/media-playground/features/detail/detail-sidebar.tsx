@@ -88,7 +88,10 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           )}
         </div>
 
-        {type === 'creation' && (item as CreationV2).agent ? (
+        {type === 'creation' &&
+        item &&
+        (item as CreationV2).agent &&
+        (item as CreationV2).agent?._id !== item.user._id ? (
           <div className="pb-4 text-sm">
             <div className="h-9 flex items-center justify-between font-bold">
               Made with

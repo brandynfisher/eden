@@ -2,8 +2,6 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { FC } from 'react'
 
-// import customImageLoader from '../../image-loader';
-
 interface Props {
   className?: string
   width?: number
