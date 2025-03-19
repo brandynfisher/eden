@@ -72,7 +72,7 @@ const MyAssistantMessage: FC = () => {
   return (
     <AssistantMessage.Root
       className={cn([
-        'block px-2 md:px-0 md:grid',
+        'block px-2 md:grid',
         isRunning && 'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >

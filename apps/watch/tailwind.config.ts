@@ -8,7 +8,6 @@ const config = {
     './components/**/*.{ts,tsx}',
     './features/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
   ],
   prefix: '',
   theme: {
@@ -135,6 +134,7 @@ const config = {
   ],
   plugins: [
     require('tailwindcss-animate'),
+    require('@assistant-ui/react-ui/tailwindcss'),
     plugin(({ matchUtilities, theme }) => {
       matchUtilities(
         {
