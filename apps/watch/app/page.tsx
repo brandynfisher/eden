@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card'
 import { env } from '@/lib/config'
 import { currentUser } from '@clerk/nextjs/server'
-import { ArrowRight, Presentation } from 'lucide-react'
+import { ArrowRight, PresentationIcon } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function WatchPage() {
@@ -92,7 +92,7 @@ export default async function WatchPage() {
                   variant="outline"
                   className="flex items-center gap-2 w-fit"
                 >
-                  <Presentation className="h-4 w-4" />
+                  <PresentationIcon className="h-4 w-4" />
                   <span>
                     Look for the slideshow button on your collection page
                   </span>

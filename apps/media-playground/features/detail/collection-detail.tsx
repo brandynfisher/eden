@@ -37,9 +37,9 @@ import {
   Edit2Icon,
   LockIcon,
   LockOpenIcon,
+  PresentationIcon,
   Share2Icon,
   TrashIcon,
-  TvIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -217,7 +217,7 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
               <Link
                 href={`${process.env.NEXT_PUBLIC_EDEN_WATCH_APP_URL}/${collection?._id}/player`}
               >
-                <TvIcon size={18} />
+                <PresentationIcon size={18} />
               </Link>
             </Button>
             <Button

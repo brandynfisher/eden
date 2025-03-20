@@ -110,7 +110,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   onCheckedChange={setApplyDurationToVideos}
                   id="video-duration"
                 />
-                <Label htmlFor="video-duration">Apply duration to videos</Label>
+                <Label htmlFor="video-duration">Use video duration</Label>
               </div>
             )}
           </div>

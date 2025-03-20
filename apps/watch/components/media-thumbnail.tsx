@@ -1,7 +1,7 @@
 'use client'
 
 import { useMediaPrefetch } from '@/hooks/use-media-prefetch'
-import { cn, getProxiedUrl } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { CreationV2 } from '@edenlabs/eden-sdk'
 import { PlayCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -32,10 +32,8 @@ export function MediaThumbnail({
 
   const isVideo = item.mediaAttributes?.mimeType?.startsWith('video')
 
-  // Get the appropriate URL (proxied for videos)
-  const mediaUrl = item.url
-    ? getProxiedUrl(item.url, item.mediaAttributes?.mimeType)
-    : ''
+  // Always use direct CloudFront URL
+  const mediaUrl = item.url || ''
 
   // Prefetch the item when the component mounts
   useEffect(() => {

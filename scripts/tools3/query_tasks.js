@@ -25,8 +25,8 @@ const config = {
   fetchOnly: false, // When true, just extracts URLs without downloading
   outputPath: path.join(path.dirname(fileURLToPath(import.meta.url)), 'downloads'), // Next to this script
   downloadConcurrency: 1, // Download one file at a time
-  downloadDelayMs: 500, // 5 seconds between downloads
-  pauseBetweenDownloadsMs: 500, // 10 seconds between each successful download
+  downloadDelayMs: 500, // delay between downloads
+  pauseBetweenDownloadsMs: 500, // delay between each successful download
   maxRetries: 5, // Increased number of retries for failed downloads
   initialRetryDelayMs: 10000, // Initial delay before first retry (10 seconds)
   backoffFactor: 2, // Exponential backoff multiplier

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { CircularProgress } from '@/components/ui/circular-progress'
 import { usePlayer } from '@/contexts/player-context'
 import { useMediaPrefetch } from '@/hooks/use-media-prefetch'
-import { cn, getNextProxyUrl, getProxiedUrl } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,13 +14,13 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 /* eslint-disable @next/next/no-img-element */
 
-// Check if we're in a development environment
-// const isDevelopment =
-//   typeof window !== 'undefined' && window.location.hostname === 'localhost'
+// Fix the linter errors by adding an underscore prefix to unused variables
+const _isDevelopment =
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
 
 export function Player() {
   const {
@@ -38,14 +38,16 @@ export function Player() {
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [proxyIndex, setProxyIndex] = useState(0)
-  const [useDirectUrl, setUseDirectUrl] = useState(false)
   const [isMediaLoaded, setIsMediaLoaded] = useState(false)
   const [isMediaError, setIsMediaError] = useState(false)
+  const [isWaitingForVideo, setIsWaitingForVideo] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const progressInterval = useRef<ReturnType<typeof setTimeout>>()
+
+  // Keep track of previous loaded media to avoid flashing loading screen
+  const prevLoadedMedia = useRef<string>('')
 
   const currentItem = items[currentIndex]
   const isVideo = currentItem?.mediaAttributes?.mimeType?.startsWith('video')
@@ -54,36 +56,60 @@ export function Player() {
   const getMediaUrl = () => {
     if (!currentItem?.url) return ''
 
-    // If using direct URL, return original
-    if (useDirectUrl) {
-      return currentItem.url
-    }
-
-    // Otherwise get appropriate proxied URL
-    return getProxiedUrl(
-      currentItem.url,
-      currentItem.mediaAttributes?.mimeType,
-      { proxyIndex },
-    )
+    // Always use direct CloudFront URL for all media types
+    return currentItem.url
   }
 
   const mediaUrl = getMediaUrl()
 
   // Reset loaded state when media changes
   useEffect(() => {
-    setIsMediaLoaded(false)
-    setIsMediaError(false)
-    setProxyIndex(0)
-    setUseDirectUrl(false)
+    // When media changes, keep previous loaded state until new media loads
+    if (prevLoadedMedia.current !== mediaUrl) {
+      setIsMediaError(false)
 
-    // Ensure current item is prefetched
+      // Don't immediately set isMediaLoaded to false if it's a video after a video
+      // This avoids flashing the loading indicator between videos
+      const previousItemWasVideo =
+        items[currentIndex - 1]?.mediaAttributes?.mimeType?.startsWith('video')
+      const currentItemIsVideo = isVideo
+
+      if (!(previousItemWasVideo && currentItemIsVideo)) {
+        setIsMediaLoaded(false)
+      } else {
+        // For video-to-video transitions, set a waiting state but don't show
+        // loading indicator immediately
+        setIsWaitingForVideo(true)
+
+        // If the video doesn't load quickly, show loading indicator after a delay
+        const waitTimer = setTimeout(() => {
+          if (!isMediaLoaded) {
+            setIsMediaLoaded(false)
+          }
+        }, 500)
+
+        return () => clearTimeout(waitTimer)
+      }
+    }
+
+    // Ensure current item is loaded with appropriate method
     if (currentItem?.url) {
       prefetch(currentItem.url, currentItem.mediaAttributes?.mimeType, {
-        prefetchVideoData: true,
+        prefetchVideoData: isVideo,
+        crossOrigin: 'anonymous',
       })
     }
-  }, [currentItem, prefetch])
+  }, [
+    currentItem,
+    mediaUrl,
+    items,
+    currentIndex,
+    isVideo,
+    prefetch,
+    isMediaLoaded,
+  ])
 
+  // Toggle fullscreen functionality
   const toggleFullscreen = async () => {
     if (!containerRef.current) return
 
@@ -118,6 +144,48 @@ export function Player() {
     }
   }, [])
 
+  // Sequential preloading that starts after current media is loaded
+  useEffect(() => {
+    // Only start preloading after current item is loaded
+    if (!isMediaLoaded || !items || items.length < 2) return
+
+    const preloadSequentially = async () => {
+      // Preload next item first
+      const nextIndex = (currentIndex + 1) % items.length
+      const nextItem = items[nextIndex]
+
+      if (nextItem?.url) {
+        const nextIsVideo =
+          nextItem.mediaAttributes?.mimeType?.startsWith('video')
+
+        await prefetch(nextItem.url, nextItem.mediaAttributes?.mimeType, {
+          prefetchVideoData: nextIsVideo,
+          crossOrigin: 'anonymous',
+        })
+
+        // After next item is loaded, load the item after that
+        const nextNextIndex = (currentIndex + 2) % items.length
+        const nextNextItem = items[nextNextIndex]
+
+        if (nextNextItem?.url) {
+          const nextNextIsVideo =
+            nextNextItem.mediaAttributes?.mimeType?.startsWith('video')
+
+          await prefetch(
+            nextNextItem.url,
+            nextNextItem.mediaAttributes?.mimeType,
+            {
+              prefetchVideoData: nextNextIsVideo,
+              crossOrigin: 'anonymous',
+            },
+          )
+        }
+      }
+    }
+
+    preloadSequentially()
+  }, [isMediaLoaded, currentIndex, items, prefetch])
+
   // Handle progress tracking
   useEffect(() => {
     // Clear existing interval
@@ -136,6 +204,11 @@ export function Player() {
       if (!video) return
 
       const videoDuration = currentItem.mediaAttributes?.duration || 0
+
+      // IMPORTANT: This determines whether to use the video's natural duration
+      // or override it with the custom duration set in the player settings.
+      // When applyDurationToVideos is true, videos will follow the same timing
+      // as images (mediaDuration). Otherwise, videos play for their full length.
       const targetDuration = applyDurationToVideos
         ? mediaDuration
         : videoDuration
@@ -238,36 +311,17 @@ export function Player() {
   }, [goToNextSlide, goToPreviousSlide])
 
   // Handle media loading events
-  const handleMediaLoaded = () => {
+  const handleMediaLoaded = useCallback(() => {
     setIsMediaLoaded(true)
     setIsMediaError(false)
-  }
+    setIsWaitingForVideo(false)
+    prevLoadedMedia.current = mediaUrl
+  }, [mediaUrl])
 
   // Handle media error events
   const handleMediaError = () => {
     setIsMediaError(true)
-
-    if (isVideo && currentItem?.url) {
-      console.log(`Media error with URL: ${mediaUrl}`)
-
-      // Try the next proxy if available
-      const nextProxy = getNextProxyUrl(
-        currentItem.url,
-        currentItem.mediaAttributes?.mimeType,
-        proxyIndex,
-      )
-
-      if (nextProxy) {
-        console.log(`Trying next proxy: ${nextProxy}`)
-        setProxyIndex(prev => prev + 1)
-        setIsMediaError(false)
-      } else if (!useDirectUrl) {
-        // If no more proxies, try direct URL as last resort
-        console.log('No more proxies, trying direct URL')
-        setUseDirectUrl(true)
-        setIsMediaError(false)
-      }
-    }
+    console.log(`Media error with URL: ${mediaUrl}`)
   }
 
   if (!currentItem) return null
@@ -294,6 +348,7 @@ export function Player() {
             playsInline
             muted={isMuted}
             preload="auto"
+            {...(!_isDevelopment && { crossOrigin: 'anonymous' })}
             onLoadedData={handleMediaLoaded}
             onCanPlay={handleMediaLoaded}
             onError={handleMediaError}
@@ -309,6 +364,9 @@ export function Player() {
                     Please check your connection and try again
                   </div>
                 </div>
+              ) : isWaitingForVideo ? (
+                // Show a more subtle loading indicator when waiting for video in a video-to-video transition
+                <div className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary opacity-30"></div>
               ) : (
                 <div className="size-12 animate-spin rounded-full border-4 border-muted border-t-primary"></div>
               )}
@@ -326,6 +384,7 @@ export function Player() {
               'w-full h-full object-contain',
               !isMediaLoaded && 'opacity-0',
             )}
+            {...(!_isDevelopment && { crossOrigin: 'anonymous' })}
             onLoad={handleMediaLoaded}
             onError={handleMediaError}
           />
