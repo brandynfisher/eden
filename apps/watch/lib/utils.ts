@@ -70,7 +70,7 @@ export function getProxiedUrl(
   // In production, we should be able to use CloudFront directly
   // since our domain will be allowed in CORS
   if (
-    url.includes('dtut5r9j4w7j4.cloudfront.net') &&
+    url.includes(process.env.NEXT_PUBLIC_CLOUDFRONT_URL || '') &&
     !options?.forceProxy &&
     !isDevelopment
   ) {
