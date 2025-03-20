@@ -72,12 +72,12 @@ const MyAssistantMessage: FC = () => {
   return (
     <AssistantMessage.Root
       className={cn([
-        'block px-2 md:px-0 md:grid',
+        'block px-2 md:grid',
         isRunning && 'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >
       <MyAssistantMessageAvatar />
-      <AssistantMessage.Content key={id} className="pl-3 !max-w-full" />
+      <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
       <BranchPicker />
       <MyAssistantActionBar />
       {!isEmpty && isRunning && (
