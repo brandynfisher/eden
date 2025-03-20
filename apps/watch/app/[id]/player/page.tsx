@@ -4,7 +4,7 @@ import { Player } from '@/components/player'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { Button } from '@/components/ui/button'
 import { PlayerProvider, usePlayer } from '@/contexts/player-context'
-import { useCollectionCreations } from '@/hooks/use-collection-creations'
+import { useCollectionCreationsFeed } from '@/hooks/use-collection-creations-feed'
 import { Loader2, X } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 
@@ -12,9 +12,13 @@ export default function PlayerPage() {
   const router = useRouter()
   const { id } = useParams()
 
-  const { creations, isLoading: isCollectionLoading } = useCollectionCreations(
-    id as string,
-  )
+  const {
+    creations,
+    isLoading: isCollectionLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useCollectionCreationsFeed(id as string)
 
   if (isCollectionLoading) {
     return (
@@ -29,7 +33,12 @@ export default function PlayerPage() {
   }
 
   return (
-    <PlayerProvider initialItems={creations}>
+    <PlayerProvider
+      initialItems={creations}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+    >
       <PlayerContent router={router} />
     </PlayerProvider>
   )

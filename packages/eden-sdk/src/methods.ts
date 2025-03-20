@@ -240,6 +240,8 @@ import {
   CreationsV2GetResponse,
   CreationsV2PatchArguments,
   CreationsV2PatchResponse,
+  FeedCreationsV2CursorArguments,
+  FeedCreationsV2CursorResponse,
   ModelsV2GetArguments,
   ModelsV2GetResponse,
   ModelsV2ListArguments,
@@ -286,6 +288,7 @@ import {
   creationsV2BulkPatchRequestConfig,
   creationsV2GetRequestConfig,
   creationsV2PatchRequestConfig,
+  feedCursorCreationsV2RequestConfig,
   modelsV2GetRequestConfig,
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
@@ -692,6 +695,13 @@ export abstract class Methods {
       FeedCreationsCursorArguments,
       FeedCreationsCursorResponse
     >(this, feedCursorCreationsRequestConfig),
+  }
+
+  public readonly feed_cursorV2 = {
+    creations: bindApiCall<
+      FeedCreationsV2CursorArguments,
+      FeedCreationsV2CursorResponse
+    >(this, feedCursorCreationsV2RequestConfig),
   }
 
   public readonly generators = {

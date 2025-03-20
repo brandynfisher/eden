@@ -6,6 +6,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react'
 
@@ -29,6 +30,9 @@ interface PlayerContextType {
   // Collection Data
   items: CreationV2[]
   hasVideos: boolean
+
+  // Loading
+  isLoadingMore: boolean
 }
 
 const PlayerContext = createContext<PlayerContextType | null>(null)
@@ -36,31 +40,72 @@ const PlayerContext = createContext<PlayerContextType | null>(null)
 export function PlayerProvider({
   children,
   initialItems,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
 }: {
   children: ReactNode
   initialItems: CreationV2[]
+  hasNextPage?: boolean
+  fetchNextPage?: () => Promise<unknown>
+  isFetchingNextPage?: boolean
 }) {
-  // Player State
+  const [items, setItems] = useState<CreationV2[]>(initialItems)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(true)
   const [mediaDuration, setMediaDuration] = useState(15)
   const [applyDurationToVideos, setApplyDurationToVideos] = useState(false)
   const [showSettings, setShowSettings] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Update items when initialItems changes
+  useEffect(() => {
+    setItems(initialItems)
+  }, [initialItems])
 
   // Check if collection has any videos
-  const hasVideos = initialItems.some(item =>
+  const hasVideos = items.some(item =>
     item.mediaAttributes?.mimeType?.startsWith('video'),
   )
 
+  // Check if we need to load more items
+  useEffect(() => {
+    // If we're getting close to the end of the list (within 3 items) and more items are available
+    const loadMoreItems = async () => {
+      if (
+        fetchNextPage &&
+        hasNextPage &&
+        !isFetchingNextPage &&
+        items.length > 0 &&
+        items.length - currentIndex <= 3 &&
+        !isLoadingMore
+      ) {
+        try {
+          setIsLoadingMore(true)
+          await fetchNextPage()
+        } finally {
+          setIsLoadingMore(false)
+        }
+      }
+    }
+
+    loadMoreItems()
+  }, [
+    currentIndex,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoadingMore,
+    items.length,
+  ])
+
   const goToNextSlide = useCallback(() => {
-    setCurrentIndex(prev => (prev + 1) % initialItems.length)
-  }, [initialItems.length])
+    setCurrentIndex(prev => (prev + 1) % items.length)
+  }, [items.length])
 
   const goToPreviousSlide = useCallback(() => {
-    setCurrentIndex(
-      prev => (prev - 1 + initialItems.length) % initialItems.length,
-    )
-  }, [initialItems.length])
+    setCurrentIndex(prev => (prev - 1 + items.length) % items.length)
+  }, [items.length])
 
   return (
     <PlayerContext.Provider
@@ -82,8 +127,11 @@ export function PlayerProvider({
         setShowSettings,
 
         // Collection Data
-        items: initialItems,
+        items,
         hasVideos,
+
+        // Loading
+        isLoadingMore,
       }}
     >
       {children}

@@ -27,6 +27,7 @@ export function Player() {
     applyDurationToVideos,
     goToNextSlide,
     goToPreviousSlide,
+    isLoadingMore,
   } = usePlayer()
 
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -245,6 +246,7 @@ export function Player() {
       <div className="absolute bottom-4 right-4 flex items-center gap-2 h-10">
         <Badge variant="outline">
           {currentIndex + 1} / {items.length}
+          {isLoadingMore && '...'}
         </Badge>
 
         {isVideo && (
@@ -269,6 +271,15 @@ export function Player() {
       >
         {isFullscreen ? <Minimize2 /> : <Maximize2 />}
       </Button>
+
+      {/* Loading indicator */}
+      {isLoadingMore && (
+        <div className="absolute bottom-4 left-4">
+          <Badge variant="outline" className="animate-pulse">
+            Loading more...
+          </Badge>
+        </div>
+      )}
     </div>
   )
 }

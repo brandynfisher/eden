@@ -64,6 +64,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new
           build-args: |
             "NEXT_PUBLIC_APP_ENV=staging"
+            "NEXT_PUBLIC_EDEN_WATCH_APP_URL=https://staging.watch.eden.art"
             "NEXT_PUBLIC_HOST=https://staging2.app.eden.art"
             "NEXT_PUBLIC_EDEN_API_URL=https://staging.api.eden.art"
             "NEXT_PUBLIC_EDEN_SSE_URL=https://staging.api.eden.art"
