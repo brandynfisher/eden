@@ -18,6 +18,10 @@ import { useEffect, useRef, useState } from 'react'
 
 /* eslint-disable @next/next/no-img-element */
 
+// Check if we're in a development environment
+const isDevelopment =
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+
 export function Player() {
   const {
     currentIndex,
@@ -289,6 +293,9 @@ export function Player() {
             autoPlay
             playsInline
             muted={isMuted}
+            // Only use crossOrigin in production
+            {...(!isDevelopment && { crossOrigin: 'anonymous' })}
+            preload="auto"
             onLoadedData={handleMediaLoaded}
             onCanPlay={handleMediaLoaded}
             onError={handleMediaError}
@@ -321,6 +328,8 @@ export function Player() {
               'w-full h-full object-contain',
               !isMediaLoaded && 'opacity-0',
             )}
+            // Only use crossOrigin in production
+            {...(!isDevelopment && { crossOrigin: 'anonymous' })}
             onLoad={handleMediaLoaded}
             onError={handleMediaError}
           />

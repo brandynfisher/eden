@@ -35,10 +35,12 @@ import axios from 'axios'
 import {
   DownloadIcon,
   Edit2Icon,
+  Link,
   LockIcon,
   LockOpenIcon,
   Share2Icon,
   TrashIcon,
+  TvIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -206,6 +208,14 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
           </h1>
 
           <div className="flex gap-x-2">
+            <Button variant="outline" size="icon" asChild>
+              <Link
+                href={`${process.env.NEXT_PUBLIC_EDEN_WATCH_APP_URL}/${collection?._id}/player`}
+              >
+                <TvIcon className="mr-2 h-4 w-4" />
+                Watch
+              </Link>
+            </Button>
             <Button variant="outline" size="icon" onClick={onShareCollection}>
               <Share2Icon size={18} />
             </Button>

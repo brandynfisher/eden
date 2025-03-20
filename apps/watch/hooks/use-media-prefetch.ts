@@ -2,11 +2,20 @@
 
 import { useCallback, useRef } from 'react'
 
+// Check if we're in a development environment
+const isDevelopment =
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+
 interface PrefetchOptions {
   /**
    * If true, prefetch video data more aggressively (not just metadata)
    */
   prefetchVideoData?: boolean
+
+  /**
+   * Cross-origin attribute for media elements
+   */
+  crossOrigin?: 'anonymous' | 'use-credentials'
 }
 
 /**
@@ -46,6 +55,12 @@ export function useMediaPrefetch() {
           video.preload = 'metadata'
           video.muted = true
           video.playsInline = true
+
+          // Apply crossOrigin attribute if specified and not in development
+          if (options?.crossOrigin && !isDevelopment) {
+            video.crossOrigin = options.crossOrigin
+          }
+
           video.src = url
 
           // Just load the metadata
@@ -60,6 +75,12 @@ export function useMediaPrefetch() {
 
         // Create an image element for prefetching
         const img = new Image()
+
+        // Apply crossOrigin attribute if specified and not in development
+        if (options?.crossOrigin && !isDevelopment) {
+          img.crossOrigin = options.crossOrigin
+        }
+
         img.src = url
         prefetchedImages.current.add(url)
       }

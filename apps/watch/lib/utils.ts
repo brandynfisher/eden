@@ -33,6 +33,12 @@ const PROXY_CONFIG = {
 }
 
 /**
+ * Check if we're in a development environment
+ */
+const isDevelopment =
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+
+/**
  * Returns a proxied URL for media assets to avoid CORS issues
  *
  * @param url The original URL to proxy
@@ -48,14 +54,37 @@ export function getProxiedUrl(
     forceProxy?: boolean
   },
 ): string {
-  // If proxy is disabled or URL is empty, return original
-  if (!url || (!PROXY_CONFIG.enabled && !options?.forceProxy)) {
+  // If URL is empty, return empty string
+  if (!url) return ''
+
+  // In development, always proxy CloudFront URLs to avoid CORS
+  if (isDevelopment && url.includes('cloudfront.net') && PROXY_CONFIG.enabled) {
+    const proxyIndex = options?.proxyIndex ?? 0
+    const proxy = PROXY_CONFIG.proxies[proxyIndex]
+
+    if (proxy) {
+      return proxy.getUrl(url)
+    }
+  }
+
+  // In production, we should be able to use CloudFront directly
+  // since our domain will be allowed in CORS
+  if (
+    url.includes('dtut5r9j4w7j4.cloudfront.net') &&
+    !options?.forceProxy &&
+    !isDevelopment
+  ) {
     return url
   }
 
-  // Only proxy video URLs unless forced
+  // If proxy is disabled and not forced, return original
+  if (!PROXY_CONFIG.enabled && !options?.forceProxy) {
+    return url
+  }
+
+  // Only proxy video URLs unless forced or in development
   const isVideo = mimeType?.startsWith('video')
-  if (!isVideo && !options?.forceProxy) {
+  if (!isVideo && !options?.forceProxy && !isDevelopment) {
     return url
   }
 

@@ -47,12 +47,14 @@ export function MediaPreloader() {
         // Prefetch with more aggressive settings for the next item
         prefetch(url, mimeType, {
           prefetchVideoData: isNextItem,
+          crossOrigin: 'anonymous',
         })
 
         // If it's a video, also prefetch the proxied URL
-        if (mimeType.startsWith('video')) {
+        if (mimeType.startsWith('video') && proxiedUrl !== url) {
           prefetch(proxiedUrl, mimeType, {
             prefetchVideoData: isNextItem,
+            crossOrigin: 'anonymous',
           })
         }
       }
