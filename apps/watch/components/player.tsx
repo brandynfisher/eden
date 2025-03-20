@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CircularProgress } from '@/components/ui/circular-progress'
 import { usePlayer } from '@/contexts/player-context'
-import { cn } from '@/lib/utils'
+import { useMediaPrefetch } from '@/hooks/use-media-prefetch'
+import { cn, getNextProxyUrl, getProxiedUrl } from '@/lib/utils'
 import {
   ChevronLeft,
   ChevronRight,
@@ -17,6 +18,10 @@ import { useEffect, useRef, useState } from 'react'
 
 /* eslint-disable @next/next/no-img-element */
 
+// Check if we're in a development environment
+// const isDevelopment =
+//   typeof window !== 'undefined' && window.location.hostname === 'localhost'
+
 export function Player() {
   const {
     currentIndex,
@@ -27,16 +32,57 @@ export function Player() {
     applyDurationToVideos,
     goToNextSlide,
     goToPreviousSlide,
+    isLoadingMore,
   } = usePlayer()
+  const { prefetch } = useMediaPrefetch()
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [proxyIndex, setProxyIndex] = useState(0)
+  const [useDirectUrl, setUseDirectUrl] = useState(false)
+  const [isMediaLoaded, setIsMediaLoaded] = useState(false)
+  const [isMediaError, setIsMediaError] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const imageRef = useRef<HTMLImageElement>(null)
   const progressInterval = useRef<ReturnType<typeof setTimeout>>()
 
   const currentItem = items[currentIndex]
   const isVideo = currentItem?.mediaAttributes?.mimeType?.startsWith('video')
+
+  // Get the URL based on our current proxy state
+  const getMediaUrl = () => {
+    if (!currentItem?.url) return ''
+
+    // If using direct URL, return original
+    if (useDirectUrl) {
+      return currentItem.url
+    }
+
+    // Otherwise get appropriate proxied URL
+    return getProxiedUrl(
+      currentItem.url,
+      currentItem.mediaAttributes?.mimeType,
+      { proxyIndex },
+    )
+  }
+
+  const mediaUrl = getMediaUrl()
+
+  // Reset loaded state when media changes
+  useEffect(() => {
+    setIsMediaLoaded(false)
+    setIsMediaError(false)
+    setProxyIndex(0)
+    setUseDirectUrl(false)
+
+    // Ensure current item is prefetched
+    if (currentItem?.url) {
+      prefetch(currentItem.url, currentItem.mediaAttributes?.mimeType, {
+        prefetchVideoData: true,
+      })
+    }
+  }, [currentItem, prefetch])
 
   const toggleFullscreen = async () => {
     if (!containerRef.current) return
@@ -191,6 +237,39 @@ export function Player() {
     }
   }, [goToNextSlide, goToPreviousSlide])
 
+  // Handle media loading events
+  const handleMediaLoaded = () => {
+    setIsMediaLoaded(true)
+    setIsMediaError(false)
+  }
+
+  // Handle media error events
+  const handleMediaError = () => {
+    setIsMediaError(true)
+
+    if (isVideo && currentItem?.url) {
+      console.log(`Media error with URL: ${mediaUrl}`)
+
+      // Try the next proxy if available
+      const nextProxy = getNextProxyUrl(
+        currentItem.url,
+        currentItem.mediaAttributes?.mimeType,
+        proxyIndex,
+      )
+
+      if (nextProxy) {
+        console.log(`Trying next proxy: ${nextProxy}`)
+        setProxyIndex(prev => prev + 1)
+        setIsMediaError(false)
+      } else if (!useDirectUrl) {
+        // If no more proxies, try direct URL as last resort
+        console.log('No more proxies, trying direct URL')
+        setUseDirectUrl(true)
+        setIsMediaError(false)
+      }
+    }
+  }
+
   if (!currentItem) return null
 
   return (
@@ -202,20 +281,71 @@ export function Player() {
       )}
     >
       {isVideo ? (
-        <video
-          ref={videoRef}
-          src={currentItem.url}
-          className="w-full h-full object-contain"
-          autoPlay
-          playsInline
-          muted={isMuted}
-        />
+        <>
+          <video
+            ref={videoRef}
+            key={mediaUrl}
+            src={mediaUrl}
+            className={cn(
+              'w-full h-full object-contain',
+              !isMediaLoaded && 'opacity-0',
+            )}
+            autoPlay
+            playsInline
+            muted={isMuted}
+            preload="auto"
+            onLoadedData={handleMediaLoaded}
+            onCanPlay={handleMediaLoaded}
+            onError={handleMediaError}
+          />
+          {!isMediaLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              {isMediaError ? (
+                <div className="text-center">
+                  <div className="mb-2 text-destructive">
+                    Failed to load video
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Please check your connection and try again
+                  </div>
+                </div>
+              ) : (
+                <div className="size-12 animate-spin rounded-full border-4 border-muted border-t-primary"></div>
+              )}
+            </div>
+          )}
+        </>
       ) : (
-        <img
-          src={currentItem.url}
-          alt={currentItem.filename}
-          className="w-full h-full object-contain"
-        />
+        <>
+          <img
+            ref={imageRef}
+            key={mediaUrl}
+            src={mediaUrl}
+            alt={currentItem.filename}
+            className={cn(
+              'w-full h-full object-contain',
+              !isMediaLoaded && 'opacity-0',
+            )}
+            onLoad={handleMediaLoaded}
+            onError={handleMediaError}
+          />
+          {!isMediaLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              {isMediaError ? (
+                <div className="text-center">
+                  <div className="mb-2 text-destructive">
+                    Failed to load image
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Please check your connection and try again
+                  </div>
+                </div>
+              ) : (
+                <div className="size-12 animate-spin rounded-full border-4 border-muted border-t-primary"></div>
+              )}
+            </div>
+          )}
+        </>
       )}
 
       {/* Navigation Buttons */}
@@ -245,6 +375,7 @@ export function Player() {
       <div className="absolute bottom-4 right-4 flex items-center gap-2 h-10">
         <Badge variant="outline">
           {currentIndex + 1} / {items.length}
+          {isLoadingMore && '...'}
         </Badge>
 
         {isVideo && (
@@ -269,6 +400,15 @@ export function Player() {
       >
         {isFullscreen ? <Minimize2 /> : <Maximize2 />}
       </Button>
+
+      {/* Loading indicator */}
+      {isLoadingMore && (
+        <div className="absolute bottom-4 left-4">
+          <Badge variant="outline" className="animate-pulse">
+            Loading more...
+          </Badge>
+        </div>
+      )}
     </div>
   )
 }
