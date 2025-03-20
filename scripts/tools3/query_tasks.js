@@ -21,11 +21,12 @@ const config = {
   limit: 25,
   resultPath: 'result[].output[].filename', // Path to extract from each document
   prependUrl: true, // Whether to prepend AWS_CLOUDFRONT_URL to filenames
-  downloadFiles: true, // Whether to download the files
+  downloadFiles: true, // Whether to download the files - set to false to just fetch URLs
+  fetchOnly: false, // When true, just extracts URLs without downloading
   outputPath: path.join(path.dirname(fileURLToPath(import.meta.url)), 'downloads'), // Next to this script
   downloadConcurrency: 1, // Download one file at a time
-  downloadDelayMs: 5000, // 5 seconds between downloads
-  pauseBetweenDownloadsMs: 2000, // 10 seconds between each successful download
+  downloadDelayMs: 500, // 5 seconds between downloads
+  pauseBetweenDownloadsMs: 500, // 10 seconds between each successful download
   maxRetries: 5, // Increased number of retries for failed downloads
   initialRetryDelayMs: 10000, // Initial delay before first retry (10 seconds)
   backoffFactor: 2, // Exponential backoff multiplier
@@ -114,9 +115,22 @@ function downloadFile(url, targetPath, retries = 0) {
     // Choose http or https module based on URL
     const httpClient = url.startsWith('https') ? https : http
 
+    // Parse the URL to get hostname for Referer header
+    const parsedUrl = new URL(url)
+    const hostname = parsedUrl.hostname
+
+    // Browser-like headers to avoid CloudFront 403 errors
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
+      'Accept': 'video/webm,video/mp4,video/*;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': `https://${hostname}/`,
+      'Origin': `https://${hostname}`
+    }
+
     console.log(`Downloading file (attempt ${retries + 1}/${config.maxRetries + 1}): ${url}`)
 
-    const request = httpClient.get(url, (response) => {
+    const request = httpClient.get(url, { headers }, (response) => {
       // Handle redirects
       if (response.statusCode === 301 || response.statusCode === 302) {
         const redirectUrl = response.headers.location
@@ -289,24 +303,17 @@ async function main() {
 
     console.log(`Found ${docs.length} documents matching the query criteria.`)
 
-    // Create download directory with tool name and timestamp
+    // Create timestamp and directory paths early - moved up to fix reference error
     const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '')
     const downloadDir = path.resolve(
       config.outputPath,
       `${config.query.tool}_${timestamp}`
     )
-    console.log(`Download directory: ${downloadDir}`)
-
-    if (!DRY_RUN && config.downloadFiles) {
-      fs.mkdirSync(downloadDir, { recursive: true })
-      console.log(`Created download directory: ${downloadDir}`)
-    } else {
-      console.log(`[DRY_RUN] Would create directory: ${downloadDir}`)
-    }
 
     // Extract the specified data from each document
     const results = []
     const downloadsToProcess = []
+    const allExtractedUrls = []
 
     for (const doc of docs) {
       let extractedValues = extractNestedValues(doc, config.resultPath)
@@ -315,6 +322,9 @@ async function main() {
       if (config.prependUrl) {
         extractedValues = extractedValues.map(filename => filenameToUrl(filename))
       }
+
+      // Save all URLs for fetch-only mode
+      allExtractedUrls.push(...extractedValues)
 
       results.push({
         _id: doc._id,
@@ -328,8 +338,8 @@ async function main() {
       console.log('Extracted values:')
       console.log(extractedValues)
 
-      // Queue files for download if configured
-      if (!DRY_RUN && config.downloadFiles) {
+      // Queue files for download if configured and not in fetch-only mode
+      if (!DRY_RUN && config.downloadFiles && !config.fetchOnly) {
         for (const url of extractedValues) {
           if (!url || typeof url !== 'string') continue
 
@@ -351,13 +361,49 @@ async function main() {
             docId: doc._id
           })
         }
-      } else if (DRY_RUN && config.downloadFiles) {
-        console.log(`[DRY_RUN] Would download ${extractedValues.length} files for document ${doc._id}`)
+      } else if ((DRY_RUN || config.fetchOnly) && config.downloadFiles) {
+        console.log(`[${DRY_RUN ? 'DRY_RUN' : 'FETCH_ONLY'}] Would download ${extractedValues.length} files for document ${doc._id}`)
       }
     }
 
+    console.log('\nSummary:')
+    console.log(`Total documents processed: ${docs.length}`)
+    console.log(`Total values extracted: ${results.reduce((acc, r) => acc + r.extractedValues.length, 0)}`)
+
+    // In fetch-only mode, write URLs to a file without downloading
+    if (config.fetchOnly) {
+      const outputDir = path.resolve(
+        config.outputPath
+      )
+
+      // Ensure output directory exists
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true })
+      }
+
+      const urlsFilePath = path.join(outputDir, `${config.query.tool}_urls_${timestamp}.txt`)
+      fs.writeFileSync(urlsFilePath, allExtractedUrls.join('\n'))
+      console.log(`\nFetch-only mode: ${allExtractedUrls.length} URLs written to ${urlsFilePath}`)
+      console.log('You can download these files using tools like wget or curl:')
+      console.log(`wget -i ${urlsFilePath}`)
+      console.log(`\nOr to download with a 5-second delay between files:`)
+      console.log(`cat ${urlsFilePath} | while read url; do wget "$url"; sleep 5; done`)
+
+      return results
+    }
+
+    // Now create the download directory since we're not in fetch-only mode
+    console.log(`Download directory: ${downloadDir}`)
+
+    if (!DRY_RUN && config.downloadFiles) {
+      fs.mkdirSync(downloadDir, { recursive: true })
+      console.log(`Created download directory: ${downloadDir}`)
+    } else {
+      console.log(`[DRY_RUN] Would create directory: ${downloadDir}`)
+    }
+
     // Download files with rate limiting if needed
-    if (downloadsToProcess.length > 0 && !DRY_RUN) {
+    if (downloadsToProcess.length > 0 && !DRY_RUN && !config.fetchOnly) {
       console.log(`\nPreparing to download ${downloadsToProcess.length} files with staggered approach...`)
 
       const downloadStats = await downloadFilesWithRateLimit(
@@ -369,11 +415,7 @@ async function main() {
       console.log(`\nDownload completed: ${downloadStats.successful}/${downloadStats.total} files successful`)
     }
 
-    console.log('\nSummary:')
-    console.log(`Total documents processed: ${docs.length}`)
-    console.log(`Total values extracted: ${results.reduce((acc, r) => acc + r.extractedValues.length, 0)}`)
-
-    if (!DRY_RUN && config.downloadFiles) {
+    if (!DRY_RUN && config.downloadFiles && !config.fetchOnly) {
       console.log(`Files downloaded to: ${downloadDir}`)
 
       // Write results to a manifest file
@@ -388,7 +430,7 @@ async function main() {
         results
       }, null, 2))
       console.log(`Manifest written to: ${manifestPath}`)
-    } else if (DRY_RUN && config.downloadFiles) {
+    } else if (DRY_RUN && config.downloadFiles && !config.fetchOnly) {
       console.log(`[DRY_RUN] No files were downloaded. Run with DRY_RUN=false to download files.`)
     }
 
