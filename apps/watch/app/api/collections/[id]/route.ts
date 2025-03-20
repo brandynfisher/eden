@@ -24,19 +24,11 @@ export async function GET(
   const authToken = await getToken()
 
   try {
-    // const eden = new EdenClient({
-    //   edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-    //   token: authToken || undefined,
-    // })
-
-    // const res = await eden.collections.getCreationsV2({
-    //   collectionId: id,
-    // })
     const res = await fetcher<PaginatedCursorResponse<CreationV2>>(
       createCursorPaginationRoute(
         `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/feed-cursor/creations`,
         {
-          limit: 3,
+          limit: 25,
           sort: 'createdAt;-1',
           collection: id,
           cursor,

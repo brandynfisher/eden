@@ -1,5 +1,6 @@
 'use client'
 
+import { MediaPreloader } from '@/components/media-preloader'
 import { Player } from '@/components/player'
 import { SettingsDialog } from '@/components/settings-dialog'
 import { Button } from '@/components/ui/button'
@@ -59,6 +60,7 @@ function PlayerContent({ router }: { router: ReturnType<typeof useRouter> }) {
 
   return (
     <main className="w-screen h-screen bg-black relative">
+      <MediaPreloader />
       <Player />
 
       <Button
