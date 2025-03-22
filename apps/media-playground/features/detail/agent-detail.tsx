@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
+import AgentTriggerSheet from '@/features/agent/agent-trigger-sheet'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import CreationsFeed from '@/features/feed/creations-feed'
@@ -16,10 +17,12 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAgentDeploymentFormSheet,
   updateAgentFormSheet,
+  updateAgentTriggerFormSheet,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import {
+  ClockIcon,
   EyeOffIcon,
   MessageSquareIcon,
   RocketIcon,
@@ -71,6 +74,15 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   const handleConfigureDeployments = () => {
     dispatch(
       updateAgentDeploymentFormSheet({
+        isOpen: true,
+        agentId: agent?._id,
+      }),
+    )
+  }
+
+  const handleConfigureTriggers = () => {
+    dispatch(
+      updateAgentTriggerFormSheet({
         isOpen: true,
         agentId: agent?._id,
       }),
@@ -129,13 +141,22 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                       <SettingsIcon className="w-4 h-4" />
                     </Button>
                     {isFeatureDeploymentsEnabled && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleConfigureDeployments}
-                      >
-                        <RocketIcon size={18} />
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleConfigureDeployments}
+                        >
+                          <RocketIcon size={18} />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleConfigureTriggers}
+                        >
+                          <ClockIcon size={18} />
+                        </Button>
+                      </>
                     )}
                     <AgentActionsMenu
                       className="size-10"
@@ -214,6 +235,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           )}
         </div>
       </div>
+      <AgentTriggerSheet />
       <div className="p-4">
         {isSignedIn ? (
           !!user && (

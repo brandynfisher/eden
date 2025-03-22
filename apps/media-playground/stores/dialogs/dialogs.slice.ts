@@ -40,6 +40,10 @@ export interface DialogsState {
     agentId?: string
     onAction?: () => Promise<void>
   }
+  agentTriggerFormSheet: {
+    isOpen: boolean
+    agentId?: string
+  }
 }
 
 const initialState: DialogsState = {
@@ -74,6 +78,10 @@ const initialState: DialogsState = {
     agentId: undefined,
   },
   agentDeploymentFormSheet: {
+    isOpen: false,
+    agentId: undefined,
+  },
+  agentTriggerFormSheet: {
     isOpen: false,
     agentId: undefined,
   },
@@ -219,6 +227,18 @@ const dialogsSlice = createSlice({
         state.agentDeploymentFormSheet.onAction = action.payload.onAction
       }
     },
+    updateAgentTriggerFormSheet(
+      state,
+      action: { payload: { isOpen: boolean; agentId?: string } },
+    ) {
+      if (!action.payload.isOpen) {
+        state.agentTriggerFormSheet.isOpen = false
+        delete state.agentTriggerFormSheet.agentId
+      } else {
+        state.agentTriggerFormSheet.isOpen = action.payload.isOpen
+        state.agentTriggerFormSheet.agentId = action.payload.agentId
+      }
+    },
   },
 })
 
@@ -232,6 +252,7 @@ export const {
   updateAgentFormSheet,
   updateAgentDeploymentFormSheet,
   closeAllQuickCreateModals,
+  updateAgentTriggerFormSheet,
 } = dialogsSlice.actions
 
 export default dialogsSlice.reducer
