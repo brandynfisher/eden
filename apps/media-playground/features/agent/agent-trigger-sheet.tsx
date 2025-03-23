@@ -9,10 +9,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { DiscordTriggerSection } from '@/features/agent/trigger-sheet/discord-trigger-section'
-import { TelegramTriggerSection } from '@/features/agent/trigger-sheet/telegram-trigger-section'
-import { TwitterTriggerSection } from '@/features/agent/trigger-sheet/twitter-trigger-section'
-import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
+import { TriggerCreateSheet } from '@/features/agent/trigger-sheet/trigger-create-sheet'
+import { TriggerList } from '@/features/agent/trigger-sheet/trigger-list'
+import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { useAgentTriggerFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentTriggerFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -22,7 +21,7 @@ const AgentTriggerFormSheet = () => {
   const { isOpen, agentId } = useAgentTriggerFormSheet()
   const dispatch = useAppDispatch()
 
-  const deploymentsQuery = useAgentDeploymentsQuery({
+  const triggersQuery = useAgentTriggersQuery({
     key: agentId || '',
     enabled: !!agentId && isOpen,
   })
@@ -42,49 +41,30 @@ const AgentTriggerFormSheet = () => {
           <RocketIcon size={18} />
         </Button>
       </SheetTrigger>
-      <SheetContent
-        side="left"
-        className="overflow-y-auto w-full sm:!max-w-2xl"
-      >
+      <SheetContent side="left" className="w-full sm:!max-w-2xl">
         <SheetHeader>
-          <SheetTitle>Configure Triggers</SheetTitle>
+          <SheetTitle>Scheduled Tasks</SheetTitle>
           <SheetDescription>
-            Configure your agent's triggers across different platforms.
+            Configure your agent's scheduled tasks across different platforms.
           </SheetDescription>
         </SheetHeader>
-        {deploymentsQuery.isPending && (
+        {triggersQuery.isPending && (
           <div className="flex items-center justify-center mt-10">
             <Loader2 className="size-4 animate-spin" />
           </div>
         )}
-        {deploymentsQuery.isError && (
+        {triggersQuery.isError && (
           <div className="flex items-center justify-center gap-2 mt-10">
             <AlertCircle className="size-4 text-destructive" />
             <p className="text-destructive">
-              We were unable to fetch your deployments. Please try again later.
+              We were unable to fetch agent triggers. Please try again later.
             </p>
           </div>
         )}
-        {deploymentsQuery.isSuccess && (
-          <div className="space-y-4 mt-4">
-            <DiscordTriggerSection
-              agentId={agentId}
-              deployment={deploymentsQuery.deployments?.find(
-                deployment => deployment.platform === 'discord',
-              )}
-            />
-            <TelegramTriggerSection
-              agentId={agentId}
-              deployment={deploymentsQuery.deployments?.find(
-                deployment => deployment.platform === 'telegram',
-              )}
-            />
-            <TwitterTriggerSection
-              agentId={agentId}
-              deployment={deploymentsQuery.deployments?.find(
-                deployment => deployment.platform === 'twitter',
-              )}
-            />
+        {triggersQuery.isSuccess && (
+          <div className="flex flex-col flex-1 space-y-4 mt-4">
+            <TriggerList agentId={agentId} triggers={triggersQuery.triggers} />
+            <TriggerCreateSheet agentId={agentId} />
           </div>
         )}
       </SheetContent>

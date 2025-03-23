@@ -1,5 +1,6 @@
 import { Agent, AgentDocument } from '../models/Agent'
 import { Deployment } from '../models/Deployment'
+import { Trigger } from '../models/Trigger'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
@@ -237,6 +238,94 @@ export const updateAgent = async (
 
   return reply.status(200).send({
     agentId,
+  })
+}
+
+export const getAgentTriggers = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const currentUserId = request.user.userId
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to view triggers for this agent',
+    })
+  }
+
+  const triggers = await Trigger.find({
+    agent: agentId,
+  }).populate('deployment', '_id platform config')
+
+  return reply.status(200).send({
+    triggers,
+  })
+}
+
+export const createAgentTrigger = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const currentUserId = request.user.userId
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to create triggers for this agent',
+    })
+  }
+
+  // TODO: Implement rest
+}
+
+export const deleteAgentTrigger = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId, triggerId } = request.params as {
+    agentId: string
+    triggerId: string
+  }
+  const currentUserId = request.user.userId
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to delete triggers for this agent',
+    })
+  }
+
+  // TODO: If we don't want to delete the trigger here, we need to use eve api?
+  await Trigger.deleteOne({
+    _id: triggerId,
+    agent: agentId,
+  })
+
+  return reply.status(200).send({
+    success: true,
   })
 }
 

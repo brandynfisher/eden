@@ -1,51 +1,4 @@
-import { z } from 'zod'
-
-// Define the CronSchedule type based on the provided schema
-export type CronSchedule = {
-  year?: number | string
-  month?: number | string
-  day?: number | string
-  week?: number | string
-  day_of_week?: number | string | string[]
-  hour?: number | string
-  minute?: number | string
-  second?: number | string
-  start_date: Date
-  end_date?: Date
-  timezone?: string
-}
-
-export type Channel = {
-  value: string
-  label: string
-}
-
-export type Trigger = {
-  id: string
-  message: string
-  schedule: CronSchedule
-  channels: { id: string; name: string }[]
-  createdAt?: Date
-}
-
-// Define form schema
-export const formSchema = z.object({
-  instructions: z.string().min(1, 'Instructions are required'),
-  channels: z.array(z.string()),
-  startDate: z.date(),
-  repeat: z.enum([
-    'DOES_NOT_REPEAT',
-    'HOURLY',
-    'DAILY',
-    'WEEKDAYS',
-    'WEEKENDS',
-    'MONTHLY',
-  ]),
-  endDate: z.date().optional(),
-  timezone: z.string(),
-})
-
-export type FormValues = z.infer<typeof formSchema>
+import { Deployment } from '@edenlabs/eden-sdk'
 
 // Define a type for the timezone object
 export type TimezoneOption = {
@@ -168,71 +121,12 @@ export function getTimezones(): TimezoneOption[] {
   }
 }
 
-// Function to determine the repeat type from a schedule
-export const determineRepeatType = (
-  schedule: CronSchedule,
-): FormValues['repeat'] => {
-  if (schedule.hour !== undefined && schedule.minute !== undefined) {
-    if (schedule.day_of_week === '1-5') {
-      return 'WEEKDAYS'
-    } else if (schedule.day_of_week === '0,6') {
-      return 'WEEKENDS'
-    } else if (schedule.day !== undefined) {
-      return 'MONTHLY'
-    } else if (
-      schedule.day_of_week === undefined &&
-      schedule.day === undefined
-    ) {
-      return 'DAILY'
-    }
-  } else if (schedule.minute === 0 && schedule.hour === undefined) {
-    return 'HOURLY'
-  }
+export function getChannelsForPlatform(
+  platform: string,
+  deployment: Deployment,
+) {
+  if (platform === 'discord') return deployment.config.discord.channel_allowlist
+  if (platform === 'telegram') return deployment.config.telegram.topic_allowlist
 
-  return 'DOES_NOT_REPEAT'
-}
-
-// This will be used to map the form values to the API schema
-export const repeatValueToCronSchedule = (
-  repeat: FormValues['repeat'],
-  startDate: Date,
-  endDate?: Date,
-  timezone?: string,
-): CronSchedule => {
-  const cronSchedule: CronSchedule = {
-    start_date: startDate,
-    end_date: endDate,
-    timezone: timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
-  }
-
-  switch (repeat) {
-    case 'HOURLY':
-      cronSchedule.minute = 0 // Every hour at minute 0
-      break
-    case 'DAILY':
-      cronSchedule.hour = startDate.getHours()
-      cronSchedule.minute = startDate.getMinutes()
-      break
-    case 'WEEKDAYS':
-      cronSchedule.hour = startDate.getHours()
-      cronSchedule.minute = startDate.getMinutes()
-      cronSchedule.day_of_week = '1-5' // Monday to Friday
-      break
-    case 'WEEKENDS':
-      cronSchedule.hour = startDate.getHours()
-      cronSchedule.minute = startDate.getMinutes()
-      cronSchedule.day_of_week = '0,6' // Sunday and Saturday
-      break
-    case 'MONTHLY':
-      cronSchedule.hour = startDate.getHours()
-      cronSchedule.minute = startDate.getMinutes()
-      cronSchedule.day = startDate.getDate() // Same day of month
-      break
-    case 'DOES_NOT_REPEAT':
-    default:
-      // For non-recurring, we just use the start_date
-      break
-  }
-
-  return cronSchedule
+  return []
 }

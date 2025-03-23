@@ -9,56 +9,17 @@ import {
 import { cn } from '@/lib/utils'
 import { ChevronDownIcon, InfoIcon } from 'lucide-react'
 
-interface TriggerCollapsibleTriggerProps {
+interface TriggerCollapsibleFormGroupProps {
   isOpen: boolean
   label: string
   tooltip: string
-  disabled?: boolean
-  disabledNote?: string
 }
 
-export const TriggerCollapsibleTrigger = ({
+export const TriggerCollapsibleFormGroup = ({
   isOpen,
   label,
   tooltip,
-  disabled = false,
-  disabledNote,
-}: TriggerCollapsibleTriggerProps) => {
-  if (disabled) {
-    return (
-      <div
-        className={cn([
-          'w-full flex items-center gap-4 p-4 border transition-colors rounded-lg',
-          'border border-muted bg-popover',
-          'opacity-70 cursor-not-allowed',
-        ])}
-      >
-        <div className="w-full flex items-center gap-2">
-          <Label>{label}</Label>
-          <TooltipProvider delayDuration={125}>
-            <Tooltip>
-              <TooltipTrigger
-                className="text-muted-foreground hover:text-accent-foreground cursor-pointer flex items-center"
-                onClick={ev => ev.preventDefault()}
-                asChild
-              >
-                <InfoIcon className="h-4 w-4" />
-              </TooltipTrigger>
-              <TooltipContent sideOffset={16} className="max-w-[95dvw]">
-                {tooltip}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          {disabledNote && (
-            <span className="text-xs text-muted-foreground ml-auto">
-              {disabledNote}
-            </span>
-          )}
-        </div>
-      </div>
-    )
-  }
-
+}: TriggerCollapsibleFormGroupProps) => {
   return (
     <CollapsibleTrigger
       className={cn([

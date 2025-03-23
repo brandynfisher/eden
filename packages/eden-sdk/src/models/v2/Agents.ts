@@ -2,6 +2,7 @@ import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { ModelV2 } from 'src/models/v2'
 import { Deployment } from 'src/models/v2/Deployments'
+import { CronSchedule, Trigger } from 'src/models/v2/Trigger'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 export type AgentSuggestion = {
@@ -201,6 +202,25 @@ export interface AgentsDeleteArguments extends WebAPICallOptions {
   agentId: string
 }
 
+/***
+ * Trigger
+ */
+export interface AgentsGetTriggersArguments extends WebAPICallOptions {
+  agentId: string
+}
+
+export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
+  agentId: string
+  message: string
+  schedule: CronSchedule
+  ephemeral?: boolean
+}
+
+export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
+  agentId: string
+  triggerId: string
+}
+
 // Requests
 export const agentGetRequestConfig = (
   args: AgentGetArguments,
@@ -291,6 +311,32 @@ export const agentsDeleteRequestConfig = (
   }
 }
 
+export const agentsGetTriggersRequestConfig = (
+  args: AgentsGetTriggersArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/agents/${args.agentId}/triggers`,
+  }
+}
+
+export const agentsCreateTriggerRequestConfig = (
+  args: AgentsCreateTriggerArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/triggers`,
+  }
+}
+
+export const agentsDeleteTriggerRequestConfig = (
+  args: AgentsDeleteTriggerArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `v2/agents/${args.agentId}/triggers/${args.triggerId}`,
+  }
+}
 // Responses
 export type AgentsGetDeploymentsResponse = WebAPICallResult & {
   deployments: Deployment[]
@@ -333,6 +379,21 @@ export type AgentsDeleteDeploymentResponse = WebAPICallResult & {
 }
 
 export type AgentsDeleteResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+export type AgentsGetTriggersResponse = WebAPICallResult & {
+  triggers: Trigger[]
+  error?: string
+}
+
+export type AgentsCreateTriggerResponse = WebAPICallResult & {
+  trigger: Trigger
+  error?: string
+}
+
+export type AgentsDeleteTriggerResponse = WebAPICallResult & {
   success: boolean
   error?: string
 }

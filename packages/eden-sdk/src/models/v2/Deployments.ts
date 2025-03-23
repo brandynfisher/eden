@@ -9,7 +9,7 @@ export type Platform =
   | 'discord_modal'
   | 'telegram_modal'
 
-type AllowlistItem = {
+export type AllowlistItem = {
   id: string
   note?: string
 }
