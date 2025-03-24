@@ -9,7 +9,7 @@ import {
 import { useAuthState } from '@/hooks/use-auth-state'
 import { CollectionV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { ExternalLinkIcon } from 'lucide-react'
+import { ExternalLinkIcon, PresentationIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
 
@@ -58,6 +58,14 @@ const CollectionActionsContent = ({
           <Link href={`/collections/${collection._id}`}>
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
+            href={`${process.env.NEXT_PUBLIC_EDEN_WATCH_APP_URL}/${collection._id}/player`}
+          >
+            <PresentationIcon className="mr-2 h-4 w-4" />
+            Watch
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>

@@ -225,6 +225,8 @@ import {
   CollectionsV2DeleteArguments,
   CollectionsV2DeleteResponse,
   CollectionsV2GetArguments,
+  CollectionsV2GetCreationsArguments,
+  CollectionsV2GetCreationsResponse,
   CollectionsV2GetLightArguments,
   CollectionsV2GetLightResponse,
   CollectionsV2GetResponse,
@@ -238,6 +240,8 @@ import {
   CreationsV2GetResponse,
   CreationsV2PatchArguments,
   CreationsV2PatchResponse,
+  FeedCreationsV2CursorArguments,
+  FeedCreationsV2CursorResponse,
   ModelsV2GetArguments,
   ModelsV2GetResponse,
   ModelsV2ListArguments,
@@ -276,6 +280,7 @@ import {
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
+  collectionsV2GetCreationsRequestConfig,
   collectionsV2GetLightRequestConfig,
   collectionsV2GetRequestConfig,
   collectionsV2RemoveCreationsRequestConfig,
@@ -283,6 +288,7 @@ import {
   creationsV2BulkPatchRequestConfig,
   creationsV2GetRequestConfig,
   creationsV2PatchRequestConfig,
+  feedCursorCreationsV2RequestConfig,
   modelsV2GetRequestConfig,
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
@@ -442,6 +448,10 @@ export abstract class Methods {
       this,
       collectionsV2GetRequestConfig,
     ),
+    getCreationsV2: bindApiCall<
+      CollectionsV2GetCreationsArguments,
+      CollectionsV2GetCreationsResponse
+    >(this, collectionsV2GetCreationsRequestConfig),
     getLightV2: bindApiCall<
       CollectionsV2GetLightArguments,
       CollectionsV2GetLightResponse
@@ -685,6 +695,13 @@ export abstract class Methods {
       FeedCreationsCursorArguments,
       FeedCreationsCursorResponse
     >(this, feedCursorCreationsRequestConfig),
+  }
+
+  public readonly feed_cursorV2 = {
+    creations: bindApiCall<
+      FeedCreationsV2CursorArguments,
+      FeedCreationsV2CursorResponse
+    >(this, feedCursorCreationsV2RequestConfig),
   }
 
   public readonly generators = {

@@ -4,7 +4,7 @@ import React from 'react'
 
 const TypingIndicator = () => {
   return (
-    <div className="w-fit h-8 items-center rounded-md text-center px-2 flex gap-0.5 text-2xl">
+    <div className="w-fit h-8 items-center rounded-md text-center flex gap-0.5 text-2xl">
       <div
         className="animate-bounce"
         style={{
