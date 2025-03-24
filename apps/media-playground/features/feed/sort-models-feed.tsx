@@ -1,5 +1,6 @@
 'use client'
 
+import FeedSearchForm from '@/components/filter/feed-search-form'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import ModelsFeed from '@/features/feed/models-feed'
 import { ModelsFilter } from '@/features/feed/models-filter'
@@ -19,11 +20,16 @@ const SortModelsFeed = ({ initialFilter }: Props) => {
   const [filter, setFilter] = useState<FeedCursorRouteQueryParams['filter']>(
     initialFilter || {},
   )
+  const [search, setSearch] = useState('')
+  const handleSearch = (value: string) => {
+    setSearch(value)
+  }
 
   // Convert filter object to query parameters for ModelsFeed
   const getQueryParams = (): FeedConceptsCursorArguments => {
     const queryParams: FeedConceptsCursorArguments = {
       sort: ['createdAt;-1'],
+      search: search,
     }
 
     // Convert filter object properties to string array format
@@ -51,13 +57,13 @@ const SortModelsFeed = ({ initialFilter }: Props) => {
   return (
     <>
       <div className="flex items-center mb-6 gap-x-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mr-auto">
           <TypographyH4 className="text-xl font-semibold text-center">
             Explore Models
           </TypographyH4>
         </div>
+        <FeedSearchForm handleSearch={handleSearch} />
         <ModelsFilter
-          className="ml-auto"
           initialFilter={initialFilter}
           onChange={filter => setFilter(filter)}
         />
