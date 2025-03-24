@@ -168,12 +168,23 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                 </div>
               )}
             </div>
-            <div className="pb-4 text-sm">
-              <div className="h-9 flex items-center justify-between">
-                <div className="font-bold">Thumbnail Prompts</div>
+            {!item ? (
+              <div className="pb-4 text-sm">
+                <div className="h-9 flex items-center justify-between">
+                  <div className="font-bold">Thumbnail Prompts</div>
+                </div>
+                <div className="space-y-1">
+                  <Skeleton className="h-5 w-[250px]" />
+                  <Skeleton className="h-5 w-[250px]" />
+                  <Skeleton className="h-5 w-[250px]" />
+                </div>
               </div>
-              {item && (item as ModelV2).thumbnail_prompts ? (
-                Array.isArray((item as ModelV2).thumbnail_prompts) ? (
+            ) : (item as ModelV2).thumbnail_prompts ? (
+              <div className="pb-4 text-sm">
+                <div className="h-9 flex items-center justify-between">
+                  <div className="font-bold">Thumbnail Prompts</div>
+                </div>
+                {Array.isArray((item as ModelV2).thumbnail_prompts) ? (
                   <ol className="list-decimal list-decimal-inside ml-4 text-muted-foreground">
                     {((item as ModelV2).thumbnail_prompts as string[]).map(
                       (prompt, index) => (
@@ -189,15 +200,9 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                       text={String((item as ModelV2).thumbnail_prompts) || '-'}
                     />
                   </div>
-                )
-              ) : (
-                <div className="space-y-1">
-                  <Skeleton className="h-5 w-[250px]" />
-                  <Skeleton className="h-5 w-[250px]" />
-                  <Skeleton className="h-5 w-[250px]" />
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : null}
           </>
         ) : null}
 

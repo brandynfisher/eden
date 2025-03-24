@@ -162,7 +162,7 @@ const TaskStatusIndicator = () => {
                           <TimeAgo date={task.createdAt} locale="en-short" />
                         </div>
                       </div>
-                      <div className={'h-10 flex gap-2 items-center'}>
+                      <div className={'h-10 flex gap-2 items-center relative'}>
                         {task.status === TaskV2Status.Completed
                           ? task.result.map((result, resultIndex) =>
                               result.output && Array.isArray(result.output) ? (
@@ -178,11 +178,8 @@ const TaskStatusIndicator = () => {
                                   />
                                 ))
                               ) : (
-                                <AlertDestructive
-                                  key={resultIndex}
-                                  title="Data Error"
-                                >
-                                  <AlertDescription>
+                                <AlertDestructive key={resultIndex}>
+                                  <AlertDescription className="p-1 text-xs">
                                     Item: {task?._id}
                                   </AlertDescription>
                                 </AlertDestructive>
