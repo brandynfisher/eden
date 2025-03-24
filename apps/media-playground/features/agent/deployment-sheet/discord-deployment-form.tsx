@@ -10,9 +10,10 @@ import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ExternalLink } from 'lucide-react'
+import { Copy } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -120,29 +121,38 @@ export const DiscordDeploymentForm = ({
 
             {/* OAuth URL Section */}
             {deployment?.config?.discord?.oauth_url && isDeployed && (
-              <div className="flex flex-col gap-2 mt-2 p-4 borderrounded-0">
+              <div className="flex flex-col gap-2 mt-2 p-4 borderrounded-m">
                 <div className="flex flex-col">
-                  <h3 className="text-sm font-medium text-gray-700">
-                    Invite Bot to Server
-                  </h3>
+                  <h3 className="text-sm font-medium">Invite Bot to Server</h3>
                   <p className="text-sm">
                     Use this link to add your bot to a Discord server:
                   </p>
                 </div>
                 <div className="flex items-center justify-between mt-1">
-                  <div className="text-sm truncate max-w-[70%] overflow-hidden">
+                  <div className="text-sm text-gray-600 truncate max-w-[70%] overflow-hidden">
                     {deployment.config.discord.oauth_url}
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      window.open(deployment.config.discord.oauth_url, '_blank')
-                    }
+                    onClick={e => {
+                      e.preventDefault()
+
+                      if (deployment.config.discord.oauth_url) {
+                        navigator.clipboard.writeText(
+                          deployment.config.discord.oauth_url,
+                        )
+                        toast.success('Copied to clipboard', {
+                          description:
+                            'Discord OAuth URL has been copied to clipboard',
+                          dismissible: true,
+                        })
+                      }
+                    }}
                     className="flex items-center gap-1"
                   >
-                    <span>Open</span>
-                    <ExternalLink size={14} />
+                    <span>Copy</span>
+                    <Copy size={14} />
                   </Button>
                 </div>
               </div>
