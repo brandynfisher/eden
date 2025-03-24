@@ -47,6 +47,7 @@ const AgentTriggerFormSheet = () => {
           <SheetDescription>
             Configure your agent's scheduled tasks across different platforms.
           </SheetDescription>
+          <TriggerCreateSheet agentId={agentId} />
         </SheetHeader>
         {triggersQuery.isPending && (
           <div className="flex items-center justify-center mt-10">
@@ -64,7 +65,6 @@ const AgentTriggerFormSheet = () => {
         {triggersQuery.isSuccess && (
           <div className="flex flex-col flex-1 space-y-4 mt-4">
             <TriggerList agentId={agentId} triggers={triggersQuery.triggers} />
-            <TriggerCreateSheet agentId={agentId} />
           </div>
         )}
       </SheetContent>

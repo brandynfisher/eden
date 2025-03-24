@@ -213,6 +213,8 @@ export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
   agentId: string
   message: string
   schedule: CronSchedule
+  deploymentId?: string
+  channelId?: string
   ephemeral?: boolean
 }
 

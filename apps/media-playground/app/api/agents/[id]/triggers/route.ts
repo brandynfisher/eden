@@ -68,7 +68,7 @@ export async function POST(
 
   const requestJson = await request.json()
 
-  const { message, schedule, updateConfig } =
+  const { message, schedule, deploymentId, channelId } =
     requestJson as AgentsCreateTriggerArguments
 
   try {
@@ -81,7 +81,8 @@ export async function POST(
       agentId: id,
       message,
       schedule,
-      updateConfig,
+      deploymentId,
+      channelId,
     })
 
     if (!res) {

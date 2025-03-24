@@ -18,7 +18,10 @@ import {
 } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
 import { TriggerPlatformField } from '@/features/agent/trigger-sheet/trigger-platform-field'
-import { TriggerRepeatOptions } from '@/features/agent/trigger-sheet/trigger-repeat-options'
+import {
+  TriggerRepeatOptions,
+  triggerRepeatOptions,
+} from '@/features/agent/trigger-sheet/trigger-repeat-options'
 import { TriggerScheduleField } from '@/features/agent/trigger-sheet/trigger-schedule-field'
 import { getChannelsForPlatform } from '@/features/agent/trigger-sheet/trigger-utils'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
@@ -109,7 +112,17 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
 
   const onSubmit = async (values: CreateTriggerDto) => {
     try {
+      const predefinedSchedule =
+        triggerRepeatOptions.find(option => option.value === values.repeat)
+          ?.schedule || {}
+
+      const hour = values.startDate.getHours()
+      const minute = values.startDate.getMinutes()
+
       const schedule: CronSchedule = {
+        ...predefinedSchedule,
+        hour,
+        minute,
         timezone: values.timezone,
         start_date: values.startDate,
         end_date: values.endDate,
@@ -119,7 +132,17 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
         schedule.end_date = undefined
       }
 
-      await axios.post(`/api/agents/${agentId}/triggers`, values)
+      const deployment = deployments?.find(
+        deployment => deployment.platform === platform,
+      )
+
+      await axios.post(`/api/agents/${agentId}/triggers`, {
+        message: values.instructions,
+        schedule,
+        deploymentId: deployment?._id,
+        channelId: values.channelId,
+      })
+
       toast.success('Task created successfully')
       setIsOpen(false)
     } catch (error) {
@@ -138,7 +161,10 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="left" className="w-full sm:!max-w-2xl">
+      <SheetContent
+        side="left"
+        className="w-full sm:!max-w-2xl overflow-y-auto"
+      >
         <SheetHeader>
           <SheetTitle>Schedule New Task</SheetTitle>
           <SheetDescription>

@@ -291,7 +291,7 @@ export const createAgentTrigger = async (
     })
   }
 
-  // TODO: Implement rest
+  // TODO-jmill: Implement rest
 }
 
 export const deleteAgentTrigger = async (
@@ -318,7 +318,7 @@ export const deleteAgentTrigger = async (
     })
   }
 
-  // TODO: If we don't want to delete the trigger here, we need to use eve api?
+  // TODO-jmill: If we don't want to delete the trigger here, we need to use eve api?
   await Trigger.deleteOne({
     _id: triggerId,
     agent: agentId,
