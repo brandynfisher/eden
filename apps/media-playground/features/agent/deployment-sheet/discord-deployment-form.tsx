@@ -163,6 +163,7 @@ export const DiscordDeploymentForm = ({
               platform="discord"
               form={form}
               isDeployed={isDeployed ?? false}
+              guideUrl="https://docs.eden.art/docs/guides/discord"
             />
           </form>
         </Form>
