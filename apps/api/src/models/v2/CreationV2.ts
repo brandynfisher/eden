@@ -10,7 +10,7 @@ import paginate from 'mongoose-paginate-v2'
 
 export interface CreationV2Schema extends MediaOutput {
   user: ObjectId
-  requester?: ObjectId
+  agent?: ObjectId
   task: ObjectId
   args: TaskV2Args
   tool: string
@@ -22,7 +22,7 @@ export interface CreationV2Schema extends MediaOutput {
 
 export interface CreationV2Input extends MediaOutput {
   user: ObjectId
-  requester?: ObjectId
+  agent?: ObjectId
   task: ObjectId
   args: TaskV2Args
   tool: string
@@ -40,7 +40,7 @@ export const creationSchema = new Schema<CreationV2Document>(
       ref: 'users3',
       required: true,
     },
-    requester: {
+    agent: {
       type: Schema.Types.ObjectId,
       ref: 'users3',
       required: false,
@@ -124,7 +124,7 @@ creationSchema.index({
 })
 creationSchema.index({
   user: 1,
-  requester: 1,
+  agent: 1,
   'mediaAttributes.mimeType': 1,
   task: -1,
   public: -1,
@@ -133,7 +133,7 @@ creationSchema.index({
 })
 creationSchema.index({
   user: 1,
-  requester: 1,
+  agent: 1,
   public: 1,
   deleted: 1,
   createdAt: -1,

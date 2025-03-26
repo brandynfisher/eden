@@ -1,0 +1,76 @@
+'use client'
+
+import { MediaPreloader } from '@/components/media-preloader'
+import { Player } from '@/components/player'
+import { SettingsDialog } from '@/components/settings-dialog'
+import { Button } from '@/components/ui/button'
+import { PlayerProvider, usePlayer } from '@/contexts/player-context'
+import { useCollectionCreationsFeed } from '@/hooks/use-collection-creations-feed'
+import { Loader2, X } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
+
+export default function PlayerPage() {
+  const router = useRouter()
+  const { id } = useParams()
+
+  const {
+    creations,
+    isLoading: isCollectionLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useCollectionCreationsFeed(id as string)
+
+  if (isCollectionLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!creations.length) {
+    return null
+  }
+
+  return (
+    <PlayerProvider
+      initialItems={creations}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+    >
+      <PlayerContent router={router} />
+    </PlayerProvider>
+  )
+}
+
+function PlayerContent({ router }: { router: ReturnType<typeof useRouter> }) {
+  const { showSettings } = usePlayer()
+
+  const handleSettingsClose = (open: boolean) => {
+    if (!open) {
+      router.back()
+    }
+  }
+
+  if (showSettings) {
+    return <SettingsDialog open={true} onOpenChange={handleSettingsClose} />
+  }
+
+  return (
+    <main className="w-screen h-screen bg-black relative">
+      <MediaPreloader />
+      <Player />
+
+      <Button
+        onClick={() => router.back()}
+        variant="ghost"
+        size="icon"
+        className="absolute top-4 left-4 [&_svg]:size-5"
+      >
+        <X />
+      </Button>
+    </main>
+  )
+}

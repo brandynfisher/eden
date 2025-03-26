@@ -25,6 +25,10 @@ export interface CollectionsV2GetArguments extends WebAPICallOptions {
   collectionId: string
 }
 
+export interface CollectionsV2GetCreationsArguments extends WebAPICallOptions {
+  collectionId: string
+}
+
 export interface CollectionsV2CreateArguments extends WebAPICallOptions {
   name: string
   description?: string
@@ -71,6 +75,15 @@ export const collectionsV2GetRequestConfig = (
   return {
     method: 'GET',
     url: `v2/collections/${args.collectionId}`,
+  }
+}
+
+export const collectionsV2GetCreationsRequestConfig = (
+  args: CollectionsV2GetCreationsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/collections/${args.collectionId}/creations`,
   }
 }
 
@@ -137,6 +150,15 @@ export interface CollectionsV2GetLightResponse extends WebAPICallResult {
 
 export type CollectionsV2GetResponse = WebAPICallResult & {
   collection: CollectionV2
+  error?: string
+}
+
+export type CollectionsV2GetCreationsResponse = WebAPICallResult & {
+  creations: {
+    _id: CreationV2['_id']
+    mediaAttributes: CreationV2['mediaAttributes']
+    url: CreationV2['url']
+  }[]
   error?: string
 }
 

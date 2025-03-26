@@ -1,11 +1,11 @@
 'use client'
 
+import AgentLink from '../agent/agent-link'
 import { useEdenRuntimeExtras } from './hooks/useEdenRuntime'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -30,7 +30,6 @@ import { EdenRuntimeProvider } from '@/features/chat/providers/eden-runtime-prov
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { AgentBasicInfo } from '@/lib/actions/agent'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -50,7 +49,6 @@ import {
   SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
-import Link from 'next/link'
 import { FC, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -233,44 +231,6 @@ const LeftBarSheet: FC = () => {
         </div>
       </SheetContent>
     </Sheet>
-  )
-}
-
-export const AgentLink: FC<{
-  agent?: AgentBasicInfo | Agent
-  className?: string
-  hideName?: boolean
-  avatarClassName?: string
-}> = ({ agent, className, hideName, avatarClassName }) => {
-  return (
-    <Link
-      className={cn(
-        'w-full md:ml-0 flex self-center items-center gap-2 text-sm text-muted-foreground hover:text-accent-foreground',
-        className,
-      )}
-      title="View Agent profile"
-      href={`/agents/${agent?.username}`}
-    >
-      <Avatar
-        className={cn(
-          'w-6 h-6 md:w-8 md:h-8 col-start-1 row-span-full row-start-1',
-          avatarClassName,
-        )}
-      >
-        <AvatarImage
-          alt={agent?.name}
-          className={'object-cover'}
-          src={getCloudfrontOriginalUrl(agent?.userImage)}
-        />
-        <AvatarFallback
-          delayMs={250}
-          className={cn(['w-6 h-6 md:w-8 md:h-8', avatarClassName])}
-        >
-          {agent?.name[0]}
-        </AvatarFallback>
-      </Avatar>
-      {!hideName && <span className="truncate">{agent?.name}</span>}
-    </Link>
   )
 }
 

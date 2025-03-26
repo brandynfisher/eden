@@ -1,5 +1,6 @@
 import './globals.css'
 
+import Providers from './providers'
 import type { Metadata } from 'next'
 import { Inter as FontSans, Roboto_Mono } from 'next/font/google'
 import { ReactNode } from 'react'
@@ -27,11 +28,11 @@ export default function RootLayout({
   children: ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${robotoMono.className} ${fontSans.className} antialiased`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

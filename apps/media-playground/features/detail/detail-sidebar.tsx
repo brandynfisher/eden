@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
+import AgentLink from '@/features/agent/agent-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getFileTypeByMimeType } from '@/lib/files'
@@ -87,6 +88,18 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           )}
         </div>
 
+        {type === 'creation' &&
+        item &&
+        (item as CreationV2).agent &&
+        (item as CreationV2).agent?._id !== item.user._id ? (
+          <div className="pb-4 text-sm">
+            <div className="h-9 flex items-center justify-between font-bold">
+              Made with
+            </div>
+            <AgentLink agent={(item as CreationV2).agent} hideName={false} />
+          </div>
+        ) : null}
+
         {creator?._id === user?._id ? (
           <div className="pb-3">
             {item && item.public !== undefined ? (
@@ -136,14 +149,14 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
             <div className="pb-4 text-sm">
               <div className="h-9 flex items-center justify-between">
                 <div className="font-bold">Trigger Text</div>
-                {(item as ModelV2).lora_trigger_text ? (
+                {item && (item as ModelV2).lora_trigger_text ? (
                   <CopyTextButton
                     title={'Trigger Text'}
                     text={(item as ModelV2).lora_trigger_text || ''}
                   />
                 ) : null}
               </div>
-              {item ? (
+              {item && (item as ModelV2).lora_trigger_text ? (
                 <TextClampMore
                   text={(item as ModelV2).lora_trigger_text || '-'}
                 />
@@ -155,6 +168,41 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                 </div>
               )}
             </div>
+            {!item ? (
+              <div className="pb-4 text-sm">
+                <div className="h-9 flex items-center justify-between">
+                  <div className="font-bold">Thumbnail Prompts</div>
+                </div>
+                <div className="space-y-1">
+                  <Skeleton className="h-5 w-[250px]" />
+                  <Skeleton className="h-5 w-[250px]" />
+                  <Skeleton className="h-5 w-[250px]" />
+                </div>
+              </div>
+            ) : (item as ModelV2).thumbnail_prompts ? (
+              <div className="pb-4 text-sm">
+                <div className="h-9 flex items-center justify-between">
+                  <div className="font-bold">Thumbnail Prompts</div>
+                </div>
+                {Array.isArray((item as ModelV2).thumbnail_prompts) ? (
+                  <ol className="list-decimal list-decimal-inside ml-4 text-muted-foreground">
+                    {((item as ModelV2).thumbnail_prompts as string[]).map(
+                      (prompt, index) => (
+                        <li key={index} className="">
+                          <TextClampMore text={prompt || '-'} />
+                        </li>
+                      ),
+                    )}
+                  </ol>
+                ) : (
+                  <div className="flex items-start justify-between">
+                    <TextClampMore
+                      text={String((item as ModelV2).thumbnail_prompts) || '-'}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
           </>
         ) : null}
 

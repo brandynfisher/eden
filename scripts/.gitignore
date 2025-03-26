@@ -2,3 +2,5 @@
 .env.stage
 .env.local
 .env.migrate
+
+downloads/

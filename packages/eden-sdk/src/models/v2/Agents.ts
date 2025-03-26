@@ -125,6 +125,8 @@ interface DiscordDeploymentConfig {
     id: string
     note: string
   }[]
+  oauth_client_id?: string
+  oauth_url?: string
 }
 
 interface TelegramDeploymentConfig {

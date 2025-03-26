@@ -64,7 +64,24 @@ jobs:
             }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
-
+          build-args: |
+            "NEXT_PUBLIC_APP_ENV=production"
+            "NEXT_PUBLIC_HOST=https://watch.eden.art"
+            "NEXT_PUBLIC_EDEN_API_URL=https://api.eden.art"
+            "NEXT_PUBLIC_EDEN_APP_URL=https://beta.eden.art"
+            "NEXT_PUBLIC_EDEN_SSE_URL=https://api.eden.art"
+            "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://api.eden.art/ws/updates"
+            "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}"
+            "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN_EDEN2 }}"
+            "NEXT_PUBLIC_GOOGLE_GTM_ID=GTM-MR2LV55Z"
+            "NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID=G-W4718WCZQK"
+            "NEXT_PUBLIC_AWS_CLOUDFRONT_URL=https://d14i3advvh2bvd.cloudfront.net"
+            "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
+            "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up"
+            "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
+            "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache

@@ -91,6 +91,38 @@ export const getCollection = async (
   return reply.status(200).send({ collection })
 }
 
+export const getCollectionCreations = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { collectionId } = request.params as CollectionsV2GetArguments
+
+  const collectionsRepository = new CollectionV2Repository(CollectionV2)
+  const collection = await collectionsRepository.findById(collectionId)
+
+  if (!collection || collection.deleted) {
+    return reply.status(404).send({
+      error: 'Collection not found',
+    })
+  }
+
+  const creations = await CreationV2.find(
+    {
+      _id: { $in: collection.creations },
+      deleted: false,
+    },
+    '_id mediaAttributes filename thumbnail url',
+  )
+
+  creations.forEach(creation => {
+    creation.thumbnail = s3ThumbnailUrl(server, creation.filename || '', 1024)
+    creation.url = s3Url(server, creation.filename || '')
+  })
+
+  return reply.status(200).send({ creations })
+}
+
 export const createCollection = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -298,7 +330,7 @@ export const addCreationsToCollection = async (
   const isAuthorizedForCreations = creationsToAdd.every(
     creation =>
       creation.user.toString() === currentUserId.toString() ||
-      creation.requester?.toString() === currentUserId.toString() ||
+      creation.agent?.toString() === currentUserId.toString() ||
       creation.public,
   )
 

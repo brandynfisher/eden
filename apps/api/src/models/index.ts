@@ -28,6 +28,7 @@ import { ModelV2, ModelV2Document } from './v2/ModelV2'
 import { TaskV2, TaskV2Document } from './v2/TaskV2'
 import { Thread, ThreadDocument } from './v2/Thread'
 import { ToolV2, ToolV2Document } from './v2/ToolV2'
+import { TransactionV2, TransactionV2Document } from './v2/TransactionV2'
 import { Model } from 'mongoose'
 
 export interface Database {
@@ -60,6 +61,7 @@ export interface Database {
   UserMigration: Model<UserMigrationDocument>
   DiscordAgent: Model<DiscordAgentDocument>
   Trigger: Model<TriggerDocument>
+  TransactionV2: Model<TransactionV2Document>
 }
 
 export const models: Database = {
@@ -91,5 +93,9 @@ export const models: Database = {
   SessionEvent,
   UserMigration,
   DiscordAgent,
+<<<<<<< HEAD
   Trigger,
+=======
+  TransactionV2,
+>>>>>>> b29f576415a45a5a1035241100e2867f0f76260d
 }

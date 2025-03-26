@@ -24,7 +24,7 @@ export const testDiscordNotification = async (
   // @ts-ignore
   sendDiscordNotification(server, {
     _id: user?._id,
-    requester: user?._id,
+    agent: user?._id,
     user: user?._id,
     tool: '123',
     args: {

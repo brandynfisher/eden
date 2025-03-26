@@ -9,6 +9,7 @@ import taskRoutesV2 from './taskRoutesV2'
 // import testRoutes from './testRoutes'
 import threadRoutes from './threadRoutes'
 import toolRoutesV2 from './toolRoutesV2'
+import userRoutes from './userRoutes'
 
 export const routes = [
   authRoutesV2,
@@ -21,5 +22,6 @@ export const routes = [
   collectionRoutesV2,
   threadRoutes,
   agentRoutes,
+  userRoutes,
   // testRoutes,
 ]

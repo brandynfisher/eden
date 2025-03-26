@@ -3,6 +3,7 @@ import {
   createCollection,
   deleteCollection,
   getCollection,
+  getCollectionCreations,
   getCollectionDownloadZip,
   getUserCollectionsLight,
   removeCreationsFromCollection,
@@ -52,6 +53,28 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getCollection(server, request, reply),
+  })
+
+  server.get('/v2/collections/:collectionId/creations', {
+    schema: {
+      tags: ['Collections'],
+      description: 'Get creations of a collection',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        collectionId: Type.String(),
+      },
+      response: {
+        200: {
+          creations: Type.Array(Type.Any()),
+        },
+      },
+    },
+    preHandler: [request => maybeAuth(server, request)],
+    handler: (request, reply) => getCollectionCreations(server, request, reply),
   })
 
   server.post('/v2/collections', {

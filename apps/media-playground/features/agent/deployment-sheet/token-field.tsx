@@ -21,6 +21,7 @@ interface TokenFieldProps {
   name: string
   description: string
   isDeployed: boolean
+  isSubmitting: boolean
 }
 
 export const TokenField = ({
@@ -29,16 +30,17 @@ export const TokenField = ({
   isDeployed,
   label,
   description,
+  isSubmitting,
 }: TokenFieldProps) => {
   const [isEditing, setIsEditing] = useState(true)
 
   useEffect(() => {
-    if (isDeployed) {
+    if (isDeployed || isSubmitting) {
       setIsEditing(false)
     } else {
       setIsEditing(true)
     }
-  }, [isDeployed])
+  }, [isDeployed, isSubmitting])
 
   const handleEdit = () => {
     if (isEditing) {
