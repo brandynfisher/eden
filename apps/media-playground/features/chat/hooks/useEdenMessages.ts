@@ -21,8 +21,20 @@ export const useEdenMessages = <TMessage extends { id: string }>({
         return updatedMessages
       }
 
-      // Add new message without modifying existing ones
-      return [...currentMessages, message]
+      //@todo: initial user message
+
+      // Find and update all running messages
+      const updatedMessages = currentMessages.map(m =>
+        //@ts-expect-error status not typed on generic
+        m.status?.type === 'running' &&
+        //@ts-expect-error status not typed on generic
+        (!m.reply_to ? message.status?.type !== 'running' : true)
+          ? { ...m, status: { type: 'complete', reason: 'stop' } }
+          : m,
+      )
+
+      // Add new message
+      return [...updatedMessages, message]
     })
   }, [])
 

@@ -100,7 +100,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
               </ModelMiniCard>
             </Suspense>
           ) : null}
-          <ParameterTable className="w-auto" args={args} hideHeader={true} />
+          <ParameterTable args={args} hideHeader={true} />
         </div>
       )}
       {toolStatus === TaskV2Status.Failed ? (

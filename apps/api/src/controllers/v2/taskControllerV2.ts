@@ -961,12 +961,11 @@ export const subscribeWebSocketUpdates = function wsHandler(
 
     // clean up on socket close
     socket.on('close', () => {
-      this.internalMessages.connection.off(
+      this.internalMessages.connection.removeListener(
         'task-updates-v2',
         internalEmitterEventHandlerTaskUpdates,
       )
-
-      this.internalMessages.connection.off(
+      this.internalMessages.connection.removeListener(
         'thread-updates',
         internalEmitterEventHandlerThreadUpdates,
       )

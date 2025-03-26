@@ -129,7 +129,7 @@ const TaskStatusIndicator = () => {
                   asChild
                 >
                   <Link
-                    href={`/creations/${task.output_type}/${task.tool}`}
+                    href={`/create/${task.output_type}/${task.tool}`}
                     prefetch={false}
                   >
                     <div className="flex flex-col w-full">
