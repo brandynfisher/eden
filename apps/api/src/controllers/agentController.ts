@@ -9,7 +9,10 @@ import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import {
   AgentGetArguments,
   AgentsCreateArguments,
+  AgentsCreateTriggerArguments,
+  AgentsCreateTriggerResponse,
   AgentsDeleteArguments,
+  AgentsDeleteTriggerResponse,
   AgentsDeployArguments,
   AgentsDeployResponse,
   AgentsStopDeploymentArguments,
@@ -270,11 +273,40 @@ export const getAgentTriggers = async (
   })
 }
 
+const createUpdateConfig = async (
+  server: FastifyInstance,
+  deploymentId: string,
+  channelId: string,
+) => {
+  // check if deploymentId is a valid deployment
+  const deployment = await Deployment.findById(deploymentId)
+  if (!deployment) {
+    throw new Error('Deployment not found')
+  }
+
+  switch (deployment.platform) {
+    case 'discord':
+      return {
+        update_endpoint: `${server.config.EDEN_COMPUTE_API_URL}/emissions/platform/discord`,
+        deployment_id: deploymentId,
+        discord_channel_id: channelId,
+      }
+    case 'telegram':
+      return {
+        update_endpoint: `${server.config.EDEN_COMPUTE_API_URL}/emissions/platform/telegram`,
+        deployment_id: deploymentId,
+        telegram_chat_id: channelId,
+      }
+    default:
+      throw new Error('Unsupported platform')
+  }
+}
 export const createAgentTrigger = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { agentId } = request.params as { agentId: string }
+  const { agentId, message, schedule, deploymentId, channelId } = request.body as AgentsCreateTriggerArguments
   const currentUserId = request.user.userId
 
   const agent = await Agent.findById(agentId)
@@ -291,10 +323,55 @@ export const createAgentTrigger = async (
     })
   }
 
-  // TODO-jmill: Implement rest
+  const deployment = await Deployment.findById(deploymentId)
+
+  if (!deployment) {
+    return reply.status(404).send({
+      error: 'Deployment not found',
+    })
+  }
+
+  const updateConfig = await createUpdateConfig(server, deploymentId, channelId)
+
+  const updateData = {
+    agent_id: agentId,
+    message,
+    schedule,
+    platform: deployment.platform,
+    channel: {
+      id: channelId,
+      note: deployment.config[deployment.platform].channel_allowlist.find(
+        (channel: { id: string; note: string }) =>
+          channel.id === channelId,
+      )?.note,
+    },
+    update_config: updateConfig,
+  }
+
+  const edenComputeRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/create`,
+    data: updateData,
+  }
+
+  const edenComputeResponse = await axios.post(
+    edenComputeRequest.endpoint,
+    edenComputeRequest.data,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  const response = edenComputeResponse.data as AgentsCreateTriggerResponse
+
+  return reply.status(200).send({
+    triggerId: response.trigger_id,
+  })
 }
 
 export const deleteAgentTrigger = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -318,14 +395,25 @@ export const deleteAgentTrigger = async (
     })
   }
 
-  // TODO-jmill: If we don't want to delete the trigger here, we need to use eve api?
-  await Trigger.deleteOne({
-    _id: triggerId,
-    agent: agentId,
-  })
+  const edenComputeRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/delete`,
+    data: { id: triggerId },
+  }
+
+  const edenComputeResponse = await axios.post(
+    edenComputeRequest.endpoint,
+    edenComputeRequest.data,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  const response = edenComputeResponse.data as AgentsDeleteTriggerResponse
 
   return reply.status(200).send({
-    success: true,
+    success: response.success,
   })
 }
 

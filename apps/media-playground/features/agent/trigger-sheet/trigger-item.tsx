@@ -31,14 +31,7 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
   const formattedSchedule = formatCronSchedule(trigger.schedule)
 
   const channel = useMemo(() => {
-    const platform = trigger.deployment.platform
-
-    const channel = trigger.deployment.config[platform].channel_allowlist.find(
-      (channel: { id: string; note: string }) =>
-        channel.id === trigger.channel_id,
-    )
-
-    return channel?.note
+    return trigger.channel.note || trigger.channel.id
   }, [trigger])
 
   const handleDelete = async () => {
@@ -83,19 +76,19 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
           <Badge
             className={cn(
               'w-fit text-xs border-transparent capitalize gap-1 cursor-default',
-              getPlatformBadgeClass(trigger.deployment.platform),
+              getPlatformBadgeClass(trigger.platform),
             )}
           >
-            {trigger.deployment.platform === 'discord' && (
+            {trigger.platform === 'discord' && (
               <DiscordIcon size={16} />
             )}
-            {trigger.deployment.platform === 'telegram' && (
+            {trigger.platform === 'telegram' && (
               <TelegramIcon size={16} />
             )}
-            {trigger.deployment.platform === 'twitter' && (
+            {trigger.platform === 'twitter' && (
               <TwitterIcon size={16} />
             )}
-            {trigger.deployment.platform}
+            {trigger.platform}
           </Badge>
           <div className="flex items-center gap-2">
             <ChevronDownIcon
@@ -130,7 +123,7 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
           <div>
             <h4 className="text-sm font-semibold">Platform</h4>
             <p className="text-sm text-muted-foreground">
-              {trigger.deployment.platform}
+              {trigger.platform}
             </p>
           </div>
           <div>

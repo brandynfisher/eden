@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "dev:eden": "env-cmd -f .env.eden.local next dev --turbo",
+    "dev:eden": "env-cmd -f .env.eden.local next dev --turbo --port 3000",
     "build": "next build --debug",
     "start": "next start",
     "lint": "eslint app components features hooks lib stories types --fix",

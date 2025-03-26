@@ -215,9 +215,8 @@ export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
   agentId: string
   message: string
   schedule: CronSchedule
-  deploymentId?: string
-  channelId?: string
-  ephemeral?: boolean
+  deploymentId: string
+  channelId: string
 }
 
 export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
@@ -330,6 +329,7 @@ export const agentsCreateTriggerRequestConfig = (
   return {
     method: 'POST',
     url: `v2/agents/${args.agentId}/triggers`,
+    data: args
   }
 }
 

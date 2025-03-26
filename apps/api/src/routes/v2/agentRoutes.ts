@@ -149,7 +149,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       description: 'Create an agent trigger',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => createAgentTrigger(request, reply),
+    handler: (request, reply) => createAgentTrigger(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId/triggers/:triggerId', {
@@ -158,7 +158,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       description: 'Delete an agent trigger',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => deleteAgentTrigger(request, reply),
+    handler: (request, reply) => deleteAgentTrigger(server, request, reply),
   })
 
   server.get('/v2/agents/:agentId/deployments', {

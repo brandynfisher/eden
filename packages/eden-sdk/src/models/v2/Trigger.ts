@@ -1,5 +1,5 @@
 import { Creator } from 'src/models'
-import { Agent, Deployment, Thread } from 'src/models/v2'
+import { Agent, Thread } from 'src/models/v2'
 
 export type CronSchedule = {
   year?: number | string
@@ -21,9 +21,12 @@ export type Trigger = {
   user: Creator
   thread: Thread
   schedule: CronSchedule
-  deployment: Deployment
+  platform: string
+  channel: {
+    id: string
+    note?: string
+  }
   message: string
-  channel_id: string
   createdAt: Date
   updatedAt: Date
 }

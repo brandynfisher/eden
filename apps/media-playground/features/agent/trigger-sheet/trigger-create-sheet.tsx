@@ -210,10 +210,13 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
                 type="button"
                 variant="ghost"
                 onClick={() => setIsOpen(false)}
+                disabled={form.formState.isSubmitting}
               >
                 Cancel
               </Button>
-              <Button type="submit">Create Task</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Creating...' : 'Create Task'}
+              </Button>
             </SheetFooter>
           </form>
         </Form>
