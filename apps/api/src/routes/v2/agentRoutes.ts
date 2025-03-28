@@ -1,10 +1,13 @@
 import {
   createAgent,
+  createAgentTrigger,
   deleteAgent,
   deleteAgentDeployment,
+  deleteAgentTrigger,
   deployAgent,
   getAgent,
   getAgentDeployments,
+  getAgentTriggers,
   updateAgent,
   updateAgentDeployment,
 } from '../../controllers/agentController'
@@ -129,6 +132,33 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateAgent(server, request, reply),
+  })
+
+  server.get('/v2/agents/:agentId/triggers', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get agent triggers',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAgentTriggers(request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/triggers', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Create an agent trigger',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => createAgentTrigger(server, request, reply),
+  })
+
+  server.delete('/v2/agents/:agentId/triggers/:triggerId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Delete an agent trigger',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => deleteAgentTrigger(server, request, reply),
   })
 
   server.get('/v2/agents/:agentId/deployments', {

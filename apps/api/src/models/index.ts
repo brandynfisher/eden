@@ -18,6 +18,7 @@ import { Session, SessionDocument } from './Session'
 import { SessionEvent, SessionEventDocument } from './SessionEvent'
 import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
+import { Trigger, TriggerDocument } from './Trigger'
 import { User, UserDocument } from './User'
 import { UserMigration, UserMigrationDocument } from './UserMigration'
 import { CollectionV2Document } from './v2/CollectionV2'
@@ -59,6 +60,7 @@ export interface Database {
   SessionEvent: Model<SessionEventDocument>
   UserMigration: Model<UserMigrationDocument>
   DiscordAgent: Model<DiscordAgentDocument>
+  Trigger: Model<TriggerDocument>
   TransactionV2: Model<TransactionV2Document>
 }
 
@@ -91,5 +93,9 @@ export const models: Database = {
   SessionEvent,
   UserMigration,
   DiscordAgent,
+<<<<<<< HEAD
+  Trigger,
+=======
   TransactionV2,
+>>>>>>> b29f576415a45a5a1035241100e2867f0f76260d
 }

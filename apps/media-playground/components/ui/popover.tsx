@@ -14,6 +14,8 @@ const PopoverContent = React.forwardRef<
 >(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
   <PopoverPrimitive.Portal>
     <PopoverPrimitive.Content
+      onWheel={e => e.stopPropagation()}
+      onTouchMove={e => e.stopPropagation()}
       ref={ref}
       align={align}
       sideOffset={sideOffset}
