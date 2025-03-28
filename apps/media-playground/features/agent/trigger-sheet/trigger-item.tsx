@@ -11,6 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
 import { cn } from '@/lib/utils'
 import { Trigger } from '@edenlabs/eden-sdk'
@@ -27,26 +28,37 @@ export type TriggerItemProps = {
 
 export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const { invalidate } = useAgentTriggersQuery({
+    key: agentId,
+    enabled: false,
+  })
 
   const formattedSchedule = formatCronSchedule(trigger.schedule)
 
   const channel = useMemo(() => {
-    return trigger.channel.note || trigger.channel.id
+    return trigger.channel?.note || trigger.channel?.id
   }, [trigger])
 
   const handleDelete = async () => {
-    try {
-      await axios.delete(`/api/agents/${agentId}/triggers/${trigger._id}`)
-      toast.success('Trigger deleted successfully', {
-        dismissible: true,
-        richColors: true,
-      })
-    } catch (error) {
-      toast.error('Failed to delete trigger', {
-        dismissible: true,
-        richColors: true,
-      })
+    const deletePromise = async () => {
+      setIsDeleting(true)
+      try {
+        await axios.delete(`/api/agents/${agentId}/triggers/${trigger._id}`)
+        await invalidate()
+      } catch (error) {
+        throw new Error('Failed to delete task')
+      } finally {
+        setIsDeleting(false)
+      }
     }
+
+    toast.promise(deletePromise, {
+      loading: 'Deleting task...',
+      success: 'Task deleted successfully',
+      error: 'Failed to delete task',
+      richColors: true,
+    })
   }
 
   const getPlatformBadgeClass = (platform: string) => {
@@ -79,15 +91,9 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
               getPlatformBadgeClass(trigger.platform),
             )}
           >
-            {trigger.platform === 'discord' && (
-              <DiscordIcon size={16} />
-            )}
-            {trigger.platform === 'telegram' && (
-              <TelegramIcon size={16} />
-            )}
-            {trigger.platform === 'twitter' && (
-              <TwitterIcon size={16} />
-            )}
+            {trigger.platform === 'discord' && <DiscordIcon size={16} />}
+            {trigger.platform === 'telegram' && <TelegramIcon size={16} />}
+            {trigger.platform === 'twitter' && <TwitterIcon size={16} />}
             {trigger.platform}
           </Badge>
           <div className="flex items-center gap-2">
@@ -101,6 +107,7 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
               variant="ghost"
               size="icon"
               className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+              disabled={isDeleting}
               onClick={e => {
                 e.stopPropagation()
                 handleDelete()
@@ -122,9 +129,7 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
         <div className="space-y-3">
           <div>
             <h4 className="text-sm font-semibold">Platform</h4>
-            <p className="text-sm text-muted-foreground">
-              {trigger.platform}
-            </p>
+            <p className="text-sm text-muted-foreground">{trigger.platform}</p>
           </div>
           <div>
             <h4 className="text-sm font-semibold">Instructions</h4>

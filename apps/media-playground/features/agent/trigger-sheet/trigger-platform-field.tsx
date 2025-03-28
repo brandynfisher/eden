@@ -25,12 +25,14 @@ import { UseFormReturn } from 'react-hook-form'
 
 interface TriggerPlatformFieldProps {
   form: UseFormReturn<CreateTriggerDto>
+  availablePlatforms: string[]
   platform: string
   channels: AllowlistItem[]
 }
 
 export const TriggerPlatformField = ({
   form,
+  availablePlatforms,
   platform,
   channels,
 }: TriggerPlatformFieldProps) => {
@@ -81,8 +83,17 @@ export const TriggerPlatformField = ({
                   </FormControl>
                   <SelectContent>
                     {['discord', 'twitter', 'telegram'].map(platform => (
-                      <SelectItem key={platform} value={platform}>
-                        {platform}
+                      <SelectItem
+                        key={platform}
+                        value={platform}
+                        disabled={!availablePlatforms.includes(platform)}
+                      >
+                        {platform}{' '}
+                        {!availablePlatforms.includes(platform) && (
+                          <span className="ml-1">
+                            (No deployments for this platform)
+                          </span>
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -92,35 +103,45 @@ export const TriggerPlatformField = ({
             )}
           />
 
-          {platform !== 'twitter' && (
-            <FormField
-              control={form.control}
-              name="channelId"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel className="flex items-center">
-                    Channel
-                    <span className="text-destructive ml-1">*</span>
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a channel" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {channels.map(channel => (
-                        <SelectItem key={channel.id} value={channel.id}>
-                          {channel.note ?? channel.id}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+          {!platform ||
+            (platform !== 'twitter' && (
+              <FormField
+                control={form.control}
+                name="channelId"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel className="flex items-center">
+                      Channel
+                      <span className="text-destructive ml-1">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={channels.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a channel" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {channels.map(channel => (
+                          <SelectItem key={channel.id} value={channel.id}>
+                            {channel.note ?? channel.id}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {channels.length === 0 && (
+                      <p className="text-destructive text-sm ml-1">
+                        No channels found for this platform
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))}
         </div>
       </CollapsibleContent>
     </Collapsible>

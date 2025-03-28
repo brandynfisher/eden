@@ -25,6 +25,7 @@ import {
 import { TriggerScheduleField } from '@/features/agent/trigger-sheet/trigger-schedule-field'
 import { getChannelsForPlatform } from '@/features/agent/trigger-sheet/trigger-utils'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
+import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { CronSchedule } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
@@ -64,6 +65,10 @@ type TriggerCreateSheetProps = {
 
 export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const { invalidate } = useAgentTriggersQuery({
+    key: agentId,
+    enabled: false,
+  })
 
   const { deployments } = useAgentDeploymentsQuery({
     key: agentId,
@@ -143,6 +148,7 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
         channelId: values.channelId,
       })
 
+      await invalidate()
       toast.success('Task created successfully')
       setIsOpen(false)
     } catch (error) {
@@ -201,6 +207,9 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
               form={form}
               platform={platform}
               channels={channels}
+              availablePlatforms={
+                deployments?.map(deployment => deployment.platform) || []
+              }
             />
 
             <TriggerScheduleField form={form} />

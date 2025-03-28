@@ -14,12 +14,14 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAgentDeploymentFormSheet,
   updateAgentFormSheet,
+  updateAgentTriggerFormSheet,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import {
+  ClockIcon,
   ExternalLinkIcon,
   MessageSquareIcon,
   RocketIcon,
@@ -40,6 +42,7 @@ type Props = {
     | 'share'
     | 'edit'
     | 'deployments'
+    | 'tasks'
     | 'privacy'
     | 'delete'
   )[]
@@ -112,6 +115,12 @@ const AgentActionsMenu = ({
     )
   }
 
+  const handleConfigureTasks = (evt: React.MouseEvent<HTMLButtonElement>) => {
+    evt.preventDefault()
+    setIsOpen(false)
+    dispatch(updateAgentTriggerFormSheet({ isOpen: true, agentId: agent._id }))
+  }
+
   return (
     <ActionsDropdown
       open={isOpen}
@@ -178,6 +187,18 @@ const AgentActionsMenu = ({
                     <DropdownMenuSeparator />
                   </>
                 )}
+              {!hiddenItems?.includes('tasks') && (
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={handleConfigureTasks}
+                    className="w-full"
+                  >
+                    <ClockIcon className="mr-2 h-4 w-4" />
+                    Tasks
+                  </button>
+                </DropdownMenuItem>
+              )}
               {!hiddenItems?.includes('edit') && (
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <button
