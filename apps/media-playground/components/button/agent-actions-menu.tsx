@@ -184,21 +184,24 @@ const AgentActionsMenu = ({
                         Deployments
                       </button>
                     </DropdownMenuItem>
+                  </>
+                )}
+              {isFeatureDeploymentsEnabled &&
+                !hiddenItems?.includes('tasks') && (
+                  <>
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={handleConfigureTasks}
+                        className="w-full"
+                      >
+                        <ClockIcon className="mr-2 h-4 w-4" />
+                        Tasks
+                      </button>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
                 )}
-              {!hiddenItems?.includes('tasks') && (
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={handleConfigureTasks}
-                    className="w-full"
-                  >
-                    <ClockIcon className="mr-2 h-4 w-4" />
-                    Tasks
-                  </button>
-                </DropdownMenuItem>
-              )}
               {!hiddenItems?.includes('edit') && (
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <button
