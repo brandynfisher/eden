@@ -93,9 +93,6 @@ export const models: Database = {
   SessionEvent,
   UserMigration,
   DiscordAgent,
-<<<<<<< HEAD
   Trigger,
-=======
   TransactionV2,
->>>>>>> b29f576415a45a5a1035241100e2867f0f76260d
 }
