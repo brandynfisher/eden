@@ -80,6 +80,7 @@ export const DiscordDeploymentForm = ({
         isDeployed={isDeployed ?? false}
         label="Discord"
         tooltip="Deploy your agent to Discord"
+        valid={deployment?.valid}
       />
       <CollapsibleContent
         className={cn([
@@ -87,6 +88,7 @@ export const DiscordDeploymentForm = ({
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
             : '',
           isDeployed ? 'border-success' : '',
+          deployment?.valid === false ? 'border-destructive' : '',
         ])}
       >
         <Form {...form}>
@@ -164,6 +166,7 @@ export const DiscordDeploymentForm = ({
               form={form}
               isDeployed={isDeployed ?? false}
               guideUrl="https://docs.eden.art/docs/guides/discord"
+              valid={deployment?.valid}
             />
           </form>
         </Form>
