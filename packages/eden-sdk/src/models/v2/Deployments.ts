@@ -28,6 +28,7 @@ export type Deployment = {
       topic_allowlist: AllowlistItem[]
     }
   }
+  valid?: boolean
   createdAt: Date
   updatedAt: Date
 }
