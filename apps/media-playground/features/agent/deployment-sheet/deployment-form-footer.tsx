@@ -20,6 +20,7 @@ interface DeploymentFormFooterProps {
   isDeployed: boolean
   platform: string
   guideUrl?: string
+  valid?: boolean
 }
 
 export const DeploymentFormFooter = ({
@@ -28,6 +29,7 @@ export const DeploymentFormFooter = ({
   platform,
   isDeployed,
   guideUrl,
+  valid,
 }: DeploymentFormFooterProps) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
@@ -220,21 +222,30 @@ export const DeploymentFormFooter = ({
               Stop
             </Button>
           ) : (
-            <Button
-              type="submit"
-              onClick={form.handleSubmit(handleSubmit)}
-              disabled={isDeploying || !form.formState.isDirty}
-            >
-              {isDeployed ? (
-                <SaveIcon className="size-4 mr-2" />
-              ) : (
-                <RocketIcon className="size-4 mr-2" />
-              )}
-              {isDeployed ? 'Update' : 'Deploy'}
-            </Button>
+            valid === true && (
+              <Button
+                type="submit"
+                onClick={form.handleSubmit(handleSubmit)}
+                disabled={isDeploying || !form.formState.isDirty}
+              >
+                {isDeployed ? (
+                  <SaveIcon className="size-4 mr-2" />
+                ) : (
+                  <RocketIcon className="size-4 mr-2" />
+                )}
+                {isDeployed ? 'Update' : 'Deploy'}
+              </Button>
+            )
           )}
         </div>
       </div>
+      {valid === false && (
+        <div className="mt-2 text-sm text-destructive">
+          <p>
+            The deployment has failed. Please delete and try deploying again.
+          </p>
+        </div>
+      )}
     </>
   )
 }
