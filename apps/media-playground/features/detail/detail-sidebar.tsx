@@ -138,6 +138,16 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <>
             <div className="pb-4 text-sm">
               <div className="h-9 flex items-center justify-between font-bold">
+                Name
+              </div>
+              {item && (item as ModelV2).name ? (
+                (item as ModelV2).name
+              ) : (
+                <Skeleton className="h-5 w-[125px]" />
+              )}
+            </div>
+            <div className="pb-4 text-sm">
+              <div className="h-9 flex items-center justify-between font-bold">
                 Base Model
               </div>
               {item && (item as ModelV2).base_model ? (

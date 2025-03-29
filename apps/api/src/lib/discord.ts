@@ -69,9 +69,7 @@ async function sendDiscordNotification(
             },
             {
               name: 'User',
-              value: `[${user?.username}](${
-                fastify.config.EDEN2_FRONTEND_URL
-              }/creators/${user?.username}) - ${task?.user?.toString()}`,
+              value: `[${user?.username}](${fastify.config.EDEN2_FRONTEND_URL}/creators/${user?.username}) - ${user?._id}`,
               inline: true,
             },
             {

@@ -226,6 +226,10 @@ export function createZodFormSchema(
     })
   }
 
+  schema = schema.extend({
+    public: z.boolean().default(true),
+  })
+
   return schema
 }
 
