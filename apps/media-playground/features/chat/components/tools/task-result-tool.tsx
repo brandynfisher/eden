@@ -131,7 +131,7 @@ export const TaskResultTool = makeAssistantToolUI({
                                   )
                                   e.dataTransfer.effectAllowed = 'copy'
                                 }}
-                                className="w-full h-full"
+                                className="w-full h-full flex gap-4"
                               >
                                 <LightboxTrigger
                                   className="w-full h-full"

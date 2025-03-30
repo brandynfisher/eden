@@ -1,62 +1,5 @@
+import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
 import { useCallback, useState } from 'react'
-
-type ToolCallResult = {
-  output: Array<{
-    filename: string
-    mediaAttributes?: {
-      mimeType: string
-      width: number
-      height: number
-      aspectRatio: number
-      blurhash?: string
-    }
-    creation?: {
-      mediaAttributes: {
-        mimeType: string
-        width: number
-        height: number
-        aspectRatio: number
-        blurhash?: string
-      }
-      _id: string
-      filename: string
-      tool: string
-      user: {
-        _id: string
-        username: string
-        userImage?: string
-      }
-    }
-  }>
-  intermediate_outputs?: {
-    controlnet_guidance?: Array<{
-      filename: string
-      mediaAttributes: {
-        mimeType: string
-        width: number
-        height: number
-        aspectRatio: number
-        blurhash?: string
-      }
-    }>
-  }
-}
-
-type MessageWithStatus = {
-  id: string
-  role?: string
-  status?: { type: string; reason?: string }
-  reply_to?: string
-  content?: string
-  tool_calls?: Array<{
-    id: string
-    tool: string
-    args: Record<string, unknown>
-    task?: string
-    status?: string
-    result?: ToolCallResult[]
-  }>
-}
 
 type MessageResponse<T> = {
   data: T & {
@@ -64,7 +7,11 @@ type MessageResponse<T> = {
   }
 }
 
-export const useEdenMessages = <TMessage extends MessageWithStatus>({
+type ThreadMessageWithStatus = ThreadMessage & {
+  status?: AssistantMessage['status']
+}
+
+export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
   stream,
 }: {
   stream: (
