@@ -30,8 +30,8 @@ export const useWebSocketConnection = (
       },
       heartbeat: {
         message: () => JSON.stringify({ event: 'ping', ts: Date.now() }),
-        interval: 30000, // Send heartbeat every 30 seconds
-        timeout: 60000, // Consider connection dead after 60 seconds of no response
+        interval: 60000, // Send heartbeat every minute
+        timeout: 180000, // Consider connection dead after 3 minutes of no response
         returnMessage: 'pong',
       },
       share: true,

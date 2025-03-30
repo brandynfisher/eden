@@ -1,5 +1,5 @@
 import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 type MessageResponse<T> = {
   data: T & {
@@ -21,6 +21,46 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
   const [activeMessageIds, setActiveMessageIds] = useState<string[]>([])
+
+  // Check for pending message in localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const threadId = window.location.pathname.split('/').pop()
+    if (!threadId) return
+
+    const pendingMessageKey = `pending-message-${threadId}`
+    const pendingMessageData = localStorage.getItem(pendingMessageKey)
+
+    if (pendingMessageData) {
+      try {
+        const messageData = JSON.parse(pendingMessageData)
+        // Only use messages that are less than 5 minutes old
+        if (Date.now() - messageData.timestamp < 5 * 60 * 1000) {
+          // Add the pending message to the messages state
+          const pendingMessage: ThreadMessage = {
+            id: messageData.message_id,
+            role: 'user',
+            content: messageData.content,
+            attachments: messageData.attachments || [],
+            createdAt: new Date(messageData.timestamp),
+          }
+
+          setMessages(currentMessages => {
+            // Check if message already exists to prevent duplication
+            if (!currentMessages.some(m => m.id === messageData.message_id)) {
+              return [...currentMessages, pendingMessage as TMessage]
+            }
+            return currentMessages
+          })
+        }
+      } catch (e) {
+        console.error('Error parsing pending message:', e)
+      }
+      // Clean up the pending message
+      localStorage.removeItem(pendingMessageKey)
+    }
+  }, [])
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
@@ -95,19 +135,18 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       if (activeIds !== undefined) {
         setActiveMessageIds(activeIds)
       } else {
-        // If no activeIds provided, we need to identify active root messages
-        // by finding assistant messages that:
-        // 1. Have running status
-        // 2. Are the first assistant message after a user message
         const messages = Array.isArray(newMessages)
           ? newMessages
           : newMessages([])
 
+        // Check for pending messages in the new messages array
+        const pendingMessageIds = messages
+          .filter(msg => msg.role === 'user' && !msg.status)
+          .map(msg => msg.id)
+
         const activeRootIds = messages.reduce<string[]>((acc, msg, index) => {
-          // Only consider assistant messages
           if (msg.role !== 'assistant') return acc
 
-          // Check if this message has running status or pending tool calls
           const isRunning =
             msg.status?.type === 'running' ||
             msg.tool_calls?.some(
@@ -119,11 +158,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 
           if (!isRunning) return acc
 
-          // Find the previous message
           const prevMsg = messages[index - 1]
-
-          // If this is a running assistant message and the previous message was from the user
-          // (or this is the first message), it's a root message
           if (!prevMsg || prevMsg.role === 'user') {
             acc.push(msg.id)
           }
@@ -131,7 +166,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
           return acc
         }, [])
 
-        setActiveMessageIds(activeRootIds)
+        setActiveMessageIds([...activeRootIds, ...pendingMessageIds])
       }
 
       setMessages(newMessages)

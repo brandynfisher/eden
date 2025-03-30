@@ -29,6 +29,7 @@ import WebSocket from 'ws'
 
 export enum SocketClientEventName {
   Auth = 'auth',
+  Ping = 'ping',
 }
 
 export enum ServerEventName {
@@ -897,6 +898,12 @@ export const subscribeWebSocketUpdates = function wsHandler(
               },
             }),
           )
+          return
+        }
+
+        // Handle ping messages
+        if (msgJson.event === SocketClientEventName.Ping) {
+          socket.send('pong')
           return
         }
 

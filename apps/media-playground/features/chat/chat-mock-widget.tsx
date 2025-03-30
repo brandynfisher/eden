@@ -155,7 +155,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
     try {
       const response = await axios.post<
         AxiosInstance,
-        { data: ThreadsCreateResponse },
+        { data: ThreadsCreateResponse & { message_id?: string } },
         ThreadsCreateArguments
       >('/api/threads', {
         agent_id: selectedAgentId,
@@ -172,7 +172,22 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
         return
       }
 
-      router.push(`/chat/${agent?.username}/${response.data.thread_id}`)
+      // Store the message data in localStorage with a different key
+      const messageData = {
+        content: formData.message,
+        attachments: formData.attachments,
+        message_id: response.data.message_id,
+        timestamp: Date.now(),
+      }
+      localStorage.setItem(
+        `pending-message-${response.data.thread_id}`,
+        JSON.stringify(messageData),
+      )
+
+      // Navigate to the chat view with the message data
+      router.push(
+        `/chat/${agent?.username}/${response.data.thread_id}?pending=true`,
+      )
     } catch (err) {
       setIsSubmitting(false)
 
