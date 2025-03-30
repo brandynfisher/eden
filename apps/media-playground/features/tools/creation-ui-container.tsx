@@ -5,14 +5,13 @@ import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form, // FormControl,
+  // FormField,
+  // FormItem,
+  // FormLabel,
+  // FormMessage,
 } from '@/components/ui/form'
-import { Switch } from '@/components/ui/switch'
+// import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
@@ -307,7 +306,7 @@ const CreationUIContainer = ({ tool }: Props) => {
               >
                 Reset
               </Button>
-              <FormField
+              {/* <FormField
                 name="public"
                 render={({ field, fieldState }) => (
                   <FormItem
@@ -326,7 +325,7 @@ const CreationUIContainer = ({ tool }: Props) => {
                     <FormMessage>{fieldState.error?.message}</FormMessage>
                   </FormItem>
                 )}
-              />
+              /> */}
             </div>
           </div>
           {optionalParameters?.length ? (
