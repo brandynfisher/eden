@@ -415,6 +415,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                 allowReload: false,
                 allowSpeak: false,
                 components: {
+                  Empty: () => <div></div>,
                   Text: MarkdownText,
                   ToolFallback,
                 },
