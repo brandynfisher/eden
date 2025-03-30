@@ -39,7 +39,8 @@ const MyAssistantActionBar: FC = () => {
   const createdAt = useMessage(m => m.createdAt)
   return (
     <AssistantActionBar.Root
-      hideWhenRunning
+      // hideWhenRunning
+      // autohide="not-last"
       autohide="not-last"
       autohideFloat="single-branch"
       className="flex items-center gap-2 w-full z-10"
@@ -72,19 +73,19 @@ const MyAssistantMessage: FC = () => {
   return (
     <AssistantMessage.Root
       className={cn([
-        'block px-2 md:px-0 md:grid',
+        'block px-2 md:grid',
         isRunning && 'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >
       <MyAssistantMessageAvatar />
-      <AssistantMessage.Content key={id} className="pl-3 !max-w-full" />
+      <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
       <BranchPicker />
-      <MyAssistantActionBar />
-      {!isEmpty && isRunning && (
+      {!isEmpty && isRunning ? (
         <div className="col-start-3 row-start-2">
           <TypingIndicator />
         </div>
-      )}
+      ) : null}
+      {!isRunning && !isEmpty && <MyAssistantActionBar />}
     </AssistantMessage.Root>
   )
 }

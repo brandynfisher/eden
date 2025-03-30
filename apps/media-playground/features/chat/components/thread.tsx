@@ -1,6 +1,7 @@
 'use client'
 
 import AlertDestructive from '@/components/alert/alert-destructive'
+import LoadingIndicator from '@/components/loading-indicator'
 import { LightboxGallery } from '@/components/media/lightbox'
 import MyAssistantMessage from '@/features/chat/components/assistant-message'
 import {
@@ -56,6 +57,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
       Composer: ComposerComponent = MyComposer,
       ThreadWelcome: ThreadWelcomeComponent = ThreadWelcome,
     } = {},
+    threadId,
   } = config
 
   const [connectionLost, setConnectionLost] = useState(false)
@@ -66,6 +68,57 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime?.getAttachmentAccept()
   const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const messages = useThread(t => t.messages)
+  const isRunning = useThread(t => t.isRunning)
+  const isFirstLoad = useRef(true)
+
+  // Get the threadId from the URL if available
+  const urlThreadId =
+    typeof window !== 'undefined'
+      ? window.location.pathname.split('/').pop()
+      : undefined
+  const effectiveThreadId = threadId || urlThreadId
+
+  // If we have a threadId in the URL, we know we're loading an existing thread
+  // Show loading state immediately without waiting for async initialization
+  const showLoadingState = Boolean(effectiveThreadId) && messages.length === 0
+
+  // Only show welcome screen if we're explicitly in a new thread (no threadId)
+  // This prevents the welcome screen flash during async initialization
+  const showWelcomeScreen = !effectiveThreadId
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      isFirstLoad.current = false
+    }
+  }, [messages.length])
+
+  // Track threadId changes
+  // useEffect(() => {
+  //   console.log('ThreadId changed:', {
+  //     oldThreadId: threadId,
+  //     newThreadId: threadId,
+  //     messagesLength: messages.length,
+  //   })
+  // }, [threadId])
+
+  // Mount effect
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    setIsMounted(true)
+  }, [])
+
+  // Scroll to bottom on initial load and when user sends a message
+  useEffect(() => {
+    if (viewportRef.current && (!messages.length || !isRunning)) {
+      const viewport = viewportRef.current
+      viewport.scrollTop = viewport.scrollHeight
+    }
+  }, [messages.length, isRunning])
 
   // Debounce connection status changes to prevent rapid remounts
   const handleConnectionChange = React.useCallback((isOnline: boolean) => {
@@ -133,30 +186,44 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
   return (
     <Thread.Root config={config}>
-      <Thread.Viewport className="pt-0 px-1 md:px-2 relative">
-        {accept && (
-          <div className="fixed top-16 right-0 bottom-0 left-0 md:left-[250px] pointer-events-none z-30">
-            <ComposerAttachmentDropzone
-              isDragging={isDragging}
-              accept={accept}
-            />
+      <Thread.Viewport
+        ref={viewportRef}
+        autoScroll={true}
+        className="pt-0 px-1 md:px-2 relative"
+      >
+        {showLoadingState ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-50">
+            <LoadingIndicator className="w-12 h-12" />
           </div>
-        )}
-        {/* @ts-expect-error We're extending thread welcome hackishly with children */}
-        <ThreadWelcomeComponent>
-          <ThreadPrimitive.If empty={true}>
-            {memoizedComposer}
-          </ThreadPrimitive.If>
-        </ThreadWelcomeComponent>
+        ) : (
+          <>
+            {accept && (
+              <div className="fixed top-16 right-0 bottom-0 left-0 md:left-[250px] pointer-events-none z-30">
+                <ComposerAttachmentDropzone
+                  isDragging={isDragging}
+                  accept={accept}
+                />
+              </div>
+            )}
+            {showWelcomeScreen && (
+              /* @ts-expect-error We're extending thread welcome hackishly with children */
+              <ThreadWelcomeComponent>
+                <ThreadPrimitive.If empty={true}>
+                  {memoizedComposer}
+                </ThreadPrimitive.If>
+              </ThreadWelcomeComponent>
+            )}
 
-        <Thread.Messages
-          components={{
-            UserMessage: MyUserMessage,
-            EditComposer: MyEditComposer,
-            AssistantMessage: MyAssistantMessage,
-          }}
-        />
-        <ThreadFollowupSuggestions />
+            <Thread.Messages
+              components={{
+                UserMessage: MyUserMessage,
+                EditComposer: MyEditComposer,
+                AssistantMessage: MyAssistantMessage,
+              }}
+            />
+            <ThreadFollowupSuggestions />
+          </>
+        )}
         <Thread.ViewportFooter className="z-20">
           {showConnectionLost ? (
             <div className="w-full bg-accent mb-4 mt-2 rounded-lg overflow-hidden">
@@ -165,7 +232,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
           ) : null}
           <Thread.ScrollToBottom />
 
-          <ThreadPrimitive.If empty={false}>
+          <ThreadPrimitive.If empty={!effectiveThreadId}>
             {memoizedComposer}
           </ThreadPrimitive.If>
         </Thread.ViewportFooter>

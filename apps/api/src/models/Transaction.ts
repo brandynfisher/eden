@@ -1,18 +1,10 @@
 import { MannaDocument } from './Manna'
 import { MannaVoucherDocument } from './MannaVoucher'
 import { TaskDocument } from './Task'
+import { TransactionType } from '@edenlabs/eden-sdk'
 import { Document, Schema, model } from 'mongoose'
 import paginate from 'mongoose-paginate-v2'
 import Stripe from 'stripe'
-
-export type TransactionType =
-  | 'spend'
-  | 'refund'
-  | 'credit_stripe'
-  | 'credit_voucher'
-  | 'admin_modify'
-  | 'daily_login_bonus'
-  | 'discord_link_bonus'
 
 export interface TransactionSchema {
   manna: MannaDocument

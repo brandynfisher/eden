@@ -24,8 +24,10 @@ const ManageAccountCard = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Manage Account</CardTitle>
-        <CardDescription>Manage your account settings.</CardDescription>
+        <CardTitle className="sr-only">Manage Account</CardTitle>
+        <CardDescription className="!mt-0">
+          Manage your account settings.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Dialog>

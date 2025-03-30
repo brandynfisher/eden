@@ -37,9 +37,11 @@ import {
   Edit2Icon,
   LockIcon,
   LockOpenIcon,
+  PresentationIcon,
   Share2Icon,
   TrashIcon,
 } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -206,7 +208,24 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
           </h1>
 
           <div className="flex gap-x-2">
-            <Button variant="outline" size="icon" onClick={onShareCollection}>
+            <Button
+              variant="outline"
+              size="icon"
+              asChild
+              title="Watch Collection"
+            >
+              <Link
+                href={`${process.env.NEXT_PUBLIC_EDEN_WATCH_APP_URL}/${collection?._id}/player`}
+              >
+                <PresentationIcon size={18} />
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onShareCollection}
+              title="Share Collection"
+            >
               <Share2Icon size={18} />
             </Button>
             {user?._id === collection?.user._id && (

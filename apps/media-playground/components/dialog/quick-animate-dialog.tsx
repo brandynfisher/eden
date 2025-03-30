@@ -53,6 +53,26 @@ const QuickAnimateDialog = () => {
         </Suspense>
       ),
     },
+    {
+      key: 'runway',
+      title: 'Runway',
+      content: (
+        <Suspense fallback={<FormSkeleton />}>
+          <QuickCreateForm
+            toolKey={'runway'}
+            exposedParameters={['prompt_text', 'duration', 'ratio']}
+            initValues={{
+              prompt_image:
+                getCloudfrontOriginalUrl(quickAnimateModal.creation.filename) ||
+                '',
+            }}
+            onSubmitSuccess={() =>
+              dispatch(updateQuickAnimateModal({ isOpen: false }))
+            }
+          />
+        </Suspense>
+      ),
+    },
   ]
 
   return (

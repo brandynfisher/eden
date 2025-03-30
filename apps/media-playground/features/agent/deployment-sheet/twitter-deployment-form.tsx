@@ -59,6 +59,7 @@ export const TwitterDeploymentForm = ({
         isDeployed={isDeployed}
         label="Twitter"
         tooltip="Deploy your agent to Twitter"
+        valid={deployment?.valid}
       />
       <CollapsibleContent
         className={cn([
@@ -66,6 +67,7 @@ export const TwitterDeploymentForm = ({
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
             : '',
           isDeployed ? 'border-success' : '',
+          deployment?.valid === false ? 'border-destructive' : '',
         ])}
       >
         <Form {...form}>
@@ -74,6 +76,7 @@ export const TwitterDeploymentForm = ({
               form={form}
               name="userId"
               isDeployed={isDeployed}
+              isSubmitting={form.formState.isSubmitting}
               label="User ID"
               description="Your Twitter user ID."
             />
@@ -81,6 +84,7 @@ export const TwitterDeploymentForm = ({
               form={form}
               name="username"
               isDeployed={isDeployed}
+              isSubmitting={form.formState.isSubmitting}
               label="Username"
               description="Your Twitter username."
             />
@@ -88,6 +92,7 @@ export const TwitterDeploymentForm = ({
               form={form}
               name="bearerToken"
               isDeployed={isDeployed}
+              isSubmitting={form.formState.isSubmitting}
               label="Bearer Token"
               description="Your Twitter bearer token."
             />
@@ -95,6 +100,7 @@ export const TwitterDeploymentForm = ({
               form={form}
               name="consumerKey"
               isDeployed={isDeployed}
+              isSubmitting={form.formState.isSubmitting}
               label="Consumer Key"
               description="Your Twitter consumer key."
             />
@@ -102,6 +108,7 @@ export const TwitterDeploymentForm = ({
               form={form}
               name="consumerSecret"
               isDeployed={isDeployed}
+              isSubmitting={form.formState.isSubmitting}
               label="Consumer Secret"
               description="Your Twitter consumer secret."
             />
@@ -109,6 +116,7 @@ export const TwitterDeploymentForm = ({
               form={form}
               name="accessToken"
               isDeployed={isDeployed}
+              isSubmitting={form.formState.isSubmitting}
               label="Access Token"
               description="Your Twitter access token."
             />
@@ -116,6 +124,7 @@ export const TwitterDeploymentForm = ({
               form={form}
               name="accessTokenSecret"
               isDeployed={isDeployed}
+              isSubmitting={form.formState.isSubmitting}
               label="Access Token Secret"
               description="Your Twitter access token secret."
             />
@@ -124,6 +133,7 @@ export const TwitterDeploymentForm = ({
               platform="twitter"
               form={form}
               isDeployed={isDeployed}
+              valid={deployment?.valid}
             />
           </form>
         </Form>

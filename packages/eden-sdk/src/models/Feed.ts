@@ -31,6 +31,7 @@ export interface FeedCreationsBaseArguments extends WebAPICallOptions {
   minDate?: string
   orderBy?: string
   direction?: 1 | -1
+  agent?: string | string[]
 }
 
 interface FeedConceptsBaseArguments extends WebAPICallOptions {
@@ -44,6 +45,7 @@ interface FeedConceptsBaseArguments extends WebAPICallOptions {
   creationId?: string
   characterId?: string | string[]
   isPrivate?: string
+  agent?: string | string[]
 }
 
 interface FeedCreatorsBaseArguments extends WebAPICallOptions {
@@ -52,6 +54,7 @@ interface FeedCreatorsBaseArguments extends WebAPICallOptions {
   maxDate?: string
   minDate?: string
   orderBy?: string
+  agent?: string | string[]
 }
 
 export type CursorPaginatedRouteQueryParams = {
@@ -69,7 +72,7 @@ export type FeedCursorRouteQueryParams = {
     limit?: number
     name?: string | string[]
     user?: string | string[]
-    requester?: string | string[]
+    agent?: string | string[]
     owner?: string | string[]
     character?: string | string[]
     collection?: string | string[]

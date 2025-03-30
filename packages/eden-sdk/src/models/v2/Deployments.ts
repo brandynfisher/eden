@@ -9,7 +9,7 @@ export type Platform =
   | 'discord_modal'
   | 'telegram_modal'
 
-type AllowlistItem = {
+export type AllowlistItem = {
   id: string
   note?: string
 }
@@ -21,11 +21,14 @@ export type Deployment = {
   config: {
     discord: {
       channel_allowlist: AllowlistItem[]
+      oauth_client_id?: string
+      oauth_url?: string
     }
     telegram: {
       topic_allowlist: AllowlistItem[]
     }
   }
+  valid?: boolean
   createdAt: Date
   updatedAt: Date
 }

@@ -317,7 +317,8 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                 </FormControl>
                 <div className="flex flex-col gap-2 items-center w-full">
                   {/* // supports mask painter */}
-                  {maskPainterParameterNames.includes(parameter.name) ? (
+                  {tool.key !== 'texture_flow' &&
+                  maskPainterParameterNames.includes(parameter.name) ? (
                     <>
                       <MaskingCanvasDialog
                         form={form}

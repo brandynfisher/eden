@@ -24,7 +24,9 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
+import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { ELEVENLABS_VOICES } from '@/lib/voices/elevenlabs'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -32,8 +34,9 @@ import { slugifyName } from '@/utils/slug.util'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { AlertCircle, Edit2Icon, Loader2, XIcon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -50,7 +53,15 @@ export const agentSchema = z.object({
   image: z.string().optional(),
   description: z.string().min(1).max(5000),
   greeting: z.string().max(140).optional(),
-  model: z.string().optional(),
+  voice: z.string().optional(),
+  models: z
+    .array(
+      z.object({
+        lora: z.string(),
+        use_when: z.string().trim().max(500).min(1),
+      }),
+    )
+    .optional(),
   persona: z.string().max(30000).optional(),
   isPersonaPublic: z.boolean().optional(),
   knowledge: z.string().max(100000).optional(),
@@ -76,6 +87,7 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
 
 const AgentFormSheet = () => {
   const { isOpen, mode, agentId, onAction } = useAgentFormSheet()
+  const router = useRouter()
 
   const dispatch = useAppDispatch()
   const agentQuery = useAgentQuery({
@@ -98,9 +110,15 @@ const AgentFormSheet = () => {
       isPersonaPublic: agentQuery.agent?.isPersonaPublic || false,
       knowledge: agentQuery.agent?.knowledge ?? '',
       greeting: agentQuery.agent?.greeting || '',
-      model: agentQuery.agent?.model || '',
+      voice: agentQuery.agent?.voice || '',
+      models: agentQuery.agent?.models || [],
       suggestions: agentQuery.agent?.suggestions || [],
     },
+  })
+
+  const models = useFieldArray({
+    control: form.control,
+    name: 'models',
   })
 
   const name = form.watch('name')
@@ -117,8 +135,9 @@ const AgentFormSheet = () => {
         isPersonaPublic: agentQuery.agent.isPersonaPublic,
         knowledge: agentQuery.agent.knowledge ?? '',
         greeting: agentQuery.agent.greeting || '',
-        model: agentQuery.agent.model || '',
-        suggestions: agentQuery.agent.suggestions,
+        voice: agentQuery.agent.voice || '',
+        models: agentQuery.agent.models || [],
+        suggestions: agentQuery.agent.suggestions || [],
       })
     } else {
       form.reset({
@@ -130,7 +149,8 @@ const AgentFormSheet = () => {
         isPersonaPublic: false,
         knowledge: '',
         greeting: '',
-        model: '',
+        voice: '',
+        models: [],
         suggestions: [],
       })
     }
@@ -153,7 +173,8 @@ const AgentFormSheet = () => {
         })
         agentQuery.invalidate()
       } else {
-        await axios.post('/api/agents', data)
+        const agent = await axios.post('/api/agents', data)
+        router.push(`/agents/${agent.data.agentId}`)
         toast.success('Agent created successfully', {
           description: `"${data.name}" has been created successfully`,
           richColors: true,
@@ -197,7 +218,7 @@ const AgentFormSheet = () => {
         key: '',
         image: '',
         description: '',
-        model: '',
+        models: [],
       })
     }
   }
@@ -464,47 +485,123 @@ const AgentFormSheet = () => {
                 )}
               />
 
+              {/** Voice Field */}
+              <FormField
+                control={form.control}
+                name="voice"
+                render={({ field }) => (
+                  <FormItem className="p-2 bg-secondary rounded-lg">
+                    <FormLabel>Voice (Optional)</FormLabel>
+                    <FormDescription>
+                      Your agent will speak with this voice. Voices provided by
+                      ElevenLabs.
+                    </FormDescription>
+                    <FormControl>
+                      <VoiceSelector
+                        voices={ELEVENLABS_VOICES}
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/** Model Field */}
               <FormField
                 control={form.control}
-                name="model"
-                render={({ field }) => (
+                name="models"
+                render={() => (
                   <FormItem className="p-2 bg-secondary rounded-lg">
-                    <FormLabel>Flux LoRa (Optional)</FormLabel>
+                    <FormLabel>Flux LoRA Models</FormLabel>
+                    <FormDescription>
+                      Select models and specify when to use each one (max 10
+                      models).
+                    </FormDescription>
                     <div>
-                      {field.value && (
-                        <div className="relative mb-2">
-                          <ModelMiniCard modelId={field.value}>
+                      {models.fields.map((model, index) => (
+                        <div
+                          key={model.lora}
+                          className="relative mb-4 p-4 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
+                        >
+                          <div className="space-y-4">
+                            <div className="flex items-stretch gap-2 min-h-[82px]">
+                              <div className="flex-grow">
+                                <ModelMiniCard
+                                  className="w-full h-full"
+                                  modelId={model.lora}
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="hover:bg-destructive hover:text-destructive-foreground h-auto"
+                                size="icon"
+                                onClick={() => models.remove(index)}
+                              >
+                                <XIcon className="size-4" />
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              <FormField
+                                control={form.control}
+                                name={`models.${index}.use_when`}
+                                render={({ field }) => (
+                                  <FormItem className="flex-1">
+                                    <FormLabel className="text-sm text-muted-foreground">
+                                      When to use this model
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="text"
+                                        placeholder="e.g., 'when user asks for realistic images' or 'for anime style'"
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="mt-4">
+                        <ModelSelectorModal
+                          className="p-4 md:p-8 w-full"
+                          title="Select LoRA Model"
+                          description="Pick a LoRA model to add to this agent"
+                          currentValue=""
+                          selectedIds={models.fields.map(m => m.lora)}
+                          onChange={id => {
+                            const modelId = typeof id === 'string' ? id : id[0]
+                            if (!modelId) return
+
+                            // Check if model already exists (shouldn't happen due to disabled state)
+                            if (models.fields.some(m => m.lora === modelId)) {
+                              toast.error('This model is already added')
+                              return
+                            }
+
+                            // Add new model
+                            form.setValue('models', [
+                              ...models.fields,
+                              { lora: modelId, use_when: '' },
+                            ])
+                          }}
+                          trigger={
                             <Button
                               type="button"
-                              variant="ghost"
-                              className="absolute h-[calc(100%-16px)] top-2 right-2 hover:bg-destructive hover:text-destructive-foreground"
-                              size="icon"
-                              onClick={e => {
-                                e.stopPropagation()
-                                field.onChange('')
-                              }}
+                              variant="outline"
+                              disabled={models.fields.length >= 10}
+                              className="w-full"
                             >
-                              <XIcon className="size-4" />
+                              Add LoRA Model
                             </Button>
-                          </ModelMiniCard>
-                        </div>
-                      )}
-                      <ModelSelectorModal
-                        className="p-4 md:p-8 w-full"
-                        title="Select Flux LoRa"
-                        description="Pick a Flux LoRa to use as a default model for this agent"
-                        base_model="flux-dev"
-                        currentValue={field.value || ''}
-                        onChange={field.onChange}
-                        trigger={
-                          <Button type="button" variant="outline">
-                            {field.value
-                              ? 'Change Flux LoRa'
-                              : 'Select Flux LoRa'}
-                          </Button>
-                        }
-                      />
+                          }
+                        />
+                      </div>
                     </div>
                   </FormItem>
                 )}

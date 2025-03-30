@@ -33,6 +33,7 @@ const fastifyInternalMessages: FastifyPluginAsync<
   }
 
   const eventEmitter = new EventEmitter()
+  eventEmitter.setMaxListeners(100)
 
   queues.forEach(({ topic, onMessage }) => {
     eventEmitter.on(topic, onMessage)

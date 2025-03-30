@@ -2,24 +2,33 @@
 
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
 import ModelMiniCard from '@/components/card/model-mini-card'
+import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
+import AgentTriggerSheet from '@/features/agent/agent-trigger-sheet'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
-import CreationsFeed from '@/features/feed/creations-feed'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAgentDeploymentFormSheet,
   updateAgentFormSheet,
+  updateAgentTriggerFormSheet,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import {
+  ClockIcon,
   EyeOffIcon,
   MessageSquareIcon,
   RocketIcon,
@@ -71,6 +80,15 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   const handleConfigureDeployments = () => {
     dispatch(
       updateAgentDeploymentFormSheet({
+        isOpen: true,
+        agentId: agent?._id,
+      }),
+    )
+  }
+
+  const handleConfigureTriggers = () => {
+    dispatch(
+      updateAgentTriggerFormSheet({
         isOpen: true,
         agentId: agent?._id,
       }),
@@ -129,13 +147,22 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                       <SettingsIcon className="w-4 h-4" />
                     </Button>
                     {isFeatureDeploymentsEnabled && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleConfigureDeployments}
-                      >
-                        <RocketIcon size={18} />
-                      </Button>
+                      <>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleConfigureDeployments}
+                        >
+                          <RocketIcon size={18} />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={handleConfigureTriggers}
+                        >
+                          <ClockIcon size={18} />
+                        </Button>
+                      </>
                     )}
                     <AgentActionsMenu
                       className="size-10"
@@ -147,16 +174,31 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                   </>
                 )}
                 <div className="flex items-center gap-2">
-                  <AgentUsageStats
-                    agent={agent}
-                    hiddenStats={[
-                      'toolCallCount',
-                      'assistantMessageCount',
-                      'threadCount',
-                      // 'userCount',
-                    ]}
-                    className="lg:mt-0 gap-2"
-                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <AgentUsageStats
+                            agent={agent}
+                            hiddenStats={[
+                              'toolCallCount',
+                              'assistantMessageCount',
+                              'threadCount',
+                              'userCount',
+                            ]}
+                            className="lg:mt-0 gap-2"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <AgentUsageStats
+                          className="my-0 gap-2 !flex-col"
+                          agent={agent}
+                          showTooltipAsText={true}
+                        />
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   {user?._id !== agent?.owner._id && (
                     <Button
                       variant="outline"
@@ -181,52 +223,56 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           </div>
         </div>
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex flex-1 flex-col p-4 max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
-            <div className="flex items-center gap-2 mb-2">
-              <TypographyH6 className="text-primary">Persona</TypographyH6>
-              <div className="h-px flex-1 bg-border/50" />
-            </div>
-            {agent?.isPersonaPublic === undefined || !agent?.isPersonaPublic ? (
-              <>
-                <div className="text-sm italic text-muted-foreground flex items-center gap-2 mb-2">
-                  <EyeOffIcon className="w-4 h-4" />
-                  This persona is not public.
-                </div>
-                <Separator className="mb-2" />
-              </>
-            ) : null}
-            {(agent?.isPersonaPublic !== undefined && agent?.isPersonaPublic) ||
-            user?._id === agent?.owner._id ? (
+          {(agent?.isPersonaPublic || user?._id === agent?.owner._id) && (
+            <div className="flex flex-1 flex-col p-4 md:max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
+              <div className="flex items-center gap-2 mb-2">
+                <TypographyH6 className="text-primary">Persona</TypographyH6>
+              </div>
+              {!agent?.isPersonaPublic && user?._id === agent?.owner._id && (
+                <>
+                  <div className="text-sm italic text-muted-foreground flex items-center gap-2 mb-2">
+                    <EyeOffIcon className="w-4 h-4" />
+                    This persona is not public.
+                  </div>
+                  <Separator className="mb-2" />
+                </>
+              )}
               <TextClampMore
                 lines={3}
                 text={agent?.persona}
-                className="text-sm italic text-muted-foreground"
+                className="text-sm italic text-accent-foreground"
               />
-            ) : null}
-          </div>
-          {agent?.model && (
-            <div className="flex flex-1 flex-col h-fit max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
+            </div>
+          )}
+          {agent?.models && agent.models.length > 0 && (
+            <div className="flex flex-1 flex-col h-fit md:max-w-[50%] p-4 bg-muted/50 rounded-lg border border-border/50 gap-2">
               <TypographyH6 className="text-primary">Models</TypographyH6>
-              <ModelMiniCard modelId={agent.model} />
+              <div className="flex flex-col gap-2">
+                {agent.models.map((model: { lora: string }, index: number) => (
+                  <ModelMiniCard key={index} modelId={model.lora} />
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
+      <AgentTriggerSheet />
       <div className="p-4">
-        {isSignedIn ? (
-          !!user && (
-            <div>
-              <TypographyH6 className="mb-4">
-                Your Creations with {agent?.name}
-              </TypographyH6>
-              <CreationsFeed
-                query={{ user: agent._id, requester: user?._id }}
-                scrollRef={scrollRef}
-              />
-            </div>
-          )
-        ) : (
-          <CreationsFeed query={{ user: agent._id }} />
+        {agent && (
+          <RecentCreationsFeed
+            title={
+              isSignedIn && !!user
+                ? `Your Creations with ${agent?.name}`
+                : `Public Creations with ${agent?.name}`
+            }
+            query={
+              isSignedIn && !!user
+                ? { user: user._id, agent: agent._id }
+                : { agent: agent._id }
+            }
+            isModal={false}
+            scrollRef={scrollRef}
+          />
         )}
       </div>
     </>

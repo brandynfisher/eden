@@ -6,8 +6,10 @@ import creatorRoutesV2 from './creatorRoutesV2'
 import feedRoutesV2 from './feedRoutesV2'
 import modelRoutesV2 from './modelRoutesV2'
 import taskRoutesV2 from './taskRoutesV2'
+// import testRoutes from './testRoutes'
 import threadRoutes from './threadRoutes'
 import toolRoutesV2 from './toolRoutesV2'
+import userRoutes from './userRoutes'
 
 export const routes = [
   authRoutesV2,
@@ -20,4 +22,6 @@ export const routes = [
   collectionRoutesV2,
   threadRoutes,
   agentRoutes,
+  userRoutes,
+  // testRoutes,
 ]

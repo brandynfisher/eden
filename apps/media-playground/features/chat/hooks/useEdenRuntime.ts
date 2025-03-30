@@ -16,8 +16,13 @@ import {
   useExternalStoreRuntime,
   useThread,
 } from '@assistant-ui/react'
+import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
 import { useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+
+type ThreadMessageWithStatus = ThreadMessage & {
+  status?: AssistantMessage['status']
+}
 
 const symbolEdenExtras = Symbol('eden-extras')
 
@@ -40,11 +45,15 @@ export const useEdenRuntime = ({
   agentId?: string
   threadId?: string
   stream: (
-    messages: EdenMessage[],
+    messages: ThreadMessageWithStatus[],
     callback?: (thread_id?: string) => Promise<void>,
-  ) => Promise<AsyncGenerator<{ data: EdenMessage }>>
+  ) => Promise<
+    AsyncGenerator<{ data: ThreadMessageWithStatus & { active?: string[] } }>
+  >
   onSwitchToNewThread?: () => Promise<void> | void
-  onSwitchToThread?: (threadId: string) => Promise<{ messages: EdenMessage[] }>
+  onSwitchToThread?: (
+    threadId: string,
+  ) => Promise<{ messages: ThreadMessageWithStatus[] }>
   onRename?: (threadId: string, newTitle: string) => Promise<void>
   isReadOnly?: boolean | null
 }) => {
@@ -105,6 +114,7 @@ export const useEdenRuntime = ({
 
     try {
       setIsRunning(true)
+      // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
       await sendMessage(messages, callback)
     } catch (error) {
       console.error('Error streaming messages:', error)
@@ -117,6 +127,7 @@ export const useEdenRuntime = ({
 
   const threadMessages = useExternalMessageConverter({
     callback: edenMessageConverter,
+    // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
     messages,
     isRunning,
   })
@@ -127,8 +138,7 @@ export const useEdenRuntime = ({
     setIsRunning,
     runtime: useExternalStoreRuntime({
       isRunning,
-      //@todo: fix this type issue
-      //@ts-expect-error: Type error: Type 'ThreadMessage[]' is not assignable to type 'EdenMessage[]'
+      // @ts-expect-error: Type mismatch between ThreadMessage and EdenMessage needs to be resolved
       messages: threadMessages,
       setMessages,
       extras: {
@@ -198,7 +208,7 @@ export const useEdenRuntime = ({
                 `/chat/${agentId}/${newThreadId}`,
               )
             setTimeout(async () => {
-              console.log('invalidated threadlist')
+              // console.log('invalidated threadlist')
               await invalidate()
             }, 2000)
           },

@@ -1,16 +1,20 @@
 'use client'
 
+import ActionsDropdown from '@/components/button/actions-dropdown'
 import CreationActionsMenu from '@/components/button/creations-actions-menu'
+import DownloadActionItem from '@/components/button/download-action-item'
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
+import { DropdownMenuGroup } from '@/components/ui/dropdown-menu'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
+import { generateFilename } from '@/utils/slug.util'
 import { makeAssistantToolUI } from '@assistant-ui/react'
 import { TaskV2Result, TaskV2Status, ToolV2 } from '@edenlabs/eden-sdk'
-import React from 'react'
+import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
 export type TaskResultToolArgs = {
@@ -20,6 +24,37 @@ export type TaskResultToolArgs = {
   status: TaskV2Status
   error?: string
   // }
+}
+
+// Simple download menu for media outputs without a creation
+const MediaDownloadMenu = ({
+  filename,
+  mediaType = 'media',
+  className,
+}: {
+  filename: string
+  mediaType?: string
+  className?: string
+}) => {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
+      {isOpen && (
+        <DropdownMenuGroup>
+          <DownloadActionItem
+            type="creation"
+            originalFileUrl={filename}
+            saveAsFileName={generateFilename(
+              'Eden',
+              mediaType,
+              Date.now().toString(),
+            )}
+          />
+        </DropdownMenuGroup>
+      )}
+    </ActionsDropdown>
+  )
 }
 
 export const TaskResultTool = makeAssistantToolUI({
@@ -96,7 +131,7 @@ export const TaskResultTool = makeAssistantToolUI({
                                   )
                                   e.dataTransfer.effectAllowed = 'copy'
                                 }}
-                                className="w-full h-full"
+                                className="w-full h-full flex gap-4"
                               >
                                 <LightboxTrigger
                                   className="w-full h-full"
@@ -134,7 +169,7 @@ export const TaskResultTool = makeAssistantToolUI({
                                 />
                               </div>
                             )}
-                            {output.creation && (
+                            {output.creation ? (
                               <CreationActionsMenu
                                 creation={{
                                   ...output.creation,
@@ -144,6 +179,16 @@ export const TaskResultTool = makeAssistantToolUI({
                                 className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
                                 queryKey={['creations', output.creation?._id]}
                               />
+                            ) : (
+                              output.filename && (
+                                <MediaDownloadMenu
+                                  filename={output.filename}
+                                  mediaType={getFileTypeByMimeType(
+                                    output.mediaAttributes?.mimeType,
+                                  )}
+                                  className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
+                                />
+                              )
                             )}
                           </div>
                         ))

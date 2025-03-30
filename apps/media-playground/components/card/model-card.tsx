@@ -5,6 +5,7 @@ import PrivateIcon from '@/components/icons/private-icon'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import { Creator, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { PlayIcon, SquareMousePointerIcon } from 'lucide-react'
@@ -23,6 +24,7 @@ type Props = {
   queryKey: QueryKey
   onClick?: (item: ModelV2) => void
   isSelectable?: boolean
+  isSelected?: boolean
 }
 
 const ModelCard = ({
@@ -32,19 +34,39 @@ const ModelCard = ({
   queryKey,
   onClick,
   isSelectable,
+  isSelected,
 }: Props) => {
   const hideFooter = !showFooterItems.name && !showFooterItems.actions
 
   return (
-    <Card className="relative overflow-hidden z-10" style={style}>
+    <Card
+      className={cn([
+        'group relative overflow-hidden transition-all duration-300 hover:border-primary/50',
+        isSelectable && 'cursor-pointer',
+        isSelected &&
+          'border-primary/50 opacity-50 cursor-not-allowed pointer-events-none',
+      ])}
+      style={style}
+    >
       {!model.public ? <PrivateIcon /> : null}
-      {isSelectable ? (
+      {isSelectable && !isSelected ? (
         <div
-          className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
+          className={cn([
+            'absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all',
+          ])}
           onClick={() => onClick?.(model)}
         >
-          <SquareMousePointerIcon className="mr-2 h-4 w-4" />
-          Select
+          <>
+            <SquareMousePointerIcon className="mr-2 h-4 w-4" />
+            Select
+          </>
+        </div>
+      ) : null}
+      {isSelected ? (
+        <div className="absolute z-50 inset-0 flex items-center justify-center w-full h-full">
+          <div className="flex items-center justify-center bg-black px-2 py-1 rounded-md text-white text-sm">
+            Already Selected
+          </div>
         </div>
       ) : null}
       <Link

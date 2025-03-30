@@ -1,5 +1,6 @@
 import { Agent, AgentDocument } from '../models/Agent'
 import { Deployment } from '../models/Deployment'
+import { Trigger } from '../models/Trigger'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
@@ -8,7 +9,10 @@ import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import {
   AgentGetArguments,
   AgentsCreateArguments,
+  AgentsCreateTriggerArguments,
+  AgentsCreateTriggerResponse,
   AgentsDeleteArguments,
+  AgentsDeleteTriggerResponse,
   AgentsDeployArguments,
   AgentsDeployResponse,
   AgentsStopDeploymentArguments,
@@ -76,18 +80,28 @@ export const createAgent = async (
     key,
     description,
     image,
-    model,
+    models,
     persona,
     isPersonaPublic,
     greeting,
     knowledge,
     suggestions,
+    voice,
   } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
 
-  if (model) {
-    await verifyModelAccess(reply, model, currentUserId.toString())
+  if (models && models.length > 10) {
+    return reply.status(422).send({
+      error: 'Cannot have more than 10 models',
+    })
+  }
+
+  // Verify access to all models if provided
+  if (models && models.length > 0) {
+    for (const model of models) {
+      await verifyModelAccess(reply, model.lora, currentUserId.toString())
+    }
   }
 
   const imageFilename = image.split('/').pop()
@@ -104,7 +118,8 @@ export const createAgent = async (
     greeting,
     knowledge,
     suggestions,
-    model: model || undefined,
+    voice,
+    models: models || [],
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -144,9 +159,16 @@ export const updateAgent = async (
     knowledge,
     suggestions,
     image,
-    model,
+    voice,
+    models,
     public: isPublic,
   } = request.body as AgentsUpdateArguments
+
+  if (models && models.length > 10) {
+    return reply.status(422).send({
+      error: 'Cannot have more than 10 models',
+    })
+  }
 
   if (!agentId) {
     return reply.status(422).send({
@@ -165,14 +187,19 @@ export const updateAgent = async (
     greeting,
     knowledge,
     suggestions,
+    voice,
     public: isPublic,
   }
 
-  if (!model) {
-    updateData.$unset = { model: 1 }
-  } else if (model) {
-    await verifyModelAccess(reply, model, currentUserId.toString())
-    updateData.model = model
+  // Handle models array
+  if (!models || models.length === 0) {
+    updateData.$unset = { models: 1 }
+  } else {
+    // Verify access to all models
+    for (const model of models) {
+      await verifyModelAccess(reply, model.lora, currentUserId.toString())
+    }
+    updateData.models = models
   }
 
   if (image) {
@@ -214,6 +241,179 @@ export const updateAgent = async (
 
   return reply.status(200).send({
     agentId,
+  })
+}
+
+export const getAgentTriggers = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const currentUserId = request.user.userId
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to view triggers for this agent',
+    })
+  }
+
+  const triggers = await Trigger.find({
+    agent: agentId,
+  }).populate('deployment', '_id platform config')
+
+  return reply.status(200).send({
+    triggers,
+  })
+}
+
+const createUpdateConfig = async (
+  server: FastifyInstance,
+  deploymentId: string,
+  channelId: string,
+) => {
+  // check if deploymentId is a valid deployment
+  const deployment = await Deployment.findById(deploymentId)
+  if (!deployment) {
+    throw new Error('Deployment not found')
+  }
+
+  switch (deployment.platform) {
+    case 'discord':
+      return {
+        update_endpoint: `${server.config.EDEN_COMPUTE_API_URL}/emissions/platform/discord`,
+        deployment_id: deploymentId,
+        discord_channel_id: channelId,
+      }
+    case 'telegram':
+      return {
+        update_endpoint: `${server.config.EDEN_COMPUTE_API_URL}/emissions/platform/telegram`,
+        deployment_id: deploymentId,
+        telegram_chat_id: channelId,
+      }
+    default:
+      throw new Error('Unsupported platform')
+  }
+}
+export const createAgentTrigger = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId, message, schedule, deploymentId, channelId } = request.body as AgentsCreateTriggerArguments
+  const currentUserId = request.user.userId
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to create triggers for this agent',
+    })
+  }
+
+  const deployment = await Deployment.findById(deploymentId)
+
+  if (!deployment) {
+    return reply.status(404).send({
+      error: 'Deployment not found',
+    })
+  }
+
+  const updateConfig = await createUpdateConfig(server, deploymentId, channelId)
+
+  const updateData = {
+    agent_id: agentId,
+    message,
+    schedule,
+    platform: deployment.platform,
+    channel: {
+      id: channelId,
+      note: deployment.config[deployment.platform].channel_allowlist.find(
+        (channel: { id: string; note: string }) =>
+          channel.id === channelId,
+      )?.note,
+    },
+    update_config: updateConfig,
+  }
+
+  const edenComputeRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/create`,
+    data: updateData,
+  }
+
+  const edenComputeResponse = await axios.post(
+    edenComputeRequest.endpoint,
+    edenComputeRequest.data,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  const response = edenComputeResponse.data as AgentsCreateTriggerResponse
+
+  return reply.status(200).send({
+    triggerId: response.trigger_id,
+  })
+}
+
+export const deleteAgentTrigger = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId, triggerId } = request.params as {
+    agentId: string
+    triggerId: string
+  }
+  const currentUserId = request.user.userId
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to delete triggers for this agent',
+    })
+  }
+
+  const edenComputeRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/delete`,
+    data: { id: triggerId },
+  }
+
+  const edenComputeResponse = await axios.post(
+    edenComputeRequest.endpoint,
+    edenComputeRequest.data,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  const response = edenComputeResponse.data as AgentsDeleteTriggerResponse
+
+  return reply.status(200).send({
+    success: response.success,
   })
 }
 

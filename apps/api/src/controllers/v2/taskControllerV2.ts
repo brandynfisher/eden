@@ -38,6 +38,12 @@ export enum ServerEventName {
   MessageError = 'message-error',
 }
 
+export const internalToolNameBlacklist = [
+  'create_session',
+  'search_agents',
+  'search_models',
+]
+
 export type SocketClientEvent = {
   event: SocketClientEventName
   data?: { [key: string]: string }
@@ -88,10 +94,7 @@ export const createTask = async (
       })
     }
 
-    const rateLimitCheckResult = await taskRateLimitCheck(
-      request,
-      toolDocument.output_type,
-    )
+    const rateLimitCheckResult = await taskRateLimitCheck(request, toolDocument)
     if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
       if (server.Sentry) {
         server.Sentry.captureMessage(
@@ -110,6 +113,11 @@ export const createTask = async (
         args,
         user_id: userId,
       },
+    }
+
+    // if output type is lora, sanitize args.name to be url/filename safe
+    if (toolDocument.output_type === 'lora') {
+      args.name = args.name.replace(/[^a-zA-Z0-9]/g, '_')
     }
 
     if (args.lora) {
@@ -188,9 +196,17 @@ export const createTask = async (
 }
 
 function getTypeQuery(tool: string | undefined, minDate: boolean | undefined) {
+  const excludedTools = [
+    'lora_trainer',
+    'flux_trainer',
+    ...internalToolNameBlacklist,
+  ]
+
   // If minDate is provided, return empty query
   if (minDate) {
-    return {}
+    return {
+      tool: { $nin: excludedTools },
+    }
   }
 
   const isModelTask = tool === 'lora_trainer' || tool === 'flux_trainer'
@@ -200,9 +216,9 @@ function getTypeQuery(tool: string | undefined, minDate: boolean | undefined) {
     return { tool }
   }
 
-  // Otherwise exclude model tasks
+  // Otherwise exclude model tasks and tools from internalToolNameBlacklist
   return {
-    tool: { $nin: ['lora_trainer', 'flux_trainer'] },
+    tool: { $nin: excludedTools },
   }
 }
 
@@ -988,12 +1004,11 @@ export const subscribeWebSocketUpdates = function wsHandler(
 
     // clean up on socket close
     socket.on('close', () => {
-      this.internalMessages.connection.off(
+      this.internalMessages.connection.removeListener(
         'task-updates-v2',
         internalEmitterEventHandlerTaskUpdates,
       )
-
-      this.internalMessages.connection.off(
+      this.internalMessages.connection.removeListener(
         'thread-updates',
         internalEmitterEventHandlerThreadUpdates,
       )

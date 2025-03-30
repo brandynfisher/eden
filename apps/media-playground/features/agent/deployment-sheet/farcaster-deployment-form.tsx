@@ -49,6 +49,7 @@ export const FarcasterDeploymentForm = ({
         isDeployed={isDeployed ?? false}
         label="Farcaster"
         tooltip="Deploy your agent to Farcaster"
+        valid={deployment?.valid}
       />
       <CollapsibleContent
         className={cn([
@@ -56,6 +57,7 @@ export const FarcasterDeploymentForm = ({
             ? 'border border-gray-400/20 border-t-0 rounded-b-lg flex flex-col gap-2'
             : '',
           isDeployed ? 'border-success' : '',
+          deployment?.valid === false ? 'border-destructive' : '',
         ])}
       >
         <Form {...form}>
@@ -66,6 +68,7 @@ export const FarcasterDeploymentForm = ({
               isDeployed={isDeployed ?? false}
               label="Mnemonic"
               description="Your Farcaster mnemonic."
+              isSubmitting={form.formState.isSubmitting}
             />
             <TokenField
               form={form}
@@ -73,12 +76,14 @@ export const FarcasterDeploymentForm = ({
               isDeployed={isDeployed ?? false}
               label="Neynar Webhook Secret"
               description="Your Neynar webhook secret."
+              isSubmitting={form.formState.isSubmitting}
             />
             <DeploymentFormFooter
               form={form}
               agentId={agentId}
               platform="farcaster"
               isDeployed={isDeployed ?? false}
+              valid={deployment?.valid}
             />
           </form>
         </Form>

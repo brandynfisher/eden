@@ -2,6 +2,7 @@ import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { ModelV2 } from 'src/models/v2'
 import { Deployment } from 'src/models/v2/Deployments'
+import { CronSchedule, Trigger } from 'src/models/v2/Trigger'
 import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 export type AgentSuggestion = {
@@ -54,7 +55,11 @@ export type Agent = Omit<
     note: string
   }[]
   discordId?: string
-  model?: ModelV2
+  voice?: string
+  model?: {
+    lora: ModelV2
+    use_when?: string
+  }[]
   discordUsername?: string
   telegramId?: string
   telegramUsername?: string
@@ -87,7 +92,11 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   image: string
   tools?: { [key: string]: string[] }
   discordId?: string
-  model?: string
+  voice?: string
+  models?: Array<{
+    lora: string
+    use_when?: string
+  }>
 }
 
 export interface AgentsUpdateArguments extends WebAPICallOptions {
@@ -104,7 +113,11 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   tools?: { [key: string]: string[] }
   discordId?: string
   public?: boolean
-  model?: string
+  voice?: string
+  models?: Array<{
+    lora: string
+    use_when?: string
+  }>
 }
 
 interface DiscordDeploymentConfig {
@@ -112,6 +125,8 @@ interface DiscordDeploymentConfig {
     id: string
     note: string
   }[]
+  oauth_client_id?: string
+  oauth_url?: string
 }
 
 interface TelegramDeploymentConfig {
@@ -187,6 +202,26 @@ export interface AgentsDeleteDeploymentArguments extends WebAPICallOptions {
 
 export interface AgentsDeleteArguments extends WebAPICallOptions {
   agentId: string
+}
+
+/***
+ * Trigger
+ */
+export interface AgentsGetTriggersArguments extends WebAPICallOptions {
+  agentId: string
+}
+
+export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
+  agentId: string
+  message: string
+  schedule: CronSchedule
+  deploymentId: string
+  channelId: string
+}
+
+export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
+  agentId: string
+  triggerId: string
 }
 
 // Requests
@@ -279,6 +314,33 @@ export const agentsDeleteRequestConfig = (
   }
 }
 
+export const agentsGetTriggersRequestConfig = (
+  args: AgentsGetTriggersArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/agents/${args.agentId}/triggers`,
+  }
+}
+
+export const agentsCreateTriggerRequestConfig = (
+  args: AgentsCreateTriggerArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/triggers`,
+    data: args
+  }
+}
+
+export const agentsDeleteTriggerRequestConfig = (
+  args: AgentsDeleteTriggerArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `v2/agents/${args.agentId}/triggers/${args.triggerId}`,
+  }
+}
 // Responses
 export type AgentsGetDeploymentsResponse = WebAPICallResult & {
   deployments: Deployment[]
@@ -321,6 +383,21 @@ export type AgentsDeleteDeploymentResponse = WebAPICallResult & {
 }
 
 export type AgentsDeleteResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+export type AgentsGetTriggersResponse = WebAPICallResult & {
+  triggers: Trigger[]
+  error?: string
+}
+
+export type AgentsCreateTriggerResponse = WebAPICallResult & {
+  trigger: Trigger
+  error?: string
+}
+
+export type AgentsDeleteTriggerResponse = WebAPICallResult & {
   success: boolean
   error?: string
 }

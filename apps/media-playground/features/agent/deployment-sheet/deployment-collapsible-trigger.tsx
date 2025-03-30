@@ -15,6 +15,7 @@ interface DeploymentCollapsibleTriggerProps {
   isDeployed: boolean
   label: string
   tooltip: string
+  valid?: boolean
 }
 
 export const DeploymentCollapsibleTrigger = ({
@@ -22,6 +23,7 @@ export const DeploymentCollapsibleTrigger = ({
   isDeployed,
   label,
   tooltip,
+  valid,
 }: DeploymentCollapsibleTriggerProps) => {
   return (
     <CollapsibleTrigger
@@ -31,6 +33,7 @@ export const DeploymentCollapsibleTrigger = ({
           ? 'bg-muted-foreground/10 border border-gray-400/20 rounded-b-none'
           : 'border border-muted bg-popover',
         isDeployed ? 'border-success' : '',
+        valid === false ? 'border-destructive' : '',
       ])}
     >
       <div className="flex items-center gap-2">
@@ -60,9 +63,14 @@ export const DeploymentCollapsibleTrigger = ({
       {isDeployed && (
         <Badge
           variant="outline"
-          className="bg-success/20 text-success-foreground border-success"
+          className={cn(
+            'bg-success/20 text-success-foreground border-success',
+            valid === false
+              ? 'bg-destructive/20 text-destructive-foreground border-destructive'
+              : '',
+          )}
         >
-          Deployed
+          {valid === false ? 'Failed' : 'Deployed'}
         </Badge>
       )}
     </CollapsibleTrigger>

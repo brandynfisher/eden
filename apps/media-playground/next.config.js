@@ -166,22 +166,4 @@ if (process.env.NODE_ENV !== 'development') {
   })
 }
 
-module.exports = {
-  ...nextConfig,
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'app2.eden.art',
-          },
-        ],
-        destination: 'https://beta.eden.art/:path*',
-        permanent: true,
-        basePath: false,
-      },
-    ]
-  },
-}
+module.exports = nextConfig

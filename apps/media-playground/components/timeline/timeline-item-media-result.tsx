@@ -78,6 +78,7 @@ export const MediaResultOutput = ({
             poster: output.thumbnail || undefined,
           }}
           imageProps={{
+            customLoader: true,
             blurhash: output.mediaAttributes?.blurhash,
           }}
         />

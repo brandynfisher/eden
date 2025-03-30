@@ -4,7 +4,14 @@ import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Form } from '@/components/ui/form'
+import {
+  Form, // FormControl,
+  // FormField,
+  // FormItem,
+  // FormLabel,
+  // FormMessage,
+} from '@/components/ui/form'
+// import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
@@ -41,7 +48,6 @@ const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 const CreationUIContainer = ({ tool }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
-
   const presetResolutions = tool?.resolutions
   const parameterSchema = createZodFormSchema(tool.parameters || []) // create form schema
 
@@ -95,14 +101,14 @@ const CreationUIContainer = ({ tool }: Props) => {
     return cost <= balance
   }, [cost, balance])
 
-  console.log({ cost, hasEnoughBalance })
+  // console.log({ cost, hasEnoughBalance })
 
   async function onSubmit(formData: FormData) {
     if (!(await verifyAuth())) {
       return
     }
 
-    // console.log('onSubmit', formData)
+    // console.log('onSubmit', formData.public)
     // return
 
     setIsSubmitting(true)
@@ -276,7 +282,7 @@ const CreationUIContainer = ({ tool }: Props) => {
             ) : null}
           </div>
 
-          <div className="flex justify-between flex-wrap gap-2 mt-2">
+          <div className="gap-2 mt-2">
             <div className="flex gap-2 items-center">
               {optionalParameters?.length ? (
                 <Button
@@ -300,6 +306,26 @@ const CreationUIContainer = ({ tool }: Props) => {
               >
                 Reset
               </Button>
+              {/* <FormField
+                name="public"
+                render={({ field, fieldState }) => (
+                  <FormItem
+                    data-test-id={'public'}
+                    className="ml-auto flex items-center gap-2"
+                  >
+                    <FormControl id={'public'}>
+                      <Switch
+                        checked={field.value === undefined ? true : field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="text-muted-foreground !mt-0">
+                      Public
+                    </FormLabel>
+                    <FormMessage>{fieldState.error?.message}</FormMessage>
+                  </FormItem>
+                )}
+              /> */}
             </div>
           </div>
           {optionalParameters?.length ? (
