@@ -84,9 +84,8 @@ const MyAssistantMessage: FC = () => {
         <div className="col-start-3 row-start-2">
           <TypingIndicator />
         </div>
-      ) : (
-        <MyAssistantActionBar />
-      )}
+      ) : null}
+      {!isRunning && !isEmpty && <MyAssistantActionBar />}
     </AssistantMessage.Root>
   )
 }
