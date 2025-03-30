@@ -7,6 +7,7 @@ import { ToolV2 } from '../../models/v2/ToolV2'
 import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import TaskV2Repository from '../../repositories/TaskV2Repository'
+import { sendLoraTrainingCompletedEmail } from '../../utils/mailchimp'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
   MediaOutput,
@@ -670,9 +671,51 @@ export const subscribeWebSocketUpdates = function wsHandler(
         return
       }
 
-      const tasksRepository = new TaskV2Repository(TaskV2Model)
+      // Send email notification when a Lora model has completed training
+      if (
+        task.status === 'completed' &&
+        task.output_type === 'lora' &&
+        task.result?.[0]?.output
+      ) {
+        try {
+          // Get user details
+          const user = await User.findById(task.user)
+          if (user?.email) {
+            const outputArray = task.result[0].output
+            // Find the model in the output array
+            const modelOutput = outputArray.find(output => output.model)
+
+            if (modelOutput?.model) {
+              const loraName =
+                modelOutput.model.name || task.args?.name || 'Custom Lora'
+              const loraId = modelOutput.model._id
+              const loraUrl = loraId
+                ? `${this.config.FRONTEND_URL}/models/${loraId}`
+                : undefined
+
+              // Send email notification
+              await sendLoraTrainingCompletedEmail(
+                this,
+                user.email,
+                loraName,
+                loraUrl,
+                user.username,
+              )
+
+              this.log.info(
+                `Sent Lora completion email to ${user.email} for model ${loraName}`,
+              )
+            }
+          }
+        } catch (error) {
+          this.log.error(`Error sending Lora completion email: ${error}`)
+          // Don't rethrow - we don't want to interrupt the event flow
+        }
+      }
+
       // socket message is only sent to the intended recipient
       if (metaData?._id?.toString() === task.user.toString()) {
+        const tasksRepository = new TaskV2Repository(TaskV2Model)
         await tasksRepository.model.populate(task, {
           path: 'result.output.creation',
           model: 'creations3',

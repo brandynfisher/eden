@@ -1,4 +1,5 @@
 import { User, UserDocument } from '../../models/User'
+import { sendWelcomeEmail } from '../../utils/mailchimp'
 import { createNewUser } from './authController'
 import { WebhookEvent } from '@clerk/clerk-sdk-node'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -123,6 +124,7 @@ export const receiveUserUpdate = async (
           .send('Webhook Error: Blacklisted E-Mail address')
       }
 
+      // Create new user
       await createNewUser(server, {
         userId: evt.data.id,
         username: evt.data.username,
@@ -132,6 +134,19 @@ export const receiveUserUpdate = async (
         isWeb2: false,
         isAdmin: false,
       })
+
+      // Send welcome email to the new user
+      try {
+        await sendWelcomeEmail(server, email, evt.data.username)
+      } catch (error) {
+        server.log.error({
+          reason: 'Failed to send welcome email',
+          error,
+          userId: evt.data.id,
+        })
+        // Don't fail the signup process if email fails
+      }
+
       return reply.status(200).send({})
     }
     case 'user.updated': {
