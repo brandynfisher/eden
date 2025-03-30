@@ -21,13 +21,25 @@ export const useWebSocketConnection = (
       onError: e => console.error('WebSocket error', e),
       onMessage: onMessage ? event => onMessage(event) : undefined,
       reconnectAttempts: Infinity,
-      shouldReconnect: () => shouldConnect,
+      reconnectInterval: 3000, // Try to reconnect every 3 seconds
+      retryOnError: true,
+      shouldReconnect: closeEvent => {
+        // Don't reconnect on clean closes (code 1000)
+        if (closeEvent.code === 1000) return false
+        return shouldConnect
+      },
       heartbeat: {
         message: () => JSON.stringify({ event: 'ping', ts: Date.now() }),
-        // interval: 5000,
-        // timeout: 30000,
+        interval: 30000, // Send heartbeat every 30 seconds
+        timeout: 60000, // Consider connection dead after 60 seconds of no response
+        returnMessage: 'pong',
       },
       share: true,
+      filter: message => {
+        // Filter out heartbeat responses
+        if (message.data === 'pong') return false
+        return true
+      },
     },
     shouldConnect,
   )
