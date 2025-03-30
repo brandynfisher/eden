@@ -83,6 +83,7 @@ export function EdenRuntimeProvider({
         setIsLoadingThread(false)
         setIsReadOnly(false)
       },
+      // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
       onSwitchToThread: async newThreadId => {
         setIsLoadingThread(true)
         try {
@@ -199,6 +200,7 @@ export function EdenRuntimeProvider({
             const sendMessageResponse = await sendMessage({
               threadId: threadIdRef.current,
               agentId,
+              // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
               messages,
               abortSignal: streamAbortController.signal,
             })
@@ -355,7 +357,7 @@ export function EdenRuntimeProvider({
             }
           })
 
-          // @ts-expect-error Types between MessageStatus and MessageWithStatus need alignment
+          // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
           setMessages(processedMessages, thread.active)
         }
 
@@ -506,9 +508,9 @@ export function EdenRuntimeProvider({
             : msg.status,
       }
 
-      //@ts-expect-error status is not typed
+      // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
       messageEmitterRef.current?.emit(newMsg)
-      //@ts-expect-error status is not typed
+      // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
       addOrUpdateMessage(newMsg, activeRootIds)
     })
 
