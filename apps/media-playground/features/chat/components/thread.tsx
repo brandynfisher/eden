@@ -66,6 +66,17 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime?.getAttachmentAccept()
   const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const messages = useThread(t => t.messages)
+  const isRunning = useThread(t => t.isRunning)
+
+  // Scroll to bottom on initial load and when user sends a message
+  useEffect(() => {
+    if (viewportRef.current && (!messages.length || !isRunning)) {
+      const viewport = viewportRef.current
+      viewport.scrollTop = viewport.scrollHeight
+    }
+  }, [messages.length, isRunning])
 
   // Debounce connection status changes to prevent rapid remounts
   const handleConnectionChange = React.useCallback((isOnline: boolean) => {
@@ -133,7 +144,11 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
   return (
     <Thread.Root config={config}>
-      <Thread.Viewport className="pt-0 px-1 md:px-2 relative">
+      <Thread.Viewport
+        ref={viewportRef}
+        autoScroll={true}
+        className="pt-0 px-1 md:px-2 relative"
+      >
         {accept && (
           <div className="fixed top-16 right-0 bottom-0 left-0 md:left-[250px] pointer-events-none z-30">
             <ComposerAttachmentDropzone
