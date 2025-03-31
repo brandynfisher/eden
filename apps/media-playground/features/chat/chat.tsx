@@ -430,6 +430,10 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                 allowAttachments: true,
               }}
               tools={[TaskResultTool]}
+              config={{
+                threadId,
+                defaultMessages: [],
+              }}
             />
           )}
 

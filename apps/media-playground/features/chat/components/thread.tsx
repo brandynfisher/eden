@@ -71,52 +71,67 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const viewportRef = useRef<HTMLDivElement>(null)
   const messages = useThread(t => t.messages)
   const isRunning = useThread(t => t.isRunning)
-  const isFirstLoad = useRef(true)
 
   // Get the threadId from the URL if available
   const urlThreadId =
     typeof window !== 'undefined'
-      ? window.location.pathname.split('/').pop()
+      ? window.location.pathname.split('/').filter(Boolean)[2] // /chat/agentName/threadId
       : undefined
   const effectiveThreadId = threadId || urlThreadId
 
-  // If we have a threadId in the URL, we know we're loading an existing thread
-  // Show loading state immediately without waiting for async initialization
-  const showLoadingState = Boolean(effectiveThreadId) && messages.length === 0
-
-  // Only show welcome screen if we're explicitly in a new thread (no threadId)
-  // This prevents the welcome screen flash during async initialization
+  // Show welcome screen when no threadId is present
   const showWelcomeScreen = !effectiveThreadId
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      isFirstLoad.current = false
-    }
-  }, [messages.length])
+  // Only show loading when:
+  // 1. Component is mounted (to avoid double loading states with parent)
+  // 2. We have a threadId but no messages yet
+  const showLoadingState =
+    isMounted && Boolean(effectiveThreadId) && messages.length === 0
 
-  // Track threadId changes
-  // useEffect(() => {
-  //   console.log('ThreadId changed:', {
-  //     oldThreadId: threadId,
-  //     newThreadId: threadId,
-  //     messagesLength: messages.length,
-  //   })
-  // }, [threadId])
-
-  // Mount effect
+  // Debug logging - only log on important state changes
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
+    const state = {
+      threadId,
+      urlThreadId,
+      effectiveThreadId,
+      messagesLength: messages.length,
+      showWelcomeScreen,
+      showLoadingState,
+      isMounted,
     }
 
-    setIsMounted(true)
+    // Only log if something important changed
+    if (
+      state.messagesLength === 0 ||
+      state.showLoadingState ||
+      !state.isMounted
+    ) {
+      console.log('Thread state:', state)
+    }
+  }, [
+    threadId,
+    urlThreadId,
+    effectiveThreadId,
+    messages.length,
+    showWelcomeScreen,
+    showLoadingState,
+    isMounted,
+  ])
+
+  // Mount effect - only run once
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    // Delay setting isMounted slightly to avoid flash of loading state
+    const timer = setTimeout(() => setIsMounted(true), 0)
+    return () => clearTimeout(timer)
   }, [])
 
   // Scroll to bottom on initial load and when user sends a message
   useEffect(() => {
-    if (viewportRef.current && (!messages.length || !isRunning)) {
-      const viewport = viewportRef.current
-      viewport.scrollTop = viewport.scrollHeight
+    if (!viewportRef.current) return
+    if (!messages.length || !isRunning) {
+      viewportRef.current.scrollTop = viewportRef.current.scrollHeight
     }
   }, [messages.length, isRunning])
 
