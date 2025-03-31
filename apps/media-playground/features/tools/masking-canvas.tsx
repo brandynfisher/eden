@@ -67,8 +67,12 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
 }) => {
   const strokeColor = '#ffffff'
   const baseImage = form.watch(inputImageFieldName)
-
+  const containerRef = useRef<HTMLDivElement>(null)
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [containerDimensions, setContainerDimensions] = useState<{
+    width: number
+    height: number
+  } | null>(null)
   const [isUploading, setIsUploading] = useState<boolean>(false)
   const [isDrawing, setIsDrawing] = useState<boolean>(false)
   const [isErasing, setIsErasing] = useState<boolean>(false)
@@ -94,34 +98,84 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     null,
   )
 
+  // Calculate container dimensions on mount and resize
+  useEffect(() => {
+    const updateContainerDimensions = () => {
+      if (containerRef.current) {
+        const container = containerRef.current
+        const containerWidth = container.clientWidth
+        // Calculate max height as 80% of viewport height to ensure controls are visible
+        const maxHeight = window.innerHeight * 0.8
+        const containerHeight = Math.min(containerWidth, maxHeight)
+        setContainerDimensions({
+          width: containerWidth,
+          height: containerHeight,
+        })
+      }
+    }
+
+    updateContainerDimensions()
+    window.addEventListener('resize', updateContainerDimensions)
+    return () => window.removeEventListener('resize', updateContainerDimensions)
+  }, [])
+
+  // Update canvas dimensions when container or image dimensions change
   useEffect(() => {
     if (baseImage) {
       const img = new Image()
       img.src = baseImage
       img.onload = () => {
-        console.log('onload', { width: img.width, height: img.height })
         setImageDimensions({ width: img.width, height: img.height })
-        setLineWidth(32 * (img.width / width))
+        // Scale line width based on image dimensions and container size
+        if (containerDimensions) {
+          const scaleFactor = Math.min(
+            containerDimensions.width / img.width,
+            containerDimensions.height / img.height,
+          )
+          setLineWidth(32 * scaleFactor)
+        }
       }
     }
-  }, [baseImage])
+  }, [baseImage, containerDimensions])
 
   useEffect(() => {
     const handleResize = () => {
-      if (overlayCanvasRef.current && imageDimensions) {
+      if (overlayCanvasRef.current && imageDimensions && containerDimensions) {
         const overlayCanvas = overlayCanvasRef.current
+        const container = containerRef.current
+        if (!container) return
 
         // Set internal canvas resolution to match image dimensions
-        overlayCanvas.width = imageDimensions.width ?? width
-        overlayCanvas.height = imageDimensions.height ?? height
+        overlayCanvas.width = imageDimensions.width
+        overlayCanvas.height = imageDimensions.height
 
-        // Use CSS to control the canvas display size to match image aspect ratio
-        const aspectRatio = imageDimensions.width / imageDimensions.height
-        const parentWidth = overlayCanvas.parentElement?.clientWidth || width
-        const displayWidth = Math.min(parentWidth, imageDimensions.width)
-        const displayHeight = displayWidth / aspectRatio
+        // Get the container's content area dimensions
+        const containerWidth = container.clientWidth
+        const containerHeight = container.clientHeight - 150 // Account for controls height
 
-        // Set CSS size to control the display size
+        // Calculate scale to fit container while maintaining aspect ratio
+        const imageAspectRatio = imageDimensions.width / imageDimensions.height
+        const containerAspectRatio = containerWidth / containerHeight
+
+        let displayWidth, displayHeight
+
+        if (imageAspectRatio > containerAspectRatio) {
+          // Image is wider than container
+          displayWidth = containerWidth
+          displayHeight = containerWidth / imageAspectRatio
+        } else {
+          // Image is taller than container
+          displayHeight = containerHeight
+          displayWidth = containerHeight * imageAspectRatio
+        }
+
+        // Update container dimensions state with the calculated display size
+        setContainerDimensions({
+          width: displayWidth,
+          height: displayHeight,
+        })
+
+        // Apply dimensions to canvas
         overlayCanvas.style.width = `${displayWidth}px`
         overlayCanvas.style.height = `${displayHeight}px`
 
@@ -135,7 +189,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [imageDimensions, history, width, height])
+  }, [imageDimensions, history])
 
   const redrawHistory = () => {
     if (overlayCanvasRef.current) {
@@ -181,24 +235,22 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       | React.MouseEvent<HTMLCanvasElement>
       | React.TouchEvent<HTMLCanvasElement>,
   ) {
-    if (!overlayCanvasRef.current) return { x: 0, y: 0 }
+    if (!overlayCanvasRef.current || !containerDimensions) return { x: 0, y: 0 }
 
     const canvas = overlayCanvasRef.current
     const rect = canvas.getBoundingClientRect()
 
     let x, y
     if ('touches' in e) {
-      // Touch event
       const touch = e.touches[0]
       x = touch.clientX - rect.left
       y = touch.clientY - rect.top
     } else {
-      // Mouse event
       x = e.clientX - rect.left
       y = e.clientY - rect.top
     }
 
-    // Calculate scaling factor to map displayed canvas size to actual canvas resolution
+    // Calculate scaling factor based on canvas display size vs internal resolution
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
 
@@ -448,81 +500,79 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   }
 
   return (
-    <div className={cn(['w-full max-w-lg mx-auto flex flex-col items-center'])}>
+    <div
+      ref={containerRef}
+      className={cn(['w-full flex flex-col', 'h-[calc(100vh-8rem)]'])}
+    >
       {!baseImage ? (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="destructive" className="text-sm">
           <AlertDescription className="flex gap-2 items-center">
-            <InfoIcon className="h-5 w-5" />
+            <InfoIcon className="h-4 w-4" />
             You need to set a starting image before drawing a mask
           </AlertDescription>
         </Alert>
       ) : (
         <>
-          <div className="relative w-full rounded-md overflow-hidden border border-purple-600 mb-2 select-none">
-            {overlayCanvasRef ? (
-              <MaskingCanvasCursor
-                size={
-                  (lineWidth / ((imageDimensions?.width ?? width) / width)) *
-                  scale
-                }
-                opacity={0.4}
-                canvasRef={overlayCanvasRef}
-              />
-            ) : null}
-            {baseImage && (
-              <NextImage
-                src={baseImage}
-                alt="Base Image"
-                width={imageDimensions?.width || width}
-                height={imageDimensions?.height || height}
-                className="absolute top-0 left-0 w-full h-full select-none"
+          <div className="grow min-h-0 relative rounded-md overflow-hidden border border-purple-600 mb-2 select-none">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="relative"
                 style={{
-                  aspectRatio: imageDimensions
-                    ? `${imageDimensions.width} / ${imageDimensions.height}`
-                    : '1',
-                  opacity: imageOpacity,
-                  scale: scale,
-                  transform: `translate(${translate.x}px, ${translate.y}px)`,
+                  transform: `scale(${scale}) translate(${translate.x}px, ${translate.y}px)`,
+                  transformOrigin: 'center',
+                  width: containerDimensions?.width ?? 'auto',
+                  height: containerDimensions?.height ?? 'auto',
                 }}
-              />
-            )}
-            <canvas
-              data-custom-cursor={true}
-              ref={overlayCanvasRef}
-              className={cn([
-                'relative z-10 w-full h-full select-none',
-                'cursor-crosshair',
-                isInverted ? 'invert' : '',
-                isMoving ? 'cursor-move' : '',
-              ])}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              width={imageDimensions?.width ?? width}
-              height={imageDimensions?.height ?? height}
-              style={{
-                aspectRatio: imageDimensions
-                  ? `${imageDimensions.width} / ${imageDimensions.height}`
-                  : '1',
-                scale: scale,
-                transform: `translate(${translate.x}px, ${translate.y}px)`,
-                opacity: canvasOpacity,
-              }}
-            />
-
-            {history.length === 0 && !isDrawing && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-popover-foreground text-shadow-sm shadow-popover text-lg">
-                <div className="bg-accent bg-opacity-70 rounded-md py-1 px-2">
-                  Draw a mask here
-                </div>
+              >
+                {overlayCanvasRef ? (
+                  <MaskingCanvasCursor
+                    size={
+                      (lineWidth /
+                        ((imageDimensions?.width ?? width) /
+                          (containerDimensions?.width ?? width))) *
+                      scale
+                    }
+                    opacity={0.4}
+                    canvasRef={overlayCanvasRef}
+                  />
+                ) : null}
+                {baseImage && imageDimensions && containerDimensions && (
+                  <NextImage
+                    src={baseImage}
+                    alt="Base Image"
+                    width={imageDimensions.width}
+                    height={imageDimensions.height}
+                    className="select-none absolute top-0 left-0 w-full h-full"
+                    style={{
+                      opacity: imageOpacity,
+                    }}
+                    priority={true}
+                  />
+                )}
+                <canvas
+                  data-custom-cursor={true}
+                  ref={overlayCanvasRef}
+                  className={cn([
+                    'select-none absolute top-0 left-0 w-full h-full',
+                    'cursor-crosshair',
+                    isInverted ? 'invert' : '',
+                    isMoving ? 'cursor-move' : '',
+                  ])}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  style={{
+                    opacity: canvasOpacity,
+                  }}
+                />
               </div>
-            )}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2 w-full bg-secondary p-1 rounded-md">
+          <div className="shrink-0 flex flex-wrap gap-1.5 w-full bg-secondary p-1 rounded-md">
             <div>
               <Button
                 type="button"
@@ -645,10 +695,10 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               <DownloadIcon className="h-4 w-4" />
             </Button>
           </div>
-          <div className="w-full mt-4">
-            <div className="flex gap-2 mb-4">
-              <FormItem className="w-full">
-                <Label>Image Opacity</Label>
+          <div className="shrink-0 w-full mt-2">
+            <div className="flex gap-2 mb-2">
+              <FormItem className="w-full space-y-1.5">
+                <Label className="text-xs">Image Opacity</Label>
                 <SliderInput
                   hideNumberInput={true}
                   type={'float'}
@@ -661,8 +711,8 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                   }}
                 />
               </FormItem>
-              <FormItem className="w-full">
-                <Label>Canvas Opacity</Label>
+              <FormItem className="w-full space-y-1.5">
+                <Label className="text-xs">Canvas Opacity</Label>
                 <SliderInput
                   hideNumberInput={true}
                   type={'float'}
@@ -677,8 +727,8 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               </FormItem>
             </div>
 
-            <FormItem className="mb-4">
-              <Label>Line Width</Label>
+            <FormItem className="mb-2 space-y-1.5">
+              <Label className="text-xs">Line Width</Label>
               <SliderInput
                 type={'integer'}
                 min={1}
