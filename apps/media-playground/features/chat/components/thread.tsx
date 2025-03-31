@@ -3,6 +3,7 @@
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { LightboxGallery } from '@/components/media/lightbox'
+import { Button } from '@/components/ui/button'
 import MyAssistantMessage from '@/features/chat/components/assistant-message'
 import {
   ComposerAttachmentDropzone,
@@ -18,7 +19,8 @@ import {
   useThread,
 } from '@assistant-ui/react'
 import { Thread, ThreadConfig, ThreadWelcome } from '@assistant-ui/react-ui'
-import { FC, useEffect, useRef, useState } from 'react'
+import { ArrowDownIcon } from '@radix-ui/react-icons'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import React from 'react'
 import { ReadyState } from 'react-use-websocket'
 
@@ -70,7 +72,22 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const viewportRef = useRef<HTMLDivElement>(null)
   const messages = useThread(t => t.messages)
-  const isRunning = useThread(t => t.isRunning)
+  const isInitialLoadRef = useRef(true)
+  const [hasNewMessages, setHasNewMessages] = useState(false)
+  const [isAtBottom, setIsAtBottom] = useState(true)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const lastSeenContentRef = useRef('')
+
+  // Get a string representation of all complete assistant messages
+  const assistantMessagesContent = messages
+    .filter(m => m.role === 'assistant' && m.content && m.content.length > 0)
+    .map(m => m.content)
+    .join('')
+
+  // Check if any messages are still being generated
+  const hasGeneratingMessage = messages.some(
+    m => m.role === 'assistant' && (!m.content || m.content.length === 0),
+  )
 
   // Get the threadId from the URL if available
   const urlThreadId =
@@ -78,6 +95,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
       ? window.location.pathname.split('/').filter(Boolean)[2] // /chat/agentName/threadId
       : undefined
   const effectiveThreadId = threadId || urlThreadId
+  const lastThreadIdRef = useRef<string | undefined>(effectiveThreadId)
 
   // Show welcome screen when no threadId is present
   const showWelcomeScreen = !effectiveThreadId
@@ -127,13 +145,74 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     return () => clearTimeout(timer)
   }, [])
 
-  // Scroll to bottom on initial load and when user sends a message
+  // Reset new messages state when switching threads
   useEffect(() => {
-    if (!viewportRef.current) return
-    if (!messages.length || !isRunning) {
-      viewportRef.current.scrollTop = viewportRef.current.scrollHeight
+    if (effectiveThreadId !== lastThreadIdRef.current) {
+      setHasNewMessages(false)
+      setIsAtBottom(true)
+      isInitialLoadRef.current = true
+      lastSeenContentRef.current = ''
+      lastThreadIdRef.current = effectiveThreadId
     }
-  }, [messages.length, isRunning])
+  }, [effectiveThreadId])
+
+  // Track scroll position and new messages
+  useEffect(() => {
+    const viewport = viewportRef.current
+    if (!viewport) return
+
+    const handleScroll = () => {
+      const { scrollHeight, scrollTop, clientHeight } = viewport
+      const atBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10
+      setIsAtBottom(atBottom)
+      setIsScrolled(scrollTop > 100)
+      if (atBottom && !hasGeneratingMessage) {
+        setHasNewMessages(false)
+        lastSeenContentRef.current = assistantMessagesContent
+      }
+    }
+
+    viewport.addEventListener('scroll', handleScroll)
+    handleScroll() // Check initial scroll position
+    return () => viewport.removeEventListener('scroll', handleScroll)
+  }, [assistantMessagesContent, hasGeneratingMessage])
+
+  // Track new messages - now checks for content changes
+  useEffect(() => {
+    // Only show new messages if:
+    // 1. We're not at the bottom
+    // 2. Content has changed since last seen
+    // 3. Not initial load
+    // 4. No messages are being generated
+    if (
+      !isAtBottom &&
+      assistantMessagesContent !== lastSeenContentRef.current &&
+      !isInitialLoadRef.current &&
+      !hasGeneratingMessage
+    ) {
+      setHasNewMessages(true)
+    }
+  }, [assistantMessagesContent, isAtBottom, hasGeneratingMessage])
+
+  // Scroll to bottom on initial load
+  useEffect(() => {
+    if (!viewportRef.current || !isInitialLoadRef.current || !messages.length)
+      return
+
+    // Use a small timeout to ensure content is rendered
+    const timer = setTimeout(() => {
+      if (viewportRef.current) {
+        viewportRef.current.scrollTo({
+          top: viewportRef.current.scrollHeight,
+          behavior: 'instant',
+        })
+        isInitialLoadRef.current = false
+        lastSeenContentRef.current = assistantMessagesContent
+      }
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [messages.length, assistantMessagesContent])
 
   // Debounce connection status changes to prevent rapid remounts
   const handleConnectionChange = React.useCallback((isOnline: boolean) => {
@@ -199,11 +278,24 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     [config.threadId, config.composer, setIsDragging],
   )
 
+  // Scroll to bottom helper
+  const scrollToBottom = useCallback(() => {
+    if (!viewportRef.current) return
+    viewportRef.current.scrollTo({
+      top: viewportRef.current.scrollHeight,
+      behavior: 'smooth',
+    })
+    if (!hasGeneratingMessage) {
+      setHasNewMessages(false)
+      lastSeenContentRef.current = assistantMessagesContent
+    }
+  }, [assistantMessagesContent, hasGeneratingMessage])
+
   return (
     <Thread.Root config={config}>
       <Thread.Viewport
         ref={viewportRef}
-        autoScroll={true}
+        autoScroll={false}
         className="pt-0 px-1 md:px-2 relative"
       >
         {showLoadingState ? (
@@ -245,7 +337,25 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
               <AlertDestructive title="Network connection lost" />
             </div>
           ) : null}
-          <Thread.ScrollToBottom />
+          <div className="relative">
+            {(isScrolled || hasNewMessages) && !isAtBottom && (
+              <Button
+                variant="outline"
+                onClick={scrollToBottom}
+                className="absolute drop-shadow-md bottom-2 w-7 h-7 p-0 rounded-full hover:bg-accent flex items-center justify-center"
+              >
+                <ArrowDownIcon className="w-5 h-5 drop-shadow-md" />
+                {hasNewMessages && (
+                  <div
+                    onClick={scrollToBottom}
+                    className="absolute drop-shadow-md right-8 text-xs text-accent-foreground bg-purple-950 border border-purple-600 px-2 py-1 rounded-md cursor-pointer hover:bg-purple-700"
+                  >
+                    New messages
+                  </div>
+                )}
+              </Button>
+            )}
+          </div>
 
           <ThreadPrimitive.If empty={!effectiveThreadId}>
             {memoizedComposer}
