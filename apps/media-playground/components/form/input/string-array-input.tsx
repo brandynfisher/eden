@@ -6,6 +6,7 @@ import React, { ChangeEvent, useEffect, useState } from 'react'
 type Props = {
   minLength: number
   maxLength: number
+  maxStringLength?: number // Added for individual string length validation
   onChange: (newVal: string[] | undefined) => void
   value: string[]
 }
@@ -14,6 +15,7 @@ function StringArrayInput({
   onChange,
   minLength,
   maxLength,
+  maxStringLength,
   value = [],
 }: Props): React.ReactElement {
   // Added a validator to make sure incoming prop value length is within min and max length
@@ -31,12 +33,16 @@ function StringArrayInput({
     e: ChangeEvent<HTMLInputElement>,
     index: number,
   ) => {
-    const newFields = fields.map((f, i) => (i === index ? e.target.value : f))
-    setFields(newFields)
+    const newValue = e.target.value
+    // Only update if the string length is within limits
+    if (!maxStringLength || newValue.length <= maxStringLength) {
+      const newFields = fields.map((f, i) => (i === index ? newValue : f))
+      setFields(newFields)
 
-    // Check if all the fields are empty. If so, set value to `[]`.
-    const isEmpty = newFields.every(field => field.trim() === '')
-    onChange(isEmpty ? undefined : newFields)
+      // Check if all the fields are empty. If so, set value to `[]`.
+      const isEmpty = newFields.every(field => field.trim() === '')
+      onChange(isEmpty ? undefined : newFields)
+    }
   }
 
   const handleRemoveClick = (indexToRemove: number) => {
@@ -67,6 +73,7 @@ function StringArrayInput({
             value={fieldValue}
             onChange={e => handleInputChange(e, index)}
             className="text-base"
+            maxLength={maxStringLength}
           />
           {fields.length > minLength ? (
             <Button
