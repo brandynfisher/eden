@@ -244,7 +244,28 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
         </DropdownMenu> */}
       </AuthClickGuard>
 
-      <Composer.Input autoFocus className="text-base" minRows={2} />
+      <Composer.Input
+        autoFocus
+        className="text-base"
+        minRows={2}
+        onPaste={async (e: React.ClipboardEvent) => {
+          const items = e.clipboardData.items
+
+          for (const item of items) {
+            if (
+              item.type.startsWith('image/') ||
+              item.type.startsWith('video/')
+            ) {
+              e.preventDefault()
+              const file = item.getAsFile()
+              if (file) {
+                await composerRuntime.addAttachment(file)
+              }
+              break
+            }
+          }
+        }}
+      />
 
       <ThreadPrimitive.If running={true}>
         <div className="flex items-center gap-3 py-1">
