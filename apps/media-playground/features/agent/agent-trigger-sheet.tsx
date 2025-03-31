@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sheet'
 import { TriggerCreateSheet } from '@/features/agent/trigger-sheet/trigger-create-sheet'
 import { TriggerList } from '@/features/agent/trigger-sheet/trigger-list'
+import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { useAgentTriggerFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentTriggerFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -22,6 +23,11 @@ export const AgentTriggerFormSheet = () => {
   const dispatch = useAppDispatch()
 
   const triggersQuery = useAgentTriggersQuery({
+    key: agentId || '',
+    enabled: !!agentId && isOpen,
+  })
+
+  const deploymentsQuery = useAgentDeploymentsQuery({
     key: agentId || '',
     enabled: !!agentId && isOpen,
   })
@@ -47,24 +53,32 @@ export const AgentTriggerFormSheet = () => {
           <SheetDescription>
             Configure your agent's scheduled tasks across different platforms.
           </SheetDescription>
-          <TriggerCreateSheet agentId={agentId} />
+          {triggersQuery.isSuccess && deploymentsQuery.isSuccess && (
+            <TriggerCreateSheet agentId={agentId} />
+          )}
         </SheetHeader>
-        {triggersQuery.isPending && (
-          <div className="flex items-center justify-center mt-10">
-            <Loader2 className="size-4 animate-spin" />
-          </div>
-        )}
-        {triggersQuery.isError && (
-          <div className="flex items-center justify-center gap-2 mt-10">
-            <AlertCircle className="size-4 text-destructive" />
-            <p className="text-destructive">
-              We were unable to fetch agent triggers. Please try again later.
-            </p>
-          </div>
-        )}
-        {triggersQuery.isSuccess && (
+        {triggersQuery.isPending ||
+          (deploymentsQuery.isPending && (
+            <div className="flex items-center justify-center mt-10">
+              <Loader2 className="size-4 animate-spin" />
+            </div>
+          ))}
+        {triggersQuery.isError ||
+          (deploymentsQuery.isError && (
+            <div className="flex items-center justify-center gap-2 mt-10">
+              <AlertCircle className="size-4 text-destructive" />
+              <p className="text-destructive">
+                We were unable to fetch agent triggers. Please try again later.
+              </p>
+            </div>
+          ))}
+        {triggersQuery.isSuccess && deploymentsQuery.isSuccess && (
           <div className="flex flex-col flex-1 space-y-4 mt-4">
-            <TriggerList agentId={agentId} triggers={triggersQuery.triggers} />
+            <TriggerList
+              agentId={agentId}
+              triggers={triggersQuery.triggers}
+              hasDeployments={deploymentsQuery.deployments.length > 0}
+            />
           </div>
         )}
       </SheetContent>
