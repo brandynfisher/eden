@@ -52,8 +52,15 @@ const ModelSelectorModal = ({
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const onOpenChange = (open: boolean) => {
+    setOpen(open)
+    if (!open) {
+      setSearchQuery('')
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
           <Button type="button" variant="outline" className="mt-2">
