@@ -17,7 +17,7 @@ import { updateAgentTriggerFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { AlertCircle, Loader2, RocketIcon } from 'lucide-react'
 
-const AgentTriggerFormSheet = () => {
+export const AgentTriggerFormSheet = () => {
   const { isOpen, agentId } = useAgentTriggerFormSheet()
   const dispatch = useAppDispatch()
 
@@ -71,5 +71,3 @@ const AgentTriggerFormSheet = () => {
     </Sheet>
   )
 }
-
-export default AgentTriggerFormSheet

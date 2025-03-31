@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
-import AgentTriggerSheet from '@/features/agent/agent-trigger-sheet'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import CreationsFeed from '@/features/feed/creations-feed'
@@ -235,7 +234,6 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           )}
         </div>
       </div>
-      <AgentTriggerSheet />
       <div className="p-4">
         {isSignedIn ? (
           !!user && (

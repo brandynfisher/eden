@@ -108,13 +108,16 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
               size="icon"
               className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
               disabled={isDeleting}
+              asChild
               onClick={e => {
                 e.stopPropagation()
                 handleDelete()
               }}
             >
-              <TrashIcon className="h-4 w-4" />
-              <span className="sr-only">Delete</span>
+              <div>
+                <TrashIcon className="h-4 w-4" />
+                <span className="sr-only">Delete</span>
+              </div>
             </Button>
           </div>
         </div>
