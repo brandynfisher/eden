@@ -82,7 +82,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   const DEFAULT_LINE_WIDTH = 64
   const [lineWidth, setLineWidth] = useState<number>(DEFAULT_LINE_WIDTH)
   const [lineOpacity, setLineOpacity] = useState<number>(1)
-  const [imageOpacity, setImageOpacity] = useState<number>(0.5)
+  const [imageOpacity, setImageOpacity] = useState<number>(1)
   const [canvasOpacity, setCanvasOpacity] = useState<number>(0.75)
   const [imageDimensions, setImageDimensions] = useState<{
     width: number
@@ -547,7 +547,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className={cn(['w-full flex flex-col', 'h-[calc(100vh-8rem)]'])}
+      className={cn(['w-full flex flex-col', 'h-[calc(100vh-7rem)]'])}
     >
       {!baseImage ? (
         <Alert variant="destructive" className="text-sm">
@@ -576,7 +576,6 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                       (lineWidth * (containerDimensions?.width ?? width)) /
                       (imageDimensions?.width ?? width)
                     }
-                    opacity={isMoving ? 0 : 0.4}
                     canvasRef={overlayCanvasRef}
                     scale={scale}
                     translate={translate}

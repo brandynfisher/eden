@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 
 type MaskingCanvasCursorProps = {
   size: number
-  opacity: number
   canvasRef: React.RefObject<HTMLCanvasElement>
   scale: number
   translate: { x: number; y: number }
@@ -10,7 +9,6 @@ type MaskingCanvasCursorProps = {
 
 const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
   size,
-  opacity,
   canvasRef,
   scale,
   translate,
@@ -36,16 +34,6 @@ const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
       const finalX = x * scaleX
       const finalY = y * scaleY
 
-      console.log('Cursor Coordinates:', {
-        clientPos: { x: e.clientX, y: e.clientY },
-        canvasRect: rect,
-        relativePos: { x, y },
-        canvasScale: { scaleX, scaleY },
-        finalPos: { x: finalX, y: finalY },
-        zoom: scale,
-        translation: translate,
-      })
-
       setPosition({ x: finalX, y: finalY })
     }
 
@@ -64,35 +52,42 @@ const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
   const unscaledX = position.x / scaleX
   const unscaledY = position.y / scaleY
 
-  // Apply zoom and translation in reverse (divide by zoom since we're going from zoomed to unzoomed space)
-  const screenX = unscaledX / scale + translate.x
-  const screenY = unscaledY / scale + translate.y
+  // First apply translation in zoomed space, then unzoom
+  const screenX = (unscaledX + translate.x) / scale
+  const screenY = (unscaledY + translate.y) / scale
 
-  console.log('Cursor Display:', {
-    position,
-    unscaledCoords: { x: unscaledX, y: unscaledY },
-    screenCoords: { x: screenX, y: screenY },
-    scale,
-    translate,
-  })
+  // Convert the cursor size from canvas coordinates to screen coordinates
+  // size is in canvas coordinates (like line width)
+  // First convert to screen coordinates by dividing by canvas scale
+  // Then divide by zoom to match the current view
+  // Multiply by 2.5 to match the line width visually
+  const cursorSize = (size * 2.5) / scaleX / scale
 
   return (
     <div
-      className="pointer-events-none absolute inset-0"
+      className="pointer-events-none fixed inset-0"
       style={{
         width: '100%',
         height: '100%',
+        isolation: 'isolate',
+        zIndex: 50,
       }}
     >
+      {/* Main cursor with background and border */}
       <div
-        className="absolute border-2 border-white rounded-full"
+        className="absolute rounded-full"
         style={{
-          width: `${size * scale}px`,
-          height: `${size * scale}px`,
-          transform: `translate(${screenX - (size * scale) / 2}px, ${
-            screenY - (size * scale) / 2
+          width: `${cursorSize}px`,
+          height: `${cursorSize}px`,
+          transform: `translate(${screenX - cursorSize / 2}px, ${
+            screenY - cursorSize / 2
           }px)`,
-          opacity,
+          backgroundColor: 'rgba(255, 255, 255, 0.4)',
+          border: '2px solid white',
+          outline: '1px solid black',
+          outlineOffset: '-3px',
+          isolation: 'isolate',
+          mixBlendMode: 'difference',
         }}
       />
     </div>
