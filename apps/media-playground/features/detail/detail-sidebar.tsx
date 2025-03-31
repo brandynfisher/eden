@@ -138,6 +138,16 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <>
             <div className="pb-4 text-sm">
               <div className="h-9 flex items-center justify-between font-bold">
+                Name
+              </div>
+              {item && (item as ModelV2).name ? (
+                (item as ModelV2).name
+              ) : (
+                <Skeleton className="h-5 w-[125px]" />
+              )}
+            </div>
+            <div className="pb-4 text-sm">
+              <div className="h-9 flex items-center justify-between font-bold">
                 Base Model
               </div>
               {item && (item as ModelV2).base_model ? (
@@ -149,17 +159,41 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
             <div className="pb-4 text-sm">
               <div className="h-9 flex items-center justify-between">
                 <div className="font-bold">Trigger Text</div>
-                {item && (item as ModelV2).lora_trigger_text ? (
+                {item &&
+                (item as ModelV2).lora_trigger_text &&
+                !Array.isArray(
+                  (item as ModelV2).lora_trigger_text as unknown,
+                ) ? (
                   <CopyTextButton
                     title={'Trigger Text'}
-                    text={(item as ModelV2).lora_trigger_text || ''}
+                    text={String((item as ModelV2).lora_trigger_text)}
                   />
                 ) : null}
               </div>
               {item && (item as ModelV2).lora_trigger_text ? (
-                <TextClampMore
-                  text={(item as ModelV2).lora_trigger_text || '-'}
-                />
+                Array.isArray(
+                  (item as ModelV2).lora_trigger_text as unknown,
+                ) ? (
+                  <ol className="list-decimal list-decimal-inside ml-4 text-muted-foreground">
+                    {(
+                      (item as ModelV2).lora_trigger_text as unknown as string[]
+                    ).map((text, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start justify-between group"
+                      >
+                        <TextClampMore text={text || '-'} />
+                        <div className="opacity-0 group-hover:opacity-100 ml-2 flex-shrink-0">
+                          <CopyTextButton title={'Trigger Text'} text={text} />
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <TextClampMore
+                    text={String((item as ModelV2).lora_trigger_text) || '-'}
+                  />
+                )
               ) : (
                 <div className="space-y-1">
                   <Skeleton className="h-5 w-[250px]" />
@@ -168,12 +202,23 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                 </div>
               )}
             </div>
-            <div className="pb-4 text-sm">
-              <div className="h-9 flex items-center justify-between">
-                <div className="font-bold">Thumbnail Prompts</div>
+            {!item ? (
+              <div className="pb-4 text-sm">
+                <div className="h-9 flex items-center justify-between">
+                  <div className="font-bold">Thumbnail Prompts</div>
+                </div>
+                <div className="space-y-1">
+                  <Skeleton className="h-5 w-[250px]" />
+                  <Skeleton className="h-5 w-[250px]" />
+                  <Skeleton className="h-5 w-[250px]" />
+                </div>
               </div>
-              {item && (item as ModelV2).thumbnail_prompts ? (
-                Array.isArray((item as ModelV2).thumbnail_prompts) ? (
+            ) : (item as ModelV2).thumbnail_prompts ? (
+              <div className="pb-4 text-sm">
+                <div className="h-9 flex items-center justify-between">
+                  <div className="font-bold">Thumbnail Prompts</div>
+                </div>
+                {Array.isArray((item as ModelV2).thumbnail_prompts) ? (
                   <ol className="list-decimal list-decimal-inside ml-4 text-muted-foreground">
                     {((item as ModelV2).thumbnail_prompts as string[]).map(
                       (prompt, index) => (
@@ -189,15 +234,9 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                       text={String((item as ModelV2).thumbnail_prompts) || '-'}
                     />
                   </div>
-                )
-              ) : (
-                <div className="space-y-1">
-                  <Skeleton className="h-5 w-[250px]" />
-                  <Skeleton className="h-5 w-[250px]" />
-                  <Skeleton className="h-5 w-[250px]" />
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : null}
           </>
         ) : null}
 

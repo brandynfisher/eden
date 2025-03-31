@@ -4,9 +4,7 @@ import 'katex/dist/katex.min.css'
 
 import { SyntaxHighlighter } from '@/components/ui/assistant-ui/syntax-highlighter'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
-import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { cn } from '@/lib/utils'
-import { ContentPartPrimitive } from '@assistant-ui/react'
 import {
   CodeHeaderProps,
   MarkdownTextPrimitive,
@@ -186,9 +184,9 @@ const MarkdownTextImpl = () => {
           SyntaxHighlighter,
         }}
       />
-      <ContentPartPrimitive.InProgress>
+      {/* <ContentPartPrimitive.InProgress>
         <TypingIndicator />
-      </ContentPartPrimitive.InProgress>
+      </ContentPartPrimitive.InProgress> */}
     </>
   )
 }

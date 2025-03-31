@@ -68,6 +68,9 @@ const ConfigSchema = Type.Strict(
     MANNA_BONUS_SIGNUP: Type.Number({ default: 20 }),
     MANNA_BONUS_DAILY_LOGIN: Type.Number({ default: 10 }),
     MANNA_BONUS_DISCORD_LINK: Type.Number({ default: 50 }),
+    MAILCHIMP_API_KEY: Type.Optional(Type.String()),
+    EMAIL_FROM: Type.Optional(Type.String()),
+    EMAIL_FROM_NAME: Type.Optional(Type.String()),
   }),
 )
 
@@ -103,6 +106,8 @@ const configPlugin: FastifyPluginAsync = async server => {
       MANNA_BONUS_DISCORD_LINK: Number(envData.MANNA_BONUS_DISCORD_LINK),
       DISCORD_TASK_ERROR_WEBHOOK_URL:
         'https://discord.com/api/webhooks/1330194903141060608/Qp-4QRtBNc3BUU69T8Rl8hMzOtPnFSPiJTnMNdiaNNvSEibesC2mSVAqWc8XGGZzMQT2',
+      EMAIL_FROM: envData.EMAIL_FROM,
+      EMAIL_FROM_NAME: envData.EMAIL_FROM_NAME,
     } as Config)
   } else {
     throw new Error(`ajv or ConfigSchema is not defined`)

@@ -267,6 +267,19 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
       : undefined,
   })
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    setIsMounted(true)
+
+    document.body.classList.add('overflow-hidden')
+    return () => {
+      document.body.classList.remove('overflow-hidden')
+    }
+  }, [])
+
   const handleEditClick = () => {
     dispatch(
       updateAgentFormSheet({
@@ -281,19 +294,6 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   }
 
   const agent = agentClientData || agentSSRData
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    setIsMounted(true)
-
-    document.body.classList.add('overflow-hidden')
-    return () => {
-      document.body.classList.remove('overflow-hidden')
-    }
-  }, [])
 
   const isOwner = useMemo(() => {
     return user?._id === agent?.owner._id
@@ -415,6 +415,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                 allowReload: false,
                 allowSpeak: false,
                 components: {
+                  Empty: () => <div></div>,
                   Text: MarkdownText,
                   ToolFallback,
                 },
@@ -429,6 +430,10 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                 allowAttachments: true,
               }}
               tools={[TaskResultTool]}
+              config={{
+                threadId,
+                defaultMessages: [],
+              }}
             />
           )}
 

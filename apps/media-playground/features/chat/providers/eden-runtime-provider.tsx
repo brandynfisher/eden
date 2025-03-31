@@ -83,6 +83,7 @@ export function EdenRuntimeProvider({
         setIsLoadingThread(false)
         setIsReadOnly(false)
       },
+      // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
       onSwitchToThread: async newThreadId => {
         setIsLoadingThread(true)
         try {
@@ -95,9 +96,79 @@ export function EdenRuntimeProvider({
               `/chat/${agentId}/${newThreadId}`,
             )
 
-          const threadFetch = await checkThreadStatus(false)
+          const thread = await getThread(newThreadId)
+          if (!thread?.messages) {
+            return { messages: [] }
+          }
+
+          // Process messages to ensure proper active states
+          const processedMessages = thread.messages.map((msg, index) => {
+            if (msg.role !== 'assistant') return msg
+
+            const hasPendingToolCalls = msg.tool_calls?.some(
+              call =>
+                !call.status ||
+                call.status === 'running' ||
+                call.status === 'pending',
+            )
+
+            // A message is part of an active chain if:
+            // 1. It's the root assistant message (in active array)
+            // 2. It's a subsequent assistant message after an active root, before the next user message
+            const isPartOfActiveChain = thread.active?.some(activeRootId => {
+              if (activeRootId === msg.id) return true // This is the root message
+
+              // Find this message's position in the chain
+              const activeRootIndex = thread.messages.findIndex(
+                m => m.id === activeRootId,
+              )
+              if (activeRootIndex === -1) return false
+
+              // Find the next user message after the active root
+              const nextUserIndex = thread.messages.findIndex(
+                (m, i) => i > activeRootIndex && m.role === 'user',
+              )
+
+              // This message is part of the chain if it's between the root and the next user message
+              return (
+                index > activeRootIndex &&
+                (nextUserIndex === -1 || index < nextUserIndex)
+              )
+            })
+
+            const newStatus =
+              hasPendingToolCalls || isPartOfActiveChain
+                ? { type: 'running' as const }
+                : { type: 'complete' as const, reason: 'stop' as const }
+
+            return {
+              ...msg,
+              status: newStatus,
+            }
+          })
+
+          // Set stream active if we have active messages
+          const hasActiveRoots = thread.active && thread.active.length > 0
+          const lastMessage = thread.messages[thread.messages.length - 1]
+          const isLastMessageIncomplete =
+            lastMessage?.role === 'assistant' &&
+            (!lastMessage.status ||
+              lastMessage.status.type === 'running' ||
+              lastMessage.tool_calls?.some(
+                call =>
+                  !call.status ||
+                  call.status === 'running' ||
+                  call.status === 'pending',
+              ))
+
+          const shouldBeActive = Boolean(
+            hasActiveRoots || isLastMessageIncomplete,
+          )
+          setIsStreamActive(shouldBeActive)
+          setIsRunning(shouldBeActive)
+
           return {
-            messages: (threadFetch?.messages as EdenMessage[]) ?? [],
+            messages: processedMessages as EdenMessage[],
           }
         } catch (error) {
           console.error('Error switching thread:', error)
@@ -129,6 +200,7 @@ export function EdenRuntimeProvider({
             const sendMessageResponse = await sendMessage({
               threadId: threadIdRef.current,
               agentId,
+              // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
               messages,
               abortSignal: streamAbortController.signal,
             })
@@ -201,10 +273,6 @@ export function EdenRuntimeProvider({
 
   const checkThreadStatus = useCallback(
     async (shouldSetMessages = true) => {
-      // console.log('checkThreadStatus', {
-      //   threadId: threadIdRef.current,
-      //   isAuthLoading,
-      // })
       if (!threadIdRef.current || !messageEmitterRef.current) return
 
       // If auth is still loading, delay the check
@@ -218,13 +286,79 @@ export function EdenRuntimeProvider({
           !user || thread.user._id.toString() !== user?._id.toString()
         setIsReadOnly(isThreadReadOnly)
 
-        // Check if thread has active messages
-        const hasActiveMessages = thread.active && thread.active.length > 0
-        setIsStreamActive(hasActiveMessages ?? false)
-        setIsRunning(hasActiveMessages ?? false)
+        // Check if thread has active messages and evaluate their states
+        const hasActiveRoots = thread.active && thread.active.length > 0
+
+        // Check if the last message is incomplete/running
+        const lastMessage = thread.messages?.[thread.messages.length - 1]
+        const isLastMessageIncomplete =
+          lastMessage?.role === 'assistant' &&
+          (!lastMessage.status ||
+            lastMessage.status.type === 'running' ||
+            lastMessage.tool_calls?.some(
+              call =>
+                !call.status ||
+                call.status === 'running' ||
+                call.status === 'pending',
+            ))
+
+        // Set stream active if we have active root messages or the last message is incomplete
+        const shouldBeActive = Boolean(
+          hasActiveRoots || isLastMessageIncomplete,
+        )
+        setIsStreamActive(shouldBeActive)
+        setIsRunning(shouldBeActive)
 
         if (shouldSetMessages && thread.messages) {
-          setMessages(thread.messages as EdenMessage[])
+          // Process messages to ensure proper active states
+          const processedMessages = thread.messages.map((msg, index) => {
+            if (msg.role !== 'assistant') return msg
+
+            const hasPendingToolCalls = msg.tool_calls?.some(
+              call =>
+                !call.status ||
+                call.status === 'running' ||
+                call.status === 'pending',
+            )
+
+            // A message is part of an active chain if:
+            // 1. It's the root assistant message (in active array)
+            // 2. It's a subsequent assistant message after an active root, before the next user message
+            const isPartOfActiveChain = thread.active?.some(activeRootId => {
+              if (activeRootId === msg.id) return true // This is the root message
+
+              // Find this message's position in the chain
+              const activeRootIndex = thread.messages.findIndex(
+                m => m.id === activeRootId,
+              )
+              if (activeRootIndex === -1) return false
+
+              // Find the next user message after the active root
+              const nextUserIndex = thread.messages.findIndex(
+                (m, i) => i > activeRootIndex && m.role === 'user',
+              )
+
+              // This message is part of the chain if it's between the root and the next user message
+              const messageIndex = index
+              return (
+                messageIndex > activeRootIndex &&
+                (nextUserIndex === -1 || messageIndex < nextUserIndex)
+              )
+            })
+
+            const newStatus =
+              hasPendingToolCalls || isPartOfActiveChain
+                ? { type: 'running' as const }
+                : { type: 'complete' as const, reason: 'stop' as const }
+
+            return {
+              ...msg,
+              status: newStatus,
+            }
+          })
+
+          // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
+          setMessages(processedMessages, thread.active)
         }
 
         return thread
@@ -308,8 +442,16 @@ export function EdenRuntimeProvider({
       }
     }
 
+    // Handle visibility change
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && threadIdRef.current) {
+        checkThreadStatus()
+      }
+    }
+
     window.addEventListener('online', handleConnectionChange)
     window.addEventListener('offline', handleConnectionChange)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       connectionStateRef.current.wasDisconnected = true
@@ -318,6 +460,7 @@ export function EdenRuntimeProvider({
     return () => {
       window.removeEventListener('online', handleConnectionChange)
       window.removeEventListener('offline', handleConnectionChange)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [readyState, checkThreadStatus])
 
@@ -326,7 +469,7 @@ export function EdenRuntimeProvider({
 
     const {
       thread_id,
-      active: activeMessageIds,
+      active: activeRootIds,
       newMessages,
     } = websocketMessage.data
 
@@ -334,28 +477,66 @@ export function EdenRuntimeProvider({
 
     // Verify message belongs to current thread
     if (threadIdRef.current && thread_id && threadIdRef.current !== thread_id) {
-      // console.log('Message not for current thread, ignoring!')
       return
     }
 
     // Process new messages
     newMessages.forEach(msg => {
+      const hasPendingToolCalls = (
+        msg as { tool_calls?: Array<{ status?: string }> }
+      ).tool_calls?.some(
+        call =>
+          !call.status ||
+          call.status === 'running' ||
+          call.status === 'pending',
+      )
+
+      // A message is part of an active chain if:
+      // 1. It's the root assistant message (in active array)
+      // 2. It's a subsequent assistant message in the current update batch
+      const isPartOfActiveChain =
+        activeRootIds?.some(rootId => rootId === msg.id) ||
+        (msg.role === 'assistant' && activeRootIds && activeRootIds.length > 0)
+
+      const isMessageRunning = !msg.status || msg.status.type === 'running'
+
       const newMsg = {
         ...msg,
-        status: activeMessageIds?.length ? { type: 'running' } : msg.status,
+        status:
+          hasPendingToolCalls || isPartOfActiveChain || isMessageRunning
+            ? { type: 'running' }
+            : msg.status,
       }
 
-      //@ts-expect-error status is not typed
+      // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
       messageEmitterRef.current?.emit(newMsg)
-      //@ts-expect-error status is not typed
-      addOrUpdateMessage(newMsg)
+      // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
+      addOrUpdateMessage(newMsg, activeRootIds)
     })
 
     // Check if stream should be ended
-    const lastMessage = newMessages[newMessages.length - 1]
-    if (lastMessage.status?.type === 'complete' && !activeMessageIds?.length) {
+    const hasAnyPendingToolCalls = newMessages.some(msg =>
+      (msg as { tool_calls?: Array<{ status?: string }> }).tool_calls?.some(
+        call =>
+          !call.status ||
+          call.status === 'running' ||
+          call.status === 'pending',
+      ),
+    )
+    const hasIncompleteMessages = newMessages.some(
+      msg => !msg.status || msg.status.type === 'running',
+    )
+
+    if (
+      !hasAnyPendingToolCalls &&
+      !hasIncompleteMessages &&
+      !activeRootIds?.length
+    ) {
       setIsRunning(false)
       setIsStreamActive(false)
+    } else {
+      setIsRunning(true)
+      setIsStreamActive(true)
     }
   }, [websocketMessage, isStreamActive, setIsRunning, addOrUpdateMessage])
 

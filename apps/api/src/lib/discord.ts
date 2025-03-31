@@ -33,21 +33,21 @@ async function sendDiscordNotification(
           fields: [
             {
               name: 'Tool',
-              value: task.tool,
+              value: task?.tool,
               inline: true,
             },
             {
               name: 'Output Type',
-              value: task.output_type,
+              value: task?.output_type,
               inline: true,
             },
             {
               name: 'Error',
-              value: task.error?.slice(0, 999) || 'No error message provided',
+              value: task?.error?.slice(0, 999) || 'No error message provided',
             },
             {
               name: 'Task',
-              value: task._id.toString(),
+              value: task?._id?.toString(),
               inline: true,
             },
             {
@@ -59,26 +59,24 @@ async function sendDiscordNotification(
             },
             {
               name: 'Cost',
-              value: task.cost?.toFixed(0) || 'n/a',
+              value: task?.cost?.toFixed(0) || 'n/a',
             },
             {
               name: 'Agent',
               value:
-                task.user.toString() === task.agent.toString() ? `✅` : `☐`,
+                task?.user?.toString() === task?.agent?.toString() ? `✅` : `☐`,
               inline: true,
             },
             {
               name: 'User',
-              value: `[${user?.username}](${
-                fastify.config.EDEN2_FRONTEND_URL
-              }/creators/${user?.username}) - ${task.user.toString()}`,
+              value: `[${user?.username}](${fastify.config.EDEN2_FRONTEND_URL}/creators/${user?.username}) - ${user?._id}`,
               inline: true,
             },
             {
               name: 'Agent',
               value: `[${agent?.username}](${
                 fastify.config.EDEN2_FRONTEND_URL
-              }/agents/${agent?.username}) - ${task.agent.toString()}`,
+              }/agents/${agent?.username}) - ${task?.agent?.toString()}`,
               inline: true,
             },
           ],
@@ -91,7 +89,7 @@ async function sendDiscordNotification(
       embeds: [
         {
           title: '🔍 Args',
-          description: `\`\`\`json\n${JSON.stringify(task.args, null, 2).slice(
+          description: `\`\`\`json\n${JSON.stringify(task?.args, null, 2).slice(
             0,
             4000,
           )}\n\`\`\``,

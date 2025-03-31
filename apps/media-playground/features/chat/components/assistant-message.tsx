@@ -17,7 +17,7 @@ import type { FC } from 'react'
 const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
   return (
-    <div className="flex items-center md:items-start">
+    <div className="flex items-center md:items-start mr-2">
       <Avatar className="w-10 h-10 md:w-12 md:h-12">
         <AvatarImage
           className={'object-cover'}
@@ -27,7 +27,7 @@ const MyAssistantMessageAvatar: FC = () => {
           {avatar.fallback}
         </AvatarFallback>
       </Avatar>
-      <div className="block md:hidden text-sm text-muted-foreground">
+      <div className="block ml-2 md:hidden text-sm text-muted-foreground">
         {avatar.fallback}
       </div>
     </div>
@@ -39,7 +39,8 @@ const MyAssistantActionBar: FC = () => {
   const createdAt = useMessage(m => m.createdAt)
   return (
     <AssistantActionBar.Root
-      hideWhenRunning
+      // hideWhenRunning
+      // autohide="not-last"
       autohide="not-last"
       autohideFloat="single-branch"
       className="flex items-center gap-2 w-full z-10"
@@ -77,14 +78,21 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
+      {!isEmpty && (
+        <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
+      )}
       <BranchPicker />
-      <MyAssistantActionBar />
-      {!isEmpty && isRunning && (
-        <div className="col-start-3 row-start-2">
+      {isRunning ? (
+        <div
+          className={cn(
+            'col-start-3 row-start-2',
+            isEmpty && 'col-start-auto row-start-auto mt-2',
+          )}
+        >
           <TypingIndicator />
         </div>
-      )}
+      ) : null}
+      {!isRunning && !isEmpty && <MyAssistantActionBar />}
     </AssistantMessage.Root>
   )
 }

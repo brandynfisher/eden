@@ -80,6 +80,8 @@ const ImageGalleryCell = ({ images }: { images: string[] }) => {
 const imageInputParameterNames = [
   'image',
   'init_image',
+  'start_image',
+  'end_image',
   'mask_image',
   'prompt_image',
   'control_image',

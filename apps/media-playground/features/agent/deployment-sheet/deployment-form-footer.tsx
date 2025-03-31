@@ -8,7 +8,8 @@ import { Separator } from '@/components/ui/separator'
 import { AgentClientType, AgentsDeployArguments } from '@edenlabs/eden-sdk'
 import { StopIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
-import { RocketIcon, SaveIcon, TrashIcon } from 'lucide-react'
+import { BookTextIcon, RocketIcon, SaveIcon, TrashIcon } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -18,6 +19,8 @@ interface DeploymentFormFooterProps {
   agentId: string
   isDeployed: boolean
   platform: string
+  guideUrl?: string
+  valid?: boolean
 }
 
 export const DeploymentFormFooter = ({
@@ -25,6 +28,8 @@ export const DeploymentFormFooter = ({
   agentId,
   platform,
   isDeployed,
+  guideUrl,
+  valid,
 }: DeploymentFormFooterProps) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
@@ -190,38 +195,57 @@ export const DeploymentFormFooter = ({
   return (
     <>
       <Separator className="my-4" />
-      <div className="flex items-center gap-2 self-end">
-        {isDeployed && (
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={form.formState.isSubmitting || isDeleting}
-          >
-            <TrashIcon className="size-4 mr-2" />
-            Delete
+      <div className="flex justify-between gap-2">
+        {guideUrl && (
+          <Button variant="outline" asChild>
+            <Link href={guideUrl} target="_blank">
+              <BookTextIcon className="size-4 mr-2" />
+              Guide
+            </Link>
           </Button>
         )}
-        {isDeploying ? (
-          <Button type="button" onClick={handleStop}>
-            <StopIcon className="size-4 mr-2" />
-            Stop
-          </Button>
-        ) : (
-          <Button
-            type="submit"
-            onClick={form.handleSubmit(handleSubmit)}
-            disabled={isDeploying || !form.formState.isDirty}
-          >
-            {isDeployed ? (
-              <SaveIcon className="size-4 mr-2" />
-            ) : (
-              <RocketIcon className="size-4 mr-2" />
-            )}
-            {isDeployed ? 'Update' : 'Deploy'}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 ml-auto self-end">
+          {isDeployed && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={form.formState.isSubmitting || isDeleting}
+            >
+              <TrashIcon className="size-4 mr-2" />
+              Delete
+            </Button>
+          )}
+          {isDeploying ? (
+            <Button type="button" onClick={handleStop}>
+              <StopIcon className="size-4 mr-2" />
+              Stop
+            </Button>
+          ) : (
+            valid === true && (
+              <Button
+                type="submit"
+                onClick={form.handleSubmit(handleSubmit)}
+                disabled={isDeploying || !form.formState.isDirty}
+              >
+                {isDeployed ? (
+                  <SaveIcon className="size-4 mr-2" />
+                ) : (
+                  <RocketIcon className="size-4 mr-2" />
+                )}
+                {isDeployed ? 'Update' : 'Deploy'}
+              </Button>
+            )
+          )}
+        </div>
       </div>
+      {valid === false && (
+        <div className="mt-2 text-sm text-destructive">
+          <p>
+            The deployment has failed. Please delete and try deploying again.
+          </p>
+        </div>
+      )}
     </>
   )
 }

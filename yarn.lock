@@ -5466,6 +5466,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mailchimp/mailchimp_transactional@npm:^1.0.59":
+  version: 1.0.59
+  resolution: "@mailchimp/mailchimp_transactional@npm:1.0.59"
+  dependencies:
+    axios: "npm:^1.6.7"
+  checksum: 10c0/2a5cfa79279c94df2b6d0f4220ac347f3c00836f98537def0d61b257e38194dd3818b2d5a9bf42707a46613217729f9bfb7710f238f938a6ce1b80d53ecf5e62
+  languageName: node
+  linkType: hard
+
 "@mantine/hooks@npm:^6.0.13":
   version: 6.0.21
   resolution: "@mantine/hooks@npm:6.0.21"
@@ -7149,6 +7158,33 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@radix-ui/react-hover-card@npm:^1.1.6":
+  version: 1.1.6
+  resolution: "@radix-ui/react-hover-card@npm:1.1.6"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.1"
+    "@radix-ui/react-compose-refs": "npm:1.1.1"
+    "@radix-ui/react-context": "npm:1.1.1"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.5"
+    "@radix-ui/react-popper": "npm:1.2.2"
+    "@radix-ui/react-portal": "npm:1.1.4"
+    "@radix-ui/react-presence": "npm:1.1.2"
+    "@radix-ui/react-primitive": "npm:2.0.2"
+    "@radix-ui/react-use-controllable-state": "npm:1.1.0"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/4cbc9458f9d411ce37f3390d96d3dda1289774c3e996a8ae691429b4eeb02c2c39dcfe6fddb73275babb749d4da537f989dfa3b077de088ad37f3a549a395338
+  languageName: node
+  linkType: hard
+
 "@radix-ui/react-icons@npm:^1.3.0":
   version: 1.3.0
   resolution: "@radix-ui/react-icons@npm:1.3.0"
@@ -7937,7 +7973,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-slot@npm:1.0.2, @radix-ui/react-slot@npm:^1.0.2":
+"@radix-ui/react-slot@npm:1.0.2":
   version: 1.0.2
   resolution: "@radix-ui/react-slot@npm:1.0.2"
   dependencies:
@@ -11033,6 +11069,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/mailchimp__mailchimp_transactional@npm:^1":
+  version: 1.0.10
+  resolution: "@types/mailchimp__mailchimp_transactional@npm:1.0.10"
+  dependencies:
+    axios: "npm:^1.6.7"
+  checksum: 10c0/e25d07e733f28272517fa608812b2fab91d9f31bb724f72f280635abe9a77a519d47d9de07a45b048afafb8c6acd30f489fb7c2c3d01ac2a5969fad1ef0cdce2
+  languageName: node
+  linkType: hard
+
 "@types/mdast@npm:^4.0.0":
   version: 4.0.4
   resolution: "@types/mdast@npm:4.0.4"
@@ -12527,12 +12572,14 @@ __metadata:
     "@fastify/websocket": "npm:^10.0.1"
     "@huggingface/hub": "npm:^0.12.3"
     "@immobiliarelabs/fastify-sentry": "npm:^7.1.0"
+    "@mailchimp/mailchimp_transactional": "npm:^1.0.59"
     "@sinclair/typebox": "npm:^0.32.34"
     "@types/archiver": "npm:^6.0.2"
     "@types/async": "npm:^3.2.21"
     "@types/event-source-polyfill": "npm:^1.0.3"
     "@types/fluent-ffmpeg": "npm:^2.1.21"
     "@types/lodash": "npm:^4.17.13"
+    "@types/mailchimp__mailchimp_transactional": "npm:^1"
     "@types/mongoose-aggregate-paginate-v2": "npm:^1.0.9"
     "@types/mongoose-delete": "npm:^0.5.9"
     "@types/node": "npm:^20"
@@ -13062,6 +13109,17 @@ __metadata:
   peerDependencies:
     axios: 0.x || 1.x
   checksum: 10c0/2560d33cc732e920e43b3cbdfdbbaaece040a538506c33b5e302deee4d953e8f55af8065a3b766e72f68ba4712cdfe688ef52ba80dc3c6a21e65cf8362e75736
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.6.7":
+  version: 1.8.1
+  resolution: "axios@npm:1.8.1"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.0"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10c0/b2e1d5a61264502deee4b50f0a6df0aa3b174c546ccf68c0dff714a2b8863232e0bd8cb5b84f853303e97f242a98260f9bb9beabeafe451ad5af538e9eb7ac22
   languageName: node
   linkType: hard
 
@@ -14802,6 +14860,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cronstrue@npm:^2.56.0":
+  version: 2.56.0
+  resolution: "cronstrue@npm:2.56.0"
+  bin:
+    cronstrue: bin/cli.js
+  checksum: 10c0/383a3fb3a307aa78182f31ac71523bb01fb0af8092f2014b1671821da82e2a675aa17af570b07b2cd5a8e59cb06f7db157df1aeef9a9693efc6e45966046b565
+  languageName: node
+  linkType: hard
+
 "cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3":
   version: 7.0.3
   resolution: "cross-spawn@npm:7.0.3"
@@ -15100,6 +15167,13 @@ __metadata:
     es-errors: "npm:^1.3.0"
     is-data-view: "npm:^1.0.1"
   checksum: 10c0/21b0d2e53fd6e20cc4257c873bf6d36d77bd6185624b84076c0a1ddaa757b49aaf076254006341d35568e89f52eecd1ccb1a502cfb620f2beca04f48a6a62a8f
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "date-fns@npm:4.1.0"
+  checksum: 10c0/b79ff32830e6b7faa009590af6ae0fb8c3fd9ffad46d930548fbb5acf473773b4712ae887e156ba91a7b3dc30591ce0f517d69fd83bd9c38650fdc03b4e0bac8
   languageName: node
   linkType: hard
 
@@ -21474,6 +21548,7 @@ __metadata:
     "@radix-ui/react-collapsible": "npm:^1.1.0"
     "@radix-ui/react-dialog": "npm:^1.1.1"
     "@radix-ui/react-dropdown-menu": "npm:^2.0.6"
+    "@radix-ui/react-hover-card": "npm:^1.1.6"
     "@radix-ui/react-icons": "npm:^1.3.0"
     "@radix-ui/react-label": "npm:^2.0.2"
     "@radix-ui/react-navigation-menu": "npm:^1.2.0"
@@ -21483,7 +21558,7 @@ __metadata:
     "@radix-ui/react-select": "npm:^2.1.1"
     "@radix-ui/react-separator": "npm:^1.0.3"
     "@radix-ui/react-slider": "npm:^1.2.0"
-    "@radix-ui/react-slot": "npm:^1.0.2"
+    "@radix-ui/react-slot": "npm:^1.1.2"
     "@radix-ui/react-switch": "npm:^1.1.0"
     "@radix-ui/react-tabs": "npm:^1.1.0"
     "@radix-ui/react-toast": "npm:^1.1.5"
@@ -21522,7 +21597,9 @@ __metadata:
     class-variance-authority: "npm:^0.7.0"
     clsx: "npm:^2.1.0"
     cmdk: "npm:1.0.4"
+    cronstrue: "npm:^2.56.0"
     currency.js: "npm:^2.0.4"
+    date-fns: "npm:^4.1.0"
     dayjs: "npm:^1.11.13"
     env-cmd: "npm:^10.1.0"
     eslint: "npm:8.56.0"
@@ -21542,6 +21619,7 @@ __metadata:
     photoswipe: "npm:^5.4.4"
     postcss: "npm:^8"
     react: "npm:^18.2.0"
+    react-day-picker: "npm:8.10.1"
     react-device-detect: "npm:^2.2.3"
     react-dom: "npm:^18.2.0"
     react-dropzone: "npm:^14.2.3"
@@ -25661,6 +25739,16 @@ __metadata:
   peerDependencies:
     react: ^16.3.0 || ^17.0.1 || ^18.0.0
   checksum: 10c0/5b4eb23eef564695f6db1d25b294ed31d5fa21ff4092c6a38e641f85cd10e3e0b50014366e3ac0f7cf772e73faaecd14614e5b11a5531336fa769dda8068ab59
+  languageName: node
+  linkType: hard
+
+"react-day-picker@npm:8.10.1":
+  version: 8.10.1
+  resolution: "react-day-picker@npm:8.10.1"
+  peerDependencies:
+    date-fns: ^2.28.0 || ^3.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/a0ff28c4b61b3882e6a825b19e5679e2fdf3256cf1be8eb0a0c028949815c1ae5a6561474c2c19d231c010c8e0e0b654d3a322610881e0655abca05a2e03d9df
   languageName: node
   linkType: hard
 
@@ -29806,7 +29894,7 @@ __metadata:
   version: 1.4.0
   resolution: "use-sync-external-store@npm:1.4.0"
   peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10c0/ec011a5055962c0f6b509d6e78c0b143f8cd069890ae370528753053c55e3b360d3648e76cfaa854faa7a59eb08d6c5fb1015e60ffde9046d32f5b2a295acea5
   languageName: node
   linkType: hard

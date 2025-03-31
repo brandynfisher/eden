@@ -15,6 +15,7 @@ export interface DeploymentSchema {
   platform: DeploymentPlatform
   secrets: Record<string, any>
   config: Record<string, any>
+  valid?: boolean
 }
 
 export interface DeploymentDocument extends DeploymentSchema {}
@@ -41,6 +42,9 @@ const DeploymentSchema = new Schema<DeploymentDocument>(
     },
     config: {
       type: Object,
+    },
+    valid: {
+      type: Boolean,
     },
   },
   {

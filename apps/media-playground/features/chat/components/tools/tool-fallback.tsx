@@ -18,7 +18,7 @@ import {
   CircleCheckIcon,
   ComponentIcon,
   TriangleAlertIcon,
-  WrenchIcon,
+  WrenchIcon, // HourglassIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import React, { Suspense, useState } from 'react'
@@ -45,9 +45,12 @@ export const ToolFallback: ToolCallContentPartComponent = ({
           <div>
             <span className="font-bold">{toolName}</span>
           </div>
+          {/* {toolStatus === null || toolStatus === TaskV2Status.Pending ? (
+            <HourglassIcon className="text-gray-500 h-4 w-4 animate-pulse" />
+          ) : null} */}
           {toolStatus === null ||
-          toolStatus === TaskV2Status.Running ||
-          toolStatus === TaskV2Status.Pending ? (
+          toolStatus === TaskV2Status.Pending ||
+          toolStatus === TaskV2Status.Running ? (
             <span
               className={'text-blue-500 mr-1 h-5 w-5 loading loading-ring'}
             />
@@ -100,7 +103,7 @@ export const ToolFallback: ToolCallContentPartComponent = ({
               </ModelMiniCard>
             </Suspense>
           ) : null}
-          <ParameterTable className="w-auto" args={args} hideHeader={true} />
+          <ParameterTable args={args} hideHeader={true} className="w-auto" />
         </div>
       )}
       {toolStatus === TaskV2Status.Failed ? (

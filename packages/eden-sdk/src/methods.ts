@@ -208,12 +208,18 @@ import {
   tasksListRequestConfig,
 } from './models'
 import {
+  AgentsCreateTriggerArguments,
+  AgentsCreateTriggerResponse,
   AgentsDeleteDeploymentArguments,
   AgentsDeleteDeploymentResponse,
+  AgentsDeleteTriggerArguments,
+  AgentsDeleteTriggerResponse,
   AgentsDeployArguments,
   AgentsDeployResponse,
   AgentsGetDeploymentsArguments,
   AgentsGetDeploymentsResponse,
+  AgentsGetTriggersArguments,
+  AgentsGetTriggersResponse,
   AgentsStopDeploymentArguments,
   AgentsStopDeploymentResponse,
   AgentsUpdateDeploymentArguments,
@@ -272,9 +278,12 @@ import {
   ToolsGetResponseV2,
   ToolsListArgumentsV2,
   ToolsListResponseV2,
+  agentsCreateTriggerRequestConfig,
   agentsDeleteDeploymentRequestConfig,
+  agentsDeleteTriggerRequestConfig,
   agentsDeployRequestConfig,
   agentsGetDeploymentsRequestConfig,
+  agentsGetTriggersRequestConfig,
   agentsStopDeploymentRequestConfig,
   agentsUpdateDeploymentRequestConfig,
   collectionsV2AddCreationsRequestConfig,
@@ -591,6 +600,20 @@ export abstract class Methods {
       this,
       agentsDeleteRequestConfig,
     ),
+    triggers: {
+      getAll: bindApiCall<
+        AgentsGetTriggersArguments,
+        AgentsGetTriggersResponse
+      >(this, agentsGetTriggersRequestConfig),
+      create: bindApiCall<
+        AgentsCreateTriggerArguments,
+        AgentsCreateTriggerResponse
+      >(this, agentsCreateTriggerRequestConfig),
+      delete: bindApiCall<
+        AgentsDeleteTriggerArguments,
+        AgentsDeleteTriggerResponse
+      >(this, agentsDeleteTriggerRequestConfig),
+    },
   }
 
   public readonly creations = {
