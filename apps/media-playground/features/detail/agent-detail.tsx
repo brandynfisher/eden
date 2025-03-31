@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/tooltip'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import UserAvatarLink from '@/components/user/user-avatar-link'
-import AgentTriggerSheet from '@/features/agent/agent-trigger-sheet'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
@@ -256,7 +255,6 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           )}
         </div>
       </div>
-      <AgentTriggerSheet />
       <div className="p-4">
         {agent && (
           <RecentCreationsFeed
