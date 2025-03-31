@@ -1,97 +1,101 @@
-import React, { MutableRefObject, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-interface CustomCursorProps {
-  canvasRef?: MutableRefObject<HTMLCanvasElement | null>
-  color?: string // Default cursor color
-  opacity?: number // Opacity of the custom cursor
-  size?: number // Size of the cursor in pixels (e.g., '10px')
+type MaskingCanvasCursorProps = {
+  size: number
+  opacity: number
+  canvasRef: React.RefObject<HTMLCanvasElement>
+  scale: number
+  translate: { x: number; y: number }
 }
 
-const MaskingCanvasCursor: React.FC<CustomCursorProps> = ({
+const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
+  size,
+  opacity,
   canvasRef,
-  color = '#fff',
-  opacity = 1,
-  size = 16,
+  scale,
+  translate,
 }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 })
-  const [isActive, setIsActive] = useState(false)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (canvasRef?.current) {
-        const rect = canvasRef.current.getBoundingClientRect()
-        const parentRect =
-          canvasRef.current.parentElement?.getBoundingClientRect()
+      if (!canvasRef.current) return
 
-        setPosition({
-          x: e.clientX - (parentRect?.left || rect.left),
-          y: e.clientY - (parentRect?.top || rect.top),
-        })
-      }
+      const canvas = canvasRef.current
+      const rect = canvas.getBoundingClientRect()
+
+      // Get position relative to the canvas element
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+
+      // Calculate scaling factor between internal canvas resolution and display size
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
+
+      // Convert to canvas coordinates
+      const finalX = x * scaleX
+      const finalY = y * scaleY
+
+      console.log('Cursor Coordinates:', {
+        clientPos: { x: e.clientX, y: e.clientY },
+        canvasRect: rect,
+        relativePos: { x, y },
+        canvasScale: { scaleX, scaleY },
+        finalPos: { x: finalX, y: finalY },
+        zoom: scale,
+        translation: translate,
+      })
+
+      setPosition({ x: finalX, y: finalY })
     }
 
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [canvasRef])
+  }, [canvasRef, scale, translate])
 
-  // Handle mouse enter/leave events
-  useEffect(() => {
-    const handleMouseEnter = () => setIsActive(true)
-    const handleMouseLeave = () => setIsActive(false)
+  if (!canvasRef.current) return null
 
-    const elements = document.querySelectorAll('[data-custom-cursor]')
+  const canvas = canvasRef.current
+  const rect = canvas.getBoundingClientRect()
+  const scaleX = canvas.width / rect.width
+  const scaleY = canvas.height / rect.height
 
-    elements.forEach(el => {
-      el.addEventListener('mouseenter', handleMouseEnter)
-      el.addEventListener('mouseleave', handleMouseLeave)
-    })
+  // Convert back from canvas coordinates to screen coordinates
+  const unscaledX = position.x / scaleX
+  const unscaledY = position.y / scaleY
 
-    return () => {
-      elements.forEach(el => {
-        el.removeEventListener('mouseenter', handleMouseEnter)
-        el.removeEventListener('mouseleave', handleMouseLeave)
-      })
-    }
-  }, [])
+  // Apply zoom and translation in reverse (divide by zoom since we're going from zoomed to unzoomed space)
+  const screenX = unscaledX / scale + translate.x
+  const screenY = unscaledY / scale + translate.y
+
+  console.log('Cursor Display:', {
+    position,
+    unscaledCoords: { x: unscaledX, y: unscaledY },
+    screenCoords: { x: screenX, y: screenY },
+    scale,
+    translate,
+  })
 
   return (
-    // <div
-    //   // style={{
-    //   //   position: 'fixed',
-    //   //   top: `${(position.y - translate.y) / scale}px`,
-    //   //   left: `${(position.x - translate.x) / scale}px`,
-    //   //   transform: `translate(-50%, -50%) scale(${scale})`,
-    //   //   width: `${size}px`,
-    //   //   height: `${size}px`,
-    //   //   backgroundColor: color,
-    //   //   borderRadius: '50%',
-    //   //   opacity: isActive ? opacity : 0,
-    //   //   pointerEvents: 'none',
-    //   //   transition: 'opacity 0.2s ease, transform 0.1s ease',
-    //   //   zIndex: 50,
-    //   //   // backgroundBlendMode: 'difference',
-    //   //   // mixBlendMode: 'hard-light',
-    //   // }}
-    //   className='custom-cursor'
-    // />
     <div
+      className="pointer-events-none absolute inset-0"
       style={{
-        position: 'absolute',
-        top: `${position.y}px`,
-        left: `${position.x}px`,
-        transform: `translate(-50%, -50%)`,
-        width: `${size}px`,
-        height: `${size}px`,
-        border: '2px solid #333',
-        backgroundColor: color,
-        borderRadius: '50%',
-        opacity: isActive ? opacity : 0,
-        pointerEvents: 'none',
-        transition: 'opacity 0.2s ease, transform 0.1s ease',
-        zIndex: 50,
+        width: '100%',
+        height: '100%',
       }}
-      className="custom-cursor select-none"
-    />
+    >
+      <div
+        className="absolute border-2 border-white rounded-full"
+        style={{
+          width: `${size * scale}px`,
+          height: `${size * scale}px`,
+          transform: `translate(${screenX - (size * scale) / 2}px, ${
+            screenY - (size * scale) / 2
+          }px)`,
+          opacity,
+        }}
+      />
+    </div>
   )
 }
 

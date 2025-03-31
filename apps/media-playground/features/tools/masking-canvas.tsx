@@ -79,7 +79,8 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   const [isMoving, setIsMoving] = useState<boolean>(false)
   const [history, setHistory] = useState<Stroke[]>([])
   const [redoStack, setRedoStack] = useState<Stroke[]>([])
-  const [lineWidth, setLineWidth] = useState<number>(64)
+  const DEFAULT_LINE_WIDTH = 64
+  const [lineWidth, setLineWidth] = useState<number>(DEFAULT_LINE_WIDTH)
   const [lineOpacity, setLineOpacity] = useState<number>(1)
   const [imageOpacity, setImageOpacity] = useState<number>(0.5)
   const [canvasOpacity, setCanvasOpacity] = useState<number>(0.75)
@@ -126,17 +127,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       img.src = baseImage
       img.onload = () => {
         setImageDimensions({ width: img.width, height: img.height })
-        // Scale line width based on image dimensions and container size
-        if (containerDimensions) {
-          const scaleFactor = Math.min(
-            containerDimensions.width / img.width,
-            containerDimensions.height / img.height,
-          )
-          setLineWidth(32 * scaleFactor)
-        }
       }
     }
-  }, [baseImage, containerDimensions])
+  }, [baseImage])
 
   useEffect(() => {
     const handleResize = () => {
@@ -149,9 +142,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
         overlayCanvas.width = imageDimensions.width
         overlayCanvas.height = imageDimensions.height
 
-        // Get the container's content area dimensions
+        // Get the container's content area dimensions, accounting for controls and padding
         const containerWidth = container.clientWidth
-        const containerHeight = container.clientHeight - 150 // Account for controls height
+        const containerHeight = container.clientHeight - 200 // Account for controls, padding, and margins
 
         // Calculate scale to fit container while maintaining aspect ratio
         const imageAspectRatio = imageDimensions.width / imageDimensions.height
@@ -159,14 +152,29 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
 
         let displayWidth, displayHeight
 
+        // Add a safety margin
+        const margin = 0.95 // 5% margin for safety
+
         if (imageAspectRatio > containerAspectRatio) {
           // Image is wider than container
-          displayWidth = containerWidth
-          displayHeight = containerWidth / imageAspectRatio
+          displayWidth = containerWidth * margin
+          displayHeight = (containerWidth * margin) / imageAspectRatio
         } else {
           // Image is taller than container
-          displayHeight = containerHeight
-          displayWidth = containerHeight * imageAspectRatio
+          displayHeight = containerHeight * margin
+          displayWidth = containerHeight * margin * imageAspectRatio
+        }
+
+        // Final safety check to ensure we're within bounds
+        if (displayHeight > containerHeight) {
+          const scale = containerHeight / displayHeight
+          displayHeight *= scale
+          displayWidth *= scale
+        }
+        if (displayWidth > containerWidth) {
+          const scale = containerWidth / displayWidth
+          displayWidth *= scale
+          displayHeight *= scale
         }
 
         // Update container dimensions state with the calculated display size
@@ -240,24 +248,40 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     const canvas = overlayCanvasRef.current
     const rect = canvas.getBoundingClientRect()
 
-    let x, y
+    let clientX, clientY
     if ('touches' in e) {
-      const touch = e.touches[0]
-      x = touch.clientX - rect.left
-      y = touch.clientY - rect.top
+      clientX = e.touches[0].clientX
+      clientY = e.touches[0].clientY
     } else {
-      x = e.clientX - rect.left
-      y = e.clientY - rect.top
+      clientX = e.clientX
+      clientY = e.clientY
     }
 
-    // Calculate scaling factor based on canvas display size vs internal resolution
+    // Get position relative to the canvas element
+    const x = clientX - rect.left
+    const y = clientY - rect.top
+
+    // Calculate scaling factor between internal canvas resolution and display size
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
 
-    // Scale the position according to the resolution
+    // Convert to canvas coordinates
+    const finalX = x * scaleX
+    const finalY = y * scaleY
+
+    console.log('Drawing Coordinates:', {
+      clientPos: { x: clientX, y: clientY },
+      canvasRect: { left: rect.left, top: rect.top },
+      relativePos: { x, y },
+      canvasScale: { scaleX, scaleY },
+      finalPos: { x: finalX, y: finalY },
+      zoom: scale,
+      translation: translate,
+    })
+
     return {
-      x: x * scaleX,
-      y: y * scaleY,
+      x: finalX,
+      y: finalY,
     }
   }
 
@@ -310,7 +334,20 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       | React.TouchEvent<HTMLCanvasElement>,
   ) => {
     if (isMoving) {
-      setLastPanPos(getPointPos(e))
+      e.preventDefault() // Prevent default dragging behavior
+      const rect = overlayCanvasRef.current?.getBoundingClientRect()
+      if (!rect) return
+
+      let clientX, clientY
+      if ('touches' in e) {
+        clientX = e.touches[0].clientX
+        clientY = e.touches[0].clientY
+      } else {
+        clientX = e.clientX
+        clientY = e.clientY
+      }
+
+      setLastPanPos({ x: clientX, y: clientY })
       setIsPanning(true)
     } else {
       startDrawing(e)
@@ -322,17 +359,25 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       | React.MouseEvent<HTMLCanvasElement>
       | React.TouchEvent<HTMLCanvasElement>,
   ) => {
-    if (isPanning && overlayCanvasRef.current) {
-      const currentPos = getPointPos(e)
-      if (lastPanPos) {
-        const deltaX = currentPos.x - lastPanPos.x
-        const deltaY = currentPos.y - lastPanPos.y
-        setTranslate(prevTranslate => ({
-          x: prevTranslate.x + deltaX,
-          y: prevTranslate.y + deltaY,
-        }))
-        setLastPanPos(currentPos)
+    if (isPanning && lastPanPos) {
+      let clientX, clientY
+      if ('touches' in e) {
+        clientX = e.touches[0].clientX
+        clientY = e.touches[0].clientY
+      } else {
+        clientX = e.clientX
+        clientY = e.clientY
       }
+
+      const deltaX = (clientX - lastPanPos.x) / scale
+      const deltaY = (clientY - lastPanPos.y) / scale
+
+      setTranslate(prevTranslate => ({
+        x: prevTranslate.x + deltaX,
+        y: prevTranslate.y + deltaY,
+      }))
+
+      setLastPanPos({ x: clientX, y: clientY })
     } else if (isDrawing) {
       draw(e)
     }
@@ -522,18 +567,19 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                   transformOrigin: 'center',
                   width: containerDimensions?.width ?? 'auto',
                   height: containerDimensions?.height ?? 'auto',
+                  willChange: isPanning ? 'transform' : 'auto',
                 }}
               >
-                {overlayCanvasRef ? (
+                {overlayCanvasRef && !isMoving ? (
                   <MaskingCanvasCursor
                     size={
-                      (lineWidth /
-                        ((imageDimensions?.width ?? width) /
-                          (containerDimensions?.width ?? width))) *
-                      scale
+                      (lineWidth * (containerDimensions?.width ?? width)) /
+                      (imageDimensions?.width ?? width)
                     }
-                    opacity={0.4}
+                    opacity={isMoving ? 0 : 0.4}
                     canvasRef={overlayCanvasRef}
+                    scale={scale}
+                    translate={translate}
                   />
                 ) : null}
                 {baseImage && imageDimensions && containerDimensions && (
