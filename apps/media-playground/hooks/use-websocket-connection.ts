@@ -41,7 +41,7 @@ export const useWebSocketConnection = (
       onError: e => {
         console.error('WebSocket error', e)
         // Increment reconnection attempt counter
-        lastReconnectAttemptRef.current = lastReconnectAttemptRef.current + 1
+        lastReconnectAttemptRef.current += 1
       },
       onMessage: event => {
         if (onMessage) {
@@ -51,18 +51,6 @@ export const useWebSocketConnection = (
       shouldReconnect: closeEvent => {
         // Don't reconnect on clean closes (code 1000) or if shouldConnect is false
         if (closeEvent.code === 1000 || !shouldConnect) return false
-
-        // Schedule reconnect with exponential backoff
-        const backoff = getBackoffTime(lastReconnectAttemptRef.current)
-        console.log(`Scheduling reconnect in ${backoff}ms`)
-        reconnectTimeoutRef.current = setTimeout(() => {
-          // Additional check before attempting reconnect
-          if (shouldConnect) {
-            return true
-          }
-          return false
-        }, backoff)
-
         return true
       },
       reconnectInterval: (attemptNumber: number) =>

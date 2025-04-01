@@ -87,13 +87,13 @@ const MyAssistantMessage: FC = () => {
     return () => clearTimeout(timer)
   }, [isEmpty, isRunning])
 
-  console.log({
-    isEmpty,
-    isRunning,
-    content,
-    status,
-    debounced: { isEmpty: debouncedIsEmpty, isRunning: debouncedIsRunning },
-  })
+  // console.log({
+  //   isEmpty,
+  //   isRunning,
+  //   content,
+  //   status,
+  //   debounced: { isEmpty: debouncedIsEmpty, isRunning: debouncedIsRunning },
+  // })
 
   return (
     <AssistantMessage.Root
