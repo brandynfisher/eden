@@ -107,34 +107,34 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     isMounted && Boolean(effectiveThreadId) && messages.length === 0
 
   // Debug logging - only log on important state changes
-  useEffect(() => {
-    const state = {
-      threadId,
-      urlThreadId,
-      effectiveThreadId,
-      messagesLength: messages.length,
-      showWelcomeScreen,
-      showLoadingState,
-      isMounted,
-    }
+  // useEffect(() => {
+  //   const state = {
+  //     threadId,
+  //     urlThreadId,
+  //     effectiveThreadId,
+  //     messagesLength: messages.length,
+  //     showWelcomeScreen,
+  //     showLoadingState,
+  //     isMounted,
+  //   }
 
-    // Only log if something important changed
-    if (
-      state.messagesLength === 0 ||
-      state.showLoadingState ||
-      !state.isMounted
-    ) {
-      console.log('Thread state:', state)
-    }
-  }, [
-    threadId,
-    urlThreadId,
-    effectiveThreadId,
-    messages.length,
-    showWelcomeScreen,
-    showLoadingState,
-    isMounted,
-  ])
+  //   // // Only log if something important changed
+  //   // if (
+  //   //   state.messagesLength === 0 ||
+  //   //   state.showLoadingState ||
+  //   //   !state.isMounted
+  //   // ) {
+  //   //   console.log('Thread state:', state)
+  //   // }
+  // }, [
+  //   threadId,
+  //   urlThreadId,
+  //   effectiveThreadId,
+  //   messages.length,
+  //   showWelcomeScreen,
+  //   showLoadingState,
+  //   isMounted,
+  // ])
 
   // Mount effect - only run once
   useEffect(() => {

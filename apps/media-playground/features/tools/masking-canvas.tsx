@@ -148,21 +148,22 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
 
         // Calculate scale to fit container while maintaining aspect ratio
         const imageAspectRatio = imageDimensions.width / imageDimensions.height
-        const containerAspectRatio = containerWidth / containerHeight
 
         let displayWidth, displayHeight
+        const margin = 0.9 // Increase margin for safety
 
-        // Add a safety margin
-        const margin = 0.95 // 5% margin for safety
+        // First calculate based on both width and height constraints
+        const widthBasedHeight = containerWidth / imageAspectRatio
 
-        if (imageAspectRatio > containerAspectRatio) {
-          // Image is wider than container
+        // Choose the smaller of the two possible dimensions
+        if (widthBasedHeight <= containerHeight) {
+          // Width-constrained case
           displayWidth = containerWidth * margin
-          displayHeight = (containerWidth * margin) / imageAspectRatio
+          displayHeight = displayWidth / imageAspectRatio
         } else {
-          // Image is taller than container
+          // Height-constrained case
           displayHeight = containerHeight * margin
-          displayWidth = containerHeight * margin * imageAspectRatio
+          displayWidth = displayHeight * imageAspectRatio
         }
 
         // Final safety check to ensure we're within bounds
@@ -268,16 +269,6 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     // Convert to canvas coordinates
     const finalX = x * scaleX
     const finalY = y * scaleY
-
-    console.log('Drawing Coordinates:', {
-      clientPos: { x: clientX, y: clientY },
-      canvasRect: { left: rect.left, top: rect.top },
-      relativePos: { x, y },
-      canvasScale: { scaleX, scaleY },
-      finalPos: { x: finalX, y: finalY },
-      zoom: scale,
-      translation: translate,
-    })
 
     return {
       x: finalX,
