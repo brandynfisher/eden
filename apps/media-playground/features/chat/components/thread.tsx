@@ -172,7 +172,9 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     const handleScroll = () => {
       const { scrollHeight, scrollTop, clientHeight } = viewport
       const atBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10
-      const nearBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 600
+      // Use one viewport height as the threshold
+      const nearBottom =
+        Math.abs(scrollHeight - scrollTop - clientHeight) < clientHeight
       setIsAtBottom(atBottom)
       setIsNearBottom(nearBottom)
       setIsScrolled(scrollTop > 100)
