@@ -75,13 +75,21 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const isInitialLoadRef = useRef(true)
   const [hasNewMessages, setHasNewMessages] = useState(false)
   const [isAtBottom, setIsAtBottom] = useState(true)
+  const [isNearBottom, setIsNearBottom] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
   const lastSeenContentRef = useRef('')
+  const lastMessagesLengthRef = useRef(messages.length)
 
   // Get a string representation of all complete assistant messages
   const assistantMessagesContent = messages
     .filter(m => m.role === 'assistant' && m.content && m.content.length > 0)
     .map(m => m.content)
+    .join('')
+
+  // Get a string representation of all assistant messages (including empty/generating ones)
+  const allAssistantMessages = messages
+    .filter(m => m.role === 'assistant')
+    .map(m => m.content || '')
     .join('')
 
   // Check if any messages are still being generated
@@ -164,7 +172,11 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     const handleScroll = () => {
       const { scrollHeight, scrollTop, clientHeight } = viewport
       const atBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10
+      // Use one viewport height as the threshold
+      const nearBottom =
+        Math.abs(scrollHeight - scrollTop - clientHeight) < clientHeight
       setIsAtBottom(atBottom)
+      setIsNearBottom(nearBottom)
       setIsScrolled(scrollTop > 100)
       if (atBottom && !hasGeneratingMessage) {
         setHasNewMessages(false)
@@ -177,7 +189,24 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     return () => viewport.removeEventListener('scroll', handleScroll)
   }, [assistantMessagesContent, hasGeneratingMessage])
 
-  // Track new messages - now checks for content changes
+  // Auto-scroll when near bottom and:
+  // 1. New messages are added
+  // 2. Any assistant message is updated
+  useEffect(() => {
+    const hasNewMessage = messages.length > lastMessagesLengthRef.current
+
+    // If we're near the bottom and there's any update, scroll down
+    if (
+      isNearBottom &&
+      (hasNewMessage || messages.some(m => m.role === 'assistant'))
+    ) {
+      scrollToBottom()
+    }
+
+    lastMessagesLengthRef.current = messages.length
+  }, [messages.length, allAssistantMessages])
+
+  // Track new messages - show indicator when not near bottom
   useEffect(() => {
     // Only show new messages if:
     // 1. We're not at the bottom

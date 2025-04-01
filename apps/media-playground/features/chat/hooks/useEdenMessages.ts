@@ -1,5 +1,7 @@
+import { useWebSocketContext } from '@/providers/websocket-provider'
 import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ReadyState } from 'react-use-websocket'
 
 type MessageResponse<T> = {
   data: T & {
@@ -21,6 +23,31 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
   const [activeMessageIds, setActiveMessageIds] = useState<string[]>([])
+  const { readyState } = useWebSocketContext()
+  const lastConnectionStateRef = useRef<ReadyState>(readyState)
+
+  // Reset active messages when connection is lost
+  useEffect(() => {
+    if (readyState !== lastConnectionStateRef.current) {
+      lastConnectionStateRef.current = readyState
+
+      // When connection is lost or closed
+      if (
+        readyState === ReadyState.CLOSED ||
+        readyState === ReadyState.CLOSING
+      ) {
+        setActiveMessageIds([])
+        // Mark all running messages as complete with error
+        setMessages(currentMessages =>
+          currentMessages.map(m =>
+            m.status?.type === 'running'
+              ? { ...m, status: { type: 'complete', reason: 'error' } }
+              : m,
+          ),
+        )
+      }
+    }
+  }, [readyState])
 
   // Check for pending message in localStorage on mount
   useEffect(() => {
@@ -64,7 +91,8 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
-      if (activeIds !== undefined) {
+      // Only update active IDs if connection is open
+      if (activeIds !== undefined && readyState === ReadyState.OPEN) {
         setActiveMessageIds(activeIds)
       }
 
@@ -122,7 +150,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         return [...updatedMessages, messageToAdd]
       })
     },
-    [activeMessageIds],
+    [activeMessageIds, readyState],
   )
 
   // Wrap setMessages to properly handle active messages when switching threads
