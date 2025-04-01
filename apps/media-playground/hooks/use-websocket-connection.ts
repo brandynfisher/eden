@@ -19,7 +19,12 @@ export const useWebSocketConnection = (
       onReconnectStop: () => console.log('WebSocket onReconnectStop'),
       onClose: e => console.log('WebSocket closed', e),
       onError: e => console.error('WebSocket error', e),
-      onMessage: onMessage ? event => onMessage(event) : undefined,
+      onMessage: event => {
+        // Handle custom onMessage if provided
+        if (onMessage) {
+          onMessage(event)
+        }
+      },
       reconnectAttempts: Infinity,
       reconnectInterval: 3000, // Try to reconnect every 3 seconds
       retryOnError: true,
@@ -32,22 +37,29 @@ export const useWebSocketConnection = (
         message: () => JSON.stringify({ event: 'ping', ts: Date.now() }),
         interval: 60000, // Send heartbeat every minute
         timeout: 180000, // Consider connection dead after 3 minutes of no response
-        returnMessage: 'pong',
+        returnMessage: JSON.stringify({ event: 'pong' }), // Match the expected response format
       },
       share: true,
-      filter: message => {
-        // Filter out heartbeat responses
-        if (message.data === 'pong') return false
-        return true
-      },
     },
     shouldConnect,
   )
 
+  // If the message is a pong, return null instead
+  const processedLastMessage =
+    lastMessage &&
+    (() => {
+      try {
+        const data = JSON.parse(lastMessage.data)
+        return data.event === 'pong' ? null : lastMessage
+      } catch (e) {
+        return null
+      }
+    })()
+
   return {
     sendMessage,
     sendJsonMessage,
-    lastMessage,
+    lastMessage: processedLastMessage,
     readyState,
     getWebSocket,
     // messageHistory,

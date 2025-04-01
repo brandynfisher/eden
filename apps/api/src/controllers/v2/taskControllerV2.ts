@@ -903,7 +903,14 @@ export const subscribeWebSocketUpdates = function wsHandler(
 
         // Handle ping messages
         if (msgJson.event === SocketClientEventName.Ping) {
-          socket.send('pong')
+          socket.send(
+            JSON.stringify({
+              event: 'pong',
+              data: {
+                ts: Date.now(),
+              },
+            }),
+          )
           return
         }
 
