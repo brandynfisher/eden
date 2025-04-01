@@ -2,14 +2,6 @@
 
 import { LightboxGallery } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuTrigger,
-// } from '@/components/ui/dropdown-menu'
-// import { Label } from '@/components/ui/label'
-// import { Slider } from '@/components/ui/slider'
-// import { Switch } from '@/components/ui/switch'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
