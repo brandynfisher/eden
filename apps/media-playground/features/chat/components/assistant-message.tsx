@@ -12,7 +12,7 @@ import {
   useThreadConfig,
 } from '@assistant-ui/react-ui'
 import { useTimeAgo } from 'next-timeago'
-import type { FC } from 'react'
+import React, { type FC } from 'react'
 
 const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
@@ -65,34 +65,60 @@ const MyAssistantMessage: FC = () => {
   const content = useMessage(m => m.content)
   const status = useMessage(m => m.status)
   const id = useMessage(m => m.id)
-  const isEmpty = !content || content.length === 0
-  const isRunning = status?.type === 'running'
 
-  // console.log({ isEmpty, isRunning, content, status })
+  // Memoize the derived state to prevent unnecessary recalculations
+  const { isEmpty, isRunning } = React.useMemo(
+    () => ({
+      isEmpty: !content || content.length === 0,
+      isRunning: status?.type === 'running',
+    }),
+    [content, status?.type],
+  )
+
+  // Debounce state changes to prevent flicker
+  const [debouncedIsEmpty, setDebouncedIsEmpty] = React.useState(isEmpty)
+  const [debouncedIsRunning, setDebouncedIsRunning] = React.useState(isRunning)
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedIsEmpty(isEmpty)
+      setDebouncedIsRunning(isRunning)
+    }, 100) // Small delay to prevent flicker
+    return () => clearTimeout(timer)
+  }, [isEmpty, isRunning])
+
+  console.log({
+    isEmpty,
+    isRunning,
+    content,
+    status,
+    debounced: { isEmpty: debouncedIsEmpty, isRunning: debouncedIsRunning },
+  })
 
   return (
     <AssistantMessage.Root
       className={cn([
         'block px-2 md:grid',
-        isRunning && 'border border-purple-600/40 bg-purple-900/5 rounded-lg',
+        debouncedIsRunning &&
+          'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >
       <MyAssistantMessageAvatar />
-      {!isEmpty && (
+      {!debouncedIsEmpty && (
         <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
       )}
       <BranchPicker />
-      {isRunning ? (
+      {debouncedIsEmpty || debouncedIsRunning ? (
         <div
           className={cn(
             'col-start-3 row-start-2',
-            isEmpty && 'col-start-auto row-start-auto mt-2',
+            debouncedIsEmpty && 'col-start-auto row-start-auto mt-2',
           )}
         >
           <TypingIndicator />
         </div>
       ) : null}
-      {!isRunning && !isEmpty && <MyAssistantActionBar />}
+      {!debouncedIsRunning && !debouncedIsEmpty && <MyAssistantActionBar />}
     </AssistantMessage.Root>
   )
 }
