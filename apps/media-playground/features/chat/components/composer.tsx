@@ -261,7 +261,6 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
               if (file) {
                 await composerRuntime.addAttachment(file)
               }
-              break
             }
           }
         }}
