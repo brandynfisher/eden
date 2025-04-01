@@ -357,9 +357,11 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
             )}
           </div>
 
-          <ThreadPrimitive.If empty={!effectiveThreadId}>
-            {memoizedComposer}
-          </ThreadPrimitive.If>
+          {!showWelcomeScreen && (
+            <ThreadPrimitive.If empty={!effectiveThreadId}>
+              {memoizedComposer}
+            </ThreadPrimitive.If>
+          )}
         </Thread.ViewportFooter>
       </Thread.Viewport>
     </Thread.Root>
