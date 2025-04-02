@@ -37,9 +37,22 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         const index = currentMessages.findIndex(m => m.id === message.id)
 
         if (index !== -1) {
+          // Check if the message content and status are identical
+          const existingMessage = currentMessages[index]
+          const isIdentical =
+            existingMessage.content === message.content &&
+            existingMessage.status?.type === message.status?.type &&
+            existingMessage.status?.reason === message.status?.reason &&
+            JSON.stringify(existingMessage.tool_calls) ===
+              JSON.stringify(message.tool_calls)
+
+          // If message is identical, don't update
+          if (isIdentical) {
+            return currentMessages
+          }
+
           // Update existing message while preserving tool_calls if they exist
           const updatedMessages = [...currentMessages]
-          const existingMessage = currentMessages[index]
           updatedMessages[index] = {
             ...existingMessage,
             ...message,
