@@ -26,69 +26,6 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
   const { readyState } = useWebSocketContext()
   const lastConnectionStateRef = useRef<ReadyState>(readyState)
 
-  // Reset active messages when connection is lost
-  useEffect(() => {
-    if (readyState !== lastConnectionStateRef.current) {
-      lastConnectionStateRef.current = readyState
-
-      // When connection is lost or closed
-      if (
-        readyState === ReadyState.CLOSED ||
-        readyState === ReadyState.CLOSING
-      ) {
-        setActiveMessageIds([])
-        // Mark all running messages as complete with error
-        setMessages(currentMessages =>
-          currentMessages.map(m =>
-            m.status?.type === 'running'
-              ? { ...m, status: { type: 'complete', reason: 'error' } }
-              : m,
-          ),
-        )
-      }
-    }
-  }, [readyState])
-
-  // Check for pending message in localStorage on mount
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const threadId = window.location.pathname.split('/').pop()
-    if (!threadId) return
-
-    const pendingMessageKey = `pending-message-${threadId}`
-    const pendingMessageData = localStorage.getItem(pendingMessageKey)
-
-    if (pendingMessageData) {
-      try {
-        const messageData = JSON.parse(pendingMessageData)
-        // Only use messages that are less than 5 minutes old
-        if (Date.now() - messageData.timestamp < 5 * 60 * 1000) {
-          // Add the pending message to the messages state
-          const pendingMessage: ThreadMessage = {
-            id: messageData.message_id,
-            role: 'user',
-            content: messageData.content,
-            attachments: messageData.attachments || [],
-            createdAt: new Date(messageData.timestamp),
-          }
-
-          setMessages(currentMessages => {
-            // Check if message already exists to prevent duplication
-            if (!currentMessages.some(m => m.id === messageData.message_id)) {
-              return [...currentMessages, pendingMessage as TMessage]
-            }
-            return currentMessages
-          })
-        }
-      } catch (e) {
-        console.error('Error parsing pending message:', e)
-      }
-      // Clean up the pending message
-      localStorage.removeItem(pendingMessageKey)
-    }
-  }, [])
-
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
       // Only update active IDs if connection is open
@@ -152,6 +89,64 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
     },
     [activeMessageIds, readyState],
   )
+
+  // Reset active messages when connection is lost
+  useEffect(() => {
+    if (readyState !== lastConnectionStateRef.current) {
+      lastConnectionStateRef.current = readyState
+
+      // When connection is lost or closed
+      if (
+        readyState === ReadyState.CLOSED ||
+        readyState === ReadyState.CLOSING
+      ) {
+        setActiveMessageIds([])
+        // Mark all running messages as complete with error
+        setMessages(currentMessages =>
+          currentMessages.map(m =>
+            m.status?.type === 'running'
+              ? { ...m, status: { type: 'complete', reason: 'error' } }
+              : m,
+          ),
+        )
+      }
+    }
+  }, [readyState])
+
+  // Check for pending message in localStorage on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const threadId = window.location.pathname.split('/').pop()
+    if (!threadId) return
+
+    const pendingMessageKey = `pending-message-${threadId}`
+    const pendingMessageData = localStorage.getItem(pendingMessageKey)
+
+    if (pendingMessageData) {
+      try {
+        const messageData = JSON.parse(pendingMessageData)
+        // Only use messages that are less than 5 minutes old
+        if (Date.now() - messageData.timestamp < 5 * 60 * 1000) {
+          // Add the pending message to the messages state
+          const pendingMessage = {
+            id: messageData.message_id,
+            role: 'user' as const,
+            content: messageData.content,
+            attachments: messageData.attachments || [],
+            createdAt: new Date(messageData.timestamp),
+          } as TMessage
+
+          // Add message and mark it as active
+          addOrUpdateMessage(pendingMessage, [messageData.message_id])
+        }
+      } catch (e) {
+        console.error('Error parsing pending message:', e)
+      }
+      // Clean up the pending message
+      localStorage.removeItem(pendingMessageKey)
+    }
+  }, [addOrUpdateMessage])
 
   // Wrap setMessages to properly handle active messages when switching threads
   const setMessagesWithActive = useCallback(

@@ -392,10 +392,41 @@ export function EdenRuntimeProvider({
         threadIdRef.current = threadId
 
         if (threadIdRef.current) {
-          runtime.threads.switchToThread(threadIdRef.current)
+          // Check for pending message before switching thread
+          const pendingMessageKey = `pending-message-${threadIdRef.current}`
+          const pendingMessageData = localStorage.getItem(pendingMessageKey)
+          let pendingMessage = null
+
+          if (pendingMessageData) {
+            try {
+              const messageData = JSON.parse(pendingMessageData)
+              if (Date.now() - messageData.timestamp < 5 * 60 * 1000) {
+                pendingMessage = {
+                  id: messageData.message_id,
+                  role: 'user' as const,
+                  content: messageData.content,
+                  attachments: messageData.attachments || [],
+                  createdAt: new Date(messageData.timestamp),
+                  status: undefined,
+                } as const
+              }
+            } catch (e) {
+              console.error('Error parsing pending message:', e)
+            }
+            localStorage.removeItem(pendingMessageKey)
+          }
+
+          await runtime.threads.switchToThread(threadIdRef.current)
+
           // Only check thread status if auth is loaded
           if (!isAuthLoading) {
-            await checkThreadStatus()
+            const thread = await checkThreadStatus(false) // Pass false to prevent overwriting messages
+
+            // If we have a pending message and thread data, add the pending message
+            if (pendingMessage && thread?.messages) {
+              const updatedMessages = [...thread.messages, pendingMessage]
+              setMessages(updatedMessages as EdenMessage[], thread.active)
+            }
           }
         }
       } catch (error) {
