@@ -100,7 +100,7 @@ export const TaskResultTool = makeAssistantToolUI({
                               <audio
                                 controls
                                 // loop={true}
-                                className="w-full max-w-2xl"
+                                className="w-full max-w-2xl pr-12"
                               >
                                 <source
                                   src={getCloudfrontOriginalUrl(
