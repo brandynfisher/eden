@@ -43,6 +43,7 @@ const creationSections: FilterSection[] = [
     items: [
       { id: 'flux_dev', name: 'Flux DEV' },
       { id: 'flux_schnell', name: 'Flux Schnell' },
+      { id: 'kling_pro', name: 'Kling Pro' },
       { id: 'upscaler', name: 'Upscaler' },
       { id: 'txt2img', name: 'txt2img' },
       { id: 'txt2vid', name: 'txt2vid' },
