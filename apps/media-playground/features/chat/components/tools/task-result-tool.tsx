@@ -100,7 +100,7 @@ export const TaskResultTool = makeAssistantToolUI({
                               <audio
                                 controls
                                 // loop={true}
-                                className="w-full max-w-2xl"
+                                className="w-full max-w-2xl pr-12"
                               >
                                 <source
                                   src={getCloudfrontOriginalUrl(
@@ -131,10 +131,10 @@ export const TaskResultTool = makeAssistantToolUI({
                                   )
                                   e.dataTransfer.effectAllowed = 'copy'
                                 }}
-                                className="w-full h-full flex gap-4"
+                                className="relative w-full aspect-[16/9] min-h-[200px]"
                               >
                                 <LightboxTrigger
-                                  className="w-full h-full"
+                                  className="absolute inset-0"
                                   slide={{
                                     type: 'video',
                                     url: getCloudfrontOriginalUrl(

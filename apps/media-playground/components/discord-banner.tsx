@@ -8,6 +8,9 @@ import { XCircleIcon } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
+const BANNER_KEY = 'discordBannerDismissed-v2'
+const LEGACY_BANNER_KEY = 'discordBannerDismissed'
+
 const DiscordBanner: React.FC = () => {
   const { isSignedIn } = useAuthState()
   const pathname = usePathname()
@@ -16,18 +19,33 @@ const DiscordBanner: React.FC = () => {
   const shouldShowDiscordBanner =
     !pathname.startsWith('/chat') && pathname !== '/'
 
-  const [discordBannerDismissedQuery, setDiscordBannerDismissed] =
-    useLocalStorage<string>('discordBannerDismissed', '')
+  const [isDismissed, setIsDismissed] = useLocalStorage(BANNER_KEY, false)
+  const [legacyDismissed] = useLocalStorage(LEGACY_BANNER_KEY, '')
+
+  // Migrate legacy format to new format
+  React.useEffect(() => {
+    if (
+      !isDismissed.isLoading &&
+      !isDismissed.data &&
+      legacyDismissed.data &&
+      !legacyDismissed.isLoading
+    ) {
+      setIsDismissed(true)
+      // Also clear the legacy key to prevent any future issues
+      localStorage.removeItem(LEGACY_BANNER_KEY)
+    }
+  }, [legacyDismissed, isDismissed, setIsDismissed])
 
   const handleDismiss = () => {
-    setDiscordBannerDismissed(Date.now().toString())
+    setIsDismissed(true)
   }
 
   if (
     !isSignedIn ||
     !shouldShowDiscordBanner ||
-    discordBannerDismissedQuery.isLoading ||
-    discordBannerDismissedQuery.data
+    isDismissed.isLoading ||
+    isDismissed.data ||
+    (legacyDismissed.data && !legacyDismissed.isLoading)
   ) {
     return null
   }

@@ -80,6 +80,12 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const lastSeenContentRef = useRef('')
   const lastMessagesLengthRef = useRef(messages.length)
 
+  // Constants for scroll calculations
+  const COMPOSER_HEIGHT = 64 // Height of the composer component
+  const HEADER_HEIGHT = 64 // Height of the header
+  const BOTTOM_THRESHOLD = 10 // How close to bottom to consider "at bottom"
+  const TOTAL_OFFSET = COMPOSER_HEIGHT + HEADER_HEIGHT // Total height of fixed elements
+
   // Get a string representation of all complete assistant messages
   const assistantMessagesContent = messages
     .filter(m => m.role === 'assistant' && m.content && m.content.length > 0)
@@ -172,10 +178,14 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
     const handleScroll = () => {
       const { scrollHeight, scrollTop, clientHeight } = viewport
-      const atBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10
-      // Use one viewport height as the threshold
+      // Account for fixed elements in bottom calculations
+      const atBottom =
+        Math.abs(scrollHeight - scrollTop - clientHeight) <
+        BOTTOM_THRESHOLD + TOTAL_OFFSET
+      // Use one viewport height as the threshold, accounting for fixed elements
       const nearBottom =
-        Math.abs(scrollHeight - scrollTop - clientHeight) < clientHeight
+        Math.abs(scrollHeight - scrollTop - clientHeight) <
+        clientHeight + TOTAL_OFFSET
       setIsAtBottom(atBottom)
       setIsNearBottom(nearBottom)
       setIsScrolled(scrollTop > 100)
@@ -233,7 +243,8 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     const timer = setTimeout(() => {
       if (viewportRef.current) {
         viewportRef.current.scrollTo({
-          top: viewportRef.current.scrollHeight,
+          // Add extra padding to ensure we scroll past fixed elements
+          top: viewportRef.current.scrollHeight + TOTAL_OFFSET,
           behavior: 'instant',
         })
         isInitialLoadRef.current = false
@@ -311,9 +322,11 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   // Scroll to bottom helper
   const scrollToBottom = useCallback(() => {
     if (!viewportRef.current) return
-    viewportRef.current.scrollTo({
-      top: viewportRef.current.scrollHeight,
-      behavior: 'smooth',
+    const viewport = viewportRef.current
+    viewport.scrollTo({
+      // Add extra padding to ensure we scroll past fixed elements
+      top: viewport.scrollHeight + TOTAL_OFFSET,
+      behavior: 'instant',
     })
     if (!hasGeneratingMessage) {
       setHasNewMessages(false)

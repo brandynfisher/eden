@@ -5,13 +5,11 @@ import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
 import LoadingIndicator from '@/components/loading-indicator'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import ModelMediaPreview from '@/components/media/model-media-preview'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import DetailSidebar from '@/features/detail/detail-sidebar'
 import { useModelQuery } from '@/hooks/query/use-model-query'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
-import { ChevronDownIcon } from 'lucide-react'
 import React, { RefObject, Suspense, useEffect, useRef, useState } from 'react'
 
 type Props = {
@@ -69,30 +67,6 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
     }
   }, [observedRef, model?._id])
 
-  const handleScrollToCreations = () => {
-    setShouldLoadRecentCreations(true)
-    // Wait for next tick to ensure the content starts loading
-    requestAnimationFrame(() => {
-      // Then wait a bit more to ensure the content has had a chance to mount
-      setTimeout(() => {
-        const recentCreationsElement = observedRef.current
-        if (isModal && scrollRef?.current && recentCreationsElement) {
-          const containerRect = scrollRef.current.getBoundingClientRect()
-          const elementRect = recentCreationsElement.getBoundingClientRect()
-          scrollRef.current.scrollTo({
-            top: elementRect.top - containerRect.top - 20,
-            behavior: 'smooth',
-          })
-        } else {
-          recentCreationsElement?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          })
-        }
-      }, 100)
-    })
-  }
-
   return (
     <>
       <div
@@ -121,16 +95,6 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
         </Suspense>
       </div>
       <div>
-        <div className="flex justify-center">
-          <Button
-            variant="outline"
-            size="icon"
-            className="cursor-pointer self-center animate-bounce mt-4"
-            onClick={handleScrollToCreations}
-          >
-            <ChevronDownIcon className="w-10 h-10" />
-          </Button>
-        </div>
         <div className="px-4 w-full">
           {model ? (
             <>

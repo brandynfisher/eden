@@ -447,7 +447,7 @@ export function LightboxVideoTrigger({
   }
 
   return (
-    <div ref={hoverRef} className="relative h-full w-full">
+    <div ref={hoverRef} className={cn('relative w-full', className)}>
       {thumbnail && (
         <LightboxImageTrigger
           customLoader={true}
@@ -458,9 +458,9 @@ export function LightboxVideoTrigger({
           }
           width={width}
           height={height}
+          // priority={true}
           className={cn(
-            'absolute inset-0 flex w-full h-full object-contain',
-            className,
+            'absolute inset-0 flex w-full h-full object-contain bg-muted/10',
           )}
         />
       )}
@@ -476,8 +476,7 @@ export function LightboxVideoTrigger({
         width={width}
         height={height}
         className={cn(
-          'flex w-full h-full object-contain relative z-10',
-          className,
+          'relative inset-0 flex w-full h-full object-contain z-10',
         )}
         onMouseEnter={handlePlay}
         onMouseLeave={handlePause}

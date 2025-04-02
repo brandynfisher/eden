@@ -118,6 +118,16 @@ const MyAssistantMessage: FC = () => {
           <TypingIndicator />
         </div>
       ) : null}
+      <ThreadPrimitive.If running={true} empty={true}>
+        <div
+          className={cn(
+            'col-start-3 row-start-2',
+            debouncedIsEmpty && 'col-start-auto row-start-auto mt-2',
+          )}
+        >
+          <TypingIndicator />
+        </div>
+      </ThreadPrimitive.If>
 
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />

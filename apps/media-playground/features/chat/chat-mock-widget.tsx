@@ -186,7 +186,9 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
 
       // Navigate to the chat view with the message data
       router.push(
-        `/chat/${agent?.username}/${response.data.thread_id}?pending=true`,
+        `/chat/${agent?.username}/${
+          response.data.thread_id
+        }?pending=true&message_id=${response.data.message_id || ''}`,
       )
     } catch (err) {
       setIsSubmitting(false)
