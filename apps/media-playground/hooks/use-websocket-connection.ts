@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import useWebSocket from 'react-use-websocket'
 
 export const useWebSocketConnection = (
@@ -11,6 +11,7 @@ export const useWebSocketConnection = (
   const pingIntervalRef = useRef<ReturnType<typeof setInterval>>()
   const lastPongRef = useRef<number>(Date.now())
   const maxBackoff = 30000 // Maximum backoff of 30 seconds
+  const [forceReconnect, setForceReconnect] = useState(false)
 
   // Calculate exponential backoff with jitter
   const getBackoffTime = useCallback((attempt: number) => {
@@ -43,7 +44,7 @@ export const useWebSocketConnection = (
           // Check if we haven't received a pong in 90 seconds
           if (Date.now() - lastPongRef.current > 90000) {
             // console.log('No pong received in 90s, closing connection')
-            getWebSocket()?.close()
+            setForceReconnect(prev => !prev) // Toggle to force a reconnect
           }
         }, 30000)
       },
@@ -87,7 +88,7 @@ export const useWebSocketConnection = (
       retryOnError: true,
       share: true,
     },
-    shouldConnect,
+    shouldConnect || forceReconnect, // Add forceReconnect to the dependencies
   )
 
   // Cleanup on unmount
