@@ -182,11 +182,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
 
         // handle string input
         if (isSchemaType(parameter, 'string')) {
-          if (
-            name === 'prompt' ||
-            name === 'negative_prompt' ||
-            name === 'text_input'
-          ) {
+          if (name.includes('prompt')) {
             return (
               <FormItem
                 className={`mt-0 !p-4 ${
@@ -376,6 +372,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                       : 1
                   }
                   maxLength={parameter.max_length || 256}
+                  maxStringLength={5000}
                   onChange={onChange}
                   value={value === null ? [] : value || ['']}
                 />

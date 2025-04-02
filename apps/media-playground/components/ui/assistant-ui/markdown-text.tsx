@@ -184,9 +184,6 @@ const MarkdownTextImpl = () => {
           SyntaxHighlighter,
         }}
       />
-      {/* <ContentPartPrimitive.InProgress>
-        <TypingIndicator />
-      </ContentPartPrimitive.InProgress> */}
     </>
   )
 }

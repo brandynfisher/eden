@@ -123,7 +123,11 @@ const ParameterTableCollapsible = ({ item }: Props) => {
           </Suspense>
         ) : null}
         <div className="bg-accent rounded-md">
-          <ParameterTable taskId={item._id} args={item.args} />
+          <ParameterTable
+            taskId={item._id}
+            args={item.args}
+            performance={item.performance}
+          />
         </div>
       </CollapsibleContent>
     </Collapsible>

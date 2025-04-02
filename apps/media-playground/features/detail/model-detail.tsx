@@ -134,9 +134,6 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
         <div className="px-4 w-full">
           {model ? (
             <>
-              <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8">
-                Recent creations using this model
-              </div>
               <div
                 ref={observedRef}
                 className="lg:max-w-[80%] 2xl:max-w-[70%] mx-auto pb-12"

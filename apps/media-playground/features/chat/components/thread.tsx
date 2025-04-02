@@ -111,8 +111,9 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   // Only show loading when:
   // 1. Component is mounted (to avoid double loading states with parent)
   // 2. We have a threadId but no messages yet
-  const showLoadingState =
-    isMounted && Boolean(effectiveThreadId) && messages.length === 0
+  const showLoadingState = !showWelcomeScreen
+    ? false
+    : isMounted && Boolean(effectiveThreadId) && messages.length === 0
 
   // Debug logging - only log on important state changes
   // useEffect(() => {
@@ -379,7 +380,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
                     onClick={scrollToBottom}
                     className="absolute drop-shadow-md right-8 text-xs text-accent-foreground bg-purple-950 border border-purple-600 px-2 py-1 rounded-md cursor-pointer hover:bg-purple-700"
                   >
-                    New messages
+                    <span className="text-xs animate-pulse">New messages</span>
                   </div>
                 )}
               </Button>

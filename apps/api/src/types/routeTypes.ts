@@ -63,10 +63,12 @@ export const sessionType = Type.Object({
 export const taskV2Type = Type.Object({
   _id: Type.String(),
   user: populatedUserType,
+  agent: Type.Optional(Type.Any()),
   tool: Type.String(),
   output_type: Type.Optional(Type.String()),
   args: Type.Any(),
   status: Type.String(),
+  performance: Type.Optional(Type.Any()),
   result: Type.Optional(Type.Any()),
   model: Type.Optional(Type.Any()),
   error: Type.Optional(Type.Any()),

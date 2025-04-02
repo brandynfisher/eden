@@ -108,7 +108,7 @@ const CreationUIContainer = ({ tool }: Props) => {
       return
     }
 
-    // console.log('onSubmit', formData.public)
+    // console.log('onSubmit', formData)
     // return
 
     setIsSubmitting(true)
