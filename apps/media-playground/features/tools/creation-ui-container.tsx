@@ -103,6 +103,24 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   // console.log({ cost, hasEnoughBalance })
 
+  // Add scroll to error effect
+  useEffect(() => {
+    const errors = form.formState.errors
+    if (Object.keys(errors).length > 0) {
+      // Small delay to ensure reliable scrolling, especially on mobile
+      setTimeout(() => {
+        // Find first error field element
+        const firstErrorField = document.querySelector('[aria-invalid="true"]')
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          })
+        }
+      }, 100)
+    }
+  }, [form.formState.errors])
+
   async function onSubmit(formData: FormData) {
     if (!(await verifyAuth())) {
       return
@@ -400,7 +418,11 @@ const CreationUIContainer = ({ tool }: Props) => {
             size="sm"
             className="w-[72px]"
             onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
-            disabled={isSubmitting || !hasEnoughBalance}
+            disabled={
+              isSubmitting ||
+              !hasEnoughBalance ||
+              Object.keys(form.formState.errors).length > 0
+            }
           >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
