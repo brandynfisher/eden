@@ -30,6 +30,7 @@ export const useToolPreset = () => {
   } = useCreationQuery({
     key: creationParam || '',
     enabled: !!creationParam,
+    staleTime: Infinity,
   })
 
   // Use react-query to fetch task data if taskParam is present

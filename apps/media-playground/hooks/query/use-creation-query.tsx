@@ -6,12 +6,14 @@ type Props = {
   key: CreationV2['_id']
   initialData?: CreationsV2GetResponse
   enabled?: boolean
+  staleTime?: number
 }
 
 export const useCreationQuery = ({
   key,
   initialData,
   enabled = true,
+  staleTime = Infinity,
 }: Props) => {
   const queryKey: QueryKey = ['creations', key]
 
@@ -30,6 +32,7 @@ export const useCreationQuery = ({
     initialData,
     queryKey,
     queryFn: () => fetcher<CreationsV2GetResponse>(`/api/creations/${key}`),
+    staleTime,
   })
 
   const queryClient = useQueryClient()

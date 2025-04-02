@@ -282,9 +282,21 @@ export function EdenRuntimeProvider({
         const thread = await getThread(threadIdRef.current)
         if (!thread) return
 
-        const isThreadReadOnly =
-          !user || thread.user._id.toString() !== user?._id.toString()
-        setIsReadOnly(isThreadReadOnly)
+        // Process the thread data
+        // console.log('Read-only check:', {
+        //   threadUserId: thread.user._id,
+        //   currentUserId: user?._id,
+        //   threadUser: thread.user,
+        //   currentUser: user,
+        //   isAuthLoading
+        // })
+
+        // Only set read-only state if auth is loaded
+        if (!isAuthLoading) {
+          const isThreadReadOnly =
+            !user || thread.user._id.toString() !== user._id.toString()
+          setIsReadOnly(isThreadReadOnly)
+        }
 
         // Check if thread has active messages and evaluate their states
         const hasActiveRoots = thread.active && thread.active.length > 0
@@ -306,8 +318,12 @@ export function EdenRuntimeProvider({
         const shouldBeActive = Boolean(
           hasActiveRoots || isLastMessageIncomplete,
         )
-        setIsStreamActive(shouldBeActive)
-        setIsRunning(shouldBeActive)
+
+        // Only update these states if they've actually changed
+        if (isStreamActive !== shouldBeActive) {
+          setIsStreamActive(shouldBeActive)
+          setIsRunning(shouldBeActive)
+        }
 
         if (shouldSetMessages && thread.messages) {
           // Process messages to ensure proper active states
@@ -357,7 +373,7 @@ export function EdenRuntimeProvider({
             }
           })
 
-          // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
+          // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
           setMessages(processedMessages, thread.active)
         }
 
@@ -366,16 +382,8 @@ export function EdenRuntimeProvider({
         console.error('Error checking thread status:', error)
       }
     },
-    [setMessages, setIsRunning, user, isAuthLoading],
+    [setMessages, setIsRunning, user, isAuthLoading, isStreamActive],
   )
-
-  // Add an effect to recheck thread status when auth state changes
-  useEffect(() => {
-    if (!isAuthLoading && threadIdRef.current) {
-      // console.log('Auth state changed, rechecking thread status')
-      checkThreadStatus()
-    }
-  }, [isAuthLoading, user, checkThreadStatus])
 
   // Modify the initial thread loading effect
   useEffect(() => {
@@ -407,8 +415,7 @@ export function EdenRuntimeProvider({
                   content: messageData.content,
                   attachments: messageData.attachments || [],
                   createdAt: new Date(messageData.timestamp),
-                  status: undefined,
-                } as const
+                }
               }
             } catch (e) {
               console.error('Error parsing pending message:', e)
@@ -416,18 +423,103 @@ export function EdenRuntimeProvider({
             localStorage.removeItem(pendingMessageKey)
           }
 
+          // First switch the thread in runtime
           await runtime.threads.switchToThread(threadIdRef.current)
 
-          // Only check thread status if auth is loaded
-          if (!isAuthLoading) {
-            const thread = await checkThreadStatus(false) // Pass false to prevent overwriting messages
+          // Then get the initial thread state
+          const thread = await getThread(threadIdRef.current)
+          if (!thread) return
 
-            // If we have a pending message and thread data, add the pending message
-            if (pendingMessage && thread?.messages) {
-              const updatedMessages = [...thread.messages, pendingMessage]
-              //@ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
-              setMessages(updatedMessages as EdenMessage[], thread.active)
-            }
+          // Process the thread data
+          // console.log('Read-only check:', {
+          //   threadUserId: thread.user._id,
+          //   currentUserId: user?._id,
+          //   threadUser: thread.user,
+          //   currentUser: user,
+          //   isAuthLoading
+          // })
+
+          // Only set read-only state if auth is loaded
+          if (!isAuthLoading) {
+            const isThreadReadOnly =
+              !user || thread.user._id.toString() !== user._id.toString()
+            setIsReadOnly(isThreadReadOnly)
+          }
+
+          const hasActiveRoots = thread.active && thread.active.length > 0
+          const lastMessage = thread.messages?.[thread.messages.length - 1]
+          const isLastMessageIncomplete =
+            lastMessage?.role === 'assistant' &&
+            (!lastMessage.status ||
+              lastMessage.status.type === 'running' ||
+              lastMessage.tool_calls?.some(
+                call =>
+                  !call.status ||
+                  call.status === 'running' ||
+                  call.status === 'pending',
+              ))
+
+          const shouldBeActive = Boolean(
+            hasActiveRoots || isLastMessageIncomplete,
+          )
+          setIsStreamActive(shouldBeActive)
+          setIsRunning(shouldBeActive)
+
+          if (thread.messages) {
+            // Process messages to ensure proper active states
+            const processedMessages = thread.messages.map((msg, index) => {
+              if (msg.role !== 'assistant') return msg
+
+              const hasPendingToolCalls = msg.tool_calls?.some(
+                call =>
+                  !call.status ||
+                  call.status === 'running' ||
+                  call.status === 'pending',
+              )
+
+              const isPartOfActiveChain = thread.active?.some(activeRootId => {
+                if (activeRootId === msg.id) return true
+
+                const activeRootIndex = thread.messages.findIndex(
+                  m => m.id === activeRootId,
+                )
+                if (activeRootIndex === -1) return false
+
+                const nextUserIndex = thread.messages.findIndex(
+                  (m, i) => i > activeRootIndex && m.role === 'user',
+                )
+
+                const messageIndex = index
+                return (
+                  messageIndex > activeRootIndex &&
+                  (nextUserIndex === -1 || messageIndex < nextUserIndex)
+                )
+              })
+
+              const newStatus =
+                hasPendingToolCalls || isPartOfActiveChain
+                  ? { type: 'running' as const }
+                  : { type: 'complete' as const, reason: 'stop' as const }
+
+              return {
+                ...msg,
+                status: newStatus,
+              }
+            })
+
+            // Add pending message if exists
+            const finalMessages = pendingMessage
+              ? [...processedMessages, pendingMessage]
+              : processedMessages
+
+            // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
+            setMessages(finalMessages, thread.active)
+          }
+
+          // Only check thread status if auth is loaded and we need to monitor status
+          if (!isAuthLoading && shouldBeActive) {
+            // Start monitoring thread status
+            checkThreadStatus()
           }
         }
       } catch (error) {
@@ -438,64 +530,9 @@ export function EdenRuntimeProvider({
     }
 
     loadThread()
-  }, [threadId, runtime, checkThreadStatus, isAuthLoading])
+  }, [threadId, runtime, checkThreadStatus, isAuthLoading, user])
 
-  // Connection monitoring effect with reduced re-renders
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const handleConnectionChange = async () => {
-      const isOnline = navigator.onLine
-      const wasDisconnected = connectionStateRef.current.wasDisconnected
-
-      if (!isOnline) {
-        connectionStateRef.current.wasDisconnected = true
-      } else if (wasDisconnected) {
-        // Only trigger a re-fetch if we were previously disconnected
-        await checkThreadStatus()
-        connectionStateRef.current.wasDisconnected = false
-      }
-    }
-
-    // Check WebSocket state changes without triggering re-renders
-    if (readyState !== connectionStateRef.current.lastKnownState) {
-      connectionStateRef.current.lastKnownState = readyState
-      if (
-        readyState === ReadyState.CLOSED ||
-        readyState === ReadyState.CLOSING
-      ) {
-        connectionStateRef.current.wasDisconnected = true
-      } else if (
-        connectionStateRef.current.wasDisconnected &&
-        readyState === ReadyState.OPEN
-      ) {
-        checkThreadStatus()
-        connectionStateRef.current.wasDisconnected = false
-      }
-    }
-
-    // Handle visibility change
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && threadIdRef.current) {
-        checkThreadStatus()
-      }
-    }
-
-    window.addEventListener('online', handleConnectionChange)
-    window.addEventListener('offline', handleConnectionChange)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      connectionStateRef.current.wasDisconnected = true
-    }
-
-    return () => {
-      window.removeEventListener('online', handleConnectionChange)
-      window.removeEventListener('offline', handleConnectionChange)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [readyState, checkThreadStatus])
-
+  // Modify the websocket message effect to prevent unnecessary thread checks
   useEffect(() => {
     if (!websocketMessage || (!isStreamActive && !threadIdRef.current)) return
 
@@ -559,18 +596,72 @@ export function EdenRuntimeProvider({
       msg => !msg.status || msg.status.type === 'running',
     )
 
-    if (
-      !hasAnyPendingToolCalls &&
-      !hasIncompleteMessages &&
-      !activeRootIds?.length
-    ) {
-      setIsRunning(false)
-      setIsStreamActive(false)
-    } else {
-      setIsRunning(true)
-      setIsStreamActive(true)
+    const newShouldBeActive = Boolean(
+      hasAnyPendingToolCalls || hasIncompleteMessages || activeRootIds?.length,
+    )
+
+    // Only update these states if they've actually changed
+    if (isStreamActive !== newShouldBeActive) {
+      setIsRunning(newShouldBeActive)
+      setIsStreamActive(newShouldBeActive)
     }
   }, [websocketMessage, isStreamActive, setIsRunning, addOrUpdateMessage])
+
+  // Connection monitoring effect with reduced re-renders
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleConnectionChange = async () => {
+      const isOnline = navigator.onLine
+      const wasDisconnected = connectionStateRef.current.wasDisconnected
+
+      if (!isOnline) {
+        connectionStateRef.current.wasDisconnected = true
+      } else if (wasDisconnected) {
+        // Only trigger a re-fetch if we were previously disconnected
+        await checkThreadStatus()
+        connectionStateRef.current.wasDisconnected = false
+      }
+    }
+
+    // Check WebSocket state changes without triggering re-renders
+    if (readyState !== connectionStateRef.current.lastKnownState) {
+      connectionStateRef.current.lastKnownState = readyState
+      if (
+        readyState === ReadyState.CLOSED ||
+        readyState === ReadyState.CLOSING
+      ) {
+        connectionStateRef.current.wasDisconnected = true
+      } else if (
+        connectionStateRef.current.wasDisconnected &&
+        readyState === ReadyState.OPEN
+      ) {
+        checkThreadStatus()
+        connectionStateRef.current.wasDisconnected = false
+      }
+    }
+
+    // Handle visibility change
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && threadIdRef.current) {
+        checkThreadStatus()
+      }
+    }
+
+    window.addEventListener('online', handleConnectionChange)
+    window.addEventListener('offline', handleConnectionChange)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      connectionStateRef.current.wasDisconnected = true
+    }
+
+    return () => {
+      window.removeEventListener('online', handleConnectionChange)
+      window.removeEventListener('offline', handleConnectionChange)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [readyState, checkThreadStatus])
 
   // Initialize client-side only refs after mount
   useEffect(() => {
