@@ -218,6 +218,10 @@ export type TaskV2 = {
   status: TaskV2Status
   error: string | null
   result: TaskV2Result[]
+  performance?: {
+    waitTime?: number
+    runTime?: number
+  }
   createdAt: Date
   updatedAt: Date
 }

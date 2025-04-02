@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { useMessage } from '@assistant-ui/react'
+import { ThreadPrimitive, useMessage } from '@assistant-ui/react'
 import {
   AssistantActionBar,
   AssistantMessage,
@@ -118,7 +118,11 @@ const MyAssistantMessage: FC = () => {
           <TypingIndicator />
         </div>
       ) : null}
-      {!debouncedIsRunning && !debouncedIsEmpty && <MyAssistantActionBar />}
+
+      <ThreadPrimitive.If running={false} empty={false}>
+        <MyAssistantActionBar />
+      </ThreadPrimitive.If>
+      {/* {!debouncedIsRunning && !debouncedIsEmpty && } */}
     </AssistantMessage.Root>
   )
 }

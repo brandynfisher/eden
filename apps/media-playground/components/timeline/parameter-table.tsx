@@ -105,16 +105,26 @@ const videoInputParameterNames = [
   'video5',
 ]
 
-type ParameterValue = TaskV2Args[keyof TaskV2Args]
+type ParameterValue =
+  | TaskV2Args[keyof TaskV2Args]
+  | TaskV2['performance']
+  | null
 
 type Props = {
   taskId?: TaskV2['_id']
   args: TaskV2Args
+  performance?: TaskV2['performance']
   className?: string
   hideHeader?: boolean
 }
 
-const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
+const ParameterTable = ({
+  taskId,
+  performance,
+  args,
+  hideHeader,
+  className,
+}: Props) => {
   const [copiedText, copy] = useCopyToClipboard()
   const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
@@ -136,8 +146,16 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
       })
   }
 
-  const allArgs = taskId
-    ? Object.entries({ taskId, ...args })
+  const allArgs: [string, ParameterValue][] = taskId
+    ? Object.entries({
+        taskId,
+        ...(performance &&
+        (performance.waitTime !== undefined ||
+          performance.runTime !== undefined)
+          ? { performance }
+          : {}),
+        ...args,
+      })
     : Object.entries({ ...args })
 
   const renderValue = (paramName: string, value: ParameterValue) => {
@@ -186,6 +204,30 @@ const ParameterTable = ({ taskId, args, hideHeader, className }: Props) => {
 
     // Handle Long objects
     if (typeof value === 'object' && !Array.isArray(value)) {
+      if (paramName === 'performance') {
+        return {
+          isInline: true,
+          content: (
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground">Wait time:</span>
+              <span className="text-xs">
+                {value?.waitTime !== undefined
+                  ? `${value.waitTime.toFixed(0)} s`
+                  : 'n/a'}
+              </span>
+              <span className="text-xs text-muted-foreground ml-2">
+                Run time:
+              </span>
+              <span className="text-xs">
+                {value?.runTime !== undefined
+                  ? `${value.runTime.toFixed(0)} s`
+                  : 'n/a'}
+              </span>
+            </div>
+          ),
+        }
+      }
+
       return {
         isInline: true,
         content:

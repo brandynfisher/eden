@@ -167,6 +167,7 @@ export function createZodParameterSchema(
             parameter,
             createZodParameterSchema({
               ...parameter,
+              max_length: 5000, //@TODO: Array items string max length is not defined, we only have item count
               schema: parameter.schema.items,
             }),
           )
