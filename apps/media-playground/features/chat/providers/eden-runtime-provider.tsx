@@ -425,6 +425,7 @@ export function EdenRuntimeProvider({
             // If we have a pending message and thread data, add the pending message
             if (pendingMessage && thread?.messages) {
               const updatedMessages = [...thread.messages, pendingMessage]
+              //@ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
               setMessages(updatedMessages as EdenMessage[], thread.active)
             }
           }
