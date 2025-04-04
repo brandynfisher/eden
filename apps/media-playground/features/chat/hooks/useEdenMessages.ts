@@ -34,6 +34,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         status: message.status,
         activeIds,
         createdAt: message.createdAt,
+        content: message.content,
       })
 
       // Only update active IDs if connection is open and they're provided
@@ -48,90 +49,45 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       }
 
       setMessages(currentMessages => {
-        const index = currentMessages.findIndex(m => m.id === message.id)
+        // Find any matching messages - only match if:
+        // 1. IDs match exactly, OR
+        // 2. Both messages are temp messages with matching content and role
+        const matchingMessages = currentMessages.filter(
+          m =>
+            m.id === message.id ||
+            (m.id.startsWith('temp-') &&
+              message.id.startsWith('temp-') &&
+              m.content === message.content &&
+              m.role === message.role),
+        )
 
-        if (index !== -1) {
-          // Check if the message content and status are identical
-          const existingMessage = currentMessages[index]
-          const isIdentical =
-            existingMessage.content === message.content &&
-            existingMessage.status?.type === message.status?.type &&
-            existingMessage.status?.reason === message.status?.reason &&
-            JSON.stringify(existingMessage.tool_calls) ===
-              JSON.stringify(message.tool_calls)
-
-          // If message is identical, don't update
-          if (isIdentical) {
-            console.log(
-              'useEdenMessages.addOrUpdateMessage - identical, skipping',
-              {
-                messageId: message.id,
-              },
-            )
-            return currentMessages
-          }
-
-          // Check if the new message is older than the existing one
-          const existingDate = existingMessage.createdAt
-            ? new Date(existingMessage.createdAt)
-            : null
-          const newDate = message.createdAt ? new Date(message.createdAt) : null
-          if (existingDate && newDate && newDate < existingDate) {
-            console.log(
-              'useEdenMessages.addOrUpdateMessage - received older message, skipping',
-              {
-                messageId: message.id,
-                existingDate,
-                newDate,
-              },
-            )
-            return currentMessages
-          }
-
-          // Update existing message while preserving tool_calls if they exist
-          const updatedMessages = [...currentMessages]
-          updatedMessages[index] = {
-            ...existingMessage,
-            ...message,
-            // Preserve existing tool_calls if the new message doesn't have any
-            tool_calls: message.tool_calls || existingMessage.tool_calls,
-            // If message is in active array and is an assistant message, ensure it stays running
-            status:
-              activeIds?.includes(message.id) && message.role === 'assistant'
-                ? { type: 'running' }
-                : message.status,
-          }
-          console.log('useEdenMessages.addOrUpdateMessage - updated existing', {
-            messageId: message.id,
-            index,
-            status: updatedMessages[index].status,
+        if (matchingMessages.length > 0) {
+          // Replace only the matching messages
+          return currentMessages.map(m => {
+            if (matchingMessages.some(match => match.id === m.id)) {
+              console.log(
+                'useEdenMessages.addOrUpdateMessage - replacing message',
+                {
+                  oldId: m.id,
+                  newId: message.id,
+                  content: message.content,
+                },
+              )
+              return {
+                ...message,
+                // Preserve existing tool_calls if the new message doesn't have any
+                tool_calls: message.tool_calls || m.tool_calls,
+                // If message is in active array and is an assistant message, ensure it stays running
+                status:
+                  activeIds?.includes(message.id) &&
+                  message.role === 'assistant'
+                    ? { type: 'running' }
+                    : message.status,
+              }
+            }
+            return m
           })
-          return updatedMessages
         }
-
-        // When receiving a completion message, only complete messages that:
-        // 1. Are not in the active array
-        // 2. Are not the current message
-        // 3. Are assistant messages
-        const updatedMessages = currentMessages.map(m => {
-          const isRunning = m.status?.type === 'running'
-          const isCompletionMessage = message.status?.type === 'complete'
-          const isActive =
-            activeIds?.includes(m.id) || activeMessageIds.includes(m.id)
-          const isCurrentMessage = m.id === message.id
-          const isAssistant = m.role === 'assistant'
-
-          if (
-            isRunning &&
-            !isActive &&
-            !isCurrentMessage &&
-            isCompletionMessage &&
-            isAssistant
-          ) {
-            return { ...m, status: { type: 'complete', reason: 'stop' } }
-          }
-          return m
-        })
 
         // For new messages:
         // 1. If it's in the active array and is an assistant message, it should be running
@@ -162,7 +118,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         })
 
         // Add new message
-        return [...updatedMessages, messageToAdd]
+        return [...currentMessages, messageToAdd]
       })
     },
     [activeMessageIds, readyState],
@@ -296,7 +252,6 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
                     m =>
                       m.id === messageData.message_id ||
                       m.content === messageData.content ||
-                      // Also check for temp IDs
                       (m.id.startsWith('temp-') &&
                         messageData.message_id.startsWith('temp-')),
                   )
@@ -335,14 +290,17 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
                     } else {
                       processedMessages.splice(insertIndex, 0, pendingMessage)
                     }
-
-                    // Keep the pending message in localStorage until we see it in the DB
-                    // This ensures we don't lose it during environment timing differences
-                    return
                   }
 
-                  // If the message exists in the DB, we can safely remove it from localStorage
-                  localStorage.removeItem(pendingMessageKey)
+                  // Only remove from localStorage if we found a matching non-temp message
+                  const hasRealMessage = processedMessages.some(
+                    m =>
+                      !m.id.startsWith('temp-') &&
+                      m.content === messageData.content,
+                  )
+                  if (hasRealMessage) {
+                    localStorage.removeItem(pendingMessageKey)
+                  }
                 }
               } catch (e) {
                 console.error('Error parsing pending message:', e)
