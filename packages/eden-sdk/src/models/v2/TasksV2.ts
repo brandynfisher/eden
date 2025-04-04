@@ -217,6 +217,7 @@ export type TaskV2 = {
   args: TaskV2Args
   status: TaskV2Status
   error: string | null
+  cost?: number
   result: TaskV2Result[]
   performance?: {
     waitTime?: number

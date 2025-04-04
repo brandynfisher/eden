@@ -112,6 +112,7 @@ type ParameterValue =
 
 type Props = {
   taskId?: TaskV2['_id']
+  cost?: number
   args: TaskV2Args
   performance?: TaskV2['performance']
   className?: string
@@ -120,6 +121,7 @@ type Props = {
 
 const ParameterTable = ({
   taskId,
+  cost,
   performance,
   args,
   hideHeader,
@@ -149,6 +151,7 @@ const ParameterTable = ({
   const allArgs: [string, ParameterValue][] = taskId
     ? Object.entries({
         taskId,
+        ...(cost !== undefined ? { cost } : {}),
         ...(performance &&
         (performance.waitTime !== undefined ||
           performance.runTime !== undefined)

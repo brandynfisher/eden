@@ -320,6 +320,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               {item && remainingArgs ? (
                 <ParameterTable
                   taskId={item.task._id?.toString()}
+                  cost={item.task.cost}
                   args={remainingArgs}
                 />
               ) : (

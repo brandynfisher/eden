@@ -127,6 +127,7 @@ const ParameterTableCollapsible = ({ item }: Props) => {
             taskId={item._id}
             args={item.args}
             performance={item.performance}
+            cost={item.cost}
           />
         </div>
       </CollapsibleContent>
