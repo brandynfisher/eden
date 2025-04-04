@@ -34,6 +34,26 @@ const QuickAnimateDialog = () => {
 
   const tabs = [
     {
+      key: 'kling_pro',
+      title: 'Kling Pro',
+      content: (
+        <Suspense fallback={<FormSkeleton />}>
+          <QuickCreateForm
+            toolKey={'kling_pro'}
+            exposedParameters={['prompt', 'duration', 'cfg_scale', 'end_image']}
+            initValues={{
+              start_image:
+                getCloudfrontOriginalUrl(quickAnimateModal.creation.filename) ||
+                '',
+            }}
+            onSubmitSuccess={() =>
+              dispatch(updateQuickAnimateModal({ isOpen: false }))
+            }
+          />
+        </Suspense>
+      ),
+    },
+    {
       key: 'animate_3D',
       title: 'Animate 3D',
       content: (
