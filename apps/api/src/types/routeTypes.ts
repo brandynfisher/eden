@@ -65,6 +65,7 @@ export const taskV2Type = Type.Object({
   user: populatedUserType,
   agent: Type.Optional(Type.Any()),
   tool: Type.String(),
+  cost: Type.Optional(Type.Number()),
   output_type: Type.Optional(Type.String()),
   args: Type.Any(),
   status: Type.String(),

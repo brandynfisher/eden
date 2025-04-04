@@ -118,7 +118,7 @@ const MyAssistantMessage: FC = () => {
           <TypingIndicator />
         </div>
       ) : null}
-      <ThreadPrimitive.If running={true} empty={true}>
+      {/* <ThreadPrimitive.If running={true} empty={true}>
         <div
           className={cn(
             'col-start-3 row-start-2',
@@ -127,7 +127,7 @@ const MyAssistantMessage: FC = () => {
         >
           <TypingIndicator />
         </div>
-      </ThreadPrimitive.If>
+      </ThreadPrimitive.If> */}
 
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />
