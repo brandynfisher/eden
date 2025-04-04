@@ -4,15 +4,13 @@ import {
   createAsyncIterableFromEmitter,
 } from '@/features/chat/MessageEmitter'
 import { getThread, sendMessage } from '@/features/chat/chat-api'
-import { EdenMessage } from '@/features/chat/eden-message-converter'
 import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider, MessageStatus } from '@assistant-ui/react'
-import { AssistantMessage } from '@edenlabs/eden-sdk'
+import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { ReadyState } from 'react-use-websocket'
-import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
 const TIMEOUT_DURATION_MS = 60 * 60 * 1000
@@ -23,6 +21,15 @@ const LoadingOverlay = () => {
       <LoadingIndicator className="w-12 h-12" />
     </div>
   )
+}
+
+type ThreadMessageWithStatus = ThreadMessage & {
+  status?: { type: 'running' | 'complete'; reason?: 'stop' | 'error' }
+}
+
+export type Thread = {
+  messages?: ThreadMessage[]
+  active?: string[]
 }
 
 export function EdenRuntimeProvider({
@@ -43,7 +50,7 @@ export function EdenRuntimeProvider({
 
   const { user, isLoading: isAuthLoading } = useAuthState()
   const [isReadOnly, setIsReadOnly] = useState(false)
-  const { message: websocketMessage, readyState } = useWebSocketMessage({
+  const { message: websocketMessage } = useWebSocketMessage({
     eventType: 'thread-update',
     abortSignal: abortControllerRef.current?.signal,
   })
@@ -69,12 +76,11 @@ export function EdenRuntimeProvider({
       isReadOnly: !isAuthLoading ? isReadOnly : null,
       threadId: threadIdRef.current,
       onSwitchToNewThread: async () => {
+        // Clear all state first
         setIsStreamActive(false)
         setIsRunning(false)
-        setIsLoadingThread(true)
-
-        // Create new abort controller for the new thread
-        getStreamAbortController()
+        setMessages([])
+        messageEmitterRef.current = new MessageEmitter()
         threadIdRef.current = undefined
 
         if (typeof window !== 'undefined')
@@ -83,27 +89,79 @@ export function EdenRuntimeProvider({
         setIsLoadingThread(false)
         setIsReadOnly(false)
       },
-      // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
-      onSwitchToThread: async newThreadId => {
+      onSwitchToThread: async (newThreadId: string) => {
+        console.log('EdenRuntimeProvider.onSwitchToThread - start', {
+          newThreadId,
+        })
+
         setIsLoadingThread(true)
         try {
+          // Reset state before switching
+          setIsStreamActive(false)
+          setIsRunning(false)
+          messageEmitterRef.current = new MessageEmitter()
           threadIdRef.current = newThreadId
 
-          if (typeof window !== 'undefined')
+          // Update URL
+          if (typeof window !== 'undefined') {
             window.history.pushState(
               null,
               '',
               `/chat/${agentId}/${newThreadId}`,
             )
-
-          const thread = await getThread(newThreadId)
-          if (!thread?.messages) {
-            return { messages: [] }
           }
 
-          // Process messages to ensure proper active states
-          const processedMessages = thread.messages.map((msg, index) => {
-            if (msg.role !== 'assistant') return msg
+          // Get fresh thread data
+          const thread = await getThread(newThreadId)
+          console.log('EdenRuntimeProvider.onSwitchToThread - got thread', {
+            threadId: newThreadId,
+            hasMessages: !!thread.messages,
+            messageCount: thread.messages?.length ?? 0,
+            active: thread.active,
+            lastMessage: thread.messages?.[thread.messages.length - 1],
+          })
+
+          if (!thread?.messages) {
+            return { messages: [], active: [] }
+          }
+
+          // Only set read-only state if auth is loaded
+          if (!isAuthLoading) {
+            const isThreadReadOnly =
+              !user || thread.user._id.toString() !== user._id.toString()
+            setIsReadOnly(isThreadReadOnly)
+          }
+
+          // Process messages to determine status
+          const messages = thread.messages.map((msg, index) => {
+            // Ensure createdAt is a Date
+            const baseMessage = {
+              ...msg,
+              createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+            }
+
+            if (msg.role !== 'assistant') return baseMessage
+
+            // A message is part of an active chain if:
+            // 1. It's the root assistant message (in active array)
+            // 2. It's a subsequent assistant message after an active root, before the next user message
+            const isPartOfActiveChain = thread.active?.some(activeRootId => {
+              if (activeRootId === msg.id) return true
+
+              const activeRootIndex = thread.messages.findIndex(
+                m => m.id === activeRootId,
+              )
+              if (activeRootIndex === -1) return false
+
+              const nextUserIndex = thread.messages.findIndex(
+                (m, i) => i > activeRootIndex && m.role === 'user',
+              )
+
+              return (
+                index > activeRootIndex &&
+                (nextUserIndex === -1 || index < nextUserIndex)
+              )
+            })
 
             const hasPendingToolCalls = msg.tool_calls?.some(
               call =>
@@ -112,73 +170,50 @@ export function EdenRuntimeProvider({
                 call.status === 'pending',
             )
 
-            // A message is part of an active chain if:
-            // 1. It's the root assistant message (in active array)
-            // 2. It's a subsequent assistant message after an active root, before the next user message
-            const isPartOfActiveChain = thread.active?.some(activeRootId => {
-              if (activeRootId === msg.id) return true // This is the root message
-
-              // Find this message's position in the chain
-              const activeRootIndex = thread.messages.findIndex(
-                m => m.id === activeRootId,
-              )
-              if (activeRootIndex === -1) return false
-
-              // Find the next user message after the active root
-              const nextUserIndex = thread.messages.findIndex(
-                (m, i) => i > activeRootIndex && m.role === 'user',
-              )
-
-              // This message is part of the chain if it's between the root and the next user message
-              return (
-                index > activeRootIndex &&
-                (nextUserIndex === -1 || index < nextUserIndex)
-              )
-            })
-
-            const newStatus =
+            const status =
               hasPendingToolCalls || isPartOfActiveChain
                 ? { type: 'running' as const }
                 : { type: 'complete' as const, reason: 'stop' as const }
 
             return {
-              ...msg,
-              status: newStatus,
-            }
+              ...baseMessage,
+              status,
+            } as ThreadMessageWithStatus
           })
 
-          // Set stream active if we have active messages
-          const hasActiveRoots = thread.active && thread.active.length > 0
-          const lastMessage = thread.messages[thread.messages.length - 1]
-          const isLastMessageIncomplete =
-            lastMessage?.role === 'assistant' &&
-            (!lastMessage.status ||
-              lastMessage.status.type === 'running' ||
-              lastMessage.tool_calls?.some(
-                call =>
-                  !call.status ||
-                  call.status === 'running' ||
-                  call.status === 'pending',
-              ))
-
-          const shouldBeActive = Boolean(
-            hasActiveRoots || isLastMessageIncomplete,
+          // Determine if stream should be active
+          const hasRunning = messages.some(
+            msg =>
+              msg.role === 'assistant' &&
+              (msg.status?.type === 'running' ||
+                msg.tool_calls?.some(
+                  call =>
+                    !call.status ||
+                    call.status === 'running' ||
+                    call.status === 'pending',
+                )),
           )
+
+          // Also consider messages in active array
+          const shouldBeActive = hasRunning || (thread.active?.length ?? 0) > 0
           setIsStreamActive(shouldBeActive)
-          setIsRunning(shouldBeActive)
+
+          console.log('EdenRuntimeProvider.onSwitchToThread - returning', {
+            threadId: newThreadId,
+            messageCount: messages.length,
+            hasRunning,
+            active: thread.active,
+            shouldBeActive,
+          })
 
           return {
-            messages: processedMessages as EdenMessage[],
+            messages: messages as ThreadMessageWithStatus[],
+            active: thread.active ?? [],
           }
         } catch (error) {
           console.error('Error switching thread:', error)
-          toast.error('Failed to switch to thread', {
-            description: `Thread may not exist or you may not have access to it`,
-            dismissible: true,
-            richColors: true,
-          })
           window.history.replaceState(null, '', `/chat/${agentId}`)
-          return { messages: [] }
+          return { messages: [], active: [] }
         } finally {
           setIsLoadingThread(false)
         }
@@ -195,10 +230,11 @@ export function EdenRuntimeProvider({
 
           const messageEmitter = messageEmitterRef.current
           const streamAbortController = getStreamAbortController()
+          const currentThreadId = threadIdRef.current
 
           try {
             const sendMessageResponse = await sendMessage({
-              threadId: threadIdRef.current,
+              threadId: currentThreadId,
               agentId,
               // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
               messages,
@@ -221,7 +257,7 @@ export function EdenRuntimeProvider({
             }
 
             // If new thread
-            if (!threadIdRef.current) {
+            if (!currentThreadId) {
               threadIdRef.current = sendMessageResponse.data.thread_id as string
               callback &&
                 (await callback(sendMessageResponse.data.thread_id as string))
@@ -237,6 +273,11 @@ export function EdenRuntimeProvider({
             )
 
             for await (const message of messageIterable) {
+              // If thread has changed, stop processing messages
+              if (currentThreadId !== threadIdRef.current) {
+                break
+              }
+
               const assistantMessage = message as AssistantMessage
 
               yield {
@@ -250,11 +291,12 @@ export function EdenRuntimeProvider({
               }
             }
           } catch (error) {
-            // Only yield error if it's not a cancellation
+            // Only yield error if it's not a cancellation and we're still on the same thread
             if (
-              !error ||
-              typeof error !== 'object' ||
-              (error as { name?: string }).name !== 'CanceledError'
+              currentThreadId === threadIdRef.current &&
+              (!error ||
+                typeof error !== 'object' ||
+                (error as { name?: string }).name !== 'CanceledError')
             ) {
               yield {
                 data: {
@@ -388,140 +430,96 @@ export function EdenRuntimeProvider({
   // Modify the initial thread loading effect
   useEffect(() => {
     const loadThread = async () => {
-      if (!threadId && !threadIdRef.current) {
+      // Skip if no thread ID to load
+      if (!threadId) {
         return
       }
 
-      // Only proceed if thread ID has changed
-      if (threadId === threadIdRef.current) return
-
       try {
         setIsLoadingThread(true)
+
+        // Get the initial thread state
+        const thread = await getThread(threadId)
+        if (!thread) {
+          console.error('Thread not found:', threadId)
+          return
+        }
+
+        // Set thread ID first
         threadIdRef.current = threadId
 
-        if (threadIdRef.current) {
-          // Check for pending message before switching thread
-          const pendingMessageKey = `pending-message-${threadIdRef.current}`
-          const pendingMessageData = localStorage.getItem(pendingMessageKey)
-          let pendingMessage = null
+        // Process the thread data
+        if (!isAuthLoading) {
+          const isThreadReadOnly =
+            !user || thread.user._id.toString() !== user._id.toString()
+          setIsReadOnly(isThreadReadOnly)
+        }
 
-          if (pendingMessageData) {
-            try {
-              const messageData = JSON.parse(pendingMessageData)
-              if (Date.now() - messageData.timestamp < 5 * 60 * 1000) {
-                pendingMessage = {
-                  id: messageData.message_id,
-                  role: 'user' as const,
-                  content: messageData.content,
-                  attachments: messageData.attachments || [],
-                  createdAt: new Date(messageData.timestamp),
-                }
-              }
-            } catch (e) {
-              console.error('Error parsing pending message:', e)
-            }
-            localStorage.removeItem(pendingMessageKey)
-          }
+        const hasActiveRoots = thread.active && thread.active.length > 0
+        const lastMessage = thread.messages?.[thread.messages.length - 1]
+        const isLastMessageIncomplete =
+          lastMessage?.role === 'assistant' &&
+          (!lastMessage.status ||
+            lastMessage.status.type === 'running' ||
+            lastMessage.tool_calls?.some(
+              call =>
+                !call.status ||
+                call.status === 'running' ||
+                call.status === 'pending',
+            ))
 
-          // First switch the thread in runtime
-          await runtime.threads.switchToThread(threadIdRef.current)
+        const shouldBeActive = Boolean(
+          hasActiveRoots || isLastMessageIncomplete,
+        )
 
-          // Then get the initial thread state
-          const thread = await getThread(threadIdRef.current)
-          if (!thread) return
+        if (thread.messages) {
+          // Process messages to ensure proper active states
+          const processedMessages = thread.messages.map((msg, index) => {
+            if (msg.role !== 'assistant') return msg
 
-          // Process the thread data
-          // console.log('Read-only check:', {
-          //   threadUserId: thread.user._id,
-          //   currentUserId: user?._id,
-          //   threadUser: thread.user,
-          //   currentUser: user,
-          //   isAuthLoading
-          // })
+            const hasPendingToolCalls = msg.tool_calls?.some(
+              call =>
+                !call.status ||
+                call.status === 'running' ||
+                call.status === 'pending',
+            )
 
-          // Only set read-only state if auth is loaded
-          if (!isAuthLoading) {
-            const isThreadReadOnly =
-              !user || thread.user._id.toString() !== user._id.toString()
-            setIsReadOnly(isThreadReadOnly)
-          }
+            const isPartOfActiveChain = thread.active?.some(activeRootId => {
+              if (activeRootId === msg.id) return true
 
-          const hasActiveRoots = thread.active && thread.active.length > 0
-          const lastMessage = thread.messages?.[thread.messages.length - 1]
-          const isLastMessageIncomplete =
-            lastMessage?.role === 'assistant' &&
-            (!lastMessage.status ||
-              lastMessage.status.type === 'running' ||
-              lastMessage.tool_calls?.some(
-                call =>
-                  !call.status ||
-                  call.status === 'running' ||
-                  call.status === 'pending',
-              ))
+              const activeRootIndex = thread.messages.findIndex(
+                m => m.id === activeRootId,
+              )
+              if (activeRootIndex === -1) return false
 
-          const shouldBeActive = Boolean(
-            hasActiveRoots || isLastMessageIncomplete,
-          )
-          setIsStreamActive(shouldBeActive)
-          setIsRunning(shouldBeActive)
-
-          if (thread.messages) {
-            // Process messages to ensure proper active states
-            const processedMessages = thread.messages.map((msg, index) => {
-              if (msg.role !== 'assistant') return msg
-
-              const hasPendingToolCalls = msg.tool_calls?.some(
-                call =>
-                  !call.status ||
-                  call.status === 'running' ||
-                  call.status === 'pending',
+              const nextUserIndex = thread.messages.findIndex(
+                (m, i) => i > activeRootIndex && m.role === 'user',
               )
 
-              const isPartOfActiveChain = thread.active?.some(activeRootId => {
-                if (activeRootId === msg.id) return true
-
-                const activeRootIndex = thread.messages.findIndex(
-                  m => m.id === activeRootId,
-                )
-                if (activeRootIndex === -1) return false
-
-                const nextUserIndex = thread.messages.findIndex(
-                  (m, i) => i > activeRootIndex && m.role === 'user',
-                )
-
-                const messageIndex = index
-                return (
-                  messageIndex > activeRootIndex &&
-                  (nextUserIndex === -1 || messageIndex < nextUserIndex)
-                )
-              })
-
-              const newStatus =
-                hasPendingToolCalls || isPartOfActiveChain
-                  ? { type: 'running' as const }
-                  : { type: 'complete' as const, reason: 'stop' as const }
-
-              return {
-                ...msg,
-                status: newStatus,
-              }
+              return (
+                index > activeRootIndex &&
+                (nextUserIndex === -1 || index < nextUserIndex)
+              )
             })
 
-            // Add pending message if exists
-            const finalMessages = pendingMessage
-              ? [...processedMessages, pendingMessage]
-              : processedMessages
+            const newStatus =
+              hasPendingToolCalls || isPartOfActiveChain
+                ? { type: 'running' as const }
+                : { type: 'complete' as const, reason: 'stop' as const }
 
-            // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
-            setMessages(finalMessages, thread.active)
-          }
+            return {
+              ...msg,
+              status: newStatus,
+            }
+          })
 
-          // Only check thread status if auth is loaded and we need to monitor status
-          if (!isAuthLoading && shouldBeActive) {
-            // Start monitoring thread status
-            checkThreadStatus()
-          }
+          // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
+          setMessages(processedMessages, thread.active)
         }
+
+        // Set stream active state after messages are processed
+        setIsStreamActive(shouldBeActive)
+        setIsRunning(shouldBeActive)
       } catch (error) {
         console.error('Error loading thread:', error)
       } finally {
@@ -530,11 +528,11 @@ export function EdenRuntimeProvider({
     }
 
     loadThread()
-  }, [threadId, runtime, checkThreadStatus, isAuthLoading, user])
+  }, [threadId, isAuthLoading, user, setMessages, setIsRunning])
 
   // Modify the websocket message effect to prevent unnecessary thread checks
   useEffect(() => {
-    if (!websocketMessage || (!isStreamActive && !threadIdRef.current)) return
+    if (!websocketMessage || !threadIdRef.current) return
 
     const {
       thread_id,
@@ -542,10 +540,8 @@ export function EdenRuntimeProvider({
       newMessages,
     } = websocketMessage.data
 
-    if (!newMessages?.length) return
-
-    // Verify message belongs to current thread
-    if (threadIdRef.current && thread_id && threadIdRef.current !== thread_id) {
+    // Only process messages for the current thread
+    if (thread_id !== threadIdRef.current || !newMessages?.length) {
       return
     }
 
@@ -560,9 +556,6 @@ export function EdenRuntimeProvider({
           call.status === 'pending',
       )
 
-      // A message is part of an active chain if:
-      // 1. It's the root assistant message (in active array)
-      // 2. It's a subsequent assistant message in the current update batch
       const isPartOfActiveChain =
         activeRootIds?.some(rootId => rootId === msg.id) ||
         (msg.role === 'assistant' && activeRootIds && activeRootIds.length > 0)
@@ -583,7 +576,7 @@ export function EdenRuntimeProvider({
       addOrUpdateMessage(newMsg, activeRootIds)
     })
 
-    // Check if stream should be ended
+    // Update stream state
     const hasAnyPendingToolCalls = newMessages.some(msg =>
       (msg as { tool_calls?: Array<{ status?: string }> }).tool_calls?.some(
         call =>
@@ -600,14 +593,13 @@ export function EdenRuntimeProvider({
       hasAnyPendingToolCalls || hasIncompleteMessages || activeRootIds?.length,
     )
 
-    // Only update these states if they've actually changed
     if (isStreamActive !== newShouldBeActive) {
       setIsRunning(newShouldBeActive)
       setIsStreamActive(newShouldBeActive)
     }
   }, [websocketMessage, isStreamActive, setIsRunning, addOrUpdateMessage])
 
-  // Connection monitoring effect with reduced re-renders
+  // Simplify connection monitoring to only check current thread
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -617,31 +609,14 @@ export function EdenRuntimeProvider({
 
       if (!isOnline) {
         connectionStateRef.current.wasDisconnected = true
-      } else if (wasDisconnected) {
-        // Only trigger a re-fetch if we were previously disconnected
+      } else if (wasDisconnected && threadIdRef.current) {
+        // Only check thread status if we have a current thread and were previously disconnected
         await checkThreadStatus()
         connectionStateRef.current.wasDisconnected = false
       }
     }
 
-    // Check WebSocket state changes without triggering re-renders
-    if (readyState !== connectionStateRef.current.lastKnownState) {
-      connectionStateRef.current.lastKnownState = readyState
-      if (
-        readyState === ReadyState.CLOSED ||
-        readyState === ReadyState.CLOSING
-      ) {
-        connectionStateRef.current.wasDisconnected = true
-      } else if (
-        connectionStateRef.current.wasDisconnected &&
-        readyState === ReadyState.OPEN
-      ) {
-        checkThreadStatus()
-        connectionStateRef.current.wasDisconnected = false
-      }
-    }
-
-    // Handle visibility change
+    // Handle visibility change - only check status if we have a current thread
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && threadIdRef.current) {
         checkThreadStatus()
@@ -661,7 +636,7 @@ export function EdenRuntimeProvider({
       window.removeEventListener('offline', handleConnectionChange)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [readyState, checkThreadStatus])
+  }, [checkThreadStatus])
 
   // Initialize client-side only refs after mount
   useEffect(() => {
