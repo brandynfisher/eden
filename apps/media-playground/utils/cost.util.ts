@@ -51,14 +51,10 @@ export const calculateCost = (
 
   const parameterValues = costParameterNames.map(name => formValues[name])
 
-  console.log({ costParameterNames, parameterValues, formValues })
-
   const costConfig = getCostConfig({
     parameterNames: costParameterNames,
     parameterValues,
   })
-
-  console.log({ costConfig, adjustedFormula })
 
   try {
     // Convert strings to numbers for evaluation
