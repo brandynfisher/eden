@@ -33,6 +33,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         role: message.role,
         status: message.status,
         activeIds,
+        createdAt: message.createdAt,
       })
 
       // Only update active IDs if connection is open and they're provided
@@ -65,6 +66,23 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
               'useEdenMessages.addOrUpdateMessage - identical, skipping',
               {
                 messageId: message.id,
+              },
+            )
+            return currentMessages
+          }
+
+          // Check if the new message is older than the existing one
+          const existingDate = existingMessage.createdAt
+            ? new Date(existingMessage.createdAt)
+            : null
+          const newDate = message.createdAt ? new Date(message.createdAt) : null
+          if (existingDate && newDate && newDate < existingDate) {
+            console.log(
+              'useEdenMessages.addOrUpdateMessage - received older message, skipping',
+              {
+                messageId: message.id,
+                existingDate,
+                newDate,
               },
             )
             return currentMessages
@@ -140,6 +158,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
           isPartOfActiveChain,
           isAssistant,
           status: messageToAdd.status,
+          createdAt: messageToAdd.createdAt,
         })
 
         // Add new message

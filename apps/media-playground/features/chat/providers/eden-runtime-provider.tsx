@@ -9,6 +9,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider, MessageStatus } from '@assistant-ui/react'
 import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
+import { useSearchParams } from 'next/navigation'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { ReadyState } from 'react-use-websocket'
 import { v4 as uuidv4 } from 'uuid'
@@ -41,6 +42,7 @@ export function EdenRuntimeProvider({
   threadId?: string
   children: ReactNode
 }>) {
+  const searchParams = useSearchParams()
   const [isLoadingThread, setIsLoadingThread] = useState(false)
   const [isClientMounted, setIsClientMounted] = useState(false)
 
@@ -61,6 +63,13 @@ export function EdenRuntimeProvider({
     lastKnownState: ReadyState.UNINSTANTIATED,
   })
 
+  // Add request tracking
+  const requestCounterRef = useRef(0)
+  const lastSuccessfulRequestRef = useRef(0)
+  const pendingThreadIdRef = useRef<string | undefined>(undefined)
+  const isInitialLoadRef = useRef(true)
+  const lastMessageTimestampRef = useRef<Record<string, Date>>({})
+
   // Create a new abort controller for a new stream
   const getStreamAbortController = useCallback(() => {
     if (abortControllerRef.current) {
@@ -76,12 +85,15 @@ export function EdenRuntimeProvider({
       isReadOnly: !isAuthLoading ? isReadOnly : null,
       threadId: threadIdRef.current,
       onSwitchToNewThread: async () => {
+        console.log('EdenRuntimeProvider.onSwitchToNewThread - resetting state')
         // Clear all state first
         setIsStreamActive(false)
         setIsRunning(false)
         setMessages([])
         messageEmitterRef.current = new MessageEmitter()
         threadIdRef.current = undefined
+        pendingThreadIdRef.current = undefined
+        // Don't clear lastMessageTimestampRef to preserve message history
 
         if (typeof window !== 'undefined')
           window.history.pushState(null, '', `/chat/${agentId}`)
@@ -92,17 +104,29 @@ export function EdenRuntimeProvider({
       onSwitchToThread: async (newThreadId: string) => {
         console.log('EdenRuntimeProvider.onSwitchToThread - start', {
           newThreadId,
+          currentThreadId: threadIdRef.current,
+          pendingThreadId: pendingThreadIdRef.current,
+          lastMessageTimestamp: lastMessageTimestampRef.current[newThreadId],
         })
+
+        // If we're already switching to this thread, ignore
+        if (pendingThreadIdRef.current === newThreadId) {
+          console.log(
+            'EdenRuntimeProvider.onSwitchToThread - already switching to this thread, ignoring',
+          )
+          return { messages: [], active: [] }
+        }
+
+        // Increment request counter
+        const currentRequest = requestCounterRef.current + 1
+        requestCounterRef.current = currentRequest
 
         setIsLoadingThread(true)
         try {
-          // Reset state before switching
-          setIsStreamActive(false)
-          setIsRunning(false)
-          messageEmitterRef.current = new MessageEmitter()
-          threadIdRef.current = newThreadId
+          // Track the pending thread ID and update URL before fetching
+          pendingThreadIdRef.current = newThreadId
 
-          // Update URL
+          // Update URL before fetching to ensure consistent state
           if (typeof window !== 'undefined') {
             window.history.pushState(
               null,
@@ -113,12 +137,67 @@ export function EdenRuntimeProvider({
 
           // Get fresh thread data
           const thread = await getThread(newThreadId)
+
+          // Only check for stale requests
+          if (currentRequest < lastSuccessfulRequestRef.current) {
+            console.log(
+              'EdenRuntimeProvider.onSwitchToThread - stale request, ignoring',
+              {
+                currentRequest,
+                lastSuccessful: lastSuccessfulRequestRef.current,
+                requestedThreadId: newThreadId,
+              },
+            )
+            return { messages: [], active: [] }
+          }
+
+          // Update thread ID after successful fetch
+          threadIdRef.current = newThreadId
+
+          // Check if the thread data is stale by comparing message timestamps
+          const lastMessage = thread.messages?.[thread.messages.length - 1]
+          const lastMessageDate = lastMessage?.createdAt
+            ? new Date(lastMessage.createdAt)
+            : null
+          const lastKnownDate = lastMessageTimestampRef.current[newThreadId]
+
+          // Only skip if we have both dates and the new data is definitely older
+          if (
+            lastKnownDate &&
+            lastMessageDate &&
+            lastMessageDate < lastKnownDate
+          ) {
+            console.log(
+              'EdenRuntimeProvider.onSwitchToThread - received stale thread data, ignoring',
+              {
+                threadId: newThreadId,
+                lastMessageDate,
+                lastKnownDate,
+              },
+            )
+            return { messages: [], active: [] }
+          }
+
+          // Update last message timestamp
+          if (lastMessageDate) {
+            lastMessageTimestampRef.current[newThreadId] = lastMessageDate
+          }
+
+          // Clear pending thread ID after successful fetch
+          pendingThreadIdRef.current = undefined
+
+          // Update last successful request
+          lastSuccessfulRequestRef.current = currentRequest
+
           console.log('EdenRuntimeProvider.onSwitchToThread - got thread', {
             threadId: newThreadId,
             hasMessages: !!thread.messages,
             messageCount: thread.messages?.length ?? 0,
             active: thread.active,
             lastMessage: thread.messages?.[thread.messages.length - 1],
+            requestId: currentRequest,
+            lastMessageDate,
+            lastKnownDate,
           })
 
           if (!thread?.messages) {
@@ -170,8 +249,11 @@ export function EdenRuntimeProvider({
                 call.status === 'pending',
             )
 
+            // Also check if message is incomplete
+            const isIncomplete = !msg.content || msg.content.length === 0
+
             const status =
-              hasPendingToolCalls || isPartOfActiveChain
+              hasPendingToolCalls || isPartOfActiveChain || isIncomplete
                 ? { type: 'running' as const }
                 : { type: 'complete' as const, reason: 'stop' as const }
 
@@ -191,12 +273,18 @@ export function EdenRuntimeProvider({
                     !call.status ||
                     call.status === 'running' ||
                     call.status === 'pending',
-                )),
+                ) ||
+                !msg.content ||
+                msg.content.length === 0),
           )
 
           // Also consider messages in active array
           const shouldBeActive = hasRunning || (thread.active?.length ?? 0) > 0
-          setIsStreamActive(shouldBeActive)
+
+          // Only update stream state if it's changed
+          if (isStreamActive !== shouldBeActive) {
+            setIsStreamActive(shouldBeActive)
+          }
 
           console.log('EdenRuntimeProvider.onSwitchToThread - returning', {
             threadId: newThreadId,
@@ -204,6 +292,7 @@ export function EdenRuntimeProvider({
             hasRunning,
             active: thread.active,
             shouldBeActive,
+            requestId: currentRequest,
           })
 
           return {
@@ -430,19 +519,36 @@ export function EdenRuntimeProvider({
   // Modify the initial thread loading effect
   useEffect(() => {
     const loadThread = async () => {
-      // Skip if no thread ID to load
-      if (!threadId) {
+      // Skip if we're not in initial load anymore
+      if (!isInitialLoadRef.current) {
         return
       }
 
-      try {
-        setIsLoadingThread(true)
+      if (!threadId || isAuthLoading || !user) return
 
-        // Get the initial thread state
+      setIsLoadingThread(true)
+
+      try {
         const thread = await getThread(threadId)
         if (!thread) {
-          console.error('Thread not found:', threadId)
-          return
+          throw new Error('Thread not found')
+        }
+
+        // Check if we need to clean up URL parameters
+        const isPending = searchParams.get('pending') === 'true'
+        const pendingMessageId = searchParams.get('message_id')
+
+        if (isPending && pendingMessageId) {
+          // Check if the pending message exists in the thread
+          const messageExists = thread.messages.some(
+            msg => msg.id === pendingMessageId,
+          )
+
+          if (messageExists) {
+            // Remove the URL parameters by constructing a new URL without them
+            const url = `/chat/${agentId}/${threadId}`
+            window.history.replaceState({}, '', url)
+          }
         }
 
         // Set thread ID first
@@ -524,11 +630,20 @@ export function EdenRuntimeProvider({
         console.error('Error loading thread:', error)
       } finally {
         setIsLoadingThread(false)
+        isInitialLoadRef.current = false
       }
     }
 
     loadThread()
-  }, [threadId, isAuthLoading, user, setMessages, setIsRunning])
+  }, [
+    threadId,
+    isAuthLoading,
+    user,
+    setMessages,
+    setIsRunning,
+    searchParams,
+    agentId,
+  ])
 
   // Modify the websocket message effect to prevent unnecessary thread checks
   useEffect(() => {

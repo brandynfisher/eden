@@ -1,128 +1,165 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { ReadyState } from 'react-use-websocket'
 import useWebSocket from 'react-use-websocket'
+
+type WebSocketConnection = WebSocket | null
+
+interface WebSocketMessage extends MessageEvent {
+  wsEndpoint?: string
+}
+
+// Singleton pattern for shared connection state
+class ConnectionManager {
+  private static instance: ConnectionManager
+  private connections = new Map<string, WebSocketConnection>()
+  private listeners = new Map<string, Set<(event: WebSocketMessage) => void>>()
+
+  private constructor() {}
+
+  static getInstance(): ConnectionManager {
+    if (!ConnectionManager.instance) {
+      ConnectionManager.instance = new ConnectionManager()
+    }
+    return ConnectionManager.instance
+  }
+
+  addListener(endpoint: string, callback: (event: WebSocketMessage) => void) {
+    if (!this.listeners.has(endpoint)) {
+      this.listeners.set(endpoint, new Set())
+    }
+    this.listeners.get(endpoint)!.add(callback)
+  }
+
+  removeListener(
+    endpoint: string,
+    callback: (event: WebSocketMessage) => void,
+  ) {
+    this.listeners.get(endpoint)?.delete(callback)
+  }
+
+  broadcast(endpoint: string, event: MessageEvent) {
+    const wsMessage: WebSocketMessage = Object.assign(event, {
+      wsEndpoint: endpoint,
+    })
+    this.listeners.get(endpoint)?.forEach(callback => callback(wsMessage))
+  }
+
+  hasConnection(endpoint: string): boolean {
+    return this.connections.has(endpoint)
+  }
+
+  getConnection(endpoint: string): WebSocketConnection {
+    return this.connections.get(endpoint) || null
+  }
+
+  setConnection(endpoint: string, ws: WebSocketConnection) {
+    if (ws) {
+      this.connections.set(endpoint, ws)
+    }
+  }
+
+  removeConnection(endpoint: string) {
+    this.connections.delete(endpoint)
+  }
+}
 
 export const useWebSocketConnection = (
   endpoint: string,
   shouldConnect: boolean,
   onMessage?: (event: MessageEvent) => void,
 ) => {
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
-  const lastReconnectAttemptRef = useRef<number>(0)
-  const pingIntervalRef = useRef<ReturnType<typeof setInterval>>()
-  const lastPongRef = useRef<number>(Date.now())
-  const maxBackoff = 30000 // Maximum backoff of 30 seconds
-  const [forceReconnect, setForceReconnect] = useState(false)
+  const manager = useRef(ConnectionManager.getInstance())
+  const [readyState, setReadyState] = useState<ReadyState>(
+    ReadyState.CONNECTING,
+  )
+  const [lastMessage, setLastMessage] = useState<MessageEvent | null>(null)
 
-  // Calculate exponential backoff with jitter
-  const getBackoffTime = useCallback((attempt: number) => {
-    const baseDelay = Math.min(1000 * Math.pow(2, attempt), maxBackoff)
-    const jitter = Math.random() * 1000 // Add up to 1 second of jitter
-    return baseDelay + jitter
-  }, [])
-
+  // Use react-use-websocket for the actual WebSocket connection
   const {
-    sendMessage,
-    sendJsonMessage,
-    lastMessage,
-    readyState,
-    getWebSocket,
+    sendMessage: wssSendMessage,
+    sendJsonMessage: wssSendJsonMessage,
+    lastMessage: wssLastMessage,
+    readyState: wssReadyState,
+    getWebSocket: wssGetWebSocket,
   } = useWebSocket(
     endpoint,
     {
-      onOpen: () => {
-        console.log('WebSocket connected')
-        // Reset reconnection attempt counter on successful connection
-        lastReconnectAttemptRef.current = 0
-
-        // Start ping interval
-        if (pingIntervalRef.current) {
-          clearInterval(pingIntervalRef.current)
-        }
-        pingIntervalRef.current = setInterval(() => {
-          sendJsonMessage({ event: 'ping', ts: Date.now() })
-
-          // Check if we haven't received a pong in 90 seconds
-          if (Date.now() - lastPongRef.current > 90000) {
-            // console.log('No pong received in 90s, closing connection')
-            setForceReconnect(prev => !prev) // Toggle to force a reconnect
-          }
-        }, 30000)
-      },
-      onClose: e => {
-        console.log('WebSocket closed', e)
-        // Clear any existing reconnect timeout and ping interval
-        if (reconnectTimeoutRef.current) {
-          clearTimeout(reconnectTimeoutRef.current)
-        }
-        if (pingIntervalRef.current) {
-          clearInterval(pingIntervalRef.current)
-        }
-      },
-      onError: e => {
-        console.error('WebSocket error', e)
-        // Increment reconnection attempt counter
-        lastReconnectAttemptRef.current += 1
-      },
-      onMessage: event => {
-        try {
-          const data = JSON.parse(event.data)
-          if (data.event === 'pong') {
-            // console.log('pong received')
-            lastPongRef.current = Date.now()
-          }
-        } catch (e) {
-          // Ignore parse errors for non-JSON messages
-        }
-
-        if (onMessage) {
-          onMessage(event)
-        }
-      },
       shouldReconnect: closeEvent => {
-        // Don't reconnect on clean closes (code 1000) or if shouldConnect is false
-        if (closeEvent.code === 1000 || !shouldConnect) return false
-        return true
+        return shouldConnect && closeEvent.code !== 1000
       },
-      reconnectInterval: (attemptNumber: number) =>
-        getBackoffTime(attemptNumber),
       retryOnError: true,
-      share: true,
+      share: true, // Enable connection sharing within the same window
+      onMessage: event => {
+        // Broadcast to other tabs through the manager
+        manager.current.broadcast(endpoint, event)
+        // Handle the message in this tab
+        setLastMessage(event)
+        onMessage?.(event)
+      },
+      onOpen: () => {
+        setReadyState(ReadyState.OPEN)
+        manager.current.setConnection(
+          endpoint,
+          wssGetWebSocket() as WebSocketConnection,
+        )
+      },
+      onClose: () => {
+        setReadyState(ReadyState.CLOSED)
+        manager.current.removeConnection(endpoint)
+      },
+      onError: () => {
+        setReadyState(ReadyState.CLOSED)
+        manager.current.removeConnection(endpoint)
+      },
     },
-    shouldConnect || forceReconnect, // Add forceReconnect to the dependencies
+    shouldConnect,
   )
 
-  // Cleanup on unmount
+  // Listen for broadcasts from other tabs
   useEffect(() => {
-    const currentReconnectTimeout = reconnectTimeoutRef.current
-    const currentPingInterval = pingIntervalRef.current
+    if (!shouldConnect) return
 
-    return () => {
-      if (currentReconnectTimeout) {
-        clearTimeout(currentReconnectTimeout)
-      }
-      if (currentPingInterval) {
-        clearInterval(currentPingInterval)
+    const handleBroadcast = (event: MessageEvent) => {
+      if (event !== wssLastMessage) {
+        setLastMessage(event)
+        onMessage?.(event)
       }
     }
-  }, [])
 
-  // If the message is a pong, return null instead
-  const processedLastMessage =
-    lastMessage &&
-    (() => {
-      try {
-        // console.log('lastMessage', lastMessage)
-        const data = JSON.parse(lastMessage.data)
-        return data.event === 'pong' ? null : lastMessage
-      } catch (e) {
-        return null
-      }
-    })()
+    manager.current.addListener(endpoint, handleBroadcast)
+
+    return () => {
+      manager.current.removeListener(endpoint, handleBroadcast)
+    }
+  }, [endpoint, shouldConnect, onMessage, wssLastMessage])
+
+  // Sync state with the shared connection
+  useEffect(() => {
+    setReadyState(wssReadyState)
+  }, [wssReadyState])
+
+  const sendMessage = useCallback(
+    (message: string) => {
+      wssSendMessage(message)
+    },
+    [wssSendMessage],
+  )
+
+  const sendJsonMessage = useCallback(
+    (message: unknown) => {
+      wssSendJsonMessage(message)
+    },
+    [wssSendJsonMessage],
+  )
+
+  const getWebSocket = useCallback(() => {
+    return wssGetWebSocket()
+  }, [wssGetWebSocket])
 
   return {
     sendMessage,
     sendJsonMessage,
-    lastMessage: processedLastMessage,
+    lastMessage,
     readyState,
     getWebSocket,
   }

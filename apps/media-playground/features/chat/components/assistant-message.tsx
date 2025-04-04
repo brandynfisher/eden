@@ -75,64 +75,67 @@ const MyAssistantMessage: FC = () => {
     [content, status?.type],
   )
 
-  // Debounce state changes to prevent flicker
-  const [debouncedIsEmpty, setDebouncedIsEmpty] = React.useState(isEmpty)
-  const [debouncedIsRunning, setDebouncedIsRunning] = React.useState(isRunning)
+  // Track previous state to prevent unnecessary flashing
+  const prevStateRef = React.useRef({ isEmpty, isRunning })
+  const [debouncedState, setDebouncedState] = React.useState({
+    isEmpty,
+    isRunning,
+  })
 
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedIsEmpty(isEmpty)
-      setDebouncedIsRunning(isRunning)
-    }, 100) // Small delay to prevent flicker
-    return () => clearTimeout(timer)
-  }, [isEmpty, isRunning])
+    // Only update if the state has been stable for the debounce period
+    // and is different from the current debounced state
+    if (
+      isEmpty !== prevStateRef.current.isEmpty ||
+      isRunning !== prevStateRef.current.isRunning
+    ) {
+      prevStateRef.current = { isEmpty, isRunning }
 
-  // console.log({
-  //   isEmpty,
-  //   isRunning,
-  //   content,
-  //   status,
-  //   debounced: { isEmpty: debouncedIsEmpty, isRunning: debouncedIsRunning },
-  // })
+      // For transitions to empty/running state, add a small delay
+      // For transitions to non-empty/non-running state, update immediately
+      const delay = isEmpty || isRunning ? 100 : 0
+
+      const timer = setTimeout(() => {
+        // Only update if the state hasn't changed during the delay
+        if (
+          isEmpty === prevStateRef.current.isEmpty &&
+          isRunning === prevStateRef.current.isRunning
+        ) {
+          setDebouncedState({ isEmpty, isRunning })
+        }
+      }, delay)
+
+      return () => clearTimeout(timer)
+    }
+  }, [isEmpty, isRunning])
 
   return (
     <AssistantMessage.Root
       className={cn([
         'block px-2 md:grid',
-        debouncedIsRunning &&
+        debouncedState.isRunning &&
           'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >
       <MyAssistantMessageAvatar />
-      {!debouncedIsEmpty && (
+      {!debouncedState.isEmpty && (
         <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
       )}
       <BranchPicker />
-      {debouncedIsEmpty || debouncedIsRunning ? (
+      {debouncedState.isEmpty || debouncedState.isRunning ? (
         <div
           className={cn(
             'col-start-3 row-start-2',
-            debouncedIsEmpty && 'col-start-auto row-start-auto mt-2',
+            debouncedState.isEmpty && 'col-start-auto row-start-auto mt-2',
           )}
         >
           <TypingIndicator />
         </div>
       ) : null}
-      {/* <ThreadPrimitive.If running={true} empty={true}>
-        <div
-          className={cn(
-            'col-start-3 row-start-2',
-            debouncedIsEmpty && 'col-start-auto row-start-auto mt-2',
-          )}
-        >
-          <TypingIndicator />
-        </div>
-      </ThreadPrimitive.If> */}
 
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />
       </ThreadPrimitive.If>
-      {/* {!debouncedIsRunning && !debouncedIsEmpty && } */}
     </AssistantMessage.Root>
   )
 }

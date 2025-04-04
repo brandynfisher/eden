@@ -83,7 +83,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   // Constants for scroll calculations
   const COMPOSER_HEIGHT = 64 // Height of the composer component
   const HEADER_HEIGHT = 64 // Height of the header
-  const BOTTOM_THRESHOLD = 10 // How close to bottom to consider "at bottom"
+  const BOTTOM_THRESHOLD = 150 // How close to bottom to consider "at bottom"
   const TOTAL_OFFSET = COMPOSER_HEIGHT + HEADER_HEIGHT // Total height of fixed elements
 
   // Get a string representation of all complete assistant messages
@@ -178,21 +178,37 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
     const handleScroll = () => {
       const { scrollHeight, scrollTop, clientHeight } = viewport
-      // Account for fixed elements in bottom calculations
-      const atBottom =
-        Math.abs(scrollHeight - scrollTop - clientHeight) <
-        BOTTOM_THRESHOLD + TOTAL_OFFSET
-      // Use one viewport height as the threshold, accounting for fixed elements
-      const nearBottom =
-        Math.abs(scrollHeight - scrollTop - clientHeight) <
-        clientHeight + TOTAL_OFFSET
+
+      // Calculate distance from bottom, accounting for fixed elements
+      const distanceFromBottom = Math.abs(
+        scrollHeight - scrollTop - clientHeight - TOTAL_OFFSET,
+      )
+
+      // Consider "at bottom" if within threshold
+      const atBottom = distanceFromBottom < BOTTOM_THRESHOLD
+
+      // Consider "near bottom" if within one viewport height
+      const nearBottom = distanceFromBottom < clientHeight
+
       setIsAtBottom(atBottom)
       setIsNearBottom(nearBottom)
       setIsScrolled(scrollTop > 100)
+
       if (atBottom && !hasGeneratingMessage) {
         setHasNewMessages(false)
         lastSeenContentRef.current = assistantMessagesContent
       }
+
+      // Debug scroll position
+      // console.log('Scroll position:', {
+      //   distanceFromBottom,
+      //   atBottom,
+      //   nearBottom,
+      //   scrollHeight,
+      //   scrollTop,
+      //   clientHeight,
+      //   threshold: BOTTOM_THRESHOLD
+      // })
     }
 
     viewport.addEventListener('scroll', handleScroll)
@@ -203,19 +219,20 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   // Auto-scroll when near bottom and:
   // 1. New messages are added
   // 2. Any assistant message is updated
+  // 3. Messages are being generated
   useEffect(() => {
     const hasNewMessage = messages.length > lastMessagesLengthRef.current
-
-    // If we're near the bottom and there's any update, scroll down
-    if (
+    const hasAssistantUpdate = messages.some(m => m.role === 'assistant')
+    const shouldAutoScroll =
       isNearBottom &&
-      (hasNewMessage || messages.some(m => m.role === 'assistant'))
-    ) {
+      (hasNewMessage || hasAssistantUpdate || hasGeneratingMessage)
+
+    if (shouldAutoScroll) {
       scrollToBottom()
     }
 
     lastMessagesLengthRef.current = messages.length
-  }, [messages.length, allAssistantMessages])
+  }, [messages.length, allAssistantMessages, hasGeneratingMessage])
 
   // Track new messages - show indicator when not near bottom
   useEffect(() => {
@@ -323,11 +340,16 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const scrollToBottom = useCallback(() => {
     if (!viewportRef.current) return
     const viewport = viewportRef.current
+
+    // Calculate target scroll position
+    const targetScroll =
+      viewport.scrollHeight - viewport.clientHeight + TOTAL_OFFSET
+
     viewport.scrollTo({
-      // Add extra padding to ensure we scroll past fixed elements
-      top: viewport.scrollHeight + TOTAL_OFFSET,
-      behavior: 'instant',
+      top: targetScroll,
+      behavior: isInitialLoadRef.current ? 'instant' : 'smooth',
     })
+
     if (!hasGeneratingMessage) {
       setHasNewMessages(false)
       lastSeenContentRef.current = assistantMessagesContent

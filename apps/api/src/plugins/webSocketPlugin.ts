@@ -1,5 +1,12 @@
 import FastifyWebSocket, { WebsocketPluginOptions } from '@fastify/websocket'
 import { FastifyInstance, FastifyPluginAsync } from 'fastify'
+import { WebSocket } from 'ws'
+
+interface BroadcastMessage {
+  type: string
+  clientId: string
+  payload: any
+}
 
 const registerWebSocket: FastifyPluginAsync = async (
   fastify: FastifyInstance,
@@ -31,6 +38,30 @@ const registerWebSocket: FastifyPluginAsync = async (
         },
       },
     }
+
+    // Store active connections by client ID
+    const connections = new Map<string, WebSocket>()
+
+    // Handle broadcast messages
+    fastify.decorate('broadcastToClient', (clientId: string, message: any) => {
+      const connection = connections.get(clientId)
+      if (connection) {
+        connection.send(JSON.stringify(message))
+      }
+    })
+
+    // Handle WebSocket messages
+    fastify.decorate(
+      'handleWebSocketMessage',
+      (socket: WebSocket, message: BroadcastMessage) => {
+        const { clientId } = message
+        connections.set(clientId, socket)
+
+        socket.on('close', () => {
+          connections.delete(clientId)
+        })
+      },
+    )
 
     await fastify.register(FastifyWebSocket, websocketOptions)
     fastify.log.info('Successfully registered plugin: WebSocket')
