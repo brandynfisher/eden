@@ -172,23 +172,29 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
         return
       }
 
+      const threadId = response.data.thread_id
+      const messageId = response.data.message_id || `temp-${Date.now()}`
+
       // Store the message data in localStorage with a different key
       const messageData = {
         content: formData.message,
         attachments: formData.attachments,
-        message_id: response.data.message_id,
+        message_id: messageId,
         timestamp: Date.now(),
       }
+
+      // Ensure the message is stored before navigation
       localStorage.setItem(
-        `pending-message-${response.data.thread_id}`,
+        `pending-message-${threadId}`,
         JSON.stringify(messageData),
       )
 
+      // Add a small delay to ensure localStorage is updated
+      await new Promise(resolve => setTimeout(resolve, 50))
+
       // Navigate to the chat view with the message data
       router.push(
-        `/chat/${agent?.username}/${
-          response.data.thread_id
-        }?pending=true&message_id=${response.data.message_id || ''}`,
+        `/chat/${agent?.username}/${threadId}?pending=true&message_id=${messageId}`,
       )
     } catch (err) {
       setIsSubmitting(false)
