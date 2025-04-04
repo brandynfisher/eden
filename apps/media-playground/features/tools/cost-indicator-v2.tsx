@@ -16,6 +16,12 @@ type Props = {
 const CostIndicatorV2: React.FC<Props> = ({ cost }) => {
   const { balance } = useAuthState()
 
+  // Format cost to at most 2 decimal places, but only show decimals if they exist
+  const formattedCost = cost.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })
+
   return (
     <TooltipProvider delayDuration={125}>
       <Tooltip>
@@ -28,7 +34,7 @@ const CostIndicatorV2: React.FC<Props> = ({ cost }) => {
               ])}
             >
               <CoinsIcon className="mr-1.5 h-4 w-4" />
-              <span className="font-mono">{Math.floor(cost) || 1}</span>
+              <span className="font-mono">{formattedCost}</span>
             </div>
           </div>
         </TooltipTrigger>
