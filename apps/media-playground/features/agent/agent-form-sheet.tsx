@@ -240,7 +240,8 @@ const AgentFormSheet = () => {
               : 'Create an agent to help you with your tasks.'}
           </SheetDescription>
         </SheetHeader>
-        {mode === 'update' && agentQuery.isPending && (
+        {((mode === 'update' && agentQuery.isPending) ||
+          voicesQuery.isPending) && (
           <div className="flex items-center justify-center mt-10">
             <Loader2 className="size-4 animate-spin" />
           </div>
