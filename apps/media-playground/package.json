@@ -66,6 +66,7 @@
     "currency.js": "^2.0.4",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "elevenlabs": "^1.56.0",
     "event-source-polyfill": "^1.0.31",
     "expr-eval": "^2.0.2",
     "holy-loader": "^2.3.8",
