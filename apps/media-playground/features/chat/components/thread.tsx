@@ -81,10 +81,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const lastMessagesLengthRef = useRef(messages.length)
 
   // Constants for scroll calculations
-  const COMPOSER_HEIGHT = 98 // Height of the composer component
-  const HEADER_HEIGHT = 64 // Height of the header
-  const BOTTOM_THRESHOLD = 0 // How close to bottom to consider "at bottom"
-  const TOTAL_OFFSET = COMPOSER_HEIGHT + HEADER_HEIGHT // Total height of fixed elements
+  const BOTTOM_THRESHOLD = 20 // How close to bottom to consider "at bottom"
 
   // Get a string representation of all complete assistant messages
   const assistantMessagesContent = messages
@@ -179,15 +176,15 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     const handleScroll = () => {
       const { scrollHeight, scrollTop, clientHeight } = viewport
 
-      // Calculate distance from bottom, accounting for fixed elements
+      // Calculate distance from bottom correctly
       const distanceFromBottom = Math.abs(
-        scrollHeight - scrollTop - clientHeight - TOTAL_OFFSET,
+        scrollHeight - scrollTop - clientHeight,
       )
 
-      // Consider "at bottom" if within threshold
+      // Consider "at bottom" if within the smaller threshold
       const atBottom = distanceFromBottom < BOTTOM_THRESHOLD
 
-      // Consider "near bottom" if within one viewport height
+      // Consider "near bottom" if within one viewport height (keep this logic)
       const nearBottom = distanceFromBottom < clientHeight
 
       setIsAtBottom(atBottom)
@@ -261,7 +258,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
       if (viewportRef.current) {
         viewportRef.current.scrollTo({
           // Add extra padding to ensure we scroll past fixed elements
-          top: viewportRef.current.scrollHeight + TOTAL_OFFSET,
+          top: viewportRef.current.scrollHeight,
           behavior: 'instant',
         })
         isInitialLoadRef.current = false
@@ -342,8 +339,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     const viewport = viewportRef.current
 
     // Calculate target scroll position
-    const targetScroll =
-      viewport.scrollHeight - viewport.clientHeight + TOTAL_OFFSET
+    const targetScroll = viewport.scrollHeight - viewport.clientHeight
 
     viewport.scrollTo({
       top: targetScroll,
@@ -403,23 +399,28 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
             </div>
           ) : null}
           <div className="relative">
-            {(isScrolled || hasNewMessages) && !isAtBottom && (
-              <Button
-                variant="outline"
-                onClick={scrollToBottom}
-                className="absolute drop-shadow-md bottom-2 w-7 h-7 p-0 rounded-full hover:bg-accent flex items-center justify-center"
-              >
-                <ArrowDownIcon className="w-5 h-5 drop-shadow-md" />
-                {hasNewMessages && (
-                  <div
-                    onClick={scrollToBottom}
-                    className="absolute drop-shadow-md right-8 text-xs text-accent-foreground bg-purple-950 border border-purple-600 px-2 py-1 rounded-md cursor-pointer hover:bg-purple-700"
-                  >
-                    <span className="text-xs animate-pulse">New messages</span>
-                  </div>
-                )}
-              </Button>
-            )}
+            {/* Show button only when NOT initial load AND NOT at bottom AND (scrolled up OR has new messages) */}
+            {!isInitialLoadRef.current &&
+              !isAtBottom &&
+              (isScrolled || hasNewMessages) && (
+                <Button
+                  variant="outline"
+                  onClick={scrollToBottom}
+                  className="absolute drop-shadow-md bottom-2 w-7 h-7 p-0 rounded-full hover:bg-accent flex items-center justify-center"
+                >
+                  <ArrowDownIcon className="w-5 h-5 drop-shadow-md" />
+                  {hasNewMessages && (
+                    <div
+                      onClick={scrollToBottom}
+                      className="absolute drop-shadow-md right-8 text-xs text-accent-foreground bg-purple-950 border border-purple-600 px-2 py-1 rounded-md cursor-pointer hover:bg-purple-700"
+                    >
+                      <span className="text-xs animate-pulse">
+                        New messages
+                      </span>
+                    </div>
+                  )}
+                </Button>
+              )}
           </div>
 
           {!showWelcomeScreen && (
