@@ -66,8 +66,6 @@ const MyAssistantMessage: FC = () => {
   const status = useMessage(m => m.status)
   const id = useMessage(m => m.id)
 
-  console.log('MyAssistantMessage', id, status, content)
-
   // Memoize the derived state to prevent unnecessary recalculations
   const { isEmpty, isRunning } = React.useMemo(
     () => ({
@@ -76,40 +74,6 @@ const MyAssistantMessage: FC = () => {
     }),
     [content, status?.type],
   )
-
-  // Track previous state to prevent unnecessary flashing
-  // const prevStateRef = React.useRef({ isEmpty, isRunning })
-  // const [debouncedState, setDebouncedState] = React.useState({
-  //   isEmpty,
-  //   isRunning,
-  // })
-
-  // React.useEffect(() => {
-  //   // Only update if the state has been stable for the debounce period
-  //   // and is different from the current debounced state
-  //   if (
-  //     isEmpty !== prevStateRef.current.isEmpty ||
-  //     isRunning !== prevStateRef.current.isRunning
-  //   ) {
-  //     prevStateRef.current = { isEmpty, isRunning }
-
-  //     // For transitions to empty/running state, add a small delay
-  //     // For transitions to non-empty/non-running state, update immediately
-  //     const delay = isEmpty || isRunning ? 100 : 0
-
-  //     const timer = setTimeout(() => {
-  //       // Only update if the state hasn't changed during the delay
-  //       if (
-  //         isEmpty === prevStateRef.current.isEmpty &&
-  //         isRunning === prevStateRef.current.isRunning
-  //       ) {
-  //         setDebouncedState({ isEmpty, isRunning })
-  //       }
-  //     }, delay)
-
-  //     return () => clearTimeout(timer)
-  //   }
-  // }, [isEmpty, isRunning])
 
   return (
     <AssistantMessage.Root

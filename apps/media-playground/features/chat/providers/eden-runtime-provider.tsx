@@ -85,7 +85,7 @@ export function EdenRuntimeProvider({
       isReadOnly: !isAuthLoading ? isReadOnly : null,
       threadId: threadIdRef.current,
       onSwitchToNewThread: async () => {
-        console.log('EdenRuntimeProvider.onSwitchToNewThread - resetting state')
+        // console.log('EdenRuntimeProvider.onSwitchToNewThread - resetting state')
         // Clear all state first
         setIsStreamActive(false)
         setIsRunning(false)
@@ -102,18 +102,18 @@ export function EdenRuntimeProvider({
         setIsReadOnly(false)
       },
       onSwitchToThread: async (newThreadId: string) => {
-        console.log('EdenRuntimeProvider.onSwitchToThread - start', {
-          newThreadId,
-          currentThreadId: threadIdRef.current,
-          pendingThreadId: pendingThreadIdRef.current,
-          lastMessageTimestamp: lastMessageTimestampRef.current[newThreadId],
-        })
+        // console.log('EdenRuntimeProvider.onSwitchToThread - start', {
+        //   newThreadId,
+        //   currentThreadId: threadIdRef.current,
+        //   pendingThreadId: pendingThreadIdRef.current,
+        //   lastMessageTimestamp: lastMessageTimestampRef.current[newThreadId],
+        // })
 
         // If we're already switching to this thread, ignore
         if (pendingThreadIdRef.current === newThreadId) {
-          console.log(
-            'EdenRuntimeProvider.onSwitchToThread - already switching to this thread, ignoring',
-          )
+          // console.log(
+          //   'EdenRuntimeProvider.onSwitchToThread - already switching to this thread, ignoring',
+          // )
           return { messages: [], active: [] }
         }
 
@@ -140,14 +140,14 @@ export function EdenRuntimeProvider({
 
           // Only check for stale requests
           if (currentRequest < lastSuccessfulRequestRef.current) {
-            console.log(
-              'EdenRuntimeProvider.onSwitchToThread - stale request, ignoring',
-              {
-                currentRequest,
-                lastSuccessful: lastSuccessfulRequestRef.current,
-                requestedThreadId: newThreadId,
-              },
-            )
+            // console.log(
+            //   'EdenRuntimeProvider.onSwitchToThread - stale request, ignoring',
+            //   {
+            //     currentRequest,
+            //     lastSuccessful: lastSuccessfulRequestRef.current,
+            //     requestedThreadId: newThreadId,
+            //   },
+            // )
             return { messages: [], active: [] }
           }
 
@@ -167,14 +167,14 @@ export function EdenRuntimeProvider({
             lastMessageDate &&
             lastMessageDate < lastKnownDate
           ) {
-            console.log(
-              'EdenRuntimeProvider.onSwitchToThread - received stale thread data, ignoring',
-              {
-                threadId: newThreadId,
-                lastMessageDate,
-                lastKnownDate,
-              },
-            )
+            // console.log(
+            //   'EdenRuntimeProvider.onSwitchToThread - received stale thread data, ignoring',
+            //   {
+            //     threadId: newThreadId,
+            //     lastMessageDate,
+            //     lastKnownDate,
+            //   },
+            // )
             return { messages: [], active: [] }
           }
 
@@ -189,16 +189,16 @@ export function EdenRuntimeProvider({
           // Update last successful request
           lastSuccessfulRequestRef.current = currentRequest
 
-          console.log('EdenRuntimeProvider.onSwitchToThread - got thread', {
-            threadId: newThreadId,
-            hasMessages: !!thread.messages,
-            messageCount: thread.messages?.length ?? 0,
-            active: thread.active,
-            lastMessage: thread.messages?.[thread.messages.length - 1],
-            requestId: currentRequest,
-            lastMessageDate,
-            lastKnownDate,
-          })
+          // console.log('EdenRuntimeProvider.onSwitchToThread - got thread', {
+          //   threadId: newThreadId,
+          //   hasMessages: !!thread.messages,
+          //   messageCount: thread.messages?.length ?? 0,
+          //   active: thread.active,
+          //   lastMessage: thread.messages?.[thread.messages.length - 1],
+          //   requestId: currentRequest,
+          //   lastMessageDate,
+          //   lastKnownDate,
+          // })
 
           if (!thread?.messages) {
             return { messages: [], active: [] }
@@ -286,14 +286,14 @@ export function EdenRuntimeProvider({
             setIsStreamActive(shouldBeActive)
           }
 
-          console.log('EdenRuntimeProvider.onSwitchToThread - returning', {
-            threadId: newThreadId,
-            messageCount: messages.length,
-            hasRunning,
-            active: thread.active,
-            shouldBeActive,
-            requestId: currentRequest,
-          })
+          // console.log('EdenRuntimeProvider.onSwitchToThread - returning', {
+          //   threadId: newThreadId,
+          //   messageCount: messages.length,
+          //   hasRunning,
+          //   active: thread.active,
+          //   shouldBeActive,
+          //   requestId: currentRequest,
+          // })
 
           return {
             messages: messages as ThreadMessageWithStatus[],

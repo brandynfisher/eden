@@ -180,10 +180,10 @@ export const useEdenRuntime = ({
           onSwitchToThread: !onSwitchToThread
             ? undefined
             : async (newThreadId: string) => {
-                console.log('useEdenRuntime.onSwitchToThread - start', {
-                  newThreadId,
-                  currentThreadId: currentThreadIdRef.current,
-                })
+                // console.log('useEdenRuntime.onSwitchToThread - start', {
+                //   newThreadId,
+                //   currentThreadId: currentThreadIdRef.current,
+                // })
 
                 try {
                   // Don't reset running state until we have new thread data
@@ -194,16 +194,16 @@ export const useEdenRuntime = ({
                   // Update current thread ID after successful switch
                   currentThreadIdRef.current = newThreadId
 
-                  console.log('useEdenRuntime.onSwitchToThread - got data', {
-                    threadId: newThreadId,
-                    currentThreadId: currentThreadIdRef.current,
-                    messageCount: messages.length,
-                    hasRunning: messages.some(
-                      m => m.status?.type === 'running',
-                    ),
-                    active,
-                    lastMessage: messages[messages.length - 1],
-                  })
+                  // console.log('useEdenRuntime.onSwitchToThread - got data', {
+                  //   threadId: newThreadId,
+                  //   currentThreadId: currentThreadIdRef.current,
+                  //   messageCount: messages.length,
+                  //   hasRunning: messages.some(
+                  //     m => m.status?.type === 'running',
+                  //   ),
+                  //   active,
+                  //   lastMessage: messages[messages.length - 1],
+                  // })
 
                   // Process messages to determine running state
                   const hasRunningMessage = messages.some(
@@ -254,22 +254,22 @@ export const useEdenRuntime = ({
                     } as ThreadMessageWithStatus
                   })
 
-                  console.log(
-                    'useEdenRuntime.onSwitchToThread - setting state',
-                    {
-                      threadId: newThreadId,
-                      currentThreadId: currentThreadIdRef.current,
-                      hasRunningMessage,
-                      hasActiveMessages,
-                      messageCount: messages.length,
-                      runningCount: processedMessages.filter(
-                        m => m.status?.type === 'running',
-                      ).length,
-                    },
-                  )
+                  // console.log(
+                  //   'useEdenRuntime.onSwitchToThread - setting state',
+                  //   {
+                  //     threadId: newThreadId,
+                  //     currentThreadId: currentThreadIdRef.current,
+                  //     hasRunningMessage,
+                  //     hasActiveMessages,
+                  //     messageCount: messages.length,
+                  //     runningCount: processedMessages.filter(
+                  //       m => m.status?.type === 'running',
+                  //     ).length,
+                  //   },
+                  // )
 
                   // Set messages and running state atomically
-                  setMessages(processedMessages, active)
+                  setMessages(processedMessages)
                   setIsRunning(hasRunningMessage || hasActiveMessages)
 
                   // Update thread list after a delay to ensure UI is updated
