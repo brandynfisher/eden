@@ -51,8 +51,6 @@ import {
   ChevronRightIcon,
   EditIcon,
   MoreHorizontal,
-  PanelLeftClose,
-  PanelRightClose,
   SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
@@ -148,7 +146,7 @@ const ThreadListItem: FC<{
   onItemClick?: () => void
 }> = ({ onItemClick }) => {
   return (
-    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all">
+    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all mr-3">
       <ThreadListItemTrigger onItemClick={onItemClick} />
     </ThreadListItemPrimitive.Root>
   )
@@ -278,7 +276,7 @@ const LeftBarSheet: FC<{
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r"
+        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
       >
         <SheetTitle className="sr-only">Thread List</SheetTitle>
         {/* Use extracted content here */}
@@ -359,7 +357,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
     <EdenRuntimeProvider agentId={agentId} threadId={threadId}>
       <div
         className="
-         flex flex-col // Base layout is now flex column for mobile header
+         flex flex-col
          fixed
          inset-x-0
          bottom-0
@@ -367,7 +365,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
        "
       >
         {/* MOBILE-ONLY HEADER */}
-        <div className="bg-[#0e1421] border-b px-2 py-2 md:hidden flex items-center justify-between gap-2">
+        <div className="bg-[#0e1421]  border-b px-2 py-2 md:hidden flex items-center justify-between">
           <LeftBarSheet
             agent={agent}
             isOwner={isOwner}
@@ -412,28 +410,10 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
             onCollapse={() => setIsSidebarCollapsed(true)}
             onExpand={() => setIsSidebarCollapsed(false)}
             className={cn(
-              'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 transition-all duration-300 ease-in-out',
+              'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out',
               isSidebarCollapsed && 'p-0 border-none',
             )}
           >
-            {/* Collapse/Expand Button - visible only on desktop */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'absolute top-2 right-2 hidden md:inline-flex z-10 size-7 group',
-                isSidebarCollapsed &&
-                  'top-1/2 -translate-y-1/2 right-[-1.2rem] border rounded-full bg-background hover:bg-muted',
-              )}
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            >
-              {isSidebarCollapsed ? (
-                <PanelRightClose className="size-4 group-hover:scale-110 transition-transform" />
-              ) : (
-                <PanelLeftClose className="size-4 group-hover:scale-110 transition-transform" />
-              )}
-            </Button>
-
             {/* Render content only if not collapsed */}
             {!isSidebarCollapsed && (
               <ChatSidebarContent
@@ -447,7 +427,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           {/* Separator Handle - visible only on desktop */}
           <ResizableHandle
             withHandle
-            className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors"
+            className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
           />
 
           {/* MAIN CONTENT PANEL */}
