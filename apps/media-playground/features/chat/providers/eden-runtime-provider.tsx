@@ -564,10 +564,23 @@ export function EdenRuntimeProvider({
           try {
             const messageData = JSON.parse(pendingMessageData)
             const messageTimestamp = new Date(messageData.timestamp)
+            const fiveSeconds = 5 * 1000
+
             // Only use messages that are less than 5 minutes old
             if (Date.now() - messageTimestamp.getTime() < 5 * 60 * 1000) {
-              // Check if this message exists in currentMessages
-              const messageExists = currentMessages.some(
+              // --- Check for existing similar message BEFORE adding ---
+              const similarMessageExists = currentMessages.some(
+                existingMsg =>
+                  existingMsg.role === 'user' &&
+                  existingMsg.content === messageData.content &&
+                  Math.abs(
+                    new Date(existingMsg.createdAt).getTime() -
+                      messageTimestamp.getTime(),
+                  ) < fiveSeconds,
+              )
+
+              // Check if this message exists based on temp ID (less reliable)
+              const tempMessageExists = currentMessages.some(
                 m =>
                   m.id === messageData.message_id ||
                   (m.id.startsWith('temp-') &&
@@ -575,9 +588,9 @@ export function EdenRuntimeProvider({
                     m.content === messageData.content),
               )
 
-              if (!messageExists) {
+              if (!similarMessageExists && !tempMessageExists) {
                 console.log(
-                  'EdenRuntimeProvider: Adding pending message from localStorage',
+                  'EdenRuntimeProvider: Adding pending message from localStorage (no similar message found)',
                   {
                     messageId: messageData.message_id,
                     content: messageData.content,
@@ -590,7 +603,6 @@ export function EdenRuntimeProvider({
                   content: messageData.content,
                   attachments: messageData.attachments || [],
                   createdAt: messageTimestamp,
-                  // Add default/undefined for other potential ThreadMessage fields if needed
                 }
 
                 // Insert the pending message at the correct position based on timestamp
@@ -603,9 +615,17 @@ export function EdenRuntimeProvider({
                 } else {
                   currentMessages.splice(insertIndex, 0, pendingMessage)
                 }
+              } else {
+                console.log(
+                  'EdenRuntimeProvider: Skipping pending message from localStorage (similar message already exists)',
+                  {
+                    messageId: messageData.message_id,
+                    content: messageData.content,
+                  },
+                )
               }
             }
-            // Clean up the pending message regardless of whether it was added (it might be old or already exist)
+            // Clean up the pending message regardless of whether it was added/skipped
             localStorage.removeItem(pendingMessageKey)
           } catch (e) {
             console.error(

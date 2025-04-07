@@ -28,22 +28,40 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
-      // console.log('useEdenMessages.addOrUpdateMessage - start', {
-      //   messageId: message.id,
-      //   role: message.role,
-      //   status: message.status,
-      //   activeIds,
-      //   createdAt: message.createdAt,
-      //   content: message.content,
-      // })
-
-      // Update active IDs state if provided and connection is open
-      // if (activeIds !== undefined && readyState === ReadyState.OPEN) {
-      //   setActiveMessageIds(activeIds)
-      // }
-
       setMessages(currentMessages => {
         let updatedMessages = [...currentMessages]
+        const fiveSeconds = 5 * 1000
+
+        // --- START: Check if incoming is a real message replacing a temp one ---
+        const isRealUserMessage =
+          message.role === 'user' && !message.id.startsWith('temp-')
+        let tempDuplicateIndex = -1
+
+        if (isRealUserMessage) {
+          tempDuplicateIndex = updatedMessages.findIndex(
+            m =>
+              m.role === 'user' &&
+              m.id.startsWith('temp-') &&
+              m.content === message.content &&
+              Math.abs(
+                new Date(m.createdAt).getTime() -
+                  new Date(message.createdAt).getTime(),
+              ) < fiveSeconds,
+          )
+
+          if (tempDuplicateIndex !== -1) {
+            console.log(
+              'useEdenMessages: Removing temporary duplicate for incoming real message',
+              {
+                tempId: updatedMessages[tempDuplicateIndex].id,
+                realId: message.id,
+                content: message.content,
+              },
+            )
+            updatedMessages.splice(tempDuplicateIndex, 1)
+          }
+        }
+        // --- END: Check for real message replacing temp one ---
 
         // Check if the stream just finished (activeIds provided and is empty)
         const streamJustFinished =
@@ -53,12 +71,6 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
           // Mark any remaining running assistant messages as complete
           updatedMessages = updatedMessages.map(m => {
             if (m.role === 'assistant' && m.status?.type === 'running') {
-              // console.log(
-              //   'useEdenMessages.addOrUpdateMessage - stream finished, marking running message as complete',
-              //   {
-              //     messageId: m.id,
-              //   },
-              // )
               return {
                 ...m,
                 status: { type: 'complete', reason: 'stop' },
@@ -68,83 +80,44 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
           })
         }
 
-        // Find any matching messages using existing logic
-        const matchingMessages = updatedMessages.filter(
-          m =>
-            m.id === message.id ||
-            (m.id.startsWith('temp-') &&
-              message.id.startsWith('temp-') &&
-              m.content === message.content &&
-              m.role === message.role),
+        // Find existing message by ID (handles both temp and real IDs)
+        const existingMessageIndex = updatedMessages.findIndex(
+          m => m.id === message.id,
         )
 
-        if (matchingMessages.length > 0) {
-          // Replace the matching messages
-          return updatedMessages.map(m => {
-            if (matchingMessages.some(match => match.id === m.id)) {
-              // Determine the correct status based ONLY on the incoming message's status
-              // unless the stream just finished (handled above)
-              const newStatus = streamJustFinished
-                ? { type: 'complete', reason: 'stop' } // Already marked complete if stream finished
-                : message.status // Otherwise, use the status from the incoming message part
-
-              // console.log(
-              //   'useEdenMessages.addOrUpdateMessage - replacing message',
-              //   {
-              //     oldId: m.id,
-              //     newId: message.id,
-              //     oldStatus: m.status,
-              //     newStatus: newStatus,
-              //     content: message.content,
-              //   },
-              // )
-
-              return {
-                ...m, // Start with existing message data
-                ...message, // Overwrite with new message data
-                // Preserve existing tool_calls if the new message doesn't have any
-                tool_calls: message.tool_calls || m.tool_calls,
-                status: newStatus, // Apply the determined status
-              }
-            }
-            return m
-          })
-        } else {
-          // Add new message
-          const isAssistant = message.role === 'assistant'
-          // Determine status based on incoming message, unless stream just finished
-          const calculatedStatus = streamJustFinished
+        if (existingMessageIndex !== -1) {
+          // Replace existing message
+          const newStatus = streamJustFinished
             ? { type: 'complete' as const, reason: 'stop' as const }
             : message.status
 
-          // Only assign status if it's an assistant message OR if calculatedStatus is defined
-          // User messages should not have a status unless explicitly provided (which they shouldn't be)
-          const finalStatus = isAssistant
-            ? calculatedStatus ?? {
-                type: 'complete' as const,
-                reason: 'unknown' as const,
-              }
-            : undefined
+          updatedMessages[existingMessageIndex] = {
+            ...updatedMessages[existingMessageIndex], // Keep existing data
+            ...message, // Overwrite with new data (including potentially real ID)
+            tool_calls:
+              message.tool_calls ||
+              updatedMessages[existingMessageIndex].tool_calls,
+            status: newStatus,
+          }
+          return updatedMessages
+        } else {
+          // Add new message
+          const isAssistant = message.role === 'assistant'
+          const calculatedStatus = streamJustFinished
+            ? { type: 'complete' as const, reason: 'stop' as const }
+            : message.status
+          const finalStatus = isAssistant ? calculatedStatus : undefined
 
           const messageToAdd = {
             ...message,
-            // Only include status field if it's defined (i.e., for assistant messages)
             ...(finalStatus && { status: finalStatus }),
           }
-
-          // console.log('useEdenMessages.addOrUpdateMessage - adding new', {
-          //   messageId: message.id,
-          //   isActive: finalStatus?.type === 'running', // Check optional type
-          //   isAssistant,
-          //   status: finalStatus, // Log the final status or undefined
-          //   createdAt: messageToAdd.createdAt,
-          // })
 
           return [...updatedMessages, messageToAdd]
         }
       })
     },
-    [readyState], // Removed activeMessageIds dependency as it's read directly inside
+    [], // Keep dependencies empty as setMessages handles state correctly
   )
 
   // Reset active messages when connection is lost
