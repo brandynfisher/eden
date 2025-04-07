@@ -66,6 +66,8 @@ const MyAssistantMessage: FC = () => {
   const status = useMessage(m => m.status)
   const id = useMessage(m => m.id)
 
+  console.log('MyAssistantMessage', id, status, content)
+
   // Memoize the derived state to prevent unnecessary recalculations
   const { isEmpty, isRunning } = React.useMemo(
     () => ({
@@ -76,57 +78,57 @@ const MyAssistantMessage: FC = () => {
   )
 
   // Track previous state to prevent unnecessary flashing
-  const prevStateRef = React.useRef({ isEmpty, isRunning })
-  const [debouncedState, setDebouncedState] = React.useState({
-    isEmpty,
-    isRunning,
-  })
+  // const prevStateRef = React.useRef({ isEmpty, isRunning })
+  // const [debouncedState, setDebouncedState] = React.useState({
+  //   isEmpty,
+  //   isRunning,
+  // })
 
-  React.useEffect(() => {
-    // Only update if the state has been stable for the debounce period
-    // and is different from the current debounced state
-    if (
-      isEmpty !== prevStateRef.current.isEmpty ||
-      isRunning !== prevStateRef.current.isRunning
-    ) {
-      prevStateRef.current = { isEmpty, isRunning }
+  // React.useEffect(() => {
+  //   // Only update if the state has been stable for the debounce period
+  //   // and is different from the current debounced state
+  //   if (
+  //     isEmpty !== prevStateRef.current.isEmpty ||
+  //     isRunning !== prevStateRef.current.isRunning
+  //   ) {
+  //     prevStateRef.current = { isEmpty, isRunning }
 
-      // For transitions to empty/running state, add a small delay
-      // For transitions to non-empty/non-running state, update immediately
-      const delay = isEmpty || isRunning ? 100 : 0
+  //     // For transitions to empty/running state, add a small delay
+  //     // For transitions to non-empty/non-running state, update immediately
+  //     const delay = isEmpty || isRunning ? 100 : 0
 
-      const timer = setTimeout(() => {
-        // Only update if the state hasn't changed during the delay
-        if (
-          isEmpty === prevStateRef.current.isEmpty &&
-          isRunning === prevStateRef.current.isRunning
-        ) {
-          setDebouncedState({ isEmpty, isRunning })
-        }
-      }, delay)
+  //     const timer = setTimeout(() => {
+  //       // Only update if the state hasn't changed during the delay
+  //       if (
+  //         isEmpty === prevStateRef.current.isEmpty &&
+  //         isRunning === prevStateRef.current.isRunning
+  //       ) {
+  //         setDebouncedState({ isEmpty, isRunning })
+  //       }
+  //     }, delay)
 
-      return () => clearTimeout(timer)
-    }
-  }, [isEmpty, isRunning])
+  //     return () => clearTimeout(timer)
+  //   }
+  // }, [isEmpty, isRunning])
 
   return (
     <AssistantMessage.Root
       className={cn([
         'block px-2 md:grid',
-        debouncedState.isRunning &&
+        isRunning && // Use raw isRunning
           'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >
       <MyAssistantMessageAvatar />
-      {!debouncedState.isEmpty && (
+      {!isEmpty && ( // Use raw isEmpty
         <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
       )}
       <BranchPicker />
-      {debouncedState.isEmpty || debouncedState.isRunning ? (
+      {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
         <div
           className={cn(
             'col-start-3 row-start-2',
-            debouncedState.isEmpty && 'col-start-auto row-start-auto mt-2',
+            isEmpty && 'col-start-auto row-start-auto mt-2', // Use raw isEmpty
           )}
         >
           <TypingIndicator />

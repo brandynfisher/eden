@@ -37,22 +37,39 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         content: message.content,
       })
 
-      // Only update active IDs if connection is open and they're provided
+      // Update active IDs state if provided and connection is open
       if (activeIds !== undefined && readyState === ReadyState.OPEN) {
-        console.log(
-          'useEdenMessages.addOrUpdateMessage - updating active IDs',
-          {
-            activeIds,
-          },
-        )
         setActiveMessageIds(activeIds)
       }
 
       setMessages(currentMessages => {
-        // Find any matching messages - only match if:
-        // 1. IDs match exactly, OR
-        // 2. Both messages are temp messages with matching content and role
-        const matchingMessages = currentMessages.filter(
+        let updatedMessages = [...currentMessages]
+
+        // Check if the stream just finished (activeIds provided and is empty)
+        const streamJustFinished =
+          activeIds !== undefined && activeIds.length === 0
+
+        if (streamJustFinished) {
+          // Mark any remaining running assistant messages as complete
+          updatedMessages = updatedMessages.map(m => {
+            if (m.role === 'assistant' && m.status?.type === 'running') {
+              console.log(
+                'useEdenMessages.addOrUpdateMessage - stream finished, marking running message as complete',
+                {
+                  messageId: m.id,
+                },
+              )
+              return {
+                ...m,
+                status: { type: 'complete', reason: 'stop' },
+              }
+            }
+            return m
+          })
+        }
+
+        // Find any matching messages using existing logic
+        const matchingMessages = updatedMessages.filter(
           m =>
             m.id === message.id ||
             (m.id.startsWith('temp-') &&
@@ -62,67 +79,77 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         )
 
         if (matchingMessages.length > 0) {
-          // Replace only the matching messages
-          return currentMessages.map(m => {
+          // Replace the matching messages
+          return updatedMessages.map(m => {
             if (matchingMessages.some(match => match.id === m.id)) {
+              // Determine the correct status based ONLY on the incoming message's status
+              // unless the stream just finished (handled above)
+              const newStatus = streamJustFinished
+                ? { type: 'complete', reason: 'stop' } // Already marked complete if stream finished
+                : message.status // Otherwise, use the status from the incoming message part
+
               console.log(
                 'useEdenMessages.addOrUpdateMessage - replacing message',
                 {
                   oldId: m.id,
                   newId: message.id,
+                  oldStatus: m.status,
+                  newStatus: newStatus,
                   content: message.content,
                 },
               )
+
               return {
-                ...message,
+                ...m, // Start with existing message data
+                ...message, // Overwrite with new message data
                 // Preserve existing tool_calls if the new message doesn't have any
                 tool_calls: message.tool_calls || m.tool_calls,
-                // If message is in active array and is an assistant message, ensure it stays running
-                status:
-                  activeIds?.includes(message.id) &&
-                  message.role === 'assistant'
-                    ? { type: 'running' }
-                    : message.status,
+                status: newStatus, // Apply the determined status
               }
             }
             return m
           })
+        } else {
+          // Add new message
+          const isAssistant = message.role === 'assistant'
+          // Determine status based on incoming message, unless stream just finished
+          const calculatedStatus = streamJustFinished
+            ? { type: 'complete' as const, reason: 'stop' as const }
+            : message.status
+
+          // Only assign status if it's an assistant message OR if calculatedStatus is defined
+          // User messages should not have a status unless explicitly provided (which they shouldn't be)
+          const finalStatus = isAssistant
+            ? calculatedStatus ?? {
+                type: 'complete' as const,
+                reason: 'unknown' as const,
+              }
+            : undefined
+
+          const messageToAdd = {
+            ...message,
+            // Only include status field if it's defined (i.e., for assistant messages)
+            ...(finalStatus && { status: finalStatus }),
+          }
+
+          console.log('useEdenMessages.addOrUpdateMessage - adding new', {
+            messageId: message.id,
+            isActive: finalStatus?.type === 'running', // Check optional type
+            isAssistant,
+            status: finalStatus, // Log the final status or undefined
+            createdAt: messageToAdd.createdAt,
+          })
+
+          return [...updatedMessages, messageToAdd]
         }
-
-        // For new messages:
-        // 1. If it's in the active array and is an assistant message, it should be running
-        // 2. If it's a reply to an active message and is an assistant message, it should be running
-        // 3. If it's part of an active chain and is an assistant message, it should be running
-        const isActive = activeIds?.includes(message.id)
-        const isPartOfActiveChain =
-          message.reply_to &&
-          (activeIds?.includes(message.reply_to) ||
-            activeMessageIds.includes(message.reply_to))
-        const isAssistant = message.role === 'assistant'
-
-        const messageToAdd = {
-          ...message,
-          status:
-            isAssistant && (isActive || isPartOfActiveChain)
-              ? { type: 'running' }
-              : message.status,
-        }
-
-        console.log('useEdenMessages.addOrUpdateMessage - adding new', {
-          messageId: message.id,
-          isActive,
-          isPartOfActiveChain,
-          isAssistant,
-          status: messageToAdd.status,
-          createdAt: messageToAdd.createdAt,
-        })
-
-        // Add new message
-        return [...currentMessages, messageToAdd]
       })
     },
-    [activeMessageIds, readyState],
+    [readyState], // Removed activeMessageIds dependency as it's read directly inside
   )
+
+  useEffect(() => {
+    console.log('useEdenMessages.activeMessageIds', activeMessageIds)
+  }, [activeMessageIds])
 
   // Reset active messages when connection is lost
   useEffect(() => {

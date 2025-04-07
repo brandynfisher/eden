@@ -22,7 +22,7 @@ export const useWebSocketMessage = ({
     if (abortSignal?.aborted) return
 
     if (lastMessageJson?.event === eventType) {
-      setMessage(lastMessageJson)
+      setMessage({ ...lastMessageJson })
     }
   }, [lastMessageJson, eventType, abortSignal])
 
