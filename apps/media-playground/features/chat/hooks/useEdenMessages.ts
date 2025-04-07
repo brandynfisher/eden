@@ -22,131 +22,102 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
   ) => Promise<AsyncGenerator<MessageResponse<TMessage>>>
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
-  const [activeMessageIds, setActiveMessageIds] = useState<string[]>([])
+  // const [activeMessageIds, setActiveMessageIds] = useState<string[]>([])
   const { readyState } = useWebSocketContext()
   const lastConnectionStateRef = useRef<ReadyState>(readyState)
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
-      console.log('useEdenMessages.addOrUpdateMessage - start', {
-        messageId: message.id,
-        role: message.role,
-        status: message.status,
-        activeIds,
-      })
-
-      // Only update active IDs if connection is open and they're provided
-      if (activeIds !== undefined && readyState === ReadyState.OPEN) {
-        console.log(
-          'useEdenMessages.addOrUpdateMessage - updating active IDs',
-          {
-            activeIds,
-          },
-        )
-        setActiveMessageIds(activeIds)
-      }
-
       setMessages(currentMessages => {
-        const index = currentMessages.findIndex(m => m.id === message.id)
+        let updatedMessages = [...currentMessages]
+        const fiveSeconds = 5 * 1000
 
-        if (index !== -1) {
-          // Check if the message content and status are identical
-          const existingMessage = currentMessages[index]
-          const isIdentical =
-            existingMessage.content === message.content &&
-            existingMessage.status?.type === message.status?.type &&
-            existingMessage.status?.reason === message.status?.reason &&
-            JSON.stringify(existingMessage.tool_calls) ===
-              JSON.stringify(message.tool_calls)
+        // --- START: Check if incoming is a real message replacing a temp one ---
+        const isRealUserMessage =
+          message.role === 'user' && !message.id.startsWith('temp-')
+        let tempDuplicateIndex = -1
 
-          // If message is identical, don't update
-          if (isIdentical) {
+        if (isRealUserMessage) {
+          tempDuplicateIndex = updatedMessages.findIndex(
+            m =>
+              m.role === 'user' &&
+              m.id.startsWith('temp-') &&
+              m.content === message.content &&
+              Math.abs(
+                new Date(m.createdAt).getTime() -
+                  new Date(message.createdAt).getTime(),
+              ) < fiveSeconds,
+          )
+
+          if (tempDuplicateIndex !== -1) {
             console.log(
-              'useEdenMessages.addOrUpdateMessage - identical, skipping',
+              'useEdenMessages: Removing temporary duplicate for incoming real message',
               {
-                messageId: message.id,
+                tempId: updatedMessages[tempDuplicateIndex].id,
+                realId: message.id,
+                content: message.content,
               },
             )
-            return currentMessages
+            updatedMessages.splice(tempDuplicateIndex, 1)
           }
+        }
+        // --- END: Check for real message replacing temp one ---
 
-          // Update existing message while preserving tool_calls if they exist
-          const updatedMessages = [...currentMessages]
-          updatedMessages[index] = {
-            ...existingMessage,
-            ...message,
-            // Preserve existing tool_calls if the new message doesn't have any
-            tool_calls: message.tool_calls || existingMessage.tool_calls,
-            // If message is in active array and is an assistant message, ensure it stays running
-            status:
-              activeIds?.includes(message.id) && message.role === 'assistant'
-                ? { type: 'running' }
-                : message.status,
-          }
-          console.log('useEdenMessages.addOrUpdateMessage - updated existing', {
-            messageId: message.id,
-            index,
-            status: updatedMessages[index].status,
+        // Check if the stream just finished (activeIds provided and is empty)
+        const streamJustFinished =
+          activeIds !== undefined && activeIds.length === 0
+
+        if (streamJustFinished) {
+          // Mark any remaining running assistant messages as complete
+          updatedMessages = updatedMessages.map(m => {
+            if (m.role === 'assistant' && m.status?.type === 'running') {
+              return {
+                ...m,
+                status: { type: 'complete', reason: 'stop' },
+              }
+            }
+            return m
           })
-          return updatedMessages
         }
 
-        // When receiving a completion message, only complete messages that:
-        // 1. Are not in the active array
-        // 2. Are not the current message
-        // 3. Are assistant messages
-        const updatedMessages = currentMessages.map(m => {
-          const isRunning = m.status?.type === 'running'
-          const isCompletionMessage = message.status?.type === 'complete'
-          const isActive =
-            activeIds?.includes(m.id) || activeMessageIds.includes(m.id)
-          const isCurrentMessage = m.id === message.id
-          const isAssistant = m.role === 'assistant'
+        // Find existing message by ID (handles both temp and real IDs)
+        const existingMessageIndex = updatedMessages.findIndex(
+          m => m.id === message.id,
+        )
 
-          if (
-            isRunning &&
-            !isActive &&
-            !isCurrentMessage &&
-            isCompletionMessage &&
-            isAssistant
-          ) {
-            return { ...m, status: { type: 'complete', reason: 'stop' } }
+        if (existingMessageIndex !== -1) {
+          // Replace existing message
+          const newStatus = streamJustFinished
+            ? { type: 'complete' as const, reason: 'stop' as const }
+            : message.status
+
+          updatedMessages[existingMessageIndex] = {
+            ...updatedMessages[existingMessageIndex], // Keep existing data
+            ...message, // Overwrite with new data (including potentially real ID)
+            tool_calls:
+              message.tool_calls ||
+              updatedMessages[existingMessageIndex].tool_calls,
+            status: newStatus,
           }
-          return m
-        })
+          return updatedMessages
+        } else {
+          // Add new message
+          const isAssistant = message.role === 'assistant'
+          const calculatedStatus = streamJustFinished
+            ? { type: 'complete' as const, reason: 'stop' as const }
+            : message.status
+          const finalStatus = isAssistant ? calculatedStatus : undefined
 
-        // For new messages:
-        // 1. If it's in the active array and is an assistant message, it should be running
-        // 2. If it's a reply to an active message and is an assistant message, it should be running
-        // 3. If it's part of an active chain and is an assistant message, it should be running
-        const isActive = activeIds?.includes(message.id)
-        const isPartOfActiveChain =
-          message.reply_to &&
-          (activeIds?.includes(message.reply_to) ||
-            activeMessageIds.includes(message.reply_to))
-        const isAssistant = message.role === 'assistant'
+          const messageToAdd = {
+            ...message,
+            ...(finalStatus && { status: finalStatus }),
+          }
 
-        const messageToAdd = {
-          ...message,
-          status:
-            isAssistant && (isActive || isPartOfActiveChain)
-              ? { type: 'running' }
-              : message.status,
+          return [...updatedMessages, messageToAdd]
         }
-
-        console.log('useEdenMessages.addOrUpdateMessage - adding new', {
-          messageId: message.id,
-          isActive,
-          isPartOfActiveChain,
-          isAssistant,
-          status: messageToAdd.status,
-        })
-
-        // Add new message
-        return [...updatedMessages, messageToAdd]
       })
     },
-    [activeMessageIds, readyState],
+    [], // Keep dependencies empty as setMessages handles state correctly
   )
 
   // Reset active messages when connection is lost
@@ -159,7 +130,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         readyState === ReadyState.CLOSED ||
         readyState === ReadyState.CLOSING
       ) {
-        setActiveMessageIds([])
+        // setActiveMessageIds([])
         // Mark all running messages as complete with error
         setMessages(currentMessages =>
           currentMessages.map(m =>
@@ -173,140 +144,64 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
   }, [readyState])
 
   // Check for pending message in localStorage on mount
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const threadId = window.location.pathname.split('/').pop()
-    if (!threadId) return
-
-    const pendingMessageKey = `pending-message-${threadId}`
-    const pendingMessageData = localStorage.getItem(pendingMessageKey)
-
-    if (pendingMessageData) {
-      try {
-        const messageData = JSON.parse(pendingMessageData)
-        // Only use messages that are less than 5 minutes old
-        if (Date.now() - messageData.timestamp < 5 * 60 * 1000) {
-          // Add the pending message to the messages state
-          const pendingMessage = {
-            id: messageData.message_id,
-            role: 'user' as const,
-            content: messageData.content,
-            attachments: messageData.attachments || [],
-            createdAt: new Date(messageData.timestamp),
-          } as TMessage
-
-          // Add message and mark it as active
-          addOrUpdateMessage(pendingMessage, [messageData.message_id])
-        }
-      } catch (e) {
-        console.error('Error parsing pending message:', e)
-      }
-      // Clean up the pending message
-      localStorage.removeItem(pendingMessageKey)
-    }
-  }, [addOrUpdateMessage])
+  // REMOVED UseEffect for pending message
 
   // Wrap setMessages to properly handle active messages when switching threads
   const setMessagesWithActive = useCallback(
     (
       newMessages: TMessage[] | ((prev: TMessage[]) => TMessage[]),
-      activeIds?: string[],
+      // activeIds?: string[],
     ) => {
-      console.log('useEdenMessages.setMessagesWithActive - start', {
-        isArray: Array.isArray(newMessages),
-        messageCount: Array.isArray(newMessages)
-          ? newMessages.length
-          : 'function',
-        activeIds,
-      })
-
       // Reset active message IDs when setting new messages
       if (Array.isArray(newMessages)) {
-        // If activeIds is provided, use those directly
-        if (activeIds !== undefined) {
-          console.log(
-            'useEdenMessages.setMessagesWithActive - using provided active',
-            {
-              activeIds,
-            },
-          )
-          setActiveMessageIds(activeIds)
-        } else {
-          // Otherwise, scan messages for running ones
-          const runningMessageIds = newMessages
-            .filter(
-              msg =>
-                msg.role === 'assistant' &&
-                (msg.status?.type === 'running' ||
-                  msg.tool_calls?.some(
-                    call =>
-                      !call.status ||
-                      call.status === 'running' ||
-                      call.status === 'pending',
-                  )),
-            )
-            .map(msg => msg.id)
-
-          const newActiveIds = runningMessageIds
-          console.log(
-            'useEdenMessages.setMessagesWithActive - computed active',
-            {
-              runningMessageIds,
-              newActiveIds,
-            },
-          )
-          setActiveMessageIds(newActiveIds)
-        }
-
         // Set messages in a single batch update
         setMessages(newMessages)
       } else {
         // Handle function updates
         setMessages(prev => {
           const nextMessages = newMessages(prev)
-          console.log(
-            'useEdenMessages.setMessagesWithActive - function update',
-            {
-              prevCount: prev.length,
-              nextCount: nextMessages.length,
-            },
-          )
+          // console.log(
+          //   'useEdenMessages.setMessagesWithActive - function update',
+          //   {
+          //     prevCount: prev.length,
+          //     nextCount: nextMessages.length,
+          //   },
+          // )
 
           // Update active IDs based on the new messages
-          if (activeIds !== undefined) {
-            console.log(
-              'useEdenMessages.setMessagesWithActive - using provided active (function)',
-              {
-                activeIds,
-              },
-            )
-            setActiveMessageIds(activeIds)
-          } else {
-            const runningMessageIds = nextMessages
-              .filter(
-                msg =>
-                  msg.role === 'assistant' &&
-                  (msg.status?.type === 'running' ||
-                    msg.tool_calls?.some(
-                      call =>
-                        !call.status ||
-                        call.status === 'running' ||
-                        call.status === 'pending',
-                    )),
-              )
-              .map(msg => msg.id)
+          // if (activeIds !== undefined) {
+          // console.log(
+          //   'useEdenMessages.setMessagesWithActive - using provided active (function)',
+          //   {
+          //     activeIds,
+          //   },
+          // )
+          // setActiveMessageIds(activeIds)
+          // } else {
+          // const runningMessageIds = nextMessages
+          //   .filter(
+          //     (msg: TMessage) =>
+          //       msg.role === 'assistant' &&
+          //       (msg.status?.type === 'running' ||
+          //         msg.tool_calls?.some(
+          //           (call: { status?: string }) =>
+          //             !call.status ||
+          //             call.status === 'running' ||
+          //             call.status === 'pending',
+          //         )),
+          //   )
+          //   .map((msg: TMessage) => msg.id)
 
-            const newActiveIds = runningMessageIds
-            console.log(
-              'useEdenMessages.setMessagesWithActive - computed active (function)',
-              {
-                runningMessageIds,
-                newActiveIds,
-              },
-            )
-            setActiveMessageIds(newActiveIds)
-          }
+          // const newActiveIds = runningMessageIds
+          // console.log(
+          //   'useEdenMessages.setMessagesWithActive - computed active (function)',
+          //   {
+          //     runningMessageIds,
+          //     newActiveIds,
+          //   },
+          // )
+          // setActiveMessageIds(newActiveIds)
+          // }
 
           return nextMessages
         })
@@ -320,9 +215,9 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       newMessages: TMessage[],
       callback?: (thread_id?: string) => Promise<void>,
     ) => {
-      console.log('sendMessage', newMessages)
+      // console.log('sendMessage', newMessages)
       // Reset active message IDs when starting a new message chain
-      setActiveMessageIds([])
+      // setActiveMessageIds([])
 
       // Add new messages optimistically with running status for assistant messages
       newMessages.forEach(message => {
@@ -337,7 +232,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       try {
         const response = await stream(newMessages, callback)
         for await (const message of response) {
-          console.log('addOrUpdateMessage', message)
+          // console.log('addOrUpdateMessage', message)
           // Extract active IDs from the message if available
           const activeIds = message.data.active
           addOrUpdateMessage(message.data, activeIds)
@@ -352,7 +247,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
               : m,
           ),
         )
-        setActiveMessageIds([])
+        // setActiveMessageIds([])
       }
     },
     [addOrUpdateMessage],

@@ -69,12 +69,18 @@ export const useEdenRuntime = ({
 
   // Add mounted ref to prevent state updates after unmount
   const isMounted = useRef(true)
+  const currentThreadIdRef = useRef<string | undefined>(threadId)
 
   useEffect(() => {
     return () => {
       isMounted.current = false
     }
   }, [])
+
+  // Update currentThreadIdRef when threadId prop changes
+  useEffect(() => {
+    currentThreadIdRef.current = threadId
+  }, [threadId])
 
   // Setup intersection observer for infinite scrolling
   useEffect(() => {
@@ -169,56 +175,111 @@ export const useEdenRuntime = ({
                 setIsRunning(false)
                 await onSwitchToNewThread()
                 setMessages([])
+                currentThreadIdRef.current = undefined
               },
           onSwitchToThread: !onSwitchToThread
             ? undefined
-            : async threadId => {
-                console.log('useEdenRuntime.onSwitchToThread - start', {
-                  threadId,
-                })
-                // Reset running state and messages before switching
-                setIsRunning(false)
-                setMessages([])
+            : async (newThreadId: string) => {
+                // console.log('useEdenRuntime.onSwitchToThread - start', {
+                //   newThreadId,
+                //   currentThreadId: currentThreadIdRef.current,
+                // })
 
-                // Get fresh thread data
-                const { messages, active } = await onSwitchToThread(threadId)
-                console.log('useEdenRuntime.onSwitchToThread - got data', {
-                  threadId,
-                  messageCount: messages.length,
-                  hasRunning: messages.some(m => m.status?.type === 'running'),
-                  active,
-                  lastMessage: messages[messages.length - 1],
-                })
+                try {
+                  // Don't reset running state until we have new thread data
+                  const { messages, active } = await onSwitchToThread(
+                    newThreadId,
+                  )
 
-                // Process messages to determine running state
-                const hasRunningMessage = messages.some(
-                  m =>
-                    m.status?.type === 'running' ||
-                    m.tool_calls?.some(
+                  // Update current thread ID after successful switch
+                  currentThreadIdRef.current = newThreadId
+
+                  // console.log('useEdenRuntime.onSwitchToThread - got data', {
+                  //   threadId: newThreadId,
+                  //   currentThreadId: currentThreadIdRef.current,
+                  //   messageCount: messages.length,
+                  //   hasRunning: messages.some(
+                  //     m => m.status?.type === 'running',
+                  //   ),
+                  //   active,
+                  //   lastMessage: messages[messages.length - 1],
+                  // })
+
+                  // Process messages to determine running state
+                  const hasRunningMessage = messages.some(
+                    m =>
+                      m.status?.type === 'running' ||
+                      m.tool_calls?.some(
+                        call =>
+                          !call.status ||
+                          call.status === 'running' ||
+                          call.status === 'pending',
+                      ) ||
+                      !m.content ||
+                      m.content.length === 0,
+                  )
+
+                  // Also check if any messages are in active array
+                  const hasActiveMessages = (active?.length ?? 0) > 0
+
+                  // Check for messages that should be running based on their role and status
+                  const processedMessages = messages.map(msg => {
+                    if (msg.role !== 'assistant') return msg
+
+                    // A message should be running if:
+                    // 1. It's in the active array
+                    // 2. It has pending tool calls
+                    // 3. It's incomplete (no content)
+                    // 4. It's already marked as running
+                    const isActive = active?.includes(msg.id)
+                    const hasPendingTools = msg.tool_calls?.some(
                       call =>
                         !call.status ||
                         call.status === 'running' ||
                         call.status === 'pending',
-                    ),
-                )
+                    )
+                    const isIncomplete =
+                      !msg.content || msg.content.length === 0
+                    const isCurrentlyRunning = msg.status?.type === 'running'
 
-                // Also consider messages in active array
-                const hasActiveMessages = active && active.length > 0
+                    return {
+                      ...msg,
+                      status:
+                        isActive ||
+                        hasPendingTools ||
+                        isIncomplete ||
+                        isCurrentlyRunning
+                          ? { type: 'running' as const }
+                          : msg.status,
+                    } as ThreadMessageWithStatus
+                  })
 
-                // Set messages first, then update running state
-                console.log('useEdenRuntime.onSwitchToThread - setting state', {
-                  threadId,
-                  hasRunningMessage,
-                  hasActiveMessages,
-                  messageCount: messages.length,
-                })
-                setMessages(messages, active)
-                setIsRunning(hasRunningMessage || hasActiveMessages)
+                  // console.log(
+                  //   'useEdenRuntime.onSwitchToThread - setting state',
+                  //   {
+                  //     threadId: newThreadId,
+                  //     currentThreadId: currentThreadIdRef.current,
+                  //     hasRunningMessage,
+                  //     hasActiveMessages,
+                  //     messageCount: messages.length,
+                  //     runningCount: processedMessages.filter(
+                  //       m => m.status?.type === 'running',
+                  //     ).length,
+                  //   },
+                  // )
 
-                // Update thread list after a delay
-                setTimeout(async () => {
-                  await invalidate()
-                }, 1000)
+                  // Set messages and running state atomically
+                  setMessages(processedMessages)
+                  setIsRunning(hasRunningMessage || hasActiveMessages)
+
+                  // Update thread list after a delay to ensure UI is updated
+                  setTimeout(async () => {
+                    await invalidate()
+                  }, 1000)
+                } catch (error) {
+                  console.error('Error switching thread:', error)
+                  throw error
+                }
               },
           onRename: !onRename
             ? undefined

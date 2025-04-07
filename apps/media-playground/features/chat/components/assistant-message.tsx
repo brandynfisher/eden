@@ -75,64 +75,33 @@ const MyAssistantMessage: FC = () => {
     [content, status?.type],
   )
 
-  // Debounce state changes to prevent flicker
-  const [debouncedIsEmpty, setDebouncedIsEmpty] = React.useState(isEmpty)
-  const [debouncedIsRunning, setDebouncedIsRunning] = React.useState(isRunning)
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedIsEmpty(isEmpty)
-      setDebouncedIsRunning(isRunning)
-    }, 100) // Small delay to prevent flicker
-    return () => clearTimeout(timer)
-  }, [isEmpty, isRunning])
-
-  // console.log({
-  //   isEmpty,
-  //   isRunning,
-  //   content,
-  //   status,
-  //   debounced: { isEmpty: debouncedIsEmpty, isRunning: debouncedIsRunning },
-  // })
-
   return (
     <AssistantMessage.Root
       className={cn([
         'block px-2 md:grid',
-        debouncedIsRunning &&
+        isRunning && // Use raw isRunning
           'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >
       <MyAssistantMessageAvatar />
-      {!debouncedIsEmpty && (
+      {!isEmpty && ( // Use raw isEmpty
         <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
       )}
       <BranchPicker />
-      {debouncedIsEmpty || debouncedIsRunning ? (
+      {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
         <div
           className={cn(
             'col-start-3 row-start-2',
-            debouncedIsEmpty && 'col-start-auto row-start-auto mt-2',
+            isEmpty && 'col-start-auto row-start-auto mt-2', // Use raw isEmpty
           )}
         >
           <TypingIndicator />
         </div>
       ) : null}
-      {/* <ThreadPrimitive.If running={true} empty={true}>
-        <div
-          className={cn(
-            'col-start-3 row-start-2',
-            debouncedIsEmpty && 'col-start-auto row-start-auto mt-2',
-          )}
-        >
-          <TypingIndicator />
-        </div>
-      </ThreadPrimitive.If> */}
 
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />
       </ThreadPrimitive.If>
-      {/* {!debouncedIsRunning && !debouncedIsEmpty && } */}
     </AssistantMessage.Root>
   )
 }

@@ -49,6 +49,9 @@ const createServer = async (
       level: process.env.LOG_LEVEL,
     },
     pluginTimeout: 0,
+    connectionTimeout: 60000, // 60 seconds
+    keepAliveTimeout: 30000, // 30 seconds
+    maxRequestsPerSocket: 0, // Disable max requests per socket limit
   })
 
   await server.register(config)

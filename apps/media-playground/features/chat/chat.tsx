@@ -13,6 +13,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@/components/ui/resizable'
 import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
@@ -141,7 +146,7 @@ const ThreadListItem: FC<{
   onItemClick?: () => void
 }> = ({ onItemClick }) => {
   return (
-    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all">
+    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all mr-3">
       <ThreadListItemTrigger onItemClick={onItemClick} />
     </ThreadListItemPrimitive.Root>
   )
@@ -205,7 +210,54 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-const LeftBarSheet: FC = () => {
+// Extracted Sidebar Content
+const ChatSidebarContent: FC<{
+  agent: Agent | null | undefined
+  isOwner: boolean
+  handleEditClick: () => void
+  onItemClick?: () => void
+}> = ({ agent, isOwner, handleEditClick, onItemClick }) => {
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2 ml-2">
+        {agent ? (
+          <>
+            <AgentLink
+              agent={agent}
+              className={cn(
+                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
+              )}
+            />
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 size-8"
+                onClick={handleEditClick}
+              >
+                <SettingsIcon className="size-4" />
+              </Button>
+            )}
+          </>
+        ) : (
+          <Skeleton className="w-[120px] h-8" />
+        )}
+      </div>
+      <Separator orientation="horizontal" className="my-2 mb-1" />
+      <div className="border-b mb-2">
+        <TopLeft onItemClick={onItemClick} />
+      </div>
+      <MainLeft onItemClick={onItemClick} />
+    </>
+  )
+}
+
+const LeftBarSheet: FC<{
+  // Updated to accept props needed by ChatSidebarContent
+  agent: Agent | null | undefined
+  isOwner: boolean
+  handleEditClick: () => void
+}> = ({ agent, isOwner, handleEditClick }) => {
   const [open, setOpen] = useState(false)
   const handleCloseSheet = () => setOpen(false)
 
@@ -222,23 +274,20 @@ const LeftBarSheet: FC = () => {
           <span className="sr-only">Toggle thread list menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="flex flex-col max-h-full">
+      <SheetContent
+        side="left"
+        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
+      >
         <SheetTitle className="sr-only">Thread List</SheetTitle>
-        <div className="mt-6 flex flex-col gap-1 max-h-full">
-          <TopLeft onItemClick={handleCloseSheet} />
-          <Separator orientation="horizontal" className="my-2" />
-          <MainLeft onItemClick={handleCloseSheet} />
-        </div>
+        {/* Use extracted content here */}
+        <ChatSidebarContent
+          agent={agent}
+          isOwner={isOwner}
+          handleEditClick={handleEditClick}
+          onItemClick={handleCloseSheet}
+        />
       </SheetContent>
     </Sheet>
-  )
-}
-
-const Header: FC = () => {
-  return (
-    <header className="flex gap-2 md:hidden">
-      <LeftBarSheet />
-    </header>
   )
 }
 
@@ -294,6 +343,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   }
 
   const agent = agentClientData || agentSSRData
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const isOwner = useMemo(() => {
     return user?._id === agent?.owner._id
@@ -306,29 +356,26 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   return (
     <EdenRuntimeProvider agentId={agentId} threadId={threadId}>
       <div
-        // On mobile: 2 rows (header + content).
-        // On md+: 2 columns (sidebar + content).
         className="
-        grid
-        w-full
-        grid-rows-[auto_1fr]
-        md:grid-rows-1
-        md:grid-cols-[250px_1fr]
-        fixed
-        inset-x-0
-        bottom-0
-        top-16
-      "
+         flex flex-col
+         fixed
+         inset-x-0
+         bottom-0
+         top-16
+       "
       >
         {/* MOBILE-ONLY HEADER */}
-        <div className="bg-muted/40 border-b px-2 py-2 md:hidden flex items-center gap-2">
-          <Header />
+        <div className="bg-[#0e1421]  border-b px-2 py-2 md:hidden flex items-center justify-between">
+          <LeftBarSheet
+            agent={agent}
+            isOwner={isOwner}
+            handleEditClick={handleEditClick}
+          />
           <div className="ml-auto flex items-center gap-2">
             {agent ? (
               <>
                 <AgentLink
                   agent={agent}
-                  // className={cn(isOwner ? 'max-w-[120px]' : 'sm:max-w-full', 'max-w-[120px]')}
                   className={`max-w-[120px] xs:max-w-[300px]`}
                 />
                 {isOwner && (
@@ -347,104 +394,110 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
             )}
           </div>
         </div>
-
-        {/* DESKTOP-ONLY SIDEBAR */}
-        <aside className="hidden bg-muted/40 border-r px-3 py-2 md:flex md:flex-col">
-          <div className="flex items-center justify-between gap-2 ml-2">
-            {agent ? (
-              <>
-                <AgentLink
-                  agent={agent}
-                  className={cn(
-                    isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
-                  )}
-                />
-                {isOwner && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 size-8"
-                    onClick={handleEditClick}
-                  >
-                    <SettingsIcon className="size-4" />
-                  </Button>
-                )}
-              </>
-            ) : (
-              <Skeleton className="w-[120px] h-8" />
+        {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 !overflow-y-hidden" // Take remaining height, prevent group overflow
+          autoSaveId={`resizable-chat-layout-${agentId}`}
+        >
+          {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
+          <ResizablePanel
+            defaultSize={18}
+            minSize={15}
+            maxSize={30}
+            collapsible
+            collapsedSize={0} // Fully collapse
+            onCollapse={() => setIsSidebarCollapsed(true)}
+            onExpand={() => setIsSidebarCollapsed(false)}
+            className={cn(
+              'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+              isSidebarCollapsed && 'p-0 border-none',
             )}
-          </div>
-          <Separator orientation="horizontal" className="my-2 mb-1" />
+          >
+            {/* Render content only if not collapsed */}
+            {!isSidebarCollapsed && (
+              <ChatSidebarContent
+                agent={agent}
+                isOwner={isOwner}
+                handleEditClick={handleEditClick}
+              />
+            )}
+          </ResizablePanel>
 
-          <div className="border-b mb-2">
-            <TopLeft />
-          </div>
-          <MainLeft />
-        </aside>
+          {/* Separator Handle - visible only on desktop */}
+          <ResizableHandle
+            withHandle
+            className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
+          />
 
-        {/* MAIN CONTENT (occupies the entire space on mobile, column 2 on md) */}
-        <main className="bg-accent overflow-hidden flex flex-col">
-          {!agent ? (
-            <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
-              <LoadingIndicator className="w-10 h-10 text-purple-600" />
-            </div>
-          ) : (
-            <Thread
-              components={{
-                //@ts-expect-error We're extending thread welcome hackishly with children
-                ThreadWelcome: MyThreadWelcome,
-                // @ts-expect-error We're extending composer hackishly with drag and drop
-                Composer: MyComposer,
-              }}
-              welcome={{
-                suggestions:
-                  agent?.suggestions && agent?.suggestions.length > 0
-                    ? agent?.suggestions.map(suggestion => ({
-                        text: suggestion.label,
-                        prompt: suggestion.prompt,
-                      }))
-                    : undefined,
-                message: agent?.greeting ?? 'What do you want to create today?',
-              }}
-              assistantAvatar={{
-                src: getCloudfrontOriginalUrl(agent?.userImage),
-                fallback: agent?.name,
-                alt: agent?.name,
-              }}
-              assistantMessage={{
-                allowReload: false,
-                allowSpeak: false,
-                components: {
-                  Empty: () => <div></div>,
-                  Text: MarkdownText,
-                  ToolFallback,
-                },
-              }}
-              userMessage={{
-                allowEdit: false,
-              }}
-              branchPicker={{
-                allowBranchPicker: false,
-              }}
-              composer={{
-                allowAttachments: true,
-              }}
-              tools={[TaskResultTool]}
-              config={{
-                threadId,
-                defaultMessages: [],
-              }}
-            />
-          )}
+          {/* MAIN CONTENT PANEL */}
+          <ResizablePanel defaultSize={82} className="flex flex-col">
+            {/* Ensure main takes full height within the panel */}
+            <main className="bg-accent flex-1 overflow-auto flex flex-col">
+              {!agent ? (
+                <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
+                  <LoadingIndicator className="w-10 h-10 text-purple-600" />
+                </div>
+              ) : (
+                <Thread
+                  components={{
+                    //@ts-expect-error We're extending thread welcome hackishly with children
+                    ThreadWelcome: MyThreadWelcome,
+                    // @ts-expect-error We're extending composer hackishly with drag and drop
+                    Composer: MyComposer,
+                  }}
+                  welcome={{
+                    suggestions:
+                      agent?.suggestions && agent?.suggestions.length > 0
+                        ? agent?.suggestions.map(suggestion => ({
+                            text: suggestion.label,
+                            prompt: suggestion.prompt,
+                          }))
+                        : undefined,
+                    message:
+                      agent?.greeting ?? 'What do you want to create today?',
+                  }}
+                  assistantAvatar={{
+                    src: getCloudfrontOriginalUrl(agent?.userImage),
+                    fallback: agent?.name,
+                    alt: agent?.name,
+                  }}
+                  assistantMessage={{
+                    allowReload: false,
+                    allowSpeak: false,
+                    components: {
+                      Empty: () => <div></div>,
+                      Text: MarkdownText,
+                      ToolFallback,
+                    },
+                  }}
+                  userMessage={{
+                    allowEdit: false,
+                  }}
+                  branchPicker={{
+                    allowBranchPicker: false,
+                  }}
+                  composer={{
+                    allowAttachments: true,
+                  }}
+                  tools={[TaskResultTool]}
+                  config={{
+                    threadId,
+                    defaultMessages: [],
+                  }}
+                />
+              )}
 
-          {isError ? (
-            <div className="p-4">
-              <AlertDestructive title={'Error loading agent'}>
-                <AlertDescription>{error?.message}</AlertDescription>
-              </AlertDestructive>
-            </div>
-          ) : null}
-        </main>
+              {isError ? (
+                <div className="p-4">
+                  <AlertDestructive title={'Error loading agent'}>
+                    <AlertDescription>{error?.message}</AlertDescription>
+                  </AlertDestructive>
+                </div>
+              ) : null}
+            </main>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </EdenRuntimeProvider>
   )

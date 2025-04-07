@@ -259,12 +259,10 @@ export const getThread = async (
       })
     }
 
-    const extendedMessages = thread.messages.map((msg, index) => {
+    const extendedMessages = thread.messages.map(msg => {
       if (msg.role !== 'assistant') {
         return msg
       }
-
-      // console.log(thread.active, msg.id.toString())
 
       const hasPendingToolCalls =
         msg.tool_calls?.length &&
@@ -280,12 +278,7 @@ export const getThread = async (
           hasPendingToolCalls ||
           (thread.active &&
             Array.isArray(thread.active) &&
-            thread.active.some(
-              t =>
-                t === msg.id.toString() ||
-                (index === thread.messages.length - 1 &&
-                  t.toString() === msg.reply_to?.toString()),
-            ))
+            thread.active.includes(msg.id.toString()))
             ? { type: 'running' }
             : { type: 'complete', reason: 'stop' },
       }

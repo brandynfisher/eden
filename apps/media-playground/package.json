@@ -84,7 +84,7 @@
     "react-markdown": "^9.0.3",
     "react-photoswipe-gallery": "^3.0.2",
     "react-redux": "^9.1.2",
-    "react-resizable-panels": "^2.1.4",
+    "react-resizable-panels": "^2.1.7",
     "react-syntax-highlighter": "^15.6.1",
     "react-truncate-inside": "^1.0.3",
     "react-use-websocket": "^4.8.1",

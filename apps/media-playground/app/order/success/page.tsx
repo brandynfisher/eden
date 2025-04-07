@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 const OrderSuccessPage = () => {
+  const router = useRouter()
+
   useEffect(() => {
     sendGTMEvent({
       event: 'success_checkout',
     })
-  }, [])
-
-  const router = useRouter()
-  router.push('/settings/subscription?state=success')
+    router.push('/settings/subscription?state=success')
+  }, [router])
 }
 
 export default OrderSuccessPage
