@@ -171,39 +171,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
   }, [readyState])
 
   // Check for pending message in localStorage on mount
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const threadId = window.location.pathname.split('/').pop()
-    if (!threadId) return
-
-    const pendingMessageKey = `pending-message-${threadId}`
-    const pendingMessageData = localStorage.getItem(pendingMessageKey)
-
-    if (pendingMessageData) {
-      try {
-        const messageData = JSON.parse(pendingMessageData)
-        // Only use messages that are less than 5 minutes old
-        if (Date.now() - messageData.timestamp < 5 * 60 * 1000) {
-          // Add the pending message to the messages state
-          const pendingMessage = {
-            id: messageData.message_id,
-            role: 'user' as const,
-            content: messageData.content,
-            attachments: messageData.attachments || [],
-            createdAt: new Date(messageData.timestamp),
-          } as TMessage
-
-          // Add message and mark it as active
-          addOrUpdateMessage(pendingMessage, [messageData.message_id])
-        }
-      } catch (e) {
-        console.error('Error parsing pending message:', e)
-      }
-      // Clean up the pending message
-      localStorage.removeItem(pendingMessageKey)
-    }
-  }, [addOrUpdateMessage])
+  // REMOVED UseEffect for pending message
 
   // Wrap setMessages to properly handle active messages when switching threads
   const setMessagesWithActive = useCallback(
@@ -213,119 +181,8 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
     ) => {
       // Reset active message IDs when setting new messages
       if (Array.isArray(newMessages)) {
-        // If activeIds is provided, use those directly
-        // if (activeIds !== undefined) {
-        // console.log(
-        //   'useEdenMessages.setMessagesWithActive - using provided active',
-        //   {
-        //     activeIds,
-        //   },
-        // )
-        // setActiveMessageIds(activeIds)
-        // } else {
-        // Otherwise, scan messages for running ones
-        // const runningMessageIds = newMessages
-        //   .filter(
-        //     (msg: TMessage) =>
-        //       msg.role === 'assistant' &&
-        //       (msg.status?.type === 'running' ||
-        //         msg.tool_calls?.some(
-        //           (call: { status?: string }) =>
-        //             !call.status ||
-        //             call.status === 'running' ||
-        //             call.status === 'pending',
-        //         )),
-        //   )
-        //   .map((msg: TMessage) => msg.id)
-
-        // const newActiveIds = runningMessageIds
-        // console.log(
-        //   'useEdenMessages.setMessagesWithActive - computed active',
-        //   {
-        //     runningMessageIds,
-        //     newActiveIds,
-        //   },
-        // )
-        // setActiveMessageIds(newActiveIds)
-        // }
-
-        // Check for pending messages in localStorage that might not be in the DB yet
-        let processedMessages = [...newMessages]
-        if (typeof window !== 'undefined') {
-          const threadId = window.location.pathname.split('/').pop()
-          if (threadId) {
-            const pendingMessageKey = `pending-message-${threadId}`
-            const pendingMessageData = localStorage.getItem(pendingMessageKey)
-
-            if (pendingMessageData) {
-              try {
-                const messageData = JSON.parse(pendingMessageData)
-                // Only use messages that are less than 5 minutes old
-                if (Date.now() - messageData.timestamp < 5 * 60 * 1000) {
-                  // Check if this message exists in newMessages
-                  const messageExists = processedMessages.some(
-                    m =>
-                      m.id === messageData.message_id ||
-                      m.content === messageData.content ||
-                      (m.id.startsWith('temp-') &&
-                        messageData.message_id.startsWith('temp-')),
-                  )
-
-                  if (!messageExists) {
-                    // console.log(
-                    //   'useEdenMessages.setMessagesWithActive - adding pending message',
-                    //   {
-                    //     messageId: messageData.message_id,
-                    //     content: messageData.content,
-                    //     timestamp: new Date(
-                    //       messageData.timestamp,
-                    //     ).toISOString(),
-                    //   },
-                    // )
-
-                    // Add the pending message to the messages
-                    const pendingMessage = {
-                      id:
-                        messageData.message_id ||
-                        `temp-${messageData.timestamp}`,
-                      role: 'user' as const,
-                      content: messageData.content,
-                      attachments: messageData.attachments || [],
-                      createdAt: new Date(messageData.timestamp),
-                    } as TMessage
-
-                    // Insert the pending message at the correct position based on timestamp
-                    const insertIndex = processedMessages.findIndex(
-                      m =>
-                        new Date(m.createdAt) > new Date(messageData.timestamp),
-                    )
-
-                    if (insertIndex === -1) {
-                      processedMessages.push(pendingMessage)
-                    } else {
-                      processedMessages.splice(insertIndex, 0, pendingMessage)
-                    }
-                  }
-
-                  // Only remove from localStorage if we found a matching non-temp message
-                  const hasRealMessage = processedMessages.some(
-                    m =>
-                      !m.id.startsWith('temp-') &&
-                      m.content === messageData.content,
-                  )
-                  if (hasRealMessage) {
-                    localStorage.removeItem(pendingMessageKey)
-                  }
-                }
-              } catch (e) {
-                console.error('Error parsing pending message:', e)
-              }
-            }
-          }
-        }
-
         // Set messages in a single batch update
-        setMessages(processedMessages)
+        setMessages(newMessages)
       } else {
         // Handle function updates
         setMessages(prev => {

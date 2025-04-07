@@ -457,58 +457,78 @@ export function EdenRuntimeProvider({
         }
 
         if (shouldSetMessages && thread.messages) {
-          // Process messages to ensure proper active states
-          const processedMessages = thread.messages.map((msg, index) => {
-            if (msg.role !== 'assistant') return msg
+          // Process messages to ensure proper active states and types
+          const processedMessages: ThreadMessageWithStatus[] =
+            thread.messages.map((msg, index) => {
+              // Ensure createdAt is a valid Date, default if necessary
+              const createdAtDate = msg.createdAt
+                ? new Date(msg.createdAt)
+                : new Date()
 
-            const hasPendingToolCalls = msg.tool_calls?.some(
-              call =>
-                !call.status ||
-                call.status === 'running' ||
-                call.status === 'pending',
-            )
+              // Base structure compatible with ThreadMessageWithStatus (status will be added for assistant)
+              const baseMessage = {
+                ...msg,
+                createdAt: createdAtDate,
+              }
 
-            // A message is part of an active chain if:
-            // 1. It's the root assistant message (in active array)
-            // 2. It's a subsequent assistant message after an active root, before the next user message
-            const isPartOfActiveChain = thread.active?.some(activeRootId => {
-              if (activeRootId === msg.id) return true // This is the root message
+              if (baseMessage.role !== 'assistant') {
+                // Return user/system messages directly, conforming to base ThreadMessage shape
+                // (which is compatible with ThreadMessageWithStatus where status is optional)
+                return baseMessage as ThreadMessageWithStatus
+              }
 
-              // Find this message's position in the chain
-              const activeRootIndex = thread.messages.findIndex(
-                m => m.id === activeRootId,
+              // --- Assistant Message Processing ---
+              const assistantMessage = baseMessage as AssistantMessage // Cast for easier access
+
+              const hasPendingToolCalls = assistantMessage.tool_calls?.some(
+                call =>
+                  !call.status ||
+                  call.status === 'running' ||
+                  call.status === 'pending',
               )
-              if (activeRootIndex === -1) return false
 
-              // Find the next user message after the active root
-              const nextUserIndex = thread.messages.findIndex(
-                (m, i) => i > activeRootIndex && m.role === 'user',
-              )
+              const isPartOfActiveChain = thread.active?.some(activeRootId => {
+                if (activeRootId === assistantMessage.id) return true
+                const activeRootIndex = thread.messages.findIndex(
+                  m => m.id === activeRootId,
+                )
+                if (activeRootIndex === -1) return false
+                const nextUserIndex = thread.messages.findIndex(
+                  (m, i) => i > activeRootIndex && m.role === 'user',
+                )
+                return (
+                  index > activeRootIndex &&
+                  (nextUserIndex === -1 || index < nextUserIndex)
+                )
+              })
 
-              // This message is part of the chain if it's between the root and the next user message
-              const messageIndex = index
-              return (
-                messageIndex > activeRootIndex &&
-                (nextUserIndex === -1 || messageIndex < nextUserIndex)
-              )
+              const isIncomplete =
+                !assistantMessage.content ||
+                assistantMessage.content.length === 0
+
+              const newStatus =
+                hasPendingToolCalls || isPartOfActiveChain || isIncomplete
+                  ? { type: 'running' as const }
+                  : { type: 'complete' as const, reason: 'stop' as const }
+
+              // Return assistant message with status
+              return {
+                ...assistantMessage,
+                createdAt: createdAtDate, // Ensure correct date is carried over
+                status: newStatus,
+              } satisfies ThreadMessageWithStatus // Use satisfies for the final object
             })
 
-            const newStatus =
-              hasPendingToolCalls || isPartOfActiveChain
-                ? { type: 'running' as const }
-                : { type: 'complete' as const, reason: 'stop' as const }
-
-            return {
-              ...msg,
-              status: newStatus,
-            }
-          })
-
-          // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
-          setMessages(processedMessages, thread.active)
+          // Call setMessages with only the processed message array
+          setMessages(processedMessages)
+        } else {
+          // Handle case where thread was empty (and no pending message was added)
+          setMessages([]) // Pass only the empty array
         }
 
-        return thread
+        // Set stream active state after messages are processed
+        setIsStreamActive(shouldBeActive)
+        setIsRunning(shouldBeActive)
       } catch (error) {
         console.error('Error checking thread status:', error)
       }
@@ -534,18 +554,79 @@ export function EdenRuntimeProvider({
           throw new Error('Thread not found')
         }
 
+        // --- START: Add localStorage check here ---
+        // @ts-expect-error // createdAt mismatch between SDK ThreadMessage and internal usage
+        let currentMessages: ThreadMessage[] = thread.messages || [] // Use fetched messages or empty array
+        const pendingMessageKey = `pending-message-${threadId}`
+        const pendingMessageData = localStorage.getItem(pendingMessageKey)
+
+        if (pendingMessageData) {
+          try {
+            const messageData = JSON.parse(pendingMessageData)
+            const messageTimestamp = new Date(messageData.timestamp)
+            // Only use messages that are less than 5 minutes old
+            if (Date.now() - messageTimestamp.getTime() < 5 * 60 * 1000) {
+              // Check if this message exists in currentMessages
+              const messageExists = currentMessages.some(
+                m =>
+                  m.id === messageData.message_id ||
+                  (m.id.startsWith('temp-') &&
+                    messageData.message_id.startsWith('temp-') &&
+                    m.content === messageData.content),
+              )
+
+              if (!messageExists) {
+                console.log(
+                  'EdenRuntimeProvider: Adding pending message from localStorage',
+                  {
+                    messageId: messageData.message_id,
+                    content: messageData.content,
+                  },
+                )
+                // Add the pending message
+                const pendingMessage: ThreadMessage = {
+                  id: messageData.message_id || `temp-${messageData.timestamp}`,
+                  role: 'user',
+                  content: messageData.content,
+                  attachments: messageData.attachments || [],
+                  createdAt: messageTimestamp,
+                  // Add default/undefined for other potential ThreadMessage fields if needed
+                }
+
+                // Insert the pending message at the correct position based on timestamp
+                const insertIndex = currentMessages.findIndex(
+                  m => new Date(m.createdAt) > messageTimestamp,
+                )
+
+                if (insertIndex === -1) {
+                  currentMessages.push(pendingMessage)
+                } else {
+                  currentMessages.splice(insertIndex, 0, pendingMessage)
+                }
+              }
+            }
+            // Clean up the pending message regardless of whether it was added (it might be old or already exist)
+            localStorage.removeItem(pendingMessageKey)
+          } catch (e) {
+            console.error(
+              'EdenRuntimeProvider: Error processing pending message:',
+              e,
+            )
+            localStorage.removeItem(pendingMessageKey) // Clean up on error too
+          }
+        }
+        // --- END: Add localStorage check here ---
+
         // Check if we need to clean up URL parameters
         const isPending = searchParams.get('pending') === 'true'
         const pendingMessageId = searchParams.get('message_id')
 
         if (isPending && pendingMessageId) {
-          // Check if the pending message exists in the thread
-          const messageExists = thread.messages.some(
+          // Check if the pending message exists in the *potentially updated* currentMessages
+          const messageExistsAfterUpdate = currentMessages.some(
             msg => msg.id === pendingMessageId,
           )
-
-          if (messageExists) {
-            // Remove the URL parameters by constructing a new URL without them
+          if (messageExistsAfterUpdate) {
             const url = `/chat/${agentId}/${threadId}`
             window.history.replaceState({}, '', url)
           }
@@ -562,10 +643,13 @@ export function EdenRuntimeProvider({
         }
 
         const hasActiveRoots = thread.active && thread.active.length > 0
-        const lastMessage = thread.messages?.[thread.messages.length - 1]
+        // Use potentially updated currentMessages array
+        const lastMessage = currentMessages[currentMessages.length - 1]
         const isLastMessageIncomplete =
           lastMessage?.role === 'assistant' &&
+          // @ts-expect-error status might not exist
           (!lastMessage.status ||
+            // @ts-expect-error status might not exist
             lastMessage.status.type === 'running' ||
             lastMessage.tool_calls?.some(
               call =>
@@ -578,49 +662,78 @@ export function EdenRuntimeProvider({
           hasActiveRoots || isLastMessageIncomplete,
         )
 
-        if (thread.messages) {
-          // Process messages to ensure proper active states
-          const processedMessages = thread.messages.map((msg, index) => {
-            if (msg.role !== 'assistant') return msg
+        // Use potentially updated currentMessages array
+        if (currentMessages.length > 0) {
+          // Process messages to ensure proper active states and types
+          // Ensure the output is strictly ThreadMessageWithStatus[] with required createdAt
+          const processedMessages: ThreadMessageWithStatus[] =
+            currentMessages.map((msg, index) => {
+              // Ensure createdAt is a valid Date, default if necessary
+              const createdAtDate = msg.createdAt
+                ? new Date(msg.createdAt)
+                : new Date() // Default to now if undefined
 
-            const hasPendingToolCalls = msg.tool_calls?.some(
-              call =>
-                !call.status ||
-                call.status === 'running' ||
-                call.status === 'pending',
-            )
+              // Base structure for user/system message
+              let processedMsg: ThreadMessageWithStatus = {
+                ...msg,
+                createdAt: createdAtDate,
+              }
 
-            const isPartOfActiveChain = thread.active?.some(activeRootId => {
-              if (activeRootId === msg.id) return true
+              // Process assistant messages specifically
+              if (processedMsg.role === 'assistant') {
+                const assistantMessage = processedMsg as AssistantMessage & {
+                  createdAt: Date
+                } // Assert createdAt exists here
 
-              const activeRootIndex = thread.messages.findIndex(
-                m => m.id === activeRootId,
-              )
-              if (activeRootIndex === -1) return false
+                const hasPendingToolCalls = assistantMessage.tool_calls?.some(
+                  call =>
+                    !call.status ||
+                    call.status === 'running' ||
+                    call.status === 'pending',
+                )
 
-              const nextUserIndex = thread.messages.findIndex(
-                (m, i) => i > activeRootIndex && m.role === 'user',
-              )
+                const isPartOfActiveChain = thread.active?.some(
+                  activeRootId => {
+                    if (activeRootId === assistantMessage.id) return true
+                    const activeRootIndex = currentMessages.findIndex(
+                      m => m.id === activeRootId,
+                    )
+                    if (activeRootIndex === -1) return false
+                    const nextUserIndex = currentMessages.findIndex(
+                      (m, i) => i > activeRootIndex && m.role === 'user',
+                    )
+                    return (
+                      index > activeRootIndex &&
+                      (nextUserIndex === -1 || index < nextUserIndex)
+                    )
+                  },
+                )
 
-              return (
-                index > activeRootIndex &&
-                (nextUserIndex === -1 || index < nextUserIndex)
-              )
+                const isIncomplete =
+                  !assistantMessage.content ||
+                  assistantMessage.content.length === 0
+
+                const newStatus =
+                  hasPendingToolCalls || isPartOfActiveChain || isIncomplete
+                    ? { type: 'running' as const }
+                    : { type: 'complete' as const, reason: 'stop' as const }
+
+                // Update the message object with status
+                processedMsg = {
+                  ...assistantMessage, // Spread the assistant message again
+                  createdAt: createdAtDate, // Ensure date is still correct
+                  status: newStatus,
+                }
+              }
+              // Return the processed message (either user/system or assistant with status)
+              return processedMsg
             })
 
-            const newStatus =
-              hasPendingToolCalls || isPartOfActiveChain
-                ? { type: 'running' as const }
-                : { type: 'complete' as const, reason: 'stop' as const }
-
-            return {
-              ...msg,
-              status: newStatus,
-            }
-          })
-
-          // @ts-expect-error: Type mismatch between EdenMessage and ThreadMessageWithStatus needs to be resolved
-          setMessages(processedMessages, thread.active)
+          // Call setMessages with the processed message array
+          setMessages(processedMessages)
+        } else {
+          // Handle case where thread was empty (and no pending message was added)
+          setMessages([]) // Pass only the empty array
         }
 
         // Set stream active state after messages are processed
@@ -628,9 +741,11 @@ export function EdenRuntimeProvider({
         setIsRunning(shouldBeActive)
       } catch (error) {
         console.error('Error loading thread:', error)
+        // Potentially redirect or show error if thread fetch fails
+        // Example: window.history.replaceState(null, '', '/chat');
       } finally {
         setIsLoadingThread(false)
-        isInitialLoadRef.current = false
+        isInitialLoadRef.current = false // Mark initial load as complete
       }
     }
 
