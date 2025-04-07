@@ -81,9 +81,9 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const lastMessagesLengthRef = useRef(messages.length)
 
   // Constants for scroll calculations
-  const COMPOSER_HEIGHT = 64 // Height of the composer component
+  const COMPOSER_HEIGHT = 98 // Height of the composer component
   const HEADER_HEIGHT = 64 // Height of the header
-  const BOTTOM_THRESHOLD = 150 // How close to bottom to consider "at bottom"
+  const BOTTOM_THRESHOLD = 0 // How close to bottom to consider "at bottom"
   const TOTAL_OFFSET = COMPOSER_HEIGHT + HEADER_HEIGHT // Total height of fixed elements
 
   // Get a string representation of all complete assistant messages
