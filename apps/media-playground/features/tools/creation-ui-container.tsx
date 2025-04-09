@@ -78,6 +78,11 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
 
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1024 // lg breakpoint
+    setMobileIsFormVisible(isMobile)
+  }, [])
+
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
     defaultValues,
