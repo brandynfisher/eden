@@ -69,28 +69,28 @@ const MyAssistantMessage: FC = () => {
   const threadId = useEdenRuntimeExtras(extras => extras.threadId)
 
   // Use a ref to track when the component mounted or thread changed
-  const mountTimeRef = React.useRef(Date.now())
+  // const mountTimeRef = React.useRef(Date.now())
 
   // Reset the mount time when thread changes
-  React.useEffect(() => {
-    mountTimeRef.current = Date.now()
-    console.log('[TypingIndicator] Thread changed or component mounted', {
-      threadId,
-    })
-  }, [threadId])
+  // React.useEffect(() => {
+  //   mountTimeRef.current = Date.now()
+  //   console.log('[TypingIndicator] Thread changed or component mounted', {
+  //     threadId,
+  //   })
+  // }, [threadId])
 
   // Memoize the derived state to prevent unnecessary recalculations
   const { isEmpty, isRunning } = React.useMemo(() => {
     const newIsEmpty = !content || content.length === 0
     const newIsRunning = status?.type === 'running'
 
-    console.log('[TypingIndicator] State calculation', {
-      threadId,
-      messageId: id,
-      isEmpty: newIsEmpty,
-      isRunning: newIsRunning,
-      timeSinceMount: Date.now() - mountTimeRef.current,
-    })
+    // console.log('[TypingIndicator] State calculation', {
+    //   threadId,
+    //   messageId: id,
+    //   isEmpty: newIsEmpty,
+    //   isRunning: newIsRunning,
+    //   timeSinceMount: Date.now() - mountTimeRef.current,
+    // })
 
     return {
       isEmpty: newIsEmpty,
@@ -99,14 +99,14 @@ const MyAssistantMessage: FC = () => {
   }, [content, status?.type, threadId, id])
 
   // Log state changes
-  React.useEffect(() => {
-    console.log('[TypingIndicator] Indicator state updated', {
-      shouldShow: isEmpty || isRunning,
-      isEmpty,
-      isRunning,
-      threadId,
-    })
-  }, [isEmpty, isRunning, threadId])
+  // React.useEffect(() => {
+  //   console.log('[TypingIndicator] Indicator state updated', {
+  //     shouldShow: isEmpty || isRunning,
+  //     isEmpty,
+  //     isRunning,
+  //     threadId,
+  //   })
+  // }, [isEmpty, isRunning, threadId])
 
   return (
     <AssistantMessage.Root

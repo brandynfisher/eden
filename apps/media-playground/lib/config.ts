@@ -7,7 +7,7 @@ export const env = {
   NEXT_PUBLIC_EDEN_API_URL:
     process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://0.0.0.0:5050',
   NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL:
-    process.env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || '',
+    process.env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || 'ws://localhost:5050',
   NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
   NEXT_PUBLIC_DISCORD_CLIENT_ID:
     process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '',

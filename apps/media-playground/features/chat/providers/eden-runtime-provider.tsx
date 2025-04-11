@@ -6,12 +6,12 @@ import {
 import { getThread, sendMessage } from '@/features/chat/chat-api'
 import { useEdenRuntime } from '@/features/chat/hooks/useEdenRuntime'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { ReadyState } from '@/hooks/use-shared-websocket-worker'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider, MessageStatus } from '@assistant-ui/react'
 import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
 import { useSearchParams } from 'next/navigation'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
-import { ReadyState } from 'react-use-websocket'
 import { v4 as uuidv4 } from 'uuid'
 
 const TIMEOUT_DURATION_MS = 60 * 60 * 1000

@@ -21630,7 +21630,6 @@ __metadata:
     react-resizable-panels: "npm:^2.1.7"
     react-syntax-highlighter: "npm:^15.6.1"
     react-truncate-inside: "npm:^1.0.3"
-    react-use-websocket: "npm:^4.8.1"
     rehype-katex: "npm:^7.0.1"
     remark-gfm: "npm:^4.0.0"
     remark-math: "npm:^6.0.0"
@@ -26175,16 +26174,6 @@ __metadata:
   peerDependencies:
     react: ">= 16.x.x"
   checksum: 10c0/eff2d2186a6424ba89285b4948db47934c55d237bd132c819aaff829c118e03b6376f69deea5e9e24f20ae15b8d8eb3a2d53380e54a02ceb08101234e705b48c
-  languageName: node
-  linkType: hard
-
-"react-use-websocket@npm:^4.8.1":
-  version: 4.8.1
-  resolution: "react-use-websocket@npm:4.8.1"
-  peerDependencies:
-    react: ">= 18.0.0"
-    react-dom: ">= 18.0.0"
-  checksum: 10c0/9106947334badc06d8af635328f1420068098130eac8f6da90e7d13cf37037cf1cf0bd528103ca3689a38097a70e10d3b577f143078254e9dd3b9aa429395116
   languageName: node
   linkType: hard
 
