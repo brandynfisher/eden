@@ -402,9 +402,9 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         >
           {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
           <ResizablePanel
-            defaultSize={18}
-            minSize={15}
-            maxSize={30}
+            defaultSize={25}
+            minSize={10}
+            maxSize={35}
             collapsible
             collapsedSize={0} // Fully collapse
             onCollapse={() => setIsSidebarCollapsed(true)}

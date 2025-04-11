@@ -22,9 +22,9 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
   ) => Promise<AsyncGenerator<MessageResponse<TMessage>>>
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
-  // const [activeMessageIds, setActiveMessageIds] = useState<string[]>([])
   const { readyState } = useWebSocketContext()
   const lastConnectionStateRef = useRef<ReadyState>(readyState)
+  const pendingOptimisticMessagesRef = useRef<TMessage[]>([])
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
@@ -105,19 +105,31 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
           const isAssistant = message.role === 'assistant'
           const calculatedStatus = streamJustFinished
             ? { type: 'complete' as const, reason: 'stop' as const }
-            : message.status
-          const finalStatus = isAssistant ? calculatedStatus : undefined
+            : message.status ||
+              (isAssistant ? { type: 'running' as const } : undefined)
 
           const messageToAdd = {
             ...message,
-            ...(finalStatus && { status: finalStatus }),
+            ...(calculatedStatus && { status: calculatedStatus }),
           }
 
-          return [...updatedMessages, messageToAdd]
+          // If it's an optimistic assistant message, store it in pendingOptimisticMessages
+          if (isAssistant && !streamJustFinished) {
+            pendingOptimisticMessagesRef.current.push(messageToAdd)
+          }
+
+          updatedMessages.push(messageToAdd)
         }
+
+        // If stream finished, clear pending optimistic messages
+        if (streamJustFinished) {
+          pendingOptimisticMessagesRef.current = []
+        }
+
+        return updatedMessages
       })
     },
-    [], // Keep dependencies empty as setMessages handles state correctly
+    [],
   )
 
   // Reset active messages when connection is lost
@@ -130,7 +142,6 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         readyState === ReadyState.CLOSED ||
         readyState === ReadyState.CLOSING
       ) {
-        // setActiveMessageIds([])
         // Mark all running messages as complete with error
         setMessages(currentMessages =>
           currentMessages.map(m =>
@@ -140,8 +151,21 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
           ),
         )
       }
+
+      // When connection is restored, reapply any pending optimistic messages
+      if (
+        readyState === ReadyState.OPEN &&
+        pendingOptimisticMessagesRef.current.length > 0
+      ) {
+        console.log('Reapplying optimistic messages after reconnection', {
+          count: pendingOptimisticMessagesRef.current.length,
+        })
+        pendingOptimisticMessagesRef.current.forEach(msg => {
+          addOrUpdateMessage(msg)
+        })
+      }
     }
-  }, [readyState])
+  }, [readyState, addOrUpdateMessage])
 
   // Check for pending message in localStorage on mount
   // REMOVED UseEffect for pending message
@@ -215,10 +239,12 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       newMessages: TMessage[],
       callback?: (thread_id?: string) => Promise<void>,
     ) => {
-      // console.log('sendMessage', newMessages)
-      // Reset active message IDs when starting a new message chain
-      // setActiveMessageIds([])
+      // Clear any existing pending optimistic messages
+      pendingOptimisticMessagesRef.current = []
 
+      console.log('sendMessage', {
+        newMessages,
+      })
       // Add new messages optimistically with running status for assistant messages
       newMessages.forEach(message => {
         const messageWithStatus = {
@@ -226,15 +252,38 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
           status:
             message.role === 'assistant' ? { type: 'running' } : undefined,
         }
+        console.log('sendMessage adding optimistic message', {
+          messageWithStatus,
+        })
         addOrUpdateMessage(messageWithStatus as TMessage)
+
+        if (message.role === 'user') {
+          const dummyAssistantMessage = {
+            status: { type: 'running' },
+            role: 'assistant',
+            id: 'temp-123',
+            content: '',
+          } as TMessage
+          console.log('sendMessage adding temp assistant message', {
+            message: dummyAssistantMessage,
+          })
+          addOrUpdateMessage(dummyAssistantMessage)
+        }
+      })
+
+      console.log('sendMessage after adding optimistic messages', {
+        newMessages,
       })
 
       try {
         const response = await stream(newMessages, callback)
+
         for await (const message of response) {
-          // console.log('addOrUpdateMessage', message)
-          // Extract active IDs from the message if available
           const activeIds = message.data.active
+          console.log('sendMessage after stream - adding message', {
+            message: message.data,
+            activeIds,
+          })
           addOrUpdateMessage(message.data, activeIds)
         }
       } catch (error) {
@@ -247,7 +296,8 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
               : m,
           ),
         )
-        // setActiveMessageIds([])
+        // Clear pending optimistic messages on error
+        pendingOptimisticMessagesRef.current = []
       }
     },
     [addOrUpdateMessage],
