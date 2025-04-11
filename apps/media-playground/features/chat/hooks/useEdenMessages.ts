@@ -1,7 +1,7 @@
+import { ReadyState } from '@/hooks/use-shared-websocket-worker'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ReadyState } from 'react-use-websocket'
 
 type MessageResponse<T> = {
   data: T & {

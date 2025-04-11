@@ -12,6 +12,7 @@ import {
 import MyEditComposer from '@/features/chat/components/edit-composer'
 import MyUserMessage from '@/features/chat/components/user-message'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { ReadyState } from '@/hooks/use-shared-websocket-worker'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import {
   ThreadPrimitive,
@@ -22,7 +23,6 @@ import { Thread, ThreadConfig, ThreadWelcome } from '@assistant-ui/react-ui'
 import { ArrowDownIcon } from '@radix-ui/react-icons'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import React from 'react'
-import { ReadyState } from 'react-use-websocket'
 
 const ThreadFollowupSuggestions: FC = () => {
   const suggestions = useThread(t => t.suggestions)

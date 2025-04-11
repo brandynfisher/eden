@@ -123,7 +123,7 @@ let nextConfig = {
   },
   sassOptions: {
     silenceDeprecations: ['legacy-js-api'],
-  }
+  },
 }
 
 // Injected content via Sentry wizard below

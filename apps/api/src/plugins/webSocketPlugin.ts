@@ -3,7 +3,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify'
 import { WebSocket } from 'ws'
 
 interface BroadcastMessage {
-  type: string
+  event: string
   clientId: string
   payload: any
 }
