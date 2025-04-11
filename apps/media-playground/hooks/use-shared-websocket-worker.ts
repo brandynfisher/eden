@@ -226,7 +226,15 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
   const handleMessage = useCallback((message: WorkerMessage) => {
     // Only log non-debug messages at debug level
     if (message.type !== 'debug') {
-      console.debug('Worker message:', message.type)
+      const data = message.data
+        ? JSON.parse(message.data as string)
+        : message.data
+      console.debug(
+        'Worker message:',
+        message.type,
+        data ? data.event : undefined,
+        data ? data.data : undefined,
+      )
     }
 
     if (message.type === 'debug') {
