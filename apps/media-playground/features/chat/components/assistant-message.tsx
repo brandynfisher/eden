@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
+import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { ThreadPrimitive, useMessage } from '@assistant-ui/react'
@@ -65,15 +66,47 @@ const MyAssistantMessage: FC = () => {
   const content = useMessage(m => m.content)
   const status = useMessage(m => m.status)
   const id = useMessage(m => m.id)
+  const threadId = useEdenRuntimeExtras(extras => extras.threadId)
+
+  // Use a ref to track when the component mounted or thread changed
+  const mountTimeRef = React.useRef(Date.now())
+
+  // Reset the mount time when thread changes
+  React.useEffect(() => {
+    mountTimeRef.current = Date.now()
+    console.log('[TypingIndicator] Thread changed or component mounted', {
+      threadId,
+    })
+  }, [threadId])
 
   // Memoize the derived state to prevent unnecessary recalculations
-  const { isEmpty, isRunning } = React.useMemo(
-    () => ({
-      isEmpty: !content || content.length === 0,
-      isRunning: status?.type === 'running',
-    }),
-    [content, status?.type],
-  )
+  const { isEmpty, isRunning } = React.useMemo(() => {
+    const newIsEmpty = !content || content.length === 0
+    const newIsRunning = status?.type === 'running'
+
+    console.log('[TypingIndicator] State calculation', {
+      threadId,
+      messageId: id,
+      isEmpty: newIsEmpty,
+      isRunning: newIsRunning,
+      timeSinceMount: Date.now() - mountTimeRef.current,
+    })
+
+    return {
+      isEmpty: newIsEmpty,
+      isRunning: newIsRunning,
+    }
+  }, [content, status?.type, threadId, id])
+
+  // Log state changes
+  React.useEffect(() => {
+    console.log('[TypingIndicator] Indicator state updated', {
+      shouldShow: isEmpty || isRunning,
+      isEmpty,
+      isRunning,
+      threadId,
+    })
+  }, [isEmpty, isRunning, threadId])
 
   return (
     <AssistantMessage.Root
@@ -99,6 +132,28 @@ const MyAssistantMessage: FC = () => {
         </div>
       ) : null}
 
+      <div className="absolute bottom-0 right-0 flex items-center gap-2">
+        <div className="text-muted-foreground p-1 bg-muted rounded-md">
+          Running:{' '}
+          <span
+            className={cn(
+              isRunning && 'text-accent-foreground bg-blue-700 p-1 rounded-md',
+            )}
+          >
+            {isRunning ? 'true' : 'false'}
+          </span>
+        </div>
+        <div className="text-muted-foreground p-1 bg-muted rounded-md">
+          Empty:{' '}
+          <span
+            className={cn(
+              isEmpty && 'text-accent-foreground bg-blue-700 p-1 rounded-md',
+            )}
+          >
+            {isEmpty ? 'true' : 'false'}
+          </span>
+        </div>
+      </div>
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />
       </ThreadPrimitive.If>
