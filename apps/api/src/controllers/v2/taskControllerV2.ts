@@ -81,7 +81,7 @@ export const createTask = async (
     }
 
     const { tool, args } = request.body as TasksV2CreateArguments
-    const toolDocument = await ToolV2.findOne({ key: tool })
+    const toolDocument = await ToolV2.findOne({ key: tool, active: true })
     if (!toolDocument) {
       return reply.status(404).send({
         message: `Tool ${tool} not available`,
