@@ -1,6 +1,16 @@
 // WebSocket Worker for connection pooling across tabs
 self.name = 'websocket-worker'
 
+// Ensure worker is registered for inspection
+if (typeof SharedWorkerGlobalScope !== 'undefined' && self instanceof SharedWorkerGlobalScope) {
+  console.log('SharedWorker initialized:', { name: self.name, timestamp: new Date().toISOString() })
+}
+
+// Add global error handler to prevent silent failures
+self.onerror = (error) => {
+  console.error('SharedWorker global error:', error)
+}
+
 // Store ports for broadcasting
 const ports = new Set()
 

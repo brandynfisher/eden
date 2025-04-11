@@ -50,7 +50,8 @@ const WORKER_PATH = '/workers/websocket.worker.js' // Adjust if your build proce
 
 // The worker path is handled by Turbopack's asset handling
 function getWorkerUrl() {
-  return WORKER_PATH
+  const version = Date.now() // Add timestamp to prevent caching
+  return `${WORKER_PATH}?v=${version}`
 }
 
 export function useSharedWebSocketWorker(endpoint: string | null) {
@@ -114,8 +115,14 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
       worker = new SharedWorker(workerUrl, {
         name: 'websocket-worker',
         credentials: 'same-origin',
+        type: 'classic', // Explicitly set type to classic for better DevTools support
       })
-      console.log('SharedWorker created successfully')
+
+      // Force worker to be kept alive
+      worker.port.start()
+      console.log('SharedWorker created successfully:', {
+        url: workerUrl,
+      })
 
       // Set up port communication
       port = worker.port
