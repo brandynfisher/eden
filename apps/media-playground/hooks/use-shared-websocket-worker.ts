@@ -224,10 +224,18 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
   const lastAuthMessageRef = useRef<AuthMessage | null>(null)
 
   const handleMessage = useCallback((message: WorkerMessage) => {
-    console.log('Received message:', message)
+    // Only log non-debug messages at debug level
+    if (message.type !== 'debug') {
+      console.debug('Worker message:', message.type)
+    }
 
     if (message.type === 'debug') {
-      console.log(`[${message.type}]`, message.message, message.data)
+      // Move debug logging to debug level
+      console.debug(
+        `[Worker ${message.timestamp}]`,
+        message.message,
+        message.data,
+      )
       return
     }
 
@@ -236,7 +244,8 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
       setReadyState(newState)
 
       if (newState === ReadyState.OPEN && lastAuthMessageRef.current) {
-        console.log('Connection opened, sending pending auth message')
+        // Only log auth resend at debug level
+        console.debug('Connection opened, resending auth')
         if (isSharedWorkerSupported) {
           portRef.current?.postMessage(lastAuthMessageRef.current)
         } else {
@@ -246,6 +255,7 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
     } else if (message.type === 'message') {
       setLastMessage(message)
     } else if (message.type === 'error') {
+      // Keep error logging as it's important
       console.error('Connection Error:', message.error)
       setReadyState(ReadyState.CLOSED)
     }
@@ -274,7 +284,7 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
         // SharedWorker implementation
         if (!workerRef.current) {
           const workerUrl = getWorkerUrl()
-          console.log('Initializing SharedWorker:', workerUrl)
+          console.debug('Initializing SharedWorker:', workerUrl)
 
           const worker = new SharedWorker(workerUrl, {
             name: 'websocket-worker',
@@ -283,7 +293,7 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
           })
 
           worker.port.start()
-          console.log('SharedWorker created successfully:', { url: workerUrl })
+          console.debug('SharedWorker created:', { url: workerUrl })
 
           const port = worker.port
           port.onmessage = (event: MessageEvent<WorkerMessage>) =>
@@ -302,7 +312,7 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
       } else {
         // Direct WebSocket implementation
         if (!directWSRef.current) {
-          console.log('SharedWorker not supported, using direct WebSocket')
+          console.debug('Using direct WebSocket (SharedWorker not supported)')
           directWSRef.current = new DirectWebSocketConnection(handleMessage)
         }
         directWSRef.current.connect(endpoint)
