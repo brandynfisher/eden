@@ -73,7 +73,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
           : message.status ||
             (message.role === 'assistant'
               ? { type: 'running' as const }
-              : undefined),
+              : message.status),
       }
 
       // Add to batch updates
@@ -156,17 +156,13 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
             status:
               message.role === 'assistant' ? { type: 'running' } : undefined,
           }
+          console.log(
+            'sendMessage adding message with status',
+            message,
+            messageWithStatus,
+            pendingOptimisticMessagesRef.current,
+          )
           addOrUpdateMessage(messageWithStatus as TMessage)
-
-          if (message.role === 'user') {
-            const dummyAssistantMessage = {
-              status: { type: 'running' },
-              role: 'assistant',
-              id: 'temp-123',
-              content: '',
-            } as TMessage
-            addOrUpdateMessage(dummyAssistantMessage)
-          }
         })
       }, 0)
 
