@@ -145,7 +145,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
     async (
       newMessages: TMessage[],
       callback?: (thread_id?: string) => Promise<void>,
-    ) => {
+    ): Promise<AsyncGenerator<MessageResponse<TMessage>>> => {
       pendingOptimisticMessagesRef.current = []
 
       // Add optimistic updates in next tick to avoid blocking
@@ -166,24 +166,10 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         })
       }, 0)
 
-      try {
-        const response = await stream(newMessages, callback)
-        for await (const message of response) {
-          addOrUpdateMessage(message.data, message.data.active)
-        }
-      } catch (error) {
-        console.error('Error in message stream:', error)
-        setMessages(currentMessages =>
-          currentMessages.map(m =>
-            m.status?.type === 'running'
-              ? { ...m, status: { type: 'complete', reason: 'error' } }
-              : m,
-          ),
-        )
-        pendingOptimisticMessagesRef.current = []
-      }
+      // RETURN the stream generator directly
+      return stream(newMessages, callback)
     },
-    [addOrUpdateMessage],
+    [addOrUpdateMessage, stream],
   )
 
   // Cleanup

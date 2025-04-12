@@ -68,45 +68,66 @@ const MyAssistantMessage: FC = () => {
   const id = useMessage(m => m.id)
   const threadId = useEdenRuntimeExtras(extras => extras.threadId)
 
-  // Use a ref to track when the component mounted or thread changed
-  // const mountTimeRef = React.useRef(Date.now())
+  // Add mount/unmount logging
+  React.useEffect(() => {
+    console.log('[TypingIndicator] Component mounted', {
+      threadId,
+      messageId: id,
+      initialContent: content,
+      initialStatus: status,
+      timestamp: new Date().toISOString(),
+      isStrictMode: process.env.NODE_ENV === 'development',
+    })
 
-  // Reset the mount time when thread changes
-  // React.useEffect(() => {
-  //   mountTimeRef.current = Date.now()
-  //   console.log('[TypingIndicator] Thread changed or component mounted', {
-  //     threadId,
-  //   })
-  // }, [threadId])
+    return () => {
+      console.log('[TypingIndicator] Component unmounting', {
+        threadId,
+        messageId: id,
+        finalContent: content,
+        finalStatus: status,
+        timestamp: new Date().toISOString(),
+      })
+    }
+  }, []) // Empty deps for mount/unmount only
+
+  // Track thread changes
+  React.useEffect(() => {
+    console.log('[TypingIndicator] Thread changed', {
+      threadId,
+      messageId: id,
+      timestamp: new Date().toISOString(),
+    })
+  }, [threadId])
+
+  // Track message updates
+  React.useEffect(() => {
+    console.log('[TypingIndicator] Message content/status updated', {
+      threadId,
+      messageId: id,
+      content: content?.length || 0,
+      status: status?.type,
+      timestamp: new Date().toISOString(),
+    })
+  }, [content, status, id, threadId])
 
   // Memoize the derived state to prevent unnecessary recalculations
   const { isEmpty, isRunning } = React.useMemo(() => {
     const newIsEmpty = !content || content.length === 0
     const newIsRunning = status?.type === 'running'
 
-    // console.log('[TypingIndicator] State calculation', {
-    //   threadId,
-    //   messageId: id,
-    //   isEmpty: newIsEmpty,
-    //   isRunning: newIsRunning,
-    //   timeSinceMount: Date.now() - mountTimeRef.current,
-    // })
+    console.log('[TypingIndicator] State calculation', {
+      threadId,
+      messageId: id,
+      isEmpty: newIsEmpty,
+      isRunning: newIsRunning,
+      timestamp: new Date().toISOString(),
+    })
 
     return {
       isEmpty: newIsEmpty,
       isRunning: newIsRunning,
     }
   }, [content, status?.type, threadId, id])
-
-  // Log state changes
-  // React.useEffect(() => {
-  //   console.log('[TypingIndicator] Indicator state updated', {
-  //     shouldShow: isEmpty || isRunning,
-  //     isEmpty,
-  //     isRunning,
-  //     threadId,
-  //   })
-  // }, [isEmpty, isRunning, threadId])
 
   return (
     <AssistantMessage.Root

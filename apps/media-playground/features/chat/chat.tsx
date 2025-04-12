@@ -321,15 +321,43 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
       return
     }
 
+    console.log('[Chat] Component mounting', {
+      agentId,
+      threadId,
+      hasSSRData: !!agentSSRData,
+      timestamp: new Date().toISOString(),
+    })
+
     setIsMounted(true)
 
     document.body.classList.add('overflow-hidden')
     return () => {
+      console.log('[Chat] Component unmounting', {
+        agentId,
+        threadId,
+        timestamp: new Date().toISOString(),
+      })
       document.body.classList.remove('overflow-hidden')
     }
   }, [])
 
+  // Track thread changes
+  useEffect(() => {
+    if (isMounted) {
+      console.log('[Chat] Thread ID changed', {
+        threadId,
+        agentId,
+        timestamp: new Date().toISOString(),
+      })
+    }
+  }, [threadId, isMounted])
+
   const handleEditClick = () => {
+    console.log('[Chat] Edit clicked', {
+      agentId,
+      threadId,
+      timestamp: new Date().toISOString(),
+    })
     dispatch(
       updateAgentFormSheet({
         isOpen: true,
@@ -346,7 +374,14 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const isOwner = useMemo(() => {
-    return user?._id === agent?.owner._id
+    const ownershipStatus = user?._id === agent?.owner._id
+    console.log('[Chat] Ownership status calculated', {
+      isOwner: ownershipStatus,
+      userId: user?._id,
+      agentOwnerId: agent?.owner._id,
+      timestamp: new Date().toISOString(),
+    })
+    return ownershipStatus
   }, [user, agent])
 
   if (!isMounted) {
@@ -402,7 +437,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         >
           {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
           <ResizablePanel
-            defaultSize={25}
+            defaultSize={20}
             minSize={10}
             maxSize={35}
             collapsible
@@ -431,7 +466,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           />
 
           {/* MAIN CONTENT PANEL */}
-          <ResizablePanel defaultSize={82} className="flex flex-col">
+          <ResizablePanel defaultSize={65} className="flex flex-col">
             {/* Ensure main takes full height within the panel */}
             <main className="bg-accent flex-1 overflow-auto flex flex-col">
               {!agent ? (
