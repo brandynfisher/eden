@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -48,13 +49,16 @@ import {
 import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
+  CheckIcon,
   ChevronRightIcon,
   EditIcon,
   MoreHorizontal,
+  PencilIcon,
   SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
-import { FC, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import * as React from 'react'
 import { toast } from 'sonner'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
@@ -80,13 +84,19 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-const ThreadListItemTrigger: FC<{
+const ThreadListItem: FC<{
   onItemClick?: () => void
 }> = ({ onItemClick }) => {
   const id = useThreadListItem(t => t.id)
+  const title = useThreadListItem(t => t.title)
   const agentId = useEdenRuntimeExtras(extras => extras.agentId)
   const { invalidate } = useThreadListQuery({ agentId })
   const runtime = useAssistantRuntime()
+  const [isEditing, setIsEditing] = useState(false)
+  const [newTitle, setNewTitle] = useState('')
+  const [isRenaming, setIsRenaming] = useState(false)
+  const isSubmittingRef = useRef(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const deleteThread = async (threadId: string) => {
     try {
@@ -113,41 +123,163 @@ const ThreadListItemTrigger: FC<{
     }
   }
 
-  return (
-    <ThreadListItemPrimitive.Trigger
-      className="relative flex group items-center justify-between flex-grow w-full gap-1 hover:bg-muted/50 rounded-lg transition-all"
-      onClick={onItemClick}
-    >
-      <div className="overflow-hidden whitespace-nowrap text-ellipsis px-3 py-2">
-        <ThreadListItemPrimitive.Title fallback="Untitled" />
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          asChild
-          className="shrink-0 h-5 w-5 mr-1 hidden [&[data-state=open]]:flex group-hover:flex [@media(pointer:coarse)]:flex"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="[&[data-state=closed]]:hidden">
-          <DropdownMenuItem
-            className="flex items-center gap-2 text-destructive hover:!text-destructive"
-            onClick={() => deleteThread(id)}
-          >
-            <TrashIcon className="size-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </ThreadListItemPrimitive.Trigger>
-  )
-}
+  const renameThread = useCallback(
+    async (threadId: string, title: string) => {
+      console.log('[ThreadListItem] Rename thread', { threadId, title })
+      if (!title) {
+        setIsEditing(false)
+        return
+      }
+      try {
+        setIsRenaming(true)
+        await axios.patch(`/api/threads/${threadId}`, {
+          title,
+        })
 
-const ThreadListItem: FC<{
-  onItemClick?: () => void
-}> = ({ onItemClick }) => {
+        await invalidate()
+
+        toast.success('Thread renamed', {
+          description: 'Your thread has been renamed.',
+          dismissible: true,
+          richColors: true,
+        })
+      } catch (error) {
+        console.error(error)
+        toast.error('Failed to rename thread', {
+          description: 'Please try again later.',
+          dismissible: true,
+          richColors: true,
+        })
+      } finally {
+        setIsRenaming(false)
+        setIsEditing(false)
+      }
+    },
+    [invalidate],
+  )
+
+  const handleRenameSubmit = useCallback(
+    async (event?: React.FormEvent | React.MouseEvent) => {
+      event?.preventDefault()
+      isSubmittingRef.current = true
+      await renameThread(id, newTitle)
+    },
+    [id, newTitle, renameThread],
+  )
+
+  const handleRenameCancel = useCallback(() => {
+    if (!isSubmittingRef.current) {
+      setIsEditing(false)
+      setNewTitle('')
+    }
+    setTimeout(() => {
+      isSubmittingRef.current = false
+    }, 150)
+  }, [])
+
+  useEffect(() => {
+    if (isEditing) {
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }, [isEditing])
+
+  useEffect(() => {
+    if (!isEditing) {
+      isSubmittingRef.current = false
+    }
+  }, [isEditing])
+
   return (
-    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all mr-3">
-      <ThreadListItemTrigger onItemClick={onItemClick} />
+    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-3 text-sm relative">
+      <div className="flex-grow min-w-0 pl-3 pr-1 py-0.5">
+        {isEditing ? (
+          <div className="flex items-center gap-1">
+            <Input
+              id="thread-title-input"
+              name="title"
+              ref={inputRef}
+              value={newTitle}
+              disabled={isRenaming}
+              onChange={e => setNewTitle(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !isRenaming) {
+                  handleRenameSubmit(e)
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  handleRenameCancel()
+                }
+              }}
+              onBlur={handleRenameCancel}
+              className="h-8 flex-grow px-1 py-0 text-sm min-w-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border"
+              onClick={e => e.stopPropagation()}
+              onPointerDown={e => e.stopPropagation()}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0 text-primary hover:text-primary"
+              onClick={handleRenameSubmit}
+              onMouseDown={e => e.preventDefault()}
+              disabled={isRenaming}
+            >
+              {isRenaming ? (
+                <LoadingIndicator className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckIcon className="h-4 w-4" />
+              )}
+              <span className="sr-only">Save</span>
+            </Button>
+          </div>
+        ) : (
+          <ThreadListItemPrimitive.Trigger
+            className="flex-grow min-w-0 py-1.5 block text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none"
+            onClick={onItemClick}
+            disabled={isEditing}
+          >
+            <div className="overflow-hidden whitespace-nowrap text-ellipsis">
+              <ThreadListItemPrimitive.Title fallback="Untitled" />
+            </div>
+          </ThreadListItemPrimitive.Trigger>
+        )}
+      </div>
+
+      {!isEditing && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 h-7 w-7 mr-1 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-opacity"
+              onClick={e => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">Thread Actions</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              className="flex items-center gap-2"
+              onSelect={() => {
+                setIsEditing(true)
+                setNewTitle(title || '')
+              }}
+            >
+              <PencilIcon className="size-4" />
+              Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center gap-2 text-destructive hover:!text-destructive focus:!text-destructive focus:!bg-destructive/10"
+              onSelect={e => {
+                e.preventDefault()
+                deleteThread(id)
+              }}
+            >
+              <TrashIcon className="size-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </ThreadListItemPrimitive.Root>
   )
 }
