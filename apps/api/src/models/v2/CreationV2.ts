@@ -18,6 +18,7 @@ export interface CreationV2Schema extends MediaOutput {
   updatedAt: Date
   public?: boolean
   metadata?: string | null
+  likeCount?: number
 }
 
 export interface CreationV2Input extends MediaOutput {
@@ -70,6 +71,10 @@ export const creationSchema = new Schema<CreationV2Document>(
     },
     metadata: {
       type: Schema.Types.Mixed,
+    },
+    likeCount: {
+      type: Number,
+      default: 0,
     },
     mediaAttributes: {
       mimeType: {
