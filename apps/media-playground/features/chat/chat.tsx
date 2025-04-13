@@ -162,7 +162,7 @@ const ThreadListItem: FC<{
     async (event?: React.FormEvent | React.MouseEvent) => {
       event?.preventDefault()
       isSubmittingRef.current = true
-      await renameThread(id, newTitle)
+      await renameThread(id, newTitle.trim())
     },
     [id, newTitle, renameThread],
   )
