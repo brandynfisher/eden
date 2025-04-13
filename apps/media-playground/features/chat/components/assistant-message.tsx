@@ -2,7 +2,6 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
-import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { ThreadPrimitive, useMessage } from '@assistant-ui/react'
@@ -66,68 +65,17 @@ const MyAssistantMessage: FC = () => {
   const content = useMessage(m => m.content)
   const status = useMessage(m => m.status)
   const id = useMessage(m => m.id)
-  const threadId = useEdenRuntimeExtras(extras => extras.threadId)
-
-  // Add mount/unmount logging
-  React.useEffect(() => {
-    console.log('[TypingIndicator] Component mounted', {
-      threadId,
-      messageId: id,
-      initialContent: content,
-      initialStatus: status,
-      timestamp: new Date().toISOString(),
-      isStrictMode: process.env.NODE_ENV === 'development',
-    })
-
-    return () => {
-      console.log('[TypingIndicator] Component unmounting', {
-        threadId,
-        messageId: id,
-        finalContent: content,
-        finalStatus: status,
-        timestamp: new Date().toISOString(),
-      })
-    }
-  }, []) // Empty deps for mount/unmount only
-
-  // Track thread changes
-  React.useEffect(() => {
-    console.log('[TypingIndicator] Thread changed', {
-      threadId,
-      messageId: id,
-      timestamp: new Date().toISOString(),
-    })
-  }, [threadId])
-
-  // Track message updates
-  React.useEffect(() => {
-    console.log('[TypingIndicator] Message content/status updated', {
-      threadId,
-      messageId: id,
-      content: content?.length || 0,
-      status: status?.type,
-      timestamp: new Date().toISOString(),
-    })
-  }, [content, status, id, threadId])
 
   // Memoize the derived state to prevent unnecessary recalculations
   const { isEmpty, isRunning } = React.useMemo(() => {
     const newIsEmpty = !content || content.length === 0
     const newIsRunning = status?.type === 'running'
 
-    console.log('[TypingIndicator] State calculation', {
-      threadId,
-      messageId: id,
-      isEmpty: newIsEmpty,
-      isRunning: newIsRunning,
-      timestamp: new Date().toISOString(),
-    })
-
     return {
       isEmpty: newIsEmpty,
       isRunning: newIsRunning,
     }
-  }, [content, status?.type, threadId, id])
+  }, [content, status?.type])
 
   return (
     <AssistantMessage.Root
@@ -152,29 +100,6 @@ const MyAssistantMessage: FC = () => {
           <TypingIndicator />
         </div>
       ) : null}
-
-      <div className="absolute bottom-0 right-0 flex items-center gap-2">
-        <div className="text-muted-foreground p-1 bg-muted rounded-md">
-          Running:{' '}
-          <span
-            className={cn(
-              isRunning && 'text-accent-foreground bg-blue-700 p-1 rounded-md',
-            )}
-          >
-            {isRunning ? 'true' : 'false'}
-          </span>
-        </div>
-        <div className="text-muted-foreground p-1 bg-muted rounded-md">
-          Empty:{' '}
-          <span
-            className={cn(
-              isEmpty && 'text-accent-foreground bg-blue-700 p-1 rounded-md',
-            )}
-          >
-            {isEmpty ? 'true' : 'false'}
-          </span>
-        </div>
-      </div>
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />
       </ThreadPrimitive.If>

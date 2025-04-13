@@ -52,9 +52,7 @@ export const useEdenRuntime = ({
     AsyncGenerator<{ data: ThreadMessageWithStatus & { active?: string[] } }>
   >
   onSwitchToNewThread?: () => Promise<void> | void
-  onSwitchToThread?: (
-    threadId: string,
-  ) => Promise<{
+  onSwitchToThread?: (threadId: string) => Promise<{
     messages: ThreadMessageWithStatus[]
     active: string[]
     shouldBeActive: boolean
@@ -79,33 +77,13 @@ export const useEdenRuntime = ({
 
   // Log initial mount and config
   useEffect(() => {
-    console.log('[EdenRuntime] Mounted', {
-      agentId,
-      threadId,
-      isReadOnly,
-      isSignedIn,
-      timestamp: new Date().toISOString(),
-    })
-
     return () => {
-      console.log('[EdenRuntime] Unmounting', {
-        agentId,
-        threadId: currentThreadIdRef.current,
-        timestamp: new Date().toISOString(),
-      })
       isMounted.current = false
     }
   }, [])
 
   // Track thread changes
   useEffect(() => {
-    if (threadId !== currentThreadIdRef.current) {
-      console.log('[EdenRuntime] Thread ID changed', {
-        from: currentThreadIdRef.current,
-        to: threadId,
-        timestamp: new Date().toISOString(),
-      })
-    }
     currentThreadIdRef.current = threadId
   }, [threadId])
 

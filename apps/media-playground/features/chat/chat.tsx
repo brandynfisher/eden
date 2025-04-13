@@ -125,7 +125,6 @@ const ThreadListItem: FC<{
 
   const renameThread = useCallback(
     async (threadId: string, title: string) => {
-      console.log('[ThreadListItem] Rename thread', { threadId, title })
       if (!title) {
         setIsEditing(false)
         return
@@ -191,9 +190,9 @@ const ThreadListItem: FC<{
 
   return (
     <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-3 text-sm relative">
-      <div className="flex-grow min-w-0 pl-3 pr-1 py-0.5">
+      <div className="flex-grow min-w-0 pl-3 pr-1 py-1.5 flex items-stretch">
         {isEditing ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-grow min-w-0">
             <Input
               id="thread-title-input"
               name="title"
@@ -232,7 +231,7 @@ const ThreadListItem: FC<{
           </div>
         ) : (
           <ThreadListItemPrimitive.Trigger
-            className="flex-grow min-w-0 py-1.5 block text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none"
+            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
             onClick={onItemClick}
             disabled={isEditing}
           >
@@ -453,43 +452,16 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
       return
     }
 
-    console.log('[Chat] Component mounting', {
-      agentId,
-      threadId,
-      hasSSRData: !!agentSSRData,
-      timestamp: new Date().toISOString(),
-    })
-
     setIsMounted(true)
 
     document.body.classList.add('overflow-hidden')
     return () => {
-      console.log('[Chat] Component unmounting', {
-        agentId,
-        threadId,
-        timestamp: new Date().toISOString(),
-      })
+      document.body.classList.remove('overflow-hidden')
       document.body.classList.remove('overflow-hidden')
     }
   }, [])
 
-  // Track thread changes
-  useEffect(() => {
-    if (isMounted) {
-      console.log('[Chat] Thread ID changed', {
-        threadId,
-        agentId,
-        timestamp: new Date().toISOString(),
-      })
-    }
-  }, [threadId, isMounted])
-
   const handleEditClick = () => {
-    console.log('[Chat] Edit clicked', {
-      agentId,
-      threadId,
-      timestamp: new Date().toISOString(),
-    })
     dispatch(
       updateAgentFormSheet({
         isOpen: true,

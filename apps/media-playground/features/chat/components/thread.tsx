@@ -66,6 +66,9 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const { readyState, isAttemptingReconnect } = useWebSocketContext()
   const { isSignedIn } = useAuthState()
   const [isDragging, setIsDragging] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
+  const alertTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const initialConnectionAttemptRef = useRef(true)
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime?.getAttachmentAccept()
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -237,12 +240,53 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     return () => clearTimeout(timer)
   }, [messages.length, assistantMessagesContent])
 
-  // Only render connection status after mount
-  const showConnectionClosedAlert =
-    isMounted &&
-    isSignedIn &&
-    readyState === ReadyState.CLOSED &&
-    !isAttemptingReconnect
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Handle connection state changes with delay
+  useEffect(() => {
+    // Clear any existing timeout
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current)
+    }
+
+    // Consider the connection healthy if:
+    // 1. We're connecting (readyState === 0)
+    // 2. We're connected (readyState === 1)
+    // 3. We're attempting to reconnect
+    // 4. It's our first connection attempt
+    const isConnectionHealthy =
+      readyState === ReadyState.CONNECTING ||
+      readyState === ReadyState.OPEN ||
+      isAttemptingReconnect ||
+      initialConnectionAttemptRef.current
+
+    // After first successful connection or 10s timeout, mark initial attempt as done
+    if (
+      readyState === ReadyState.OPEN ||
+      (!isConnectionHealthy && initialConnectionAttemptRef.current)
+    ) {
+      initialConnectionAttemptRef.current = false
+    }
+
+    if (!isConnectionHealthy) {
+      // Add a 5 second delay before showing the alert
+      alertTimeoutRef.current = setTimeout(() => {
+        setShowAlert(true)
+      }, 5000)
+    } else {
+      setShowAlert(false)
+    }
+  }, [readyState, isAttemptingReconnect])
+
+  // Only render connection status after mount and delay
+  const showConnectionClosedAlert = isMounted && isSignedIn && showAlert
 
   // Memoize the composer to prevent remounts
   const memoizedComposer = React.useMemo(
