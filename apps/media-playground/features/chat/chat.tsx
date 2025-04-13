@@ -189,8 +189,8 @@ const ThreadListItem: FC<{
   }, [isEditing])
 
   return (
-    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-3 text-sm relative">
-      <div className="flex-grow min-w-0 pl-3 pr-1 py-1.5 flex items-stretch">
+    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-1 text-sm relative">
+      <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
         {isEditing ? (
           <div className="flex items-center gap-1 flex-grow min-w-0">
             <Input
@@ -479,12 +479,6 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
 
   const isOwner = useMemo(() => {
     const ownershipStatus = user?._id === agent?.owner._id
-    console.log('[Chat] Ownership status calculated', {
-      isOwner: ownershipStatus,
-      userId: user?._id,
-      agentOwnerId: agent?.owner._id,
-      timestamp: new Date().toISOString(),
-    })
     return ownershipStatus
   }, [user, agent])
 
@@ -536,20 +530,21 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
         <ResizablePanelGroup
           direction="horizontal"
-          className="flex-1 !overflow-y-hidden" // Take remaining height, prevent group overflow
+          className="flex-1 !overflow-y-hidden"
           autoSaveId={`resizable-chat-layout-${agentId}`}
         >
           {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
           <ResizablePanel
             defaultSize={20}
-            minSize={10}
-            maxSize={35}
+            minSize={15}
+            maxSize={30}
             collapsible
-            collapsedSize={0} // Fully collapse
+            collapsedSize={0}
             onCollapse={() => setIsSidebarCollapsed(true)}
             onExpand={() => setIsSidebarCollapsed(false)}
             className={cn(
               'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+              'max-w-[320px]',
               isSidebarCollapsed && 'p-0 border-none',
             )}
           >
@@ -570,7 +565,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           />
 
           {/* MAIN CONTENT PANEL */}
-          <ResizablePanel defaultSize={65} className="flex flex-col">
+          <ResizablePanel defaultSize={80} className="flex flex-col">
             {/* Ensure main takes full height within the panel */}
             <main className="bg-accent flex-1 overflow-auto flex flex-col">
               {!agent ? (

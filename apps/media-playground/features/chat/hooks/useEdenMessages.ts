@@ -9,17 +9,22 @@ type MessageResponse<T> = {
   }
 }
 
-type ThreadMessageWithStatus = ThreadMessage & {
+// Revert to SDK compatible definition: content is optional string
+export type ThreadMessageWithStatus = Omit<ThreadMessage, 'status'> & {
   status?: AssistantMessage['status']
 }
 
 export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
   stream,
+  setIsRunning,
+  setIsSending,
 }: {
   stream: (
     messages: TMessage[],
     callback?: (thread_id?: string) => Promise<void>,
   ) => Promise<AsyncGenerator<MessageResponse<TMessage>>>
+  setIsRunning: (isRunning: boolean) => void
+  setIsSending: (isSending: boolean) => void
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
   const { readyState } = useWebSocketContext()
@@ -63,8 +68,31 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
+      console.log(
+        '[useEdenMessages] Adding or updating message',
+        activeIds,
+        message,
+      )
       const streamJustFinished =
         activeIds !== undefined && activeIds.length === 0
+
+      // If adding a user message, only set isRunning (isSending set before stream call)
+      // REMOVED: This logic is flawed. User message adding should NOT set isRunning.
+      // isRunning should reflect assistant activity.
+      // if (message.role === 'user') {
+      //  console.log(
+      //    '[useEdenMessages] User message added, setting isRunning = true',
+      //  )
+      //  setIsRunning(true)
+      // }
+
+      // If stream just finished, set sending intention false
+      if (streamJustFinished) {
+        console.log(
+          '[useEdenMessages] Stream finished, setting isSending = false',
+        )
+        setIsSending(false)
+      }
 
       const messageToAdd = {
         ...message,
@@ -98,8 +126,10 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       if (streamJustFinished) {
         pendingOptimisticMessagesRef.current = []
       }
+
+      return true
     },
-    [processBatchUpdates],
+    [processBatchUpdates, setIsRunning, setIsSending],
   )
 
   // Handle connection state changes
@@ -139,7 +169,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         })
       }
     }
-  }, [readyState, addOrUpdateMessage])
+  }, [readyState, addOrUpdateMessage, setIsRunning, setIsSending])
 
   const sendMessage = useCallback(
     async (
@@ -148,9 +178,16 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
     ): Promise<AsyncGenerator<MessageResponse<TMessage>>> => {
       pendingOptimisticMessagesRef.current = []
 
-      // Add optimistic updates in next tick to avoid blocking
+      // Optimistic message add happens here BEFORE stream starts
+      // This is where we need setIsRunning(true)
       setTimeout(() => {
         newMessages.forEach(message => {
+          if (message.role === 'user') {
+            console.log(
+              '[useEdenMessages sendMessage] Adding user message, setting isRunning = true',
+            )
+            setIsRunning(true)
+          }
           const messageWithStatus = {
             ...message,
             status:
@@ -169,7 +206,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       // RETURN the stream generator directly
       return stream(newMessages, callback)
     },
-    [addOrUpdateMessage, stream],
+    [addOrUpdateMessage, stream, setIsRunning, setIsSending],
   )
 
   // Cleanup

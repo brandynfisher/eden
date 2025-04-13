@@ -1,4 +1,38 @@
-import { EdenMessage } from '@/features/chat/eden-message-converter'
+import { Message } from '@edenlabs/eden-sdk'
+
+// Add type for @assistant-ui/react MessageStatus
+type UIMessageStatus =
+  | { readonly type: 'running' }
+  | { readonly type: 'complete'; readonly reason: 'stop' | 'unknown' }
+
+export type EdenMessage = {
+  status?: UIMessageStatus
+} & Message &
+  (
+    | {
+        role: 'user'
+        content: string
+        attachments?: string[]
+      }
+    | {
+        role: 'assistant'
+        content: string
+        status?: UIMessageStatus
+        tool_calls?: Array<{
+          id: string
+          type: string
+          function: {
+            name: string
+            arguments: string
+          }
+          status?: string
+        }>
+      }
+    | {
+        role: 'system'
+        content: string
+      }
+  )
 
 export function createAsyncIterableFromEmitter(
   emitter: MessageEmitter,
