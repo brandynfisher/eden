@@ -49,6 +49,7 @@ type WebSocketState = {
   lastMessage?: WorkerMessage | null
   lastMessageJson?: JsonMessage | null
   readyState: ReadyState
+  isAttemptingReconnect: boolean
 }
 
 const initialState: WebSocketState = {
@@ -57,6 +58,7 @@ const initialState: WebSocketState = {
   lastMessage: null,
   lastMessageJson: null,
   readyState: ReadyState.UNINSTANTIATED,
+  isAttemptingReconnect: false,
 }
 
 const WebSocketContext = createContext<WebSocketState>(initialState)
@@ -73,6 +75,7 @@ export const WebSocketProvider = ({ endpoint, children }: Props) => {
     readyState,
     lastMessage: lastWorkerMessage,
     sendMessage: sendWorkerMessage,
+    isAttemptingReconnect,
   } = useSharedWebSocketWorker(activeEndpoint)
 
   const sendAuthMessageToWorker = useCallback(
@@ -161,11 +164,13 @@ export const WebSocketProvider = ({ endpoint, children }: Props) => {
       lastMessage: lastWorkerMessage,
       lastMessageJson,
       readyState,
+      isAttemptingReconnect,
     }),
     [
       lastWorkerMessage,
       lastMessageJson,
       readyState,
+      isAttemptingReconnect,
       sendJsonMessage,
       sendMessage,
     ],

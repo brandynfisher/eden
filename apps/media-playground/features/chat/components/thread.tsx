@@ -62,14 +62,12 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     threadId,
   } = config
 
-  const [connectionLost, setConnectionLost] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const { readyState } = useWebSocketContext()
+  const { readyState, isAttemptingReconnect } = useWebSocketContext()
   const { isSignedIn } = useAuthState()
   const [isDragging, setIsDragging] = useState(false)
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime?.getAttachmentAccept()
-  const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const viewportRef = useRef<HTMLDivElement>(null)
   const messages = useThread(t => t.messages)
   const isInitialLoadRef = useRef(true)
@@ -117,36 +115,6 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const showLoadingState = !showWelcomeScreen
     ? false
     : isMounted && Boolean(effectiveThreadId) && messages.length === 0
-
-  // Debug logging - only log on important state changes
-  // useEffect(() => {
-  //   const state = {
-  //     threadId,
-  //     urlThreadId,
-  //     effectiveThreadId,
-  //     messagesLength: messages.length,
-  //     showWelcomeScreen,
-  //     showLoadingState,
-  //     isMounted,
-  //   }
-
-  //   // // Only log if something important changed
-  //   // if (
-  //   //   state.messagesLength === 0 ||
-  //   //   state.showLoadingState ||
-  //   //   !state.isMounted
-  //   // ) {
-  //   //   console.log('Thread state:', state)
-  //   // }
-  // }, [
-  //   threadId,
-  //   urlThreadId,
-  //   effectiveThreadId,
-  //   messages.length,
-  //   showWelcomeScreen,
-  //   showLoadingState,
-  //   isMounted,
-  // ])
 
   // Mount effect - only run once
   useEffect(() => {
@@ -269,59 +237,12 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     return () => clearTimeout(timer)
   }, [messages.length, assistantMessagesContent])
 
-  // Debounce connection status changes to prevent rapid remounts
-  const handleConnectionChange = React.useCallback((isOnline: boolean) => {
-    // Clear any existing timeout
-    if (connectionTimeoutRef.current) {
-      clearTimeout(connectionTimeoutRef.current)
-    }
-
-    // Add delay before updating connection status
-    // Longer delay (2s) for showing the alert, shorter delay (500ms) for hiding it
-    const delay = isOnline ? 500 : 5000
-
-    connectionTimeoutRef.current = setTimeout(() => {
-      setConnectionLost(prev => {
-        if (prev === !isOnline) return prev
-        return !isOnline
-      })
-    }, delay)
-  }, [])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    setIsMounted(true)
-
-    const handleOnline = () => handleConnectionChange(true)
-    const handleOffline = () => handleConnectionChange(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    if (navigator) {
-      // Check connection status after mount
-      const isOffline =
-        !navigator.onLine ||
-        readyState === ReadyState.CLOSED ||
-        readyState === ReadyState.CLOSING
-
-      handleConnectionChange(!isOffline)
-    }
-
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-      if (connectionTimeoutRef.current) {
-        clearTimeout(connectionTimeoutRef.current)
-      }
-    }
-  }, [readyState, handleConnectionChange])
-
   // Only render connection status after mount
-  const showConnectionLost = isMounted && isSignedIn && connectionLost
+  const showConnectionClosedAlert =
+    isMounted &&
+    isSignedIn &&
+    readyState === ReadyState.CLOSED &&
+    !isAttemptingReconnect
 
   // Memoize the composer to prevent remounts
   const memoizedComposer = React.useMemo(
@@ -393,7 +314,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
           </>
         )}
         <Thread.ViewportFooter className="z-20">
-          {showConnectionLost ? (
+          {showConnectionClosedAlert ? (
             <div className="w-full bg-accent mb-4 mt-2 rounded-lg overflow-hidden">
               <AlertDestructive title="Network connection lost" />
             </div>
