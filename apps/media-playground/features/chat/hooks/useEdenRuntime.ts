@@ -126,13 +126,9 @@ export const useEdenRuntime = ({
     messages: EdenMessage[],
     callback?: (thread_id?: string) => Promise<void>,
   ) => {
-    if (isReadOnly) {
-      console.warn('[EdenRuntime] Attempted to send message in read-only mode')
-      return
-    }
-
-    let responseGenerator: AsyncGenerator<MessageResponse<TMessage>> | null =
-      null
+    let responseGenerator: AsyncGenerator<{
+      data: ThreadMessageWithStatus & { active?: string[] }
+    }> | null = null
 
     try {
       console.log('[EdenRuntime] Sending message', {
@@ -140,6 +136,8 @@ export const useEdenRuntime = ({
         threadId: currentThreadIdRef.current,
         timestamp: new Date().toISOString(),
       })
+
+      // Set running state before starting stream
       setIsRunning(true)
 
       // Get the generator from sendMessage
@@ -150,6 +148,13 @@ export const useEdenRuntime = ({
       if (responseGenerator) {
         // Iterate through the generator to process messages
         for await (const message of responseGenerator) {
+          if (!isMounted.current) {
+            console.log(
+              '[EdenRuntime] Component unmounted during message processing',
+            )
+            // Don't break here - let the finally block handle cleanup
+            continue
+          }
           // Ensure addOrUpdateMessage is called for each yielded message
           // Added type assertion to resolve mismatch - review types later if needed
           addOrUpdateMessage(message.data as TMessage, message.data.active)
@@ -161,15 +166,42 @@ export const useEdenRuntime = ({
       }
     } catch (error) {
       console.error('[EdenRuntime] Error processing message stream:', error)
-      // Optionally handle errors, maybe update UI
+      // Don't reset running state here - let finally block handle it
     } finally {
+      // Only reset running state if we're still mounted and there are no active messages
       if (isMounted.current) {
-        // This now correctly runs *after* the for-await loop finishes or breaks
-        setIsRunning(false)
-        console.log('[EdenRuntime] Message stream processing completed/ended', {
-          threadId: currentThreadIdRef.current,
-          timestamp: new Date().toISOString(),
-        })
+        // Check both the current messages and the new messages for running state
+        const hasActiveMessages = messages.some(
+          msg =>
+            msg.role === 'assistant' &&
+            (msg.status?.type === 'running' ||
+              msg.tool_calls?.some(
+                call =>
+                  !call.status ||
+                  call.status === 'running' ||
+                  call.status === 'pending',
+              )),
+        )
+
+        // Only reset running state if there are no active messages
+        if (!hasActiveMessages) {
+          console.log(
+            '[EdenRuntime] No active messages found, resetting running state',
+            {
+              threadId: currentThreadIdRef.current,
+              timestamp: new Date().toISOString(),
+            },
+          )
+          setIsRunning(false)
+        } else {
+          console.log(
+            '[EdenRuntime] Active messages found, maintaining running state',
+            {
+              threadId: currentThreadIdRef.current,
+              timestamp: new Date().toISOString(),
+            },
+          )
+        }
       }
     }
   }
@@ -343,13 +375,6 @@ export function useEdenRuntimeExtras<T>(
 
     return selector(extras)
   })
-}
-
-// Helper type for MessageResponse if needed
-type MessageResponse<T> = {
-  data: T & {
-    active?: string[]
-  }
 }
 
 // Define TMessage - using ThreadMessageWithStatus seems more appropriate here

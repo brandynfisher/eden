@@ -155,7 +155,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
       // Consider "at bottom" if within the smaller threshold
       const atBottom = distanceFromBottom < BOTTOM_THRESHOLD
 
-      // Consider "near bottom" if within one viewport height (keep this logic)
+      // Consider "near bottom" if within one viewport height
       const nearBottom = distanceFromBottom < clientHeight
 
       setIsAtBottom(atBottom)
@@ -166,22 +166,48 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
         setHasNewMessages(false)
         lastSeenContentRef.current = assistantMessagesContent
       }
-
-      // Debug scroll position
-      // console.log('Scroll position:', {
-      //   distanceFromBottom,
-      //   atBottom,
-      //   nearBottom,
-      //   scrollHeight,
-      //   scrollTop,
-      //   clientHeight,
-      //   threshold: BOTTOM_THRESHOLD
-      // })
     }
 
     viewport.addEventListener('scroll', handleScroll)
     handleScroll() // Check initial scroll position
     return () => viewport.removeEventListener('scroll', handleScroll)
+  }, [assistantMessagesContent, hasGeneratingMessage])
+
+  // Scroll to bottom helper with improved mobile support
+  const scrollToBottom = useCallback(() => {
+    if (!viewportRef.current) return
+    const viewport = viewportRef.current
+
+    // Add a small delay to ensure content is rendered and layout is stable
+    requestAnimationFrame(() => {
+      // Calculate target scroll position with extra padding for mobile
+      const extraPadding = 60 // Account for mobile browser chrome and safe areas
+      const targetScroll =
+        viewport.scrollHeight - viewport.clientHeight + extraPadding
+
+      viewport.scrollTo({
+        top: targetScroll,
+        behavior: isInitialLoadRef.current ? 'instant' : 'smooth',
+      })
+
+      // Double-check scroll position after a short delay
+      setTimeout(() => {
+        if (
+          viewport.scrollTop + viewport.clientHeight <
+          viewport.scrollHeight
+        ) {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: 'instant',
+          })
+        }
+      }, 100)
+
+      if (!hasGeneratingMessage) {
+        setHasNewMessages(false)
+        lastSeenContentRef.current = assistantMessagesContent
+      }
+    })
   }, [assistantMessagesContent, hasGeneratingMessage])
 
   // Auto-scroll when near bottom and:
@@ -192,7 +218,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     const hasNewMessage = messages.length > lastMessagesLengthRef.current
     const hasAssistantUpdate = messages.some(m => m.role === 'assistant')
     const shouldAutoScroll =
-      isNearBottom &&
+      (isNearBottom || isInitialLoadRef.current) &&
       (hasNewMessage || hasAssistantUpdate || hasGeneratingMessage)
 
     if (shouldAutoScroll) {
@@ -200,7 +226,12 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     }
 
     lastMessagesLengthRef.current = messages.length
-  }, [messages.length, allAssistantMessages, hasGeneratingMessage])
+  }, [
+    messages.length,
+    allAssistantMessages,
+    hasGeneratingMessage,
+    scrollToBottom,
+  ])
 
   // Track new messages - show indicator when not near bottom
   useEffect(() => {
@@ -219,26 +250,20 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     }
   }, [assistantMessagesContent, isAtBottom, hasGeneratingMessage])
 
-  // Scroll to bottom on initial load
+  // Scroll to bottom on initial load with improved reliability
   useEffect(() => {
     if (!viewportRef.current || !isInitialLoadRef.current || !messages.length)
       return
 
-    // Use a small timeout to ensure content is rendered
-    const timer = setTimeout(() => {
+    // Use RAF to ensure DOM is ready
+    requestAnimationFrame(() => {
       if (viewportRef.current) {
-        viewportRef.current.scrollTo({
-          // Add extra padding to ensure we scroll past fixed elements
-          top: viewportRef.current.scrollHeight,
-          behavior: 'instant',
-        })
+        scrollToBottom()
         isInitialLoadRef.current = false
         lastSeenContentRef.current = assistantMessagesContent
       }
-    }, 100)
-
-    return () => clearTimeout(timer)
-  }, [messages.length, assistantMessagesContent])
+    })
+  }, [messages.length, assistantMessagesContent, scrollToBottom])
 
   // Clear timeout on unmount
   useEffect(() => {
@@ -297,25 +322,6 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     ),
     [config.threadId, config.composer, setIsDragging],
   )
-
-  // Scroll to bottom helper
-  const scrollToBottom = useCallback(() => {
-    if (!viewportRef.current) return
-    const viewport = viewportRef.current
-
-    // Calculate target scroll position
-    const targetScroll = viewport.scrollHeight - viewport.clientHeight
-
-    viewport.scrollTo({
-      top: targetScroll,
-      behavior: isInitialLoadRef.current ? 'instant' : 'smooth',
-    })
-
-    if (!hasGeneratingMessage) {
-      setHasNewMessages(false)
-      lastSeenContentRef.current = assistantMessagesContent
-    }
-  }, [assistantMessagesContent, hasGeneratingMessage])
 
   return (
     <Thread.Root config={config}>

@@ -1,9 +1,18 @@
 // WebSocket Worker for connection pooling across tabs
 self.name = 'websocket-worker'
 
+// Enable debugging for the worker
+self.DEBUG = true
+
 // Ensure worker is registered for inspection
 if (typeof SharedWorkerGlobalScope !== 'undefined' && self instanceof SharedWorkerGlobalScope) {
-  console.log('SharedWorker initialized:', { name: self.name, timestamp: new Date().toISOString() })
+  // Log initialization with more details
+  console.log('SharedWorker initialized:', {
+    name: self.name,
+    timestamp: new Date().toISOString(),
+    location: self.location?.href,
+    type: 'SharedWorker'
+  })
 }
 
 // Add global error handler to prevent silent failures
@@ -15,12 +24,18 @@ self.onerror = (error) => {
 const ports = new Set()
 
 function debug(message, data) {
+  if (!self.DEBUG) return
+
   const debugMessage = {
     type: 'debug',
     message,
     data,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    workerName: self.name
   }
+
+  // Log in worker context for inspection
+  console.debug(`[Worker ${debugMessage.timestamp}]`, message, data)
 
   // In a SharedWorker, we can only send messages through ports
   ports.forEach(port => {
@@ -137,53 +152,86 @@ class WebSocketManager {
     }
 
     debug('Creating new WebSocket connection', { endpoint })
-    this.endpoint = endpoint
-    this.ws = new WebSocket(endpoint)
 
-    this.ws.onopen = () => {
-      debug('Connection opened')
-      this.broadcast({ type: 'status', readyState: WebSocket.OPEN })
+    try {
+    // Create WebSocket with explicit protocols to help with debugging
+      this.endpoint = endpoint
+      this.ws = new WebSocket(endpoint, ['websocket'])
 
-      this.pingInterval = self.setInterval(() => {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-          debug('Sending ping')
-          this.ws.send(JSON.stringify({ event: 'ping', ts: Date.now() }))
+      // Log the WebSocket object details
+      console.log('WebSocket created:', {
+        url: this.ws.url,
+        protocol: this.ws.protocol,
+        readyState: this.ws.readyState,
+        binaryType: this.ws.binaryType
+      })
 
-          if (Date.now() - this.lastPongTime > 90000) {
-            debug('Pong timeout, reconnecting')
-            this.reconnect()
+      this.ws.onopen = () => {
+        console.log('WebSocket connection opened:', {
+          url: this.ws.url,
+          protocol: this.ws.protocol,
+          readyState: this.ws.readyState
+        })
+        debug('Connection opened')
+        this.broadcast({ type: 'status', readyState: WebSocket.OPEN })
+
+        this.pingInterval = self.setInterval(() => {
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            const pingData = JSON.stringify({ event: 'ping', ts: Date.now() })
+            console.debug('Sending ping:', pingData)
+            this.ws.send(pingData)
+
+            if (Date.now() - this.lastPongTime > 90000) {
+              console.warn('Pong timeout, reconnecting')
+              debug('Pong timeout, reconnecting')
+              this.reconnect()
+            }
           }
-        }
-      }, 30000)
-    }
-
-    this.ws.onclose = () => {
-      debug('Connection closed')
-      this.broadcast({ type: 'status', readyState: WebSocket.CLOSED })
-      this.cleanup()
-      this.scheduleReconnect()
-    }
-
-    this.ws.onerror = (error) => {
-      debug('Connection error', error)
-      this.broadcast({ type: 'error', error })
-      this.cleanup()
-      this.scheduleReconnect()
-    }
-
-    this.ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        debug('Received WebSocket message', data)
-        if (data.event === 'pong') {
-          this.lastPongTime = Date.now()
-          debug('Received pong')
-          return
-        }
-      } catch (e) {
-        debug('Failed to parse WebSocket message', { error: e.message })
+        }, 30000)
       }
-      this.broadcast({ type: 'message', data: event.data })
+
+      this.ws.onclose = (event) => {
+        console.log('WebSocket connection closed:', {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean
+        })
+        debug('Connection closed', { code: event.code, reason: event.reason })
+        this.broadcast({ type: 'status', readyState: WebSocket.CLOSED })
+        this.cleanup()
+        this.scheduleReconnect()
+      }
+
+      this.ws.onerror = (error) => {
+        console.error('WebSocket connection error:', error)
+        debug('Connection error', error)
+        this.broadcast({ type: 'error', error })
+        this.cleanup()
+        this.scheduleReconnect()
+      }
+
+      this.ws.onmessage = (event) => {
+        console.debug('WebSocket message received:', event.data)
+        try {
+          const data = JSON.parse(event.data)
+          debug('Received WebSocket message', data)
+          if (data.event === 'pong') {
+            this.lastPongTime = Date.now()
+            console.debug('Received pong, updating lastPongTime:', this.lastPongTime)
+            debug('Received pong')
+            return
+          }
+        } catch (e) {
+          console.error('Failed to parse WebSocket message:', e, 'Raw data:', event.data)
+          debug('Failed to parse WebSocket message', { error: e.message })
+        }
+        this.broadcast({ type: 'message', data: event.data })
+      }
+    } catch (error) {
+      console.error('Failed to create WebSocket:', error)
+      debug('Failed to create WebSocket', { error })
+      this.broadcast({ type: 'error', error })
+      this.scheduleReconnect()
     }
   }
 

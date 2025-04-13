@@ -46,12 +46,12 @@ type MessageToWorker =
   | SendMessage
   | AuthMessage
 
-const WORKER_PATH = '/workers/websocket.worker.js' // Adjust if your build process changes the path/extension
+const WORKER_PATH = '/workers/websocket.worker.js'
+const WORKER_VERSION = '1.0' // Use a fixed version instead of timestamp
 
 // The worker path is handled by Turbopack's asset handling
 function getWorkerUrl() {
-  const version = Date.now() // Add timestamp to prevent caching
-  return `${WORKER_PATH}?v=${version}`
+  return `${WORKER_PATH}?v=${WORKER_VERSION}`
 }
 
 // Check if SharedWorker is supported
@@ -320,8 +320,22 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
             type: 'classic',
           })
 
+          // Ensure the worker is properly registered for debugging
+          if ('onerror' in worker) {
+            worker.onerror = error => {
+              console.error('SharedWorker error:', error)
+              setReadyState(ReadyState.CLOSED)
+            }
+          }
+
           worker.port.start()
-          console.debug('SharedWorker created:', { url: workerUrl })
+          console.debug('SharedWorker created:', {
+            url: workerUrl,
+            options: {
+              name: 'websocket-worker',
+              type: 'classic',
+            },
+          })
 
           const port = worker.port
           port.onmessage = (event: MessageEvent<WorkerMessage>) =>
