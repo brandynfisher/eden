@@ -43,25 +43,56 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
     setMessages(currentMessages => {
       const updatedMessages = [...currentMessages]
       const processedIds = new Set<string>()
+      let placeholderIndex = -1
+      let firstAssistantUpdateProcessed = false
+
+      // Find placeholder before processing updates
+      placeholderIndex = updatedMessages.findIndex(
+        m => m.role === 'assistant' && !m.content, // Check for assistant role and empty content
+      )
 
       updates.forEach(message => {
-        const existingIndex = updatedMessages.findIndex(
-          m => m.id === message.id,
-        )
+        // --- Placeholder Replacement Logic ---
+        if (
+          message.role === 'assistant' &&
+          placeholderIndex !== -1 && // Placeholder exists
+          !firstAssistantUpdateProcessed // Haven't replaced placeholder in this batch yet
+        ) {
+          // Replace the placeholder with the first incoming assistant message
+          // Use all data from the incoming message, including its real ID
+          updatedMessages[placeholderIndex] = { ...message }
+          processedIds.add(message.id) // Mark this ID as processed
+          firstAssistantUpdateProcessed = true // Mark placeholder as replaced for this batch
+          // No need to reset placeholderIndex, as we only replace once
+        }
+        // --- Standard Update/Add Logic ---
+        else {
+          const existingIndex = updatedMessages.findIndex(
+            m => m.id === message.id,
+          )
 
-        if (existingIndex !== -1) {
-          updatedMessages[existingIndex] = {
-            ...updatedMessages[existingIndex],
-            ...message,
-            tool_calls:
-              message.tool_calls || updatedMessages[existingIndex].tool_calls,
+          if (existingIndex !== -1) {
+            // Update existing message (if it wasn't the placeholder we just replaced)
+            if (
+              existingIndex !== placeholderIndex ||
+              !firstAssistantUpdateProcessed
+            ) {
+              const existingMessage = updatedMessages[existingIndex]
+              updatedMessages[existingIndex] = {
+                ...existingMessage,
+                ...message, // Overwrite with new data
+              }
+              processedIds.add(message.id) // Mark as processed
+            }
+          } else if (!processedIds.has(message.id)) {
+            // Add message only if it wasn't processed via placeholder replacement or standard update
+            updatedMessages.push(message)
+            processedIds.add(message.id)
           }
-        } else if (!processedIds.has(message.id)) {
-          updatedMessages.push(message)
-          processedIds.add(message.id)
         }
       })
 
+      // Always return the potentially updated array. React will diff it.
       return updatedMessages
     })
   }, [])

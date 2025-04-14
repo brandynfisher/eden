@@ -254,6 +254,7 @@ export function EdenRuntimeProvider({
                 status: convertToUIStatus(assistantMessage.status),
                 metadata: assistantMessage.metadata,
                 createdAt: assistantMessage.createdAt,
+                tool_calls: assistantMessage.tool_calls,
               }
 
               yield { data: uiMessage }
@@ -921,6 +922,9 @@ export function EdenRuntimeProvider({
           call.status === 'pending',
       )
 
+      // Determine status based on incoming message and active roots
+      // Note: activeRootIds might be stale if the update removes the last active root,
+      // but the subsequent check for newShouldBeActive handles stream termination.
       const isPartOfActiveChain =
         activeRootIds?.some(rootId => rootId === msg.id) ||
         (msg.role === 'assistant' && activeRootIds && activeRootIds.length > 0)
@@ -929,30 +933,21 @@ export function EdenRuntimeProvider({
 
       const newMsg = {
         ...msg,
+        // Set status based on tool calls, active chain, or incoming status
         status:
           hasPendingToolCalls || isPartOfActiveChain || isMessageRunning
-            ? { type: 'running' }
-            : { type: 'complete', reason: 'stop' },
-      }
+            ? ({ type: 'running' } as const)
+            : ({ type: 'complete', reason: 'stop' } as const),
+        // Convert createdAt string to Date object if necessary
+        createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+      } as ThreadMessageWithStatus // Assert the type here
 
-      // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
-      messageEmitterRef.current?.emit(newMsg)
+      // Directly add/update the message using the function from useEdenMessages
+      // This bypasses the emitter and uses the batching/merging logic directly.
+      addOrUpdateMessage(newMsg, activeRootIds) // Pass activeRootIds for context
 
-      // Update messages state to replace placeholder with actual message
-      setMessages(currentMessages => {
-        const updatedMessages = [...currentMessages]
-        // Find and remove any placeholder messages
-        const placeholderIndex = updatedMessages.findIndex(
-          m => m.role === 'assistant' && (!m.content || m.content.length === 0),
-        )
-        if (placeholderIndex !== -1) {
-          updatedMessages.splice(placeholderIndex, 1)
-        }
-        // Add the new message
-        // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
-        updatedMessages.push(newMsg)
-        return updatedMessages
-      })
+      // REMOVED: Emitter logic - messages are now directly added/updated.
+      // messageEmitterRef.current?.emit(newMsg)
     })
 
     // Update stream state and abort if necessary (Now we know newMessages is not null/undefined)
