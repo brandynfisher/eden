@@ -96,9 +96,9 @@ export function EdenRuntimeProvider({
   // Define controllers FIRST
   const getStreamAbortController = useCallback(() => {
     if (abortControllerRef.current) {
-      console.log(
-        '[EdenRuntimeProvider] Aborting previous stream controller (reason: new stream)',
-      )
+      // console.log(
+      //   '[EdenRuntimeProvider] Aborting previous stream controller (reason: new stream)',
+      // )
       abortControllerRef.current.abort(new Error('New stream starting'))
     }
     abortControllerRef.current = new AbortController()
@@ -107,17 +107,17 @@ export function EdenRuntimeProvider({
 
   const abortCurrentStream = useCallback(() => {
     if (abortControllerRef.current) {
-      console.log('[EdenRuntimeProvider] Explicitly aborting current stream', {
-        hasController: true,
-        isAborted: abortControllerRef.current.signal.aborted,
-        currentThreadId: threadIdRef.current,
-      })
+      // console.log('[EdenRuntimeProvider] Explicitly aborting current stream', {
+      //   hasController: true,
+      //   isAborted: abortControllerRef.current.signal.aborted,
+      //   currentThreadId: threadIdRef.current,
+      // })
       abortControllerRef.current.abort()
       abortControllerRef.current = null // Clear the ref after aborting
     } else {
-      console.log('[EdenRuntimeProvider] No stream controller to abort', {
-        currentThreadId: threadIdRef.current,
-      })
+      // console.log('[EdenRuntimeProvider] No stream controller to abort', {
+      //   currentThreadId: threadIdRef.current,
+      // })
     }
   }, [])
 
@@ -131,19 +131,19 @@ export function EdenRuntimeProvider({
         const streamAbortController = getStreamAbortController()
         const currentThreadId = threadIdRef.current
         let hasReceivedAnyMessage = false
-        let hasStartedMessageProcessing = false
-        let messageHandlerSet = false
+        // let hasStartedMessageProcessing = false
+        // let messageHandlerSet = false
 
         // Ensure the shared emitter exists
         if (!messageEmitterRef.current) {
           messageEmitterRef.current = new MessageEmitter()
         }
 
-        console.log('[EdenRuntimeProvider.stream] Starting new stream', {
-          currentThreadId,
-          messageCount: messages.length,
-          hasAbortController: !!streamAbortController,
-        })
+        // console.log('[EdenRuntimeProvider.stream] Starting new stream', {
+        //   currentThreadId,
+        //   messageCount: messages.length,
+        //   hasAbortController: !!streamAbortController,
+        // })
 
         try {
           // Create the message iterator from the SHARED emitter
@@ -156,7 +156,7 @@ export function EdenRuntimeProvider({
           )
 
           // Mark that we're starting message processing
-          hasStartedMessageProcessing = true
+          // hasStartedMessageProcessing = true
 
           // Send the message to get thread_id first
           const sendMessageResponse = await sendMessage({
@@ -201,49 +201,49 @@ export function EdenRuntimeProvider({
             callback && (await callback(newThreadId))
           }
 
-          console.log(
-            `[EdenRuntimeProvider stream ${threadIdRef.current}] Starting message iteration`,
-            {
-              hasReceivedAnyMessage,
-              messageHandlerSet,
-              hasStartedMessageProcessing,
-            },
-          )
+          // console.log(
+          //   `[EdenRuntimeProvider stream ${threadIdRef.current}] Starting message iteration`,
+          //   {
+          //     hasReceivedAnyMessage,
+          //     messageHandlerSet,
+          //     hasStartedMessageProcessing,
+          //   },
+          // )
 
           // Process messages as they come in
           try {
             for await (const message of messageIterable) {
               // Check for thread switch using the LATEST ref value inside the loop
               const latestThreadId = threadIdRef.current
-              console.log(
-                `[EdenRuntimeProvider stream ${latestThreadId}] Loop check: Comparing captured ID (${currentThreadId}) with latest ref ID (${latestThreadId})`,
-              )
+              // console.log(
+              //   `[EdenRuntimeProvider stream ${latestThreadId}] Loop check: Comparing captured ID (${currentThreadId}) with latest ref ID (${latestThreadId})`,
+              // )
               if (currentThreadId !== latestThreadId) {
-                console.log(
-                  `[EdenRuntimeProvider stream ${latestThreadId}] Aborting iteration due to thread switch`,
-                  {
-                    capturedStreamId: currentThreadId,
-                    latestThreadIdRef: latestThreadId,
-                  },
-                )
+                // console.log(
+                //   `[EdenRuntimeProvider stream ${latestThreadId}] Aborting iteration due to thread switch`,
+                //   {
+                //     capturedStreamId: currentThreadId,
+                //     latestThreadIdRef: latestThreadId,
+                //   },
+                // )
                 break
               }
 
               const assistantMessage = message as AssistantMessage
-              console.log(
-                '[EdenRuntimeProvider.stream] Processing message from iterator:',
-                {
-                  messageId: assistantMessage.id,
-                  hasContent: !!assistantMessage.content,
-                  status: assistantMessage.status,
-                  threadId: threadIdRef.current,
-                },
-              )
+              // console.log(
+              //   '[EdenRuntimeProvider.stream] Processing message from iterator:',
+              //   {
+              //     messageId: assistantMessage.id,
+              //     hasContent: !!assistantMessage.content,
+              //     status: assistantMessage.status,
+              //     threadId: threadIdRef.current,
+              //   },
+              // )
 
               // Set flags when first message arrives
               if (!hasReceivedAnyMessage) {
                 hasReceivedAnyMessage = true
-                messageHandlerSet = true // Or maybe remove this flag entirely?
+                // messageHandlerSet = true // Or maybe remove this flag entirely?
               }
 
               // Convert message to UI format with explicit typing
@@ -263,9 +263,9 @@ export function EdenRuntimeProvider({
           } catch (iterError) {
             // Handle specific error types if needed, e.g., AbortError
             if (iterError instanceof Error && iterError.name === 'AbortError') {
-              console.log(
-                `[EdenRuntimeProvider stream ${threadIdRef.current}] Stream aborted as expected.`,
-              )
+              // console.log(
+              //   `[EdenRuntimeProvider stream ${threadIdRef.current}] Stream aborted as expected.`,
+              // )
             } else {
               console.error(
                 `[EdenRuntimeProvider stream ${threadIdRef.current}] Error in message iteration:`,
@@ -282,9 +282,9 @@ export function EdenRuntimeProvider({
             // Check the isSending flag captured by the closure
           }
 
-          console.log(
-            `[EdenRuntimeProvider stream ${threadIdRef.current}] Finished message iteration outside try/catch`,
-          )
+          // console.log(
+          //   `[EdenRuntimeProvider stream ${threadIdRef.current}] Finished message iteration outside try/catch`,
+          // )
         } catch (error: unknown) {
           if (
             currentThreadId === threadIdRef.current &&
@@ -315,6 +315,13 @@ export function EdenRuntimeProvider({
     [agentId, getStreamAbortController],
   ) // ADD isSending dependency
 
+  // console.log('EdenRuntimeProvider', {
+  //   agentId,
+  //   threadId,
+  //   threadIdRef: threadIdRef.current,
+  //   pendingThreadIdRef: pendingThreadIdRef.current,
+  // })
+
   // Destructure only the necessary values from useEdenRuntime
   const { runtime, setMessages, addOrUpdateMessage } = useEdenRuntime({
     agentId,
@@ -324,33 +331,33 @@ export function EdenRuntimeProvider({
     // @ts-expect-error stream type mismatch
     stream: stream,
     onSwitchToNewThread: async () => {
-      // console.log('EdenRuntimeProvider.onSwitchToNewThread - resetting state')
+      // console.log('[EdenRuntimeProvider] Switching to new thread', {
+      //   currentThreadId: threadIdRef.current,
+      //   pendingThreadId: pendingThreadIdRef.current,
+      // })
       // Clear all state first
       setIsStreamActive(false)
       setMessages([])
       messageEmitterRef.current = new MessageEmitter()
       threadIdRef.current = undefined
       pendingThreadIdRef.current = undefined
-      // Don't clear lastMessageTimestampRef to preserve message history
 
       if (typeof window !== 'undefined')
         window.history.pushState(null, '', `/chat/${agentId}`)
 
       setIsLoadingThread(false)
       setIsReadOnly(false)
+      // console.log('[EdenRuntimeProvider] New thread state cleared')
     },
     onSwitchToThread: async (newThreadId: string) => {
-      // console.log('EdenRuntimeProvider.onSwitchToThread - start', {
+      // console.log('[EdenRuntimeProvider] Attempting to switch to thread:', {
       //   newThreadId,
       //   currentThreadId: threadIdRef.current,
       //   pendingThreadId: pendingThreadIdRef.current,
-      //   lastMessageTimestamp: lastMessageTimestampRef.current[newThreadId],
       // })
 
       if (pendingThreadIdRef.current === newThreadId) {
-        // console.log(
-        //   'EdenRuntimeProvider.onSwitchToThread - already switching to this thread, ignoring',
-        // )
+        // console.log('[EdenRuntimeProvider] Already switching to this thread, ignoring')
         return { messages: [], active: [], shouldBeActive: false }
       }
 
@@ -369,7 +376,7 @@ export function EdenRuntimeProvider({
 
         // Stale request check
         if (currentRequest < lastSuccessfulRequestRef.current) {
-          // console.log('EdenRuntimeProvider.onSwitchToThread - stale request ...')
+          // console.log('[EdenRuntimeProvider] Stale thread switch request detected')
           return { messages: [], active: [], shouldBeActive: false }
         }
 
@@ -377,6 +384,12 @@ export function EdenRuntimeProvider({
         threadIdRef.current = newThreadId // Update ref only on success
         lastSuccessfulRequestRef.current = currentRequest
         pendingThreadIdRef.current = undefined // Clear pending request
+
+        // console.log('[EdenRuntimeProvider] Thread switch successful:', {
+        //   newThreadId,
+        //   currentThreadId: threadIdRef.current,
+        //   hasMessages: !!thread?.messages?.length,
+        // })
 
         if (!thread?.messages) {
           setMessages([]) // Clear messages if thread is empty
@@ -596,22 +609,43 @@ export function EdenRuntimeProvider({
 
   // --- Load Existing Thread useEffect (Simplified) ---
   useEffect(() => {
-    // Only run if a threadId is provided via props and initial load hasn't been handled by the effect above
-    if (!threadId || !isClientMounted || !isInitialLoadRef.current) {
+    // Only run if a threadId is provided via props and client is mounted
+    if (!threadId || !isClientMounted) {
+      // console.log('[EdenRuntimeProvider] Waiting for client mount:', {
+      //   threadId,
+      //   isClientMounted,
+      //   isInitialLoad: isInitialLoadRef.current,
+      //   currentThreadId: threadIdRef.current,
+      // })
       return
     }
 
-    // Prevent the other effect from running if we are loading an existing thread
-    isInitialLoadRef.current = false
+    // Prevent duplicate loads
+    if (threadIdRef.current === threadId && !isInitialLoadRef.current) {
+      // console.log('[EdenRuntimeProvider] Skipping duplicate thread load:', {
+      //   threadId,
+      //   currentThreadId: threadIdRef.current,
+      // })
+      return
+    }
 
-    // console.log(`[EdenRuntimeProvider] Loading existing thread: ${threadId}`);
+    // console.log('[EdenRuntimeProvider] Loading thread:', {
+    //   threadId,
+    //   currentThreadId: threadIdRef.current,
+    //   isInitialLoad: isInitialLoadRef.current,
+    // })
 
-    // Set loading state. The actual data loading is triggered internally
-    // by the useEdenRuntime hook calling onSwitchToThread due to threadId change.
-    ;(async () => {
+    // Set loading state and load thread data
+    (async () => {
       setIsLoadingThread(true)
       try {
         const thread = await getThread(threadId)
+        console.log('[EdenRuntimeProvider] Thread data loaded:', {
+          threadId,
+          hasMessages: !!thread?.messages?.length,
+          messageCount: thread?.messages?.length,
+        })
+
         if (!thread?.messages) {
           setMessages([])
           return
@@ -667,6 +701,11 @@ export function EdenRuntimeProvider({
 
         threadIdRef.current = threadId
         setMessages(processedMessages)
+        // console.log('[EdenRuntimeProvider] Thread messages processed and set:', {
+        //   threadId,
+        //   messageCount: processedMessages.length,
+        //   currentThreadId: threadIdRef.current,
+        // })
 
         // Set read-only state
         if (!isAuthLoading) {
@@ -674,6 +713,9 @@ export function EdenRuntimeProvider({
             !user || thread.user._id.toString() !== user._id.toString()
           setIsReadOnly(isThreadReadOnly)
         }
+
+        // Mark initial load as complete
+        isInitialLoadRef.current = false
       } catch (error) {
         console.error('Error loading thread:', error)
         toast.error('Failed to load thread')
@@ -681,6 +723,7 @@ export function EdenRuntimeProvider({
         if (typeof window !== 'undefined') {
           window.history.replaceState(null, '', `/chat/${agentId}`)
         }
+        threadIdRef.current = undefined
       } finally {
         setIsLoadingThread(false)
       }
@@ -698,16 +741,29 @@ export function EdenRuntimeProvider({
       !agentId || // Ensure agentId prop is valid
       threadId // Check the initial prop value directly
     ) {
+      // console.log('[EdenRuntimeProvider] Skipping initial chat start:', {
+      //   isClientMounted,
+      //   isAuthLoading,
+      //   hasUser: !!user,
+      //   agentId,
+      //   threadId,
+      //   currentThreadId: threadIdRef.current,
+      // })
       return
     }
 
     // Use a flag to ensure this runs only once per component lifecycle when conditions are met
     if (isInitialLoadRef.current === false) {
+      // console.log('[EdenRuntimeProvider] Initial load already handled')
       return
     }
 
     const initChatDataString = localStorage.getItem(CHAT_INIT_STORAGE_KEY)
-    console.log('[EdenRuntimeProvider] initChatDataString', initChatDataString)
+    // console.log('[EdenRuntimeProvider] Initial chat data:', {
+    // hasInitData: !!initChatDataString,
+    // currentThreadId: threadIdRef.current,
+    // })
+
     if (!initChatDataString) {
       // No initial data found, normal state (e.g., navigated directly to /chat/agent)
       isInitialLoadRef.current = false
@@ -837,14 +893,14 @@ export function EdenRuntimeProvider({
       // We still need to evaluate if the stream should stop based *only* on activeRootIds
       const newShouldBeActive = Boolean(activeRootIds?.length)
       if (!newShouldBeActive && isStreamActive) {
-        console.log(
-          '[EdenRuntimeProvider] Websocket indicates stream completion (no new messages, empty active array), aborting stream',
-          {
-            threadId: thread_id,
-            activeRootIds,
-            currentThreadId: threadIdRef.current,
-          },
-        )
+        // console.log(
+        //   '[EdenRuntimeProvider] Websocket indicates stream completion (no new messages, empty active array), aborting stream',
+        //   {
+        //     threadId: thread_id,
+        //     activeRootIds,
+        //     currentThreadId: threadIdRef.current,
+        //   },
+        // )
         abortControllerRef.current?.abort(
           new Error('WebSocket indicated completion (no new messages)'),
         )
@@ -924,14 +980,14 @@ export function EdenRuntimeProvider({
     // The generator's finally block will handle setting isRunning state
     if (!newShouldBeActive && isStreamActive) {
       // Check if it *was* active
-      console.log(
-        '[EdenRuntimeProvider] Websocket indicates stream completion, aborting stream',
-        {
-          threadId: thread_id,
-          activeRootIds,
-          currentThreadId: threadIdRef.current,
-        },
-      )
+      // console.log(
+      //   '[EdenRuntimeProvider] Websocket indicates stream completion, aborting stream',
+      //   {
+      //     threadId: thread_id,
+      //     activeRootIds,
+      //     currentThreadId: threadIdRef.current,
+      //   },
+      // )
       abortControllerRef.current?.abort(
         new Error('WebSocket indicated completion'),
       )
@@ -982,17 +1038,28 @@ export function EdenRuntimeProvider({
 
   // Initialize client-side only refs after mount
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    // Initialize refs and state
     if (!abortControllerRef.current) {
       abortControllerRef.current = new AbortController()
     }
     if (!messageEmitterRef.current) {
       messageEmitterRef.current = new MessageEmitter()
     }
+
+    // Set client mounted state and trigger thread load if needed
     setIsClientMounted(true)
 
+    // Cleanup function
     return () => {
-      abortControllerRef.current?.abort()
-      abortControllerRef.current = null
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+        abortControllerRef.current = null
+      }
+      messageEmitterRef.current = null
+      setIsClientMounted(false)
+      isInitialLoadRef.current = true
     }
   }, [])
 
