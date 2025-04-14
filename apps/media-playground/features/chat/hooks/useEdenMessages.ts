@@ -99,43 +99,26 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
-      // console.log(
-      //   '[useEdenMessages] Adding or updating message',
-      //   activeIds,
-      //   message,
-      // )
+      const messageToAdd = message // Use the message directly
+
+      // Signal stream completion if activeIds is empty
       const streamJustFinished =
         activeIds !== undefined && activeIds.length === 0
-
-      // If adding a user message, only set isRunning (isSending set before stream call)
-      // REMOVED: This logic is flawed. User message adding should NOT set isRunning.
-      // isRunning should reflect assistant activity.
-      // if (message.role === 'user') {
-      //  console.log(
-      //    '[useEdenMessages] User message added, setting isRunning = true',
-      //  )
-      //  setIsRunning(true)
-      // }
-
-      // If stream just finished, set sending intention false
-      // if (streamJustFinished) {
-      // console.log(
-      //   '[useEdenMessages] Stream finished, setting isSending = false',
-      // )
-      // setIsSending(false)
-      // }
-
-      const messageToAdd = {
-        ...message,
-        status: streamJustFinished
-          ? { type: 'complete' as const, reason: 'stop' as const }
-          : message.status ||
-            (message.role === 'assistant'
-              ? { type: 'running' as const }
-              : message.status),
+      if (streamJustFinished) {
+        setIsRunning(false)
+        // Clear pending optimistic messages upon stream completion
+        pendingOptimisticMessagesRef.current = []
+        // Force update status of all currently running messages to complete
+        setMessages(currentMessages =>
+          currentMessages.map(m =>
+            m.status?.type === 'running'
+              ? { ...m, status: { type: 'complete', reason: 'stop' } }
+              : m,
+          ),
+        )
       }
 
-      // Add to batch updates
+      // Add to batch updates (still needed to process the final message content/tool_calls)
       batchUpdatesRef.current.push(messageToAdd)
 
       // Clear any existing timeout
@@ -148,19 +131,16 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         processBatchUpdates()
       }, 50) // 50ms batch window
 
-      // Track optimistic messages
+      // Track optimistic messages (only if stream hasn't just finished)
+      // We still add assistant messages before they are complete
       if (message.role === 'assistant' && !streamJustFinished) {
         pendingOptimisticMessagesRef.current.push(messageToAdd)
       }
 
-      // Clear pending messages if stream finished
-      if (streamJustFinished) {
-        pendingOptimisticMessagesRef.current = []
-      }
-
       return true
     },
-    [processBatchUpdates, setIsRunning],
+    // Add setIsRunning to dependencies
+    [processBatchUpdates, setIsRunning, setMessages],
   )
 
   // Handle connection state changes

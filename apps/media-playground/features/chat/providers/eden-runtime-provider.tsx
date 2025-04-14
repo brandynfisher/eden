@@ -386,64 +386,63 @@ export function EdenRuntimeProvider({
         lastSuccessfulRequestRef.current = currentRequest
         pendingThreadIdRef.current = undefined // Clear pending request
 
-        // console.log('[EdenRuntimeProvider] Thread switch successful:', {
-        //   newThreadId,
-        //   currentThreadId: threadIdRef.current,
-        //   hasMessages: !!thread?.messages?.length,
-        // })
-
         if (!thread?.messages) {
           setMessages([]) // Clear messages if thread is empty
+          setIsReadOnly(false) // Assume new thread is writable
           return { messages: [], active: [], shouldBeActive: false }
         }
 
         // Read-only check
+        let isThreadReadOnly = false
         if (!isAuthLoading) {
-          const isThreadReadOnly =
+          isThreadReadOnly =
             !user || thread.user._id.toString() !== user._id.toString()
           setIsReadOnly(isThreadReadOnly)
         }
 
-        // Process messages (keep existing logic for status calculation)
-        const messages = thread.messages.map((msg, index) => {
-          const baseMessage = {
-            ...msg,
-            createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
+        // --- Refactored Message Processing ---
+        setMessages([]) // Clear existing messages first
+
+        let hasRunningMessages = false
+
+        // Process messages individually via addOrUpdateMessage
+        thread.messages.forEach((msg, index) => {
+          const createdAtDate = msg.createdAt
+            ? new Date(msg.createdAt)
+            : new Date()
+          const baseMessage = { ...msg, createdAt: createdAtDate }
+
+          if (baseMessage.role !== 'assistant') {
+            addOrUpdateMessage(baseMessage as ThreadMessageWithStatus)
+            return
           }
-          if (msg.role !== 'assistant') return baseMessage
 
-          // A message is part of an active chain if:
-          // 1. It's the root assistant message (in active array)
-          // 2. It's a subsequent assistant message after an active root, before the next user message
-          const isPartOfActiveChain = thread.active?.some(activeRootId => {
-            if (activeRootId === msg.id) return true
-
-            const activeRootIndex = thread.messages.findIndex(
-              m => m.id === activeRootId,
-            )
-            if (activeRootIndex === -1) return false
-
-            const nextUserIndex = thread.messages.findIndex(
-              (m, i) => i > activeRootIndex && m.role === 'user',
-            )
-
-            return (
-              index > activeRootIndex &&
-              (nextUserIndex === -1 || index < nextUserIndex)
-            )
-          })
-
-          const hasPendingToolCalls = msg.tool_calls?.some(
+          // Status calculation logic (consistent with checkThreadStatus)
+          const assistantMessage = baseMessage as AssistantMessage
+          const hasPendingToolCalls = assistantMessage.tool_calls?.some(
             call =>
               !call.status ||
               call.status === 'running' ||
               call.status === 'pending',
           )
+          const isPartOfActiveChain = thread.active?.some(activeRootId => {
+            if (activeRootId === assistantMessage.id) return true
+            const activeRootIndex = thread.messages!.findIndex(
+              m => m.id === activeRootId,
+            )
+            if (activeRootIndex === -1) return false
+            const nextUserIndex = thread.messages!.findIndex(
+              (m, i) => i > activeRootIndex && m.role === 'user',
+            )
+            return (
+              index > activeRootIndex &&
+              (nextUserIndex === -1 || index < nextUserIndex)
+            )
+          })
+          const isIncomplete =
+            !assistantMessage.content || assistantMessage.content.length === 0
 
-          // Also check if message is incomplete
-          const isIncomplete = !msg.content || msg.content.length === 0
-
-          const status =
+          const newStatus =
             hasPendingToolCalls || isPartOfActiveChain || isIncomplete
               ? ({ type: 'running' as const } satisfies UIMessageStatus)
               : ({
@@ -451,18 +450,27 @@ export function EdenRuntimeProvider({
                   reason: 'stop' as const,
                 } satisfies UIMessageStatus)
 
-          return { ...baseMessage, status } as ThreadMessageWithStatus
+          if (newStatus.type === 'running') {
+            hasRunningMessages = true
+          }
+
+          const messageToAdd = {
+            ...assistantMessage,
+            createdAt: createdAtDate,
+            status: newStatus,
+          } satisfies ThreadMessageWithStatus
+
+          addOrUpdateMessage(messageToAdd)
         })
 
-        // Determine if stream should be active (keep existing logic)
-        const hasRunning = messages.some(
-          msg => msg.role === 'assistant' && msg.status?.type === 'running',
-        )
-        const shouldBeActive = hasRunning || (thread.active?.length ?? 0) > 0
+        // Determine initial shouldBeActive state
+        const shouldBeActive =
+          hasRunningMessages || (thread.active?.length ?? 0) > 0
+        setIsStreamActive(shouldBeActive) // Set initial stream state here
 
-        // console.log('EdenRuntimeProvider.onSwitchToThread - returning ...')
+        // Return the initial state after clearing
         return {
-          messages: messages as ThreadMessageWithStatus[],
+          messages: [], // Messages will be populated via addOrUpdateMessage
           active: thread.active ?? [],
           shouldBeActive,
         }
@@ -474,6 +482,7 @@ export function EdenRuntimeProvider({
         }
         threadIdRef.current = undefined // Reset threadId if switch failed
         setMessages([]) // Clear messages on error
+        setIsReadOnly(false) // Reset read-only state
         return { messages: [], active: [], shouldBeActive: false }
       } finally {
         setIsLoadingThread(false)
@@ -543,57 +552,63 @@ export function EdenRuntimeProvider({
         }
 
         if (shouldSetMessages && thread.messages) {
-          // Process messages to ensure proper active states and types
-          const processedMessages: ThreadMessageWithStatus[] =
-            thread.messages.map((msg, index) => {
-              const createdAtDate = msg.createdAt
-                ? new Date(msg.createdAt)
-                : new Date()
-              const baseMessage = { ...msg, createdAt: createdAtDate }
+          // Clear existing messages before re-adding to ensure consistency
+          setMessages([])
 
-              if (baseMessage.role !== 'assistant') {
-                return baseMessage as ThreadMessageWithStatus
-              }
+          // Process messages individually via addOrUpdateMessage
+          thread.messages.forEach((msg, index) => {
+            const createdAtDate = msg.createdAt
+              ? new Date(msg.createdAt)
+              : new Date()
+            const baseMessage = { ...msg, createdAt: createdAtDate }
 
-              const assistantMessage = baseMessage as AssistantMessage
-              const hasPendingToolCalls = assistantMessage.tool_calls?.some(
-                call =>
-                  !call.status ||
-                  call.status === 'running' ||
-                  call.status === 'pending',
+            if (baseMessage.role !== 'assistant') {
+              addOrUpdateMessage(baseMessage as ThreadMessageWithStatus)
+              return
+            }
+
+            // Logic to determine status (copied from original map)
+            const assistantMessage = baseMessage as AssistantMessage
+            const hasPendingToolCalls = assistantMessage.tool_calls?.some(
+              call =>
+                !call.status ||
+                call.status === 'running' ||
+                call.status === 'pending',
+            )
+            const isPartOfActiveChain = thread.active?.some(activeRootId => {
+              if (activeRootId === assistantMessage.id) return true
+              const activeRootIndex = thread.messages!.findIndex(
+                m => m.id === activeRootId,
               )
-              const isPartOfActiveChain = thread.active?.some(activeRootId => {
-                if (activeRootId === assistantMessage.id) return true
-                const activeRootIndex = thread.messages.findIndex(
-                  m => m.id === activeRootId,
-                )
-                if (activeRootIndex === -1) return false
-                const nextUserIndex = thread.messages.findIndex(
-                  (m, i) => i > activeRootIndex && m.role === 'user',
-                )
-                return (
-                  index > activeRootIndex &&
-                  (nextUserIndex === -1 || index < nextUserIndex)
-                )
-              })
-              const isIncomplete =
-                !assistantMessage.content ||
-                assistantMessage.content.length === 0
-
-              const newStatus =
-                hasPendingToolCalls || isPartOfActiveChain || isIncomplete
-                  ? { type: 'running' as const }
-                  : { type: 'complete' as const, reason: 'stop' as const }
-
-              return {
-                ...assistantMessage,
-                createdAt: createdAtDate,
-                status: newStatus,
-              } satisfies ThreadMessageWithStatus
+              if (activeRootIndex === -1) return false
+              const nextUserIndex = thread.messages!.findIndex(
+                (m, i) => i > activeRootIndex && m.role === 'user',
+              )
+              return (
+                index > activeRootIndex &&
+                (nextUserIndex === -1 || index < nextUserIndex)
+              )
             })
+            const isIncomplete =
+              !assistantMessage.content || assistantMessage.content.length === 0
 
-          // Call setMessages with only the processed message array
-          setMessages(processedMessages)
+            const newStatus =
+              hasPendingToolCalls || isPartOfActiveChain || isIncomplete
+                ? ({ type: 'running' as const } satisfies UIMessageStatus)
+                : ({
+                    type: 'complete' as const,
+                    reason: 'stop' as const,
+                  } satisfies UIMessageStatus)
+
+            const messageToAdd = {
+              ...assistantMessage,
+              createdAt: createdAtDate,
+              status: newStatus,
+            } satisfies ThreadMessageWithStatus
+
+            // Add each message via the hook's function
+            addOrUpdateMessage(messageToAdd)
+          })
         } else {
           // Handle case where thread was empty (and no pending message was added)
           setMessages([]) // Pass only the empty array
@@ -605,7 +620,15 @@ export function EdenRuntimeProvider({
         console.error('Error checking thread status:', error)
       }
     },
-    [setMessages, user, isAuthLoading, isStreamActive, isReadOnly],
+    // Ensure addOrUpdateMessage is a dependency
+    [
+      setMessages,
+      addOrUpdateMessage,
+      user,
+      isAuthLoading,
+      isStreamActive,
+      isReadOnly,
+    ],
   )
 
   // --- Load Existing Thread useEffect (Simplified) ---

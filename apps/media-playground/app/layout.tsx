@@ -21,7 +21,7 @@ import { GoogleTagManager } from '@next/third-parties/google'
 import HolyLoader from 'holy-loader'
 import { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
-import { ReactNode } from 'react'
+import { ReactNode, StrictMode } from 'react'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -94,44 +94,44 @@ export default function RootLayout({
   modal: ReactNode
 }) {
   return (
-    // <StrictMode>
-    <html lang="en" suppressHydrationWarning>
-      <PreloadResources />
-      <body
-        className={cn(
-          'min-h-screen bg-background antialiased',
-          fontSans.className,
-        )}
-      >
-        <HolyLoader color="#9333ea" height="1px" />
-        <Providers>
-          <div className="flex min-h-screen w-full flex-col">
-            <Header />
-            {modal}
-            {children}
-            <ScrollTopButton />
-          </div>
-
-          {env.NEXT_PUBLIC_APP_ENV === 'production' ? (
-            <GoogleTagManager gtmId={env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
-          ) : (
-            <TailwindIndicator />
+    <StrictMode>
+      <html lang="en" suppressHydrationWarning>
+        <PreloadResources />
+        <body
+          className={cn(
+            'min-h-screen bg-background antialiased',
+            fontSans.className,
           )}
+        >
+          <HolyLoader color="#9333ea" height="1px" />
+          <Providers>
+            <div className="flex min-h-screen w-full flex-col">
+              <Header />
+              {modal}
+              {children}
+              <ScrollTopButton />
+            </div>
 
-          <Toaster expand={false} visibleToasts={9} closeButton={true} />
-          <ShareDialog />
-          <CollectionSelectionDialog />
-          <QuickAnimateDialog />
-          <QuickUpscaleDialog />
-          <DeleteConfirmationDialog />
-          <AgentFormSheet />
-          <AgentDeploymentSheet />
-          <AgentTriggerFormSheet />
+            {env.NEXT_PUBLIC_APP_ENV === 'production' ? (
+              <GoogleTagManager gtmId={env.NEXT_PUBLIC_GOOGLE_GTM_ID || ''} />
+            ) : (
+              <TailwindIndicator />
+            )}
 
-          <div id="modal-root" />
-        </Providers>
-      </body>
-    </html>
-    // </StrictMode>
+            <Toaster expand={false} visibleToasts={9} closeButton={true} />
+            <ShareDialog />
+            <CollectionSelectionDialog />
+            <QuickAnimateDialog />
+            <QuickUpscaleDialog />
+            <DeleteConfirmationDialog />
+            <AgentFormSheet />
+            <AgentDeploymentSheet />
+            <AgentTriggerFormSheet />
+
+            <div id="modal-root" />
+          </Providers>
+        </body>
+      </html>
+    </StrictMode>
   )
 }
