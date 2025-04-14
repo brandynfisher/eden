@@ -68,11 +68,11 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
-      console.log(
-        '[useEdenMessages] Adding or updating message',
-        activeIds,
-        message,
-      )
+      // console.log(
+      //   '[useEdenMessages] Adding or updating message',
+      //   activeIds,
+      //   message,
+      // )
       const streamJustFinished =
         activeIds !== undefined && activeIds.length === 0
 
@@ -88,9 +88,9 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 
       // If stream just finished, set sending intention false
       if (streamJustFinished) {
-        console.log(
-          '[useEdenMessages] Stream finished, setting isSending = false',
-        )
+        // console.log(
+        //   '[useEdenMessages] Stream finished, setting isSending = false',
+        // )
         setIsSending(false)
       }
 
@@ -183,9 +183,9 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       setTimeout(() => {
         newMessages.forEach(message => {
           if (message.role === 'user') {
-            console.log(
-              '[useEdenMessages sendMessage] Adding user message, setting isRunning = true',
-            )
+            // console.log(
+            //   '[useEdenMessages sendMessage] Adding user message, setting isRunning = true',
+            // )
             setIsRunning(true)
           }
           const messageWithStatus = {
@@ -193,12 +193,12 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
             status:
               message.role === 'assistant' ? { type: 'running' } : undefined,
           }
-          console.log(
-            'sendMessage adding message with status',
-            message,
-            messageWithStatus,
-            pendingOptimisticMessagesRef.current,
-          )
+          // console.log(
+          //   'sendMessage adding message with status',
+          //   message,
+          //   messageWithStatus,
+          //   pendingOptimisticMessagesRef.current,
+          // )
           addOrUpdateMessage(messageWithStatus as TMessage)
         })
       }, 0)

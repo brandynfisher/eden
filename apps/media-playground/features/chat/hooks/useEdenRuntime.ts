@@ -88,13 +88,13 @@ export function useEdenRuntime({
   }, [threadId])
 
   // Track running state changes
-  useEffect(() => {
-    console.log('[EdenRuntime] Running state changed', {
-      isRunning,
-      threadId: currentThreadIdRef.current,
-      timestamp: new Date().toISOString(),
-    })
-  }, [isRunning])
+  // useEffect(() => {
+  //   console.log('[EdenRuntime] Running state changed', {
+  //     isRunning,
+  //     threadId: currentThreadIdRef.current,
+  //     timestamp: new Date().toISOString(),
+  //   })
+  // }, [isRunning])
 
   // Setup intersection observer for infinite scrolling
   useEffect(() => {
@@ -123,23 +123,23 @@ export function useEdenRuntime({
   }, [hasMore, threads, isFetchingNextPage, fetchNextPage])
 
   // Log relevant state changes for debugging
-  useEffect(() => {
-    console.log('[EdenRuntime] State Change Debug', {
-      isRunning,
-      isSending,
-      lastMessage: messages[messages.length - 1],
-      timestamp: new Date().toISOString(),
-    })
-  }, [isRunning, isSending, messages])
+  // useEffect(() => {
+  // console.log('[EdenRuntime] State Change Debug', {
+  //   isRunning,
+  //   isSending,
+  //   lastMessage: messages[messages.length - 1],
+  //   timestamp: new Date().toISOString(),
+  // })
+  // }, [isRunning, isSending, messages])
 
   // Simplified converter
   function uiMessageToEdenMessageStatus(
     uiMessage: AppendMessage,
   ): ThreadMessageWithStatus {
-    console.log(
-      '[EdenRuntime] uiMessageToEdenMessageStatus input:',
-      JSON.stringify(uiMessage),
-    )
+    // console.log(
+    //   '[EdenRuntime] uiMessageToEdenMessageStatus input:',
+    //   JSON.stringify(uiMessage),
+    // )
     let contentStr: string | undefined = undefined
     if (typeof uiMessage.content === 'string') {
       contentStr = uiMessage.content
@@ -175,10 +175,10 @@ export function useEdenRuntime({
       status: undefined, // Initial status is undefined for user messages
       metadata: metadata,
     }
-    console.log(
-      '[EdenRuntime] uiMessageToEdenMessageStatus output:',
-      JSON.stringify(result),
-    )
+    // console.log(
+    //   '[EdenRuntime] uiMessageToEdenMessageStatus output:',
+    //   JSON.stringify(result),
+    // )
     return result as ThreadMessageWithStatus
   }
 
@@ -186,53 +186,53 @@ export function useEdenRuntime({
     messagesToSend: ThreadMessageWithStatus[],
     callback?: (thread_id?: string) => Promise<void>,
   ) => {
-    console.log(
-      '[EdenRuntime] handleSendMessage sending:',
-      JSON.stringify(
-        messagesToSend.map(m => ({
-          id: m.id,
-          role: m.role,
-          status: m.status,
-          metadata: m.metadata,
-        })),
-      ),
-    )
+    // console.log(
+    //   '[EdenRuntime] handleSendMessage sending:',
+    //   JSON.stringify(
+    //     messagesToSend.map(m => ({
+    //       id: m.id,
+    //       role: m.role,
+    //       status: m.status,
+    //       metadata: m.metadata,
+    //     })),
+    //   ),
+    // )
     try {
       setIsSending(true)
       const responseGenerator = await sendMessage(messagesToSend, callback)
       if (!responseGenerator) {
-        console.error('[EdenRuntime] No response generator')
+        console.error('[EdenRuntime] No response generator', { isSending })
         if (isMounted.current) {
           setIsSending(false)
         }
         return
       }
-      console.log('[EdenRuntime] handleSendMessage received generator')
+      // console.log('[EdenRuntime] handleSendMessage received generator')
       for await (const message of responseGenerator) {
         if (!isMounted.current) {
-          console.log(
-            '[EdenRuntime] handleSendMessage loop: Unmounted, breaking',
-          )
+          // console.log(
+          //   '[EdenRuntime] handleSendMessage loop: Unmounted, breaking',
+          // )
           break
         }
-        console.log(
-          '[EdenRuntime] handleSendMessage loop: Received message, calling addOrUpdateMessage',
-          JSON.stringify({
-            id: message.data.id,
-            status: message.data.status,
-            metadata: message.data.metadata,
-          }),
-        )
+        // console.log(
+        //   '[EdenRuntime] handleSendMessage loop: Received message, calling addOrUpdateMessage',
+        //   JSON.stringify({
+        //     id: message.data.id,
+        //     status: message.data.status,
+        //     metadata: message.data.metadata,
+        //   }),
+        // )
         addOrUpdateMessage(message.data, message.data.active)
       }
-      console.log('[EdenRuntime] handleSendMessage loop: Finished iteration')
+      // console.log('[EdenRuntime] handleSendMessage loop: Finished iteration')
     } catch (error) {
       console.error('[EdenRuntime] handleSendMessage Error:', error)
     } finally {
-      console.log(
-        '[EdenRuntime] handleSendMessage finally block. isMounted:',
-        isMounted.current,
-      )
+      // console.log(
+      //   '[EdenRuntime] handleSendMessage finally block. isMounted:',
+      //   isMounted.current,
+      // )
       if (isMounted.current) {
         // Force completion status for any remaining running assistant messages
         setMessages(currentMessages => {
@@ -257,12 +257,12 @@ export function useEdenRuntime({
 
   // Converts Hook State (ThreadMessageWithStatus[]) -> UI State (EdenMessage[])
   // Slim down logging to only relevant fields
-  console.log(
-    '[EdenRuntime] Input messages to useExternalMessageConverter:',
-    JSON.stringify(
-      messages.map(m => ({ id: m.id, status: m.status, metadata: m.metadata })),
-    ),
-  )
+  // console.log(
+  //   '[EdenRuntime] Input messages to useExternalMessageConverter:',
+  //   JSON.stringify(
+  //     messages.map(m => ({ id: m.id, status: m.status, metadata: m.metadata })),
+  //   ),
+  // )
   const threadMessages = useExternalMessageConverter({
     callback: edenMessageConverter,
     // WORKAROUND: Cast messages to any due to potential type mismatch in useExternalMessageConverter hook definition.
@@ -272,16 +272,16 @@ export function useEdenRuntime({
     isRunning,
   })
   // Slim down logging to only relevant fields
-  console.log(
-    '[EdenRuntime] Output messages from useExternalMessageConverter (threadMessages):',
-    JSON.stringify(
-      threadMessages.map(m => ({
-        id: m.id,
-        status: m.status,
-        metadata: m.metadata,
-      })),
-    ),
-  )
+  // console.log(
+  //   '[EdenRuntime] Output messages from useExternalMessageConverter (threadMessages):',
+  //   JSON.stringify(
+  //     threadMessages.map(m => ({
+  //       id: m.id,
+  //       status: m.status,
+  //       metadata: m.metadata,
+  //     })),
+  //   ),
+  // )
 
   return {
     addOrUpdateMessage,
@@ -351,7 +351,7 @@ export function useEdenRuntime({
         },
       },
       onNew: async (msg: AppendMessage) => {
-        console.log('[EdenRuntime] onNew received:', JSON.stringify(msg))
+        // console.log('[EdenRuntime] onNew received:', JSON.stringify(msg))
         if (isReadOnly) {
           console.warn(
             '[EdenRuntime] Attempted to create new message in read-only mode',
@@ -362,10 +362,10 @@ export function useEdenRuntime({
         return handleSendMessage(
           [messageToSend],
           async (newThreadId?: string) => {
-            console.log(
-              '[EdenRuntime] onNew handleSendMessage callback. newThreadId:',
-              newThreadId,
-            )
+            // console.log(
+            //   '[EdenRuntime] onNew handleSendMessage callback. newThreadId:',
+            //   newThreadId,
+            // )
             if (typeof window !== 'undefined' && newThreadId) {
               window.history.pushState(
                 null,
@@ -374,9 +374,9 @@ export function useEdenRuntime({
               )
             }
             setTimeout(async () => {
-              console.log(
-                '[EdenRuntime] onNew handleSendMessage callback: Invalidating query cache',
-              )
+              // console.log(
+              //   '[EdenRuntime] onNew handleSendMessage callback: Invalidating query cache',
+              // )
               await invalidate()
             }, 2000)
           },
