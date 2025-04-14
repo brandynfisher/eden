@@ -107,19 +107,6 @@ export function useEdenRuntime({
     }
   }, [threadId])
 
-  // Handle cleanup of states when thread changes
-  useEffect(() => {
-    if (!isInitializedRef.current) return
-
-    // Clear states when thread changes
-    setIsRunning(false)
-    setIsSending(false)
-
-    if (!threadId) {
-      setMessages([])
-    }
-  }, [threadId])
-
   // Track running state changes
   // useEffect(() => {
   //   console.log('[EdenRuntime] Running state changed', {
@@ -154,16 +141,6 @@ export function useEdenRuntime({
       observer.disconnect()
     }
   }, [hasMore, threads, isFetchingNextPage, fetchNextPage])
-
-  // Log relevant state changes for debugging
-  useEffect(() => {
-    // console.log('[EdenRuntime] State Change Debug', {
-    //   isRunning,
-    //   isSending,
-    //   lastMessage: messages[messages.length - 1],
-    //   timestamp: new Date().toISOString(),
-    // })
-  }, [isRunning, isSending, messages])
 
   // Simplified converter
   function uiMessageToEdenMessageStatus(
@@ -234,7 +211,6 @@ export function useEdenRuntime({
       setIsSending(true)
       const responseGenerator = await sendMessage(messagesToSend, callback)
       if (!responseGenerator) {
-        // console.error('[EdenRuntime] No response generator')
         if (isMounted.current) {
           setIsSending(false)
         }
@@ -428,10 +404,6 @@ export function useEdenRuntime({
         },
       },
       onNew: async (msg: AppendMessage) => {
-        // console.log('[useEdenRuntime] Creating new message:', {
-        //   threadId: currentThreadIdRef.current,
-        //   isReadOnly,
-        // })
         if (isReadOnly) {
           console.warn(
             '[useEdenRuntime] Attempted to create new message in read-only mode',
@@ -442,10 +414,6 @@ export function useEdenRuntime({
         return handleSendMessage(
           [messageToSend],
           async (newThreadId?: string) => {
-            // console.log('[useEdenRuntime] Message sent, received new thread ID:', {
-            //   newThreadId,
-            //   currentThreadId: currentThreadIdRef.current,
-            // })
             if (typeof window !== 'undefined' && newThreadId) {
               window.history.pushState(
                 null,
