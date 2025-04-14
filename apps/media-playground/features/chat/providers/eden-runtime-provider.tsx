@@ -10,11 +10,12 @@ import { ReadyState } from '@/hooks/use-shared-websocket-worker'
 import { useWebSocketMessage } from '@/hooks/use-websocket-message'
 import { AssistantRuntimeProvider } from '@assistant-ui/react'
 import { AssistantMessage, ThreadMessage } from '@edenlabs/eden-sdk'
-import { useSearchParams } from 'next/navigation'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 
 const TIMEOUT_DURATION_MS = 60 * 60 * 1000
+const CHAT_INIT_STORAGE_KEY = 'chat-init-data'
 
 const LoadingOverlay = () => {
   return (
@@ -66,11 +67,10 @@ export function EdenRuntimeProvider({
   threadId?: string
   children: ReactNode
 }>) {
-  const searchParams = useSearchParams()
   const [isLoadingThread, setIsLoadingThread] = useState(false)
   const [isClientMounted, setIsClientMounted] = useState(false)
 
-  const threadIdRef = useRef<string | undefined>(undefined)
+  const threadIdRef = useRef<string | undefined>(threadId)
   const messageEmitterRef = useRef<MessageEmitter | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -92,7 +92,6 @@ export function EdenRuntimeProvider({
   const lastSuccessfulRequestRef = useRef(0)
   const pendingThreadIdRef = useRef<string | undefined>(undefined)
   const isInitialLoadRef = useRef(true)
-  const lastMessageTimestampRef = useRef<Record<string, Date>>({})
 
   // Define controllers FIRST
   const getStreamAbortController = useCallback(() => {
@@ -316,7 +315,7 @@ export function EdenRuntimeProvider({
     [agentId, getStreamAbortController],
   ) // ADD isSending dependency
 
-  // Call useEdenRuntime AFTER defining everything it needs
+  // Destructure only the necessary values from useEdenRuntime
   const { runtime, setMessages, addOrUpdateMessage } = useEdenRuntime({
     agentId,
     isReadOnly: !isAuthLoading ? isReadOnly : null,
@@ -348,7 +347,6 @@ export function EdenRuntimeProvider({
       //   lastMessageTimestamp: lastMessageTimestampRef.current[newThreadId],
       // })
 
-      // If we're already switching to this thread, ignore
       if (pendingThreadIdRef.current === newThreadId) {
         // console.log(
         //   'EdenRuntimeProvider.onSwitchToThread - already switching to this thread, ignoring',
@@ -356,104 +354,48 @@ export function EdenRuntimeProvider({
         return { messages: [], active: [], shouldBeActive: false }
       }
 
-      // Increment request counter
       const currentRequest = requestCounterRef.current + 1
       requestCounterRef.current = currentRequest
-
       setIsLoadingThread(true)
-      try {
-        // Track the pending thread ID and update URL before fetching
-        pendingThreadIdRef.current = newThreadId
+      pendingThreadIdRef.current = newThreadId // Track pending request
 
-        // Update URL before fetching to ensure consistent state
+      try {
+        // Update URL immediately when switching to an EXISTING thread
         if (typeof window !== 'undefined') {
           window.history.pushState(null, '', `/chat/${agentId}/${newThreadId}`)
         }
 
-        // Get fresh thread data
         const thread = await getThread(newThreadId)
 
-        // Only check for stale requests
+        // Stale request check
         if (currentRequest < lastSuccessfulRequestRef.current) {
-          // console.log(
-          //   'EdenRuntimeProvider.onSwitchToThread - stale request, ignoring',
-          //   {
-          //     currentRequest,
-          //     lastSuccessful: lastSuccessfulRequestRef.current,
-          //     requestedThreadId: newThreadId,
-          //   },
-          // )
+          // console.log('EdenRuntimeProvider.onSwitchToThread - stale request ...')
           return { messages: [], active: [], shouldBeActive: false }
         }
 
-        // Update thread ID after successful fetch
-        threadIdRef.current = newThreadId
-
-        // Check if the thread data is stale by comparing message timestamps
-        const lastMessage = thread.messages?.[thread.messages.length - 1]
-        const lastMessageDate = lastMessage?.createdAt
-          ? new Date(lastMessage.createdAt)
-          : null
-        const lastKnownDate = lastMessageTimestampRef.current[newThreadId]
-
-        // Only skip if we have both dates and the new data is definitely older
-        if (
-          lastKnownDate &&
-          lastMessageDate &&
-          lastMessageDate < lastKnownDate
-        ) {
-          // console.log(
-          //   'EdenRuntimeProvider.onSwitchToThread - received stale thread data, ignoring',
-          //   {
-          //     threadId: newThreadId,
-          //     lastMessageDate,
-          //     lastKnownDate,
-          //   },
-          // )
-          return { messages: [], active: [], shouldBeActive: false }
-        }
-
-        // Update last message timestamp
-        if (lastMessageDate) {
-          lastMessageTimestampRef.current[newThreadId] = lastMessageDate
-        }
-
-        // Clear pending thread ID after successful fetch
-        pendingThreadIdRef.current = undefined
-
-        // Update last successful request
+        // --- Success ---
+        threadIdRef.current = newThreadId // Update ref only on success
         lastSuccessfulRequestRef.current = currentRequest
-
-        // console.log('EdenRuntimeProvider.onSwitchToThread - got thread', {
-        //   threadId: newThreadId,
-        //   hasMessages: !!thread.messages,
-        //   messageCount: thread.messages?.length ?? 0,
-        //   active: thread.active,
-        //   lastMessage: thread.messages?.[thread.messages.length - 1],
-        //   requestId: currentRequest,
-        //   lastMessageDate,
-        //   lastKnownDate,
-        // })
+        pendingThreadIdRef.current = undefined // Clear pending request
 
         if (!thread?.messages) {
+          setMessages([]) // Clear messages if thread is empty
           return { messages: [], active: [], shouldBeActive: false }
         }
 
-        // Only set read-only state if auth is loaded
+        // Read-only check
         if (!isAuthLoading) {
           const isThreadReadOnly =
             !user || thread.user._id.toString() !== user._id.toString()
           setIsReadOnly(isThreadReadOnly)
         }
 
-        // Process messages to determine status
+        // Process messages (keep existing logic for status calculation)
         const messages = thread.messages.map((msg, index) => {
-          // Ensure createdAt is a Date
           const baseMessage = {
             ...msg,
             createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
           }
-
           if (msg.role !== 'assistant') return baseMessage
 
           // A message is part of an active chain if:
@@ -489,47 +431,22 @@ export function EdenRuntimeProvider({
 
           const status =
             hasPendingToolCalls || isPartOfActiveChain || isIncomplete
-              ? { type: 'running' as const }
-              : { type: 'complete' as const, reason: 'stop' as const }
+              ? ({ type: 'running' as const } satisfies UIMessageStatus)
+              : ({
+                  type: 'complete' as const,
+                  reason: 'stop' as const,
+                } satisfies UIMessageStatus)
 
-          return {
-            ...baseMessage,
-            status,
-          } as ThreadMessageWithStatus
+          return { ...baseMessage, status } as ThreadMessageWithStatus
         })
 
-        // Determine if stream should be active
+        // Determine if stream should be active (keep existing logic)
         const hasRunning = messages.some(
-          msg =>
-            msg.role === 'assistant' &&
-            (msg.status?.type === 'running' ||
-              msg.tool_calls?.some(
-                call =>
-                  !call.status ||
-                  call.status === 'running' ||
-                  call.status === 'pending',
-              ) ||
-              !msg.content ||
-              msg.content.length === 0),
+          msg => msg.role === 'assistant' && msg.status?.type === 'running',
         )
-
-        // Also consider messages in active array
         const shouldBeActive = hasRunning || (thread.active?.length ?? 0) > 0
 
-        // Only update stream state if it's changed
-        // if (isStreamActive !== shouldBeActive) {
-        //   setIsStreamActive(shouldBeActive)
-        // }
-
-        // console.log('EdenRuntimeProvider.onSwitchToThread - returning', {
-        //   threadId: newThreadId,
-        //   messageCount: messages.length,
-        //   hasRunning,
-        //   active: thread.active,
-        //   shouldBeActive,
-        //   requestId: currentRequest,
-        // })
-
+        // console.log('EdenRuntimeProvider.onSwitchToThread - returning ...')
         return {
           messages: messages as ThreadMessageWithStatus[],
           active: thread.active ?? [],
@@ -537,11 +454,18 @@ export function EdenRuntimeProvider({
         }
       } catch (error) {
         console.error('Error switching thread:', error)
-        window.history.replaceState(null, '', `/chat/${agentId}`)
-        // Return default empty state on error, ensuring shouldBeActive is false
+        // Revert URL if fetch fails
+        if (typeof window !== 'undefined') {
+          window.history.replaceState(null, '', `/chat/${agentId}`)
+        }
+        threadIdRef.current = undefined // Reset threadId if switch failed
+        setMessages([]) // Clear messages on error
         return { messages: [], active: [], shouldBeActive: false }
       } finally {
         setIsLoadingThread(false)
+        if (pendingThreadIdRef.current === newThreadId) {
+          pendingThreadIdRef.current = undefined // Clear pending if it matches failed request
+        }
       }
     },
   })
@@ -608,33 +532,22 @@ export function EdenRuntimeProvider({
           // Process messages to ensure proper active states and types
           const processedMessages: ThreadMessageWithStatus[] =
             thread.messages.map((msg, index) => {
-              // Ensure createdAt is a valid Date, default if necessary
               const createdAtDate = msg.createdAt
                 ? new Date(msg.createdAt)
                 : new Date()
-
-              // Base structure compatible with ThreadMessageWithStatus (status will be added for assistant)
-              const baseMessage = {
-                ...msg,
-                createdAt: createdAtDate,
-              }
+              const baseMessage = { ...msg, createdAt: createdAtDate }
 
               if (baseMessage.role !== 'assistant') {
-                // Return user/system messages directly, conforming to base ThreadMessage shape
-                // (which is compatible with ThreadMessageWithStatus where status is optional)
                 return baseMessage as ThreadMessageWithStatus
               }
 
-              // --- Assistant Message Processing ---
-              const assistantMessage = baseMessage as AssistantMessage // Cast for easier access
-
+              const assistantMessage = baseMessage as AssistantMessage
               const hasPendingToolCalls = assistantMessage.tool_calls?.some(
                 call =>
                   !call.status ||
                   call.status === 'running' ||
                   call.status === 'pending',
               )
-
               const isPartOfActiveChain = thread.active?.some(activeRootId => {
                 if (activeRootId === assistantMessage.id) return true
                 const activeRootIndex = thread.messages.findIndex(
@@ -649,7 +562,6 @@ export function EdenRuntimeProvider({
                   (nextUserIndex === -1 || index < nextUserIndex)
                 )
               })
-
               const isIncomplete =
                 !assistantMessage.content ||
                 assistantMessage.content.length === 0
@@ -659,12 +571,11 @@ export function EdenRuntimeProvider({
                   ? { type: 'running' as const }
                   : { type: 'complete' as const, reason: 'stop' as const }
 
-              // Return assistant message with status
               return {
                 ...assistantMessage,
-                createdAt: createdAtDate, // Ensure correct date is carried over
+                createdAt: createdAtDate,
                 status: newStatus,
-              } satisfies ThreadMessageWithStatus // Use satisfies for the final object
+              } satisfies ThreadMessageWithStatus
             })
 
           // Call setMessages with only the processed message array
@@ -680,243 +591,231 @@ export function EdenRuntimeProvider({
         console.error('Error checking thread status:', error)
       }
     },
-    [setMessages, user, isAuthLoading, isStreamActive],
+    [setMessages, user, isAuthLoading, isStreamActive, isReadOnly],
   )
 
-  // Modify the initial thread loading effect
+  // --- Load Existing Thread useEffect (Simplified) ---
   useEffect(() => {
-    const loadThread = async () => {
-      // Skip if we're not in initial load anymore
-      if (!isInitialLoadRef.current) {
-        return
-      }
+    // Only run if a threadId is provided via props and initial load hasn't been handled by the effect above
+    if (!threadId || !isClientMounted || !isInitialLoadRef.current) {
+      return
+    }
 
-      if (!threadId || isAuthLoading || !user) return
+    // Prevent the other effect from running if we are loading an existing thread
+    isInitialLoadRef.current = false
 
+    // console.log(`[EdenRuntimeProvider] Loading existing thread: ${threadId}`);
+
+    // Set loading state. The actual data loading is triggered internally
+    // by the useEdenRuntime hook calling onSwitchToThread due to threadId change.
+    ;(async () => {
       setIsLoadingThread(true)
-
       try {
         const thread = await getThread(threadId)
-        if (!thread) {
-          throw new Error('Thread not found')
+        if (!thread?.messages) {
+          setMessages([])
+          return
         }
 
-        // --- START: Add localStorage check here ---
-        // @ts-expect-error // createdAt mismatch between SDK ThreadMessage and internal usage
-        let currentMessages: ThreadMessage[] = thread.messages || [] // Use fetched messages or empty array
-        const pendingMessageKey = `pending-message-${threadId}`
-        const pendingMessageData = localStorage.getItem(pendingMessageKey)
+        // Process messages to ensure proper active states and types
+        const processedMessages: ThreadMessageWithStatus[] =
+          thread.messages.map((msg, index) => {
+            const createdAtDate = msg.createdAt
+              ? new Date(msg.createdAt)
+              : new Date()
+            const baseMessage = { ...msg, createdAt: createdAtDate }
 
-        if (pendingMessageData) {
-          try {
-            const messageData = JSON.parse(pendingMessageData)
-            const messageTimestamp = new Date(messageData.timestamp)
-            const fiveSeconds = 5 * 1000
-
-            // Only use messages that are less than 5 minutes old
-            if (Date.now() - messageTimestamp.getTime() < 5 * 60 * 1000) {
-              // --- Check for existing similar message BEFORE adding ---
-              const similarMessageExists = currentMessages.some(
-                existingMsg =>
-                  existingMsg.role === 'user' &&
-                  existingMsg.content === messageData.content &&
-                  Math.abs(
-                    new Date(existingMsg.createdAt).getTime() -
-                      messageTimestamp.getTime(),
-                  ) < fiveSeconds,
-              )
-
-              // Check if this message exists based on temp ID (less reliable)
-              const tempMessageExists = currentMessages.some(
-                m =>
-                  m.id === messageData.message_id ||
-                  (m.id.startsWith('temp-') &&
-                    messageData.message_id.startsWith('temp-') &&
-                    m.content === messageData.content),
-              )
-
-              if (!similarMessageExists && !tempMessageExists) {
-                console.log(
-                  'EdenRuntimeProvider: Adding pending message from localStorage (no similar message found)',
-                  {
-                    messageId: messageData.message_id,
-                    content: messageData.content,
-                  },
-                )
-                // Add the pending message
-                const pendingMessage: ThreadMessage = {
-                  id: messageData.message_id || `temp-${messageData.timestamp}`,
-                  role: 'user',
-                  content: messageData.content,
-                  attachments: messageData.attachments || [],
-                  createdAt: messageTimestamp,
-                }
-
-                // Insert the pending message at the correct position based on timestamp
-                const insertIndex = currentMessages.findIndex(
-                  m => new Date(m.createdAt) > messageTimestamp,
-                )
-
-                if (insertIndex === -1) {
-                  currentMessages.push(pendingMessage)
-                } else {
-                  currentMessages.splice(insertIndex, 0, pendingMessage)
-                }
-              } else {
-                console.log(
-                  'EdenRuntimeProvider: Skipping pending message from localStorage (similar message already exists)',
-                  {
-                    messageId: messageData.message_id,
-                    content: messageData.content,
-                  },
-                )
-              }
+            if (baseMessage.role !== 'assistant') {
+              return baseMessage as ThreadMessageWithStatus
             }
-            // Clean up the pending message regardless of whether it was added/skipped
-            localStorage.removeItem(pendingMessageKey)
-          } catch (e) {
-            console.error(
-              'EdenRuntimeProvider: Error processing pending message:',
-              e,
+
+            const assistantMessage = baseMessage as AssistantMessage
+            const hasPendingToolCalls = assistantMessage.tool_calls?.some(
+              call =>
+                !call.status ||
+                call.status === 'running' ||
+                call.status === 'pending',
             )
-            localStorage.removeItem(pendingMessageKey) // Clean up on error too
-          }
-        }
-        // --- END: Add localStorage check here ---
+            const isPartOfActiveChain = thread.active?.some(activeRootId => {
+              if (activeRootId === assistantMessage.id) return true
+              const activeRootIndex = thread.messages.findIndex(
+                m => m.id === activeRootId,
+              )
+              if (activeRootIndex === -1) return false
+              const nextUserIndex = thread.messages.findIndex(
+                (m, i) => i > activeRootIndex && m.role === 'user',
+              )
+              return (
+                index > activeRootIndex &&
+                (nextUserIndex === -1 || index < nextUserIndex)
+              )
+            })
+            const isIncomplete =
+              !assistantMessage.content || assistantMessage.content.length === 0
 
-        // Check if we need to clean up URL parameters
-        const isPending = searchParams.get('pending') === 'true'
-        const pendingMessageId = searchParams.get('message_id')
+            const newStatus =
+              hasPendingToolCalls || isPartOfActiveChain || isIncomplete
+                ? { type: 'running' as const }
+                : { type: 'complete' as const, reason: 'stop' as const }
 
-        if (isPending && pendingMessageId) {
-          // Check if the pending message exists in the *potentially updated* currentMessages
-          const messageExistsAfterUpdate = currentMessages.some(
-            msg => msg.id === pendingMessageId,
-          )
-          if (messageExistsAfterUpdate) {
-            const url = `/chat/${agentId}/${threadId}`
-            window.history.replaceState({}, '', url)
-          }
-        }
+            return {
+              ...assistantMessage,
+              createdAt: createdAtDate,
+              status: newStatus,
+            } satisfies ThreadMessageWithStatus
+          })
 
-        // Set thread ID first
         threadIdRef.current = threadId
+        setMessages(processedMessages)
 
-        // Process the thread data
+        // Set read-only state
         if (!isAuthLoading) {
           const isThreadReadOnly =
             !user || thread.user._id.toString() !== user._id.toString()
           setIsReadOnly(isThreadReadOnly)
         }
-
-        const hasActiveRoots = thread.active && thread.active.length > 0
-        // Use potentially updated currentMessages array
-        const lastMessage = currentMessages[currentMessages.length - 1]
-        const isLastMessageIncomplete =
-          lastMessage?.role === 'assistant' &&
-          // @ts-expect-error status might not exist
-          (!lastMessage.status ||
-            // @ts-expect-error status might not exist
-            lastMessage.status.type === 'running' ||
-            lastMessage.tool_calls?.some(
-              call =>
-                !call.status ||
-                call.status === 'running' ||
-                call.status === 'pending',
-            ))
-
-        const shouldBeActive = Boolean(
-          hasActiveRoots || isLastMessageIncomplete,
-        )
-
-        // Use potentially updated currentMessages array
-        if (currentMessages.length > 0) {
-          // Process messages to ensure proper active states and types
-          // Ensure the output is strictly ThreadMessageWithStatus[] with required createdAt
-          const processedMessages: ThreadMessageWithStatus[] =
-            currentMessages.map((msg, index) => {
-              // Ensure createdAt is a valid Date, default if necessary
-              const createdAtDate = msg.createdAt
-                ? new Date(msg.createdAt)
-                : new Date() // Default to now if undefined
-
-              // Base structure for user/system message
-              let processedMsg: ThreadMessageWithStatus = {
-                ...msg,
-                createdAt: createdAtDate,
-              }
-
-              // Process assistant messages specifically
-              if (processedMsg.role === 'assistant') {
-                const assistantMessage = processedMsg as AssistantMessage & {
-                  createdAt: Date
-                } // Assert createdAt exists here
-
-                const hasPendingToolCalls = assistantMessage.tool_calls?.some(
-                  call =>
-                    !call.status ||
-                    call.status === 'running' ||
-                    call.status === 'pending',
-                )
-
-                const isPartOfActiveChain = thread.active?.some(
-                  activeRootId => {
-                    if (activeRootId === assistantMessage.id) return true
-                    const activeRootIndex = currentMessages.findIndex(
-                      m => m.id === activeRootId,
-                    )
-                    if (activeRootIndex === -1) return false
-                    const nextUserIndex = currentMessages.findIndex(
-                      (m, i) => i > activeRootIndex && m.role === 'user',
-                    )
-                    return (
-                      index > activeRootIndex &&
-                      (nextUserIndex === -1 || index < nextUserIndex)
-                    )
-                  },
-                )
-
-                const isIncomplete =
-                  !assistantMessage.content ||
-                  assistantMessage.content.length === 0
-
-                const newStatus =
-                  hasPendingToolCalls || isPartOfActiveChain || isIncomplete
-                    ? { type: 'running' as const }
-                    : { type: 'complete' as const, reason: 'stop' as const }
-
-                // Update the message object with status
-                processedMsg = {
-                  ...assistantMessage, // Spread the assistant message again
-                  createdAt: createdAtDate, // Ensure date is still correct
-                  status: newStatus,
-                }
-              }
-              // Return the processed message (either user/system or assistant with status)
-              return processedMsg
-            })
-
-          // Call setMessages with the processed message array
-          setMessages(processedMessages)
-        } else {
-          // Handle case where thread was empty (and no pending message was added)
-          setMessages([]) // Pass only the empty array
-        }
-
-        // Set stream active state after messages are processed
-        setIsStreamActive(shouldBeActive)
       } catch (error) {
         console.error('Error loading thread:', error)
-        // Potentially redirect or show error if thread fetch fails
-        // Example: window.history.replaceState(null, '', '/chat');
+        toast.error('Failed to load thread')
+        setMessages([])
+        if (typeof window !== 'undefined') {
+          window.history.replaceState(null, '', `/chat/${agentId}`)
+        }
       } finally {
         setIsLoadingThread(false)
-        isInitialLoadRef.current = false // Mark initial load as complete
       }
+    })()
+  }, [threadId, isClientMounted, agentId, user, isAuthLoading])
+
+  // --- NEW: Initial Chat Start useEffect (No Thread ID) ---
+  useEffect(() => {
+    // Only run on client, when authenticated, have a valid agentId prop,
+    // and if there's no initial threadId provided via props
+    if (
+      !isClientMounted ||
+      isAuthLoading ||
+      !user ||
+      !agentId || // Ensure agentId prop is valid
+      threadId // Check the initial prop value directly
+    ) {
+      return
     }
 
-    loadThread()
-  }, [threadId, isAuthLoading, user, setMessages, searchParams, agentId])
+    // Use a flag to ensure this runs only once per component lifecycle when conditions are met
+    if (isInitialLoadRef.current === false) {
+      return
+    }
+
+    const initChatDataString = localStorage.getItem(CHAT_INIT_STORAGE_KEY)
+    console.log('[EdenRuntimeProvider] initChatDataString', initChatDataString)
+    if (!initChatDataString) {
+      // No initial data found, normal state (e.g., navigated directly to /chat/agent)
+      isInitialLoadRef.current = false
+      setIsLoadingThread(false) // Ensure loading is cleared
+      return
+    }
+
+    // Mark as processing initial load immediately
+    isInitialLoadRef.current = false
+
+    try {
+      const initChatData = JSON.parse(initChatDataString)
+
+      // Basic validation
+      if (
+        !initChatData.content ||
+        typeof initChatData.content !== 'string' ||
+        initChatData.agentUsername !== agentId
+      ) {
+        console.error(
+          '[EdenRuntimeProvider] Invalid initial chat data found (agentId mismatch?).',
+          initChatData,
+          agentId,
+        )
+        setIsLoadingThread(false)
+        return
+      }
+
+      // Validation succeeded, NOW remove the item
+      localStorage.removeItem(CHAT_INIT_STORAGE_KEY)
+
+      // Construct the initial user message
+      const initialUserMessage: ThreadMessageWithStatus = {
+        id: uuidv4(),
+        role: 'user' as const,
+        content: initChatData.content,
+        attachments: initChatData.attachments || [],
+        createdAt: new Date(initChatData.timestamp || Date.now()),
+        metadata: {
+          custom: null,
+        },
+        status: undefined,
+      }
+
+      // Create a placeholder assistant message
+      const placeholderAssistantMessage: ThreadMessageWithStatus = {
+        id: uuidv4(),
+        role: 'assistant' as const,
+        content: '',
+        createdAt: new Date(),
+        metadata: {
+          custom: null,
+        },
+        status: { type: 'running' },
+      }
+
+      setMessages([initialUserMessage, placeholderAssistantMessage])
+
+      // Then trigger the stream to actually send the message
+      ;(async () => {
+        try {
+          const messageGenerator = await stream(
+            [initialUserMessage],
+            async newThreadId => {
+              if (newThreadId) {
+                threadIdRef.current = newThreadId
+                // Update URL history after receiving the ID
+                if (typeof window !== 'undefined') {
+                  window.history.replaceState(
+                    null,
+                    '',
+                    `/chat/${initChatData.agentUsername}/${newThreadId}`,
+                  )
+                }
+                setIsReadOnly(false)
+              }
+            },
+          )
+
+          // Process the stream
+          for await (const message of messageGenerator) {
+            console.log(
+              '[EdenRuntimeProvider] Stream message received:',
+              message,
+            )
+          }
+        } catch (error) {
+          console.error(
+            '[EdenRuntimeProvider] Error in initial message stream:',
+            error,
+          )
+          toast.error('Failed to send initial message')
+          setMessages([])
+          if (typeof window !== 'undefined') {
+            window.history.replaceState(
+              null,
+              '',
+              `/chat/${initChatData.agentUsername}`,
+            )
+          }
+        }
+      })()
+    } catch (e) {
+      console.error('[EdenRuntimeProvider] Error parsing initial chat data:', e)
+      toast.error('Failed to read initial chat data.')
+      setIsLoadingThread(false)
+    }
+  }, [isClientMounted, isAuthLoading, user, setMessages, threadId, agentId])
 
   // Modify the websocket message effect to prevent unnecessary thread checks
   useEffect(() => {
@@ -982,8 +881,22 @@ export function EdenRuntimeProvider({
 
       // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
       messageEmitterRef.current?.emit(newMsg)
-      // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
-      addOrUpdateMessage(newMsg, activeRootIds)
+
+      // Update messages state to replace placeholder with actual message
+      setMessages(currentMessages => {
+        const updatedMessages = [...currentMessages]
+        // Find and remove any placeholder messages
+        const placeholderIndex = updatedMessages.findIndex(
+          m => m.role === 'assistant' && (!m.content || m.content.length === 0),
+        )
+        if (placeholderIndex !== -1) {
+          updatedMessages.splice(placeholderIndex, 1)
+        }
+        // Add the new message
+        // @ts-expect-error: Type mismatch between ThreadMessageWithStatus and EdenMessage needs to be resolved
+        updatedMessages.push(newMsg)
+        return updatedMessages
+      })
     })
 
     // Update stream state and abort if necessary (Now we know newMessages is not null/undefined)

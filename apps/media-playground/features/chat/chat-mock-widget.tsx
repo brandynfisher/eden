@@ -18,14 +18,8 @@ import { Separator } from '@/components/ui/separator'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { AgentBasicInfo } from '@/lib/actions/agent'
 import { cn } from '@/lib/utils'
-import {
-  Agent,
-  AgentSuggestion,
-  ThreadsCreateArguments,
-  ThreadsCreateResponse,
-} from '@edenlabs/eden-sdk'
+import { Agent, AgentSuggestion } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import axios, { AxiosError, AxiosInstance } from 'axios'
 import {
   ExternalLinkIcon,
   Keyboard,
@@ -62,6 +56,7 @@ interface StoredFormData extends FormData {
 }
 
 const FORM_STORAGE_KEY = 'chat-mock-form-state'
+const CHAT_INIT_STORAGE_KEY = 'chat-init-data'
 
 const DEFAULT_SUGGESTIONS: AgentSuggestion[] = [
   {
@@ -153,64 +148,37 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
     setIsSubmitting(true)
 
     try {
-      const response = await axios.post<
-        AxiosInstance,
-        { data: ThreadsCreateResponse & { message_id?: string } },
-        ThreadsCreateArguments
-      >('/api/threads', {
-        agent_id: selectedAgentId,
-        content: formData.message,
-        attachments: formData.attachments,
-      })
-
-      if (!response || !response.data || !response.data?.thread_id) {
-        toast.error(`Failed to create thread!`, {
-          description: JSON.stringify(response),
-          dismissible: true,
-          richColors: true,
-        })
+      const agent = agents.find(a => a._id === selectedAgentId)
+      if (!agent?.username) {
+        toast.error('Agent not found or username missing.')
+        setIsSubmitting(false)
+        localStorage.removeItem(CHAT_INIT_STORAGE_KEY)
         return
       }
 
-      const threadId = response.data.thread_id
-      const messageId = response.data.message_id || `temp-${Date.now()}`
-
-      // Store the message data in localStorage with a different key
-      const messageData = {
+      const chatInitData = {
         content: formData.message,
-        attachments: formData.attachments,
-        message_id: messageId,
+        attachments: formData.attachments || [],
+        agentId: agent?._id,
+        agentUsername: agent?.username,
         timestamp: Date.now(),
       }
 
-      // Ensure the message is stored before navigation
-      localStorage.setItem(
-        `pending-message-${threadId}`,
-        JSON.stringify(messageData),
-      )
+      localStorage.setItem(CHAT_INIT_STORAGE_KEY, JSON.stringify(chatInitData))
 
-      // Add a small delay to ensure localStorage is updated
-      await new Promise(resolve => setTimeout(resolve, 50))
+      localStorage.removeItem(FORM_STORAGE_KEY)
+      setHasStoredData(false)
 
-      // Navigate to the chat view with the message data
-      router.push(
-        `/chat/${agent?.username}/${threadId}?pending=true&message_id=${messageId}`,
-      )
+      router.push(`/chat/${agent.username}`)
     } catch (err) {
-      setIsSubmitting(false)
-
-      const errorMessage = axios.isAxiosError(err)
-        ? JSON.parse((err as AxiosError).request.responseText)?.message
-        : 'Unknown Error'
-
-      toast.error(`Failed to create thread!`, {
-        description: JSON.stringify(errorMessage),
+      console.error('Error preparing chat initiation:', err)
+      toast.error('Failed to prepare chat initiation.', {
+        description: err instanceof Error ? err.message : 'Unknown error',
         dismissible: true,
         richColors: true,
       })
-    } finally {
-      localStorage.removeItem(FORM_STORAGE_KEY)
-      setHasStoredData(false)
+      setIsSubmitting(false)
+      localStorage.removeItem(CHAT_INIT_STORAGE_KEY)
     }
   }
 
