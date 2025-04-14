@@ -59,6 +59,13 @@ export function useEdenRuntime({
   const [isSending, setIsSending] = useState(false)
   const { isSignedIn } = useAuthState()
 
+  // console.log('[useEdenRuntime] Initializing with:', {
+  //   threadId,
+  //   agentId,
+  //   isReadOnly,
+  //   isSignedIn,
+  // })
+
   const { messages, sendMessage, setMessages, addOrUpdateMessage } =
     useEdenMessages({
       stream: stream,
@@ -74,17 +81,30 @@ export function useEdenRuntime({
   // Add mounted ref to prevent state updates after unmount
   const isMounted = useRef(true)
   const currentThreadIdRef = useRef<string | undefined>(threadId)
+  const isInitializedRef = useRef(false)
 
   // Log initial mount and config
   useEffect(() => {
+    if (!isInitializedRef.current) {
+      // console.log('[useEdenRuntime] Initial mount with threadId:', threadId)
+      isInitializedRef.current = true
+    }
     return () => {
       isMounted.current = false
+      // console.log('[useEdenRuntime] Unmounted with final threadId:', currentThreadIdRef.current)
     }
   }, [])
 
-  // Track thread changes
+  // Track thread changes - only update if actually changed
   useEffect(() => {
-    currentThreadIdRef.current = threadId
+    if (currentThreadIdRef.current !== threadId) {
+      // console.log('[useEdenRuntime] Thread ID changed:', {
+      //   from: currentThreadIdRef.current,
+      //   to: threadId,
+      //   isInitialized: isInitializedRef.current,
+      // })
+      currentThreadIdRef.current = threadId
+    }
   }, [threadId])
 
   // Track running state changes
@@ -121,16 +141,6 @@ export function useEdenRuntime({
       observer.disconnect()
     }
   }, [hasMore, threads, isFetchingNextPage, fetchNextPage])
-
-  // Log relevant state changes for debugging
-  // useEffect(() => {
-  // console.log('[EdenRuntime] State Change Debug', {
-  //   isRunning,
-  //   isSending,
-  //   lastMessage: messages[messages.length - 1],
-  //   timestamp: new Date().toISOString(),
-  // })
-  // }, [isRunning, isSending, messages])
 
   // Simplified converter
   function uiMessageToEdenMessageStatus(
@@ -201,7 +211,6 @@ export function useEdenRuntime({
       setIsSending(true)
       const responseGenerator = await sendMessage(messagesToSend, callback)
       if (!responseGenerator) {
-        console.error('[EdenRuntime] No response generator', { isSending })
         if (isMounted.current) {
           setIsSending(false)
         }
@@ -302,19 +311,33 @@ export function useEdenRuntime({
           edenImageAttachmentAdapter,
         ]),
         threadList: {
-          threadId,
-          threads: threads?.map(thread => ({
-            threadId: thread?._id || Date.now().toString(),
-            title: thread?.title || 'Untitled',
-            state:
-              isFetchingNextPage && thread === threads[threads.length - 1]
-                ? 'loading'
-                : 'regular',
-            status: 'regular',
-          })),
+          threadId: currentThreadIdRef.current,
+          threads: threads?.map(thread => {
+            const isCurrentThread = thread?._id === currentThreadIdRef.current
+            // console.log('[useEdenRuntime] Thread mapping:', {
+            //   threadId: thread?._id,
+            //   currentThreadId: currentThreadIdRef.current,
+            //   isCurrentThread,
+            //   title: thread?.title
+            // })
+            return {
+              id: thread?._id || Date.now().toString(),
+              threadId: thread?._id || Date.now().toString(),
+              title: thread?.title || 'Untitled',
+              state:
+                isFetchingNextPage && thread === threads[threads.length - 1]
+                  ? 'loading'
+                  : 'regular',
+              status: 'regular' as const,
+              selected: isCurrentThread,
+            }
+          }),
           onSwitchToNewThread: !onSwitchToNewThread
             ? undefined
             : async () => {
+                // console.log('[useEdenRuntime] Switching to new thread', {
+                //   currentThreadId: currentThreadIdRef.current,
+                // })
                 // Keep abortion for thread switching
                 abortCurrentStream?.()
                 setIsRunning(false)
@@ -322,10 +345,29 @@ export function useEdenRuntime({
                 await onSwitchToNewThread()
                 setMessages([])
                 currentThreadIdRef.current = undefined
+                // console.log('[useEdenRuntime] New thread switch complete')
               },
           onSwitchToThread: !onSwitchToThread
             ? undefined
             : async (newThreadId: string) => {
+                console.log('[useEdenRuntime] onSwitchToThread called:', {
+                  newThreadId,
+                  currentThreadId: currentThreadIdRef.current,
+                  threads: threads?.map(t => ({ id: t?._id, title: t?.title })),
+                })
+                if (currentThreadIdRef.current === newThreadId) {
+                  console.log(
+                    '[useEdenRuntime] Already on thread:',
+                    newThreadId,
+                  )
+                  return
+                }
+
+                console.log('[useEdenRuntime] Switching to existing thread:', {
+                  newThreadId,
+                  currentThreadId: currentThreadIdRef.current,
+                })
+
                 // Keep abortion for thread switching
                 abortCurrentStream?.()
 
@@ -333,12 +375,23 @@ export function useEdenRuntime({
                   const { messages, shouldBeActive } = await onSwitchToThread(
                     newThreadId,
                   )
+                  if (!isMounted.current) return // Prevent state updates if unmounted
+
                   currentThreadIdRef.current = newThreadId
                   setIsRunning(shouldBeActive)
                   setIsSending(false)
                   setMessages(messages)
+                  // console.log('[useEdenRuntime] Thread switch successful:', {
+                  //   newThreadId,
+                  //   messageCount: messages.length,
+                  //   shouldBeActive,
+                  // })
                 } catch (error) {
-                  console.error('[EdenRuntime] Error switching thread:', error)
+                  console.error(
+                    '[useEdenRuntime] Error switching thread:',
+                    error,
+                  )
+                  if (!isMounted.current) return
                   setIsRunning(false)
                   setIsSending(false)
                 }
@@ -351,10 +404,9 @@ export function useEdenRuntime({
         },
       },
       onNew: async (msg: AppendMessage) => {
-        // console.log('[EdenRuntime] onNew received:', JSON.stringify(msg))
         if (isReadOnly) {
           console.warn(
-            '[EdenRuntime] Attempted to create new message in read-only mode',
+            '[useEdenRuntime] Attempted to create new message in read-only mode',
           )
           return
         }
@@ -362,10 +414,6 @@ export function useEdenRuntime({
         return handleSendMessage(
           [messageToSend],
           async (newThreadId?: string) => {
-            // console.log(
-            //   '[EdenRuntime] onNew handleSendMessage callback. newThreadId:',
-            //   newThreadId,
-            // )
             if (typeof window !== 'undefined' && newThreadId) {
               window.history.pushState(
                 null,
@@ -374,9 +422,6 @@ export function useEdenRuntime({
               )
             }
             setTimeout(async () => {
-              // console.log(
-              //   '[EdenRuntime] onNew handleSendMessage callback: Invalidating query cache',
-              // )
               await invalidate()
             }, 2000)
           },

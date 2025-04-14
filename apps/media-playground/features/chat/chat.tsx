@@ -63,7 +63,11 @@ import { toast } from 'sonner'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const isNewSelected = useThreadListItem(t => t.id === 'DEFAULT_THREAD_ID')
+  const threadId = useEdenRuntimeExtras(extras => extras.threadId)
   const isLoading = false
+
+  // Only show as selected if we're in a new thread state (no threadId)
+  const shouldShowSelected = !threadId && isNewSelected
 
   return (
     <ThreadListPrimitive.New asChild>
@@ -72,7 +76,7 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
         onClick={onItemClick}
         className={cn(
           'flex w-full justify-between px-3 mb-1',
-          !isLoading && isNewSelected && 'bg-aui-muted',
+          !isLoading && shouldShowSelected && 'bg-aui-muted',
         )}
       >
         <div className="flex items-center gap-2 text-sm font-semibold">
@@ -90,6 +94,7 @@ const ThreadListItem: FC<{
   const id = useThreadListItem(t => t.id)
   const title = useThreadListItem(t => t.title)
   const agentId = useEdenRuntimeExtras(extras => extras.agentId)
+  const currentThreadId = useEdenRuntimeExtras(extras => extras.threadId)
   const { invalidate } = useThreadListQuery({ agentId })
   const runtime = useAssistantRuntime()
   const [isEditing, setIsEditing] = useState(false)
@@ -97,6 +102,8 @@ const ThreadListItem: FC<{
   const [isRenaming, setIsRenaming] = useState(false)
   const isSubmittingRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const isActive = id === currentThreadId
 
   const deleteThread = async (threadId: string) => {
     try {
@@ -189,7 +196,12 @@ const ThreadListItem: FC<{
   }, [isEditing])
 
   return (
-    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-1 text-sm relative">
+    <ThreadListItemPrimitive.Root
+      className={cn(
+        'group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-1 text-sm relative',
+        isActive && 'bg-muted text-primary font-medium',
+      )}
+    >
       <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
         {isEditing ? (
           <div className="flex items-center gap-1 flex-grow min-w-0">
