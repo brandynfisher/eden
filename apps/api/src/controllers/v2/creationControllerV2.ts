@@ -9,7 +9,6 @@ import {
   CreationsV2BulkPatchArguments,
   CreationsV2GetArguments,
   CreationsV2PatchArguments,
-  ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -19,6 +18,7 @@ export const getCreation = async (
   reply: FastifyReply,
 ) => {
   const { creationId } = request.params as CreationsV2GetArguments
+  const { userId } = request.user || {}
 
   const creation = (await CreationV2.findOneWithDeleted({
     _id: creationId,
@@ -39,10 +39,7 @@ export const getCreation = async (
     .populate({
       path: 'agent',
       select: '_id username name userImage type',
-    })) as CreationV2Document & {
-    reactions?: Map<ReactionType, boolean>
-    bookmarked?: boolean
-  }
+    })) as CreationV2Document
 
   if (!creation || creation.deleted) {
     return reply.status(404).send({
@@ -50,7 +47,16 @@ export const getCreation = async (
     })
   }
 
-  // console.log({ creation })
+  // Check if user has liked this creation
+  if (userId) {
+    const userLike = await CreationLikeV2.findOne({
+      user: userId,
+      creation: creationId,
+    })
+    creation.isLiked = !!userLike
+  }
+
+  console.log({ creation })
 
   // if (!creation.public) {
   //   if (creation.user._id.toString() !== request.user?.userId.toString()) {

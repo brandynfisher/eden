@@ -19,6 +19,7 @@ export interface CreationV2Schema extends MediaOutput {
   public?: boolean
   metadata?: string | null
   likeCount?: number
+  isLiked?: boolean
 }
 
 export interface CreationV2Input extends MediaOutput {
@@ -75,6 +76,9 @@ export const creationSchema = new Schema<CreationV2Document>(
     likeCount: {
       type: Number,
       default: 0,
+    },
+    isLiked: {
+      type: Boolean,
     },
     mediaAttributes: {
       mimeType: {

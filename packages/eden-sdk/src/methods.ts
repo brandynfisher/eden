@@ -513,14 +513,6 @@ export abstract class Methods {
       CollectionsV2DeleteArguments,
       CollectionsV2DeleteResponse
     >(this, collectionsV2DeleteRequestConfig),
-    likeV2: bindApiCall<CreationsV2LikeArguments, CreationsV2LikeResponse>(
-      this,
-      creationsV2LikeRequestConfig,
-    ),
-    unlikeV2: bindApiCall<
-      CreationsV2UnlikeArguments,
-      CreationsV2UnlikeResponse
-    >(this, creationsV2UnlikeRequestConfig),
   }
 
   public readonly concepts = {
@@ -667,6 +659,14 @@ export abstract class Methods {
       this,
       creationsDeleteRequestConfig,
     ),
+    likeV2: bindApiCall<CreationsV2LikeArguments, CreationsV2LikeResponse>(
+      this,
+      creationsV2LikeRequestConfig,
+    ),
+    unlikeV2: bindApiCall<
+      CreationsV2UnlikeArguments,
+      CreationsV2UnlikeResponse
+    >(this, creationsV2UnlikeRequestConfig),
   }
 
   public readonly creators = {

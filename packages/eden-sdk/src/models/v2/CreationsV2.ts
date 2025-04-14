@@ -152,6 +152,7 @@ export const creationsV2LikeRequestConfig = (
   return {
     method: 'POST',
     url: `v2/creations/${args.creationId}/like`,
+    data: {},
   }
 }
 
@@ -161,6 +162,7 @@ export const creationsV2UnlikeRequestConfig = (
   return {
     method: 'DELETE',
     url: `v2/creations/${args.creationId}/like`,
+    data: {},
   }
 }
 
@@ -225,6 +227,7 @@ export type CreationV2 = MediaOutput & {
   deleted: boolean
   public?: boolean
   likeCount?: number
+  isLiked?: boolean
 }
 
 export interface CreationV2Attributes {
