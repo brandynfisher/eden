@@ -56,7 +56,7 @@ export function useEdenRuntime({
   abortCurrentStream?: () => void
 }) {
   const [isRunning, setIsRunning] = useState(false)
-  const [isSending, setIsSending] = useState(false)
+  // const [isSending, setIsSending] = useState(false)
   const { isSignedIn } = useAuthState()
 
   // console.log('[useEdenRuntime] Initializing with:', {
@@ -70,7 +70,6 @@ export function useEdenRuntime({
     useEdenMessages({
       stream: stream,
       setIsRunning,
-      setIsSending,
     })
   const { threads, invalidate, hasMore, fetchNextPage, isFetchingNextPage } =
     useThreadListQuery({
@@ -208,12 +207,12 @@ export function useEdenRuntime({
     //   ),
     // )
     try {
-      setIsSending(true)
+      // setIsSending(true)
       const responseGenerator = await sendMessage(messagesToSend, callback)
       if (!responseGenerator) {
-        if (isMounted.current) {
-          setIsSending(false)
-        }
+        // if (isMounted.current) {
+        //   // setIsSending(false)
+        // }
         return
       }
       // console.log('[EdenRuntime] handleSendMessage received generator')
@@ -259,7 +258,7 @@ export function useEdenRuntime({
           // Only update state if something actually changed
           return changed ? updatedMessages : currentMessages
         })
-        setIsSending(false)
+        // setIsSending(false)
       }
     }
   }
@@ -296,7 +295,7 @@ export function useEdenRuntime({
     addOrUpdateMessage,
     setMessages,
     setIsRunning,
-    setIsSending,
+    // setIsSending,
     runtime: useExternalStoreRuntime({
       isRunning,
       messages: threadMessages,
@@ -341,7 +340,7 @@ export function useEdenRuntime({
                 // Keep abortion for thread switching
                 abortCurrentStream?.()
                 setIsRunning(false)
-                setIsSending(false)
+                // setIsSending(false)
                 await onSwitchToNewThread()
                 setMessages([])
                 currentThreadIdRef.current = undefined
@@ -379,7 +378,7 @@ export function useEdenRuntime({
 
                   currentThreadIdRef.current = newThreadId
                   setIsRunning(shouldBeActive)
-                  setIsSending(false)
+                  // setIsSending(false)
                   setMessages(messages)
                   // console.log('[useEdenRuntime] Thread switch successful:', {
                   //   newThreadId,
@@ -393,7 +392,7 @@ export function useEdenRuntime({
                   )
                   if (!isMounted.current) return
                   setIsRunning(false)
-                  setIsSending(false)
+                  // setIsSending(false)
                 }
               },
           onRename: !onRename

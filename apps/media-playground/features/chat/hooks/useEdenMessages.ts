@@ -17,14 +17,14 @@ export type ThreadMessageWithStatus = Omit<ThreadMessage, 'status'> & {
 export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
   stream,
   setIsRunning,
-  setIsSending,
-}: {
+}: // setIsSending,
+{
   stream: (
     messages: TMessage[],
     callback?: (thread_id?: string) => Promise<void>,
   ) => Promise<AsyncGenerator<MessageResponse<TMessage>>>
   setIsRunning: (isRunning: boolean) => void
-  setIsSending: (isSending: boolean) => void
+  // setIsSending: (isSending: boolean) => void
 }) => {
   const [messages, setMessages] = useState<TMessage[]>([])
   const { readyState } = useWebSocketContext()
@@ -87,12 +87,12 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       // }
 
       // If stream just finished, set sending intention false
-      if (streamJustFinished) {
-        // console.log(
-        //   '[useEdenMessages] Stream finished, setting isSending = false',
-        // )
-        setIsSending(false)
-      }
+      // if (streamJustFinished) {
+      // console.log(
+      //   '[useEdenMessages] Stream finished, setting isSending = false',
+      // )
+      // setIsSending(false)
+      // }
 
       const messageToAdd = {
         ...message,
@@ -129,7 +129,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
 
       return true
     },
-    [processBatchUpdates, setIsRunning, setIsSending],
+    [processBatchUpdates, setIsRunning],
   )
 
   // Handle connection state changes
@@ -169,7 +169,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
         })
       }
     }
-  }, [readyState, addOrUpdateMessage, setIsRunning, setIsSending])
+  }, [readyState, addOrUpdateMessage, setIsRunning])
 
   const sendMessage = useCallback(
     async (
@@ -206,7 +206,7 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       // RETURN the stream generator directly
       return stream(newMessages, callback)
     },
-    [addOrUpdateMessage, stream, setIsRunning, setIsSending],
+    [addOrUpdateMessage, stream, setIsRunning],
   )
 
   // Cleanup
