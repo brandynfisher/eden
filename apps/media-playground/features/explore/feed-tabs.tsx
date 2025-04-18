@@ -20,7 +20,7 @@ const FeedTabs = () => {
       key: 'creations',
       title: 'Creations',
       content: <CreationsFeed maxCols={7} />,
-      // sortMenu: SortMenu,
+      sortMenu: props => <SortMenu {...props} variant="creation" />,
       filterMenu: CreationsFilter,
       initialFilter: initialCreationsFilter,
     },

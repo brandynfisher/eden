@@ -188,17 +188,17 @@ const collectionsPreAggregatePipeline = (
 ) => {
   return [
     ...matchStage,
-    {
-      $project: {
-        creations: 1,
-      },
-    },
+    // {
+    //   $project: {
+    //     creations: 1,
+    //   },
+    // },
     ...creationsLookup('creations', '_id', lookupPipeline),
-    {
-      $sort: {
-        _id: -1,
-      },
-    },
+    // {
+    //   $sort: {
+    //     _id: -1,
+    //   },
+    // },
   ]
 }
 
@@ -336,6 +336,10 @@ const handleArguments = async ({
             if (field === 'embedding.score') {
               useEmbeddingsPreAggregate = true //@todo: handle aggregation below
               return ['embedding.score_adjusted', Number(direction)]
+            }
+
+            if (field === 'likeCount') {
+              return ['likeCount', Number(direction)]
             }
 
             return [field, Number(direction)]

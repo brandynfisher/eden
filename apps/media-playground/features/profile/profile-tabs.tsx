@@ -33,6 +33,9 @@ const ProfileTabs = () => {
     {
       key: 'creations',
       title: 'Creations',
+      sortMenu: props => (
+        <SortMenu {...props} variant="creation" initialSort="createdAt;-1" />
+      ),
       filterMenu: ProfileCreationsFilter,
       content: (
         <CreationsFeed

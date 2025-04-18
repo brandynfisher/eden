@@ -23,6 +23,7 @@ import { User, UserDocument } from './User'
 import { UserMigration, UserMigrationDocument } from './UserMigration'
 import { CollectionV2Document } from './v2/CollectionV2'
 import { CollectionV2 } from './v2/CollectionV2'
+import { CreationLikeV2, CreationLikeV2Document } from './v2/CreationLikeV2'
 import { CreationV2, CreationV2Document } from './v2/CreationV2'
 import { ModelV2, ModelV2Document } from './v2/ModelV2'
 import { TaskV2, TaskV2Document } from './v2/TaskV2'
@@ -44,6 +45,7 @@ export interface Database {
   Thread: Model<ThreadDocument>
   Creation: Model<CreationDocument>
   CreationV2: Model<CreationV2Document>
+  CreationLikeV2: Model<CreationLikeV2Document>
   Deployment: Model<DeploymentDocument>
   Embedding: Model<EmbeddingDocument>
   Concept: Model<ConceptDocument>
@@ -78,6 +80,7 @@ export const models: Database = {
   Thread,
   Creation,
   CreationV2,
+  CreationLikeV2,
   Concept,
   Deployment,
   ModelV2,

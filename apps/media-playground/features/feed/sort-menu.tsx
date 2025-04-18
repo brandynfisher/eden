@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import {
   ArrowDownUpIcon,
   ClockArrowDown,
+  HeartIcon,
   StarIcon,
   TrendingUpIcon,
 } from 'lucide-react'
@@ -36,11 +37,17 @@ const userSortOptions = [
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
 ]
 
-// Update the variant type to include 'user'
+// Add new sort options for creations
+const creationSortOptions = [
+  { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
+  { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
+]
+
+// Update the variant type to include 'user' and 'creation'
 type Props = {
   onChange: (sort: string) => void
   initialSort?: string
-  variant?: 'default' | 'agent' | 'user'
+  variant?: 'default' | 'agent' | 'user' | 'creation'
   className?: string
 }
 
@@ -55,6 +62,8 @@ export const SortMenu = ({
       ? agentSortOptions
       : variant === 'user'
       ? userSortOptions
+      : variant === 'creation'
+      ? creationSortOptions
       : sortOptions
   const [baseSort, setBaseSort] = useState<string>(
     initialSort ||
@@ -62,6 +71,8 @@ export const SortMenu = ({
         ? 'stats.userMessageCount_7d;-1'
         : variant === 'user'
         ? 'createdAt;-1'
+        : variant === 'creation'
+        ? 'likeCount;-1'
         : 'createdAt;-1'),
   )
 
