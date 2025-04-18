@@ -26,7 +26,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
-import { ELEVENLABS_VOICES } from '@/lib/voices/elevenlabs'
+import { useVoicesQuery } from '@/hooks/query/use-voices-query'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -95,6 +95,7 @@ const AgentFormSheet = () => {
     enabled: agentId && isOpen ? true : false,
     refetchOnWindowFocus: false,
   })
+  const voicesQuery = useVoicesQuery()
 
   const [isKeyEditMode, setIsKeyEditMode] = useState(false)
   const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
@@ -239,7 +240,8 @@ const AgentFormSheet = () => {
               : 'Create an agent to help you with your tasks.'}
           </SheetDescription>
         </SheetHeader>
-        {mode === 'update' && agentQuery.isPending && (
+        {((mode === 'update' && agentQuery.isPending) ||
+          voicesQuery.isPending) && (
           <div className="flex items-center justify-center mt-10">
             <Loader2 className="size-4 animate-spin" />
           </div>
@@ -498,7 +500,7 @@ const AgentFormSheet = () => {
                     </FormDescription>
                     <FormControl>
                       <VoiceSelector
-                        voices={ELEVENLABS_VOICES}
+                        voices={voicesQuery.voices}
                         value={field.value || ''}
                         onChange={field.onChange}
                       />
