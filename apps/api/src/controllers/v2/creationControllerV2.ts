@@ -253,7 +253,7 @@ export const creationBulkUpdate = async (
 }
 
 export const likeCreation = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -321,7 +321,7 @@ export const likeCreation = async (
 }
 
 export const unlikeCreation = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
