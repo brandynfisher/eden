@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getFileTypeByMimeType } from '@/lib/files'
 import {
@@ -68,7 +67,6 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
             creation={creation}
             queryKey={queryKey}
             userId={user?._id}
-            isOpen={isOpen}
           />
         )}
       </ActionsDropdown>
@@ -80,30 +78,23 @@ type ContentProps = {
   creation: CreationV2
   queryKey: QueryKey
   userId?: string
-  isOpen?: boolean
 }
 
 const CreationActionsContent = ({
   creation,
   queryKey,
   userId,
-  isOpen,
 }: ContentProps) => {
   const dispatch = useAppDispatch()
-
   const { isSignedIn } = useAuthState()
-  const { creation: creationResponse } = useCreationQuery({
-    key: creation._id,
-    enabled: isOpen,
-  })
 
-  const creationData = creationResponse
+  const creationData = creation
 
   const handleAddToCollectionClick = () => {
     dispatch(
       updateAddToCollectionModal({
         isOpen: true,
-        creationIds: [creation._id],
+        creationIds: [creationData._id],
       }),
     )
   }
@@ -118,7 +109,7 @@ const CreationActionsContent = ({
 
   const handleShareClick = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/creations/${creation._id}`
+    const shareUrl = `${baseUrl}/creations/${creationData._id}`
     dispatch(
       updateShareModal({
         isOpen: true,
@@ -128,13 +119,16 @@ const CreationActionsContent = ({
   }
 
   const fileType =
-    getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
+    getFileTypeByMimeType(creationData.mediaAttributes?.mimeType) || 'image'
 
   return (
     <>
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
-          <Link className="cursor-pointer" href={`/creations/${creation._id}`}>
+          <Link
+            className="cursor-pointer"
+            href={`/creations/${creationData._id}`}
+          >
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
             {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
@@ -184,7 +178,7 @@ const CreationActionsContent = ({
         <DropdownMenuItem asChild disabled={!isSignedIn}>
           <Link
             className="cursor-pointer flex items-center"
-            href={`/create/${fileType}/${creation.tool}?creation=${creation._id}`}
+            href={`/create/${fileType}/${creationData.tool}?creation=${creationData._id}`}
             scroll={false}
             shallow={true}
             prefetch={false}
@@ -195,13 +189,13 @@ const CreationActionsContent = ({
           </Link>
         </DropdownMenuItem>
       </DropdownMenuGroup>
-      {creationResponse && creationData?.user._id === userId && (
+      {creationData && creationData.user._id === userId && (
         <>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <PrivacyActionItem
               type="creation"
-              item={creationResponse}
+              item={creationData}
               queryKey={queryKey}
             />
           </DropdownMenuGroup>
@@ -209,24 +203,23 @@ const CreationActionsContent = ({
           <DropdownMenuGroup>
             <DeleteActionItem
               type="creation"
-              item={creationResponse}
+              item={creationData}
               queryKey={queryKey}
             />
           </DropdownMenuGroup>
         </>
       )}
-      {isSignedIn ? (
+      {isSignedIn && creationData ? (
         <>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DownloadActionItem
               type="creation"
-              originalFileUrl={creationResponse?.filename || ''}
+              originalFileUrl={creationData.filename || ''}
               saveAsFileName={generateFilename(
-                creationResponse?.user.username || '',
-                creationResponse?.task.args?.prompt?.substring(0, 64).trim() ||
-                  '',
-                creationResponse?._id || '',
+                creationData.user.username || '',
+                creationData.task.args?.prompt?.substring(0, 64).trim() || ' ',
+                creationData._id || '',
               )}
             />
           </DropdownMenuGroup>

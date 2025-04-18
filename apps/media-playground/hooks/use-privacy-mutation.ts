@@ -8,8 +8,6 @@ import {
 } from '@/lib/query/guards'
 import { capitalize } from '@/lib/strings'
 import {
-  AgentsUpdateResponse,
-  CollectionsV2UpdateResponse,
   CreationV2,
   CreationsV2PatchResponse,
   FeedV2CursorResponse,
@@ -25,36 +23,43 @@ import {
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-// Define a union type for possible previousData types
-type PreviousData =
+// Define a union type for possible previousData types for the timeline
+type PreviousTimelineData =
   | InfiniteData<TasksV2ListResponse | FeedV2CursorResponse>
-  | CreationV2
-  | ModelV2
   | undefined
 
+// Define a union type for possible previousData types for the single item
+// Simplified to only CreationV2 or ModelV2 for this hook's current usage context
+type PreviousItemData = CreationV2 | ModelV2 | undefined
+
+type MutationContext = {
+  previousTimelineData: PreviousTimelineData
+  previousItemData: PreviousItemData
+}
+
 type MutationOptions = {
-  type: 'creation' | 'model' | 'collection' | 'agent'
-  queryKey: QueryKey
+  type: 'creation' | 'model' // Simplified type
+  timelineQueryKey: QueryKey
+  itemQueryKey: QueryKey
   onSuccessMessage?: string
 }
 
 export function usePrivacyMutation({
   type,
-  queryKey,
+  timelineQueryKey,
+  itemQueryKey,
   onSuccessMessage,
 }: MutationOptions) {
   const queryClient = useQueryClient()
 
   return useMutation<
-    | ModelsV2PatchResponse
-    | CreationsV2PatchResponse
-    | CollectionsV2UpdateResponse
-    | AgentsUpdateResponse,
+    ModelsV2PatchResponse | CreationsV2PatchResponse, // Simplified response types
     Error,
     { ids: string[]; public: boolean },
-    { previousData: PreviousData }
+    MutationContext
   >({
     mutationFn: async ({ ids, public: isPublic }) => {
+      // Endpoint logic remains the same as type is passed correctly
       const endpoint =
         ids.length === 1 ? `/api/${type}s/${ids[0]}` : `/api/${type}s/bulk`
 
@@ -78,98 +83,104 @@ export function usePrivacyMutation({
 
       return response
     },
-    onMutate: async ({ ids, public: isPublic }) => {
-      await queryClient.cancelQueries({ queryKey })
+    onMutate: async ({ ids, public: isPublic }): Promise<MutationContext> => {
+      // Cancel queries for both keys
+      await queryClient.cancelQueries({ queryKey: timelineQueryKey })
+      await queryClient.cancelQueries({ queryKey: itemQueryKey })
 
-      const previousData = queryClient.getQueryData<PreviousData>(queryKey)
+      // Get previous data for both keys
+      const previousTimelineData =
+        queryClient.getQueryData<PreviousTimelineData>(timelineQueryKey)
+      const previousItemData =
+        queryClient.getQueryData<PreviousItemData>(itemQueryKey)
 
-      // Inside your onMutate function
-      if (previousData) {
-        let newData: PreviousData
-        if (isInfiniteData(previousData)) {
-          newData = {
-            ...previousData,
-            pages: previousData.pages.map(page => {
-              if (isTasksV2ListResponse(page)) {
-                return {
-                  ...page,
-                  docs: page?.docs?.map(doc => {
-                    if (!isTaskV2(doc)) return doc
-                    return {
-                      ...doc,
-                      result: doc.result.map(result => {
-                        result.output = result.output.map(output => {
-                          if (
-                            type === 'creation' &&
-                            output.creation &&
-                            ids.includes(output.creation._id)
-                          ) {
-                            return {
-                              ...output,
-                              creation: {
-                                ...output.creation,
-                                public: isPublic,
-                              },
-                            }
+      // Optimistic update for Timeline Data (TaskV2 list)
+      if (previousTimelineData && isInfiniteData(previousTimelineData)) {
+        const newTimelineData = {
+          ...previousTimelineData,
+          pages: previousTimelineData.pages.map(page => {
+            if (isTasksV2ListResponse(page)) {
+              return {
+                ...page,
+                docs: page?.docs?.map(doc => {
+                  if (!isTaskV2(doc)) return doc
+                  return {
+                    ...doc,
+                    result: doc.result.map(result => {
+                      result.output = result.output.map(output => {
+                        if (
+                          type === 'creation' &&
+                          output.creation &&
+                          ids.includes(output.creation._id)
+                        ) {
+                          return {
+                            ...output,
+                            creation: {
+                              ...output.creation,
+                              public: isPublic,
+                            },
                           }
-                          if (
-                            type === 'model' &&
-                            output.model &&
-                            ids.includes(output.model._id)
-                          ) {
-                            return {
-                              ...output,
-                              model: {
-                                ...output.model,
-                                public: isPublic,
-                              },
-                            }
+                        }
+                        if (
+                          type === 'model' &&
+                          output.model &&
+                          ids.includes(output.model._id)
+                        ) {
+                          return {
+                            ...output,
+                            model: {
+                              ...output.model,
+                              public: isPublic,
+                            },
                           }
-                          return output
-                        })
-                        return result
-                      }),
-                    }
-                  }),
-                }
+                        }
+                        return output
+                      })
+                      return result
+                    }),
+                  }
+                }),
               }
-              return page
-            }),
-          }
-        } else {
-          // Handle non-infinite data changes if applicable
-          if (
-            type === 'creation' &&
-            isCreationData(previousData) &&
-            ids.includes(previousData._id)
-          ) {
-            newData = {
-              ...previousData,
-              public: isPublic,
             }
-          } else if (
-            type === 'model' &&
-            isModelData(previousData) &&
-            ids.includes(previousData._id)
-          ) {
-            newData = {
-              ...previousData,
-              public: isPublic,
-            }
-          } else {
-            newData = previousData
-          }
+            return page
+          }),
         }
-
-        queryClient.setQueryData(queryKey, newData)
+        queryClient.setQueryData(timelineQueryKey, newTimelineData)
       }
 
-      return { previousData }
+      // Optimistic update for Item Data (CreationV2 or ModelV2)
+      if (previousItemData) {
+        let newItemData: PreviousItemData = undefined
+        if (
+          type === 'creation' &&
+          isCreationData(previousItemData) &&
+          ids.includes(previousItemData._id)
+        ) {
+          newItemData = { ...previousItemData, public: isPublic }
+        } else if (
+          type === 'model' &&
+          isModelData(previousItemData) &&
+          ids.includes(previousItemData._id)
+        ) {
+          newItemData = { ...previousItemData, public: isPublic }
+        }
+        // Removed agent/collection checks
+
+        if (newItemData) {
+          queryClient.setQueryData(itemQueryKey, newItemData)
+        }
+      }
+
+      // Return context for potential rollback
+      return { previousTimelineData, previousItemData }
     },
-    onError: (err, _variables, context) => {
-      console.error('Mutation error:', err)
-      if (context?.previousData) {
-        queryClient.setQueryData(queryKey, context.previousData)
+    onError: (_err, _variables, context) => {
+      // Rollback both optimistic updates on error
+      if (context?.previousTimelineData) {
+        queryClient.setQueryData(timelineQueryKey, context.previousTimelineData)
+      }
+      if (context?.previousItemData) {
+        queryClient.setQueryData(itemQueryKey, context.previousItemData)
       }
       toast.error(`Failed to update ${type} privacy`, {
         description: 'Please try again.',
@@ -191,7 +202,9 @@ export function usePrivacyMutation({
       })
     },
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey })
+      // Invalidate both queries for eventual consistency
+      await queryClient.invalidateQueries({ queryKey: timelineQueryKey })
+      await queryClient.invalidateQueries({ queryKey: itemQueryKey })
     },
   })
 }

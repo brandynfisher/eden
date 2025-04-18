@@ -24,6 +24,14 @@ const TimelineItemResultTools = ({
   queryKey,
   className,
 }: Props) => {
+  console.log('[TimelineItemResultTools] Rendering/Re-rendering...', {
+    taskId: task._id,
+    outputFilename: output.filename,
+    creationPublic: output.creation?.public,
+    modelPublic: output.model?.public,
+    queryKey,
+  })
+
   return (
     <div
       data-test-id="timeline-item-result-tools"

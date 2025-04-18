@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -56,18 +55,12 @@ type ContentProps = {
 const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
   const dispatch = useAppDispatch()
 
-  const { model: modelResponse } = useModelQuery({
-    key: model._id,
-    initialData: {
-      model,
-    },
-  })
-
-  const modelData = modelResponse || model
+  // Use the model prop directly
+  const modelData = model
 
   const handleShareClick = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/models/${model._id}`
+    const shareUrl = `${baseUrl}/models/${modelData._id}` // Use modelData
     dispatch(
       updateShareModal({
         isOpen: true,
@@ -80,6 +73,7 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
     <>
       <DropdownMenuGroup>
         <DropdownMenuItem asChild>
+          {/* Use modelData for link */}
           <Link className="cursor-pointer" href={`/models/${modelData._id}`}>
             <ExternalLinkIcon className="mr-2 h-4 w-4" />
             View Details
@@ -97,10 +91,10 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
           <Link
             className="cursor-pointer"
             href={`/create/image/${
-              model.base_model && model.base_model === 'flux-dev'
+              modelData.base_model && modelData.base_model === 'flux-dev' // Use modelData
                 ? 'flux_dev'
                 : 'txt2img'
-            }?lora=${model._id}`}
+            }?lora=${modelData._id}`}
             prefetch={false}
           >
             <ComponentIcon className="mr-2 h-4 w-4" />
@@ -115,7 +109,8 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
           Share
         </button>
       </DropdownMenuItem>
-      {modelData.user._id === userId && (
+      {/* Use modelData prop for conditional rendering and passing down */}
+      {modelData && modelData.user._id === userId && (
         <>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
