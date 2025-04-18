@@ -1,13 +1,13 @@
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { usePrivacyToggle } from '@/hooks/use-privacy-toggle'
-import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { Agent, CollectionV2, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { Loader2Icon, LockIcon, LockOpenIcon } from 'lucide-react'
 import React, { useMemo } from 'react'
 
 type Props = {
-  item: ModelV2 | CreationV2 // Updated type to match usePrivacyToggle
-  type: 'creation' | 'model' // Updated type to match usePrivacyToggle
+  item: ModelV2 | CreationV2 | CollectionV2 | Agent // Updated type to match usePrivacyToggle
+  type: 'creation' | 'model' | 'collection' | 'agent' // Updated type to match usePrivacyToggle
   queryKey: QueryKey // This is the timeline query key
 }
 

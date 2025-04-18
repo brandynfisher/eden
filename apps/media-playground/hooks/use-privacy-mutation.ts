@@ -23,13 +23,10 @@ import {
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-// Define a union type for possible previousData types for the timeline
 type PreviousTimelineData =
   | InfiniteData<TasksV2ListResponse | FeedV2CursorResponse>
   | undefined
 
-// Define a union type for possible previousData types for the single item
-// Simplified to only CreationV2 or ModelV2 for this hook's current usage context
 type PreviousItemData = CreationV2 | ModelV2 | undefined
 
 type MutationContext = {
@@ -38,7 +35,7 @@ type MutationContext = {
 }
 
 type MutationOptions = {
-  type: 'creation' | 'model' // Simplified type
+  type: 'creation' | 'model' | 'collection' | 'agent'
   timelineQueryKey: QueryKey
   itemQueryKey: QueryKey
   onSuccessMessage?: string

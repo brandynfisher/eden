@@ -14,7 +14,12 @@ type Props = {
 }
 
 const PrivacyToggle = ({ type, item, queryKey, className }: Props) => {
-  const { handleToggle } = usePrivacyToggle({ type, item, queryKey })
+  const { handleToggle } = usePrivacyToggle({
+    type,
+    item,
+    timelineQueryKey: queryKey,
+    itemQueryKey: queryKey,
+  })
   const [isLoading, setIsLoading] = useState(false)
 
   const onToggle = () => {
