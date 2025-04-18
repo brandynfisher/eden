@@ -3,6 +3,7 @@
 import ImageWithFallback from '@/components/media/image-with-fallback'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
+import customImageLoader from '@/image-loader'
 import Link from 'next/link'
 
 type Props = {
@@ -32,7 +33,7 @@ const ToolCard = ({ title, image, link, description, priority }: Props) => {
         ) : (
           <ImageWithFallback
             loading={priority ? undefined : 'lazy'}
-            // loader={customImageLoader}
+            loader={customImageLoader}
             src={image}
             alt={title}
             data-loaded="false"
