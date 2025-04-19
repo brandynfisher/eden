@@ -2,16 +2,18 @@
 
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
+import { SubscriptionGateModal } from '@/components/modals/SubscriptionGateModal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  Form, // FormControl,
-  // FormField,
-  // FormItem,
-  // FormLabel,
-  // FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form'
-// import { Switch } from '@/components/ui/switch'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
@@ -20,15 +22,17 @@ import ParameterField from '@/features/tools/parameters/parameter-field'
 import ParameterGroupCollapse from '@/features/tools/parameters/parameter-group-collapse'
 import { groupParameters } from '@/features/tools/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedActions } from '@/hooks/use-subscription-gate'
+import { useSubscriptionGate } from '@/hooks/use-subscription-gate'
 import { useToolPreset } from '@/hooks/use-tool-preset'
 import { trackTaskCreate } from '@/lib/analytics'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { cn } from '@/lib/utils'
 import { calculateCost } from '@/utils/cost.util'
-import { ToolV2 } from '@edenlabs/eden-sdk'
+import { SubscriptionTier, ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Loader2, Settings2Icon } from 'lucide-react'
+import { CrownIcon, Loader2, Settings2Icon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
@@ -47,7 +51,10 @@ const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
 const CreationUIContainer = ({ tool }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
+  const { isAllowed: isAllowedPrivacy, minimumSubscriptionTier } =
+    useSubscriptionGate(GatedActions.MakePrivate)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false)
   const presetResolutions = tool?.resolutions
   const parameterSchema = createZodFormSchema(tool.parameters || []) // create form schema
 
@@ -324,26 +331,45 @@ const CreationUIContainer = ({ tool }: Props) => {
               >
                 Reset
               </Button>
-              {/* <FormField
+              <FormField
                 name="public"
                 render={({ field, fieldState }) => (
                   <FormItem
                     data-test-id={'public'}
-                    className="ml-auto flex items-center gap-2"
+                    className="ml-auto flex items-center gap-2 space-y-0 relative"
                   >
-                    <FormControl id={'public'}>
-                      <Switch
-                        checked={field.value === undefined ? true : field.value}
-                        onCheckedChange={field.onChange}
+                    <div className={'flex items-center gap-2'}>
+                      {!isAllowedPrivacy ? (
+                        <CrownIcon className="text-orange-400 h-5 w-5" />
+                      ) : null}
+                      <FormControl id={field.name} className="mt-0">
+                        <Switch
+                          checked={
+                            field.value === undefined ? true : field.value
+                          }
+                          onCheckedChange={field.onChange}
+                          disabled={!isAllowedPrivacy}
+                        />
+                      </FormControl>
+                      <FormLabel
+                        htmlFor={field.name}
+                        className={'text-muted-foreground !mt-0'}
+                      >
+                        Public
+                      </FormLabel>
+                    </div>
+                    {!isAllowedPrivacy && (
+                      <div
+                        className="absolute inset-0 cursor-pointer z-10"
+                        onClick={() => setIsSubscriptionModalOpen(true)}
+                        title="Making creations private requires a subscription"
+                        aria-hidden="true"
                       />
-                    </FormControl>
-                    <FormLabel className="text-muted-foreground !mt-0">
-                      Public
-                    </FormLabel>
+                    )}
                     <FormMessage>{fieldState.error?.message}</FormMessage>
                   </FormItem>
                 )}
-              /> */}
+              />
             </div>
           </div>
           {optionalParameters?.length ? (
@@ -456,6 +482,15 @@ const CreationUIContainer = ({ tool }: Props) => {
       >
         {formContent}
       </CreationUIMobile>
+
+      <SubscriptionGateModal
+        open={isSubscriptionModalOpen}
+        onOpenChange={setIsSubscriptionModalOpen}
+        featureName="Making creations private"
+        minimumSubscriptionTier={
+          minimumSubscriptionTier || SubscriptionTier.Basic // Default fallback, adjust if needed
+        }
+      />
     </>
   )
 }
