@@ -98,10 +98,10 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
       //   scrollIndex,
       // )
       setInitialScrollIndex(scrollIndex)
-      console.log(
-        '[AgentDetail] Read initial scroll index from history state:',
-        scrollIndex,
-      )
+      // console.log(
+      //   '[AgentDetail] Read initial scroll index from history state:',
+      //   scrollIndex,
+      // )
       setInitialScrollIndex(scrollIndex)
       // Clear the history state immediately after reading
       try {
@@ -120,7 +120,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
             }
           }
           window.history.replaceState(restState, '')
-          console.log('[AgentDetail] Cleared scrollIndex from history state')
+          // console.log('[AgentDetail] Cleared scrollIndex from history state')
         }
       } catch (e) {
         console.error('Error clearing history state:', e)
