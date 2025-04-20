@@ -133,6 +133,9 @@ const CreationUIContainer = ({ tool }: Props) => {
       return
     }
 
+    const { makePublic, ...args } = formData as FormData & {
+      makePublic?: boolean
+    }
     // console.log('onSubmit', formData)
     // return
 
@@ -141,7 +144,8 @@ const CreationUIContainer = ({ tool }: Props) => {
     try {
       const response = await axios.post('/api/tasks/create', {
         tool: tool.key,
-        args: formData,
+        args: args,
+        makePublic: makePublic,
       })
 
       console.log({ response })
@@ -332,10 +336,10 @@ const CreationUIContainer = ({ tool }: Props) => {
                 Reset
               </Button>
               <FormField
-                name="public"
+                name="makePublic"
                 render={({ field, fieldState }) => (
                   <FormItem
-                    data-test-id={'public'}
+                    data-test-id={'makePublic'}
                     className="ml-auto flex items-center gap-2 space-y-0 relative"
                   >
                     <div className={'flex items-center gap-2'}>

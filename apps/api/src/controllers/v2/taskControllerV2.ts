@@ -80,7 +80,7 @@ export const createTask = async (
       })
     }
 
-    const { tool, args } = request.body as TasksV2CreateArguments
+    const { tool, args, makePublic } = request.body as TasksV2CreateArguments
     const toolDocument = await ToolV2.findOne({ key: tool, active: true })
     if (!toolDocument) {
       return reply.status(404).send({
@@ -107,11 +107,19 @@ export const createTask = async (
       })
     }
 
+    console.log({
+      tool,
+      args,
+      public: makePublic,
+      user_id: userId,
+    })
+
     const modalRequest = {
       endpoint: `${server.config.EDEN_COMPUTE_API_URL}/create`,
       data: {
         tool,
         args,
+        public: makePublic,
         user_id: userId,
       },
     }

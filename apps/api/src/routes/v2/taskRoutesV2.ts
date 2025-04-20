@@ -48,6 +48,7 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
       body: {
         tool: Type.String(),
         args: Type.Optional(argsType),
+        makePublic: Type.Optional(Type.Boolean()),
       },
       response: {
         200: Type.Object({

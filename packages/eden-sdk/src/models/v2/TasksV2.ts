@@ -16,6 +16,7 @@ import { AxiosRequestConfig } from 'axios'
 export interface TasksV2CreateArguments extends WebAPICallOptions {
   tool: string
   args?: any
+  makePublic?: boolean
 }
 
 export interface TasksV2ListArguments

@@ -227,10 +227,10 @@ export function createZodFormSchema(
     })
   }
 
-  // Merge the existing schema with the public field
+  // Merge the existing schema with the makePublic field
   schema = z.object({
     ...schema.shape,
-    public: z.boolean().default(true),
+    makePublic: z.boolean().default(true),
   })
 
   return schema
