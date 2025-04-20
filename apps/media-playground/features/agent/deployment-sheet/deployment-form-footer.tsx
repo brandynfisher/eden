@@ -222,7 +222,7 @@ export const DeploymentFormFooter = ({
               Stop
             </Button>
           ) : (
-            valid === true && (
+            (valid === true || valid === undefined) && (
               <Button
                 type="submit"
                 onClick={form.handleSubmit(handleSubmit)}
