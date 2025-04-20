@@ -7,6 +7,7 @@ import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +28,7 @@ import {
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import {
+  ChevronDownIcon,
   ClockIcon,
   EyeOffIcon,
   MessageSquareIcon,
@@ -35,7 +37,7 @@ import {
   Share2Icon,
 } from 'lucide-react'
 import Link from 'next/link'
-import React, { RefObject } from 'react'
+import React, { RefObject, useMemo, useRef, useState } from 'react'
 
 type Props = {
   id: string
@@ -44,9 +46,14 @@ type Props = {
   scrollRef?: RefObject<HTMLDivElement>
 }
 
+// Define filter types within AgentDetail
+type FilterMode = 'all' | 'mine'
+
 const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
-  const { isSignedIn, user } = useAuthState()
+  const { user, isSignedIn } = useAuthState()
   const dispatch = useAppDispatch()
+  const [filterMode, setFilterMode] = useState<FilterMode>('all')
+  const feedSectionRef = useRef<HTMLDivElement>(null)
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
     FeatureFlag.FeatureDeployments,
   )
@@ -61,6 +68,16 @@ const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
+
+  // Construct the query for RecentCreationsFeed based on filterMode
+  const recentCreationsQuery = useMemo(() => {
+    if (!agent) return {}
+    const baseAgentQuery = { agent: agent._id }
+    if (filterMode === 'mine' && user?._id) {
+      return { ...baseAgentQuery, user: user._id }
+    }
+    return baseAgentQuery
+  }, [agent, filterMode, user?._id])
 
   const onUpdateAgent = async () => {
     await invalidate()
@@ -95,7 +112,42 @@ const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
     )
   }
 
+  // Scroll handler, moved from RecentCreationsFeed
+  const handleScrollToCreations = () => {
+    // Note: We no longer need to trigger loading here, just scroll
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const recentCreationsElement = feedSectionRef.current
+        if (isModal && scrollRef?.current && recentCreationsElement) {
+          const containerRect = scrollRef.current.getBoundingClientRect()
+          const elementRect = recentCreationsElement.getBoundingClientRect()
+          // Adjust scroll position slightly to show content below arrow/title/tabs
+          scrollRef.current.scrollTo({
+            top:
+              scrollRef.current.scrollTop +
+              elementRect.top -
+              containerRect.top -
+              80, // Adjust this offset as needed
+            behavior: 'smooth',
+          })
+        } else {
+          recentCreationsElement?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+          // Adjust scroll position slightly after scrollIntoView
+          if (recentCreationsElement) {
+            window.scrollBy(0, -80) // Adjust this offset as needed
+          }
+        }
+      }, 100) // Keep small delay
+    })
+  }
+
   if (!agent) return null
+
+  // Determine if the filter tabs should be shown
+  const showFilterTabs = isSignedIn && !!user
 
   return (
     <>
@@ -256,24 +308,48 @@ const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
           )}
         </div>
       </div>
-      <div className="p-4">
-        {agent && (
-          <RecentCreationsFeed
-            title={
-              isSignedIn && !!user
-                ? `Your Creations with ${agent?.name}`
-                : `Public Creations with ${agent?.name}`
-            }
-            query={
-              isSignedIn && !!user
-                ? { user: user._id, agent: agent._id }
-                : { agent: agent._id }
-            }
-            isModal={isModal}
-            scrollRef={scrollRef}
-          />
-        )}
-      </div>
+
+      {/* Bouncy Arrow and Title (Moved Here) */}
+      {agent && (
+        <>
+          <div className="flex justify-center mt-4">
+            <Button
+              variant="outline"
+              size="icon"
+              className="cursor-pointer self-center animate-bounce"
+              onClick={handleScrollToCreations}
+            >
+              <ChevronDownIcon className="w-10 h-10" />
+            </Button>
+          </div>
+          <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8 px-4">
+            {`Creations with ${agent.name}`}
+          </div>
+
+          {/* Feed Section Start - Attach Ref Here */}
+          <div ref={feedSectionRef}>
+            {/* Filter Tabs */}
+            {showFilterTabs && (
+              <Tabs
+                value={filterMode}
+                onValueChange={value => setFilterMode(value as FilterMode)}
+                className="w-full flex justify-center mb-4 px-4"
+              >
+                <TabsList>
+                  <TabsTrigger value="all">All Creations</TabsTrigger>
+                  <TabsTrigger value="mine">My Creations</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+
+            {/* Recent Creations Feed Component */}
+            <RecentCreationsFeed
+              query={recentCreationsQuery}
+              scrollRef={scrollRef}
+            />
+          </div>
+        </>
+      )}
     </>
   )
 }
