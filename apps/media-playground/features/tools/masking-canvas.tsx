@@ -548,29 +548,30 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                   willChange: isPanning ? 'transform' : 'auto',
                 }}
               >
-                {overlayCanvasRef && !isMoving ? (
-                  <MaskingCanvasCursor
-                    size={
-                      (lineWidth * (displayDimensions?.width ?? width)) /
-                      (imageDimensions?.width ?? width)
-                    }
-                    canvasRef={overlayCanvasRef}
-                    scale={scale}
-                    translate={translate}
-                  />
-                ) : null}
                 {baseImage && imageDimensions && displayDimensions && (
-                  <NextImage
-                    src={baseImage}
-                    alt="Base Image"
-                    width={imageDimensions.width}
-                    height={imageDimensions.height}
-                    className="select-none absolute top-0 left-0 w-full h-full"
-                    style={{
-                      opacity: imageOpacity,
-                    }}
-                    priority={true}
-                  />
+                  <>
+                    {overlayCanvasRef && !isMoving && (
+                      <MaskingCanvasCursor
+                        size={
+                          (lineWidth * (displayDimensions?.width ?? width)) /
+                          (imageDimensions?.width ?? width)
+                        }
+                        canvasRef={overlayCanvasRef}
+                        scale={scale}
+                      />
+                    )}
+                    <NextImage
+                      src={baseImage}
+                      alt="Base Image"
+                      width={imageDimensions.width}
+                      height={imageDimensions.height}
+                      className="select-none absolute top-0 left-0 w-full h-full"
+                      style={{
+                        opacity: imageOpacity,
+                      }}
+                      priority={true}
+                    />
+                  </>
                 )}
                 <canvas
                   data-custom-cursor={true}

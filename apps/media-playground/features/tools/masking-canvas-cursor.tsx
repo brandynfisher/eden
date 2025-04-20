@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 
 type MaskingCanvasCursorProps = {
-  size: number // This is the base display size passed from parent
+  size: number // Changed prop name back to size
   canvasRef: React.RefObject<HTMLCanvasElement>
   scale: number
   // translate: { x: number; y: number } // Removed unused prop again
 }
 
 const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
-  size,
+  size, // Changed prop name back
   canvasRef,
   scale,
   // translate, // Removed unused prop again
@@ -37,10 +37,8 @@ const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
 
   if (!canvasRef.current) return null
 
-  // Calculate the visual size of the cursor on screen
-  // The `size` prop is the brush size in *display pixels* if scale were 1.
-  // We just need to multiply by the current CSS scale.
-  const cursorSize = size * scale
+  // --- Revert size calculation to use size prop directly ---
+  const finalCursorSize = size // Removed * scale
 
   // Calculate position within the parent's transformed coordinate system (Removed translation adjustment)
   const innerX = position.x / scale
@@ -49,8 +47,8 @@ const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
   // Use absolute positioning within the parent container
   const cursorStyle: React.CSSProperties = {
     position: 'absolute',
-    width: `${cursorSize}px`,
-    height: `${cursorSize}px`,
+    width: `${finalCursorSize}px`, // Use recalculated size
+    height: `${finalCursorSize}px`, // Use recalculated size
     top: `${innerY}px`, // Use calculated inner position
     left: `${innerX}px`, // Use calculated inner position
     borderRadius: '50%',
