@@ -1,17 +1,28 @@
+import { SubscriptionGateModal } from '../modals/SubscriptionGateModal'
 import { Button } from '@/components/ui/button'
-import { Form } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Switch } from '@/components/ui/switch'
 import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
 import ParameterField from '@/features/tools/parameters/parameter-field'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedActions } from '@/hooks/use-subscription-gate'
+import { useSubscriptionGate } from '@/hooks/use-subscription-gate'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { closeAllQuickCreateModals } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { calculateCost } from '@/utils/cost.util'
-import { ToolV2 } from '@edenlabs/eden-sdk'
+import { SubscriptionTier, ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Loader2 } from 'lucide-react'
+import { CrownIcon, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -34,8 +45,10 @@ const SimpleGeneratorForm = ({
   const dispatch = useAppDispatch()
 
   const { verifyAuth, refetchMe, balance } = useAuthState()
+  const { isAllowed: isAllowedPrivacy, minimumSubscriptionTier } =
+    useSubscriptionGate(GatedActions.MakePrivate)
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false)
   const parameters = tool?.parameters?.filter(param =>
     exposedParameters.includes(param.name),
   )
@@ -62,6 +75,10 @@ const SimpleGeneratorForm = ({
     const finalData = { ...defaultValues, ...formData, ...initValues }
     // console.log('onSubmit', finalData)
 
+    const { makePublic, ...args } = finalData as FormData & {
+      makePublic?: boolean
+    }
+
     if (!(await verifyAuth())) {
       return
     }
@@ -70,7 +87,8 @@ const SimpleGeneratorForm = ({
     try {
       const response = await axios.post('/api/tasks/create', {
         tool: tool.key,
-        args: finalData,
+        args: args,
+        makePublic: makePublic,
       })
 
       console.log({ response })
@@ -117,6 +135,43 @@ const SimpleGeneratorForm = ({
               )
             })
           : null}
+        <FormField
+          name="makePublic"
+          render={({ field, fieldState }) => (
+            <FormItem
+              data-test-id={'makePublic'}
+              className="ml-auto flex items-center gap-2 space-y-0 relative"
+            >
+              <div className={'flex items-center gap-2'}>
+                {!isAllowedPrivacy ? (
+                  <CrownIcon className="text-orange-400 h-5 w-5" />
+                ) : null}
+                <FormControl id={field.name} className="mt-0">
+                  <Switch
+                    checked={field.value === undefined ? true : field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={!isAllowedPrivacy}
+                  />
+                </FormControl>
+                <FormLabel
+                  htmlFor={field.name}
+                  className={'text-muted-foreground !mt-0'}
+                >
+                  Public
+                </FormLabel>
+              </div>
+              {!isAllowedPrivacy && (
+                <div
+                  className="absolute inset-0 cursor-pointer z-10"
+                  onClick={() => setIsSubscriptionModalOpen(true)}
+                  title="Making creations private requires a subscription"
+                  aria-hidden="true"
+                />
+              )}
+              <FormMessage>{fieldState.error?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
         <div className="flex gap-2 items-center justify-end">
           <CostIndicatorV2 cost={cost} />
 
@@ -149,6 +204,14 @@ const SimpleGeneratorForm = ({
           </Button>
         </div>
       </form>
+      <SubscriptionGateModal
+        open={isSubscriptionModalOpen}
+        onOpenChange={setIsSubscriptionModalOpen}
+        featureName="Making creations private"
+        minimumSubscriptionTier={
+          minimumSubscriptionTier || SubscriptionTier.Basic // Default fallback, adjust if needed
+        }
+      />
     </Form>
   )
 }
