@@ -4,6 +4,7 @@ import FeedSearchForm from '@/components/filter/feed-search-form'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import ModelsFeed from '@/features/feed/models-feed'
 import { ModelsFilter } from '@/features/feed/models-filter'
+import { SortMenu } from '@/features/feed/sort-menu'
 import {
   FeedConceptsCursorArguments,
   FeedCursorRouteQueryParams,
@@ -15,8 +16,8 @@ type Props = {
   initialFilter?: FeedCursorRouteQueryParams['filter']
 }
 
-const SortModelsFeed = ({ initialFilter }: Props) => {
-  // const [sort, setSort] = useState(initialSort || 'createdAt;-1')
+const SortModelsFeed = ({ initialSort, initialFilter }: Props) => {
+  const [sort, setSort] = useState(initialSort || 'createdAt;-1')
   const [filter, setFilter] = useState<FeedCursorRouteQueryParams['filter']>(
     initialFilter || {},
   )
@@ -28,7 +29,7 @@ const SortModelsFeed = ({ initialFilter }: Props) => {
   // Convert filter object to query parameters for ModelsFeed
   const getQueryParams = (): FeedConceptsCursorArguments => {
     const queryParams: FeedConceptsCursorArguments = {
-      sort: ['createdAt;-1'],
+      sort: [sort],
       search: search,
     }
 
@@ -63,6 +64,11 @@ const SortModelsFeed = ({ initialFilter }: Props) => {
           </TypographyH4>
         </div>
         <FeedSearchForm handleSearch={handleSearch} />
+        <SortMenu
+          variant="model"
+          initialSort={sort}
+          onChange={sort => setSort(sort)}
+        />
         <ModelsFilter
           initialFilter={initialFilter}
           onChange={filter => setFilter(filter)}

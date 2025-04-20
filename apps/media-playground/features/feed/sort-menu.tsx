@@ -23,6 +23,7 @@ const sortOptions = [
 
 // Add new sort options specifically for agents
 const agentSortOptions = [
+  { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
   {
     label: 'Trending',
     value: 'stats.userMessageCount_7d;-1',
@@ -43,11 +44,16 @@ const creationSortOptions = [
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
 ]
 
+const modelSortOptions = [
+  { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
+  { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
+]
+
 // Update the variant type to include 'user' and 'creation'
 type Props = {
   onChange: (sort: string) => void
   initialSort?: string
-  variant?: 'default' | 'agent' | 'user' | 'creation'
+  variant?: 'default' | 'agent' | 'user' | 'creation' | 'model'
   className?: string
 }
 
@@ -64,6 +70,8 @@ export const SortMenu = ({
       ? userSortOptions
       : variant === 'creation'
       ? creationSortOptions
+      : variant === 'model'
+      ? modelSortOptions
       : sortOptions
   const [baseSort, setBaseSort] = useState<string>(
     initialSort ||
@@ -72,6 +80,8 @@ export const SortMenu = ({
         : variant === 'user'
         ? 'createdAt;-1'
         : variant === 'creation'
+        ? 'likeCount;-1'
+        : variant === 'model'
         ? 'likeCount;-1'
         : 'createdAt;-1'),
   )
