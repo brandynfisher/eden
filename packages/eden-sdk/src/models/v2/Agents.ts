@@ -66,6 +66,8 @@ export type Agent = Omit<
   createdAt: Date
   updatedAt: Date
   public?: boolean
+  likeCount?: number
+  isLiked?: boolean
   stats?: AgentStats
 }
 
@@ -224,6 +226,14 @@ export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
   triggerId: string
 }
 
+export interface AgentsLikeArguments extends WebAPICallOptions {
+  agentId: string
+}
+
+export interface AgentsUnlikeArguments extends WebAPICallOptions {
+  agentId: string
+}
+
 // Requests
 export const agentGetRequestConfig = (
   args: AgentGetArguments,
@@ -329,7 +339,7 @@ export const agentsCreateTriggerRequestConfig = (
   return {
     method: 'POST',
     url: `v2/agents/${args.agentId}/triggers`,
-    data: args
+    data: args,
   }
 }
 
@@ -341,6 +351,26 @@ export const agentsDeleteTriggerRequestConfig = (
     url: `v2/agents/${args.agentId}/triggers/${args.triggerId}`,
   }
 }
+
+export const agentsLikeRequestConfig = (
+  args: AgentsLikeArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/agents/${args.agentId}/like`,
+    data: {},
+  }
+}
+
+export const agentsUnlikeRequestConfig = (
+  args: AgentsUnlikeArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `v2/agents/${args.agentId}/like`,
+  }
+}
+
 // Responses
 export type AgentsGetDeploymentsResponse = WebAPICallResult & {
   deployments: Deployment[]
@@ -398,6 +428,16 @@ export type AgentsCreateTriggerResponse = WebAPICallResult & {
 }
 
 export type AgentsDeleteTriggerResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+export type AgentsLikeResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+export type AgentsUnlikeResponse = WebAPICallResult & {
   success: boolean
   error?: string
 }

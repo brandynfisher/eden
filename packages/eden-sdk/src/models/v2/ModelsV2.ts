@@ -29,6 +29,14 @@ export interface ModelsV2PatchArguments extends WebAPICallOptions {
   deleted?: boolean
 }
 
+export interface ModelsV2LikeArguments extends WebAPICallOptions {
+  modelId: string
+}
+
+export interface ModelsV2UnlikeArguments extends WebAPICallOptions {
+  modelId: string
+}
+
 // Requests
 export const modelsV2ListRequestConfig = (
   args: ModelsV2ListArguments,
@@ -61,8 +69,27 @@ export const modelsV2PatchRequestConfig = (
     },
   }
 }
-// Responses
 
+export const modelsV2LikeRequestConfig = (
+  args: ModelsV2LikeArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/models/${args.modelId}/like`,
+    data: {},
+  }
+}
+
+export const modelsV2UnlikeRequestConfig = (
+  args: ModelsV2UnlikeArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `v2/models/${args.modelId}/like`,
+  }
+}
+
+// Responses
 export type ModelsV2ListResponse = WebAPICallResult &
   PaginatedResponse<ModelV2> & {
     error?: string
@@ -78,8 +105,17 @@ export type ModelsV2PatchResponse = WebAPICallResult & {
   model?: ModelV2
 }
 
-// Types
+export type ModelsV2LikeResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
 
+export type ModelsV2UnlikeResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+// Types
 export type ModelV2 = {
   _id: string
   name: string
@@ -95,4 +131,6 @@ export type ModelV2 = {
   base_model?: BaseModelName
   lora_trigger_text?: string
   thumbnail_prompts?: string[]
+  likeCount?: number
+  isLiked?: boolean
 }

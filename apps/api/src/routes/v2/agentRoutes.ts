@@ -8,6 +8,8 @@ import {
   getAgent,
   getAgentDeployments,
   getAgentTriggers,
+  likeAgent,
+  unlikeAgent,
   updateAgent,
   updateAgentDeployment,
 } from '../../controllers/agentController'
@@ -294,6 +296,68 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteAgent(request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/like', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Like an agent',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        agentId: Type.String(),
+      },
+      response: {
+        200: {
+          message: Type.String(),
+        },
+        400: {
+          message: Type.String(),
+        },
+        404: {
+          message: Type.String(),
+        },
+        500: {
+          message: Type.String(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => likeAgent(server, request, reply),
+  })
+
+  server.delete('/v2/agents/:agentId/like', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Unlike an agent',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        agentId: Type.String(),
+      },
+      response: {
+        200: {
+          message: Type.String(),
+        },
+        400: {
+          message: Type.String(),
+        },
+        404: {
+          message: Type.String(),
+        },
+        500: {
+          message: Type.String(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => unlikeAgent(server, request, reply),
   })
 }
 

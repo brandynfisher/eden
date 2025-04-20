@@ -1,6 +1,7 @@
 'use client'
 
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
+import LikeButton from '@/components/button/like-button'
 import ModelMiniCard from '@/components/card/model-mini-card'
 import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
 import TextClampMore from '@/components/text/text-clamp-more'
@@ -18,6 +19,7 @@ import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useToggleLikeQuery } from '@/hooks/query/use-toggle-like-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAgentDeploymentFormSheet,
@@ -50,7 +52,11 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
     FeatureFlag.FeatureDeployments,
   )
 
-  const { agent: agentClientData, invalidate } = useAgentQuery({
+  const {
+    agent: agentClientData,
+    invalidate,
+    queryKey,
+  } = useAgentQuery({
     key: id,
     initialData: agentSSRData
       ? {
@@ -60,6 +66,17 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
+
+  const { toggleLike } = useToggleLikeQuery({
+    queryKey,
+    isLiked: agent?.isLiked || false,
+    entityType: 'agent',
+  })
+
+  const handleToggleLike = async () => {
+    if (!agent) return
+    await toggleLike(agent._id)
+  }
 
   const onUpdateAgent = async () => {
     await invalidate()
@@ -173,6 +190,11 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                   </>
                 )}
                 <div className="flex items-center gap-2">
+                  <LikeButton
+                    isLiked={agent.isLiked}
+                    likeCount={agent.likeCount}
+                    onChange={handleToggleLike}
+                  />
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>

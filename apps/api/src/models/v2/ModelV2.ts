@@ -20,6 +20,8 @@ export interface ModelV2Schema {
   updatedAt: Date
   lora_trigger_text?: string
   thumbnail_prompts?: string[]
+  likeCount?: number
+  isLiked?: boolean
 }
 
 export interface ModelV2Input {
@@ -72,6 +74,13 @@ export const modelSchema = new Schema<ModelV2Document>(
     lora_trigger_text: {
       type: String,
       default: '',
+    },
+    likeCount: {
+      type: Number,
+      default: 0,
+    },
+    isLiked: {
+      type: Boolean,
     },
   },
   {

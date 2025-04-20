@@ -1,30 +1,22 @@
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { HeartIcon } from 'lucide-react'
 
 type Props = {
-  count?: number
-  isActive: boolean
+  isLiked?: boolean
+  likeCount?: number
   onChange: () => void
 }
 
-const LikeButton = ({ count, isActive, onChange }: Props) => {
+const LikeButton = ({ isLiked = false, likeCount = 0, onChange }: Props) => {
   return (
-    <div
-      onClick={onChange}
-      className="flex gap-1 items-center justify-end cursor-pointer group h-8 min-w-8"
-      title="Like"
-    >
-      {count !== undefined ? (
-        <span className="text-xs group-hover:text-primary">{count}</span>
-      ) : null}
+    <Button variant="outline" size="sm" onClick={onChange}>
       <HeartIcon
-        size={16}
-        className={cn(
-          'group-hover:text-primary',
-          isActive ? 'fill-current' : undefined,
-        )}
+        className={cn('h-4 w-4 mr-2', isLiked && 'text-red-500')}
+        fill={isLiked ? 'currentColor' : 'none'}
       />
-    </div>
+      {likeCount}
+    </Button>
   )
 }
 
