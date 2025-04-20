@@ -40,10 +40,11 @@ import React, { RefObject } from 'react'
 type Props = {
   id: string
   agentSSRData?: Agent
+  isModal?: boolean
   scrollRef?: RefObject<HTMLDivElement>
 }
 
-const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
+const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
   const { isSignedIn, user } = useAuthState()
   const dispatch = useAppDispatch()
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
@@ -268,7 +269,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                 ? { user: user._id, agent: agent._id }
                 : { agent: agent._id }
             }
-            isModal={false}
+            isModal={isModal}
             scrollRef={scrollRef}
           />
         )}

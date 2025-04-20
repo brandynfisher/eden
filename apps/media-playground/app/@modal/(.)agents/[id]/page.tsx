@@ -23,7 +23,7 @@ export default function AgentsModalPage({ params: { id } }: Props) {
         }}
         scrollRef={scrollRef}
       >
-        <AgentDetail id={currentId} scrollRef={scrollRef} />
+        <AgentDetail id={currentId} scrollRef={scrollRef} isModal={true} />
       </FullScreenModal>
     </>
   )
