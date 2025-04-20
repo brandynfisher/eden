@@ -25,7 +25,7 @@ import {
   ZoomOutIcon,
 } from 'lucide-react'
 import NextImage from 'next/image'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 type MaskingCanvasProps = {
@@ -69,7 +69,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   const baseImage = form.watch(inputImageFieldName)
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null)
-  const [containerDimensions, setContainerDimensions] = useState<{
+  const [displayDimensions, setDisplayDimensions] = useState<{
     width: number
     height: number
   } | null>(null)
@@ -82,8 +82,8 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   const DEFAULT_LINE_WIDTH = 64
   const [lineWidth, setLineWidth] = useState<number>(DEFAULT_LINE_WIDTH)
   const [lineOpacity, setLineOpacity] = useState<number>(1)
-  const [imageOpacity, setImageOpacity] = useState<number>(1)
-  const [canvasOpacity, setCanvasOpacity] = useState<number>(0.75)
+  const [imageOpacity /* setImageOpacity */] = useState<number>(1)
+  const [canvasOpacity /* setCanvasOpacity */] = useState<number>(0.75)
   const [imageDimensions, setImageDimensions] = useState<{
     width: number
     height: number
@@ -99,109 +99,71 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     null,
   )
 
-  // Calculate container dimensions on mount and resize
+  // Effect 1: Calculate Display Dimensions based on Container and Image
   useEffect(() => {
-    const updateContainerDimensions = () => {
-      if (containerRef.current) {
+    const calculateAndSetDisplayDimensions = () => {
+      if (containerRef.current && imageDimensions) {
         const container = containerRef.current
         const containerWidth = container.clientWidth
-        // Calculate max height as 80% of viewport height to ensure controls are visible
+        // Use container height if available, fallback to rough estimate
+        const containerHeight =
+          container.clientHeight > 50
+            ? container.clientHeight - 200
+            : window.innerHeight * 0.6
+
+        const imageAspectRatio = imageDimensions.width / imageDimensions.height
+        let displayWidth, displayHeight
+        const margin = 0.95 // Reduced margin slightly
+
+        const widthBasedHeight = containerWidth / imageAspectRatio
+
+        if (widthBasedHeight <= containerHeight) {
+          displayWidth = containerWidth * margin
+          displayHeight = displayWidth / imageAspectRatio
+        } else {
+          displayHeight = containerHeight * margin
+          displayWidth = displayHeight * imageAspectRatio
+        }
+
+        // Final safety check
+        if (displayWidth > containerWidth * margin) {
+          const scale = (containerWidth * margin) / displayWidth
+          displayWidth *= scale
+          displayHeight *= scale
+        }
+        if (displayHeight > containerHeight * margin) {
+          const scale = (containerHeight * margin) / displayHeight
+          displayHeight *= scale
+          displayWidth *= scale
+        }
+
+        setDisplayDimensions({
+          width: Math.max(50, displayWidth), // Ensure minimum size
+          height: Math.max(50, displayHeight),
+        })
+      } else if (containerRef.current) {
+        // Fallback if imageDimensions are not yet loaded
+        const container = containerRef.current
+        const containerWidth = container.clientWidth
         const maxHeight = window.innerHeight * 0.8
         const containerHeight = Math.min(containerWidth, maxHeight)
-        setContainerDimensions({
+        setDisplayDimensions({
           width: containerWidth,
           height: containerHeight,
         })
       }
     }
 
-    updateContainerDimensions()
-    window.addEventListener('resize', updateContainerDimensions)
-    return () => window.removeEventListener('resize', updateContainerDimensions)
-  }, [])
+    calculateAndSetDisplayDimensions() // Run on mount and when dependencies change
+    window.addEventListener('resize', calculateAndSetDisplayDimensions)
+    return () =>
+      window.removeEventListener('resize', calculateAndSetDisplayDimensions)
+  }, [imageDimensions]) // Correct dependency
 
-  // Update canvas dimensions when container or image dimensions change
-  useEffect(() => {
-    if (baseImage) {
-      const img = new Image()
-      img.src = baseImage
-      img.onload = () => {
-        setImageDimensions({ width: img.width, height: img.height })
-      }
-    }
-  }, [baseImage])
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (overlayCanvasRef.current && imageDimensions && containerDimensions) {
-        const overlayCanvas = overlayCanvasRef.current
-        const container = containerRef.current
-        if (!container) return
-
-        // Set internal canvas resolution to match image dimensions
-        overlayCanvas.width = imageDimensions.width
-        overlayCanvas.height = imageDimensions.height
-
-        // Get the container's content area dimensions, accounting for controls and padding
-        const containerWidth = container.clientWidth
-        const containerHeight = container.clientHeight - 200 // Account for controls, padding, and margins
-
-        // Calculate scale to fit container while maintaining aspect ratio
-        const imageAspectRatio = imageDimensions.width / imageDimensions.height
-
-        let displayWidth, displayHeight
-        const margin = 0.9 // Increase margin for safety
-
-        // First calculate based on both width and height constraints
-        const widthBasedHeight = containerWidth / imageAspectRatio
-
-        // Choose the smaller of the two possible dimensions
-        if (widthBasedHeight <= containerHeight) {
-          // Width-constrained case
-          displayWidth = containerWidth * margin
-          displayHeight = displayWidth / imageAspectRatio
-        } else {
-          // Height-constrained case
-          displayHeight = containerHeight * margin
-          displayWidth = displayHeight * imageAspectRatio
-        }
-
-        // Final safety check to ensure we're within bounds
-        if (displayHeight > containerHeight) {
-          const scale = containerHeight / displayHeight
-          displayHeight *= scale
-          displayWidth *= scale
-        }
-        if (displayWidth > containerWidth) {
-          const scale = containerWidth / displayWidth
-          displayWidth *= scale
-          displayHeight *= scale
-        }
-
-        // Update container dimensions state with the calculated display size
-        setContainerDimensions({
-          width: displayWidth,
-          height: displayHeight,
-        })
-
-        // Apply dimensions to canvas
-        overlayCanvas.style.width = `${displayWidth}px`
-        overlayCanvas.style.height = `${displayHeight}px`
-
-        redrawHistory()
-      }
-    }
-
-    window.addEventListener('resize', handleResize)
-    handleResize()
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [imageDimensions, history])
-
-  const redrawHistory = () => {
-    if (overlayCanvasRef.current) {
+  // --- Moved redrawHistory definition before Effect 2 ---
+  const redrawHistory = useCallback(() => {
+    // Add check for imageDimensions to prevent errors before it loads
+    if (overlayCanvasRef.current && imageDimensions) {
       const ctx = overlayCanvasRef.current.getContext('2d')
       if (ctx) {
         ctx.clearRect(
@@ -237,14 +199,42 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
         )
       }
     }
-  }
+  }, [history, imageDimensions])
+
+  // Effect 2: Apply Dimensions and Redraw Canvas
+  useEffect(() => {
+    if (overlayCanvasRef.current && imageDimensions && displayDimensions) {
+      const overlayCanvas = overlayCanvasRef.current
+
+      // Set internal canvas resolution
+      overlayCanvas.width = imageDimensions.width
+      overlayCanvas.height = imageDimensions.height
+
+      // Set display style dimensions
+      overlayCanvas.style.width = `${displayDimensions.width}px`
+      overlayCanvas.style.height = `${displayDimensions.height}px`
+
+      redrawHistory() // Redraw when dimensions change
+    }
+  }, [displayDimensions, imageDimensions, redrawHistory]) // Correct dependencies
+
+  // Update canvas dimensions when container or image dimensions change
+  useEffect(() => {
+    if (baseImage) {
+      const img = new Image()
+      img.src = baseImage
+      img.onload = () => {
+        setImageDimensions({ width: img.width, height: img.height })
+      }
+    }
+  }, [baseImage]) // Correct dependency for this effect
 
   function getPointPos(
     e:
       | React.MouseEvent<HTMLCanvasElement>
       | React.TouchEvent<HTMLCanvasElement>,
   ) {
-    if (!overlayCanvasRef.current || !containerDimensions) return { x: 0, y: 0 }
+    if (!overlayCanvasRef.current || !displayDimensions) return { x: 0, y: 0 }
 
     const canvas = overlayCanvasRef.current
     const rect = canvas.getBoundingClientRect()
@@ -536,10 +526,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={cn(['w-full flex flex-col', 'h-[calc(100vh-7rem)]'])}
-    >
+    <div ref={containerRef} className={cn(['w-full flex flex-col h-full'])}>
       {!baseImage ? (
         <Alert variant="destructive" className="text-sm">
           <AlertDescription className="flex gap-2 items-center">
@@ -556,15 +543,15 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                 style={{
                   transform: `scale(${scale}) translate(${translate.x}px, ${translate.y}px)`,
                   transformOrigin: 'center',
-                  width: containerDimensions?.width ?? 'auto',
-                  height: containerDimensions?.height ?? 'auto',
+                  width: displayDimensions?.width ?? 'auto',
+                  height: displayDimensions?.height ?? 'auto',
                   willChange: isPanning ? 'transform' : 'auto',
                 }}
               >
                 {overlayCanvasRef && !isMoving ? (
                   <MaskingCanvasCursor
                     size={
-                      (lineWidth * (containerDimensions?.width ?? width)) /
+                      (lineWidth * (displayDimensions?.width ?? width)) /
                       (imageDimensions?.width ?? width)
                     }
                     canvasRef={overlayCanvasRef}
@@ -572,7 +559,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                     translate={translate}
                   />
                 ) : null}
-                {baseImage && imageDimensions && containerDimensions && (
+                {baseImage && imageDimensions && displayDimensions && (
                   <NextImage
                     src={baseImage}
                     alt="Base Image"
@@ -733,7 +720,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
           </div>
           <div className="shrink-0 w-full mt-2">
             <div className="flex gap-2 mb-2">
-              <FormItem className="w-full space-y-1.5">
+              {/* <FormItem className="w-full space-y-1.5">
                 <Label className="text-xs">Image Opacity</Label>
                 <SliderInput
                   hideNumberInput={true}
@@ -746,8 +733,8 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                     setImageOpacity(newVal === undefined ? 1 : newVal)
                   }}
                 />
-              </FormItem>
-              <FormItem className="w-full space-y-1.5">
+              </FormItem> */}
+              {/* <FormItem className="w-full space-y-1.5">
                 <Label className="text-xs">Canvas Opacity</Label>
                 <SliderInput
                   hideNumberInput={true}
@@ -760,10 +747,10 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
                     setCanvasOpacity(newVal === undefined ? 1 : newVal)
                   }}
                 />
-              </FormItem>
+              </FormItem> */}
             </div>
 
-            <FormItem className="mb-2 space-y-1.5">
+            <FormItem className="mb-4 space-y-1.5">
               <Label className="text-xs">Line Width</Label>
               <SliderInput
                 type={'integer'}
