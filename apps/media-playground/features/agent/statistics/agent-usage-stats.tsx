@@ -88,6 +88,9 @@ export default function AgentUsageStats({
         'flex flex-wrap rounded-md text-sm text-muted-foreground',
         className,
       )}
+      onFocusCapture={e => {
+        e.stopPropagation()
+      }}
     >
       {stats
         .filter(stat => !hiddenStats.includes(stat.name))

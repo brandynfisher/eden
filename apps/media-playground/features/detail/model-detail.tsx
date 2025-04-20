@@ -13,7 +13,16 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { ModelV2 } from '@edenlabs/eden-sdk'
 import { ChevronDownIcon } from 'lucide-react'
-import React, { RefObject, Suspense, useMemo, useRef, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import React, {
+  RefObject,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 type FilterMode = 'all' | 'mine'
 
@@ -26,7 +35,74 @@ type Props = {
 
 const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
   const { user, isSignedIn } = useAuthState()
-  const [filterMode, setFilterMode] = useState<FilterMode>('all')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [filterMode, setFilterMode] = useState<FilterMode>(() => {
+    const initialTab = searchParams.get('tab')
+    return initialTab === 'mine' ? 'mine' : 'all'
+  })
+  const [initialScrollIndex, setInitialScrollIndex] = useState<number | null>(
+    null,
+  )
+
+  const clearScrollIndexState = useCallback(() => {
+    // console.log('[ModelDetail] Clearing initialScrollIndex')
+    setInitialScrollIndex(null)
+  }, [])
+
+  useEffect(() => {
+    const historyScrollIndex = window.history.state?.scrollIndex
+
+    // console.log(
+    //   `[ModelDetail] Scroll check effect: historyScrollIndex=${historyScrollIndex}`,
+    // )
+
+    if (typeof historyScrollIndex === 'number') {
+      const scrollIndex = historyScrollIndex
+      // console.log(
+      //   '[ModelDetail] Read initial scroll index from history state:',
+      //   scrollIndex,
+      // )
+      setInitialScrollIndex(scrollIndex)
+      try {
+        const currentState = window.history.state || {}
+        if (
+          typeof currentState === 'object' &&
+          currentState !== null &&
+          'scrollIndex' in currentState
+        ) {
+          const restState: Record<string, unknown> = {}
+          for (const key in currentState) {
+            if (key !== 'scrollIndex') {
+              restState[key] = currentState[key]
+            }
+          }
+          window.history.replaceState(restState, '')
+          // console.log('[ModelDetail] Cleared scrollIndex from history state')
+        }
+      } catch (e) {
+        console.error('Error clearing history state:', e)
+      }
+    }
+  }, [searchParams, router, id])
+
+  useEffect(() => {
+    const currentTab = searchParams.get('tab')
+    const newTabValue = filterMode === 'mine' ? 'mine' : null
+
+    if (currentTab === newTabValue || (!currentTab && !newTabValue)) {
+      return
+    }
+
+    const params = new URLSearchParams(searchParams.toString())
+    if (newTabValue) {
+      params.set('tab', newTabValue)
+    } else {
+      params.delete('tab')
+    }
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }, [filterMode, searchParams, router])
+
   const feedSectionRef = useRef<HTMLDivElement>(null)
 
   const { model: modelClientData, queryKey } = useModelQuery({
@@ -127,7 +203,9 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
             {showFilterTabs && (
               <Tabs
                 value={filterMode}
-                onValueChange={value => setFilterMode(value as FilterMode)}
+                onValueChange={value => {
+                  setFilterMode(value as FilterMode)
+                }}
                 className="w-full flex justify-center mb-4"
               >
                 <TabsList>
@@ -140,6 +218,8 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
             <RecentCreationsFeed
               query={recentCreationsQuery}
               scrollRef={scrollRef}
+              initialScrollIndex={initialScrollIndex}
+              onScrollRestored={clearScrollIndexState}
             />
           </div>
         </>

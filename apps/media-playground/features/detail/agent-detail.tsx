@@ -37,22 +37,119 @@ import {
   Share2Icon,
 } from 'lucide-react'
 import Link from 'next/link'
-import React, { RefObject, useMemo, useRef, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 type Props = {
   id: string
   agentSSRData?: Agent
-  isModal?: boolean
   scrollRef?: RefObject<HTMLDivElement>
 }
 
 // Define filter types within AgentDetail
 type FilterMode = 'all' | 'mine'
 
-const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
+const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   const { user, isSignedIn } = useAuthState()
   const dispatch = useAppDispatch()
-  const [filterMode, setFilterMode] = useState<FilterMode>('all')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Use standard useState again
+  const [filterMode, setFilterMode] = useState<FilterMode>(() => {
+    // Initialize state from URL search param on mount
+    const initialTab = searchParams.get('tab')
+    return initialTab === 'mine' ? 'mine' : 'all' // Default to 'all'
+  })
+
+  // State to hold the scroll INDEX target read from history state
+  const [initialScrollIndex, setInitialScrollIndex] = useState<number | null>(
+    null,
+  )
+
+  // Callback to clear state after scroll restore
+  const clearScrollIndexState = useCallback(() => {
+    // console.log('[AgentDetail] Clearing initialScrollIndex')
+    setInitialScrollIndex(null)
+    // REMOVE URL param clearing logic
+  }, []) // No dependencies needed now
+
+  // Effect to read initial scroll INDEX from history state
+  useEffect(() => {
+    // Read scrollIndex from history state
+    const historyScrollIndex = window.history.state?.scrollIndex
+
+    // console.log(
+    //   `[AgentDetail] Scroll check effect: historyScrollIndex=${historyScrollIndex}`,
+    // )
+
+    // If the history state exists, attempt to read and set state
+    if (typeof historyScrollIndex === 'number') {
+      const scrollIndex = historyScrollIndex
+      // console.log(
+      //   '[AgentDetail] Read initial scroll index from history state:',
+      //   scrollIndex,
+      // )
+      setInitialScrollIndex(scrollIndex)
+      console.log(
+        '[AgentDetail] Read initial scroll index from history state:',
+        scrollIndex,
+      )
+      setInitialScrollIndex(scrollIndex)
+      // Clear the history state immediately after reading
+      try {
+        const currentState = window.history.state || {}
+        // Manually build restState if scrollIndex exists
+        if (
+          typeof currentState === 'object' &&
+          currentState !== null &&
+          'scrollIndex' in currentState
+        ) {
+          const restState: Record<string, unknown> = {}
+          for (const key in currentState) {
+            if (key !== 'scrollIndex') {
+              // Clear scrollIndex
+              restState[key] = currentState[key]
+            }
+          }
+          window.history.replaceState(restState, '')
+          console.log('[AgentDetail] Cleared scrollIndex from history state')
+        }
+      } catch (e) {
+        console.error('Error clearing history state:', e)
+      }
+    }
+    // Depend on searchParams/router to potentially catch navigation events
+  }, [searchParams, router, id])
+
+  // Effect to update URL when filterMode changes
+  useEffect(() => {
+    const currentTab = searchParams.get('tab')
+    const newTabValue = filterMode === 'mine' ? 'mine' : null // null removes the param
+
+    // Avoid pushing the same state
+    if (currentTab === newTabValue || (!currentTab && !newTabValue)) {
+      return
+    }
+
+    const params = new URLSearchParams(searchParams.toString())
+    if (newTabValue) {
+      params.set('tab', newTabValue)
+    } else {
+      params.delete('tab')
+    }
+    // Use replace to avoid adding to history for tab clicks
+    router.replace(`?${params.toString()}`, { scroll: false })
+    // scroll: false prevents Next.js from scrolling to top on shallow nav
+  }, [filterMode, searchParams, router])
+
   const feedSectionRef = useRef<HTMLDivElement>(null)
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
     FeatureFlag.FeatureDeployments,
@@ -110,38 +207,6 @@ const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
         agentId: agent?._id,
       }),
     )
-  }
-
-  // Scroll handler, moved from RecentCreationsFeed
-  const handleScrollToCreations = () => {
-    // Note: We no longer need to trigger loading here, just scroll
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        const recentCreationsElement = feedSectionRef.current
-        if (isModal && scrollRef?.current && recentCreationsElement) {
-          const containerRect = scrollRef.current.getBoundingClientRect()
-          const elementRect = recentCreationsElement.getBoundingClientRect()
-          // Adjust scroll position slightly to show content below arrow/title/tabs
-          scrollRef.current.scrollTo({
-            top:
-              scrollRef.current.scrollTop +
-              elementRect.top -
-              containerRect.top -
-              80, // Adjust this offset as needed
-            behavior: 'smooth',
-          })
-        } else {
-          recentCreationsElement?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-          })
-          // Adjust scroll position slightly after scrollIntoView
-          if (recentCreationsElement) {
-            window.scrollBy(0, -80) // Adjust this offset as needed
-          }
-        }
-      }, 100) // Keep small delay
-    })
   }
 
   if (!agent) return null
@@ -317,7 +382,6 @@ const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
               variant="outline"
               size="icon"
               className="cursor-pointer self-center animate-bounce"
-              onClick={handleScrollToCreations}
             >
               <ChevronDownIcon className="w-10 h-10" />
             </Button>
@@ -332,7 +396,9 @@ const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
             {showFilterTabs && (
               <Tabs
                 value={filterMode}
-                onValueChange={value => setFilterMode(value as FilterMode)}
+                onValueChange={value => {
+                  setFilterMode(value as FilterMode)
+                }}
                 className="w-full flex justify-center mb-4 px-4"
               >
                 <TabsList>
@@ -346,6 +412,8 @@ const AgentDetail = ({ id, agentSSRData, scrollRef, isModal }: Props) => {
             <RecentCreationsFeed
               query={recentCreationsQuery}
               scrollRef={scrollRef}
+              initialScrollIndex={initialScrollIndex}
+              onScrollRestored={clearScrollIndexState}
             />
           </div>
         </>

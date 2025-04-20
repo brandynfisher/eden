@@ -8,38 +8,52 @@ import { Suspense } from 'react'
 type Props = {
   query: Record<string, string>
   scrollRef?: RefObject<HTMLDivElement>
+  initialScrollIndex?: number | null
+  onScrollRestored?: () => void
 }
 
-export default function RecentCreationsFeed({ query, scrollRef }: Props) {
-  const [shouldLoadCreations, setShouldLoadCreations] = useState(false)
-  const [shouldShowCreations, setShouldShowCreations] = useState(false)
+export default function RecentCreationsFeed({
+  query,
+  scrollRef,
+  initialScrollIndex,
+  onScrollRestored,
+}: Props) {
+  const [shouldLoadCreations, setShouldLoadCreations] = useState<boolean>(false)
   const observedRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let observer: IntersectionObserver
+    const currentObservedRef = observedRef.current
 
-    if (observedRef.current) {
+    if (currentObservedRef) {
       observer = new IntersectionObserver(
         entries => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               setShouldLoadCreations(true)
-              setShouldShowCreations(true)
+              observer.disconnect()
             }
           })
         },
         { threshold: 0.1 },
       )
 
-      observer.observe(observedRef.current)
+      observer.observe(currentObservedRef)
     }
 
     return () => {
-      if (observer) {
+      if (observer && currentObservedRef) {
+        if (observer.takeRecords().length > 0 || observer.root) {
+          try {
+            observer.unobserve(currentObservedRef)
+          } catch (e) {
+            /* ignore if already unobserved */
+          }
+        }
         observer.disconnect()
       }
     }
-  }, [observedRef])
+  }, [])
 
   return (
     <div className="px-4 w-full">
@@ -50,9 +64,9 @@ export default function RecentCreationsFeed({ query, scrollRef }: Props) {
         <div className="relative min-h-[400px]">
           <div
             className={cn(
-              'w-full transition-opacity duration-300',
-              shouldLoadCreations && shouldShowCreations
-                ? 'opacity-0 pointer-events-none h-0 overflow-hidden'
+              'w-full transition-opacity duration-300 absolute inset-0',
+              shouldLoadCreations
+                ? 'opacity-0 pointer-events-none hidden'
                 : 'opacity-100',
             )}
           >
@@ -60,21 +74,21 @@ export default function RecentCreationsFeed({ query, scrollRef }: Props) {
           </div>
           <div
             className={cn(
-              'w-full transition-opacity duration-300',
-              !shouldShowCreations && 'opacity-0',
+              'w-full transition-opacity duration-300 absolute inset-0',
+              !shouldLoadCreations && 'opacity-0 pointer-events-none',
             )}
           >
-            {shouldLoadCreations && (
-              <Suspense fallback={null}>
-                <ErrorBoundary>
-                  <CreationsFeed
-                    query={query}
-                    maxCols={5}
-                    scrollRef={scrollRef}
-                  />
-                </ErrorBoundary>
-              </Suspense>
-            )}
+            <Suspense fallback={null}>
+              <ErrorBoundary>
+                <CreationsFeed
+                  query={query}
+                  maxCols={5}
+                  scrollRef={scrollRef}
+                  initialScrollIndex={initialScrollIndex}
+                  onScrollRestored={onScrollRestored}
+                />
+              </ErrorBoundary>
+            </Suspense>
           </div>
         </div>
       </div>

@@ -81,6 +81,7 @@ const FullScreenModal = ({
           `w-full md:w-[calc(100dvw_-_144px)] h-full overflow-x-hidden no-scrollbar outline-none`,
           className,
         ])}
+        style={{ overflowAnchor: 'auto' }}
       >
         {OverlayComponent ? <OverlayComponent /> : null}
 

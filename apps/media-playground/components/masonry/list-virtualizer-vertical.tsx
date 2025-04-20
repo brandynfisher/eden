@@ -145,11 +145,7 @@ const ListVirtualizerVertical = ({
         >
           {isLoaderRow ? (
             <div className="flex items-center justify-center">
-              {hasNextPage ? (
-                <LoadingIndicator className="h-6 w-6" />
-              ) : (
-                'Nothing more to load'
-              )}
+              {hasNextPage ? <LoadingIndicator className="h-6 w-6" /> : null}
             </div>
           ) : item ? (
             render({ item })
