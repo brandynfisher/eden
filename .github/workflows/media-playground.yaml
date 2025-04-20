@@ -1,12 +1,12 @@
-name: "Build / Deploy - Eden Create - PROD"
+name: 'Build / Deploy - Eden Create - PROD'
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "apps/media-playground/**"
-      - ".github/workflows/media-playground.yaml"
+      - 'apps/media-playground/**'
+      - '.github/workflows/media-playground.yaml'
 
 env:
   REGISTRY: ghcr.io
@@ -16,7 +16,7 @@ env:
 jobs:
   build-and-push-to-ghcr:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
       packages: write
@@ -59,7 +59,9 @@ jobs:
           context: .
           file: ./apps/media-playground/Dockerfile
           push: true
-          tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
+          tags:
+            ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
+            }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
           build-args: |
@@ -98,20 +100,22 @@ jobs:
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
-          title: "🚀 Build - Eden Create - PROD"
-          status: "Success"
+          title: '🚀 Build - Eden Create - PROD'
+          status: 'Success'
           color: 0x00ff00
           description: |
             Commit: ${{ github.sha }}
             Branch: ${{ github.ref_name }}
 
       - name: Discord Failure Notification
-        if: needs.build-and-push-to-ghcr.result == 'failure' || needs.build-and-push-to-ghcr.result == 'cancelled'
+        if:
+          needs.build-and-push-to-ghcr.result == 'failure' ||
+          needs.build-and-push-to-ghcr.result == 'cancelled'
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
-          title: "❌ Build - Eden Create - PROD"
-          status: "Failed"
+          title: '❌ Build - Eden Create - PROD'
+          status: 'Failed'
           color: 0xff0000
           description: |
             Commit: ${{ github.sha }}
