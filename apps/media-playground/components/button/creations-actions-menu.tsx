@@ -1,6 +1,7 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
+import LikeButton from '@/components/button/like-button'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import {
   DropdownMenuGroup,
@@ -145,6 +146,16 @@ const CreationActionsContent = ({
             <Share2Icon className="mr-2 h-4 w-4" />
             Share
           </button>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <LikeButton
+            queryKey={queryKey}
+            type="creation"
+            id={creation._id}
+            isLiked={creation.isLiked}
+            likeCount={creation.likeCount}
+            isDropdownItem={true}
+          />
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer w-full group"

@@ -17,7 +17,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentLink from '@/features/agent/agent-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
-import { useToggleLikeQuery } from '@/hooks/query/use-toggle-like-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { cn } from '@/lib/utils'
@@ -42,17 +41,6 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { TimeAgo } = useTimeAgo()
   const { user } = useAuthState()
 
-  const { toggleLike } = useToggleLikeQuery({
-    queryKey,
-    isLiked: item?.isLiked || false,
-    entityType: type,
-  })
-
-  const handleToggleLike = async () => {
-    if (!item) return
-    await toggleLike(item._id)
-  }
-
   return (
     <div
       className={cn([
@@ -66,9 +54,11 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
             <div>
               <div className="flex items-center justify-between mb-4 p-2 rounded-md bg-popover border">
                 <LikeButton
+                  queryKey={queryKey}
+                  type={type}
+                  id={item._id}
                   isLiked={item.isLiked}
                   likeCount={item.likeCount}
-                  onChange={handleToggleLike}
                 />
               </div>
               <div className="flex">

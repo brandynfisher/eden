@@ -19,7 +19,6 @@ import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
-import { useToggleLikeQuery } from '@/hooks/query/use-toggle-like-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import {
   updateAgentDeploymentFormSheet,
@@ -66,17 +65,6 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
-
-  const { toggleLike } = useToggleLikeQuery({
-    queryKey,
-    isLiked: agent?.isLiked || false,
-    entityType: 'agent',
-  })
-
-  const handleToggleLike = async () => {
-    if (!agent) return
-    await toggleLike(agent._id)
-  }
 
   const onUpdateAgent = async () => {
     await invalidate()
@@ -191,9 +179,11 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                 )}
                 <div className="flex items-center gap-2">
                   <LikeButton
+                    queryKey={queryKey}
+                    type="agent"
+                    id={agent._id}
                     isLiked={agent.isLiked}
                     likeCount={agent.likeCount}
-                    onChange={handleToggleLike}
                   />
                   <TooltipProvider>
                     <Tooltip>

@@ -3,6 +3,7 @@
 import { getQueryClient } from '@/app/get-query-client'
 import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
+import LikeButton from '@/components/button/like-button'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import {
   DropdownMenuGroup,
@@ -40,6 +41,7 @@ type Props = {
     | 'view-details'
     | 'chat'
     | 'share'
+    | 'like'
     | 'edit'
     | 'deployments'
     | 'tasks'
@@ -165,6 +167,20 @@ const AgentActionsMenu = ({
                   <Share2Icon className="mr-2 h-4 w-4" />
                   Share
                 </button>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          )}
+          {!hiddenItems?.includes('like') && (
+            <DropdownMenuGroup>
+              <DropdownMenuItem asChild className="cursor-pointer">
+                <LikeButton
+                  queryKey={queryKey}
+                  type="agent"
+                  id={agent._id}
+                  isLiked={agent.isLiked}
+                  likeCount={agent.likeCount}
+                  isDropdownItem={true}
+                />
               </DropdownMenuItem>
             </DropdownMenuGroup>
           )}

@@ -1,6 +1,7 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
+import LikeButton from '@/components/button/like-button'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import {
   DropdownMenuGroup,
@@ -114,6 +115,16 @@ const ModelActionsContent = ({ model, queryKey, userId }: ContentProps) => {
           <Share2Icon className="mr-2 h-4 w-4" />
           Share
         </button>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild className="cursor-pointer">
+        <LikeButton
+          queryKey={queryKey}
+          type="model"
+          id={modelData._id}
+          isLiked={modelData.isLiked}
+          likeCount={modelData.likeCount}
+          isDropdownItem={true}
+        />
       </DropdownMenuItem>
       {modelData.user._id === userId && (
         <>

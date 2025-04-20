@@ -2,7 +2,7 @@
 
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
 import ActionsDropdown from '@/components/button/actions-dropdown'
-import LikeButton from '@/components/button/like-button'
+// import LikeButton from '@/components/button/like-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
@@ -169,12 +169,12 @@ const CreationCard = ({
         <CardFooter
           // creator={creator}
           actions={[
-            <LikeButton
-              key={0}
-              count={4}
-              isActive={false}
-              onChange={() => null}
-            />,
+            // <LikeButton
+            //   key={0}
+            //   likeCount={4}
+            //   isLiked={false}
+            //   onChange={() => null}
+            // />,
             <ActionsDropdown key={1} />,
           ]}
         />
