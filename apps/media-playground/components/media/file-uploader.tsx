@@ -563,7 +563,7 @@ const FileUploader = ({
 
       {filesToUpload.length || existingFiles.length ? (
         <div
-          className="bg-card p-2 rounded-lg mt-4"
+          className="bg-card p-2 rounded-lg"
           onClick={e => {
             e.stopPropagation()
           }}

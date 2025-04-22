@@ -105,36 +105,32 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
       if (containerRef.current && imageDimensions) {
         const container = containerRef.current
         const containerWidth = container.clientWidth
-        // Use container height if available, fallback to rough estimate
-        const containerHeight =
-          container.clientHeight > 50
-            ? container.clientHeight - 200
-            : window.innerHeight * 0.6
+        // Calculate available height based on viewport and dialog content
+        const availableHeight = window.innerHeight * 0.8 // Use 80% of viewport height
+        const containerHeight = Math.max(
+          container.clientHeight,
+          availableHeight,
+        )
 
         const imageAspectRatio = imageDimensions.width / imageDimensions.height
         let displayWidth, displayHeight
-        const margin = 0.95 // Reduced margin slightly
+        const margin = 0.85 // Increased margin for better initial fit
 
-        const widthBasedHeight = containerWidth / imageAspectRatio
+        // First calculate based on width
+        displayWidth = containerWidth * margin
+        displayHeight = displayWidth / imageAspectRatio
 
-        if (widthBasedHeight <= containerHeight) {
-          displayWidth = containerWidth * margin
-          displayHeight = displayWidth / imageAspectRatio
-        } else {
+        // If height exceeds container, recalculate based on height
+        if (displayHeight > containerHeight * margin) {
           displayHeight = containerHeight * margin
           displayWidth = displayHeight * imageAspectRatio
         }
 
-        // Final safety check
+        // One final check to ensure width fits
         if (displayWidth > containerWidth * margin) {
           const scale = (containerWidth * margin) / displayWidth
           displayWidth *= scale
           displayHeight *= scale
-        }
-        if (displayHeight > containerHeight * margin) {
-          const scale = (containerHeight * margin) / displayHeight
-          displayHeight *= scale
-          displayWidth *= scale
         }
 
         setDisplayDimensions({
@@ -145,11 +141,14 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
         // Fallback if imageDimensions are not yet loaded
         const container = containerRef.current
         const containerWidth = container.clientWidth
-        const maxHeight = window.innerHeight * 0.8
-        const containerHeight = Math.min(containerWidth, maxHeight)
+        const availableHeight = window.innerHeight * 0.8
+        const containerHeight = Math.max(
+          container.clientHeight,
+          availableHeight,
+        )
         setDisplayDimensions({
-          width: containerWidth,
-          height: containerHeight,
+          width: containerWidth * 0.85,
+          height: containerHeight * 0.85,
         })
       }
     }
@@ -751,46 +750,50 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
               </FormItem> */}
             </div>
 
-            <FormItem className="mb-4 space-y-1.5">
-              <Label className="text-xs">Line Width</Label>
-              <SliderInput
-                type={'integer'}
-                min={1}
-                max={420}
-                step={1}
-                value={lineWidth}
-                onChange={(newVal: number | undefined) => {
-                  setLineWidth(newVal || 1)
-                }}
-              />
-            </FormItem>
-            <FormItem className="hidden">
-              <Label>Line Opacity</Label>
-              <SliderInput
-                type={'float'}
-                min={0.05}
-                max={1}
-                step={0.05}
-                value={lineOpacity}
-                onChange={(newVal: number | undefined) => {
-                  setLineOpacity(newVal || 1)
-                }}
-              />
-            </FormItem>
+            <div className="flex flex-col md:flex-row gap-6 items-start md:items-end">
+              <Button
+                variant="secondary"
+                type="button"
+                disabled={isUploading || !history.length}
+                onClick={useMask}
+                className="order-2 md:order-1 w-full md:w-[200px]"
+              >
+                {isUploading ? (
+                  <LoadingIndicator className="h-4 w-4 mr-2" />
+                ) : (
+                  <UploadCloudIcon className="h-4 w-4 mr-2 " />
+                )}
+                Use mask
+              </Button>
 
-            <Button
-              variant="secondary"
-              type="button"
-              disabled={isUploading || !history.length}
-              onClick={useMask}
-            >
-              {isUploading ? (
-                <LoadingIndicator className="h-4 w-4 mr-2" />
-              ) : (
-                <UploadCloudIcon className="h-4 w-4 mr-2 " />
-              )}
-              Use mask
-            </Button>
+              <FormItem className="w-full order-1 md:order-2 space-y-1.5">
+                <Label className="text-xs">Line Width</Label>
+                <SliderInput
+                  type={'integer'}
+                  min={1}
+                  max={420}
+                  step={1}
+                  value={lineWidth}
+                  onChange={(newVal: number | undefined) => {
+                    setLineWidth(newVal || 1)
+                  }}
+                />
+              </FormItem>
+
+              <FormItem className="hidden">
+                <Label>Line Opacity</Label>
+                <SliderInput
+                  type={'float'}
+                  min={0.05}
+                  max={1}
+                  step={0.05}
+                  value={lineOpacity}
+                  onChange={(newVal: number | undefined) => {
+                    setLineOpacity(newVal || 1)
+                  }}
+                />
+              </FormItem>
+            </div>
           </div>
         </>
       )}
