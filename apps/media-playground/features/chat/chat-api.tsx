@@ -58,3 +58,31 @@ export const sendMessage = async function (params: {
 
   return response
 }
+
+export const pinMessage = async (messageId: string) => {
+  try {
+    const response: AxiosResponse<ThreadsMessageResponse> = await axios.post(
+      `/api/threads/pin`,
+      { message_id: messageId },
+    )
+    console.log(response)
+    return response.data
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+}
+
+export const unpinMessage = async (threadId: string, messageId: string) => {
+  try {
+    const response: AxiosResponse<ThreadsMessageResponse> = await axios.post(
+      `/api/threads/unpin`,
+      { thread_id: threadId, message_id: messageId },
+    )
+    console.log(response)
+    return response.data
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+}

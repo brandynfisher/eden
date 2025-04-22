@@ -11,6 +11,7 @@ import {
   ThreadsGetArguments,
   ThreadsListArguments,
   ThreadsMessageReactArguments,
+  ThreadsPinMessageArguments,
   ThreadsRenameArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -509,4 +510,66 @@ export const renameThread = async (
   })
 
   return reply.status(200).send({ success: true })
+}
+
+export const pinThreadMessage = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  const { message_id } = request.body as ThreadsPinMessageArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!message_id) {
+    return reply.status(400).send({
+      message: 'message_id not provided',
+    })
+  }
+
+  try {
+    const query = {
+      user: userId,
+      'messages.id': new ObjectId(message_id),
+    }
+
+    console.log('pinning message', message_id, userId.toString())
+
+    await ThreadModel.updateOne(
+      query,
+      {
+        $set: { 'messages.$[msg].pinned': true },
+      },
+      {
+        arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+      },
+    )
+
+    return reply.status(200).send({ success: true })
+  } catch (e) {
+    console.log(e)
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({
+      message: 'Failed to add thread message reaction',
+      error: errorMessage,
+    })
+    return reply.status(500).send({ error: errorMessage })
+  }
 }

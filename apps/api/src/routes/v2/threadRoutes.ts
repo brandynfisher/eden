@@ -4,6 +4,7 @@ import {
   deleteThread,
   getThread,
   listThreads,
+  pinThreadMessage,
   renameThread,
 } from '../../controllers/v2/threadController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
@@ -89,6 +90,42 @@ const threadRoutes: FastifyPluginAsync = async server => {
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) =>
       addThreadMessageReaction(server, request, reply),
+  })
+
+  server.post('/v2/threads/pin', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Pin a thread message ',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        message_id: Type.String(),
+      },
+      response: {
+        200: Type.Any(),
+        400: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => pinThreadMessage(server, request, reply),
   })
 
   server.get('/v2/threads', {

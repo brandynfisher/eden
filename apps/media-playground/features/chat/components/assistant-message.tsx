@@ -1,6 +1,8 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { pinMessage } from '@/features/chat/chat-api'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -11,6 +13,7 @@ import {
   BranchPicker,
   useThreadConfig,
 } from '@assistant-ui/react-ui'
+import { PinIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import React, { type FC } from 'react'
 
@@ -37,6 +40,8 @@ const MyAssistantMessageAvatar: FC = () => {
 const MyAssistantActionBar: FC = () => {
   const { TimeAgo } = useTimeAgo()
   const createdAt = useMessage(m => m.createdAt)
+  const id = useMessage(m => m.id)
+
   return (
     <AssistantActionBar.Root
       // hideWhenRunning
@@ -51,8 +56,20 @@ const MyAssistantActionBar: FC = () => {
       <AssistantActionBar.FeedbackPositive />
       <AssistantActionBar.FeedbackNegative />
 
+      <Button
+        variant={'ghost'}
+        size="icon"
+        className="p-0.5 w-6 h-6 hover:text-foreground hover:bg-muted"
+        onClick={() => {
+          console.log('pin message', { id })
+          pinMessage(id)
+        }}
+      >
+        <PinIcon className="w-4 h-4" />
+      </Button>
+
       <div
-        className="ml-auto text-xs text-muted-foreground"
+        className="ml-auto text-xs bg-transparent"
         title={new Date(createdAt).toLocaleString()}
       >
         <TimeAgo date={new Date(createdAt)} />
