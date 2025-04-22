@@ -73,11 +73,11 @@ export const pinMessage = async (messageId: string) => {
   }
 }
 
-export const unpinMessage = async (threadId: string, messageId: string) => {
+export const unpinMessage = async (messageId: string) => {
   try {
     const response: AxiosResponse<ThreadsMessageResponse> = await axios.post(
       `/api/threads/unpin`,
-      { thread_id: threadId, message_id: messageId },
+      { message_id: messageId },
     )
     console.log(response)
     return response.data

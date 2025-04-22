@@ -2,20 +2,25 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { pinMessage } from '@/features/chat/chat-api'
+import { pinMessage, unpinMessage } from '@/features/chat/chat-api'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { ThreadPrimitive, useMessage } from '@assistant-ui/react'
+import {
+  ThreadPrimitive,
+  getExternalStoreMessages,
+  useMessage,
+} from '@assistant-ui/react'
 import {
   AssistantActionBar,
   AssistantMessage,
   BranchPicker,
   useThreadConfig,
 } from '@assistant-ui/react-ui'
-import { PinIcon } from 'lucide-react'
+import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
+import { PinIcon, PinOffIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
-import React, { type FC } from 'react'
+import React, { type FC, useState } from 'react'
 
 const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
@@ -41,7 +46,10 @@ const MyAssistantActionBar: FC = () => {
   const { TimeAgo } = useTimeAgo()
   const createdAt = useMessage(m => m.createdAt)
   const id = useMessage(m => m.id)
-
+  const myMessages = useMessage(m =>
+    getExternalStoreMessages(m),
+  ) as EdenThreadMessage[]
+  const [pinnedState, setPinnedState] = useState(myMessages[0].pinned)
   return (
     <AssistantActionBar.Root
       // hideWhenRunning
@@ -60,12 +68,21 @@ const MyAssistantActionBar: FC = () => {
         variant={'ghost'}
         size="icon"
         className="p-0.5 w-6 h-6 hover:text-foreground hover:bg-muted"
-        onClick={() => {
-          console.log('pin message', { id })
-          pinMessage(id)
+        onClick={async () => {
+          if (pinnedState) {
+            unpinMessage(id)
+            setPinnedState(false)
+          } else {
+            pinMessage(id)
+            setPinnedState(true)
+          }
         }}
       >
-        <PinIcon className="w-4 h-4" />
+        {pinnedState ? (
+          <PinOffIcon className="w-4 h-4 text-purple-600" />
+        ) : (
+          <PinIcon className="w-4 h-4" />
+        )}
       </Button>
 
       <div

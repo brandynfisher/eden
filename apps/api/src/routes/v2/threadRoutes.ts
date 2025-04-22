@@ -6,6 +6,7 @@ import {
   listThreads,
   pinThreadMessage,
   renameThread,
+  unpinThreadMessage,
 } from '../../controllers/v2/threadController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
@@ -126,6 +127,42 @@ const threadRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => pinThreadMessage(server, request, reply),
+  })
+
+  server.post('/v2/threads/unpin', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Unpin a thread message ',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        message_id: Type.String(),
+      },
+      response: {
+        200: Type.Any(),
+        400: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => unpinThreadMessage(server, request, reply),
   })
 
   server.get('/v2/threads', {
