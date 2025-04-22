@@ -336,14 +336,16 @@ const FileUploader = ({
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return
 
-      if (
+      if (!maxFiles || maxFiles === 1) {
+        // If maxFiles is 1, replace the existing file with the new one
+        setFilesToUpload([])
+        setExistingFiles([])
+      } else if (
         existingFiles.length + filesToUpload.length + acceptedFiles.length >
-        (maxFiles || 1)
+        maxFiles
       ) {
         toast.error(`Too many files!`, {
-          description: `Maximum for this field is ${maxFiles} ${
-            maxFiles > 1 ? 'files' : 'file'
-          }`,
+          description: `Maximum for this field is ${maxFiles} files`,
           dismissible: true,
           richColors: true,
         })

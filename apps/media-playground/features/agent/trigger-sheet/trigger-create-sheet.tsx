@@ -134,7 +134,7 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
       }
 
       if (values.repeat === TriggerRepeatOptions.DOES_NOT_REPEAT) {
-        schedule.end_date = undefined
+        schedule.end_date = schedule.start_date
       }
 
       const deployment = deployments?.find(
