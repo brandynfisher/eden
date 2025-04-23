@@ -55,6 +55,7 @@ class WebSocketManager {
     this.reconnectTimeout = null
     this.pingInterval = null
     this.lastPongTime = Date.now()
+    this.isReconnecting = false
 
     // Initialize connection handling
     self.onconnect = (e) => {
@@ -154,12 +155,12 @@ class WebSocketManager {
     debug('Creating new WebSocket connection', { endpoint })
 
     try {
-    // Create WebSocket with explicit protocols to help with debugging
+      // Create WebSocket with explicit protocols to help with debugging
       this.endpoint = endpoint
       this.ws = new WebSocket(endpoint, ['websocket'])
 
       // Log the WebSocket object details
-      console.log('WebSocket created:', {
+      debug('WebSocket created', {
         url: this.ws.url,
         protocol: this.ws.protocol,
         readyState: this.ws.readyState,
@@ -167,79 +168,95 @@ class WebSocketManager {
       })
 
       this.ws.onopen = () => {
-        console.log('WebSocket connection opened:', {
-          url: this.ws.url,
-          protocol: this.ws.protocol,
-          readyState: this.ws.readyState
-        })
-        debug('Connection opened')
-        this.broadcast({ type: 'status', readyState: WebSocket.OPEN })
+        try {
+          if (!this.ws) return // Guard against null ws
 
-        this.pingInterval = self.setInterval(() => {
-          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            const pingData = JSON.stringify({ event: 'ping', ts: Date.now() })
-            console.debug('Sending ping:', pingData)
-            this.ws.send(pingData)
+          debug('Connection opened', {
+            url: this.ws.url,
+            protocol: this.ws.protocol,
+            readyState: this.ws.readyState
+          })
 
-            if (Date.now() - this.lastPongTime > 90000) {
-              console.warn('Pong timeout, reconnecting')
-              debug('Pong timeout, reconnecting')
-              this.reconnect()
-            }
+          this.broadcast({ type: 'status', readyState: WebSocket.OPEN })
+          this.lastPongTime = Date.now() // Reset pong timer on successful connection
+          this.isReconnecting = false
+
+          // Setup ping interval
+          if (this.pingInterval) {
+            clearInterval(this.pingInterval)
           }
-        }, 30000)
+
+          this.pingInterval = self.setInterval(() => {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+              const pingData = JSON.stringify({ event: 'ping', ts: Date.now() })
+              debug('Sending ping', pingData)
+              this.ws.send(pingData)
+
+              // Check for pong timeout
+              if (Date.now() - this.lastPongTime > 90000) {
+                debug('Pong timeout detected', {
+                  lastPong: this.lastPongTime,
+                  now: Date.now(),
+                  diff: Date.now() - this.lastPongTime
+                })
+                if (!this.isReconnecting) {
+                  this.reconnect()
+                }
+              }
+            }
+          }, 30000)
+        } catch (error) {
+          console.error('Error in onopen handler:', error)
+          this.scheduleReconnect()
+        }
       }
 
       this.ws.onclose = (event) => {
-        console.log('WebSocket connection closed:', {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean
-        })
         debug('Connection closed', { code: event.code, reason: event.reason })
         this.broadcast({ type: 'status', readyState: WebSocket.CLOSED })
         this.cleanup()
-        this.scheduleReconnect()
+        if (!this.isReconnecting) {
+          this.scheduleReconnect()
+        }
       }
 
       this.ws.onerror = (error) => {
-        console.error('WebSocket connection error:', error)
         debug('Connection error', error)
         this.broadcast({ type: 'error', error })
         this.cleanup()
-        this.scheduleReconnect()
+        if (!this.isReconnecting) {
+          this.scheduleReconnect()
+        }
       }
 
       this.ws.onmessage = (event) => {
-        console.debug('WebSocket message received:', event.data)
         try {
           const data = JSON.parse(event.data)
           debug('Received WebSocket message', data)
           if (data.event === 'pong') {
             this.lastPongTime = Date.now()
-            console.debug('Received pong, updating lastPongTime:', this.lastPongTime)
-            debug('Received pong')
+            debug('Received pong, updated lastPongTime', this.lastPongTime)
             return
           }
+          this.broadcast({ type: 'message', data: event.data })
         } catch (e) {
           console.error('Failed to parse WebSocket message:', e, 'Raw data:', event.data)
           debug('Failed to parse WebSocket message', { error: e.message })
         }
-        this.broadcast({ type: 'message', data: event.data })
       }
     } catch (error) {
       console.error('Failed to create WebSocket:', error)
       debug('Failed to create WebSocket', { error })
-      this.broadcast({ type: 'error', error })
       this.scheduleReconnect()
     }
   }
 
   disconnect() {
     debug('Disconnecting WebSocket')
+    this.cleanup()
     if (this.ws) {
       this.ws.close()
-      this.cleanup()
+      this.ws = null
     }
   }
 
@@ -253,25 +270,42 @@ class WebSocketManager {
       clearTimeout(this.reconnectTimeout)
       this.reconnectTimeout = null
     }
-    this.ws = null
   }
 
   reconnect() {
+    if (this.isReconnecting) {
+      debug('Already attempting to reconnect')
+      return
+    }
+
+    this.isReconnecting = true
     debug('Initiating reconnection')
     this.disconnect()
+
     if (this.endpoint) {
       this.connect(this.endpoint)
+    } else {
+      this.isReconnecting = false
     }
   }
 
   scheduleReconnect() {
-    if (!this.reconnectTimeout && this.endpoint) {
-      debug('Scheduling reconnection')
-      this.reconnectTimeout = self.setTimeout(() => {
-        this.reconnectTimeout = null
-        this.connect(this.endpoint)
-      }, 1000)
+    if (this.reconnectTimeout || !this.endpoint || this.isReconnecting) {
+      debug('Skipping reconnect schedule', {
+        hasTimeout: !!this.reconnectTimeout,
+        hasEndpoint: !!this.endpoint,
+        isReconnecting: this.isReconnecting
+      })
+      return
     }
+
+    debug('Scheduling reconnection')
+    this.reconnectTimeout = self.setTimeout(() => {
+      this.reconnectTimeout = null
+      if (!this.isReconnecting) {
+        this.connect(this.endpoint)
+      }
+    }, 1000)
   }
 }
 

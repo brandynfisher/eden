@@ -38,109 +38,74 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
     if (batchUpdatesRef.current.length === 0) return
 
     const updates = [...batchUpdatesRef.current]
-    batchUpdatesRef.current = []
+    batchUpdatesRef.current = [] // Clear batch immediately to prevent duplicate processing
 
     setMessages(currentMessages => {
       const updatedMessages = [...currentMessages]
-      const processedIds = new Set<string>()
-      let placeholderIndex = -1
-      let firstAssistantUpdateProcessed = false
+      const processedIds = new Set() // Track processed messages to prevent duplicates
 
-      // Find placeholder before processing updates
-      placeholderIndex = updatedMessages.findIndex(
-        m => m.role === 'assistant' && !m.content, // Check for assistant role and empty content
-      )
-
+      // Process updates in order
       updates.forEach(message => {
-        // --- Placeholder Replacement Logic ---
-        if (
-          message.role === 'assistant' &&
-          placeholderIndex !== -1 && // Placeholder exists
-          !firstAssistantUpdateProcessed // Haven't replaced placeholder in this batch yet
-        ) {
-          // Replace the placeholder with the first incoming assistant message
-          // Use all data from the incoming message, including its real ID
-          updatedMessages[placeholderIndex] = { ...message }
-          processedIds.add(message.id) // Mark this ID as processed
-          firstAssistantUpdateProcessed = true // Mark placeholder as replaced for this batch
-          // No need to reset placeholderIndex, as we only replace once
-        }
-        // --- Standard Update/Add Logic ---
-        else {
-          const existingIndex = updatedMessages.findIndex(
-            m => m.id === message.id,
-          )
+        if (processedIds.has(message.id)) return // Skip if already processed
+        processedIds.add(message.id)
 
-          if (existingIndex !== -1) {
-            // Update existing message (if it wasn't the placeholder we just replaced)
-            if (
-              existingIndex !== placeholderIndex ||
-              !firstAssistantUpdateProcessed
-            ) {
-              const existingMessage = updatedMessages[existingIndex]
-              updatedMessages[existingIndex] = {
-                ...existingMessage,
-                ...message, // Overwrite with new data
-              }
-              processedIds.add(message.id) // Mark as processed
-            }
-          } else if (!processedIds.has(message.id)) {
-            // Add message only if it wasn't processed via placeholder replacement or standard update
-            updatedMessages.push(message)
-            processedIds.add(message.id)
+        const existingIndex = updatedMessages.findIndex(
+          m => m.id === message.id,
+        )
+
+        if (existingIndex !== -1) {
+          updatedMessages[existingIndex] = {
+            ...updatedMessages[existingIndex],
+            ...message,
           }
+        } else {
+          updatedMessages.push(message)
         }
       })
 
-      // Always return the potentially updated array. React will diff it.
       return updatedMessages
     })
   }, [])
 
   const addOrUpdateMessage = useCallback(
     (message: TMessage, activeIds?: string[]) => {
-      const messageToAdd = message // Use the message directly
-
-      // Signal stream completion if activeIds is empty
-      const streamJustFinished =
-        activeIds !== undefined && activeIds.length === 0
-      if (streamJustFinished) {
-        setIsRunning(false)
-        // Clear pending optimistic messages upon stream completion
-        pendingOptimisticMessagesRef.current = []
-        // Force update status of all currently running messages to complete
-        setMessages(currentMessages =>
-          currentMessages.map(m =>
-            m.status?.type === 'running'
-              ? { ...m, status: { type: 'complete', reason: 'stop' } }
-              : m,
-          ),
-        )
-      }
-
-      // Add to batch updates (still needed to process the final message content/tool_calls)
-      batchUpdatesRef.current.push(messageToAdd)
-
-      // Clear any existing timeout
+      // Clear any existing timeout first
       if (batchTimeoutRef.current) {
         clearTimeout(batchTimeoutRef.current)
+        batchTimeoutRef.current = undefined
       }
 
-      // Process batch after a short delay
-      batchTimeoutRef.current = setTimeout(() => {
-        processBatchUpdates()
-      }, 50) // 50ms batch window
+      // Add message to batch
+      batchUpdatesRef.current.push(message)
 
-      // Track optimistic messages (only if stream hasn't just finished)
-      // We still add assistant messages before they are complete
-      if (message.role === 'assistant' && !streamJustFinished) {
-        pendingOptimisticMessagesRef.current.push(messageToAdd)
+      // Process immediately if stream is complete
+      if (activeIds !== undefined && activeIds.length === 0) {
+        processBatchUpdates()
+
+        const existingMessageIndex = messages.findIndex(
+          m => m.id === message.id,
+        )
+        const isNewAssistantMessage =
+          message.role === 'assistant' && existingMessageIndex === -1
+
+        if (
+          message.content &&
+          message.content.length > 0 &&
+          isNewAssistantMessage
+        ) {
+          setIsRunning(false)
+        }
+      } else {
+        // Otherwise batch with a short delay
+        batchTimeoutRef.current = setTimeout(() => {
+          processBatchUpdates()
+          batchTimeoutRef.current = undefined
+        }, 50)
       }
 
       return true
     },
-    // Add setIsRunning to dependencies
-    [processBatchUpdates, setIsRunning, setMessages],
+    [processBatchUpdates, setIsRunning, messages],
   )
 
   // Handle connection state changes
@@ -187,35 +152,48 @@ export const useEdenMessages = <TMessage extends ThreadMessageWithStatus>({
       newMessages: TMessage[],
       callback?: (thread_id?: string) => Promise<void>,
     ): Promise<AsyncGenerator<MessageResponse<TMessage>>> => {
+      setIsRunning(true)
+
+      // Clear any pending state
       pendingOptimisticMessagesRef.current = []
+      if (batchTimeoutRef.current) {
+        clearTimeout(batchTimeoutRef.current)
+        batchTimeoutRef.current = undefined
+      }
+      batchUpdatesRef.current = []
 
-      // Optimistic message add happens here BEFORE stream starts
-      // This is where we need setIsRunning(true)
-      setTimeout(() => {
-        newMessages.forEach(message => {
-          if (message.role === 'user') {
-            // console.log(
-            //   '[useEdenMessages sendMessage] Adding user message, setting isRunning = true',
-            // )
-            setIsRunning(true)
-          }
-          const messageWithStatus = {
-            ...message,
-            status:
-              message.role === 'assistant' ? { type: 'running' } : undefined,
-          }
-          // console.log(
-          //   'sendMessage adding message with status',
-          //   message,
-          //   messageWithStatus,
-          //   pendingOptimisticMessagesRef.current,
-          // )
-          addOrUpdateMessage(messageWithStatus as TMessage)
-        })
-      }, 0)
+      // Add user messages first
+      for (const message of newMessages) {
+        if (message.role === 'user') {
+          addOrUpdateMessage(message)
+        }
+      }
 
-      // RETURN the stream generator directly
-      return stream(newMessages, callback)
+      // Start stream and process messages
+      const stream_generator = await stream(newMessages, callback)
+
+      // Create a wrapper generator that processes messages as they come in
+      return (async function* () {
+        try {
+          for await (const message of stream_generator) {
+            console.log('[useEdenMessages] Received stream message:', {
+              id: message.data.id,
+              content: message.data.content?.slice(0, 50),
+              status: message.data.status,
+              active: message.data.active,
+            })
+
+            // Process the message
+            addOrUpdateMessage(message.data, message.data.active)
+
+            // Yield the message for other consumers
+            yield message
+          }
+        } catch (error) {
+          console.error('[useEdenMessages] Stream error:', error)
+          throw error
+        }
+      })()
     },
     [addOrUpdateMessage, stream, setIsRunning],
   )
