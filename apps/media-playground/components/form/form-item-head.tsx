@@ -43,7 +43,7 @@ const FormItemHead = ({ icon, label, description, badge }: Props) => {
           </Tooltip>
         </TooltipProvider>
       </FormDescription>
-      <div className="ml-4 ">{badge}</div>
+      {badge && <div className="ml-4">{badge}</div>}
     </div>
   )
 }

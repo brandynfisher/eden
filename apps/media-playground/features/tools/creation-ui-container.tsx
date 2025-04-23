@@ -201,7 +201,12 @@ const CreationUIContainer = ({ tool }: Props) => {
   )
 
   const groupedRequiredParameters = useMemo(
-    () => (requiredParameters ? groupParameters(requiredParameters) : []),
+    () =>
+      (requiredParameters ? groupParameters(requiredParameters) : []).filter(
+        element =>
+          element.parameter?.name !== 'width' &&
+          element.parameter?.name !== 'height',
+      ),
     [requiredParameters],
   )
 
@@ -220,6 +225,13 @@ const CreationUIContainer = ({ tool }: Props) => {
   )
 
   const isRunwayPoweredTool = RUNWAY_TOOL_KEYS.includes(tool.key)
+
+  const widthParameter = tool.parameters?.find(
+    parameter => parameter.name === 'width',
+  )
+  const heightParameter = tool.parameters?.find(
+    parameter => parameter.name === 'height',
+  )
 
   const formContent = (
     <Form {...form}>
@@ -300,15 +312,18 @@ const CreationUIContainer = ({ tool }: Props) => {
 
             {(presetResolutions && presetResolutions.length) ||
             sampleCountParameter ? (
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1">
                 {sampleCountParameter ? (
                   <SampleCountSelector parameter={sampleCountParameter} />
                 ) : null}
                 {presetResolutions && presetResolutions.length ? (
-                  <div className="flex ml-auto">
+                  <div className="w-full">
                     <AspectRatioSelector
                       presetResolutions={presetResolutions}
                       form={form}
+                      tool={tool}
+                      widthParameter={widthParameter}
+                      heightParameter={heightParameter}
                     />
                   </div>
                 ) : null}
