@@ -1034,8 +1034,12 @@ export function EdenRuntimeProvider({
 
     // Handle visibility change - only check status if we have a current thread
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && threadIdRef.current) {
-        checkThreadStatus()
+      if (
+        document.visibilityState === 'visible' &&
+        threadIdRef.current &&
+        isStreamActive // Only check if we have an active stream
+      ) {
+        checkThreadStatus(false) // Don't force message updates unless necessary
       }
     }
 
@@ -1052,7 +1056,7 @@ export function EdenRuntimeProvider({
       window.removeEventListener('offline', handleConnectionChange)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [checkThreadStatus])
+  }, [checkThreadStatus, isStreamActive])
 
   // Initialize client-side only refs after mount
   useEffect(() => {
