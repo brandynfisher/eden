@@ -257,27 +257,30 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                 {user?._id === agent?.owner._id && (
                   <>
                     <Button
+                      className="gap-2"
                       variant="outline"
-                      size="icon"
                       onClick={handleEditClick}
                     >
                       <SettingsIcon className="w-4 h-4" />
+                      Edit
                     </Button>
                     {isFeatureDeploymentsEnabled && (
                       <>
                         <Button
+                          className="gap-2"
                           variant="outline"
-                          size="icon"
                           onClick={handleConfigureDeployments}
                         >
                           <RocketIcon size={18} />
+                          Deployments
                         </Button>
                         <Button
+                          className="gap-2"
                           variant="outline"
-                          size="icon"
                           onClick={handleConfigureTriggers}
                         >
                           <ClockIcon size={18} />
+                          Tasks
                         </Button>
                       </>
                     )}
