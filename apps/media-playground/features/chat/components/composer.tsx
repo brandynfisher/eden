@@ -162,6 +162,8 @@ export const MyComposer: FC<MyComposerProps> = ({
     }
   }, [accept, handleFilesDropped, setIsDragging])
 
+  console.log('autoFocus', autoFocus)
+
   if (isReadOnly === null || isReadOnly) {
     return (
       <div className="flex items-center justify-between gap-2 md:gap-3 py-2 px-2 md:px-4 h-[58px] w-full">

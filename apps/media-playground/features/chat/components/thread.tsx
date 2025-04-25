@@ -23,6 +23,7 @@ import { Thread, ThreadConfig, ThreadWelcome } from '@assistant-ui/react-ui'
 import { ArrowDownIcon } from '@radix-ui/react-icons'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import React from 'react'
+import { isDesktop } from 'react-device-detect'
 
 const ThreadFollowupSuggestions: FC = () => {
   const suggestions = useThread(t => t.suggestions)
@@ -352,11 +353,17 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
         <ComposerComponent
           {...config.composer}
           setIsDragging={setIsDragging}
-          autoFocus={showWelcomeScreen}
+          autoFocus={showWelcomeScreen || isDesktop}
         />
       </LightboxGallery>
     ),
-    [config.threadId, config.composer, setIsDragging, showWelcomeScreen],
+    [
+      config.threadId,
+      config.composer,
+      setIsDragging,
+      showWelcomeScreen,
+      isDesktop,
+    ],
   )
 
   return (
