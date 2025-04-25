@@ -53,13 +53,13 @@ type MessageToWorker =
   | VersionCheckMessage
 
 const WORKER_PATH = '/workers/websocket.worker.js'
-const WORKER_VERSION = '1.0' // Must match version in websocket.worker.js
+const WORKER_VERSION = '1.1' // Must match version in websocket.worker.js
 const VERSION_CHECK_TIMEOUT = 2000 // 2 seconds timeout for version check
 
 // The worker path is handled by Turbopack's asset handling
 function getWorkerUrl() {
-  const cacheBuster = Date.now() // Add cache buster to force reload when needed
-  return `${WORKER_PATH}?v=${WORKER_VERSION}&t=${cacheBuster}`
+  // Only use the version, no timestamp to ensure sharing between tabs
+  return `${WORKER_PATH}?v=${WORKER_VERSION}`
 }
 
 // Check if SharedWorker is supported
@@ -83,24 +83,8 @@ async function terminateSharedWorkers() {
     }
   }
 
-  // Also try to cleanup using SharedWorker if available
-  if (isSharedWorkerSupported) {
-    try {
-      // Create a temporary worker to send cleanup message
-      const tempWorker = new SharedWorker(getWorkerUrl(), {
-        name: 'websocket-worker-cleanup',
-        credentials: 'same-origin',
-        type: 'classic',
-      })
-      tempWorker.port.start()
-      tempWorker.port.postMessage({ type: 'cleanup_legacy_workers' })
-      setTimeout(() => {
-        tempWorker.port.close()
-      }, 1000)
-    } catch (e) {
-      console.warn('Failed to create cleanup worker:', e)
-    }
-  }
+  // We don't need the temporary worker approach anymore since it was causing
+  // unnecessary worker creation
 }
 
 class DirectWebSocketConnection {

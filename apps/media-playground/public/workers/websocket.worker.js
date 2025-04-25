@@ -2,30 +2,16 @@
 self.name = 'websocket-worker'
 
 // Worker version must match the version in useSharedWebSocketWorker.ts
-self.WORKER_VERSION = '1.0'
+self.WORKER_VERSION = '1.1'
 
 // Enable debugging for the worker
 self.DEBUG = true
 
-// Keep track of all known worker instances
-const knownWorkers = new Set()
-
-// Function to attempt cleanup of other workers
-function cleanupOtherWorkers() {
-  try {
-    // Broadcast a cleanup message that legacy workers will respond to
-    const bc = new BroadcastChannel('websocket-worker-cleanup')
-    bc.postMessage({ type: 'cleanup_request', timestamp: Date.now() })
-    setTimeout(() => bc.close(), 1000)
-  } catch (e) {
-    debug('Failed to create BroadcastChannel', e)
-  }
-}
-
-// Listen for cleanup messages
+// Listen for cleanup messages using BroadcastChannel
+let cleanupChannel
 try {
-  const bc = new BroadcastChannel('websocket-worker-cleanup')
-  bc.onmessage = (event) => {
+  cleanupChannel = new BroadcastChannel('websocket-worker-cleanup')
+  cleanupChannel.onmessage = (event) => {
     if (event.data.type === 'cleanup_request') {
       // Legacy workers won't have a version and will self-terminate
       if (!self.WORKER_VERSION) {
@@ -49,8 +35,10 @@ if (typeof SharedWorkerGlobalScope !== 'undefined' && self instanceof SharedWork
     type: 'SharedWorker'
   })
 
-  // Attempt to cleanup other workers on startup
-  cleanupOtherWorkers()
+  // Send a cleanup message for legacy workers
+  if (cleanupChannel) {
+    cleanupChannel.postMessage({ type: 'cleanup_request', timestamp: Date.now() })
+  }
 }
 
 // Add global error handler to prevent silent failures
@@ -128,10 +116,6 @@ class WebSocketManager {
   handleMessage(message, port) {
     debug('Handling message', message)
     switch (message.type) {
-      case 'cleanup_legacy_workers':
-        debug('Cleanup request received')
-        cleanupOtherWorkers()
-        break
       case 'version_check':
         debug('Version check requested', { version: self.WORKER_VERSION })
         port.postMessage({
