@@ -297,10 +297,52 @@ const ThreadListItem: FC<{
 const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const agentId = useEdenRuntimeExtras(extras => extras.agentId)
-  const { isLoading, hasMore, isFetchingNextPage } = useThreadListQuery({
-    agentId,
-    enabled: !!isSignedIn && !!agentId,
-  })
+  const { isLoading, hasMore, isFetchingNextPage, fetchNextPage } =
+    useThreadListQuery({
+      agentId,
+      enabled: !!isSignedIn && !!agentId,
+    })
+
+  // Setup intersection observer for infinite scrolling
+  useEffect(() => {
+    if (!hasMore || isFetchingNextPage) {
+      return
+    }
+
+    const target = document.getElementById('thread-list-observer-target')
+    if (!target) {
+      return
+    }
+
+    const container = target.closest('nav')
+    if (!container) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore) {
+          const scrollPosition = container.scrollTop
+
+          fetchNextPage().then(() => {
+            requestAnimationFrame(() => {
+              container.scrollTop = scrollPosition
+            })
+          })
+        }
+      },
+      {
+        threshold: 1.0,
+        rootMargin: '10px',
+      },
+    )
+
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [hasMore, isFetchingNextPage, fetchNextPage])
 
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
@@ -323,18 +365,24 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
                 }}
               />
               {hasMore && (
-                <div id="thread-list-observer-target" className="h-8 w-full">
-                  <Separator orientation="horizontal" className="my-2" />
-                  <div className="flex justify-center text-muted-foreground text-sm py-2">
-                    Older Threads
-                  </div>
-                  <Separator orientation="horizontal" className="my-2" />
-                  {isFetchingNextPage && (
-                    <div className="flex justify-center py-2">
-                      <Skeleton className="w-full h-9" />
+                <>
+                  <div id="thread-list-observer-target" className="h-8 w-full">
+                    <Separator orientation="horizontal" className="my-2" />
+                    <div
+                      className={cn(
+                        'flex justify-center text-muted-foreground text-sm py-2',
+                        isFetchingNextPage && 'text-purple-600',
+                      )}
+                    >
+                      {isFetchingNextPage ? (
+                        <LoadingIndicator className="w-4 h-4" />
+                      ) : (
+                        'Older Threads'
+                      )}
                     </div>
-                  )}
-                </div>
+                    <Separator orientation="horizontal" className="my-2" />
+                  </div>
+                </>
               )}
             </>
           ) : (
