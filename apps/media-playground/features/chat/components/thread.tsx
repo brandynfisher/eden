@@ -82,7 +82,8 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const lastMessagesLengthRef = useRef(messages.length)
 
   // Constants for scroll calculations
-  const BOTTOM_THRESHOLD = 20 // How close to bottom to consider "at bottom"
+  const BOTTOM_THRESHOLD = 60 // Increased from 20 to give more room for content
+  const NEAR_BOTTOM_THRESHOLD = 1.2 // Multiplier for viewport height
 
   // Get a string representation of all complete assistant messages
   const assistantMessagesContent = messages
@@ -152,11 +153,12 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
         scrollHeight - scrollTop - clientHeight,
       )
 
-      // Consider "at bottom" if within the smaller threshold
+      // Consider "at bottom" if within the threshold
       const atBottom = distanceFromBottom < BOTTOM_THRESHOLD
 
-      // Consider "near bottom" if within one viewport height
-      const nearBottom = distanceFromBottom < clientHeight
+      // Consider "near bottom" if within 1.2x viewport height
+      const nearBottom =
+        distanceFromBottom < clientHeight * NEAR_BOTTOM_THRESHOLD
 
       setIsAtBottom(atBottom)
       setIsNearBottom(nearBottom)
@@ -173,41 +175,71 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     return () => viewport.removeEventListener('scroll', handleScroll)
   }, [assistantMessagesContent, hasGeneratingMessage])
 
-  // Scroll to bottom helper with improved mobile support
+  // Scroll to bottom helper with improved mobile support and image handling
   const scrollToBottom = useCallback(() => {
     if (!viewportRef.current) return
     const viewport = viewportRef.current
 
-    // Add a small delay to ensure content is rendered and layout is stable
-    requestAnimationFrame(() => {
-      // Calculate target scroll position with extra padding for mobile
-      const extraPadding = 60 // Account for mobile browser chrome and safe areas
-      const targetScroll =
-        viewport.scrollHeight - viewport.clientHeight + extraPadding
+    // Function to perform the actual scroll
+    const performScroll = () => {
+      requestAnimationFrame(() => {
+        // Calculate target scroll position with extra padding for mobile
+        const extraPadding = 60 // Account for mobile browser chrome and safe areas
+        const targetScroll =
+          viewport.scrollHeight - viewport.clientHeight + extraPadding
 
-      viewport.scrollTo({
-        top: targetScroll,
-        behavior: isInitialLoadRef.current ? 'instant' : 'smooth',
-      })
+        viewport.scrollTo({
+          top: targetScroll,
+          behavior: isInitialLoadRef.current ? 'instant' : 'smooth',
+        })
 
-      // Double-check scroll position after a short delay
-      setTimeout(() => {
-        if (
-          viewport.scrollTop + viewport.clientHeight <
-          viewport.scrollHeight
-        ) {
-          viewport.scrollTo({
-            top: viewport.scrollHeight,
-            behavior: 'instant',
-          })
+        // Double-check scroll position after a short delay
+        setTimeout(() => {
+          if (
+            viewport.scrollTop + viewport.clientHeight <
+            viewport.scrollHeight - BOTTOM_THRESHOLD
+          ) {
+            viewport.scrollTo({
+              top: viewport.scrollHeight,
+              behavior: 'instant',
+            })
+          }
+        }, 500)
+
+        if (!hasGeneratingMessage) {
+          setHasNewMessages(false)
+          lastSeenContentRef.current = assistantMessagesContent
         }
-      }, 100)
+      })
+    }
 
-      if (!hasGeneratingMessage) {
-        setHasNewMessages(false)
-        lastSeenContentRef.current = assistantMessagesContent
+    // Set up mutation observer to watch for image loads
+    const observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        const addedNodes = Array.from(mutation.addedNodes)
+        const hasNewImages = addedNodes.some(
+          node =>
+            node instanceof HTMLElement &&
+            (node.tagName === 'IMG' || node.querySelector('img')),
+        )
+
+        if (hasNewImages) {
+          // Wait for images to load before scrolling
+          setTimeout(performScroll, 100)
+        }
       }
     })
+
+    observer.observe(viewport, {
+      childList: true,
+      subtree: true,
+    })
+
+    // Initial scroll
+    performScroll()
+
+    // Cleanup observer
+    return () => observer.disconnect()
   }, [assistantMessagesContent, hasGeneratingMessage])
 
   // Auto-scroll when near bottom and:
