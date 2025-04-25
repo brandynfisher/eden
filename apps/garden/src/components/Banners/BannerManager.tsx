@@ -7,7 +7,11 @@ const BannerManager = () => {
   return (
     <ClerkLoaded>
       <SignedIn>
-        <LegacyShutdownBanner delay={2000} />
+        <LegacyShutdownBanner
+          delay={2000}
+          id="legacy-shutdown-banner"
+          reappearAfterMinutes={2}
+        />
       </SignedIn>
       <SignedOut>
         <AuthChangeBanner />
