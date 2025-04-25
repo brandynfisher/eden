@@ -37,7 +37,7 @@ import { z } from 'zod'
 export const createTriggerSchema = z
   .object({
     instructions: z.string().min(1, 'Instructions are required'),
-    platform: z.enum(['discord', 'twitter', 'telegram']),
+    platform: z.enum(['web', 'discord', 'twitter', 'telegram']),
     channelId: z.string().optional(),
     startDate: z.date(),
     repeat: z.nativeEnum(TriggerRepeatOptions),
@@ -46,7 +46,7 @@ export const createTriggerSchema = z
   })
   .refine(
     data => {
-      if (data.platform !== 'twitter') {
+      if (data.platform !== 'twitter' && data.platform !== 'web') {
         return data.channelId && data.channelId.length > 0
       }
       return true
@@ -144,6 +144,7 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
       await axios.post(`/api/agents/${agentId}/triggers`, {
         message: values.instructions,
         schedule,
+        platform: values.platform,
         deploymentId: deployment?._id,
         channelId: values.channelId,
       })
@@ -156,8 +157,6 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
       toast.error('Failed to create task')
     }
   }
-
-  if (deployments?.length === 0) return null
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
