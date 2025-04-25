@@ -349,10 +349,14 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const memoizedComposer = React.useMemo(
     () => (
       <LightboxGallery galleryKey={config.threadId}>
-        <ComposerComponent {...config.composer} setIsDragging={setIsDragging} />
+        <ComposerComponent
+          {...config.composer}
+          setIsDragging={setIsDragging}
+          autoFocus={showWelcomeScreen}
+        />
       </LightboxGallery>
     ),
-    [config.threadId, config.composer, setIsDragging],
+    [config.threadId, config.composer, setIsDragging, showWelcomeScreen],
   )
 
   return (

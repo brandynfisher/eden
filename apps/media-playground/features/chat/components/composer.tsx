@@ -52,12 +52,17 @@ export const ComposerAttachmentDropzone: FC<
 
 type MyComposerProps = {
   setIsDragging: (isDragging: boolean) => void
+  autoFocus?: boolean
 }
 
-export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
+export const MyComposer: FC<MyComposerProps> = ({
+  setIsDragging,
+  autoFocus = true,
+}) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const isReadOnly = useEdenRuntimeExtras(extras => extras.isReadOnly)
   const agentId = useEdenRuntimeExtras(extras => extras.agentId)
+  const threadId = useEdenRuntimeExtras(extras => extras.threadId)
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime.getAttachmentAccept()
 
@@ -237,7 +242,10 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
       </AuthClickGuard>
 
       <Composer.Input
-        autoFocus
+        key={threadId}
+        autoFocus={autoFocus}
+        // autoFocus={true}
+        unstable_focusOnScrollToBottom={false}
         className="text-base"
         minRows={2}
         onPaste={async (e: React.ClipboardEvent) => {
