@@ -12,27 +12,31 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useVoicesQuery } from '@/hooks/query/use-voices-query'
 import { cn } from '@/lib/utils'
-import { Voice } from 'elevenlabs/api'
-import { Check, ChevronsUpDown, Play } from 'lucide-react'
-import React, { useCallback, useState } from 'react'
+import { Check, ChevronsUpDown, Loader2, Play } from 'lucide-react'
+import React, { useCallback, useMemo, useState } from 'react'
 
 interface VoiceSelectorProps {
-  voices: Voice[]
   value?: string
   onChange: (value: string) => void
   className?: string
 }
 
 export function VoiceSelector({
-  voices,
   value,
   onChange,
   className,
 }: VoiceSelectorProps) {
   const [open, setOpen] = useState(false)
 
-  const selectedVoice = voices.find(voice => voice.voice_id === value)
+  const voicesQuery = useVoicesQuery()
+
+  const selectedVoice = useMemo(() => {
+    if (!voicesQuery.voices) return null
+
+    return voicesQuery.voices.find(voice => voice.voice_id === value)
+  }, [voicesQuery.voices, value])
 
   const handlePlayVoiceSample = useCallback((url: string) => {
     const audioElement = document.createElement('audio')
@@ -56,7 +60,11 @@ export function VoiceSelector({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0 w-[--radix-popover-trigger-width]">
-          {voices.length === 0 ? (
+          {voicesQuery.isLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="size-4 animate-spin" />
+            </div>
+          ) : voicesQuery.isError || voicesQuery.voices.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
               Voices could not be loaded. Please try again later.
             </div>
@@ -66,7 +74,7 @@ export function VoiceSelector({
               <CommandEmpty>No voice found.</CommandEmpty>
               <CommandGroup>
                 <ScrollArea className="max-h-80 overflow-y-auto">
-                  {voices.map(voice => (
+                  {voicesQuery.voices.map(voice => (
                     <CommandItem
                       key={voice.voice_id}
                       onSelect={() => {
