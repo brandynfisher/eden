@@ -23,15 +23,6 @@ import { PinIcon, PinOffIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import React, { type FC, useState } from 'react'
 
-// Add reaction API functions
-// const addReaction = async (messageId: string, type: 'thumbs_up' | 'thumbs_down') => {
-//   await fetch(`/api/messages/${messageId}/reactions`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({ type }),
-//   })
-// }
-
 const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
   return (
@@ -68,11 +59,6 @@ const MyAssistantActionBar: FC = () => {
   const hasThumbsUp = userId ? reactions.thumbs_up?.includes(userId) : false
   const hasThumbsDown = userId ? reactions.thumbs_down?.includes(userId) : false
 
-  console.log('[MyAssistantActionBar]:', {
-    hasThumbsUp,
-    hasThumbsDown,
-    reactions,
-  })
   return (
     <AssistantActionBar.Root
       autohide="not-last"
