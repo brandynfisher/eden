@@ -69,7 +69,12 @@ export type Agent = Omit<
   stats?: AgentStats
 }
 
-export type AgentClientType = 'discord' | 'telegram' | 'twitter' | 'farcaster'
+export type AgentClientType =
+  | 'discord'
+  | 'telegram'
+  | 'twitter'
+  | 'farcaster'
+  | 'web'
 export type AgentDeployCommand = 'deploy' | 'stop'
 export type AgentDeployCredentials = {
   CLIENT_DISCORD_TOKEN: string
@@ -217,6 +222,7 @@ export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
   schedule: CronSchedule
   deploymentId: string
   channelId: string
+  platform: AgentClientType
 }
 
 export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
@@ -329,7 +335,7 @@ export const agentsCreateTriggerRequestConfig = (
   return {
     method: 'POST',
     url: `v2/agents/${args.agentId}/triggers`,
-    data: args
+    data: args,
   }
 }
 
