@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { pinMessage, unpinMessage } from '@/features/chat/chat-api'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import {
@@ -21,6 +22,15 @@ import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
 import { PinIcon, PinOffIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import React, { type FC, useState } from 'react'
+
+// Add reaction API functions
+// const addReaction = async (messageId: string, type: 'thumbs_up' | 'thumbs_down') => {
+//   await fetch(`/api/messages/${messageId}/reactions`, {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ type }),
+//   })
+// }
 
 const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
@@ -50,19 +60,36 @@ const MyAssistantActionBar: FC = () => {
     getExternalStoreMessages(m),
   ) as EdenThreadMessage[]
   const [pinnedState, setPinnedState] = useState(myMessages[0].pinned)
+  const reactions = myMessages[0].reactions || {}
+
+  const { user } = useAuthState()
+  const userId = user?._id || null
+
+  const hasThumbsUp = userId ? reactions.thumbs_up?.includes(userId) : false
+  const hasThumbsDown = userId ? reactions.thumbs_down?.includes(userId) : false
+
+  console.log('[MyAssistantActionBar]:', {
+    hasThumbsUp,
+    hasThumbsDown,
+    reactions,
+  })
   return (
     <AssistantActionBar.Root
-      // hideWhenRunning
-      // autohide="not-last"
       autohide="not-last"
       autohideFloat="single-branch"
       className="flex items-center gap-2 w-full z-10"
     >
-      {/*<AssistantActionBar.SpeechControl />*/}
       <AssistantActionBar.Copy />
-      {/*<AssistantActionBar.Reload />*/}
-      <AssistantActionBar.FeedbackPositive />
-      <AssistantActionBar.FeedbackNegative />
+      <AssistantActionBar.FeedbackPositive
+        className={cn(
+          hasThumbsUp ? 'text-green-600' : '!text-muted-foreground',
+        )}
+      />
+      <AssistantActionBar.FeedbackNegative
+        className={cn(
+          hasThumbsDown ? 'text-red-600' : '!text-muted-foreground',
+        )}
+      />
 
       <Button
         variant={'ghost'}
