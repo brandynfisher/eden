@@ -1,4 +1,9 @@
-import { ThreadMessageLike, ToolCallContentPart } from '@assistant-ui/react'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
+import {
+  CompleteAttachment,
+  ThreadMessageLike,
+  ToolCallContentPart,
+} from '@assistant-ui/react'
 import {
   AssistantMessage,
   Message,
@@ -56,30 +61,58 @@ const contentToParts = (
 }
 
 export function convertEdenMessage(msg: EdenMessage): ThreadMessageLike {
-  return {
-    id: msg.id,
-    role: msg.role,
-    content: [
-      ...contentToParts(msg, msg.content),
-      ...(msg.tool_calls?.map(
-        (chunk): ToolCallContentPart => ({
-          type: 'tool-call',
-          toolCallId: chunk.id,
-          toolName: 'task_result',
-          //@ts-expect-error args is not typed
-          args: chunk.args,
-          argsText: JSON.stringify(chunk.args, null, 2),
-          result: {
-            tool: chunk.tool,
-            status: chunk.status,
-            result: chunk.result,
-            error: chunk.error,
-          },
-        }),
-      ) ?? []),
-    ],
-    metadata: msg.metadata,
-    status: msg.status,
-    createdAt: msg.createdAt,
-  } as ThreadMessageLike
+  switch (msg.role) {
+    case 'user':
+      return {
+        id: msg.id,
+        role: 'user',
+        metadata: msg.metadata,
+        content: contentToParts(msg, msg.content),
+        attachments: msg.attachments?.map(
+          (attachment, idx) =>
+            ({
+              id: idx.toString(),
+              type: 'image',
+              name: attachment,
+              content: [
+                {
+                  type: 'image',
+                  image: getCloudfrontOriginalUrl(attachment),
+                },
+              ],
+              // contentType: attachment.contentType ?? "unknown/unknown",
+              contentType: 'image/png',
+              status: { type: 'complete' },
+            } satisfies CompleteAttachment),
+        ),
+        createdAt: msg.createdAt,
+      }
+    case 'assistant':
+      return {
+        id: msg.id,
+        role: msg.role,
+        content: [
+          ...contentToParts(msg, msg.content),
+          ...(msg.tool_calls?.map(
+            (chunk): ToolCallContentPart => ({
+              type: 'tool-call',
+              toolCallId: chunk.id,
+              toolName: 'task_result',
+              //@ts-expect-error args is not typed
+              args: chunk.args,
+              argsText: JSON.stringify(chunk.args, null, 2),
+              result: {
+                tool: chunk.tool,
+                status: chunk.status,
+                result: chunk.result,
+                error: chunk.error,
+              },
+            }),
+          ) ?? []),
+        ],
+        metadata: msg.metadata,
+        status: msg.status,
+        createdAt: msg.createdAt,
+      } as ThreadMessageLike
+  }
 }

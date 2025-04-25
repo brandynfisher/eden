@@ -104,10 +104,10 @@ export function MyRuntimeProvider({
         createdAt: new Date(tempMessage.timestamp),
       }
 
-      console.log('[onNew] Setting isRunning and adding temp message', {
-        messageId: userMessage.id,
-        content: userMessage.content.slice(0, 20) + '...',
-      })
+      // console.log('[onNew] Setting isRunning and adding temp message', {
+      //   messageId: userMessage.id,
+      //   content: userMessage.content.slice(0, 20) + '...',
+      // })
 
       // Remove the temp message immediately to prevent reprocessing
       sessionStorage.removeItem(TEMP_MESSAGE_KEY)
@@ -161,10 +161,10 @@ export function MyRuntimeProvider({
         createdAt: new Date(),
       }
 
-      console.log('[onNew] Setting isRunning and adding initial message', {
-        messageId: userMessage.id,
-        content: userMessage.content.slice(0, 20) + '...',
-      })
+      // console.log('[onNew] Setting isRunning and adding initial message', {
+      //   messageId: userMessage.id,
+      //   content: userMessage.content.slice(0, 20) + '...',
+      // })
 
       setIsRunning(true)
       setMessages([userMessage])
@@ -209,11 +209,11 @@ export function MyRuntimeProvider({
 
           const hasActiveMessages = Boolean(thread.active?.length)
 
-          console.log('[Initial Thread Load] Setting messages and isRunning', {
-            messageCount: thread.messages.length,
-            isRunning: hasActiveMessages,
-            active: thread.active,
-          })
+          // console.log('[Initial Thread Load] Setting messages and isRunning', {
+          //   messageCount: thread.messages.length,
+          //   isRunning: hasActiveMessages,
+          //   active: thread.active,
+          // })
 
           // When loading a new thread, process messages based on active state
           const processedMessages = (thread.messages as EdenMessage[]).map(
@@ -225,29 +225,54 @@ export function MyRuntimeProvider({
                   .reverse()
                   .find(m => m.role === 'user')
 
-                // If this is the last assistant message and there are active messages, it might still be running
-                const isLastAssistant = array
+                // Find the next user message after this assistant message
+                const nextUserMessage = array
                   .slice(index + 1)
-                  .every(m => m.role !== 'assistant')
+                  .find(m => m.role === 'user')
 
-                // Check if the previous user message is being processed
+                // Get all assistant messages in this response stack (between last user and next user)
+                const responseStackStart = previousUserMessage
+                  ? array.indexOf(previousUserMessage) + 1
+                  : 0
+                const responseStackEnd = nextUserMessage
+                  ? array.indexOf(nextUserMessage)
+                  : array.length
+                const assistantMessagesInStack = array
+                  .slice(responseStackStart, responseStackEnd)
+                  .filter(m => m.role === 'assistant')
+
+                // Check if this message's previous user message is being processed
                 const isPreviousUserActive =
                   previousUserMessage &&
                   thread.active?.includes(previousUserMessage.id)
 
-                // Only mark as running if:
-                // 1. The previous user message is in the active array (being processed)
-                // 2. AND this is the last assistant message
-                // 3. AND the last message in the thread is not an optimistic user message
-                const lastMessage = array[array.length - 1]
-                const hasOptimisticUserMessage =
-                  lastMessage?.role === 'user' && !lastMessage.id
+                // Check if any message in the stack has pending tool calls
+                const hasStackPendingToolCalls = assistantMessagesInStack.some(
+                  m =>
+                    m.tool_calls?.some(
+                      call =>
+                        !call.status ||
+                        call.status === 'pending' ||
+                        !call.result ||
+                        (typeof call.result === 'object' &&
+                          'status' in call.result &&
+                          call.result.status === 'pending'),
+                    ),
+                )
 
-                if (
-                  isLastAssistant &&
-                  isPreviousUserActive &&
-                  !hasOptimisticUserMessage
-                ) {
+                // Check if this is the last assistant message in the entire response stack
+                const isLastAssistantInStack =
+                  message ===
+                  assistantMessagesInStack[assistantMessagesInStack.length - 1]
+
+                // A message should be running if:
+                // 1. Its previous user message is active OR
+                // 2. Any message in the stack has pending tool calls AND this is the last assistant message
+                // 3. OR the entire stack should be running because we're still getting responses
+                const shouldStackBeRunning =
+                  isPreviousUserActive ||
+                  (hasStackPendingToolCalls && isLastAssistantInStack)
+                if (shouldStackBeRunning) {
                   return {
                     ...message,
                     status: { type: 'running' as const },
@@ -288,18 +313,18 @@ export function MyRuntimeProvider({
 
     // Only process messages for the current thread
     if (thread_id !== currentThreadIdRef.current) {
-      console.log('[WS Update] Ignoring message for different thread:', {
-        receivedThreadId: thread_id,
-        currentThreadId: currentThreadIdRef.current,
-      })
+      // console.log('[WS Update] Ignoring message for different thread:', {
+      //   receivedThreadId: thread_id,
+      //   currentThreadId: currentThreadIdRef.current,
+      // })
       return
     }
 
-    console.log('[WS Update] Processing update:', {
-      newMessagesCount: newMessages.length,
-      active,
-      isRunning: Boolean(active?.length),
-    })
+    // console.log('[WS Update] Processing update:', {
+    //   newMessagesCount: newMessages.length,
+    //   active,
+    //   isRunning: Boolean(active?.length),
+    // })
 
     // Update messages first
     setMessages(current => {
@@ -322,36 +347,37 @@ export function MyRuntimeProvider({
           }
 
           // For assistant messages:
-          // 1. If it's not the last message, it should be complete
+          // 1. If it's not the last message, check if it has pending tool calls
           const isLastMessage = index === updatedMessages.length - 1
+          const hasPendingToolCalls = message.tool_calls?.some(
+            call =>
+              !call.status ||
+              call.status === 'pending' ||
+              !call.result ||
+              (typeof call.result === 'object' &&
+                'status' in call.result &&
+                call.result.status === 'pending'),
+          )
 
-          if (!isLastMessage) {
-            return { type: 'complete' as const, reason: 'stop' as const }
+          // If message has pending tool calls, it's running regardless of position
+          if (hasPendingToolCalls) {
+            return { type: 'running' as const }
           }
 
-          // 2. If it is the last message:
-          // First check if we have any tool calls
-          if (message.tool_calls?.length) {
-            // If any tool call is pending or doesn't have a result yet, the message is running
-            const hasIncompleteToolCalls = message.tool_calls.some(
-              call =>
-                !call.status ||
-                call.status === 'pending' ||
-                !call.result ||
-                (typeof call.result === 'object' &&
-                  'status' in call.result &&
-                  call.result.status === 'pending'),
-            )
-
-            // If message has tool calls and active array exists, it's definitely running
-            if (hasIncompleteToolCalls || (active && active.length > 0)) {
+          // 2. If it's the last message:
+          if (isLastMessage) {
+            // If we have active messages and this is the last message, it's running
+            if (active && active.length > 0) {
               return { type: 'running' as const }
             }
-          }
 
-          // Then check active array - if we have active messages and this is the last message, it's running
-          if (active && active.length > 0 && isLastMessage) {
-            return { type: 'running' as const }
+            // If message has tool calls but no content yet, it's running
+            if (
+              message.tool_calls?.length &&
+              (!message.content || message.content.length === 0)
+            ) {
+              return { type: 'running' as const }
+            }
           }
 
           // Otherwise, use existing status or default to complete
@@ -365,29 +391,26 @@ export function MyRuntimeProvider({
 
         if (existingMessageIndex === -1) {
           // For new messages
-          console.log('[WS Update] Adding new message:', {
-            id: newMessage.id,
-            role: newMessage.role,
-            isLastMessage: true,
-            hasActiveArray: Boolean(active?.length),
-            hasToolCalls: Boolean(newMessage.tool_calls?.length),
-            hasPendingToolCalls: newMessage.tool_calls?.some(
-              call => !call.status || call.status === 'pending',
-            ),
-            content:
-              typeof newMessage.content === 'string'
-                ? newMessage.content.slice(0, 20) + '...'
-                : newMessage.content,
-          })
-
-          // If this is a new assistant message with tool calls, immediately mark it as running
+          // If this is a new assistant message with tool calls, check if any are pending
           if (
             newMessage.role === 'assistant' &&
             newMessage.tool_calls?.length
           ) {
+            const hasPendingToolCalls = newMessage.tool_calls.some(
+              call =>
+                !call.status ||
+                call.status === 'pending' ||
+                !call.result ||
+                (typeof call.result === 'object' &&
+                  'status' in call.result &&
+                  call.result.status === 'pending'),
+            )
+
             updatedMessages.push({
               ...newMessage,
-              status: { type: 'running' as const },
+              status: hasPendingToolCalls
+                ? { type: 'running' as const }
+                : determineAssistantStatus(newMessage, updatedMessages.length),
             })
             return updatedMessages
           }
@@ -400,12 +423,25 @@ export function MyRuntimeProvider({
                 break
               }
               if (message.role === 'assistant') {
-                updatedMessages[i] = {
-                  ...message,
-                  status: {
-                    type: 'complete' as const,
-                    reason: 'stop' as const,
-                  },
+                // Only mark as complete if it has no pending tool calls
+                const hasPendingToolCalls = message.tool_calls?.some(
+                  call =>
+                    !call.status ||
+                    call.status === 'pending' ||
+                    !call.result ||
+                    (typeof call.result === 'object' &&
+                      'status' in call.result &&
+                      call.result.status === 'pending'),
+                )
+
+                if (!hasPendingToolCalls) {
+                  updatedMessages[i] = {
+                    ...message,
+                    status: {
+                      type: 'complete' as const,
+                      reason: 'stop' as const,
+                    },
+                  }
                 }
               }
             }
@@ -421,42 +457,35 @@ export function MyRuntimeProvider({
           })
         } else {
           // For existing messages
-          const oldStatus = updatedMessages[existingMessageIndex].status
           const newStatus = determineAssistantStatus(
             newMessage,
             existingMessageIndex,
           )
 
-          // If this is an assistant message with tool calls and no content yet, keep it running
+          // If this is an assistant message with tool calls, check if any are pending
           if (
             newMessage.role === 'assistant' &&
-            newMessage.tool_calls?.length &&
-            (!newMessage.content || newMessage.content.length === 0)
+            newMessage.tool_calls?.length
           ) {
+            const hasPendingToolCalls = newMessage.tool_calls.some(
+              call =>
+                !call.status ||
+                call.status === 'pending' ||
+                !call.result ||
+                (typeof call.result === 'object' &&
+                  'status' in call.result &&
+                  call.result.status === 'pending'),
+            )
+
             updatedMessages[existingMessageIndex] = {
               ...updatedMessages[existingMessageIndex],
               ...newMessage,
-              status: { type: 'running' as const },
+              status: hasPendingToolCalls
+                ? { type: 'running' as const }
+                : newStatus,
             }
             return updatedMessages
           }
-
-          console.log('[WS Update] Updating existing message:', {
-            id: newMessage.id,
-            role: newMessage.role,
-            oldStatus,
-            newStatus,
-            isLastMessage: existingMessageIndex === updatedMessages.length - 1,
-            hasActiveArray: Boolean(active?.length),
-            hasToolCalls: Boolean(newMessage.tool_calls?.length),
-            hasPendingToolCalls: newMessage.tool_calls?.some(
-              call => !call.status || call.status === 'pending',
-            ),
-            content:
-              typeof newMessage.content === 'string'
-                ? newMessage.content.slice(0, 20) + '...'
-                : newMessage.content,
-          })
 
           updatedMessages[existingMessageIndex] = {
             ...updatedMessages[existingMessageIndex],
@@ -473,13 +502,13 @@ export function MyRuntimeProvider({
 
     // Update running state based ONLY on active array
     const newIsRunning = Boolean(active?.length)
-    console.log(
-      `[WS Update] ${
-        newIsRunning
-          ? 'Setting isRunning to true - user message being processed'
-          : 'Setting isRunning to false - no user message being processed'
-      }`,
-    )
+    // console.log(
+    //   `[WS Update] ${
+    //     newIsRunning
+    //       ? 'Setting isRunning to true - user message being processed'
+    //       : 'Setting isRunning to false - no user message being processed'
+    //   }`,
+    // )
     setIsRunning(newIsRunning)
 
     if (!active?.length) {
@@ -512,10 +541,10 @@ export function MyRuntimeProvider({
       status: undefined,
     }
 
-    console.log('[onNew] Setting isRunning and adding user message', {
-      messageId,
-      content: message.content[0].text.slice(0, 20) + '...',
-    })
+    // console.log('[onNew] Setting isRunning and adding user message', {
+    //   messageId,
+    //   content: message.content[0].text.slice(0, 20) + '...',
+    // })
 
     // Set running state immediately before adding the message
     setIsRunning(true)
@@ -542,7 +571,7 @@ export function MyRuntimeProvider({
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('[onNew] Request aborted')
+        // console.log('[onNew] Request aborted')
       } else {
         console.error('[onNew] Error sending message:', error)
         setIsRunning(false)
@@ -604,12 +633,12 @@ export function MyRuntimeProvider({
 
             const hasActiveMessages = Boolean(thread.active?.length)
 
-            console.log('[onSwitchToThread] Switching thread', {
-              threadId,
-              messageCount: thread.messages.length,
-              isRunning: hasActiveMessages,
-              active: thread.active,
-            })
+            // console.log('[onSwitchToThread] Switching thread', {
+            //   threadId,
+            //   messageCount: thread.messages.length,
+            //   isRunning: hasActiveMessages,
+            //   active: thread.active,
+            // })
 
             // Update URL without triggering popstate
             updateUrlWithoutNavigation(threadId)
@@ -618,16 +647,68 @@ export function MyRuntimeProvider({
             const processedMessages = (thread.messages as EdenMessage[]).map(
               (message, index, array) => {
                 if (message.role === 'assistant') {
-                  // If this is the last assistant message and there are active messages, it might still be running
-                  const isLastAssistant = array
+                  // Find the last user message before this assistant message
+                  const previousUserMessage = [...array]
+                    .slice(0, index)
+                    .reverse()
+                    .find(m => m.role === 'user')
+
+                  // Find the next user message after this assistant message
+                  const nextUserMessage = array
                     .slice(index + 1)
-                    .every(m => m.role !== 'assistant')
-                  if (isLastAssistant && hasActiveMessages) {
+                    .find(m => m.role === 'user')
+
+                  // Get all assistant messages in this response stack (between last user and next user)
+                  const responseStackStart = previousUserMessage
+                    ? array.indexOf(previousUserMessage) + 1
+                    : 0
+                  const responseStackEnd = nextUserMessage
+                    ? array.indexOf(nextUserMessage)
+                    : array.length
+                  const assistantMessagesInStack = array
+                    .slice(responseStackStart, responseStackEnd)
+                    .filter(m => m.role === 'assistant')
+
+                  // Check if this message's previous user message is being processed
+                  const isPreviousUserActive =
+                    previousUserMessage &&
+                    thread.active?.includes(previousUserMessage.id)
+
+                  // Check if any message in the stack has pending tool calls
+                  const hasStackPendingToolCalls =
+                    assistantMessagesInStack.some(m =>
+                      m.tool_calls?.some(
+                        call =>
+                          !call.status ||
+                          call.status === 'pending' ||
+                          !call.result ||
+                          (typeof call.result === 'object' &&
+                            'status' in call.result &&
+                            call.result.status === 'pending'),
+                      ),
+                    )
+
+                  // Check if this is the last assistant message in the entire response stack
+                  const isLastAssistantInStack =
+                    message ===
+                    assistantMessagesInStack[
+                      assistantMessagesInStack.length - 1
+                    ]
+
+                  // A message should be running if:
+                  // 1. Its previous user message is active OR
+                  // 2. Any message in the stack has pending tool calls AND this is the last assistant message
+                  // 3. OR the entire stack should be running because we're still getting responses
+                  const shouldStackBeRunning =
+                    isPreviousUserActive ||
+                    (hasStackPendingToolCalls && isLastAssistantInStack)
+                  if (shouldStackBeRunning) {
                     return {
                       ...message,
                       status: { type: 'running' as const },
                     }
                   }
+
                   return {
                     ...message,
                     status: {
@@ -653,13 +734,13 @@ export function MyRuntimeProvider({
           }
         },
         onSwitchToNewThread: async () => {
-          console.log('[onSwitchToNewThread] Creating new thread')
+          // console.log('[onSwitchToNewThread] Creating new thread')
 
           // Guard against recursive calls
           if (!currentThreadIdRef.current) {
-            console.log(
-              '[onSwitchToNewThread] Already in new thread state, skipping',
-            )
+            // console.log(
+            //   '[onSwitchToNewThread] Already in new thread state, skipping',
+            // )
             return
           }
 
@@ -687,9 +768,9 @@ export function MyRuntimeProvider({
 
       // Guard against recursive navigation
       if (newThreadId === currentThreadIdRef.current) {
-        console.log(
-          '[handlePopState] Already in correct thread state, skipping',
-        )
+        // console.log(
+        //   '[handlePopState] Already in correct thread state, skipping',
+        // )
         return
       }
 
