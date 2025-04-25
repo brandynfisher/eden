@@ -158,8 +158,6 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
     }
   }
 
-  if (deployments?.length === 0) return null
-
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>

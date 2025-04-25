@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 import { Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { format } from 'date-fns'
-import { ChevronDownIcon, TrashIcon } from 'lucide-react'
+import { ChevronDownIcon, GlobeIcon, TrashIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -63,6 +63,8 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
 
   const getPlatformBadgeClass = (platform: string) => {
     switch (platform) {
+      case 'web':
+        return 'bg-blue-500/20 hover:bg-blue-500/30 text-white'
       case 'discord':
         return 'bg-[#5865F2]/20 hover:bg-[#5865F2]/30 text-white'
       case 'telegram':
@@ -94,6 +96,7 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
             {trigger.platform === 'discord' && <DiscordIcon size={16} />}
             {trigger.platform === 'telegram' && <TelegramIcon size={16} />}
             {trigger.platform === 'twitter' && <TwitterIcon size={16} />}
+            {trigger.platform === 'web' && <GlobeIcon size={16} />}
             {trigger.platform}
           </Badge>
           <div className="flex items-center gap-2">
