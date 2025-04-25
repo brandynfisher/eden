@@ -10,27 +10,22 @@ import {
 } from '@/components/ui/dialog'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { subscriptionTierNameMap } from '@/lib/strings'
+import { useSubscriptionGateModal } from '@/stores/dialogs/dialogs.selector'
+import { updateSubscriptionGateModal } from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { CrownIcon } from 'lucide-react'
 import Link from 'next/link'
-
-interface SubscriptionGateModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  featureName: string
-  minimumSubscriptionTier: SubscriptionTier
-}
 
 function getSubscriptionTierName(tier: SubscriptionTier): string {
   return subscriptionTierNameMap[tier] || SubscriptionTier[tier]
 }
 
-export function SubscriptionGateModal({
-  open,
-  onOpenChange,
-  featureName,
-  minimumSubscriptionTier,
-}: SubscriptionGateModalProps) {
+export function SubscriptionGateModal() {
+  const { isOpen, featureName, minimumSubscriptionTier } =
+    useSubscriptionGateModal()
+  const dispatch = useAppDispatch()
+
   const { user } = useAuthState()
 
   const minimumTierName = getSubscriptionTierName(minimumSubscriptionTier)
@@ -38,8 +33,18 @@ export function SubscriptionGateModal({
     ? getSubscriptionTierName(user.subscriptionTier)
     : 'Free'
 
+  const onOpenChange = (open: boolean) => {
+    dispatch(
+      updateSubscriptionGateModal({
+        isOpen: open,
+        featureName: featureName,
+        minimumSubscriptionTier: minimumSubscriptionTier,
+      }),
+    )
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

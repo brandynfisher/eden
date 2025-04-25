@@ -1,9 +1,11 @@
 import { ToggleGroupItem } from '@/components/ui/toggle-group'
 import { cn } from '@/lib/utils'
+import { ReactNode } from 'react'
 
 type ToggleButtonProps = {
   value: string
-  label: string
+  label: string | ReactNode
+  labelString?: string
   onClick: () => void
   disabled?: boolean
   className?: string
@@ -12,6 +14,7 @@ type ToggleButtonProps = {
 const ToggleButton = ({
   value,
   label,
+  labelString,
   onClick,
   className,
   disabled,
@@ -19,8 +22,8 @@ const ToggleButton = ({
   return (
     <ToggleGroupItem
       value={value}
-      aria-label={`Set ${label}`}
-      title={!disabled ? `Set ${label}` : undefined}
+      aria-label={`Set ${labelString || label}`}
+      title={!disabled ? `Set ${labelString || label}` : undefined}
       onClick={!disabled ? onClick : undefined}
       className={cn([
         'flex items-center h-7 w-12 text-xs rounded-md justify-center px-2',

@@ -1,5 +1,10 @@
+import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { usePrivacyToggle } from '@/hooks/use-privacy-toggle'
+import {
+  GatedActions,
+  useSubscriptionGate,
+} from '@/hooks/use-subscription-gate'
 import { Agent, CollectionV2, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import { Loader2Icon, LockIcon, LockOpenIcon } from 'lucide-react'
@@ -15,6 +20,10 @@ const PrivacyActionItem = ({ type, item, queryKey }: Props) => {
   // console.log('[PrivacyActionItem] Rendering/Re-rendering...',
   //   { type, itemId: item._id, itemPublic: item.public, queryKey },
   // )
+
+  const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
+    GatedActions.MakePrivate,
+  )
 
   // Construct the item-specific query key
   const itemQueryKey: QueryKey = useMemo(
@@ -37,24 +46,38 @@ const PrivacyActionItem = ({ type, item, queryKey }: Props) => {
   //   { isPending, itemPublic: item.public, displayPublic },
   // )
 
+  const onChangePrivacy = () => {
+    if (isAllowedPrivacy || !item.public) {
+      handleToggle()
+    }
+  }
+
   return (
-    <DropdownMenuItem
-      onClick={handleToggle}
-      className="cursor-pointer"
-      disabled={isPending} // Disable button while pending
-    >
-      {isPending ? (
-        <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-      ) : displayPublic ? (
-        <LockOpenIcon className="mr-2 h-4 w-4" /> // Icon for Public state
-      ) : (
-        <LockIcon className="mr-2 h-4 w-4" /> // Icon for Private state
-      )}
-      <span>
-        Set <strong>{displayPublic ? 'Private' : 'Public'}</strong>
-      </span>
-      {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
-    </DropdownMenuItem>
+    <>
+      <DropdownMenuItem
+        onClick={onChangePrivacy}
+        className="cursor-pointer relative"
+        disabled={isPending} // Disable button while pending
+      >
+        {isPending ? (
+          <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+        ) : displayPublic ? (
+          <LockOpenIcon className="mr-2 h-4 w-4" /> // Icon for Public state
+        ) : (
+          <LockIcon className="mr-2 h-4 w-4" />
+        )}
+        <span>
+          Set <strong>{displayPublic ? 'Private' : 'Public'}</strong>
+        </span>
+
+        <SubscriptionCrownBadge
+          isPublic={item.public}
+          type={type}
+          className="ml-auto"
+        />
+        {/*<DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>*/}
+      </DropdownMenuItem>
+    </>
   )
 }
 

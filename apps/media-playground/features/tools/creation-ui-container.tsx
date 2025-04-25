@@ -1,8 +1,8 @@
 'use client'
 
+import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
-import { SubscriptionGateModal } from '@/components/modals/SubscriptionGateModal'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -29,10 +29,10 @@ import { trackTaskCreate } from '@/lib/analytics'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { cn } from '@/lib/utils'
 import { calculateCost } from '@/utils/cost.util'
-import { SubscriptionTier, ToolV2 } from '@edenlabs/eden-sdk'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { CrownIcon, Loader2, Settings2Icon } from 'lucide-react'
+import { Loader2, Settings2Icon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
@@ -51,10 +51,10 @@ const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
 const CreationUIContainer = ({ tool }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
-  const { isAllowed: isAllowedPrivacy, minimumSubscriptionTier } =
-    useSubscriptionGate(GatedActions.MakePrivate)
+  const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
+    GatedActions.MakePrivate,
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false)
   const presetResolutions = tool?.resolutions
   const parameterSchema = createZodFormSchema(tool.parameters || []) // create form schema
 
@@ -363,9 +363,12 @@ const CreationUIContainer = ({ tool }: Props) => {
                     className="ml-auto flex items-center gap-2 space-y-0 relative"
                   >
                     <div className={'flex items-center gap-2'}>
-                      {!isAllowedPrivacy ? (
-                        <CrownIcon className="text-orange-400 h-5 w-5" />
-                      ) : null}
+                      <SubscriptionCrownBadge
+                        type={
+                          tool.output_type === 'lora' ? 'model' : 'creation'
+                        }
+                        className="h-5 w-5"
+                      />
                       <FormControl id={field.name} className="mt-0">
                         <Switch
                           checked={
@@ -382,14 +385,6 @@ const CreationUIContainer = ({ tool }: Props) => {
                         Public
                       </FormLabel>
                     </div>
-                    {!isAllowedPrivacy && (
-                      <div
-                        className="absolute inset-0 cursor-pointer z-10"
-                        onClick={() => setIsSubscriptionModalOpen(true)}
-                        title="Making creations private requires a subscription"
-                        aria-hidden="true"
-                      />
-                    )}
                     <FormMessage>{fieldState.error?.message}</FormMessage>
                   </FormItem>
                 )}
@@ -506,15 +501,6 @@ const CreationUIContainer = ({ tool }: Props) => {
       >
         {formContent}
       </CreationUIMobile>
-
-      <SubscriptionGateModal
-        open={isSubscriptionModalOpen}
-        onOpenChange={setIsSubscriptionModalOpen}
-        featureName="Making creations private"
-        minimumSubscriptionTier={
-          minimumSubscriptionTier || SubscriptionTier.Basic // Default fallback, adjust if needed
-        }
-      />
     </>
   )
 }

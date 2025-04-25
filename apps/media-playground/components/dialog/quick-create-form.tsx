@@ -1,4 +1,4 @@
-import { SubscriptionGateModal } from '../modals/SubscriptionGateModal'
+import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -19,10 +19,10 @@ import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { closeAllQuickCreateModals } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { calculateCost } from '@/utils/cost.util'
-import { SubscriptionTier, ToolV2 } from '@edenlabs/eden-sdk'
+import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { CrownIcon, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -45,10 +45,10 @@ const SimpleGeneratorForm = ({
   const dispatch = useAppDispatch()
 
   const { verifyAuth, refetchMe, balance } = useAuthState()
-  const { isAllowed: isAllowedPrivacy, minimumSubscriptionTier } =
-    useSubscriptionGate(GatedActions.MakePrivate)
+  const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
+    GatedActions.MakePrivate,
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false)
   const parameters = tool?.parameters?.filter(param =>
     exposedParameters.includes(param.name),
   )
@@ -142,10 +142,8 @@ const SimpleGeneratorForm = ({
               data-test-id={'makePublic'}
               className="ml-auto flex items-center gap-2 space-y-0 relative"
             >
-              <div className={'flex items-center gap-2'}>
-                {!isAllowedPrivacy ? (
-                  <CrownIcon className="text-orange-400 h-5 w-5" />
-                ) : null}
+              <div className={'flex items-center gap-2 relative'}>
+                <SubscriptionCrownBadge type="creation" className="h-5 w-5" />
                 <FormControl id={field.name} className="mt-0">
                   <Switch
                     checked={field.value === undefined ? true : field.value}
@@ -160,14 +158,6 @@ const SimpleGeneratorForm = ({
                   Public
                 </FormLabel>
               </div>
-              {!isAllowedPrivacy && (
-                <div
-                  className="absolute inset-0 cursor-pointer z-10"
-                  onClick={() => setIsSubscriptionModalOpen(true)}
-                  title="Making creations private requires a subscription"
-                  aria-hidden="true"
-                />
-              )}
               <FormMessage>{fieldState.error?.message}</FormMessage>
             </FormItem>
           )}
@@ -204,14 +194,6 @@ const SimpleGeneratorForm = ({
           </Button>
         </div>
       </form>
-      <SubscriptionGateModal
-        open={isSubscriptionModalOpen}
-        onOpenChange={setIsSubscriptionModalOpen}
-        featureName="Making creations private"
-        minimumSubscriptionTier={
-          minimumSubscriptionTier || SubscriptionTier.Basic // Default fallback, adjust if needed
-        }
-      />
     </Form>
   )
 }
