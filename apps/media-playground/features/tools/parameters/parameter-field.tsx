@@ -100,6 +100,32 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             )
           }
 
+          if (parameter.name === 'width' || parameter.name === 'height') {
+            const parsedValue = +value ? +value : undefined
+            return (
+              <FormItemWrap
+                name={name}
+                label={label}
+                description={parameter.description}
+                errorMessage={fieldState.error?.message}
+                className={className}
+              >
+                <Input
+                  id={name}
+                  onChange={e =>
+                    onChange(e.target.value ? parseInt(e.target.value) : 0)
+                  }
+                  type="number"
+                  min={parameter.minimum || 0}
+                  max={parameter.maximum || 2048}
+                  className="text-base"
+                  onBlur={onBlur}
+                  value={parsedValue}
+                />
+              </FormItemWrap>
+            )
+          }
+
           return (
             <FormItemWrap
               name={name}
