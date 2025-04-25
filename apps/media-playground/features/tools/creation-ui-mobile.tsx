@@ -23,7 +23,7 @@ const CreationUiMobile = ({ open, onOpenChange, tool, children }: Props) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <div className="lg:hidden fixed bottom-0 flex z-10 bg-accent p-2 w-full justify-between items-center gap-2">
+        <div className="lg:hidden fixed left-0 bottom-0 flex z-10 bg-accent p-2 w-full justify-between items-center gap-2">
           <div className="text-sm text-muted-foreground">{tool.name}</div>
           <Button onClick={() => onOpenChange(true)}>
             <PlusIcon className="h-4 w-4 mr-1" />

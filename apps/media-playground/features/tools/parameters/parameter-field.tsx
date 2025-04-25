@@ -158,7 +158,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           return (
             <FormItem
               className={cn([
-                'flex flex-row items-center justify-between rounded-lg p-4',
+                'flex flex-row items-center justify-between rounded-lg p-2 md:p-4',
                 className,
               ])}
               data-test-id={parameter.name}
@@ -185,8 +185,8 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           if (name.includes('prompt')) {
             return (
               <FormItem
-                className={`mt-0 !p-4 ${
-                  parameter.required ? '!pt-4' : '!pt-3'
+                className={`mt-0 !p-2 md:!p-4 ${
+                  parameter.required ? '!pt-2 md:!pt-4' : '!pt-1 md:!pt-3'
                 }`}
                 data-test-id={parameter.name}
               >
@@ -204,8 +204,8 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
                     placeholder={parameter.description}
                     className={`!ml-0 border-0 resize-none rounded-lg text-base ${
                       parameter.required
-                        ? '!outline-none !p-4 !pt-2 !mt-0'
-                        : 'rounded-lg border p-2 '
+                        ? '!outline-none !p-2 md:!p-4 !pt-2 !mt-0'
+                        : 'rounded-lg border p-2 md:p-4'
                     }`}
                     onChange={onChange}
                     onBlur={onBlur}
@@ -250,7 +250,10 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
         if (isSchemaType(parameter, 'lora')) {
           const parsedValue = typeof value !== 'string' ? '' : value
           return (
-            <FormItem className="mt-0 !p-4 !pt-2" data-test-id={parameter.name}>
+            <FormItem
+              className="mt-0 !p-2 md:!p-4 !pt-2"
+              data-test-id={parameter.name}
+            >
               <FormItemHead label={label} description={parameter.description} />
               <FormControl id={name}>
                 <Input
@@ -296,7 +299,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           ) {
             return (
               <FormItem
-                className="mt-0 !p-4 !pt-2"
+                className="mt-0 !p-2 md:!p-4 !pt-2"
                 data-test-id={parameter.name}
               >
                 <FormItemHead
@@ -347,7 +350,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
           if (arrayItemType === 'string') {
             return (
               <FormItem
-                className="mt-0 !p-4 !pt-2"
+                className="mt-0 !p-2 md:!p-4 !pt-2"
                 data-test-id={parameter.name}
               >
                 <FormItemHead
@@ -404,7 +407,7 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
             ) {
               return (
                 <FormItem
-                  className="mt-0 !p-4 !pt-2"
+                  className="mt-0 !p-2 md:!p-4 !pt-2"
                   data-test-id={parameter.name}
                 >
                   <FormItemHead

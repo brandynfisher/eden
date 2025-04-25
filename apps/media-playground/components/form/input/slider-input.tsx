@@ -50,7 +50,7 @@ const SliderInput = ({
       <div className="relative flex items-center w-full">
         <SliderInputRangeLabel
           text={`${min.toLocaleString()}${unit || ''}`}
-          className="left-4"
+          className="left-2 md:left-4"
         />
         <div className="flex-1 relative">
           <SliderWithTooltip
@@ -69,12 +69,12 @@ const SliderInput = ({
         </div>
         <SliderInputRangeLabel
           text={`${max.toLocaleString()}${unit || ''}`}
-          className="right-4"
+          className="right-2 md:right-4"
         />
       </div>
       <Input
         className={cn([
-          'ml-2 w-28 h-8 rounded-md relative font-mono text-base',
+          'ml-2 w-20 h-8 rounded-md relative font-mono text-base',
           hideNumberInput ? 'hidden' : '',
         ])}
         type="number"

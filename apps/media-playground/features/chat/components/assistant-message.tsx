@@ -101,15 +101,42 @@ const MyAssistantMessage: FC = () => {
   const id = useMessage(m => m.id)
 
   // Memoize the derived state to prevent unnecessary recalculations
-  const { isEmpty, isRunning } = React.useMemo(() => {
-    const newIsEmpty = !content || content.length === 0
-    const newIsRunning = status?.type === 'running'
+  // const { isEmpty, isRunning } = React.useMemo(() => {
+  //   const newIsEmpty = !content || content.length === 0
+  //   const newIsRunning = status?.type === 'running'
 
-    return {
-      isEmpty: newIsEmpty,
-      isRunning: newIsRunning,
-    }
-  }, [content, status?.type])
+  //   if (newIsRunning) {
+  //     console.log('[MyAssistantMessage] newIsRunning:', {
+  //       id,
+  //       isEmpty: newIsEmpty,
+  //       isRunning: newIsRunning,
+  //       content,
+  //       status,
+  //     })
+  //   }
+
+  //   return {
+  //     isEmpty: newIsEmpty,
+  //     isRunning: newIsRunning,
+  //   }
+  // }, [id, content, status])
+  // const myMessages = useMessage(m =>
+  //   getExternalStoreMessages(m),
+  // ) as EdenThreadMessage[]
+  const isRunning = status?.type === 'running'
+  const isEmpty = typeof content === 'undefined' || content.length === 0
+
+  // if (isRunning || isEmpty) {
+  //   console.log('[MyAssistantMessage]:', status, id)
+  // }
+
+  // console.log('[MyAssistantMessage]:', {
+  //   isRunning,
+  //   isEmpty,
+  //   content,
+  //   status,
+  //   id,
+  // })
 
   return (
     <AssistantMessage.Root
@@ -120,20 +147,16 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      {!isEmpty && ( // Use raw isEmpty
-        <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
-      )}
+      {/* {!isEmpty && ( // Use raw isEmpty */}
+      <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
+      {/* )} */}
       <BranchPicker />
       {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
-        <div
-          className={cn(
-            'col-start-3 row-start-2',
-            isEmpty && 'col-start-auto row-start-auto mt-2', // Use raw isEmpty
-          )}
-        >
+        <div className="col-start-3 row-start-2">
           <TypingIndicator />
         </div>
       ) : null}
+
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />
       </ThreadPrimitive.If>

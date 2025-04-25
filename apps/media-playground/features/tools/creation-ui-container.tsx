@@ -225,7 +225,7 @@ const CreationUIContainer = ({ tool }: Props) => {
     <Form {...form}>
       <form className="w-full">
         <div className="flex items-center lg:justify-between p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-          <TypographyH4 className="text-sm md:text-lg pl-8 md:pl-12 lg:pl-0">
+          <TypographyH4 className="text-sm md:text-base pl-8 md:pl-12 lg:pl-0">
             {tool.name}
           </TypographyH4>
           {tool.base_model ? (
@@ -264,7 +264,7 @@ const CreationUIContainer = ({ tool }: Props) => {
             ))}
 
             {maskingParameters && maskingParameters.length > 0 ? (
-              <div className="bg-muted-darker border border-secondary rounded-lg space-y-2 mt-0 !p-4 !pt-2">
+              <div className="bg-muted-darker border border-secondary rounded-lg space-y-2 mt-0 !p-2 md:!p-4 !pt-2">
                 <div className="text-sm font-medium text-foreground">
                   Masking
                 </div>

@@ -1,7 +1,6 @@
 'use client'
 
 import AgentLink from '../agent/agent-link'
-import { useEdenRuntimeExtras } from './hooks/useEdenRuntime'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -32,7 +31,10 @@ import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
-import { EdenRuntimeProvider } from '@/features/chat/providers/eden-runtime-provider'
+import {
+  MyRuntimeProvider,
+  useEdenRuntimeExtras,
+} from '@/features/chat/providers/my-runtime-provider'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -130,39 +132,36 @@ const ThreadListItem: FC<{
     }
   }
 
-  const renameThread = useCallback(
-    async (threadId: string, title: string) => {
-      if (!title) {
-        setIsEditing(false)
-        return
-      }
-      try {
-        setIsRenaming(true)
-        await axios.patch(`/api/threads/${threadId}`, {
-          title,
-        })
+  const renameThread = useCallback(async (threadId: string, title: string) => {
+    if (!title) {
+      setIsEditing(false)
+      return
+    }
+    try {
+      setIsRenaming(true)
+      await axios.patch(`/api/threads/${threadId}`, {
+        title,
+      })
 
-        await invalidate()
+      await invalidate()
 
-        toast.success('Thread renamed', {
-          description: 'Your thread has been renamed.',
-          dismissible: true,
-          richColors: true,
-        })
-      } catch (error) {
-        console.error(error)
-        toast.error('Failed to rename thread', {
-          description: 'Please try again later.',
-          dismissible: true,
-          richColors: true,
-        })
-      } finally {
-        setIsRenaming(false)
-        setIsEditing(false)
-      }
-    },
-    [invalidate],
-  )
+      toast.success('Thread renamed', {
+        description: 'Your thread has been renamed.',
+        dismissible: true,
+        richColors: true,
+      })
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to rename thread', {
+        description: 'Please try again later.',
+        dismissible: true,
+        richColors: true,
+      })
+    } finally {
+      setIsRenaming(false)
+      setIsEditing(false)
+    }
+  }, [])
 
   const handleRenameSubmit = useCallback(
     async (event?: React.FormEvent | React.MouseEvent) => {
@@ -499,7 +498,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   }
 
   return (
-    <EdenRuntimeProvider agentId={agentId} threadId={threadId}>
+    <MyRuntimeProvider agentId={agentId} threadId={threadId}>
       <div
         className="
          flex flex-col
@@ -612,7 +611,11 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                     allowReload: false,
                     allowSpeak: false,
                     components: {
-                      Empty: () => <div></div>,
+                      Empty: () => (
+                        <div className="text-muted-foreground italic">
+                          Thinking...
+                        </div>
+                      ),
                       Text: MarkdownText,
                       ToolFallback,
                     },
@@ -645,7 +648,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
-    </EdenRuntimeProvider>
+    </MyRuntimeProvider>
   )
 }
 
