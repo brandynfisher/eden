@@ -60,11 +60,12 @@ export function MyRuntimeProvider({
   const abortControllerRef = useRef<AbortController | null>(null)
   const { lastMessageJson } = useWebSocketContext()
   const currentThreadIdRef = useRef<string | undefined>()
-  const { isSignedIn } = useAuthState()
+  const { isSignedIn, user, isLoading: isAuthLoading } = useAuthState()
   const initialMessageProcessedRef = useRef(false)
 
   // Add URL update tracking
   const lastUrlUpdateRef = useRef<string | null>(null)
+  const [isReadOnly, setIsReadOnly] = useState(false)
 
   // Function to update URL without triggering Next.js navigation
   const updateUrlWithoutNavigation = (newThreadId?: string) => {
@@ -186,6 +187,8 @@ export function MyRuntimeProvider({
         if (threadId && threadId !== currentThreadIdRef.current) {
           currentThreadIdRef.current = threadId
           updateUrlWithoutNavigation(threadId)
+          // Since this is a new thread created by the current user, it's not read-only
+          setIsReadOnly(false)
         }
       } catch (error) {
         console.error('[onNew] Error sending initial message:', error)
@@ -208,6 +211,12 @@ export function MyRuntimeProvider({
           }
 
           const hasActiveMessages = Boolean(thread.active?.length)
+
+          // Determine if thread is read-only based on ownership
+          const isThreadReadOnly =
+            !isAuthLoading &&
+            (!user || thread.user._id.toString() !== user._id.toString())
+          setIsReadOnly(isThreadReadOnly)
 
           // console.log('[Initial Thread Load] Setting messages and isRunning', {
           //   messageCount: thread.messages.length,
@@ -602,7 +611,7 @@ export function MyRuntimeProvider({
       [symbolEdenExtras]: true,
       agentId,
       threadId: currentThreadIdRef.current,
-      isReadOnly: false,
+      isReadOnly,
     },
     adapters: {
       feedback: edenFeedbackAdapter,
