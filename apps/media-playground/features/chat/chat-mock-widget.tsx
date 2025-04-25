@@ -56,7 +56,7 @@ interface StoredFormData extends FormData {
 }
 
 const FORM_STORAGE_KEY = 'chat-mock-form-state'
-const CHAT_INIT_STORAGE_KEY = 'chat-init-data'
+const TEMP_MESSAGE_KEY = 'chat-temp-message'
 
 const DEFAULT_SUGGESTIONS: AgentSuggestion[] = [
   {
@@ -152,19 +152,17 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
       if (!agent?.username) {
         toast.error('Agent not found or username missing.')
         setIsSubmitting(false)
-        localStorage.removeItem(CHAT_INIT_STORAGE_KEY)
         return
       }
 
-      const chatInitData = {
-        content: formData.message,
-        attachments: formData.attachments || [],
-        agentId: agent?._id,
-        agentUsername: agent?.username,
-        timestamp: Date.now(),
-      }
-
-      localStorage.setItem(CHAT_INIT_STORAGE_KEY, JSON.stringify(chatInitData))
+      sessionStorage.setItem(
+        TEMP_MESSAGE_KEY,
+        JSON.stringify({
+          content: formData.message,
+          attachments: formData.attachments || [],
+          timestamp: Date.now(),
+        }),
+      )
 
       localStorage.removeItem(FORM_STORAGE_KEY)
       setHasStoredData(false)
@@ -178,7 +176,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
         richColors: true,
       })
       setIsSubmitting(false)
-      localStorage.removeItem(CHAT_INIT_STORAGE_KEY)
+      sessionStorage.removeItem(TEMP_MESSAGE_KEY)
     }
   }
 

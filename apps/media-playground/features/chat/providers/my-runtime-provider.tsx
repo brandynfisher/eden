@@ -18,6 +18,7 @@ import {
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
 import { PropsWithChildren, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 const symbolEdenExtras = Symbol('eden-extras')
 
@@ -40,12 +41,19 @@ interface WebSocketMessage {
 type MyRuntimeProviderProps = {
   agentId: string
   threadId?: string
+  initialMessage?: {
+    content: string
+    attachments?: string[]
+  }
 } & PropsWithChildren
+
+const TEMP_MESSAGE_KEY = 'chat-temp-message'
 
 export function MyRuntimeProvider({
   children,
   agentId,
   threadId,
+  initialMessage,
 }: MyRuntimeProviderProps) {
   const [messages, setMessages] = useState<EdenMessage[]>([])
   const [isRunning, setIsRunning] = useState(false)
@@ -53,17 +61,141 @@ export function MyRuntimeProvider({
   const { lastMessageJson } = useWebSocketContext()
   const currentThreadIdRef = useRef<string | undefined>()
   const { isSignedIn } = useAuthState()
+  const initialMessageProcessedRef = useRef(false)
+
+  // Add URL update tracking
+  const lastUrlUpdateRef = useRef<string | null>(null)
 
   // Function to update URL without triggering Next.js navigation
   const updateUrlWithoutNavigation = (newThreadId?: string) => {
     const baseUrl = `/chat/${agentId}`
     const newUrl = newThreadId ? `${baseUrl}/${newThreadId}` : baseUrl
 
-    // Always update URL and dispatch popstate to keep history state in sync
+    // Skip if we're already at this URL
+    if (lastUrlUpdateRef.current === newUrl) {
+      return
+    }
+
+    // Update our ref before making changes to prevent loops
+    lastUrlUpdateRef.current = newUrl
+
+    // Update URL state without dispatching popstate
     const state = { ...window.history.state, as: newUrl, url: newUrl }
     window.history.pushState(state, '', newUrl)
-    window.dispatchEvent(new PopStateEvent('popstate', { state }))
   }
+
+  // Handle temporary message from sessionStorage
+  useEffect(() => {
+    // Only process if we don't have a threadId (new chat) and haven't processed a message yet
+    if (threadId || initialMessageProcessedRef.current) return
+
+    const tempMessageJson = sessionStorage.getItem(TEMP_MESSAGE_KEY)
+    if (!tempMessageJson) return
+
+    try {
+      const tempMessage = JSON.parse(tempMessageJson)
+
+      // Create optimistic user message
+      const userMessage: EdenMessage = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: tempMessage.content,
+        attachments: tempMessage.attachments || [],
+        createdAt: new Date(tempMessage.timestamp),
+      }
+
+      console.log('[onNew] Setting isRunning and adding temp message', {
+        messageId: userMessage.id,
+        content: userMessage.content.slice(0, 20) + '...',
+      })
+
+      // Remove the temp message immediately to prevent reprocessing
+      sessionStorage.removeItem(TEMP_MESSAGE_KEY)
+
+      setIsRunning(true)
+      setMessages([userMessage])
+      initialMessageProcessedRef.current = true
+
+      // Send the message
+      sendMessage({
+        messages: [userMessage],
+        agentId: agentId,
+        threadId: currentThreadIdRef.current,
+      })
+        .then(response => {
+          if (response.status !== 200) {
+            throw new Error('Failed to send message')
+          }
+
+          // If we get a new threadId back, update the URL and current thread reference
+          const threadId = response.data?.thread_id as string | undefined
+          if (threadId && threadId !== currentThreadIdRef.current) {
+            currentThreadIdRef.current = threadId
+            updateUrlWithoutNavigation(threadId)
+          }
+        })
+        .catch(error => {
+          console.error('[onNew] Error sending temp message:', error)
+          setIsRunning(false)
+          setMessages([]) // Clear the optimistic message on error
+          toast.error('Failed to send message')
+        })
+    } catch (error) {
+      console.error('Error processing temp message:', error)
+      sessionStorage.removeItem(TEMP_MESSAGE_KEY)
+    }
+  }, [threadId, agentId])
+
+  // Handle initial message if provided
+  useEffect(() => {
+    if (!initialMessage || initialMessageProcessedRef.current || threadId)
+      return
+
+    const processInitialMessage = async () => {
+      // Create optimistic user message
+      const userMessage: EdenMessage = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: initialMessage.content,
+        attachments: initialMessage.attachments || [],
+        createdAt: new Date(),
+      }
+
+      console.log('[onNew] Setting isRunning and adding initial message', {
+        messageId: userMessage.id,
+        content: userMessage.content.slice(0, 20) + '...',
+      })
+
+      setIsRunning(true)
+      setMessages([userMessage])
+      initialMessageProcessedRef.current = true
+
+      try {
+        const response = await sendMessage({
+          messages: [userMessage],
+          agentId: agentId,
+          threadId: currentThreadIdRef.current,
+        })
+
+        if (response.status !== 200) {
+          throw new Error('Failed to send message')
+        }
+
+        // If we get a new threadId back, update the URL and current thread reference
+        const threadId = response.data?.thread_id as string | undefined
+        if (threadId && threadId !== currentThreadIdRef.current) {
+          currentThreadIdRef.current = threadId
+          updateUrlWithoutNavigation(threadId)
+        }
+      } catch (error) {
+        console.error('[onNew] Error sending initial message:', error)
+        setIsRunning(false)
+        setMessages([]) // Clear the optimistic message on error
+      }
+    }
+
+    processInitialMessage()
+  }, [initialMessage, threadId, agentId])
 
   // Load initial thread if threadId is in URL
   useEffect(() => {
@@ -406,6 +538,7 @@ export function MyRuntimeProvider({
     messages: threadMessages,
     onNew,
     extras: {
+      [symbolEdenExtras]: true,
       agentId,
       threadId: currentThreadIdRef.current,
       isReadOnly: false,
@@ -446,7 +579,7 @@ export function MyRuntimeProvider({
               active: thread.active,
             })
 
-            // Update URL using Next.js router
+            // Update URL without triggering popstate
             updateUrlWithoutNavigation(threadId)
 
             // When switching threads, process messages based on active state
@@ -475,9 +608,13 @@ export function MyRuntimeProvider({
               },
             )
 
-            setMessages(processedMessages)
-            setIsRunning(hasActiveMessages)
+            // Update state in a single batch to prevent recursion
+            const prevThreadId = currentThreadIdRef.current
             currentThreadIdRef.current = threadId
+            if (prevThreadId !== threadId) {
+              setMessages(processedMessages)
+              setIsRunning(hasActiveMessages)
+            }
           } catch (error) {
             console.error('Error switching to thread:', error)
             throw error
@@ -486,13 +623,21 @@ export function MyRuntimeProvider({
         onSwitchToNewThread: async () => {
           console.log('[onSwitchToNewThread] Creating new thread')
 
-          // Update URL using Next.js router
+          // Guard against recursive calls
+          if (!currentThreadIdRef.current) {
+            console.log(
+              '[onSwitchToNewThread] Already in new thread state, skipping',
+            )
+            return
+          }
+
+          // Update URL without triggering popstate
           updateUrlWithoutNavigation()
 
           // Reset the current state
+          currentThreadIdRef.current = undefined
           setMessages([])
           setIsRunning(false)
-          currentThreadIdRef.current = undefined
         },
       },
     },
@@ -504,6 +649,17 @@ export function MyRuntimeProvider({
       // Extract threadId from URL on back/forward navigation
       const pathParts = window.location.pathname.split('/')
       const newThreadId = pathParts[3] // /chat/agentId/threadId
+
+      // Update our URL tracking ref
+      lastUrlUpdateRef.current = window.location.pathname
+
+      // Guard against recursive navigation
+      if (newThreadId === currentThreadIdRef.current) {
+        console.log(
+          '[handlePopState] Already in correct thread state, skipping',
+        )
+        return
+      }
 
       if (newThreadId !== currentThreadIdRef.current) {
         if (newThreadId) {

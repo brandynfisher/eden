@@ -126,9 +126,9 @@ const MyAssistantMessage: FC = () => {
   const isRunning = status?.type === 'running'
   const isEmpty = typeof content === 'undefined' || content.length === 0
 
-  if (isRunning || isEmpty) {
-    console.log('[MyAssistantMessage]:', status, id)
-  }
+  // if (isRunning || isEmpty) {
+  //   console.log('[MyAssistantMessage]:', status, id)
+  // }
 
   // console.log('[MyAssistantMessage]:', {
   //   isRunning,

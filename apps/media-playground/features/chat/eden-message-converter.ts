@@ -1,5 +1,10 @@
-import { ThreadMessageLike } from '@assistant-ui/react'
-import { Message } from '@edenlabs/eden-sdk'
+import { ThreadMessageLike, ToolCallContentPart } from '@assistant-ui/react'
+import {
+  AssistantMessage,
+  Message,
+  SystemMessage,
+  UserMessage,
+} from '@edenlabs/eden-sdk'
 
 export interface ToolCall {
   id: string
@@ -24,15 +29,54 @@ export interface EdenMessage extends Message {
   }
 }
 
+const contentToParts = (
+  message: EdenMessage,
+  content:
+    | UserMessage['content']
+    | AssistantMessage['content']
+    | SystemMessage['content'],
+) => {
+  if (message.role === 'assistant') {
+    if (
+      //@ts-expect-error message type is not correct
+      message.status?.type === 'incomplete' &&
+      //@ts-expect-error message type is not correct
+      message.status?.reason === 'error'
+    ) {
+      return [
+        {
+          type: 'text' as const,
+          text: `Failed Response! \`\`\`${content}\`\`\` `,
+        },
+      ]
+    }
+  }
+
+  return [{ type: 'text' as const, text: content }]
+}
+
 export function convertEdenMessage(msg: EdenMessage): ThreadMessageLike {
   return {
     id: msg.id,
     role: msg.role,
     content: [
-      {
-        type: 'text' as const,
-        text: msg.content,
-      },
+      ...contentToParts(msg, msg.content),
+      ...(msg.tool_calls?.map(
+        (chunk): ToolCallContentPart => ({
+          type: 'tool-call',
+          toolCallId: chunk.id,
+          toolName: 'task_result',
+          //@ts-expect-error args is not typed
+          args: chunk.args,
+          argsText: JSON.stringify(chunk.args, null, 2),
+          result: {
+            tool: chunk.tool,
+            status: chunk.status,
+            result: chunk.result,
+            error: chunk.error,
+          },
+        }),
+      ) ?? []),
     ],
     metadata: msg.metadata,
     status: msg.status,
