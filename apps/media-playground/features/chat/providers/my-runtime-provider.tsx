@@ -371,11 +371,26 @@ export function MyRuntimeProvider({
             isLastMessage: true,
             hasActiveArray: Boolean(active?.length),
             hasToolCalls: Boolean(newMessage.tool_calls?.length),
+            hasPendingToolCalls: newMessage.tool_calls?.some(
+              call => !call.status || call.status === 'pending',
+            ),
             content:
               typeof newMessage.content === 'string'
                 ? newMessage.content.slice(0, 20) + '...'
                 : newMessage.content,
           })
+
+          // If this is a new assistant message with tool calls, immediately mark it as running
+          if (
+            newMessage.role === 'assistant' &&
+            newMessage.tool_calls?.length
+          ) {
+            updatedMessages.push({
+              ...newMessage,
+              status: { type: 'running' as const },
+            })
+            return updatedMessages
+          }
 
           // Mark all assistant messages as complete until we hit a user message (going backwards)
           if (!active || active.length === 0) {
@@ -396,7 +411,7 @@ export function MyRuntimeProvider({
             }
           }
 
-          // Then add the new message
+          // Then add the new message with determined status
           updatedMessages.push({
             ...newMessage,
             status: determineAssistantStatus(
@@ -412,6 +427,20 @@ export function MyRuntimeProvider({
             existingMessageIndex,
           )
 
+          // If this is an assistant message with tool calls and no content yet, keep it running
+          if (
+            newMessage.role === 'assistant' &&
+            newMessage.tool_calls?.length &&
+            (!newMessage.content || newMessage.content.length === 0)
+          ) {
+            updatedMessages[existingMessageIndex] = {
+              ...updatedMessages[existingMessageIndex],
+              ...newMessage,
+              status: { type: 'running' as const },
+            }
+            return updatedMessages
+          }
+
           console.log('[WS Update] Updating existing message:', {
             id: newMessage.id,
             role: newMessage.role,
@@ -420,6 +449,9 @@ export function MyRuntimeProvider({
             isLastMessage: existingMessageIndex === updatedMessages.length - 1,
             hasActiveArray: Boolean(active?.length),
             hasToolCalls: Boolean(newMessage.tool_calls?.length),
+            hasPendingToolCalls: newMessage.tool_calls?.some(
+              call => !call.status || call.status === 'pending',
+            ),
             content:
               typeof newMessage.content === 'string'
                 ? newMessage.content.slice(0, 20) + '...'
