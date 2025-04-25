@@ -55,6 +55,7 @@ export type Thread = {
   active?: string[]
 }
 
+/** @deprecated Use my-runtime-provider instead */
 export function EdenRuntimeProvider({
   agentId,
   threadId,
@@ -492,7 +493,6 @@ export function EdenRuntimeProvider({
       // Removed unused @ts-expect-error
       const processedMsg = {
         ...msg,
-        // @ts-expect-error Re-adding as requested
         status: convertToUIStatus(msg.status),
         createdAt: msg.createdAt ? new Date(msg.createdAt) : new Date(),
       } as ThreadMessageWithStatus

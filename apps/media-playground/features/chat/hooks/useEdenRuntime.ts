@@ -1,8 +1,8 @@
 'use client'
 
+import { convertEdenMessage } from '../eden-message-converter'
 import EdenFeedbackAdapter from '@/features/chat/eden-feedback-adapter'
 import edenImageAttachmentAdapter from '@/features/chat/eden-image-attachment-adapter'
-import { edenMessageConverter } from '@/features/chat/eden-message-converter'
 import {
   ThreadMessageWithStatus,
   useEdenMessages,
@@ -272,7 +272,7 @@ export function useEdenRuntime({
   //   ),
   // )
   const threadMessages = useExternalMessageConverter({
-    callback: edenMessageConverter,
+    callback: convertEdenMessage,
     // WORKAROUND: Cast messages to any due to potential type mismatch in useExternalMessageConverter hook definition.
     // It seems to expect the output type (EdenMessage[]) instead of the input type (ThreadMessageWithStatus[]).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -806,8 +806,6 @@ export const subscribeWebSocketUpdates = function wsHandler(
       thread: ThreadDocument
       newMessages: ThreadMessage[]
     }) => {
-      // console.log('internalEmitterEventHandlerThreadUpdates', thread)
-
       if (!metaData.userId) {
         // this.log.error(`User not authenticated/not found - ${thread.user}`)
         return
@@ -847,17 +845,9 @@ export const subscribeWebSocketUpdates = function wsHandler(
                       )
                     return {
                       ...msg,
-                      status:
-                        hasPendingToolCalls ||
-                        (thread.active &&
-                          Array.isArray(thread.active) &&
-                          thread.active.some(
-                            t =>
-                              t.toString() === msg.id.toString() ||
-                              t.toString() === msg.reply_to?.toString(),
-                          ))
-                          ? { type: 'running' }
-                          : { type: 'complete', reason: 'stop' },
+                      status: hasPendingToolCalls
+                        ? { type: 'running' }
+                        : { type: 'complete', reason: 'stop' },
                     }
                   }),
                   thread_id: thread._id,

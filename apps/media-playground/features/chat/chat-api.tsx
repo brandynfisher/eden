@@ -36,7 +36,7 @@ export const sendMessage = async function (params: {
   threadId?: string
   agentId: string
   messages: EdenMessage[]
-  abortSignal: AbortSignal | undefined
+  abortSignal?: AbortSignal | undefined
 }): Promise<AxiosResponse<ThreadsMessageResponse>> {
   // console.log('sendMessage', params)
 

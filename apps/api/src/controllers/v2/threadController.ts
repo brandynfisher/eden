@@ -276,13 +276,9 @@ export const getThread = async (
         )
       return {
         ...msg,
-        status:
-          hasPendingToolCalls ||
-          (thread.active &&
-            Array.isArray(thread.active) &&
-            thread.active.includes(msg.id.toString()))
-            ? { type: 'running' }
-            : { type: 'complete', reason: 'stop' },
+        status: hasPendingToolCalls
+          ? { type: 'running' }
+          : { type: 'complete', reason: 'stop' },
       }
     })
 
