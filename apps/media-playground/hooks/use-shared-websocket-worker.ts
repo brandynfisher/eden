@@ -17,6 +17,7 @@ interface WorkerMessage {
   error?: unknown
   message?: string
   timestamp?: string
+  version?: string
 }
 
 // Define the types for messages sent TO the worker
@@ -40,22 +41,67 @@ interface AuthMessage {
   data: unknown
 }
 
+interface VersionCheckMessage {
+  type: 'version_check'
+}
+
 type MessageToWorker =
   | ConnectMessage
   | DisconnectMessage
   | SendMessage
   | AuthMessage
+  | VersionCheckMessage
 
 const WORKER_PATH = '/workers/websocket.worker.js'
-const WORKER_VERSION = '1.0' // Use a fixed version instead of timestamp
+const WORKER_VERSION = '1.0' // Must match version in websocket.worker.js
+const VERSION_CHECK_TIMEOUT = 2000 // 2 seconds timeout for version check
 
 // The worker path is handled by Turbopack's asset handling
 function getWorkerUrl() {
-  return `${WORKER_PATH}?v=${WORKER_VERSION}`
+  const cacheBuster = Date.now() // Add cache buster to force reload when needed
+  return `${WORKER_PATH}?v=${WORKER_VERSION}&t=${cacheBuster}`
 }
 
 // Check if SharedWorker is supported
 const isSharedWorkerSupported = typeof SharedWorker !== 'undefined'
+
+// Function to terminate all shared workers with our name
+async function terminateSharedWorkers() {
+  if (!navigator.serviceWorker) return
+
+  // First try to use the debug API
+  // @ts-ignore - debug API types not available
+  if (typeof navigator.serviceWorker.getRegistrations === 'function') {
+    const registrations = await navigator.serviceWorker.getRegistrations()
+    for (const registration of registrations) {
+      if (
+        registration.active &&
+        registration.active.scriptURL.includes(WORKER_PATH)
+      ) {
+        await registration.unregister()
+      }
+    }
+  }
+
+  // Also try to cleanup using SharedWorker if available
+  if (isSharedWorkerSupported) {
+    try {
+      // Create a temporary worker to send cleanup message
+      const tempWorker = new SharedWorker(getWorkerUrl(), {
+        name: 'websocket-worker-cleanup',
+        credentials: 'same-origin',
+        type: 'classic',
+      })
+      tempWorker.port.start()
+      tempWorker.port.postMessage({ type: 'cleanup_legacy_workers' })
+      setTimeout(() => {
+        tempWorker.port.close()
+      }, 1000)
+    } catch (e) {
+      console.warn('Failed to create cleanup worker:', e)
+    }
+  }
+}
 
 class DirectWebSocketConnection {
   private ws: WebSocket | null = null
@@ -233,8 +279,41 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
   const portRef = useRef<MessagePort | null>(null)
   const directWSRef = useRef<DirectWebSocketConnection | null>(null)
   const lastAuthMessageRef = useRef<AuthMessage | null>(null)
+  const versionCheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
+  const versionVerifiedRef = useRef(false)
+
+  const cleanupWorker = useCallback(async () => {
+    if (portRef.current) {
+      portRef.current.postMessage({ type: 'disconnect' })
+      portRef.current.close()
+      portRef.current = null
+    }
+    if (workerRef.current) {
+      await terminateSharedWorkers()
+      workerRef.current = null
+    }
+    versionVerifiedRef.current = false
+  }, [])
 
   const handleMessage = useCallback((message: WorkerMessage) => {
+    // Clear version check timeout if we get any message
+    if (versionCheckTimeoutRef.current) {
+      clearTimeout(versionCheckTimeoutRef.current)
+      versionCheckTimeoutRef.current = null
+    }
+
+    // Handle version check response
+    if (message.type === 'debug' && 'version' in message) {
+      versionVerifiedRef.current = true
+      if (message.version !== WORKER_VERSION) {
+        console.warn('Worker version mismatch detected, reloading worker')
+        cleanupWorker()
+        return
+      }
+    }
+
     // Only log non-debug messages at debug level
     if (message.type !== 'debug') {
       const data = message.data
@@ -291,17 +370,7 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
   // Initialize connection
   useEffect(() => {
     if (!endpoint) {
-      if (isSharedWorkerSupported) {
-        if (portRef.current) {
-          portRef.current.postMessage({ type: 'disconnect' })
-          portRef.current.close()
-          portRef.current = null
-          workerRef.current = null
-        }
-      } else {
-        directWSRef.current?.disconnect()
-        directWSRef.current = null
-      }
+      cleanupWorker()
       setReadyState(ReadyState.CLOSED)
       setIsAttemptingReconnect(false)
       return
@@ -314,41 +383,56 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
           const workerUrl = getWorkerUrl()
           console.debug('Initializing SharedWorker:', workerUrl)
 
-          const worker = new SharedWorker(workerUrl, {
-            name: 'websocket-worker',
-            credentials: 'same-origin',
-            type: 'classic',
-          })
+          // Attempt to terminate any existing workers first
+          terminateSharedWorkers().then(() => {
+            const worker = new SharedWorker(workerUrl, {
+              name: 'websocket-worker',
+              credentials: 'same-origin',
+              type: 'classic',
+            })
 
-          // Ensure the worker is properly registered for debugging
-          if ('onerror' in worker) {
-            worker.onerror = error => {
-              console.error('SharedWorker error:', error)
+            // Ensure the worker is properly registered for debugging
+            if ('onerror' in worker) {
+              worker.onerror = error => {
+                console.error('SharedWorker error:', error)
+                setReadyState(ReadyState.CLOSED)
+              }
+            }
+
+            worker.port.start()
+            console.debug('SharedWorker created:', {
+              url: workerUrl,
+              options: {
+                name: 'websocket-worker',
+                type: 'classic',
+              },
+            })
+
+            const port = worker.port
+            port.onmessage = (event: MessageEvent<WorkerMessage>) =>
+              handleMessage(event.data)
+            port.onmessageerror = error => {
+              console.error('Worker port message error:', error)
               setReadyState(ReadyState.CLOSED)
             }
-          }
 
-          worker.port.start()
-          console.debug('SharedWorker created:', {
-            url: workerUrl,
-            options: {
-              name: 'websocket-worker',
-              type: 'classic',
-            },
+            workerRef.current = worker
+            portRef.current = port
+
+            // Set up version check timeout
+            if (versionCheckTimeoutRef.current) {
+              clearTimeout(versionCheckTimeoutRef.current)
+            }
+            versionCheckTimeoutRef.current = setTimeout(() => {
+              console.warn('Version check timeout - assuming legacy worker')
+              cleanupWorker()
+            }, VERSION_CHECK_TIMEOUT)
+
+            // Check version immediately after connection
+            port.postMessage({ type: 'version_check' })
+            port.postMessage({ type: 'connect', endpoint })
           })
-
-          const port = worker.port
-          port.onmessage = (event: MessageEvent<WorkerMessage>) =>
-            handleMessage(event.data)
-          port.onmessageerror = error => {
-            console.error('Worker port message error:', error)
-            setReadyState(ReadyState.CLOSED)
-          }
-
-          workerRef.current = worker
-          portRef.current = port
-          port.postMessage({ type: 'connect', endpoint })
-        } else if (portRef.current) {
+        } else if (portRef.current && versionVerifiedRef.current) {
           portRef.current.postMessage({ type: 'connect', endpoint })
         }
       } else {
@@ -370,21 +454,11 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
     }
 
     return () => {
-      if (isSharedWorkerSupported) {
-        if (workerRef.current) {
-          workerRef.current.port.postMessage({ type: 'disconnect' })
-          workerRef.current = null
-        }
-      } else {
-        if (directWSRef.current) {
-          directWSRef.current.disconnect()
-          directWSRef.current = null
-        }
-      }
+      cleanupWorker()
       setReadyState(ReadyState.CLOSED)
       setIsAttemptingReconnect(false)
     }
-  }, [endpoint, handleMessage])
+  }, [endpoint, handleMessage, cleanupWorker])
 
   const sendMessage = useCallback((message: MessageToWorker) => {
     if (isSharedWorkerSupported) {
