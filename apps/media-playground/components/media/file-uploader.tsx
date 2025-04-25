@@ -521,7 +521,7 @@ const FileUploader = ({
           onDrop(files)
         }
       }}
-      className={cn(['flex-grow', className])}
+      className={cn(['flex flex-col flex-grow gap-2', className])}
     >
       <div>
         {existingFiles.length + filesToUpload.length < (maxFiles || 1) ? (
