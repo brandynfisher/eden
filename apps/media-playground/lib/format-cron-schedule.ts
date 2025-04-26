@@ -68,6 +68,29 @@ function scheduleToCronExpression(schedule: CronSchedule): string {
 export function formatCronSchedule(schedule: CronSchedule): string {
   const parts: string[] = []
 
+  // Handle one-time tasks (where start_date equals end_date)
+  if (
+    schedule.start_date &&
+    schedule.end_date &&
+    dayjs(schedule.start_date).isSame(dayjs(schedule.end_date))
+  ) {
+    const taskDate = dayjs(schedule.start_date).tz(schedule.timezone || 'UTC')
+    const now = dayjs().tz(schedule.timezone || 'UTC')
+    const hour = schedule.hour?.toString() || taskDate.format('H')
+    const minute = schedule.minute?.toString() || taskDate.format('m')
+    const formattedTime = dayjs()
+      .hour(parseInt(hour, 10))
+      .minute(parseInt(minute, 10))
+      .format('h:mma')
+      .toLowerCase()
+
+    if (taskDate.isSame(now, 'day')) {
+      return `at ${formattedTime}`
+    } else {
+      return `at ${formattedTime}, ${taskDate.format('MMMM D, YYYY')}`
+    }
+  }
+
   // Get the cron expression
   const cronExpression = scheduleToCronExpression(schedule)
 
