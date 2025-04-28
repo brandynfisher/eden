@@ -164,15 +164,15 @@ const CreationCard = ({
             </>
           ) : null}
         </div>
-        <div className="absolute bottom-2 right-2">
-          <LikeButton
-            type="creation"
-            id={creation._id}
-            isLiked={creation.isLiked}
-            likeCount={creation.likeCount}
-          />
-        </div>
       </Link>
+      <div className="absolute bottom-2 right-2 z-10">
+        <LikeButton
+          type="creation"
+          id={creation._id}
+          isLiked={creation.isLiked}
+          likeCount={creation.likeCount}
+        />
+      </div>
       {showFooter ? (
         <CardFooter
           // creator={creator}
