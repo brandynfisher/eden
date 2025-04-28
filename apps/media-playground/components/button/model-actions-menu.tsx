@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { useModelQuery } from '@/hooks/query/use-model-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -44,19 +43,11 @@ const ModelActionsMenu = ({
   const [isOpen, setIsOpen] = useState(false)
   const dispatch = useAppDispatch()
 
-  const { model: modelResponse } = useModelQuery({
-    key: model._id,
-    initialData: {
-      model,
-    },
-    enabled: !!model,
-  })
-
   if (!model) {
     return null
   }
 
-  const modelData = modelResponse || model
+  const modelData = model
 
   const handleShareClick = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
@@ -90,10 +81,10 @@ const ModelActionsMenu = ({
                 <Link
                   className="cursor-pointer"
                   href={`/create/image/${
-                    model.base_model && model.base_model === 'flux-dev'
+                    modelData.base_model && modelData.base_model === 'flux-dev'
                       ? 'flux_dev'
                       : 'txt2img'
-                  }?lora=${model._id}`}
+                  }?lora=${modelData._id}`}
                   prefetch={false}
                 >
                   <ComponentIcon className="mr-2 h-4 w-4" />
@@ -125,7 +116,7 @@ const ModelActionsMenu = ({
               />
             </DropdownMenuItem>
           )}
-          {modelData.user._id === user?._id && (
+          {modelData && modelData.user._id === user?._id && (
             <>
               {!hiddenItems?.includes('privacy') && (
                 <>

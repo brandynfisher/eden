@@ -90,6 +90,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
             type="agent"
             id={agent._id}
             isLiked={agent.isLiked}
+            docQueryKeyId={agent.username}
             likeCount={agent.likeCount}
             className="pointer-events-auto"
           />

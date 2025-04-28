@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getFileTypeByMimeType } from '@/lib/files'
 import {
@@ -51,12 +50,7 @@ const CreationActionsMenu = ({
   const [isOpen, setIsOpen] = useState(false)
   const dispatch = useAppDispatch()
 
-  const { creation: creationResponse } = useCreationQuery({
-    key: creation._id,
-    enabled: isOpen && !!creation,
-  })
-
-  const creationData = creationResponse || creation
+  const creationData = creation
 
   if (!creationData) {
     return null
@@ -103,7 +97,7 @@ const CreationActionsMenu = ({
                 <DropdownMenuItem asChild>
                   <Link
                     className="cursor-pointer"
-                    href={`/creations/${creation._id}`}
+                    href={`/creations/${creationData._id}`}
                   >
                     <ExternalLinkIcon className="mr-2 h-4 w-4" />
                     View Details
@@ -125,9 +119,9 @@ const CreationActionsMenu = ({
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <LikeButton
                     type="creation"
-                    id={creation._id}
-                    isLiked={creation.isLiked}
-                    likeCount={creation.likeCount}
+                    id={creationData._id}
+                    isLiked={creationData.isLiked}
+                    likeCount={creationData.likeCount}
                     isDropdownItem={true}
                   />
                 </DropdownMenuItem>
@@ -170,7 +164,7 @@ const CreationActionsMenu = ({
               <DropdownMenuItem asChild disabled={!isSignedIn}>
                 <Link
                   className="cursor-pointer flex items-center"
-                  href={`/create/${fileType}/${creation.tool}?creation=${creation._id}`}
+                  href={`/create/${fileType}/${creationData.tool}?creation=${creationData._id}`}
                   scroll={false}
                   shallow={true}
                   prefetch={false}
@@ -181,13 +175,13 @@ const CreationActionsMenu = ({
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            {creationResponse && creationData?.user._id === user?._id && (
+            {creationData && creationData.user._id === user?._id && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <PrivacyActionItem
                     type="creation"
-                    item={creationResponse}
+                    item={creationData}
                     queryKey={queryKey}
                   />
                 </DropdownMenuGroup>
@@ -195,25 +189,24 @@ const CreationActionsMenu = ({
                 <DropdownMenuGroup>
                   <DeleteActionItem
                     type="creation"
-                    item={creationResponse}
+                    item={creationData}
                     queryKey={queryKey}
                   />
                 </DropdownMenuGroup>
               </>
             )}
-            {isSignedIn ? (
+            {isSignedIn && creationData ? (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DownloadActionItem
                     type="creation"
-                    originalFileUrl={creationResponse?.filename || ''}
+                    originalFileUrl={creationData.filename || ''}
                     saveAsFileName={generateFilename(
-                      creationResponse?.user.username || '',
-                      creationResponse?.task.args?.prompt
-                        ?.substring(0, 64)
-                        .trim() || '',
-                      creationResponse?._id || '',
+                      creationData.user.username || '',
+                      creationData.task.args?.prompt?.substring(0, 64).trim() ||
+                        '',
+                      creationData._id || '',
                     )}
                   />
                 </DropdownMenuGroup>

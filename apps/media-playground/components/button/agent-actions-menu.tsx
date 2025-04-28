@@ -177,6 +177,7 @@ const AgentActionsMenu = ({
                   type="agent"
                   id={agent._id}
                   isLiked={agent.isLiked}
+                  docQueryKeyId={agent.username}
                   likeCount={agent.likeCount}
                   isDropdownItem={true}
                 />
