@@ -54,7 +54,6 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
             <div>
               <div className="flex items-center justify-between mb-4 p-2 rounded-md bg-popover border">
                 <LikeButton
-                  queryKey={queryKey}
                   type={type}
                   id={item._id}
                   isLiked={item.isLiked}

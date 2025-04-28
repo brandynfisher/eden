@@ -176,15 +176,7 @@ const CreationCard = ({
       {showFooter ? (
         <CardFooter
           // creator={creator}
-          actions={[
-            // <LikeButton
-            //   key={0}
-            //   likeCount={4}
-            //   isLiked={false}
-            //   onChange={() => null}
-            // />,
-            <ActionsDropdown key={1} />,
-          ]}
+          actions={[<ActionsDropdown key={1} />]}
         />
       ) : null}
     </Card>

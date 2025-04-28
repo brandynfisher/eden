@@ -174,7 +174,6 @@ const AgentActionsMenu = ({
             <DropdownMenuGroup>
               <DropdownMenuItem asChild className="cursor-pointer">
                 <LikeButton
-                  queryKey={queryKey}
                   type="agent"
                   id={agent._id}
                   isLiked={agent.isLiked}
