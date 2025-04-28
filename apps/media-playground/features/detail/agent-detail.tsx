@@ -51,11 +51,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
     FeatureFlag.FeatureDeployments,
   )
 
-  const {
-    agent: agentClientData,
-    invalidate,
-    queryKey,
-  } = useAgentQuery({
+  const { agent: agentClientData, invalidate } = useAgentQuery({
     key: id,
     initialData: agentSSRData
       ? {
@@ -179,11 +175,11 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                 )}
                 <div className="flex items-center gap-2">
                   <LikeButton
-                    queryKey={queryKey}
                     type="agent"
                     id={agent._id}
                     isLiked={agent.isLiked}
                     likeCount={agent.likeCount}
+                    docQueryKeyId={id}
                   />
                   <TooltipProvider>
                     <Tooltip>

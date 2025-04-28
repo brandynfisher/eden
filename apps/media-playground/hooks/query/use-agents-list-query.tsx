@@ -2,7 +2,7 @@ import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
 import { Agent, PaginatedCursorResponse } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 
-export const listQueryKey = ['agents']
+export const listQueryKey = ['list', 'agents']
 
 export const useAgentsListQuery = (query?: {
   _id?: string[]

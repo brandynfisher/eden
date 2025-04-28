@@ -2,7 +2,7 @@
 
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
 import ActionsDropdown from '@/components/button/actions-dropdown'
-// import LikeButton from '@/components/button/like-button'
+import LikeButton from '@/components/button/like-button'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
@@ -163,6 +163,14 @@ const CreationCard = ({
               ) : null}
             </>
           ) : null}
+        </div>
+        <div className="absolute bottom-2 right-2">
+          <LikeButton
+            type="creation"
+            id={creation._id}
+            isLiked={creation.isLiked}
+            likeCount={creation.likeCount}
+          />
         </div>
       </Link>
       {showFooter ? (

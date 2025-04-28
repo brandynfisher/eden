@@ -668,6 +668,39 @@ const userLookup: PipelineStage[] = [
   { $unwind: '$user' },
 ]
 
+const likesLookup = (userId: ObjectId, entityType: string): PipelineStage[] => [
+  {
+    $lookup: {
+      from: 'likes3',
+      let: { entityId: '$_id' },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$entityId', '$$entityId'] },
+                { $eq: ['$user', userId] },
+                { $eq: ['$entityType', entityType] },
+              ],
+            },
+          },
+        },
+      ],
+      as: 'likes',
+    },
+  },
+  {
+    $addFields: {
+      isLiked: { $gt: [{ $size: '$likes' }, 0] },
+    },
+  },
+  {
+    $project: {
+      likes: 0,
+    },
+  },
+]
+
 const agentLookup: PipelineStage[] = [
   {
     $lookup: {
@@ -785,7 +818,11 @@ export const getCreationsFeedCursorV2 = async (
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
-  const lateLookupStages = [...userLookup, ...agentLookup]
+  const lateLookupStages = [
+    ...userLookup,
+    ...agentLookup,
+    ...(authUserId ? likesLookup(new ObjectId(authUserId), 'creation') : []),
+  ]
 
   // console.log(
   //   JSON.stringify(
@@ -877,8 +914,6 @@ export const getCreationsFeedCursorV2 = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(creationFeedPipeline, null, 2))
-
     results = await CreationV2.aggregate(creationFeedPipeline)
   }
 
@@ -943,7 +978,11 @@ export const getModelsFeedCursorV2 = async (
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
-  const lateLookupStages = [...taskLookup, ...userLookup]
+  const lateLookupStages = [
+    ...taskLookup,
+    ...userLookup,
+    ...(authUserId ? likesLookup(new ObjectId(authUserId), 'model') : []),
+  ]
 
   const pipeline = await createPipeline({
     limit: limit ?? 100,
@@ -1189,7 +1228,10 @@ export const getAgentsFeedCursor = async (
   const { cursor, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
-  const lateLookupStages = ownerLookup
+  const lateLookupStages = [
+    ...ownerLookup,
+    ...(authUserId ? likesLookup(new ObjectId(authUserId), 'agent') : []),
+  ]
 
   const pipeline = await createPipeline({
     limit: limit ?? 100,
@@ -1203,6 +1245,8 @@ export const getAgentsFeedCursor = async (
       models: 1,
       username: 1,
       userImage: 1,
+      likeCount: 1,
+      isLiked: 1,
       createdAt: 1,
       updatedAt: 1,
       public: 1,
