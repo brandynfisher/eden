@@ -124,26 +124,21 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
             </Button>
           </div>
         </div>
-        <p className="font-medium text-sm line-clamp-2 flex-1 text-left">
-          {trigger.message}
-        </p>
+        <TextClampMore
+          text={trigger.message}
+          className="font-medium text-sm flex-1 text-left"
+          lines={2}
+        />
+
         <span className="text-xs text-muted-foreground text-left">
           {formattedSchedule}
         </span>
       </CollapsibleTrigger>
-      <CollapsibleContent className="px-4 py-3 border border-t-0 border-gray-400/20 rounded-b-lg">
-        <div className="space-y-3">
+      <CollapsibleContent className="border border-t-0 border-gray-400/20 rounded-b-lg">
+        <div className="space-y-3 px-4 py-3">
           <div>
             <h4 className="text-sm font-semibold">Platform</h4>
             <p className="text-sm text-muted-foreground">{trigger.platform}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold">Instructions</h4>
-            <TextClampMore
-              text={trigger.message}
-              className="text-sm text-muted-foreground"
-              lines={2}
-            />
           </div>
           <div>
             <h4 className="text-sm font-semibold">Schedule</h4>
