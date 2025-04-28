@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react'
 
 type MaskingCanvasCursorProps = {
-  size: number
+  size: number // Changed prop name back to size
   canvasRef: React.RefObject<HTMLCanvasElement>
   scale: number
-  translate: { x: number; y: number }
+  // translate: { x: number; y: number } // Removed unused prop again
 }
 
 const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
-  size,
+  size, // Changed prop name back
   canvasRef,
   scale,
-  translate,
+  // translate, // Removed unused prop again
 }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 })
 
+  // Effect to track mouse position RELATIVE TO THE CANVAS VIEWPORT
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!canvasRef.current) return
@@ -22,75 +23,49 @@ const MaskingCanvasCursor: React.FC<MaskingCanvasCursorProps> = ({
       const canvas = canvasRef.current
       const rect = canvas.getBoundingClientRect()
 
-      // Get position relative to the canvas element
+      // Mouse position relative to the canvas element's top-left corner in the viewport
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
 
-      // Calculate scaling factor between internal canvas resolution and display size
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
-
-      // Convert to canvas coordinates
-      const finalX = x * scaleX
-      const finalY = y * scaleY
-
-      setPosition({ x: finalX, y: finalY })
+      setPosition({ x, y })
     }
 
+    // Use window listener as mouse might be outside canvas bounds but still relevant
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [canvasRef, scale, translate])
+  }, [canvasRef]) // Only depends on canvasRef
 
   if (!canvasRef.current) return null
 
-  const canvas = canvasRef.current
-  const rect = canvas.getBoundingClientRect()
-  const scaleX = canvas.width / rect.width
-  const scaleY = canvas.height / rect.height
+  // --- Revert size calculation to use size prop directly ---
+  const finalCursorSize = size // Removed * scale
 
-  // Convert back from canvas coordinates to screen coordinates
-  const unscaledX = position.x / scaleX
-  const unscaledY = position.y / scaleY
+  // Calculate position within the parent's transformed coordinate system (Removed translation adjustment)
+  const innerX = position.x / scale
+  const innerY = position.y / scale
 
-  // First apply translation in zoomed space, then unzoom
-  const screenX = (unscaledX + translate.x) / scale
-  const screenY = (unscaledY + translate.y) / scale
-
-  // Convert the cursor size from canvas coordinates to screen coordinates
-  // size is in canvas coordinates (like line width)
-  // First convert to screen coordinates by dividing by canvas scale
-  // Then divide by zoom to match the current view
-  // Multiply by 2.5 to match the line width visually
-  const cursorSize = (size * 2.5) / scaleX / scale
+  // Use absolute positioning within the parent container
+  const cursorStyle: React.CSSProperties = {
+    position: 'absolute',
+    width: `${finalCursorSize}px`, // Use recalculated size
+    height: `${finalCursorSize}px`, // Use recalculated size
+    top: `${innerY}px`, // Use calculated inner position
+    left: `${innerX}px`, // Use calculated inner position
+    borderRadius: '50%',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    border: '2px solid white',
+    outline: '1px solid black',
+    outlineOffset: '-3px',
+    isolation: 'isolate',
+    mixBlendMode: 'difference',
+    pointerEvents: 'none',
+    zIndex: 50,
+    transform: `translate(-50%, -50%)`, // Center using transform
+  }
 
   return (
-    <div
-      className="pointer-events-none fixed inset-0"
-      style={{
-        width: '100%',
-        height: '100%',
-        isolation: 'isolate',
-        zIndex: 50,
-      }}
-    >
-      {/* Main cursor with background and border */}
-      <div
-        className="absolute rounded-full"
-        style={{
-          width: `${cursorSize}px`,
-          height: `${cursorSize}px`,
-          transform: `translate(${screenX - cursorSize / 2}px, ${
-            screenY - cursorSize / 2
-          }px)`,
-          backgroundColor: 'rgba(255, 255, 255, 0.4)',
-          border: '2px solid white',
-          outline: '1px solid black',
-          outlineOffset: '-3px',
-          isolation: 'isolate',
-          mixBlendMode: 'difference',
-        }}
-      />
-    </div>
+    // The cursor is rendered *inside* the div that has the scale/translate transform in MaskingCanvas.tsx
+    <div style={cursorStyle} />
   )
 }
 

@@ -1,6 +1,9 @@
+import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import ToggleButton from '@/components/button/toggle-button'
 import { ToggleGroup } from '@/components/ui/toggle-group'
 import { usePrivacyToggle } from '@/hooks/use-privacy-toggle'
+import { GatedActions } from '@/hooks/use-subscription-gate'
+import { useSubscriptionGate } from '@/hooks/use-subscription-gate'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
@@ -14,10 +17,22 @@ type Props = {
 }
 
 const PrivacyToggle = ({ type, item, queryKey, className }: Props) => {
-  const { handleToggle } = usePrivacyToggle({ type, item, queryKey })
+  const { handleToggle } = usePrivacyToggle({
+    type,
+    item,
+    timelineQueryKey: queryKey,
+    itemQueryKey: queryKey,
+  })
+  const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
+    GatedActions.MakePrivate,
+  )
   const [isLoading, setIsLoading] = useState(false)
 
   const onToggle = () => {
+    if (!isAllowedPrivacy && item.public) {
+      return
+    }
+
     setIsLoading(true)
 
     handleToggle()
@@ -44,8 +59,15 @@ const PrivacyToggle = ({ type, item, queryKey, className }: Props) => {
         disabled={item.public}
       />
       <ToggleButton
+        className="w-auto relative"
         value={'private'}
-        label={'Private'}
+        labelString={'Private'}
+        label={
+          <div className="flex items-center gap-2">
+            Private
+            <SubscriptionCrownBadge type={type} />
+          </div>
+        }
         onClick={onToggle}
         disabled={!item.public}
       />

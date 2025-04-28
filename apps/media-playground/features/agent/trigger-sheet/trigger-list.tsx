@@ -5,16 +5,11 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Trigger } from '@edenlabs/eden-sdk'
 
 export type TriggerListProps = {
-  hasDeployments: boolean
   triggers: Trigger[]
   agentId: string
 }
 
-export function TriggerList({
-  triggers,
-  agentId,
-  hasDeployments,
-}: TriggerListProps) {
+export function TriggerList({ triggers, agentId }: TriggerListProps) {
   const filteredTriggers = triggers.filter(trigger => {
     if (!trigger.schedule.end_date) return true
 
@@ -23,14 +18,6 @@ export function TriggerList({
 
     return endDate > currentDate
   })
-
-  if (!hasDeployments) {
-    return (
-      <div className="text-sm text-center text-muted-foreground py-4 border rounded-md">
-        Deploy your agent to enable task setup.
-      </div>
-    )
-  }
 
   if (filteredTriggers.length === 0) {
     return (

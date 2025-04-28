@@ -60,7 +60,7 @@ const ModelActionsMenu = ({
 
   const handleShareClick = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/models/${model._id}`
+    const shareUrl = `${baseUrl}/models/${modelData._id}` // Use modelData
     dispatch(
       updateShareModal({
         isOpen: true,

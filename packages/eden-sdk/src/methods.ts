@@ -286,6 +286,12 @@ import {
   ThreadsMessageReactArguments,
   ThreadsMessageReactResponse,
   ThreadsMessageResponse,
+  ThreadsPinMessageArguments,
+  ThreadsPinMessageResponse,
+  ThreadsRenameArguments,
+  ThreadsRenameResponse,
+  ThreadsUnpinMessageArguments,
+  ThreadsUnpinMessageResponse,
   ToolsGetArgumentsV2,
   ToolsGetResponseV2,
   ToolsListArgumentsV2,
@@ -330,6 +336,9 @@ import {
   threadsListRequestConfig,
   threadsMessageReactRequestConfig,
   threadsMessageRequestConfig,
+  threadsPinMessageRequestConfig,
+  threadsRenameRequestConfig,
+  threadsUnpinMessageRequestConfig,
   toolsGetRequestConfigV2,
   toolsListRequestConfigV2,
 } from './models/v2'
@@ -895,9 +904,21 @@ export abstract class Methods {
       ThreadsMessageReactArguments,
       ThreadsMessageReactResponse
     >(this, threadsMessageReactRequestConfig),
+    pinMessage: bindApiCall<
+      ThreadsPinMessageArguments,
+      ThreadsPinMessageResponse
+    >(this, threadsPinMessageRequestConfig),
+    unpinMessage: bindApiCall<
+      ThreadsUnpinMessageArguments,
+      ThreadsUnpinMessageResponse
+    >(this, threadsUnpinMessageRequestConfig),
     delete: bindApiCall<ThreadsDeleteArguments, ThreadsDeleteResponse>(
       this,
       threadsDeleteRequestConfig,
+    ),
+    rename: bindApiCall<ThreadsRenameArguments, ThreadsRenameResponse>(
+      this,
+      threadsRenameRequestConfig,
     ),
   }
 

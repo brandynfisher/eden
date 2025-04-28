@@ -51,3 +51,8 @@ export const useAgentTriggerFormSheet = () => {
   const dialogs = useAppSelector(selectDialogs)
   return dialogs.agentTriggerFormSheet
 }
+
+export const useSubscriptionGateModal = () => {
+  const dialogs = useAppSelector(selectDialogs)
+  return dialogs.subscriptionGateModal
+}

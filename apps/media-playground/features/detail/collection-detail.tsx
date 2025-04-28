@@ -1,5 +1,6 @@
 'use client'
 
+import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,6 +24,10 @@ import UserAvatarLink from '@/components/user/user-avatar-link'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { useCollectionQuery } from '@/hooks/query/use-collection-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import {
+  GatedActions,
+  useSubscriptionGate,
+} from '@/hooks/use-subscription-gate'
 import {
   updateDeleteDialog,
   updateShareModal,
@@ -65,7 +70,9 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
   const router = useRouter()
   const { user } = useAuthState()
   const dispatch = useAppDispatch()
-
+  const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
+    GatedActions.MakePrivate,
+  )
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
 
@@ -330,10 +337,14 @@ const CollectionDetail = ({ id, collectionSSRData }: Props) => {
                   <FormItem className="flex flex-col gap-y-2">
                     <FormLabel>Privacy</FormLabel>
                     <FormControl>
-                      <div className="flex items-center gap-x-4">
-                        <LockIcon size={16} />
+                      <div className="flex items-center gap-x-2 relative w-fit">
+                        <SubscriptionCrownBadge
+                          type="collection"
+                          className="h-5 w-5"
+                        />
                         <Switch
                           className="!mt-0"
+                          disabled={!isAllowedPrivacy}
                           checked={field.value}
                           onCheckedChange={checked => {
                             field.onChange(checked)

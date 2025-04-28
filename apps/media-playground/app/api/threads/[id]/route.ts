@@ -76,3 +76,37 @@ export async function DELETE(
     })
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params: { id } }: { params: { id: string } },
+) {
+  const { getToken } = getAuth(request)
+  const authToken = await getToken()
+
+  const body = await request.json()
+  const title = body.title
+
+  if (!title) {
+    return new NextResponse(JSON.stringify({ message: 'Missing title' }), {
+      status: 400,
+    })
+  }
+
+  try {
+    const eden = new EdenClient({
+      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
+      token: authToken !== null ? authToken : undefined,
+    })
+
+    const res = await eden.threads.rename({ thread_id: id, title: title })
+
+    return NextResponse.json(res)
+  } catch (error) {
+    const errorMessage = handleAxiosServerError(error)
+    console.error(errorMessage)
+    return new NextResponse(JSON.stringify({ message: errorMessage }), {
+      status: 500,
+    })
+  }
+}

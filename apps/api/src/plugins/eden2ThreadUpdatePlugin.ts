@@ -64,7 +64,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
       'change',
       async (data: ChangeStreamDocument<ThreadDocument>) => {
         // fastify.log.info(`Change stream onChange: ${WATCHED_COLLECTION}`)
-
         // console.log(data.operationType, data)
         try {
           if (data.operationType === 'insert') {

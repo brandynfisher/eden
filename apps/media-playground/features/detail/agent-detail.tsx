@@ -8,6 +8,7 @@ import TextClampMore from '@/components/text/text-clamp-more'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Tooltip,
   TooltipContent,
@@ -28,6 +29,7 @@ import {
 import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import {
+  ChevronDownIcon,
   ClockIcon,
   EyeOffIcon,
   MessageSquareIcon,
@@ -36,7 +38,15 @@ import {
   Share2Icon,
 } from 'lucide-react'
 import Link from 'next/link'
-import React, { RefObject } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 type Props = {
   id: string
@@ -44,9 +54,104 @@ type Props = {
   scrollRef?: RefObject<HTMLDivElement>
 }
 
+// Define filter types within AgentDetail
+type FilterMode = 'all' | 'mine'
+
 const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
-  const { isSignedIn, user } = useAuthState()
+  const { user, isSignedIn } = useAuthState()
   const dispatch = useAppDispatch()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Use standard useState again
+  const [filterMode, setFilterMode] = useState<FilterMode>(() => {
+    // Initialize state from URL search param on mount
+    const initialTab = searchParams.get('tab')
+    return initialTab === 'mine' ? 'mine' : 'all' // Default to 'all'
+  })
+
+  // State to hold the scroll INDEX target read from history state
+  const [initialScrollIndex, setInitialScrollIndex] = useState<number | null>(
+    null,
+  )
+
+  // Callback to clear state after scroll restore
+  const clearScrollIndexState = useCallback(() => {
+    // console.log('[AgentDetail] Clearing initialScrollIndex')
+    setInitialScrollIndex(null)
+    // REMOVE URL param clearing logic
+  }, []) // No dependencies needed now
+
+  // Effect to read initial scroll INDEX from history state
+  useEffect(() => {
+    // Read scrollIndex from history state
+    const historyScrollIndex = window.history.state?.scrollIndex
+
+    // console.log(
+    //   `[AgentDetail] Scroll check effect: historyScrollIndex=${historyScrollIndex}`,
+    // )
+
+    // If the history state exists, attempt to read and set state
+    if (typeof historyScrollIndex === 'number') {
+      const scrollIndex = historyScrollIndex
+      // console.log(
+      //   '[AgentDetail] Read initial scroll index from history state:',
+      //   scrollIndex,
+      // )
+      setInitialScrollIndex(scrollIndex)
+      // console.log(
+      //   '[AgentDetail] Read initial scroll index from history state:',
+      //   scrollIndex,
+      // )
+      setInitialScrollIndex(scrollIndex)
+      // Clear the history state immediately after reading
+      try {
+        const currentState = window.history.state || {}
+        // Manually build restState if scrollIndex exists
+        if (
+          typeof currentState === 'object' &&
+          currentState !== null &&
+          'scrollIndex' in currentState
+        ) {
+          const restState: Record<string, unknown> = {}
+          for (const key in currentState) {
+            if (key !== 'scrollIndex') {
+              // Clear scrollIndex
+              restState[key] = currentState[key]
+            }
+          }
+          window.history.replaceState(restState, '')
+          // console.log('[AgentDetail] Cleared scrollIndex from history state')
+        }
+      } catch (e) {
+        console.error('Error clearing history state:', e)
+      }
+    }
+    // Depend on searchParams/router to potentially catch navigation events
+  }, [searchParams, router, id])
+
+  // Effect to update URL when filterMode changes
+  useEffect(() => {
+    const currentTab = searchParams.get('tab')
+    const newTabValue = filterMode === 'mine' ? 'mine' : null // null removes the param
+
+    // Avoid pushing the same state
+    if (currentTab === newTabValue || (!currentTab && !newTabValue)) {
+      return
+    }
+
+    const params = new URLSearchParams(searchParams.toString())
+    if (newTabValue) {
+      params.set('tab', newTabValue)
+    } else {
+      params.delete('tab')
+    }
+    // Use replace to avoid adding to history for tab clicks
+    router.replace(`?${params.toString()}`, { scroll: false })
+    // scroll: false prevents Next.js from scrolling to top on shallow nav
+  }, [filterMode, searchParams, router])
+
+  const feedSectionRef = useRef<HTMLDivElement>(null)
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
     FeatureFlag.FeatureDeployments,
   )
@@ -61,6 +166,16 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   })
 
   const agent = agentClientData || agentSSRData
+
+  // Construct the query for RecentCreationsFeed based on filterMode
+  const recentCreationsQuery = useMemo(() => {
+    if (!agent) return {}
+    const baseAgentQuery = { agent: agent._id }
+    if (filterMode === 'mine' && user?._id) {
+      return { ...baseAgentQuery, user: user._id }
+    }
+    return baseAgentQuery
+  }, [agent, filterMode, user?._id])
 
   const onUpdateAgent = async () => {
     await invalidate()
@@ -96,6 +211,9 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   }
 
   if (!agent) return null
+
+  // Determine if the filter tabs should be shown
+  const showFilterTabs = isSignedIn && !!user
 
   return (
     <>
@@ -140,27 +258,30 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                 {user?._id === agent?.owner._id && (
                   <>
                     <Button
+                      className="gap-2"
                       variant="outline"
-                      size="icon"
                       onClick={handleEditClick}
                     >
                       <SettingsIcon className="w-4 h-4" />
+                      Edit
                     </Button>
                     {isFeatureDeploymentsEnabled && (
                       <>
                         <Button
+                          className="gap-2"
                           variant="outline"
-                          size="icon"
                           onClick={handleConfigureDeployments}
                         >
                           <RocketIcon size={18} />
+                          Deployments
                         </Button>
                         <Button
+                          className="gap-2"
                           variant="outline"
-                          size="icon"
                           onClick={handleConfigureTriggers}
                         >
                           <ClockIcon size={18} />
+                          Tasks
                         </Button>
                       </>
                     )}
@@ -263,24 +384,51 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           )}
         </div>
       </div>
-      <div className="p-4">
-        {agent && (
-          <RecentCreationsFeed
-            title={
-              isSignedIn && !!user
-                ? `Your Creations with ${agent?.name}`
-                : `Public Creations with ${agent?.name}`
-            }
-            query={
-              isSignedIn && !!user
-                ? { user: user._id, agent: agent._id }
-                : { agent: agent._id }
-            }
-            isModal={false}
-            scrollRef={scrollRef}
-          />
-        )}
-      </div>
+
+      {/* Bouncy Arrow and Title (Moved Here) */}
+      {agent && (
+        <>
+          <div className="flex justify-center mt-4">
+            <Button
+              variant="outline"
+              size="icon"
+              className="cursor-pointer self-center animate-bounce"
+            >
+              <ChevronDownIcon className="w-10 h-10" />
+            </Button>
+          </div>
+          <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8 px-4">
+            {`Creations with ${agent.name}`}
+          </div>
+
+          {/* Feed Section Start - Attach Ref Here */}
+          <div ref={feedSectionRef}>
+            {/* Filter Tabs */}
+            {showFilterTabs && (
+              <Tabs
+                value={filterMode}
+                onValueChange={value => {
+                  setFilterMode(value as FilterMode)
+                }}
+                className="w-full flex justify-center mb-4 px-4"
+              >
+                <TabsList>
+                  <TabsTrigger value="all">All Creations</TabsTrigger>
+                  <TabsTrigger value="mine">My Creations</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+
+            {/* Recent Creations Feed Component */}
+            <RecentCreationsFeed
+              query={recentCreationsQuery}
+              scrollRef={scrollRef}
+              initialScrollIndex={initialScrollIndex}
+              onScrollRestored={clearScrollIndexState}
+            />
+          </div>
+        </>
+      )}
     </>
   )
 }

@@ -1,19 +1,27 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { pinMessage, unpinMessage } from '@/features/chat/chat-api'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
-import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { ThreadPrimitive, useMessage } from '@assistant-ui/react'
+import {
+  ThreadPrimitive,
+  getExternalStoreMessages,
+  useMessage,
+} from '@assistant-ui/react'
 import {
   AssistantActionBar,
   AssistantMessage,
   BranchPicker,
   useThreadConfig,
 } from '@assistant-ui/react-ui'
+import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
+import { PinIcon, PinOffIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
-import React, { type FC } from 'react'
+import React, { type FC, useState } from 'react'
 
 const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
@@ -38,22 +46,60 @@ const MyAssistantMessageAvatar: FC = () => {
 const MyAssistantActionBar: FC = () => {
   const { TimeAgo } = useTimeAgo()
   const createdAt = useMessage(m => m.createdAt)
+  const id = useMessage(m => m.id)
+  const myMessages = useMessage(m =>
+    getExternalStoreMessages(m),
+  ) as EdenThreadMessage[]
+  const [pinnedState, setPinnedState] = useState(myMessages[0].pinned)
+  const reactions = myMessages[0].reactions || {}
+
+  const { user } = useAuthState()
+  const userId = user?._id || null
+
+  const hasThumbsUp = userId ? reactions.thumbs_up?.includes(userId) : false
+  const hasThumbsDown = userId ? reactions.thumbs_down?.includes(userId) : false
+
   return (
     <AssistantActionBar.Root
-      // hideWhenRunning
-      // autohide="not-last"
       autohide="not-last"
       autohideFloat="single-branch"
       className="flex items-center gap-2 w-full z-10"
     >
-      {/*<AssistantActionBar.SpeechControl />*/}
       <AssistantActionBar.Copy />
-      {/*<AssistantActionBar.Reload />*/}
-      <AssistantActionBar.FeedbackPositive />
-      <AssistantActionBar.FeedbackNegative />
+      <AssistantActionBar.FeedbackPositive
+        className={cn(
+          hasThumbsUp ? 'text-green-600' : '!text-muted-foreground',
+        )}
+      />
+      <AssistantActionBar.FeedbackNegative
+        className={cn(
+          hasThumbsDown ? 'text-red-600' : '!text-muted-foreground',
+        )}
+      />
+
+      <Button
+        variant={'ghost'}
+        size="icon"
+        className="p-0.5 w-6 h-6 hover:text-foreground hover:bg-muted"
+        onClick={async () => {
+          if (pinnedState) {
+            unpinMessage(id)
+            setPinnedState(false)
+          } else {
+            pinMessage(id)
+            setPinnedState(true)
+          }
+        }}
+      >
+        {pinnedState ? (
+          <PinOffIcon className="w-4 h-4 text-purple-600" />
+        ) : (
+          <PinIcon className="w-4 h-4" />
+        )}
+      </Button>
 
       <div
-        className="ml-auto text-xs text-muted-foreground"
+        className="ml-auto text-xs bg-transparent"
         title={new Date(createdAt).toLocaleString()}
       >
         <TimeAgo date={new Date(createdAt)} />
@@ -66,47 +112,44 @@ const MyAssistantMessage: FC = () => {
   const content = useMessage(m => m.content)
   const status = useMessage(m => m.status)
   const id = useMessage(m => m.id)
-  const threadId = useEdenRuntimeExtras(extras => extras.threadId)
-
-  // Use a ref to track when the component mounted or thread changed
-  // const mountTimeRef = React.useRef(Date.now())
-
-  // Reset the mount time when thread changes
-  // React.useEffect(() => {
-  //   mountTimeRef.current = Date.now()
-  //   console.log('[TypingIndicator] Thread changed or component mounted', {
-  //     threadId,
-  //   })
-  // }, [threadId])
 
   // Memoize the derived state to prevent unnecessary recalculations
-  const { isEmpty, isRunning } = React.useMemo(() => {
-    const newIsEmpty = !content || content.length === 0
-    const newIsRunning = status?.type === 'running'
+  // const { isEmpty, isRunning } = React.useMemo(() => {
+  //   const newIsEmpty = !content || content.length === 0
+  //   const newIsRunning = status?.type === 'running'
 
-    // console.log('[TypingIndicator] State calculation', {
-    //   threadId,
-    //   messageId: id,
-    //   isEmpty: newIsEmpty,
-    //   isRunning: newIsRunning,
-    //   timeSinceMount: Date.now() - mountTimeRef.current,
-    // })
+  //   if (newIsRunning) {
+  //     console.log('[MyAssistantMessage] newIsRunning:', {
+  //       id,
+  //       isEmpty: newIsEmpty,
+  //       isRunning: newIsRunning,
+  //       content,
+  //       status,
+  //     })
+  //   }
 
-    return {
-      isEmpty: newIsEmpty,
-      isRunning: newIsRunning,
-    }
-  }, [content, status?.type, threadId, id])
+  //   return {
+  //     isEmpty: newIsEmpty,
+  //     isRunning: newIsRunning,
+  //   }
+  // }, [id, content, status])
+  // const myMessages = useMessage(m =>
+  //   getExternalStoreMessages(m),
+  // ) as EdenThreadMessage[]
+  const isRunning = status?.type === 'running'
+  const isEmpty = typeof content === 'undefined' || content.length === 0
 
-  // Log state changes
-  // React.useEffect(() => {
-  //   console.log('[TypingIndicator] Indicator state updated', {
-  //     shouldShow: isEmpty || isRunning,
-  //     isEmpty,
-  //     isRunning,
-  //     threadId,
-  //   })
-  // }, [isEmpty, isRunning, threadId])
+  // if (isRunning || isEmpty) {
+  //   console.log('[MyAssistantMessage]:', status, id)
+  // }
+
+  // console.log('[MyAssistantMessage]:', {
+  //   isRunning,
+  //   isEmpty,
+  //   content,
+  //   status,
+  //   id,
+  // })
 
   return (
     <AssistantMessage.Root
@@ -117,43 +160,16 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      {!isEmpty && ( // Use raw isEmpty
-        <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
-      )}
+      {/* {!isEmpty && ( // Use raw isEmpty */}
+      <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
+      {/* )} */}
       <BranchPicker />
       {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
-        <div
-          className={cn(
-            'col-start-3 row-start-2',
-            isEmpty && 'col-start-auto row-start-auto mt-2', // Use raw isEmpty
-          )}
-        >
+        <div className="col-start-3 row-start-2">
           <TypingIndicator />
         </div>
       ) : null}
 
-      <div className="absolute bottom-0 right-0 flex items-center gap-2">
-        <div className="text-muted-foreground p-1 bg-muted rounded-md">
-          Running:{' '}
-          <span
-            className={cn(
-              isRunning && 'text-accent-foreground bg-blue-700 p-1 rounded-md',
-            )}
-          >
-            {isRunning ? 'true' : 'false'}
-          </span>
-        </div>
-        <div className="text-muted-foreground p-1 bg-muted rounded-md">
-          Empty:{' '}
-          <span
-            className={cn(
-              isEmpty && 'text-accent-foreground bg-blue-700 p-1 rounded-md',
-            )}
-          >
-            {isEmpty ? 'true' : 'false'}
-          </span>
-        </div>
-      </div>
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />
       </ThreadPrimitive.If>

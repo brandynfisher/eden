@@ -1,4 +1,4 @@
-import { CreationV2 } from '@edenlabs/eden-sdk'
+import { CreationV2, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { createSlice } from '@reduxjs/toolkit'
 import { isMobile } from 'react-device-detect'
 import { toast } from 'sonner'
@@ -44,6 +44,11 @@ export interface DialogsState {
     isOpen: boolean
     agentId?: string
   }
+  subscriptionGateModal: {
+    isOpen: boolean
+    featureName: string
+    minimumSubscriptionTier: SubscriptionTier
+  }
 }
 
 const initialState: DialogsState = {
@@ -84,6 +89,11 @@ const initialState: DialogsState = {
   agentTriggerFormSheet: {
     isOpen: false,
     agentId: undefined,
+  },
+  subscriptionGateModal: {
+    isOpen: false,
+    featureName: '',
+    minimumSubscriptionTier: SubscriptionTier.Basic,
   },
 }
 
@@ -239,6 +249,29 @@ const dialogsSlice = createSlice({
         state.agentTriggerFormSheet.agentId = action.payload.agentId
       }
     },
+    updateSubscriptionGateModal(
+      state,
+      action: {
+        payload: {
+          isOpen: boolean
+          featureName: string
+          minimumSubscriptionTier: SubscriptionTier
+        }
+      },
+    ) {
+      if (!action.payload.isOpen) {
+        state.subscriptionGateModal.isOpen = false
+        state.subscriptionGateModal.featureName =
+          initialState.subscriptionGateModal.featureName
+        state.subscriptionGateModal.minimumSubscriptionTier =
+          initialState.subscriptionGateModal.minimumSubscriptionTier
+      } else {
+        state.subscriptionGateModal.isOpen = action.payload.isOpen
+        state.subscriptionGateModal.featureName = action.payload.featureName
+        state.subscriptionGateModal.minimumSubscriptionTier =
+          action.payload.minimumSubscriptionTier
+      }
+    },
   },
 })
 
@@ -253,6 +286,7 @@ export const {
   updateAgentDeploymentFormSheet,
   closeAllQuickCreateModals,
   updateAgentTriggerFormSheet,
+  updateSubscriptionGateModal,
 } = dialogsSlice.actions
 
 export default dialogsSlice.reducer

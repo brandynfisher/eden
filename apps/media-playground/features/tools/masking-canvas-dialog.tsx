@@ -34,18 +34,20 @@ export const MaskingCanvasDialog = ({ form, parameter, onChange }: Props) => {
           Draw a mask
         </Button>
       </DialogTrigger>
-      <DialogContentScrollable className="p-4 gap-2">
+      <DialogContentScrollable className="p-4 gap-2 flex flex-col h-full max-h-[calc(100dvh-2rem)] max-w-[95vw] w-full lg:max-w-[90vw] xl:max-w-[80vw]">
         <DialogTitle className="text-base">
           Mask Painter: {parameter.name}
         </DialogTitle>
         <DialogDescription className="text-xs text-muted-foreground">
           Draw a masking image
         </DialogDescription>
-        <MaskingCanvas
-          form={form}
-          inputImageFieldName={'image'}
-          onChange={handleOnChange}
-        />
+        <div className="flex-grow min-h-0 h-[calc(80vh-8rem)]">
+          <MaskingCanvas
+            form={form}
+            inputImageFieldName={'image'}
+            onChange={handleOnChange}
+          />
+        </div>
       </DialogContentScrollable>
     </Dialog>
   )

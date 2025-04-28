@@ -4,7 +4,7 @@ import { LightboxGallery } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
 import MyAttachment from '@/features/chat/components/attachment'
 import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
-import { useEdenRuntimeExtras } from '@/features/chat/hooks/useEdenRuntime'
+import { useEdenRuntimeExtras } from '@/features/chat/providers/my-runtime-provider'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
@@ -52,12 +52,17 @@ export const ComposerAttachmentDropzone: FC<
 
 type MyComposerProps = {
   setIsDragging: (isDragging: boolean) => void
+  autoFocus?: boolean
 }
 
-export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
+export const MyComposer: FC<MyComposerProps> = ({
+  setIsDragging,
+  autoFocus = true,
+}) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const isReadOnly = useEdenRuntimeExtras(extras => extras.isReadOnly)
   const agentId = useEdenRuntimeExtras(extras => extras.agentId)
+  const threadId = useEdenRuntimeExtras(extras => extras.threadId)
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime.getAttachmentAccept()
 
@@ -157,6 +162,8 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
     }
   }, [accept, handleFilesDropped, setIsDragging])
 
+  console.log('autoFocus', autoFocus)
+
   if (isReadOnly === null || isReadOnly) {
     return (
       <div className="flex items-center justify-between gap-2 md:gap-3 py-2 px-2 md:px-4 h-[58px] w-full">
@@ -237,7 +244,10 @@ export const MyComposer: FC<MyComposerProps> = ({ setIsDragging }) => {
       </AuthClickGuard>
 
       <Composer.Input
-        autoFocus
+        key={threadId}
+        autoFocus={autoFocus}
+        // autoFocus={true}
+        unstable_focusOnScrollToBottom={false}
         className="text-base"
         minRows={2}
         onPaste={async (e: React.ClipboardEvent) => {

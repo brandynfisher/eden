@@ -68,7 +68,7 @@ export async function POST(
 
   const requestJson = await request.json()
 
-  const { message, schedule, deploymentId, channelId } =
+  const { message, schedule, deploymentId, channelId, platform } =
     requestJson as AgentsCreateTriggerArguments
 
   try {
@@ -83,11 +83,12 @@ export async function POST(
       schedule,
       deploymentId,
       channelId,
+      platform,
     })
 
     if (!res) {
       return new NextResponse(
-        JSON.stringify({ message: 'Agent deployment error' }),
+        JSON.stringify({ message: 'Agent trigger creation error' }),
         {
           status: 500,
         },

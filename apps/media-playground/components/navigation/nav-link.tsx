@@ -8,6 +8,7 @@ export type NavLinkProps = {
   active?: boolean
   inSheet?: boolean
   description?: string
+  mediaUrl?: string
 }
 
 const NavLink = ({ label, segments, active, inSheet }: NavLinkProps) => {

@@ -74,6 +74,7 @@ threadSchema.index({
   'messages.tool_calls.task': 1,
   'messages.tool_calls': 1,
 })
+threadSchema.index({ 'messages.pinned': 1 })
 threadSchema.plugin(paginate)
 threadSchema.plugin(aggregatePaginate)
 threadSchema.plugin(mongooseDelete, {

@@ -74,11 +74,7 @@ export const AgentTriggerFormSheet = () => {
           ))}
         {triggersQuery.isSuccess && deploymentsQuery.isSuccess && (
           <div className="flex flex-col flex-1 space-y-4 mt-4">
-            <TriggerList
-              agentId={agentId}
-              triggers={triggersQuery.triggers}
-              hasDeployments={deploymentsQuery.deployments.length > 0}
-            />
+            <TriggerList agentId={agentId} triggers={triggersQuery.triggers} />
           </div>
         )}
       </SheetContent>

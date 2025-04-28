@@ -56,9 +56,9 @@ const CreationActionsMenu = ({
     enabled: isOpen && !!creation,
   })
 
-  const creationData = creationResponse
+  const creationData = creationResponse || creation
 
-  if (!creation) {
+  if (!creationData) {
     return null
   }
 
@@ -66,7 +66,7 @@ const CreationActionsMenu = ({
     dispatch(
       updateAddToCollectionModal({
         isOpen: true,
-        creationIds: [creation._id],
+        creationIds: [creationData._id],
       }),
     )
   }
@@ -81,7 +81,7 @@ const CreationActionsMenu = ({
 
   const handleShareClick = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const shareUrl = `${baseUrl}/creations/${creation._id}`
+    const shareUrl = `${baseUrl}/creations/${creationData._id}`
     dispatch(
       updateShareModal({
         isOpen: true,
@@ -91,7 +91,7 @@ const CreationActionsMenu = ({
   }
 
   const fileType =
-    getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
+    getFileTypeByMimeType(creationData.mediaAttributes?.mimeType) || 'image'
 
   return (
     <>

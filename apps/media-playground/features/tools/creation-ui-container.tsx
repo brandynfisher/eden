@@ -1,17 +1,19 @@
 'use client'
 
+import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  Form, // FormControl,
-  // FormField,
-  // FormItem,
-  // FormLabel,
-  // FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form'
-// import { Switch } from '@/components/ui/switch'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
@@ -20,6 +22,8 @@ import ParameterField from '@/features/tools/parameters/parameter-field'
 import ParameterGroupCollapse from '@/features/tools/parameters/parameter-group-collapse'
 import { groupParameters } from '@/features/tools/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedActions } from '@/hooks/use-subscription-gate'
+import { useSubscriptionGate } from '@/hooks/use-subscription-gate'
 import { useToolPreset } from '@/hooks/use-tool-preset'
 import { trackTaskCreate } from '@/lib/analytics'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
@@ -47,6 +51,9 @@ const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
 const CreationUIContainer = ({ tool }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
+  const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
+    GatedActions.MakePrivate,
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const presetResolutions = tool?.resolutions
   const parameterSchema = createZodFormSchema(tool.parameters || []) // create form schema
@@ -77,6 +84,11 @@ const CreationUIContainer = ({ tool }: Props) => {
   const [showSettings, setShowSettings] = useState(false)
 
   const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1024 // lg breakpoint
+    setMobileIsFormVisible(isMobile)
+  }, [])
 
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
@@ -126,6 +138,9 @@ const CreationUIContainer = ({ tool }: Props) => {
       return
     }
 
+    const { makePublic, ...args } = formData as FormData & {
+      makePublic?: boolean
+    }
     // console.log('onSubmit', formData)
     // return
 
@@ -134,7 +149,8 @@ const CreationUIContainer = ({ tool }: Props) => {
     try {
       const response = await axios.post('/api/tasks/create', {
         tool: tool.key,
-        args: formData,
+        args: args,
+        makePublic: makePublic,
       })
 
       console.log({ response })
@@ -185,7 +201,12 @@ const CreationUIContainer = ({ tool }: Props) => {
   )
 
   const groupedRequiredParameters = useMemo(
-    () => (requiredParameters ? groupParameters(requiredParameters) : []),
+    () =>
+      (requiredParameters ? groupParameters(requiredParameters) : []).filter(
+        element =>
+          element.parameter?.name !== 'width' &&
+          element.parameter?.name !== 'height',
+      ),
     [requiredParameters],
   )
 
@@ -205,11 +226,18 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const isRunwayPoweredTool = RUNWAY_TOOL_KEYS.includes(tool.key)
 
+  const widthParameter = tool.parameters?.find(
+    parameter => parameter.name === 'width',
+  )
+  const heightParameter = tool.parameters?.find(
+    parameter => parameter.name === 'height',
+  )
+
   const formContent = (
     <Form {...form}>
       <form className="w-full">
         <div className="flex items-center lg:justify-between p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-          <TypographyH4 className="text-sm md:text-lg pl-8 md:pl-12 lg:pl-0">
+          <TypographyH4 className="text-sm md:text-base pl-8 md:pl-12 lg:pl-0">
             {tool.name}
           </TypographyH4>
           {tool.base_model ? (
@@ -248,7 +276,7 @@ const CreationUIContainer = ({ tool }: Props) => {
             ))}
 
             {maskingParameters && maskingParameters.length > 0 ? (
-              <div className="bg-muted-darker border border-secondary rounded-lg space-y-2 mt-0 !p-4 !pt-2">
+              <div className="bg-muted-darker border border-secondary rounded-lg space-y-2 mt-0 !p-2 md:!p-4 !pt-2">
                 <div className="text-sm font-medium text-foreground">
                   Masking
                 </div>
@@ -284,15 +312,18 @@ const CreationUIContainer = ({ tool }: Props) => {
 
             {(presetResolutions && presetResolutions.length) ||
             sampleCountParameter ? (
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1">
                 {sampleCountParameter ? (
                   <SampleCountSelector parameter={sampleCountParameter} />
                 ) : null}
                 {presetResolutions && presetResolutions.length ? (
-                  <div className="flex ml-auto">
+                  <div className="w-full">
                     <AspectRatioSelector
                       presetResolutions={presetResolutions}
                       form={form}
+                      tool={tool}
+                      widthParameter={widthParameter}
+                      heightParameter={heightParameter}
                     />
                   </div>
                 ) : null}
@@ -324,26 +355,40 @@ const CreationUIContainer = ({ tool }: Props) => {
               >
                 Reset
               </Button>
-              {/* <FormField
-                name="public"
+              <FormField
+                name="makePublic"
                 render={({ field, fieldState }) => (
                   <FormItem
-                    data-test-id={'public'}
-                    className="ml-auto flex items-center gap-2"
+                    data-test-id={'makePublic'}
+                    className="ml-auto flex items-center gap-2 space-y-0 relative"
                   >
-                    <FormControl id={'public'}>
-                      <Switch
-                        checked={field.value === undefined ? true : field.value}
-                        onCheckedChange={field.onChange}
+                    <div className={'flex items-center gap-2'}>
+                      <SubscriptionCrownBadge
+                        type={
+                          tool.output_type === 'lora' ? 'model' : 'creation'
+                        }
+                        className="h-5 w-5"
                       />
-                    </FormControl>
-                    <FormLabel className="text-muted-foreground !mt-0">
-                      Public
-                    </FormLabel>
+                      <FormControl id={field.name} className="mt-0">
+                        <Switch
+                          checked={
+                            field.value === undefined ? true : field.value
+                          }
+                          onCheckedChange={field.onChange}
+                          disabled={!isAllowedPrivacy}
+                        />
+                      </FormControl>
+                      <FormLabel
+                        htmlFor={field.name}
+                        className={'text-muted-foreground !mt-0'}
+                      >
+                        Public
+                      </FormLabel>
+                    </div>
                     <FormMessage>{fieldState.error?.message}</FormMessage>
                   </FormItem>
                 )}
-              /> */}
+              />
             </div>
           </div>
           {optionalParameters?.length ? (

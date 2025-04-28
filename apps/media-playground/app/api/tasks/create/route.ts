@@ -7,12 +7,14 @@ import { NextRequest, NextResponse } from 'next/server'
 const createTask = async (
   tool: string,
   args: TaskV2['args'],
+  makePublic: boolean,
   eden: EdenClient,
 ) => {
   return eden.tasks
     .createV2({
       tool,
       args,
+      makePublic,
     })
     .then(response => {
       // console.log('response', response.task, response.timing)
@@ -105,6 +107,7 @@ export async function POST(request: NextRequest) {
     const createdTaskResponse = await createTask(
       requestJson.tool,
       requestJson.args,
+      requestJson.makePublic,
       eden,
     )
     const createdTaskJson = await createdTaskResponse.json()
