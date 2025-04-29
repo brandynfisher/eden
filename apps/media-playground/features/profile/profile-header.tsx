@@ -44,12 +44,12 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
     <div className="flex flex-col gap-4 p-4 bg-muted-darker rounded-md">
       <div className="relative lg:flex lg:justify-between lg:gap-x-4">
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative min-h-16 rounded-lg flex-shrink-0 overflow-hidden">
+          <div className="relative md:min-h-16 rounded-lg flex-shrink-0 overflow-hidden">
             <Image
               src={creator.userImage || ''}
               alt={creator.username || ''}
-              width={160}
-              height={160}
+              width={128}
+              height={128}
               className="object-cover rounded-lg"
             />
           </div>
