@@ -98,6 +98,15 @@ modelSchema.index({
   task: 1,
   createdAt: -1,
 })
+
+// Add index for likeCount-based sorting
+modelSchema.index({
+  public: 1,
+  deleted: 1,
+  likeCount: -1,
+  _id: -1,
+})
+
 modelSchema.plugin(paginate)
 modelSchema.plugin(aggregatePaginate)
 modelSchema.plugin(mongooseDelete, {

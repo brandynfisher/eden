@@ -184,4 +184,12 @@ AgentSchema.index({
   'stats.toolCallCount_7d': -1,
 })
 
+// Add index for likeCount-based sorting
+AgentSchema.index({
+  public: 1,
+  deleted: 1,
+  likeCount: -1,
+  _id: -1,
+})
+
 export const Agent = BaseUser.discriminator<AgentDocument>('agent', AgentSchema)
