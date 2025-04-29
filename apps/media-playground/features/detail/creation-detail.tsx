@@ -4,13 +4,15 @@ import ErrorBoundary from '@/components/error-boundary'
 import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
 import LoadingIndicator from '@/components/loading-indicator'
 import CreationMediaPreview from '@/components/media/creation-media-preview'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import DetailSidebar from '@/features/detail/detail-sidebar'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { cn } from '@/lib/utils'
 import { CreationV2 } from '@edenlabs/eden-sdk'
-import React, { RefObject, Suspense } from 'react'
+import { ChevronDownIcon } from 'lucide-react'
+import React, { RefObject, Suspense, useRef } from 'react'
 
 type Props = {
   id: string
@@ -20,6 +22,8 @@ type Props = {
 }
 
 const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
+  const feedSectionRef = useRef<HTMLDivElement>(null)
+
   const { creation: creationClientData, queryKey } = useCreationQuery({
     key: id,
     initialData: creationSSRData
@@ -30,6 +34,34 @@ const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
   })
 
   const creation = creationClientData || creationSSRData
+
+  const handleScrollToCreations = () => {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const recentCreationsElement = feedSectionRef.current
+        if (isModal && scrollRef?.current && recentCreationsElement) {
+          const containerRect = scrollRef.current.getBoundingClientRect()
+          const elementRect = recentCreationsElement.getBoundingClientRect()
+          scrollRef.current.scrollTo({
+            top:
+              scrollRef.current.scrollTop +
+              elementRect.top -
+              containerRect.top -
+              80,
+            behavior: 'smooth',
+          })
+        } else {
+          recentCreationsElement?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          })
+          if (recentCreationsElement) {
+            window.scrollBy(0, -80)
+          }
+        }
+      }, 100)
+    })
+  }
 
   return (
     <>
@@ -58,22 +90,35 @@ const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
           </ErrorBoundary>
         </Suspense>
       </div>
+
       {creation && (
-        <RecentCreationsFeed
-          title={
-            <>
-              Recent creations from{' '}
-              <UserAvatarLink
-                name={creation.user.username || creation.user._id}
-                image={creation.user.userImage}
-                isAgent={creation?.user?.type === 'agent'}
-              />
-            </>
-          }
-          query={{ user: creation.user._id }}
-          isModal={isModal}
-          scrollRef={scrollRef}
-        />
+        <>
+          <div className="flex justify-center mt-4">
+            <Button
+              variant="outline"
+              size="icon"
+              className="cursor-pointer self-center animate-bounce"
+              onClick={handleScrollToCreations}
+            >
+              <ChevronDownIcon className="w-10 h-10" />
+            </Button>
+          </div>
+          <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8 px-4">
+            Recent creations from{' '}
+            <UserAvatarLink
+              name={creation.user.username || creation.user._id}
+              image={creation.user.userImage}
+              isAgent={creation?.user?.type === 'agent'}
+            />
+          </div>
+
+          <div ref={feedSectionRef} className="px-4 w-full">
+            <RecentCreationsFeed
+              query={{ user: creation.user._id }}
+              scrollRef={scrollRef}
+            />
+          </div>
+        </>
       )}
     </>
   )

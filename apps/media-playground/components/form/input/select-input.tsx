@@ -44,12 +44,21 @@ const SelectInput = ({
     }
   })
 
+  // Process and format the value correctly
+  const formattedValue =
+    value === undefined || value === null ? '' : String(value)
+
   return (
     <DelayedSelect
-      onValueChange={newVal =>
+      onValueChange={newVal => {
+        // Only apply changes if the new value isn't empty or if the user explicitly chose an empty option
+        if (newVal === '' && options.findIndex(o => String(o) === '') === -1) {
+          return
+        }
+
         onChange(type === 'integer' ? parseInt(newVal) : newVal)
-      }
-      value={String(value || '')}
+      }}
+      value={formattedValue}
     >
       <SelectTrigger className={cn(['w-full', className])} title={placeholder}>
         {icon}
@@ -62,16 +71,18 @@ const SelectInput = ({
               {label}
             </SelectLabel>
           ) : null}
-          {optionsFormatted.map(option => (
-            <SelectItem
-              key={option.value}
-              value={String(option.value)}
-              className={optionClassName}
-            >
-              {option.label}
-              {suffix}
-            </SelectItem>
-          ))}
+          {optionsFormatted.map(option => {
+            return (
+              <SelectItem
+                key={option.value}
+                value={String(option.value)}
+                className={optionClassName}
+              >
+                {option.label}
+                {suffix}
+              </SelectItem>
+            )
+          })}
         </SelectGroup>
       </SelectContent>
     </DelayedSelect>

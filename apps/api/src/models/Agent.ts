@@ -32,6 +32,8 @@ export interface AgentSchema extends BaseUserSchema {
   }[]
   public?: boolean
   stats?: AgentStats
+  likeCount?: number
+  isLiked?: boolean
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}
@@ -150,6 +152,13 @@ const AgentSchema = new Schema<AgentDocument>(
         toolCallCount_7d: 0,
         lastUpdated: new Date(),
       },
+    },
+    likeCount: {
+      type: Number,
+      default: 0,
+    },
+    isLiked: {
+      type: Boolean,
     },
   },
   {

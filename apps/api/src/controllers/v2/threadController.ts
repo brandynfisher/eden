@@ -11,6 +11,8 @@ import {
   ThreadsGetArguments,
   ThreadsListArguments,
   ThreadsMessageReactArguments,
+  ThreadsPinMessageArguments,
+  ThreadsRenameArguments,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -274,13 +276,9 @@ export const getThread = async (
         )
       return {
         ...msg,
-        status:
-          hasPendingToolCalls ||
-          (thread.active &&
-            Array.isArray(thread.active) &&
-            thread.active.includes(msg.id.toString()))
-            ? { type: 'running' }
-            : { type: 'complete', reason: 'stop' },
+        status: hasPendingToolCalls
+          ? { type: 'running' }
+          : { type: 'complete', reason: 'stop' },
       }
     })
 
@@ -463,4 +461,173 @@ export const deleteThread = async (
   await thread.delete()
 
   return reply.status(200).send({ success: true })
+}
+
+export const renameThread = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  const { thread_id } = request.params as ThreadsRenameArguments
+  const { title } = request.body as ThreadsRenameArguments
+
+  if (!title) {
+    return reply.status(400).send({
+      error: 'Title not provided',
+    })
+  }
+
+  const thread = await ThreadModel.findOne({
+    _id: new ObjectId(thread_id),
+  })
+
+  if (!thread || thread.deleted) {
+    return reply.status(404).send({
+      error: 'Thread not found',
+    })
+  }
+
+  if (thread.user.toString() !== userId.toString()) {
+    return reply.status(401).send({
+      error: 'You are not allowed to rename this thread',
+    })
+  }
+
+  await thread.updateOne({
+    $set: {
+      title: title,
+    },
+  })
+
+  return reply.status(200).send({ success: true })
+}
+
+export const pinThreadMessage = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  const { message_id } = request.body as ThreadsPinMessageArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!message_id) {
+    return reply.status(400).send({
+      message: 'message_id not provided',
+    })
+  }
+
+  try {
+    const query = {
+      user: userId,
+      'messages.id': new ObjectId(message_id),
+    }
+
+    console.log('pinning message', message_id, userId.toString())
+
+    await ThreadModel.updateOne(
+      query,
+      {
+        $set: { 'messages.$[msg].pinned': true },
+      },
+      {
+        arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+      },
+    )
+
+    return reply.status(200).send({ success: true })
+  } catch (e) {
+    console.log(e)
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({
+      message: 'Failed to pin thread message',
+      error: errorMessage,
+    })
+    return reply.status(500).send({ error: errorMessage })
+  }
+}
+
+export const unpinThreadMessage = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  const { message_id } = request.body as ThreadsPinMessageArguments
+
+  const user = await User.findById(userId)
+  if (!user) {
+    return reply.status(400).send({
+      message: 'User not found',
+    })
+  }
+
+  if (!message_id) {
+    return reply.status(400).send({
+      message: 'message_id not provided',
+    })
+  }
+
+  try {
+    const query = {
+      user: userId,
+      'messages.id': new ObjectId(message_id),
+    }
+
+    console.log('pinning message', message_id, userId.toString())
+
+    await ThreadModel.updateOne(
+      query,
+      {
+        $set: { 'messages.$[msg].pinned': false },
+      },
+      {
+        arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
+      },
+    )
+
+    return reply.status(200).send({ success: true })
+  } catch (e) {
+    console.log(e)
+    const error = e as { response?: { data?: string } }
+    const errorMessage =
+      error && error.response && error.response.data
+        ? error.response.data
+        : 'Unknown Error'
+
+    server.log.error({
+      message: 'Failed to pin thread message',
+      error: errorMessage,
+    })
+    return reply.status(500).send({ error: errorMessage })
+  }
 }

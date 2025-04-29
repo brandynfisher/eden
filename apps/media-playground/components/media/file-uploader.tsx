@@ -336,14 +336,16 @@ const FileUploader = ({
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length === 0) return
 
-      if (
+      if (!maxFiles || maxFiles === 1) {
+        // If maxFiles is 1, replace the existing file with the new one
+        setFilesToUpload([])
+        setExistingFiles([])
+      } else if (
         existingFiles.length + filesToUpload.length + acceptedFiles.length >
-        (maxFiles || 1)
+        maxFiles
       ) {
         toast.error(`Too many files!`, {
-          description: `Maximum for this field is ${maxFiles} ${
-            maxFiles > 1 ? 'files' : 'file'
-          }`,
+          description: `Maximum for this field is ${maxFiles} files`,
           dismissible: true,
           richColors: true,
         })
@@ -519,7 +521,7 @@ const FileUploader = ({
           onDrop(files)
         }
       }}
-      className={cn(['flex-grow', className])}
+      className={cn(['flex flex-col flex-grow gap-2', className])}
     >
       <div>
         {existingFiles.length + filesToUpload.length < (maxFiles || 1) ? (
@@ -563,7 +565,7 @@ const FileUploader = ({
 
       {filesToUpload.length || existingFiles.length ? (
         <div
-          className="bg-card p-2 rounded-lg mt-4"
+          className="bg-card p-2 rounded-lg"
           onClick={e => {
             e.stopPropagation()
           }}

@@ -4,6 +4,9 @@ import {
   deleteThread,
   getThread,
   listThreads,
+  pinThreadMessage,
+  renameThread,
+  unpinThreadMessage,
 } from '../../controllers/v2/threadController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
@@ -90,6 +93,78 @@ const threadRoutes: FastifyPluginAsync = async server => {
       addThreadMessageReaction(server, request, reply),
   })
 
+  server.post('/v2/threads/pin', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Pin a thread message ',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        message_id: Type.String(),
+      },
+      response: {
+        200: Type.Any(),
+        400: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => pinThreadMessage(server, request, reply),
+  })
+
+  server.post('/v2/threads/unpin', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Unpin a thread message ',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        message_id: Type.String(),
+      },
+      response: {
+        200: Type.Any(),
+        400: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          // error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => unpinThreadMessage(server, request, reply),
+  })
+
   server.get('/v2/threads', {
     schema: {
       tags: ['Threads'],
@@ -137,6 +212,43 @@ const threadRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => getThread(server, request, reply),
   })
 
+  server.patch('/v2/threads/:thread_id', {
+    schema: {
+      tags: ['Threads'],
+      description: 'Rename a thread',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        thread_id: Type.String(),
+      },
+      body: {
+        title: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+        }),
+        400: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => renameThread(request, reply),
+  })
+
   server.delete('/v2/threads/:thread_id', {
     schema: {
       tags: ['Threads'],
@@ -167,7 +279,7 @@ const threadRoutes: FastifyPluginAsync = async server => {
         message: Type.Optional(Type.String()),
       },
     },
-    preHandler: [request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteThread(request, reply),
   })
 }

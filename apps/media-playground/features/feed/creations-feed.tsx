@@ -1,12 +1,14 @@
 'use client'
 
 import CreationCard from '@/components/card/creation-card'
-import MasonryVirtualizerVertical from '@/components/masonry/masonry-virtualizer-vertical'
+import MasonryVirtualizerVertical, {
+  MasonryVirtualizerHandle,
+} from '@/components/masonry/masonry-virtualizer-vertical'
 import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
 import { usePathname, useRouter } from 'next/navigation'
-import { RefObject, useMemo } from 'react'
+import { RefObject, useMemo, useRef } from 'react'
 
 type Props = {
   query?: FeedCreationsCursorArguments
@@ -14,6 +16,8 @@ type Props = {
   maxCols?: number
   multiselect?: boolean
   scrollRef?: RefObject<HTMLDivElement>
+  initialScrollIndex?: number | null
+  onScrollRestored?: () => void
 }
 
 const CreationsFeed = ({
@@ -22,8 +26,12 @@ const CreationsFeed = ({
   maxCols,
   multiselect,
   scrollRef,
+  initialScrollIndex,
+  onScrollRestored,
 }: Props) => {
   const router = useRouter()
+  const virtualizerRef = useRef<MasonryVirtualizerHandle>(null)
+
   const defaultQuery: FeedCreationsCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -36,7 +44,7 @@ const CreationsFeed = ({
     return { ...defaultQuery, ...queryProp }
   }, [defaultQuery, queryProp])
 
-  const queryKey = useMemo(() => ['creations', query], [query])
+  const queryKey = useMemo(() => ['feed', 'creations', query], [query])
   const pathname = usePathname()
 
   // Include pathname in feedId to differentiate between same queries in different routes
@@ -51,7 +59,32 @@ const CreationsFeed = ({
   const handleCardClick = (itemId: string, index: number) => {
     setActiveIndex(index)
     addToHistory(feedId) // Add current feed to history when navigating
-    router.push(`/creations/${itemId}`) // Navigate to the modal
+
+    // Get index from the child component via ref
+    const topIndex = virtualizerRef.current?.getTopmostVisibleIndex()
+    const targetUrl = `/creations/${itemId}`
+
+    // Save index to history state BEFORE navigating
+    if (typeof topIndex === 'number') {
+      try {
+        const currentState = window.history.state || {}
+        const newState = { ...currentState, scrollIndex: topIndex } // Use scrollIndex
+        window.history.replaceState(newState, '')
+        // console.log(
+        //   `[CreationsFeed] Replaced history state with scrollIndex: ${topIndex}`,
+        // )
+      } catch (e) {
+        console.error('Error manipulating history state:', e)
+      }
+    }
+    // Add logging if topIndex is NOT a number
+    else {
+      // console.log(
+      //   `[CreationsFeed] Did not save scrollIndex. topIndex result was: ${topIndex} (type: ${typeof topIndex})`,
+      // )
+    }
+
+    router.push(targetUrl) // Navigate to the modal (URL has no params)
   }
 
   const handleItemsLoaded = (newItems: RowItem[]) => {
@@ -60,7 +93,7 @@ const CreationsFeed = ({
 
   return (
     <MasonryVirtualizerVertical
-      key={JSON.stringify(queryKey)}
+      ref={virtualizerRef}
       apiEndpoint={'/api/feed/creations'}
       queryKey={queryKey}
       query={query}
@@ -69,6 +102,8 @@ const CreationsFeed = ({
       onItemsLoaded={handleItemsLoaded}
       setFetchNextPage={setFetchNextPage}
       scrollRef={scrollRef}
+      initialScrollIndex={initialScrollIndex}
+      onScrollRestored={onScrollRestored}
       render={(item: RowItem, onUpdate, index) => (
         <CreationCard
           onUpdate={onUpdate}

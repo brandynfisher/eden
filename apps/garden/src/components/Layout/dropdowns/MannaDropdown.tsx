@@ -15,7 +15,8 @@ const MannaBalanceInfo = () => {
 
   return (
     <Link href={'/account'} className="flex items-center gap-2 p-2">
-      You have <span className="font-bold">{mannaBalance}</span> Manna
+      You have <span className="font-bold">{mannaBalance?.toFixed(2)}</span>{' '}
+      Manna
     </Link>
   )
 }
@@ -106,7 +107,9 @@ const MannaDropdown = () => {
       <Button data-testid="manna-dropdown-button">
         <div className="font-mono flex items-center">
           <AccountBalanceWalletOutlined className="!flex mr-2 text-xl" />
-          {typeof mannaBalance === 'undefined' ? '---' : mannaBalance}
+          {typeof mannaBalance === 'undefined'
+            ? '---'
+            : mannaBalance.toFixed(0)}
         </div>
       </Button>
     </Dropdown>

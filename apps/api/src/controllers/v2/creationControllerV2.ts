@@ -1,4 +1,5 @@
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
+import { LikeV2 } from '../../models/v2/LikeV2'
 import {
   forceCloudfrontUrl,
   s3ThumbnailUrl,
@@ -8,7 +9,6 @@ import {
   CreationsV2BulkPatchArguments,
   CreationsV2GetArguments,
   CreationsV2PatchArguments,
-  ReactionType,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -18,6 +18,7 @@ export const getCreation = async (
   reply: FastifyReply,
 ) => {
   const { creationId } = request.params as CreationsV2GetArguments
+  const { userId } = request.user || {}
 
   const creation = (await CreationV2.findOneWithDeleted({
     _id: creationId,
@@ -38,10 +39,7 @@ export const getCreation = async (
     .populate({
       path: 'agent',
       select: '_id username name userImage type',
-    })) as CreationV2Document & {
-    reactions?: Map<ReactionType, boolean>
-    bookmarked?: boolean
-  }
+    })) as CreationV2Document
 
   if (!creation || creation.deleted) {
     return reply.status(404).send({
@@ -49,7 +47,17 @@ export const getCreation = async (
     })
   }
 
-  // console.log({ creation })
+  // Check if user has liked this creation
+  if (userId) {
+    const userLike = await LikeV2.findOne({
+      user: userId,
+      entityType: 'creation',
+      entityId: creationId,
+    })
+    creation.isLiked = !!userLike
+  }
+
+  console.log({ creation })
 
   // if (!creation.public) {
   //   if (creation.user._id.toString() !== request.user?.userId.toString()) {
@@ -243,4 +251,142 @@ export const creationBulkUpdate = async (
   return reply.status(200).send({
     results,
   })
+}
+
+export const likeCreation = async (
+  _server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { creationId } = request.params as { creationId: string }
+
+  if (!creationId) {
+    return reply.status(422).send({
+      message: 'Creation ID is required',
+    })
+  }
+
+  try {
+    // Check if the creation exists and user has access to it
+    const creation = await CreationV2.findOne({
+      _id: creationId,
+      deleted: false,
+      $or: [{ public: true }, { user: userId }],
+    })
+
+    if (!creation) {
+      return reply.status(404).send({
+        message: 'Creation not found or you do not have access to it',
+      })
+    }
+
+    // Check if user has already liked this creation
+    const existingLike = await LikeV2.findOne({
+      user: userId,
+      entityType: 'creation',
+      entityId: creationId,
+    })
+
+    if (existingLike) {
+      return reply.status(400).send({
+        message: 'Creation already liked by user',
+      })
+    }
+
+    // Create the like
+    await LikeV2.create({
+      user: userId,
+      entityType: 'creation',
+      entityId: creationId,
+    })
+
+    // Increment the like count
+    await CreationV2.findByIdAndUpdate(creationId, {
+      $inc: { likeCount: 1 },
+    })
+
+    return reply.status(200).send({
+      message: 'Creation liked successfully',
+    })
+  } catch (error) {
+    console.error('Error liking creation:', error)
+    return reply.status(500).send({
+      message: 'Error liking creation',
+    })
+  }
+}
+
+export const unlikeCreation = async (
+  _server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { creationId } = request.params as { creationId: string }
+
+  if (!creationId) {
+    return reply.status(422).send({
+      message: 'Creation ID is required',
+    })
+  }
+
+  try {
+    // Check if the creation exists and user has access to it
+    const creation = await CreationV2.findOne({
+      _id: creationId,
+      deleted: false,
+      $or: [{ public: true }, { user: userId }],
+    })
+
+    if (!creation) {
+      return reply.status(404).send({
+        message: 'Creation not found or you do not have access to it',
+      })
+    }
+
+    // Check if the like exists
+    const like = await LikeV2.findOne({
+      user: userId,
+      entityType: 'creation',
+      entityId: creationId,
+    })
+
+    if (!like) {
+      return reply.status(404).send({
+        message: 'Like not found',
+      })
+    }
+
+    // Delete the like
+    await LikeV2.findByIdAndDelete(like._id)
+
+    // Decrement the like count
+    if (creation.likeCount && creation.likeCount > 0) {
+      await CreationV2.findByIdAndUpdate(creationId, {
+        $inc: { likeCount: -1 },
+      })
+    }
+
+    return reply.status(200).send({
+      message: 'Creation unliked successfully',
+    })
+  } catch (error) {
+    console.error('Error unliking creation:', error)
+    return reply.status(500).send({
+      message: 'Error unliking creation',
+    })
+  }
 }

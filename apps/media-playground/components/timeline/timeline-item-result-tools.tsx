@@ -50,12 +50,14 @@ const TimelineItemResultTools = ({
               model={output.model}
               className="ml-auto"
               queryKey={queryKey}
+              hiddenItems={['like']}
             />
           ) : output.creation ? (
             <CreationActionsMenu
               creation={output.creation}
               className="ml-auto"
               queryKey={queryKey}
+              hiddenItems={['like']}
             />
           ) : (
             <TaskActionsMenu

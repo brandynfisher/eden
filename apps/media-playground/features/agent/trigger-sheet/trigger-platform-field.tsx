@@ -48,6 +48,8 @@ export const TriggerPlatformField = ({
     }
   }, [form.formState.errors])
 
+  const trueAvailablePlatforms = ['web', ...availablePlatforms]
+
   return (
     <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
       <TriggerCollapsibleFormGroup
@@ -82,14 +84,14 @@ export const TriggerPlatformField = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {['discord', 'twitter', 'telegram'].map(platform => (
+                    {['web', 'discord', 'twitter', 'telegram'].map(platform => (
                       <SelectItem
                         key={platform}
                         value={platform}
-                        disabled={!availablePlatforms.includes(platform)}
+                        disabled={!trueAvailablePlatforms.includes(platform)}
                       >
                         {platform}{' '}
-                        {!availablePlatforms.includes(platform) && (
+                        {!trueAvailablePlatforms.includes(platform) && (
                           <span className="ml-1">
                             (No deployments for this platform)
                           </span>
@@ -104,7 +106,7 @@ export const TriggerPlatformField = ({
           />
 
           {!platform ||
-            (platform !== 'twitter' && (
+            (platform !== 'twitter' && platform !== 'web' && (
               <FormField
                 control={form.control}
                 name="channelId"

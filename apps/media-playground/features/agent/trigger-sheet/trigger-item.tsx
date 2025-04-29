@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 import { Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { format } from 'date-fns'
-import { ChevronDownIcon, TrashIcon } from 'lucide-react'
+import { ChevronDownIcon, GlobeIcon, TrashIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -63,6 +63,8 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
 
   const getPlatformBadgeClass = (platform: string) => {
     switch (platform) {
+      case 'web':
+        return 'bg-blue-500/20 hover:bg-blue-500/30 text-white'
       case 'discord':
         return 'bg-[#5865F2]/20 hover:bg-[#5865F2]/30 text-white'
       case 'telegram':
@@ -94,6 +96,7 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
             {trigger.platform === 'discord' && <DiscordIcon size={16} />}
             {trigger.platform === 'telegram' && <TelegramIcon size={16} />}
             {trigger.platform === 'twitter' && <TwitterIcon size={16} />}
+            {trigger.platform === 'web' && <GlobeIcon size={16} />}
             {trigger.platform}
           </Badge>
           <div className="flex items-center gap-2">
@@ -121,26 +124,21 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
             </Button>
           </div>
         </div>
-        <p className="font-medium text-sm line-clamp-2 flex-1 text-left">
-          {trigger.message}
-        </p>
+        <TextClampMore
+          text={trigger.message}
+          className="font-medium text-sm flex-1 text-left"
+          lines={2}
+        />
+
         <span className="text-xs text-muted-foreground text-left">
           {formattedSchedule}
         </span>
       </CollapsibleTrigger>
-      <CollapsibleContent className="px-4 py-3 border border-t-0 border-gray-400/20 rounded-b-lg">
-        <div className="space-y-3">
+      <CollapsibleContent className="border border-t-0 border-gray-400/20 rounded-b-lg">
+        <div className="space-y-3 px-4 py-3">
           <div>
             <h4 className="text-sm font-semibold">Platform</h4>
             <p className="text-sm text-muted-foreground">{trigger.platform}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold">Instructions</h4>
-            <TextClampMore
-              text={trigger.message}
-              className="text-sm text-muted-foreground"
-              lines={2}
-            />
           </div>
           <div>
             <h4 className="text-sm font-semibold">Schedule</h4>

@@ -220,8 +220,12 @@ import {
   AgentsGetDeploymentsResponse,
   AgentsGetTriggersArguments,
   AgentsGetTriggersResponse,
+  AgentsLikeArguments,
+  AgentsLikeResponse,
   AgentsStopDeploymentArguments,
   AgentsStopDeploymentResponse,
+  AgentsUnlikeArguments,
+  AgentsUnlikeResponse,
   AgentsUpdateDeploymentArguments,
   AgentsUpdateDeploymentResponse,
   CollectionsV2AddCreationsArguments,
@@ -244,16 +248,24 @@ import {
   CreationsV2BulkPatchResponse,
   CreationsV2GetArguments,
   CreationsV2GetResponse,
+  CreationsV2LikeArguments,
+  CreationsV2LikeResponse,
   CreationsV2PatchArguments,
   CreationsV2PatchResponse,
+  CreationsV2UnlikeArguments,
+  CreationsV2UnlikeResponse,
   FeedCreationsV2CursorArguments,
   FeedCreationsV2CursorResponse,
   ModelsV2GetArguments,
   ModelsV2GetResponse,
+  ModelsV2LikeArguments,
+  ModelsV2LikeResponse,
   ModelsV2ListArguments,
   ModelsV2ListResponse,
   ModelsV2PatchArguments,
   ModelsV2PatchResponse,
+  ModelsV2UnlikeArguments,
+  ModelsV2UnlikeResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -274,6 +286,12 @@ import {
   ThreadsMessageReactArguments,
   ThreadsMessageReactResponse,
   ThreadsMessageResponse,
+  ThreadsPinMessageArguments,
+  ThreadsPinMessageResponse,
+  ThreadsRenameArguments,
+  ThreadsRenameResponse,
+  ThreadsUnpinMessageArguments,
+  ThreadsUnpinMessageResponse,
   ToolsGetArgumentsV2,
   ToolsGetResponseV2,
   ToolsListArgumentsV2,
@@ -284,7 +302,9 @@ import {
   agentsDeployRequestConfig,
   agentsGetDeploymentsRequestConfig,
   agentsGetTriggersRequestConfig,
+  agentsLikeRequestConfig,
   agentsStopDeploymentRequestConfig,
+  agentsUnlikeRequestConfig,
   agentsUpdateDeploymentRequestConfig,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
@@ -296,11 +316,15 @@ import {
   collectionsV2UpdateRequestConfig,
   creationsV2BulkPatchRequestConfig,
   creationsV2GetRequestConfig,
+  creationsV2LikeRequestConfig,
   creationsV2PatchRequestConfig,
+  creationsV2UnlikeRequestConfig,
   feedCursorCreationsV2RequestConfig,
   modelsV2GetRequestConfig,
+  modelsV2LikeRequestConfig,
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
+  modelsV2UnlikeRequestConfig,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -312,6 +336,9 @@ import {
   threadsListRequestConfig,
   threadsMessageReactRequestConfig,
   threadsMessageRequestConfig,
+  threadsPinMessageRequestConfig,
+  threadsRenameRequestConfig,
+  threadsUnpinMessageRequestConfig,
   toolsGetRequestConfigV2,
   toolsListRequestConfigV2,
 } from './models/v2'
@@ -549,6 +576,14 @@ export abstract class Methods {
       this,
       modelsV2PatchRequestConfig,
     ),
+    like: bindApiCall<ModelsV2LikeArguments, ModelsV2LikeResponse>(
+      this,
+      modelsV2LikeRequestConfig,
+    ),
+    unlike: bindApiCall<ModelsV2UnlikeArguments, ModelsV2UnlikeResponse>(
+      this,
+      modelsV2UnlikeRequestConfig,
+    ),
     // delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
     //   this,
     //   conceptsDeleteRequestConfig,
@@ -575,6 +610,14 @@ export abstract class Methods {
     update: bindApiCall<AgentsUpdateArguments, AgentsUpdateResponse>(
       this,
       agentsUpdateRequestConfig,
+    ),
+    like: bindApiCall<AgentsLikeArguments, AgentsLikeResponse>(
+      this,
+      agentsLikeRequestConfig,
+    ),
+    unlike: bindApiCall<AgentsUnlikeArguments, AgentsUnlikeResponse>(
+      this,
+      agentsUnlikeRequestConfig,
     ),
     getDeployments: bindApiCall<
       AgentsGetDeploymentsArguments,
@@ -653,6 +696,14 @@ export abstract class Methods {
       this,
       creationsDeleteRequestConfig,
     ),
+    likeV2: bindApiCall<CreationsV2LikeArguments, CreationsV2LikeResponse>(
+      this,
+      creationsV2LikeRequestConfig,
+    ),
+    unlikeV2: bindApiCall<
+      CreationsV2UnlikeArguments,
+      CreationsV2UnlikeResponse
+    >(this, creationsV2UnlikeRequestConfig),
   }
 
   public readonly creators = {
@@ -853,9 +904,21 @@ export abstract class Methods {
       ThreadsMessageReactArguments,
       ThreadsMessageReactResponse
     >(this, threadsMessageReactRequestConfig),
+    pinMessage: bindApiCall<
+      ThreadsPinMessageArguments,
+      ThreadsPinMessageResponse
+    >(this, threadsPinMessageRequestConfig),
+    unpinMessage: bindApiCall<
+      ThreadsUnpinMessageArguments,
+      ThreadsUnpinMessageResponse
+    >(this, threadsUnpinMessageRequestConfig),
     delete: bindApiCall<ThreadsDeleteArguments, ThreadsDeleteResponse>(
       this,
       threadsDeleteRequestConfig,
+    ),
+    rename: bindApiCall<ThreadsRenameArguments, ThreadsRenameResponse>(
+      this,
+      threadsRenameRequestConfig,
     ),
   }
 

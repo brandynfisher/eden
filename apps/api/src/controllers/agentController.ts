@@ -1,12 +1,14 @@
 import { Agent, AgentDocument } from '../models/Agent'
 import { Deployment } from '../models/Deployment'
 import { Trigger } from '../models/Trigger'
+import { LikeV2 } from '../models/v2/LikeV2'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import {
+  AgentClientType,
   AgentGetArguments,
   AgentsCreateArguments,
   AgentsCreateTriggerArguments,
@@ -65,6 +67,16 @@ export const getAgent = async (
 
   if (agent.owner.userImage) {
     agent.owner.userImage = forceCloudfrontUrl(server, agent.owner.userImage)
+  }
+
+  // Check if user has liked this agent
+  if (currentUserId) {
+    const userLike = await LikeV2.findOne({
+      user: currentUserId,
+      entityType: 'agent',
+      entityId: agent._id,
+    })
+    agent.isLiked = !!userLike
   }
 
   return reply.status(200).send({ agent })
@@ -275,9 +287,13 @@ export const getAgentTriggers = async (
 
 const createUpdateConfig = async (
   server: FastifyInstance,
+  platform: AgentClientType,
   deploymentId: string,
   channelId: string,
 ) => {
+  if (platform === 'web') {
+    return null
+  }
   // check if deploymentId is a valid deployment
   const deployment = await Deployment.findById(deploymentId)
   if (!deployment) {
@@ -306,7 +322,8 @@ export const createAgentTrigger = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { agentId, message, schedule, deploymentId, channelId } = request.body as AgentsCreateTriggerArguments
+  const { agentId, message, schedule, deploymentId, channelId, platform } =
+    request.body as AgentsCreateTriggerArguments
   const currentUserId = request.user.userId
 
   const agent = await Agent.findById(agentId)
@@ -325,26 +342,36 @@ export const createAgentTrigger = async (
 
   const deployment = await Deployment.findById(deploymentId)
 
-  if (!deployment) {
+  if (!deployment && platform !== 'web') {
     return reply.status(404).send({
       error: 'Deployment not found',
     })
   }
 
-  const updateConfig = await createUpdateConfig(server, deploymentId, channelId)
+  const updateConfig = await createUpdateConfig(
+    server,
+    platform,
+    deploymentId,
+    channelId,
+  )
 
   const updateData = {
     agent_id: agentId,
     message,
     schedule,
-    platform: deployment.platform,
-    channel: {
-      id: channelId,
-      note: deployment.config[deployment.platform].channel_allowlist.find(
-        (channel: { id: string; note: string }) =>
-          channel.id === channelId,
-      )?.note,
-    },
+    platform,
+    channel:
+      platform === 'web'
+        ? null
+        : {
+            id: channelId,
+            note: deployment?.config[
+              deployment?.platform
+            ].channel_allowlist.find(
+              (channel: { id: string; note: string }) =>
+                channel.id === channelId,
+            )?.note,
+          },
     update_config: updateConfig,
   }
 
@@ -676,6 +703,144 @@ const verifyModelAccess = async (
   if (!isOwnModel && !model.public) {
     return reply.status(401).send({
       error: 'You are not authorized to use this model',
+    })
+  }
+}
+
+export const likeAgent = async (
+  _server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { agentId } = request.params as { agentId: string }
+
+  if (!agentId) {
+    return reply.status(422).send({
+      message: 'Agent ID is required',
+    })
+  }
+
+  try {
+    // Check if the agent exists and user has access to it
+    const agent = await Agent.findOne({
+      _id: agentId,
+      deleted: false,
+      $or: [{ public: true }, { owner: userId }],
+    })
+
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found or you do not have access to it',
+      })
+    }
+
+    // Check if user has already liked this agent
+    const existingLike = await LikeV2.findOne({
+      user: userId,
+      entityType: 'agent',
+      entityId: agentId,
+    })
+
+    if (existingLike) {
+      return reply.status(400).send({
+        message: 'Agent already liked by user',
+      })
+    }
+
+    // Create the like
+    await LikeV2.create({
+      user: userId,
+      entityType: 'agent',
+      entityId: agentId,
+    })
+
+    // Increment the like count
+    await Agent.findByIdAndUpdate(agentId, {
+      $inc: { likeCount: 1 },
+    })
+
+    return reply.status(200).send({
+      message: 'Agent liked successfully',
+    })
+  } catch (error) {
+    console.error('Error liking agent:', error)
+    return reply.status(500).send({
+      message: 'Error liking agent',
+    })
+  }
+}
+
+export const unlikeAgent = async (
+  _server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { agentId } = request.params as { agentId: string }
+
+  if (!agentId) {
+    return reply.status(422).send({
+      message: 'Agent ID is required',
+    })
+  }
+
+  try {
+    // Check if the agent exists and user has access to it
+    const agent = await Agent.findOne({
+      _id: agentId,
+      deleted: false,
+      $or: [{ public: true }, { owner: userId }],
+    })
+
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found or you do not have access to it',
+      })
+    }
+
+    // Check if the like exists
+    const like = await LikeV2.findOne({
+      user: userId,
+      entityType: 'agent',
+      entityId: agentId,
+    })
+
+    if (!like) {
+      return reply.status(404).send({
+        message: 'Like not found',
+      })
+    }
+
+    // Delete the like
+    await LikeV2.findByIdAndDelete(like._id)
+
+    // Decrement the like count
+    if (agent.likeCount && agent.likeCount > 0) {
+      await Agent.findByIdAndUpdate(agentId, {
+        $inc: { likeCount: -1 },
+      })
+    }
+
+    return reply.status(200).send({
+      message: 'Agent unliked successfully',
+    })
+  } catch (error) {
+    console.error('Error unliking agent:', error)
+    return reply.status(500).send({
+      message: 'Error unliking agent',
     })
   }
 }

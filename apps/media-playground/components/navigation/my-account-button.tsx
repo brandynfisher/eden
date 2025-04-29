@@ -31,7 +31,7 @@ import {
   TicketIcon,
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import * as React from 'react'
 import { forwardRef, useRef, useState } from 'react'
 
@@ -45,9 +45,8 @@ const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
 ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 
 const AccountDropdown = () => {
-  const router = useRouter()
   const { isSignedIn } = useAuth()
-
+  const pathname = usePathname()
   const { user, balance } = useMe({
     isAuthenticated: !!isSignedIn,
   })
@@ -55,9 +54,8 @@ const AccountDropdown = () => {
 
   const logout = async () => {
     if (isSignedIn) {
-      await signOut()
+      await signOut({ redirectUrl: pathname })
     }
-    router.push('/sign-in')
   }
 
   const [dropdownOpen, setDropdownOpen] = useState(false)

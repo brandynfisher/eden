@@ -75,6 +75,7 @@ export type ToolV2 = {
   name: string
   description?: string
   active?: boolean
+  visible?: boolean
   parameters?: ToolParameterV2[]
   output_type: ToolOutputTypeV2
   cost_estimate?: string

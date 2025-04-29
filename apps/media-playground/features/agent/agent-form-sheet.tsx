@@ -26,7 +26,6 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
-import { ELEVENLABS_VOICES } from '@/lib/voices/elevenlabs'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -498,7 +497,6 @@ const AgentFormSheet = () => {
                     </FormDescription>
                     <FormControl>
                       <VoiceSelector
-                        voices={ELEVENLABS_VOICES}
                         value={field.value || ''}
                         onChange={field.onChange}
                       />

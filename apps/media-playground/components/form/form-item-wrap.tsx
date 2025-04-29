@@ -22,7 +22,7 @@ const FormItemWrap = ({
   return (
     <FormItem
       data-test-id={name}
-      className={cn(['mt-0 !p-4 !pt-2', className])}
+      className={cn(['mt-0 !p-2 md:!p-4 !pt-2', className])}
     >
       <FormItemHead label={label} description={description} />
       <FormControl id={name}>{children}</FormControl>

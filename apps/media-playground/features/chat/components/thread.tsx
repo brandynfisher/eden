@@ -12,6 +12,7 @@ import {
 import MyEditComposer from '@/features/chat/components/edit-composer'
 import MyUserMessage from '@/features/chat/components/user-message'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { ReadyState } from '@/hooks/use-shared-websocket-worker'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import {
   ThreadPrimitive,
@@ -22,7 +23,7 @@ import { Thread, ThreadConfig, ThreadWelcome } from '@assistant-ui/react-ui'
 import { ArrowDownIcon } from '@radix-ui/react-icons'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import React from 'react'
-import { ReadyState } from 'react-use-websocket'
+import { isDesktop } from 'react-device-detect'
 
 const ThreadFollowupSuggestions: FC = () => {
   const suggestions = useThread(t => t.suggestions)
@@ -62,14 +63,15 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     threadId,
   } = config
 
-  const [connectionLost, setConnectionLost] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
-  const { readyState } = useWebSocketContext()
+  const { readyState, isAttemptingReconnect } = useWebSocketContext()
   const { isSignedIn } = useAuthState()
   const [isDragging, setIsDragging] = useState(false)
+  const [showAlert, setShowAlert] = useState(false)
+  const alertTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const initialConnectionAttemptRef = useRef(true)
   const composerRuntime = useComposerRuntime()
   const accept = composerRuntime?.getAttachmentAccept()
-  const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const viewportRef = useRef<HTMLDivElement>(null)
   const messages = useThread(t => t.messages)
   const isInitialLoadRef = useRef(true)
@@ -81,7 +83,8 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
   const lastMessagesLengthRef = useRef(messages.length)
 
   // Constants for scroll calculations
-  const BOTTOM_THRESHOLD = 20 // How close to bottom to consider "at bottom"
+  const BOTTOM_THRESHOLD = 60 // Increased from 20 to give more room for content
+  const NEAR_BOTTOM_THRESHOLD = 1.2 // Multiplier for viewport height
 
   // Get a string representation of all complete assistant messages
   const assistantMessagesContent = messages
@@ -118,36 +121,6 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     ? false
     : isMounted && Boolean(effectiveThreadId) && messages.length === 0
 
-  // Debug logging - only log on important state changes
-  // useEffect(() => {
-  //   const state = {
-  //     threadId,
-  //     urlThreadId,
-  //     effectiveThreadId,
-  //     messagesLength: messages.length,
-  //     showWelcomeScreen,
-  //     showLoadingState,
-  //     isMounted,
-  //   }
-
-  //   // // Only log if something important changed
-  //   // if (
-  //   //   state.messagesLength === 0 ||
-  //   //   state.showLoadingState ||
-  //   //   !state.isMounted
-  //   // ) {
-  //   //   console.log('Thread state:', state)
-  //   // }
-  // }, [
-  //   threadId,
-  //   urlThreadId,
-  //   effectiveThreadId,
-  //   messages.length,
-  //   showWelcomeScreen,
-  //   showLoadingState,
-  //   isMounted,
-  // ])
-
   // Mount effect - only run once
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -181,11 +154,12 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
         scrollHeight - scrollTop - clientHeight,
       )
 
-      // Consider "at bottom" if within the smaller threshold
+      // Consider "at bottom" if within the threshold
       const atBottom = distanceFromBottom < BOTTOM_THRESHOLD
 
-      // Consider "near bottom" if within one viewport height (keep this logic)
-      const nearBottom = distanceFromBottom < clientHeight
+      // Consider "near bottom" if within 1.2x viewport height
+      const nearBottom =
+        distanceFromBottom < clientHeight * NEAR_BOTTOM_THRESHOLD
 
       setIsAtBottom(atBottom)
       setIsNearBottom(nearBottom)
@@ -195,22 +169,78 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
         setHasNewMessages(false)
         lastSeenContentRef.current = assistantMessagesContent
       }
-
-      // Debug scroll position
-      // console.log('Scroll position:', {
-      //   distanceFromBottom,
-      //   atBottom,
-      //   nearBottom,
-      //   scrollHeight,
-      //   scrollTop,
-      //   clientHeight,
-      //   threshold: BOTTOM_THRESHOLD
-      // })
     }
 
     viewport.addEventListener('scroll', handleScroll)
     handleScroll() // Check initial scroll position
     return () => viewport.removeEventListener('scroll', handleScroll)
+  }, [assistantMessagesContent, hasGeneratingMessage])
+
+  // Scroll to bottom helper with improved mobile support and image handling
+  const scrollToBottom = useCallback(() => {
+    if (!viewportRef.current) return
+    const viewport = viewportRef.current
+
+    // Function to perform the actual scroll
+    const performScroll = () => {
+      requestAnimationFrame(() => {
+        // Calculate target scroll position with extra padding for mobile
+        const extraPadding = 60 // Account for mobile browser chrome and safe areas
+        const targetScroll =
+          viewport.scrollHeight - viewport.clientHeight + extraPadding
+
+        viewport.scrollTo({
+          top: targetScroll,
+          behavior: isInitialLoadRef.current ? 'instant' : 'smooth',
+        })
+
+        // Double-check scroll position after a short delay
+        setTimeout(() => {
+          if (
+            viewport.scrollTop + viewport.clientHeight <
+            viewport.scrollHeight - BOTTOM_THRESHOLD
+          ) {
+            viewport.scrollTo({
+              top: viewport.scrollHeight,
+              behavior: 'instant',
+            })
+          }
+        }, 500)
+
+        if (!hasGeneratingMessage) {
+          setHasNewMessages(false)
+          lastSeenContentRef.current = assistantMessagesContent
+        }
+      })
+    }
+
+    // Set up mutation observer to watch for image loads
+    const observer = new MutationObserver(mutations => {
+      for (const mutation of mutations) {
+        const addedNodes = Array.from(mutation.addedNodes)
+        const hasNewImages = addedNodes.some(
+          node =>
+            node instanceof HTMLElement &&
+            (node.tagName === 'IMG' || node.querySelector('img')),
+        )
+
+        if (hasNewImages) {
+          // Wait for images to load before scrolling
+          setTimeout(performScroll, 100)
+        }
+      }
+    })
+
+    observer.observe(viewport, {
+      childList: true,
+      subtree: true,
+    })
+
+    // Initial scroll
+    performScroll()
+
+    // Cleanup observer
+    return () => observer.disconnect()
   }, [assistantMessagesContent, hasGeneratingMessage])
 
   // Auto-scroll when near bottom and:
@@ -221,7 +251,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     const hasNewMessage = messages.length > lastMessagesLengthRef.current
     const hasAssistantUpdate = messages.some(m => m.role === 'assistant')
     const shouldAutoScroll =
-      isNearBottom &&
+      (isNearBottom || isInitialLoadRef.current) &&
       (hasNewMessage || hasAssistantUpdate || hasGeneratingMessage)
 
     if (shouldAutoScroll) {
@@ -229,7 +259,12 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     }
 
     lastMessagesLengthRef.current = messages.length
-  }, [messages.length, allAssistantMessages, hasGeneratingMessage])
+  }, [
+    messages.length,
+    allAssistantMessages,
+    hasGeneratingMessage,
+    scrollToBottom,
+  ])
 
   // Track new messages - show indicator when not near bottom
   useEffect(() => {
@@ -248,109 +283,88 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
     }
   }, [assistantMessagesContent, isAtBottom, hasGeneratingMessage])
 
-  // Scroll to bottom on initial load
+  // Scroll to bottom on initial load with improved reliability
   useEffect(() => {
     if (!viewportRef.current || !isInitialLoadRef.current || !messages.length)
       return
 
-    // Use a small timeout to ensure content is rendered
-    const timer = setTimeout(() => {
+    // Use RAF to ensure DOM is ready
+    requestAnimationFrame(() => {
       if (viewportRef.current) {
-        viewportRef.current.scrollTo({
-          // Add extra padding to ensure we scroll past fixed elements
-          top: viewportRef.current.scrollHeight,
-          behavior: 'instant',
-        })
+        scrollToBottom()
         isInitialLoadRef.current = false
         lastSeenContentRef.current = assistantMessagesContent
       }
-    }, 100)
+    })
+  }, [messages.length, assistantMessagesContent, scrollToBottom])
 
-    return () => clearTimeout(timer)
-  }, [messages.length, assistantMessagesContent])
-
-  // Debounce connection status changes to prevent rapid remounts
-  const handleConnectionChange = React.useCallback((isOnline: boolean) => {
-    // Clear any existing timeout
-    if (connectionTimeoutRef.current) {
-      clearTimeout(connectionTimeoutRef.current)
-    }
-
-    // Add delay before updating connection status
-    // Longer delay (2s) for showing the alert, shorter delay (500ms) for hiding it
-    const delay = isOnline ? 500 : 5000
-
-    connectionTimeoutRef.current = setTimeout(() => {
-      setConnectionLost(prev => {
-        if (prev === !isOnline) return prev
-        return !isOnline
-      })
-    }, delay)
-  }, [])
-
+  // Clear timeout on unmount
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    setIsMounted(true)
-
-    const handleOnline = () => handleConnectionChange(true)
-    const handleOffline = () => handleConnectionChange(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    if (navigator) {
-      // Check connection status after mount
-      const isOffline =
-        !navigator.onLine ||
-        readyState === ReadyState.CLOSED ||
-        readyState === ReadyState.CLOSING
-
-      handleConnectionChange(!isOffline)
-    }
-
     return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-      if (connectionTimeoutRef.current) {
-        clearTimeout(connectionTimeoutRef.current)
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current)
       }
     }
-  }, [readyState, handleConnectionChange])
+  }, [])
 
-  // Only render connection status after mount
-  const showConnectionLost = isMounted && isSignedIn && connectionLost
+  // Handle connection state changes with delay
+  useEffect(() => {
+    // Clear any existing timeout
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current)
+    }
+
+    // Consider the connection healthy if:
+    // 1. We're connecting (readyState === 0)
+    // 2. We're connected (readyState === 1)
+    // 3. We're attempting to reconnect
+    // 4. It's our first connection attempt
+    const isConnectionHealthy =
+      readyState === ReadyState.CONNECTING ||
+      readyState === ReadyState.OPEN ||
+      isAttemptingReconnect ||
+      initialConnectionAttemptRef.current
+
+    // After first successful connection or 10s timeout, mark initial attempt as done
+    if (
+      readyState === ReadyState.OPEN ||
+      (!isConnectionHealthy && initialConnectionAttemptRef.current)
+    ) {
+      initialConnectionAttemptRef.current = false
+    }
+
+    if (!isConnectionHealthy) {
+      // Add a 5 second delay before showing the alert
+      alertTimeoutRef.current = setTimeout(() => {
+        setShowAlert(true)
+      }, 5000)
+    } else {
+      setShowAlert(false)
+    }
+  }, [readyState, isAttemptingReconnect])
+
+  // Only render connection status after mount and delay
+  const showConnectionClosedAlert = isMounted && isSignedIn && showAlert
 
   // Memoize the composer to prevent remounts
   const memoizedComposer = React.useMemo(
     () => (
       <LightboxGallery galleryKey={config.threadId}>
-        <ComposerComponent {...config.composer} setIsDragging={setIsDragging} />
+        <ComposerComponent
+          {...config.composer}
+          setIsDragging={setIsDragging}
+          autoFocus={showWelcomeScreen || isDesktop}
+        />
       </LightboxGallery>
     ),
-    [config.threadId, config.composer, setIsDragging],
+    [
+      config.threadId,
+      config.composer,
+      setIsDragging,
+      showWelcomeScreen,
+      isDesktop,
+    ],
   )
-
-  // Scroll to bottom helper
-  const scrollToBottom = useCallback(() => {
-    if (!viewportRef.current) return
-    const viewport = viewportRef.current
-
-    // Calculate target scroll position
-    const targetScroll = viewport.scrollHeight - viewport.clientHeight
-
-    viewport.scrollTo({
-      top: targetScroll,
-      behavior: isInitialLoadRef.current ? 'instant' : 'smooth',
-    })
-
-    if (!hasGeneratingMessage) {
-      setHasNewMessages(false)
-      lastSeenContentRef.current = assistantMessagesContent
-    }
-  }, [assistantMessagesContent, hasGeneratingMessage])
 
   return (
     <Thread.Root config={config}>
@@ -393,7 +407,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
           </>
         )}
         <Thread.ViewportFooter className="z-20">
-          {showConnectionLost ? (
+          {showConnectionClosedAlert ? (
             <div className="w-full bg-accent mb-4 mt-2 rounded-lg overflow-hidden">
               <AlertDestructive title="Network connection lost" />
             </div>

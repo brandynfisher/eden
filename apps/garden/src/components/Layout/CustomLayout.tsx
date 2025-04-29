@@ -1,4 +1,4 @@
-import AnnouncementBanner from '@/components/Banners/AnnouncementBanner'
+import LegacyShutdownBanner from '../Banners/LegacyShutdownBanner'
 import FetchIndicator from '@/components/Layout/FetchIndicator'
 import LayoutHeader from '@/components/Layout/LayoutHeader'
 import RouteProgressBar from '@/components/Layout/RouteProgressBar'
@@ -88,11 +88,10 @@ const CustomLayout = ({
           fixedHeight ? 'h-screen overflow-hidden' : ''
         }`}
       >
-        <AnnouncementBanner
-          id={'beta_announcer'}
-          text={<span>NEW! Eden Create Beta</span>}
-          linkUrl={'https://beta.eden.art'}
-          linkText={'Try it now!'}
+        <LegacyShutdownBanner
+          id={'legacy_shutdown'}
+          delay={200}
+          reappearAfterMinutes={2}
         />
         <LayoutHeader />
         <Layout

@@ -36,7 +36,7 @@ export const sendMessage = async function (params: {
   threadId?: string
   agentId: string
   messages: EdenMessage[]
-  abortSignal: AbortSignal | undefined
+  abortSignal?: AbortSignal | undefined
 }): Promise<AxiosResponse<ThreadsMessageResponse>> {
   // console.log('sendMessage', params)
 
@@ -57,4 +57,32 @@ export const sendMessage = async function (params: {
   )
 
   return response
+}
+
+export const pinMessage = async (messageId: string) => {
+  try {
+    const response: AxiosResponse<ThreadsMessageResponse> = await axios.post(
+      `/api/threads/pin`,
+      { message_id: messageId },
+    )
+    console.log(response)
+    return response.data
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+}
+
+export const unpinMessage = async (messageId: string) => {
+  try {
+    const response: AxiosResponse<ThreadsMessageResponse> = await axios.post(
+      `/api/threads/unpin`,
+      { message_id: messageId },
+    )
+    console.log(response)
+    return response.data
+  } catch (e) {
+    console.error(e)
+    return null
+  }
 }

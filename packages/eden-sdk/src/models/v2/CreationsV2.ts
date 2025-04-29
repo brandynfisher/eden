@@ -56,6 +56,14 @@ export interface CreationsV2BulkPatchArguments extends WebAPICallOptions {
   deleted?: boolean
 }
 
+export interface CreationsV2LikeArguments extends WebAPICallOptions {
+  creationId: string
+}
+
+export interface CreationsV2UnlikeArguments extends WebAPICallOptions {
+  creationId: string
+}
+
 // Requests
 
 export const creationsV2ListRequestConfig = (
@@ -138,6 +146,26 @@ export const creationsV2DeleteRequestConfig = (
   }
 }
 
+export const creationsV2LikeRequestConfig = (
+  args: CreationsV2LikeArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/creations/${args.creationId}/like`,
+    data: {},
+  }
+}
+
+export const creationsV2UnlikeRequestConfig = (
+  args: CreationsV2UnlikeArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `v2/creations/${args.creationId}/like`,
+    data: {},
+  }
+}
+
 // Responses
 
 export type CreationsV2ListResponse = WebAPICallResult &
@@ -176,6 +204,16 @@ export type CreationsV2DeleteResponse = WebAPICallResult & {
   success?: boolean
 }
 
+export type CreationsV2LikeResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
+}
+
+export type CreationsV2UnlikeResponse = WebAPICallResult & {
+  error?: string
+  success?: boolean
+}
+
 // Types
 export type CreationV2 = MediaOutput & {
   _id: string
@@ -188,6 +226,8 @@ export type CreationV2 = MediaOutput & {
   updatedAt: Date
   deleted: boolean
   public?: boolean
+  likeCount?: number
+  isLiked?: boolean
 }
 
 export interface CreationV2Attributes {

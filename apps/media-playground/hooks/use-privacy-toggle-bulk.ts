@@ -13,7 +13,8 @@ type Props = {
 export function usePrivacyToggleBulk({ type, items, queryKey }: Props) {
   const mutation = usePrivacyMutation({
     type,
-    queryKey,
+    timelineQueryKey: queryKey,
+    itemQueryKey: queryKey,
     onSuccessMessage: `${capitalize(type)}s updated`,
   })
 

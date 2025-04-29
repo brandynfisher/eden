@@ -4,6 +4,8 @@ import {
   creationBulkUpdate,
   creationUpdate,
   getCreation,
+  likeCreation,
+  unlikeCreation,
 } from '../../controllers/v2/creationControllerV2'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -128,6 +130,68 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => creationBulkUpdate(request, reply),
+  })
+
+  server.post('/v2/creations/:creationId/like', {
+    schema: {
+      tags: ['Creations'],
+      description: 'Like a creation',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        creationId: Type.String(),
+      },
+      response: {
+        200: {
+          message: Type.String(),
+        },
+        400: {
+          message: Type.String(),
+        },
+        404: {
+          message: Type.String(),
+        },
+        500: {
+          message: Type.String(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => likeCreation(server, request, reply),
+  })
+
+  server.delete('/v2/creations/:creationId/like', {
+    schema: {
+      tags: ['Creations'],
+      description: 'Unlike a creation',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        creationId: Type.String(),
+      },
+      response: {
+        200: {
+          message: Type.String(),
+        },
+        400: {
+          message: Type.String(),
+        },
+        404: {
+          message: Type.String(),
+        },
+        500: {
+          message: Type.String(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => unlikeCreation(server, request, reply),
   })
 }
 

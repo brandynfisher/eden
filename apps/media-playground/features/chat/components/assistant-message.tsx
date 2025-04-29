@@ -1,18 +1,27 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { pinMessage, unpinMessage } from '@/features/chat/chat-api'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { ThreadPrimitive, useMessage } from '@assistant-ui/react'
+import {
+  ThreadPrimitive,
+  getExternalStoreMessages,
+  useMessage,
+} from '@assistant-ui/react'
 import {
   AssistantActionBar,
   AssistantMessage,
   BranchPicker,
   useThreadConfig,
 } from '@assistant-ui/react-ui'
+import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
+import { PinIcon, PinOffIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
-import React, { type FC } from 'react'
+import React, { type FC, useState } from 'react'
 
 const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
@@ -37,22 +46,60 @@ const MyAssistantMessageAvatar: FC = () => {
 const MyAssistantActionBar: FC = () => {
   const { TimeAgo } = useTimeAgo()
   const createdAt = useMessage(m => m.createdAt)
+  const id = useMessage(m => m.id)
+  const myMessages = useMessage(m =>
+    getExternalStoreMessages(m),
+  ) as EdenThreadMessage[]
+  const [pinnedState, setPinnedState] = useState(myMessages[0].pinned)
+  const reactions = myMessages[0].reactions || {}
+
+  const { user } = useAuthState()
+  const userId = user?._id || null
+
+  const hasThumbsUp = userId ? reactions.thumbs_up?.includes(userId) : false
+  const hasThumbsDown = userId ? reactions.thumbs_down?.includes(userId) : false
+
   return (
     <AssistantActionBar.Root
-      // hideWhenRunning
-      // autohide="not-last"
       autohide="not-last"
       autohideFloat="single-branch"
       className="flex items-center gap-2 w-full z-10"
     >
-      {/*<AssistantActionBar.SpeechControl />*/}
       <AssistantActionBar.Copy />
-      {/*<AssistantActionBar.Reload />*/}
-      <AssistantActionBar.FeedbackPositive />
-      <AssistantActionBar.FeedbackNegative />
+      <AssistantActionBar.FeedbackPositive
+        className={cn(
+          hasThumbsUp ? 'text-green-600' : '!text-muted-foreground',
+        )}
+      />
+      <AssistantActionBar.FeedbackNegative
+        className={cn(
+          hasThumbsDown ? 'text-red-600' : '!text-muted-foreground',
+        )}
+      />
+
+      <Button
+        variant={'ghost'}
+        size="icon"
+        className="p-0.5 w-6 h-6 hover:text-foreground hover:bg-muted"
+        onClick={async () => {
+          if (pinnedState) {
+            unpinMessage(id)
+            setPinnedState(false)
+          } else {
+            pinMessage(id)
+            setPinnedState(true)
+          }
+        }}
+      >
+        {pinnedState ? (
+          <PinOffIcon className="w-4 h-4 text-purple-600" />
+        ) : (
+          <PinIcon className="w-4 h-4" />
+        )}
+      </Button>
 
       <div
-        className="ml-auto text-xs text-muted-foreground"
+        className="ml-auto text-xs bg-transparent"
         title={new Date(createdAt).toLocaleString()}
       >
         <TimeAgo date={new Date(createdAt)} />
@@ -67,13 +114,42 @@ const MyAssistantMessage: FC = () => {
   const id = useMessage(m => m.id)
 
   // Memoize the derived state to prevent unnecessary recalculations
-  const { isEmpty, isRunning } = React.useMemo(
-    () => ({
-      isEmpty: !content || content.length === 0,
-      isRunning: status?.type === 'running',
-    }),
-    [content, status?.type],
-  )
+  // const { isEmpty, isRunning } = React.useMemo(() => {
+  //   const newIsEmpty = !content || content.length === 0
+  //   const newIsRunning = status?.type === 'running'
+
+  //   if (newIsRunning) {
+  //     console.log('[MyAssistantMessage] newIsRunning:', {
+  //       id,
+  //       isEmpty: newIsEmpty,
+  //       isRunning: newIsRunning,
+  //       content,
+  //       status,
+  //     })
+  //   }
+
+  //   return {
+  //     isEmpty: newIsEmpty,
+  //     isRunning: newIsRunning,
+  //   }
+  // }, [id, content, status])
+  // const myMessages = useMessage(m =>
+  //   getExternalStoreMessages(m),
+  // ) as EdenThreadMessage[]
+  const isRunning = status?.type === 'running'
+  const isEmpty = typeof content === 'undefined' || content.length === 0
+
+  // if (isRunning || isEmpty) {
+  //   console.log('[MyAssistantMessage]:', status, id)
+  // }
+
+  // console.log('[MyAssistantMessage]:', {
+  //   isRunning,
+  //   isEmpty,
+  //   content,
+  //   status,
+  //   id,
+  // })
 
   return (
     <AssistantMessage.Root
@@ -84,17 +160,12 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      {!isEmpty && ( // Use raw isEmpty
-        <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
-      )}
+      {/* {!isEmpty && ( // Use raw isEmpty */}
+      <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
+      {/* )} */}
       <BranchPicker />
       {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
-        <div
-          className={cn(
-            'col-start-3 row-start-2',
-            isEmpty && 'col-start-auto row-start-auto mt-2', // Use raw isEmpty
-          )}
-        >
+        <div className="col-start-3 row-start-2">
           <TypingIndicator />
         </div>
       ) : null}

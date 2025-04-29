@@ -25,6 +25,14 @@ export interface ThreadsMessageArguments extends WebAPICallOptions {
   attachments?: string[]
 }
 
+export interface ThreadsPinMessageArguments extends WebAPICallOptions {
+  message_id: string
+}
+
+export interface ThreadsUnpinMessageArguments extends WebAPICallOptions {
+  message_id: string
+}
+
 export interface ThreadsMessageReactArguments extends WebAPICallOptions {
   message_id: string
   reaction: 'thumbs_up' | 'thumbs_down'
@@ -42,6 +50,11 @@ export interface ThreadsGetArguments extends WebAPICallOptions {
 
 export interface ThreadsDeleteArguments extends WebAPICallOptions {
   thread_id: string
+}
+
+export interface ThreadsRenameArguments extends WebAPICallOptions {
+  thread_id: string
+  title: string
 }
 
 // Requests
@@ -82,6 +95,30 @@ export const threadsMessageReactRequestConfig = (
   }
 }
 
+export const threadsPinMessageRequestConfig = (
+  args: ThreadsPinMessageArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/threads/pin',
+    data: {
+      ...args,
+    },
+  }
+}
+
+export const threadsUnpinMessageRequestConfig = (
+  args: ThreadsUnpinMessageArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: 'v2/threads/unpin',
+    data: {
+      ...args,
+    },
+  }
+}
+
 export const threadsListRequestConfig = (
   args: ThreadsListArguments,
 ): AxiosRequestConfig => {
@@ -110,6 +147,19 @@ export const threadsDeleteRequestConfig = (
     url: `v2/threads/${args.thread_id}`,
   }
 }
+
+export const threadsRenameRequestConfig = (
+  args: ThreadsRenameArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `v2/threads/${args.thread_id}`,
+    data: {
+      title: args.title,
+    },
+  }
+}
+
 // Responses
 
 export type ThreadsCreateResponse = WebAPICallResult &
@@ -128,6 +178,24 @@ export type ThreadsMessageResponse = WebAPICallResult &
         message?: string
       }
     | { thread_id?: Thread['_id']; success: boolean }
+  )
+
+export type ThreadsPinMessageResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { success: boolean }
+  )
+
+export type ThreadsUnpinMessageResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { success: boolean }
   )
 
 export type ThreadsMessageReactResponse = WebAPICallResult &
@@ -158,6 +226,14 @@ export type ThreadsDeleteResponse = WebAPICallResult &
     | { success: boolean }
   )
 
+export type ThreadsRenameResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { success: boolean }
+  )
 // Types
 
 export type Message = {
@@ -195,6 +271,7 @@ export type ThreadMessage = {
   role: 'user' | 'assistant' | 'tool' | 'system'
   content?: string
   reactions?: ThreadMessageReaction
+  pinned?: boolean
   metadata?: {
     [key: string]: string | number | boolean | Date | null
   }

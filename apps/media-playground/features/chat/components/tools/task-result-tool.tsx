@@ -62,7 +62,6 @@ export const TaskResultTool = makeAssistantToolUI({
   render: ({ args, argsText, status, result }) => {
     const { tool, result: toolResults } = result as TaskResultToolArgs
     // console.log('args', args)
-
     return (
       <div className="mb-2">
         <ToolFallback

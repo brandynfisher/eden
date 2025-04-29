@@ -10,6 +10,7 @@ export type ToolV2Schema = {
   name: string
   description?: string
   active?: boolean
+  visible?: boolean
   parameters?: ToolParameterV2[]
   output_type: ToolOutputTypeV2
   cost_estimate?: string
@@ -36,6 +37,10 @@ export const ToolV2Schema = new Schema<ToolV2Document>(
       type: String,
     },
     active: {
+      type: Boolean,
+      default: false,
+    },
+    visible: {
       type: Boolean,
       default: false,
     },

@@ -8,6 +8,7 @@ import QuickAnimateDialog from '@/components/dialog/quick-animate-dialog'
 import QuickUpscaleDialog from '@/components/dialog/quick-upscale-dialog'
 import ShareDialog from '@/components/dialog/share-dialog'
 import Header from '@/components/header/header'
+import { SubscriptionGateModal } from '@/components/modals/SubscriptionGateModal'
 import { PreloadResources } from '@/components/preload-resources'
 import ScrollTopButton from '@/components/scroll-top-button'
 import { TailwindIndicator } from '@/components/tailwind-indicator'
@@ -127,6 +128,7 @@ export default function RootLayout({
             <AgentFormSheet />
             <AgentDeploymentSheet />
             <AgentTriggerFormSheet />
+            <SubscriptionGateModal />
 
             <div id="modal-root" />
           </Providers>

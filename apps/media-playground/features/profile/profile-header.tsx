@@ -8,7 +8,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Creator } from '@edenlabs/eden-sdk'
-import { Share2Icon } from 'lucide-react'
+import { Share2Icon, UserIcon } from 'lucide-react'
 import Image from 'next/image'
 
 type Props = {
@@ -41,37 +41,47 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
   }
 
   return (
-    <div className="flex justify-between">
-      <div className="flex items-center gap-4">
-        <div className="relative rounded-full overflow-hidden border-popover-foreground border-2 h-16 w-16 lg:h-24 lg:w-24">
-          <Image
-            src={creator.userImage || ''}
-            alt={creator.username || ''}
-            width={96}
-            height={96}
-          />
-        </div>
-        <div>
-          <TypographyH3 className="text-lg md:text-xl mb-2">
-            {name}
-          </TypographyH3>
-          <div>
-            {user?._id === creator?._id ? (
-              <Badge variant={'outline'}>My profile</Badge>
-            ) : null}
+    <div className="flex flex-col gap-4 p-4 bg-muted-darker rounded-md">
+      <div className="relative lg:flex lg:justify-between lg:gap-x-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative md:min-h-16 rounded-lg flex-shrink-0 overflow-hidden">
+            <Image
+              src={creator.userImage || ''}
+              alt={creator.username || ''}
+              width={128}
+              height={128}
+              className="object-cover rounded-lg"
+            />
+          </div>
+          <div className="flex flex-col gap-4">
+            <div>
+              <TypographyH3 className="text-2xl font-semibold mb-2">
+                {name}
+              </TypographyH3>
+              <div className="flex flex-wrap items-center gap-2">
+                {user?._id === creator?._id ? (
+                  <Badge variant={'outline'}>My profile</Badge>
+                ) : null}
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <UserIcon className="w-3 h-3" />
+                  Member since {new Date(creator.createdAt).getFullYear()}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="default"
+                className="flex items-center gap-2"
+                onClick={onShareProfile}
+              >
+                <Share2Icon className="w-4 h-4" />
+                Share
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-          onClick={onShareProfile}
-        >
-          <Share2Icon className="size-4" />
-          Share
-        </Button>
       </div>
     </div>
   )

@@ -68,7 +68,9 @@ export const registerInternalMessages: FastifyPluginAsync = async fastify => {
         {
           topic: 'thread-updates',
           onMessage: async _message => {
-            // fastify.log.info('thread-updates: Internal message received ', { _message })
+            fastify.log.info('thread-updates: Internal message received ', {
+              _message,
+            })
           },
         },
       ],

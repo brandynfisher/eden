@@ -2,8 +2,8 @@
 
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useTaskQuery } from '@/hooks/query/use-task-query'
-import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 
 type GenericValues = {
   [key: string]: number | string | undefined | boolean | null
@@ -13,14 +13,14 @@ export const useToolPreset = () => {
   const [presetValues, setPresetValues] = useState<GenericValues | undefined>(
     undefined,
   )
+  const hasAppliedPresets = useRef(false)
+  const router = useRouter()
   const queryParams = useSearchParams()
 
   // Extract query parameters
   const loraParam = queryParams.get('lora')
   const creationParam = queryParams.get('creation')
   const taskParam = queryParams.get('task')
-
-  // console.log({ taskParam })
 
   // Use react-query to fetch creation data if creationParam is present
   const {
@@ -29,7 +29,7 @@ export const useToolPreset = () => {
     error: creationError,
   } = useCreationQuery({
     key: creationParam || '',
-    enabled: !!creationParam,
+    enabled: !!creationParam && !hasAppliedPresets.current,
     staleTime: Infinity,
   })
 
@@ -40,12 +40,21 @@ export const useToolPreset = () => {
     error: taskError,
   } = useTaskQuery({
     key: taskParam || '',
-    enabled: !!taskParam,
+    enabled: !!taskParam && !hasAppliedPresets.current,
     staleTime: Infinity,
   })
 
-  // console.log({taskData, isTaskLoading, taskError})
   useEffect(() => {
+    // Only proceed if we haven't applied presets yet and we have all the data we need
+    if (hasAppliedPresets.current) {
+      return
+    }
+
+    // Check if we're still loading any data
+    if ((creationParam && isCreationLoading) || (taskParam && isTaskLoading)) {
+      return
+    }
+
     const derivePresetValues = () => {
       let newPreset: GenericValues = {}
 
@@ -98,21 +107,44 @@ export const useToolPreset = () => {
       )
 
       // If any presets are set, update the state
-      setPresetValues(
-        Object.keys(filteredPreset).length > 0 ? filteredPreset : undefined,
-      )
+      if (Object.keys(filteredPreset).length > 0) {
+        setPresetValues(filteredPreset)
+      }
+
+      // Mark presets as applied
+      hasAppliedPresets.current = true
+
+      // Clean up URL params after applying presets
+      if (loraParam || creationParam || taskParam) {
+        // Get current URL and remove preset-related params
+        const url = new URL(window.location.href)
+        url.searchParams.delete('lora')
+        url.searchParams.delete('creation')
+        url.searchParams.delete('task')
+
+        // Replace URL without triggering a re-render
+        router.replace(url.pathname + url.search, { scroll: false })
+      }
     }
 
     derivePresetValues()
-  }, [loraParam, creationParam, creationData, taskParam, taskData])
+  }, [
+    loraParam,
+    creationParam,
+    creationData,
+    taskParam,
+    taskData,
+    isCreationLoading,
+    isTaskLoading,
+    router,
+  ])
 
   // Determine if any loading is in progress
-  const isLoading = isCreationLoading || isTaskLoading
+  const isLoading =
+    (isCreationLoading || isTaskLoading) && !hasAppliedPresets.current
 
   // Capture the first error encountered
   const error = creationError || taskError
-
-  // console.log({ presetValues })
 
   return {
     presetValues,

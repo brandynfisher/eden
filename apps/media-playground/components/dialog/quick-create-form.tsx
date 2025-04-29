@@ -1,9 +1,20 @@
+import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import { Button } from '@/components/ui/button'
-import { Form } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Switch } from '@/components/ui/switch'
 import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
 import ParameterField from '@/features/tools/parameters/parameter-field'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { GatedActions } from '@/hooks/use-subscription-gate'
+import { useSubscriptionGate } from '@/hooks/use-subscription-gate'
 import { createZodFormSchema, getDefaultNameValueMap } from '@/lib/forms'
 import { closeAllQuickCreateModals } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -34,8 +45,10 @@ const SimpleGeneratorForm = ({
   const dispatch = useAppDispatch()
 
   const { verifyAuth, refetchMe, balance } = useAuthState()
+  const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
+    GatedActions.MakePrivate,
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
-
   const parameters = tool?.parameters?.filter(param =>
     exposedParameters.includes(param.name),
   )
@@ -62,6 +75,10 @@ const SimpleGeneratorForm = ({
     const finalData = { ...defaultValues, ...formData, ...initValues }
     // console.log('onSubmit', finalData)
 
+    const { makePublic, ...args } = finalData as FormData & {
+      makePublic?: boolean
+    }
+
     if (!(await verifyAuth())) {
       return
     }
@@ -70,7 +87,8 @@ const SimpleGeneratorForm = ({
     try {
       const response = await axios.post('/api/tasks/create', {
         tool: tool.key,
-        args: finalData,
+        args: args,
+        makePublic: makePublic,
       })
 
       console.log({ response })
@@ -117,6 +135,33 @@ const SimpleGeneratorForm = ({
               )
             })
           : null}
+        <FormField
+          name="makePublic"
+          render={({ field, fieldState }) => (
+            <FormItem
+              data-test-id={'makePublic'}
+              className="ml-auto flex items-center gap-2 space-y-0 relative"
+            >
+              <div className={'flex items-center gap-2 relative'}>
+                <SubscriptionCrownBadge type="creation" className="h-5 w-5" />
+                <FormControl id={field.name} className="mt-0">
+                  <Switch
+                    checked={field.value === undefined ? true : field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={!isAllowedPrivacy}
+                  />
+                </FormControl>
+                <FormLabel
+                  htmlFor={field.name}
+                  className={'text-muted-foreground !mt-0'}
+                >
+                  Public
+                </FormLabel>
+              </div>
+              <FormMessage>{fieldState.error?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
         <div className="flex gap-2 items-center justify-end">
           <CostIndicatorV2 cost={cost} />
 

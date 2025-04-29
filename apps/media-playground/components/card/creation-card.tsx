@@ -165,18 +165,18 @@ const CreationCard = ({
           ) : null}
         </div>
       </Link>
+      <div className="absolute bottom-2 right-2 z-10">
+        <LikeButton
+          type="creation"
+          id={creation._id}
+          isLiked={creation.isLiked}
+          likeCount={creation.likeCount}
+        />
+      </div>
       {showFooter ? (
         <CardFooter
           // creator={creator}
-          actions={[
-            <LikeButton
-              key={0}
-              count={4}
-              isActive={false}
-              onChange={() => null}
-            />,
-            <ActionsDropdown key={1} />,
-          ]}
+          actions={[<ActionsDropdown key={1} />]}
         />
       ) : null}
     </Card>

@@ -2,6 +2,7 @@
 
 import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
+import { SortMenu } from '@/features/feed/sort-menu'
 import { FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
 import { useState } from 'react'
 
@@ -12,6 +13,12 @@ const SortCreationsFeed = () => {
   const [filter, setFilter] = useState<FeedCreationsCursorArguments>(
     initialCreationsFilter,
   )
+  const [sort, setSort] = useState('createdAt;-1')
+
+  const query = {
+    ...filter,
+    sort,
+  }
 
   return (
     <>
@@ -25,15 +32,14 @@ const SortCreationsFeed = () => {
           }
           initialFilter={initialCreationsFilter}
         />
+        <SortMenu
+          variant="creation"
+          initialSort={sort}
+          onChange={sort => setSort(sort)}
+        />
       </div>
 
-      <CreationsFeed
-        query={{
-          ...filter,
-        }}
-        minCols={2}
-        maxCols={8}
-      />
+      <CreationsFeed query={query} minCols={2} maxCols={8} />
     </>
   )
 }

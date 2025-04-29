@@ -1,7 +1,6 @@
 'use client'
 
 import AgentLink from '../agent/agent-link'
-import { useEdenRuntimeExtras } from './hooks/useEdenRuntime'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -13,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -31,7 +31,10 @@ import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
-import { EdenRuntimeProvider } from '@/features/chat/providers/eden-runtime-provider'
+import {
+  MyRuntimeProvider,
+  useEdenRuntimeExtras,
+} from '@/features/chat/providers/my-runtime-provider'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -48,18 +51,25 @@ import {
 import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
+  CheckIcon,
   ChevronRightIcon,
   EditIcon,
   MoreHorizontal,
+  PencilIcon,
   SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
-import { FC, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import * as React from 'react'
 import { toast } from 'sonner'
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const isNewSelected = useThreadListItem(t => t.id === 'DEFAULT_THREAD_ID')
+  const threadId = useEdenRuntimeExtras(extras => extras.threadId)
   const isLoading = false
+
+  // Only show as selected if we're in a new thread state (no threadId)
+  const shouldShowSelected = !threadId && isNewSelected
 
   return (
     <ThreadListPrimitive.New asChild>
@@ -68,7 +78,7 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
         onClick={onItemClick}
         className={cn(
           'flex w-full justify-between px-3 mb-1',
-          !isLoading && isNewSelected && 'bg-aui-muted',
+          !isLoading && shouldShowSelected && 'bg-aui-muted',
         )}
       >
         <div className="flex items-center gap-2 text-sm font-semibold">
@@ -80,13 +90,22 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-const ThreadListItemTrigger: FC<{
+const ThreadListItem: FC<{
   onItemClick?: () => void
 }> = ({ onItemClick }) => {
   const id = useThreadListItem(t => t.id)
+  const title = useThreadListItem(t => t.title)
   const agentId = useEdenRuntimeExtras(extras => extras.agentId)
+  const currentThreadId = useEdenRuntimeExtras(extras => extras.threadId)
   const { invalidate } = useThreadListQuery({ agentId })
   const runtime = useAssistantRuntime()
+  const [isEditing, setIsEditing] = useState(false)
+  const [newTitle, setNewTitle] = useState('')
+  const [isRenaming, setIsRenaming] = useState(false)
+  const isSubmittingRef = useRef(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const isActive = id === currentThreadId
 
   const deleteThread = async (threadId: string) => {
     try {
@@ -113,41 +132,164 @@ const ThreadListItemTrigger: FC<{
     }
   }
 
-  return (
-    <ThreadListItemPrimitive.Trigger
-      className="relative flex group items-center justify-between flex-grow w-full gap-1 hover:bg-muted/50 rounded-lg transition-all"
-      onClick={onItemClick}
-    >
-      <div className="overflow-hidden whitespace-nowrap text-ellipsis px-3 py-2">
-        <ThreadListItemPrimitive.Title fallback="Untitled" />
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          asChild
-          className="shrink-0 h-5 w-5 mr-1 hidden [&[data-state=open]]:flex group-hover:flex [@media(pointer:coarse)]:flex"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="[&[data-state=closed]]:hidden">
-          <DropdownMenuItem
-            className="flex items-center gap-2 text-destructive hover:!text-destructive"
-            onClick={() => deleteThread(id)}
-          >
-            <TrashIcon className="size-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </ThreadListItemPrimitive.Trigger>
-  )
-}
+  const renameThread = useCallback(async (threadId: string, title: string) => {
+    if (!title) {
+      setIsEditing(false)
+      return
+    }
+    try {
+      setIsRenaming(true)
+      await axios.patch(`/api/threads/${threadId}`, {
+        title,
+      })
 
-const ThreadListItem: FC<{
-  onItemClick?: () => void
-}> = ({ onItemClick }) => {
+      await invalidate()
+
+      toast.success('Thread renamed', {
+        description: 'Your thread has been renamed.',
+        dismissible: true,
+        richColors: true,
+      })
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to rename thread', {
+        description: 'Please try again later.',
+        dismissible: true,
+        richColors: true,
+      })
+    } finally {
+      setIsRenaming(false)
+      setIsEditing(false)
+    }
+  }, [])
+
+  const handleRenameSubmit = useCallback(
+    async (event?: React.FormEvent | React.MouseEvent) => {
+      event?.preventDefault()
+      isSubmittingRef.current = true
+      await renameThread(id, newTitle.trim())
+    },
+    [id, newTitle, renameThread],
+  )
+
+  const handleRenameCancel = useCallback(() => {
+    if (!isSubmittingRef.current) {
+      setIsEditing(false)
+      setNewTitle('')
+    }
+    setTimeout(() => {
+      isSubmittingRef.current = false
+    }, 150)
+  }, [])
+
+  useEffect(() => {
+    if (isEditing) {
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }, [isEditing])
+
+  useEffect(() => {
+    if (!isEditing) {
+      isSubmittingRef.current = false
+    }
+  }, [isEditing])
+
   return (
-    <ThreadListItemPrimitive.Root className="group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-2 rounded-lg transition-all mr-3">
-      <ThreadListItemTrigger onItemClick={onItemClick} />
+    <ThreadListItemPrimitive.Root
+      className={cn(
+        'group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-1 text-sm relative',
+        isActive && 'bg-muted text-primary font-medium',
+      )}
+    >
+      <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
+        {isEditing ? (
+          <div className="flex items-center gap-1 flex-grow min-w-0">
+            <Input
+              id="thread-title-input"
+              name="title"
+              ref={inputRef}
+              value={newTitle}
+              disabled={isRenaming}
+              onChange={e => setNewTitle(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !isRenaming) {
+                  handleRenameSubmit(e)
+                } else if (e.key === 'Escape') {
+                  e.preventDefault()
+                  handleRenameCancel()
+                }
+              }}
+              onBlur={handleRenameCancel}
+              className="h-8 flex-grow px-1 py-0 text-sm min-w-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border"
+              onClick={e => e.stopPropagation()}
+              onPointerDown={e => e.stopPropagation()}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0 text-primary hover:text-primary"
+              onClick={handleRenameSubmit}
+              onMouseDown={e => e.preventDefault()}
+              disabled={isRenaming}
+            >
+              {isRenaming ? (
+                <LoadingIndicator className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckIcon className="h-4 w-4" />
+              )}
+              <span className="sr-only">Save</span>
+            </Button>
+          </div>
+        ) : (
+          <ThreadListItemPrimitive.Trigger
+            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
+            onClick={onItemClick}
+            disabled={isEditing}
+          >
+            <div className="overflow-hidden whitespace-nowrap text-ellipsis">
+              <ThreadListItemPrimitive.Title fallback="Untitled" />
+            </div>
+          </ThreadListItemPrimitive.Trigger>
+        )}
+      </div>
+
+      {!isEditing && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 h-7 w-7 mr-1 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-opacity"
+              onClick={e => e.stopPropagation()}
+            >
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">Thread Actions</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              className="flex items-center gap-2"
+              onSelect={() => {
+                setIsEditing(true)
+                setNewTitle(title || '')
+              }}
+            >
+              <PencilIcon className="size-4" />
+              Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center gap-2 text-destructive hover:!text-destructive focus:!text-destructive focus:!bg-destructive/10"
+              onSelect={e => {
+                e.preventDefault()
+                deleteThread(id)
+              }}
+            >
+              <TrashIcon className="size-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </ThreadListItemPrimitive.Root>
   )
 }
@@ -155,10 +297,52 @@ const ThreadListItem: FC<{
 const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const agentId = useEdenRuntimeExtras(extras => extras.agentId)
-  const { isLoading, hasMore, isFetchingNextPage } = useThreadListQuery({
-    agentId,
-    enabled: !!isSignedIn && !!agentId,
-  })
+  const { isLoading, hasMore, isFetchingNextPage, fetchNextPage } =
+    useThreadListQuery({
+      agentId,
+      enabled: !!isSignedIn && !!agentId,
+    })
+
+  // Setup intersection observer for infinite scrolling
+  useEffect(() => {
+    if (!hasMore || isFetchingNextPage) {
+      return
+    }
+
+    const target = document.getElementById('thread-list-observer-target')
+    if (!target) {
+      return
+    }
+
+    const container = target.closest('nav')
+    if (!container) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore) {
+          const scrollPosition = container.scrollTop
+
+          fetchNextPage().then(() => {
+            requestAnimationFrame(() => {
+              container.scrollTop = scrollPosition
+            })
+          })
+        }
+      },
+      {
+        threshold: 1.0,
+        rootMargin: '10px',
+      },
+    )
+
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [hasMore, isFetchingNextPage, fetchNextPage])
 
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
@@ -181,18 +365,24 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
                 }}
               />
               {hasMore && (
-                <div id="thread-list-observer-target" className="h-8 w-full">
-                  <Separator orientation="horizontal" className="my-2" />
-                  <div className="flex justify-center text-muted-foreground text-sm py-2">
-                    Older Threads
-                  </div>
-                  <Separator orientation="horizontal" className="my-2" />
-                  {isFetchingNextPage && (
-                    <div className="flex justify-center py-2">
-                      <Skeleton className="w-full h-9" />
+                <>
+                  <div id="thread-list-observer-target" className="h-8 w-full">
+                    <Separator orientation="horizontal" className="my-2" />
+                    <div
+                      className={cn(
+                        'flex justify-center text-muted-foreground text-sm py-2',
+                        isFetchingNextPage && 'text-purple-600',
+                      )}
+                    >
+                      {isFetchingNextPage ? (
+                        <LoadingIndicator className="w-4 h-4" />
+                      ) : (
+                        'Older Threads'
+                      )}
                     </div>
-                  )}
-                </div>
+                    <Separator orientation="horizontal" className="my-2" />
+                  </div>
+                </>
               )}
             </>
           ) : (
@@ -326,6 +516,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
     document.body.classList.add('overflow-hidden')
     return () => {
       document.body.classList.remove('overflow-hidden')
+      document.body.classList.remove('overflow-hidden')
     }
   }, [])
 
@@ -346,7 +537,8 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const isOwner = useMemo(() => {
-    return user?._id === agent?.owner._id
+    const ownershipStatus = user?._id === agent?.owner._id
+    return ownershipStatus
   }, [user, agent])
 
   if (!isMounted) {
@@ -354,7 +546,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   }
 
   return (
-    <EdenRuntimeProvider agentId={agentId} threadId={threadId}>
+    <MyRuntimeProvider agentId={agentId} threadId={threadId}>
       <div
         className="
          flex flex-col
@@ -397,20 +589,21 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
         <ResizablePanelGroup
           direction="horizontal"
-          className="flex-1 !overflow-y-hidden" // Take remaining height, prevent group overflow
+          className="flex-1 !overflow-y-hidden"
           autoSaveId={`resizable-chat-layout-${agentId}`}
         >
           {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
           <ResizablePanel
-            defaultSize={18}
+            defaultSize={20}
             minSize={15}
             maxSize={30}
             collapsible
-            collapsedSize={0} // Fully collapse
+            collapsedSize={0}
             onCollapse={() => setIsSidebarCollapsed(true)}
             onExpand={() => setIsSidebarCollapsed(false)}
             className={cn(
               'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+              'max-w-[320px]',
               isSidebarCollapsed && 'p-0 border-none',
             )}
           >
@@ -431,7 +624,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           />
 
           {/* MAIN CONTENT PANEL */}
-          <ResizablePanel defaultSize={82} className="flex flex-col">
+          <ResizablePanel defaultSize={80} className="flex flex-col">
             {/* Ensure main takes full height within the panel */}
             <main className="bg-accent flex-1 overflow-auto flex flex-col">
               {!agent ? (
@@ -466,7 +659,11 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                     allowReload: false,
                     allowSpeak: false,
                     components: {
-                      Empty: () => <div></div>,
+                      Empty: () => (
+                        <div className="text-muted-foreground italic">
+                          Thinking...
+                        </div>
+                      ),
                       Text: MarkdownText,
                       ToolFallback,
                     },
@@ -499,7 +696,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
-    </EdenRuntimeProvider>
+    </MyRuntimeProvider>
   )
 }
 
