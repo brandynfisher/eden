@@ -3,7 +3,6 @@
 import ImageWithFallback from '@/components/media/image-with-fallback'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
-import customImageLoader from '@/image-loader'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 
@@ -49,10 +48,11 @@ export const ToolCardMedia = ({
       ) : (
         <ImageWithFallback
           loading={priority ? undefined : 'lazy'}
-          loader={customImageLoader}
+          // loader={customImageLoader}
           src={mediaUrl}
           alt={title || mediaUrl}
           data-loaded="false"
+          unoptimized={true}
           onLoad={event => {
             event.currentTarget.setAttribute('data-loaded', 'true')
           }}
