@@ -708,7 +708,7 @@ const verifyModelAccess = async (
 }
 
 export const likeAgent = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -778,7 +778,7 @@ export const likeAgent = async (
 }
 
 export const unlikeAgent = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {

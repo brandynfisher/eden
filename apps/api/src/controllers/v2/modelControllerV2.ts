@@ -166,7 +166,7 @@ export const modelUpdate = async (
 }
 
 export const likeModel = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -236,7 +236,7 @@ export const likeModel = async (
 }
 
 export const unlikeModel = async (
-  server: FastifyInstance,
+  _server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
