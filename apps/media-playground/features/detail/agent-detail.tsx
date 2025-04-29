@@ -140,16 +140,32 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
       return
     }
 
+    // Create new URLSearchParams but preserve other params
     const params = new URLSearchParams(searchParams.toString())
     if (newTabValue) {
       params.set('tab', newTabValue)
     } else {
       params.delete('tab')
     }
-    // Use replace to avoid adding to history for tab clicks
-    router.replace(`?${params.toString()}`, { scroll: false })
-    // scroll: false prevents Next.js from scrolling to top on shallow nav
-  }, [filterMode, searchParams, router])
+
+    // Use history.replaceState directly to avoid Next.js routing
+    // Ensure we're updating both the URL and the state
+    const newSearch = params.toString()
+    const newUrl = `${window.location.pathname}${
+      newSearch ? '?' + newSearch : ''
+    }`
+
+    // Update the URL and trigger a re-render by updating searchParams
+    window.history.replaceState(
+      { ...window.history.state, as: newUrl, url: newUrl },
+      '',
+      newUrl,
+    )
+
+    // Force a re-render of components that depend on searchParams
+    const event = new PopStateEvent('popstate', { state: window.history.state })
+    window.dispatchEvent(event)
+  }, [filterMode, searchParams])
 
   const feedSectionRef = useRef<HTMLDivElement>(null)
   const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
