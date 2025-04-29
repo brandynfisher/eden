@@ -1,4 +1,5 @@
 import { User } from '../../models/User'
+import { LikeV2 } from '../../models/v2/LikeV2'
 import { ModelV2 } from '../../models/v2/ModelV2'
 import { s3Url } from '../../plugins/s3Plugin'
 import ModelV2Repository from '../../repositories/ModelV2Repository'
@@ -62,6 +63,7 @@ export const getModel = async (
   reply: FastifyReply,
 ) => {
   const { modelId } = request.params as ModelsV2GetArguments
+  const { userId } = request.user
 
   const model = await ModelV2.findOneWithDeleted({
     _id: modelId,
@@ -87,6 +89,16 @@ export const getModel = async (
     return reply.status(401).send({
       message: 'User not authorized to view this',
     })
+  }
+
+  // Check if user has liked this model
+  if (userId) {
+    const userLike = await LikeV2.findOne({
+      user: userId,
+      entityType: 'model',
+      entityId: modelId,
+    })
+    model.isLiked = !!userLike
   }
 
   if (!isOwner && model?.task?.args) {
@@ -151,4 +163,142 @@ export const modelUpdate = async (
   return reply.status(200).send({
     model,
   })
+}
+
+export const likeModel = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { modelId } = request.params as { modelId: string }
+
+  if (!modelId) {
+    return reply.status(422).send({
+      message: 'Model ID is required',
+    })
+  }
+
+  try {
+    // Check if the model exists and user has access to it
+    const model = await ModelV2.findOne({
+      _id: modelId,
+      deleted: false,
+      $or: [{ public: true }, { user: userId }],
+    })
+
+    if (!model) {
+      return reply.status(404).send({
+        message: 'Model not found or you do not have access to it',
+      })
+    }
+
+    // Check if user has already liked this model
+    const existingLike = await LikeV2.findOne({
+      user: userId,
+      entityType: 'model',
+      entityId: modelId,
+    })
+
+    if (existingLike) {
+      return reply.status(400).send({
+        message: 'Model already liked by user',
+      })
+    }
+
+    // Create the like
+    await LikeV2.create({
+      user: userId,
+      entityType: 'model',
+      entityId: modelId,
+    })
+
+    // Increment the like count
+    await ModelV2.findByIdAndUpdate(modelId, {
+      $inc: { likeCount: 1 },
+    })
+
+    return reply.status(200).send({
+      message: 'Model liked successfully',
+    })
+  } catch (error) {
+    console.error('Error liking model:', error)
+    return reply.status(500).send({
+      message: 'Error liking model',
+    })
+  }
+}
+
+export const unlikeModel = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { modelId } = request.params as { modelId: string }
+
+  if (!modelId) {
+    return reply.status(422).send({
+      message: 'Model ID is required',
+    })
+  }
+
+  try {
+    // Check if the model exists and user has access to it
+    const model = await ModelV2.findOne({
+      _id: modelId,
+      deleted: false,
+      $or: [{ public: true }, { user: userId }],
+    })
+
+    if (!model) {
+      return reply.status(404).send({
+        message: 'Model not found or you do not have access to it',
+      })
+    }
+
+    // Check if the like exists
+    const like = await LikeV2.findOne({
+      user: userId,
+      entityType: 'model',
+      entityId: modelId,
+    })
+
+    if (!like) {
+      return reply.status(404).send({
+        message: 'Like not found',
+      })
+    }
+
+    // Delete the like
+    await LikeV2.findByIdAndDelete(like._id)
+
+    // Decrement the like count
+    if (model.likeCount && model.likeCount > 0) {
+      await ModelV2.findByIdAndUpdate(modelId, {
+        $inc: { likeCount: -1 },
+      })
+    }
+
+    return reply.status(200).send({
+      message: 'Model unliked successfully',
+    })
+  } catch (error) {
+    console.error('Error unliking model:', error)
+    return reply.status(500).send({
+      message: 'Error unliking model',
+    })
+  }
 }

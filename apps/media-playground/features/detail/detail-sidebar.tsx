@@ -1,3 +1,4 @@
+import LikeButton from '../../components/button/like-button'
 import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
 import ModelMiniCard from '@/components/card/model-mini-card'
@@ -16,13 +17,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentLink from '@/features/agent/agent-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
-import { useToggleCreationLikeQuery } from '@/hooks/query/use-toggle-creation-like-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { ComponentIcon, HeartIcon } from 'lucide-react'
+import { ComponentIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
 import React, { Suspense } from 'react'
@@ -41,15 +41,6 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { TimeAgo } = useTimeAgo()
   const { user } = useAuthState()
 
-  const { toggleLike } = useToggleCreationLikeQuery({
-    queryKey,
-    isLiked: (item as CreationV2)?.isLiked || false,
-  })
-
-  const handleToggleLike = async () => {
-    await toggleLike((item as CreationV2)._id)
-  }
-
   return (
     <div
       className={cn([
@@ -61,26 +52,14 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         <div className="pt-4 pb-3">
           {item ? (
             <div>
-              {type === 'creation' && (
-                <div className="flex items-center justify-between mb-4 p-2 rounded-md bg-popover border">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleToggleLike}
-                  >
-                    <HeartIcon
-                      className={cn(
-                        'h-4 w-4 mr-2',
-                        (item as CreationV2).isLiked && 'text-red-500',
-                      )}
-                      fill={
-                        (item as CreationV2).isLiked ? 'currentColor' : 'none'
-                      }
-                    />
-                    {(item as CreationV2).likeCount}
-                  </Button>
-                </div>
-              )}
+              <div className="flex items-center justify-between mb-4 p-2 rounded-md bg-popover border">
+                <LikeButton
+                  type={type}
+                  id={item._id}
+                  isLiked={item.isLiked}
+                  likeCount={item.likeCount}
+                />
+              </div>
               <div className="flex">
                 <UserAvatarLink
                   name={item.user.username || item.user._id}

@@ -44,7 +44,7 @@ const CreationsFeed = ({
     return { ...defaultQuery, ...queryProp }
   }, [defaultQuery, queryProp])
 
-  const queryKey = useMemo(() => ['creations', query], [query])
+  const queryKey = useMemo(() => ['feed', 'creations', query], [query])
   const pathname = usePathname()
 
   // Include pathname in feedId to differentiate between same queries in different routes

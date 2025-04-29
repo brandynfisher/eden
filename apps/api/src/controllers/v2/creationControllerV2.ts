@@ -1,5 +1,5 @@
-import { CreationLikeV2 } from '../../models/v2/CreationLikeV2'
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
+import { LikeV2 } from '../../models/v2/LikeV2'
 import {
   forceCloudfrontUrl,
   s3ThumbnailUrl,
@@ -49,9 +49,10 @@ export const getCreation = async (
 
   // Check if user has liked this creation
   if (userId) {
-    const userLike = await CreationLikeV2.findOne({
+    const userLike = await LikeV2.findOne({
       user: userId,
-      creation: creationId,
+      entityType: 'creation',
+      entityId: creationId,
     })
     creation.isLiked = !!userLike
   }
@@ -287,9 +288,10 @@ export const likeCreation = async (
     }
 
     // Check if user has already liked this creation
-    const existingLike = await CreationLikeV2.findOne({
+    const existingLike = await LikeV2.findOne({
       user: userId,
-      creation: creationId,
+      entityType: 'creation',
+      entityId: creationId,
     })
 
     if (existingLike) {
@@ -299,9 +301,10 @@ export const likeCreation = async (
     }
 
     // Create the like
-    await CreationLikeV2.create({
+    await LikeV2.create({
       user: userId,
-      creation: creationId,
+      entityType: 'creation',
+      entityId: creationId,
     })
 
     // Increment the like count
@@ -355,9 +358,10 @@ export const unlikeCreation = async (
     }
 
     // Check if the like exists
-    const like = await CreationLikeV2.findOne({
+    const like = await LikeV2.findOne({
       user: userId,
-      creation: creationId,
+      entityType: 'creation',
+      entityId: creationId,
     })
 
     if (!like) {
@@ -367,12 +371,14 @@ export const unlikeCreation = async (
     }
 
     // Delete the like
-    await CreationLikeV2.findByIdAndDelete(like._id)
+    await LikeV2.findByIdAndDelete(like._id)
 
     // Decrement the like count
-    await CreationV2.findByIdAndUpdate(creationId, {
-      $inc: { likeCount: -1 },
-    })
+    if (creation.likeCount && creation.likeCount > 0) {
+      await CreationV2.findByIdAndUpdate(creationId, {
+        $inc: { likeCount: -1 },
+      })
+    }
 
     return reply.status(200).send({
       message: 'Creation unliked successfully',

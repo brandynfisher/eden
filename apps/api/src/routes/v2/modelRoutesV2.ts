@@ -1,4 +1,9 @@
-import { getModel, modelUpdate } from '../../controllers/v2/modelControllerV2'
+import {
+  getModel,
+  likeModel,
+  modelUpdate,
+  unlikeModel,
+} from '../../controllers/v2/modelControllerV2'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
@@ -66,6 +71,68 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => modelUpdate(request, reply),
+  })
+
+  server.post('/v2/models/:modelId/like', {
+    schema: {
+      tags: ['Models'],
+      description: 'Like a model',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        modelId: Type.String(),
+      },
+      response: {
+        200: {
+          message: Type.String(),
+        },
+        400: {
+          message: Type.String(),
+        },
+        404: {
+          message: Type.String(),
+        },
+        500: {
+          message: Type.String(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => likeModel(server, request, reply),
+  })
+
+  server.delete('/v2/models/:modelId/like', {
+    schema: {
+      tags: ['Models'],
+      description: 'Unlike a model',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        modelId: Type.String(),
+      },
+      response: {
+        200: {
+          message: Type.String(),
+        },
+        400: {
+          message: Type.String(),
+        },
+        404: {
+          message: Type.String(),
+        },
+        500: {
+          message: Type.String(),
+        },
+      },
+    },
+    preHandler: [async (request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => unlikeModel(server, request, reply),
   })
 }
 

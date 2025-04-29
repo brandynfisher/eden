@@ -45,7 +45,7 @@ const AgentsFeed = ({
     return { ...defaultQuery, ...queryProp }
   }, [defaultQuery, queryProp])
 
-  const queryKey = useMemo(() => ['agents', query], [query])
+  const queryKey = useMemo(() => ['feed', 'agents', query], [query])
   const pathname = usePathname()
 
   // Include pathname in feedId to differentiate between same queries in different routes
