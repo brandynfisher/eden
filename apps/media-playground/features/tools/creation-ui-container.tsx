@@ -159,6 +159,7 @@ const CreationUIContainer = ({ tool }: Props) => {
         description: (
           <code className="text-xs text-foreground">Tool: {tool.key}</code>
         ),
+        position: mobileIsFormVisible ? 'top-center' : 'bottom-right',
         dismissible: true,
         richColors: true,
       })
