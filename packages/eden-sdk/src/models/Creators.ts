@@ -230,6 +230,8 @@ export type Creator = {
   lastDailyLoginBonus?: Date
   discordLinkBonusClaimed?: boolean
   discordId?: string
+  twitterHandle?: string
+  twitterId?: string
   createdAt: string
   updatedAt: string
 }

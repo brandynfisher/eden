@@ -21,6 +21,8 @@ export interface BaseUserSchema {
   followerCount: number
   followingCount: number
   discordId?: string
+  twitterHandle?: string
+  twitterId?: string
   deleted?: boolean
   createdAt?: Date
   updatedAt?: Date
@@ -75,6 +77,12 @@ const BaseUserSchema = new Schema<BaseUserDocument>(
       default: 0,
     },
     discordId: {
+      type: String,
+    },
+    twitterHandle: {
+      type: String,
+    },
+    twitterId: {
       type: String,
     },
     deleted: {

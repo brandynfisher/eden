@@ -38,7 +38,7 @@ const DiscordAuthButton = () => {
       disabled={isLoading}
       variant={'secondary'}
     >
-      <DiscordIcon size={24} />
+      <DiscordIcon size={16} />
       {user?.discordId ? 'Disconnect' : 'Connect'} Discord Account
     </Button>
   )
