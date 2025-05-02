@@ -1,7 +1,7 @@
 'use client'
 
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
-import LikeButton from '@/components/button/like-button'
+// import LikeButton from '@/components/button/like-button'
 import ModelMiniCard from '@/components/card/model-mini-card'
 import RecentCreationsFeed from '@/components/feed/recent-creations-feed'
 import TextClampMore from '@/components/text/text-clamp-more'
@@ -311,13 +311,13 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                   </>
                 )}
                 <div className="flex items-center gap-2">
-                  <LikeButton
+                  {/* <LikeButton
                     type="agent"
                     id={agent._id}
                     isLiked={agent.isLiked}
                     likeCount={agent.likeCount}
                     docQueryKeyId={id}
-                  />
+                  /> */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>

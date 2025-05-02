@@ -52,14 +52,16 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         <div className="pt-4 pb-3">
           {item ? (
             <div>
-              <div className="flex items-center justify-between mb-4 p-2 rounded-md bg-popover border">
-                <LikeButton
-                  type={type}
-                  id={item._id}
-                  isLiked={item.isLiked}
-                  likeCount={item.likeCount}
-                />
-              </div>
+              {type === 'creation' && (
+                <div className="flex items-center justify-between mb-4 p-2 rounded-md bg-popover border">
+                  <LikeButton
+                    type={type}
+                    id={item._id}
+                    isLiked={item.isLiked}
+                    likeCount={item.likeCount}
+                  />
+                </div>
+              )}
               <div className="flex">
                 <UserAvatarLink
                   name={item.user.username || item.user._id}

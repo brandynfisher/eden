@@ -1,5 +1,5 @@
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
-import LikeButton from '@/components/button/like-button'
+// import LikeButton from '@/components/button/like-button'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
 import { Button } from '@/components/ui/button'
@@ -86,14 +86,14 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
       </Link>
       <div className="absolute bottom-0 right-0 p-2 flex items-center justify-between shrink-0 pointer-events-none">
         <div className="flex items-center gap-1 ml-auto">
-          <LikeButton
+          {/* <LikeButton
             type="agent"
             id={agent._id}
             isLiked={agent.isLiked}
             docQueryKeyId={agent.username}
             likeCount={agent.likeCount}
             className="pointer-events-auto"
-          />
+          /> */}
           <div className="flex items-center gap-1">
             <TooltipProvider>
               <Tooltip>

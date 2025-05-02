@@ -1,4 +1,4 @@
-import LikeButton from '@/components/button/like-button'
+// import LikeButton from '@/components/button/like-button'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
 import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
@@ -98,13 +98,13 @@ const ModelCard = ({
           actions={
             showFooterItems.actions
               ? [
-                  <LikeButton
-                    key={0}
-                    type="model"
-                    id={model._id}
-                    isLiked={model.isLiked}
-                    likeCount={model.likeCount}
-                  />,
+                  // <LikeButton
+                  //   key={0}
+                  //   type="model"
+                  //   id={model._id}
+                  //   isLiked={model.isLiked}
+                  //   likeCount={model.likeCount}
+                  // />,
                   <Link
                     key={2}
                     className="cursor-pointer"

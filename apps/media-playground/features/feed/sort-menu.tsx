@@ -23,7 +23,7 @@ const sortOptions = [
 
 // Add new sort options specifically for agents
 const agentSortOptions = [
-  { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
+  // { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
   {
     label: 'Trending',
     value: 'stats.userMessageCount_7d;-1',
@@ -45,7 +45,7 @@ const creationSortOptions = [
 ]
 
 const modelSortOptions = [
-  { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
+  // { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
 ]
 

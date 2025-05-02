@@ -4,7 +4,7 @@ import FeedSearchForm from '@/components/filter/feed-search-form'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import ModelsFeed from '@/features/feed/models-feed'
 import { ModelsFilter } from '@/features/feed/models-filter'
-import { SortMenu } from '@/features/feed/sort-menu'
+// import { SortMenu } from '@/features/feed/sort-menu'
 import {
   FeedConceptsCursorArguments,
   FeedCursorRouteQueryParams,
@@ -12,12 +12,12 @@ import {
 import { useState } from 'react'
 
 type Props = {
-  initialSort?: string
+  // initialSort?: string
   initialFilter?: FeedCursorRouteQueryParams['filter']
 }
 
-const SortModelsFeed = ({ initialSort, initialFilter }: Props) => {
-  const [sort, setSort] = useState(initialSort || 'createdAt;-1')
+const SortModelsFeed = ({ initialFilter }: Props) => {
+  // const [sort, setSort] = useState(initialSort || 'createdAt;-1')
   const [filter, setFilter] = useState<FeedCursorRouteQueryParams['filter']>(
     initialFilter || {},
   )
@@ -29,7 +29,7 @@ const SortModelsFeed = ({ initialSort, initialFilter }: Props) => {
   // Convert filter object to query parameters for ModelsFeed
   const getQueryParams = (): FeedConceptsCursorArguments => {
     const queryParams: FeedConceptsCursorArguments = {
-      sort: [sort],
+      // sort: [sort],
       search: search,
     }
 
@@ -57,19 +57,20 @@ const SortModelsFeed = ({ initialSort, initialFilter }: Props) => {
 
   return (
     <>
-      <div className="flex items-center mb-6 gap-x-2">
+      <div className="flex sm:flex-row flex-col items-center mb-6 gap-2">
         <div className="flex items-center justify-between mr-auto">
           <TypographyH4 className="text-xl font-semibold text-center">
             Explore Models
           </TypographyH4>
         </div>
         <FeedSearchForm handleSearch={handleSearch} />
-        <SortMenu
+        {/* <SortMenu
           variant="model"
           initialSort={sort}
           onChange={sort => setSort(sort)}
-        />
+        /> */}
         <ModelsFilter
+          className="w-full sm:w-auto"
           initialFilter={initialFilter}
           onChange={filter => setFilter(filter)}
         />
