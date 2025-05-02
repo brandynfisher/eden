@@ -33,7 +33,7 @@ const TwitterAuthButton = () => {
 
   return (
     <Button
-      className="gap-2"
+      className="gap-2 w-full sm:w-[250px]"
       onClick={handleTwitterConnection}
       disabled={isLoading}
       variant={'secondary'}

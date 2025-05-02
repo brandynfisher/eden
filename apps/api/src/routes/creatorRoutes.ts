@@ -124,6 +124,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         body: Type.Object({
           username: Type.Optional(Type.String()),
           userImage: Type.Optional(Type.String()),
+          instagramHandle: Type.Optional(Type.String()),
         }),
       },
       response: {

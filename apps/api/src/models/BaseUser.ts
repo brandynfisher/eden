@@ -23,6 +23,7 @@ export interface BaseUserSchema {
   discordId?: string
   twitterHandle?: string
   twitterId?: string
+  instagramHandle?: string
   deleted?: boolean
   createdAt?: Date
   updatedAt?: Date
@@ -83,6 +84,9 @@ const BaseUserSchema = new Schema<BaseUserDocument>(
       type: String,
     },
     twitterId: {
+      type: String,
+    },
+    instagramHandle: {
       type: String,
     },
     deleted: {

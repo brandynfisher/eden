@@ -33,7 +33,7 @@ const DiscordAuthButton = () => {
 
   return (
     <Button
-      className="gap-2"
+      className="gap-2 w-full sm:w-[250px]"
       onClick={handleDiscordConnection}
       disabled={isLoading}
       variant={'secondary'}

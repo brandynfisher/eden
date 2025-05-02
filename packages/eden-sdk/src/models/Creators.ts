@@ -32,6 +32,7 @@ export interface CreatorsGetArguments extends WebAPICallOptions {
 export interface CreatorsUpdateArguments extends WebAPICallOptions {
   username?: string
   userImage?: string
+  instagramHandle?: string
 }
 
 export interface CreatorFollowersListArguments
@@ -232,6 +233,7 @@ export type Creator = {
   discordId?: string
   twitterHandle?: string
   twitterId?: string
+  instagramHandle?: string
   createdAt: string
   updatedAt: string
 }

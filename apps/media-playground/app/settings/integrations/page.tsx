@@ -1,6 +1,7 @@
 'use client'
 
 import DiscordAuthButton from '@/components/button/discord-auth-button'
+import InstagramAuthButton from '@/components/button/instagram-auth-button'
 import TwitterAuthButton from '@/components/button/twitter-auth-button'
 import {
   Card,
@@ -39,7 +40,7 @@ const SettingsIntegrationsPage = () => {
             <CardDescription>
               {user?.discordId
                 ? 'Your Discord account is connected. You can disconnect it below.'
-                : 'Connect your Discord account to Eden'}
+                : 'Connect your Discord account to Eden.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -57,12 +58,31 @@ const SettingsIntegrationsPage = () => {
                   account below.
                 </>
               ) : (
-                'Connect your X (Twitter) account to Eden'
+                'Connect your X (Twitter) account to Eden.'
               )}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <TwitterAuthButton />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Instagram</CardTitle>
+            <CardDescription>
+              {user?.instagramHandle ? (
+                <>
+                  Connected as @{user.instagramHandle}. You can disconnect your
+                  Instagram account below.
+                </>
+              ) : (
+                'Connect your Instagram account to Eden.'
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <InstagramAuthButton />
           </CardContent>
         </Card>
       </div>

@@ -336,7 +336,8 @@ export const updateCreator = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { username, userImage } = request.body as CreatorsUpdateArguments
+  const { username, userImage, instagramHandle } =
+    request.body as CreatorsUpdateArguments
 
   const creator = await User.findById(userId)
   if (!creator) {
@@ -374,6 +375,27 @@ export const updateCreator = async (
     creator.userImage = userImage
   }
 
+  if (instagramHandle !== undefined && instagramHandle !== null) {
+    if (instagramHandle === '') {
+      creator.instagramHandle = ''
+    } else {
+      const existingInstagramUser = await User.findOne({
+        instagramHandle: {
+          $regex: instagramHandle.toLowerCase(),
+          $options: 'i',
+        },
+      })
+      if (
+        existingInstagramUser &&
+        existingInstagramUser._id.toString() !== creator._id.toString()
+      ) {
+        return reply.status(400).send({
+          message: 'Instagram handle already taken',
+        })
+      }
+      creator.instagramHandle = instagramHandle
+    }
+  }
   try {
     await creator.save()
   } catch (e) {
