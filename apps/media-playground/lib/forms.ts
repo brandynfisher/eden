@@ -227,11 +227,13 @@ export function createZodFormSchema(
     })
   }
 
-  // Merge the existing schema with the makePublic field
-  schema = z.object({
-    ...schema.shape,
+  const makePublicField = z.object({
     makePublic: z.boolean().default(true),
   })
+
+  // Merge the existing schema with the makePublic field
+  //@ts-expect-error: z.intersection is not defined in zod types
+  schema = z.intersection(schema, makePublicField)
 
   return schema
 }
