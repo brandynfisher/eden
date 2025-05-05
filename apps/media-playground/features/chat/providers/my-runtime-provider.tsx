@@ -526,11 +526,10 @@ export function MyRuntimeProvider({
   }, [lastMessageJson])
 
   const onNew = async (message: ThreadMessageLike) => {
-    if (
-      !Array.isArray(message.content) ||
-      message.content[0]?.type !== 'text'
-    ) {
-      throw new Error('Only text messages are supported')
+    let text = ''
+
+    if (Array.isArray(message.content) && message.content[0]?.type === 'text') {
+      text = message.content[0].text
     }
 
     const messageId = Date.now().toString()
@@ -544,7 +543,7 @@ export function MyRuntimeProvider({
     const userMessage: EdenMessage = {
       id: messageId,
       role: 'user',
-      content: message.content[0].text,
+      content: text,
       attachments: attachmentsArr,
       createdAt: new Date(),
       status: undefined,
