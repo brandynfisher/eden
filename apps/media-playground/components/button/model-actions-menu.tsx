@@ -1,7 +1,7 @@
 import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
 import DownloadActionItem from '@/components/button/download-action-item'
-import LikeButton from '@/components/button/like-button'
+// import LikeButton from '@/components/button/like-button'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import {
   DropdownMenuGroup,
@@ -105,7 +105,7 @@ const ModelActionsMenu = ({
               </button>
             </DropdownMenuItem>
           )}
-          {!hiddenItems?.includes('like') && (
+          {/* {!hiddenItems?.includes('like') && (
             <DropdownMenuItem asChild className="cursor-pointer">
               <LikeButton
                 type="model"
@@ -115,7 +115,7 @@ const ModelActionsMenu = ({
                 isDropdownItem={true}
               />
             </DropdownMenuItem>
-          )}
+          )} */}
           {modelData && modelData.user._id === user?._id && (
             <>
               {!hiddenItems?.includes('privacy') && (
