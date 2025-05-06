@@ -67,7 +67,7 @@ interface QueryOptions {
   cursor?: string
   projection?: Record<string, 1 | -1 | Expression.Meta>
   sortCursor?:
-    | { praiseCount: { $lte?: number } }
+    | { likeCount: { $lte?: number } }
     | { creationCount: { $lte?: number } }
     | { followerCount: { $lte?: number } }
   limit?: number
@@ -110,7 +110,7 @@ type CustomFilters = {
   public?: boolean
   maxDate?: Date | undefined
   minDate?: Date | undefined
-  praiseCount?: { $gt?: number }
+  likeCount?: { $gt?: number }
   creationCount?: { $gt?: number }
   followerCount?: { $gt?: number }
   createdAt?: Filter
@@ -292,7 +292,7 @@ const handleArguments = async ({
     output_type?: string[]
     createdAt?: { $lte?: Date; $gte?: Date }
     'embedding.score'?: { $exists: true }
-    praiseCount?: { $gt: 0 }
+    likeCount?: { $gt: 0 }
     creationCount?: { $gt: 0 }
     followerCount?: { $gt: 0 }
     creation?: ObjectId
@@ -305,8 +305,8 @@ const handleArguments = async ({
           .map(sortOption => {
             const [field, direction] = sortOption.split(';')
 
-            if (field === 'praiseCount') {
-              return ['praiseCount', Number(direction)]
+            if (field === 'likeCount') {
+              return ['likeCount', Number(direction)]
             }
 
             if (field === 'creationCount') {
@@ -402,8 +402,8 @@ const handleArguments = async ({
             return []
           }
 
-          if (field === 'praiseCount') {
-            customFilterOptions['praiseCount'] = { $gt: 0 }
+          if (field === 'likeCount') {
+            customFilterOptions['likeCount'] = { $gt: 0 }
             return []
           }
 
@@ -534,8 +534,8 @@ const handleArguments = async ({
       isUserRequestingOwnProfileFeed
     ) {
       customFilterMap['public'] = String(fieldValues) === 'false'
-    } else if (fieldName === 'praiseCount') {
-      customFilterMap['praiseCount'] = { $gt: 0 }
+    } else if (fieldName === 'likeCount') {
+      customFilterMap['likeCount'] = { $gt: 0 }
     } else if (fieldName === 'creationCount') {
       customFilterMap['creationCount'] = { $gt: 0 }
     } else if (fieldName === 'followerCount') {
@@ -877,8 +877,8 @@ export const getCreationsFeedCursorV2 = async (
       limit: limit ?? 100,
       sortOptions: { ...sortOptions, _id: -1 },
       sortCursor:
-        customFilterOptions.praiseCount && nextValue !== undefined
-          ? { praiseCount: { $lte: nextValue } }
+        customFilterOptions.likeCount && nextValue !== undefined
+          ? { likeCount: { $lte: nextValue } }
           : undefined,
       cursor,
     })
@@ -927,9 +927,9 @@ export const getCreationsFeedCursorV2 = async (
     feed.nextCursor =
       results && results.length && results[results.length - 1]._id
 
-    if (customFilterOptions.praiseCount) {
+    if (customFilterOptions.likeCount) {
       feed.nextValue =
-        results && results.length && results[results.length - 1].praiseCount
+        results && results.length && results[results.length - 1].likeCount
     }
 
     feed.docs.forEach(doc => {
@@ -988,8 +988,8 @@ export const getModelsFeedCursorV2 = async (
     limit: limit ?? 100,
     sortOptions: { ...sortOptions, _id: -1 },
     sortCursor:
-      customFilterOptions.praiseCount && nextValue !== undefined
-        ? { praiseCount: { $lte: nextValue } }
+      customFilterOptions.likeCount && nextValue !== undefined
+        ? { likeCount: { $lte: nextValue } }
         : undefined,
     cursor,
   })
@@ -1077,9 +1077,9 @@ export const getModelsFeedCursorV2 = async (
     feed.nextCursor =
       results && results.length && results[results.length - 1]._id
 
-    if (customFilterOptions.praiseCount) {
+    if (customFilterOptions.likeCount) {
       feed.nextValue =
-        results && results.length && results[results.length - 1].praiseCount
+        results && results.length && results[results.length - 1].likeCount
     }
 
     feed.docs.forEach(doc => {
@@ -1128,8 +1128,8 @@ export const getCollectionsFeedCursorV2 = async (
     limit: limit ?? 100,
     sortOptions: { ...sortOptions, _id: -1 },
     sortCursor:
-      customFilterOptions.praiseCount && nextValue !== undefined
-        ? { praiseCount: { $lte: nextValue } }
+      customFilterOptions.likeCount && nextValue !== undefined
+        ? { likeCount: { $lte: nextValue } }
         : undefined,
     cursor,
   })
@@ -1180,9 +1180,9 @@ export const getCollectionsFeedCursorV2 = async (
     feed.nextCursor =
       results && results.length && results[results.length - 1]._id
 
-    if (customFilterOptions.praiseCount) {
+    if (customFilterOptions.likeCount) {
       feed.nextValue =
-        results && results.length && results[results.length - 1].praiseCount
+        results && results.length && results[results.length - 1].likeCount
     }
 
     feed.docs.forEach(doc => {
