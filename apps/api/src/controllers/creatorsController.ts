@@ -399,6 +399,7 @@ export const updateCreator = async (
   try {
     await creator.save()
   } catch (e) {
+    console.error(e)
     return reply.status(400).send({
       message: 'Failed to save',
     })
