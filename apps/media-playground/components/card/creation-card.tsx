@@ -67,7 +67,7 @@ const CreationCard = ({
   return (
     <Card
       ref={ref}
-      className="relative overflow-hidden border-0 z-10"
+      className="relative overflow-hidden border-0 z-10 group"
       style={style}
     >
       {creation.deleted ? (
@@ -165,7 +165,7 @@ const CreationCard = ({
           ) : null}
         </div>
       </Link>
-      <div className="absolute bottom-2 right-2 z-10">
+      <div className="absolute bottom-2 right-2 z-10 group-hover:opacity-100 opacity-0 transition-opacity">
         <LikeButton
           type="creation"
           id={creation._id}
