@@ -32,6 +32,7 @@ export interface CreatorsGetArguments extends WebAPICallOptions {
 export interface CreatorsUpdateArguments extends WebAPICallOptions {
   username?: string
   userImage?: string
+  instagramHandle?: string
 }
 
 export interface CreatorFollowersListArguments
@@ -230,6 +231,9 @@ export type Creator = {
   lastDailyLoginBonus?: Date
   discordLinkBonusClaimed?: boolean
   discordId?: string
+  twitterHandle?: string
+  twitterId?: string
+  instagramHandle?: string
   createdAt: string
   updatedAt: string
 }
@@ -252,4 +256,5 @@ export enum FeatureFlag {
   AssistantAccess = 'assistant_access',
   FreeTools = 'freeTools',
   FeatureDeployments = 'feature_Deployments',
+  TestAgentRateLimit = 'test_agent_rate_limit',
 }

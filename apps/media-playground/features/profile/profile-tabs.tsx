@@ -49,9 +49,9 @@ const ProfileTabs = () => {
       key: 'models',
       title: 'Models',
       filterMenu: ProfileModelsFilter,
-      sortMenu: props => (
-        <SortMenu {...props} variant="model" initialSort="createdAt;-1" />
-      ),
+      // sortMenu: props => (
+      //   <SortMenu {...props} variant="model" initialSort="createdAt;-1" />
+      // ),
       content: <ModelsFeed query={baseQuery} minCols={1} maxCols={4} />,
     },
     {

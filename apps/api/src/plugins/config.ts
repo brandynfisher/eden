@@ -71,6 +71,8 @@ const ConfigSchema = Type.Strict(
     MAILCHIMP_API_KEY: Type.Optional(Type.String()),
     EMAIL_FROM: Type.Optional(Type.String()),
     EMAIL_FROM_NAME: Type.Optional(Type.String()),
+    TWITTER_CLIENT_ID: Type.Optional(Type.String()),
+    TWITTER_CLIENT_SECRET: Type.Optional(Type.String()),
   }),
 )
 

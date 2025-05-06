@@ -148,6 +148,12 @@ creationSchema.index({
   createdAt: -1,
   _id: -1,
 })
+creationSchema.index({
+  public: 1,
+  deleted: 1,
+  likeCount: -1,
+  _id: -1,
+})
 creationSchema.plugin(paginate)
 creationSchema.plugin(aggregatePaginate)
 creationSchema.plugin(mongooseDelete, {

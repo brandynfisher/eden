@@ -27,7 +27,7 @@ const FeedTabs = () => {
     {
       key: 'models',
       title: 'Models',
-      sortMenu: props => <SortMenu {...props} variant="model" />,
+      // sortMenu: props => <SortMenu {...props} variant="model" />,
       content: (
         <ModelsFeed
           minCols={1}

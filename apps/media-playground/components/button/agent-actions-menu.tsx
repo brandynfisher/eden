@@ -3,7 +3,7 @@
 import { getQueryClient } from '@/app/get-query-client'
 import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
-import LikeButton from '@/components/button/like-button'
+// import LikeButton from '@/components/button/like-button'
 import PrivacyActionItem from '@/components/button/privacy-action-item'
 import {
   DropdownMenuGroup,
@@ -170,7 +170,7 @@ const AgentActionsMenu = ({
               </DropdownMenuItem>
             </DropdownMenuGroup>
           )}
-          {!hiddenItems?.includes('like') && (
+          {/* {!hiddenItems?.includes('like') && (
             <DropdownMenuGroup>
               <DropdownMenuItem asChild className="cursor-pointer">
                 <LikeButton
@@ -183,7 +183,7 @@ const AgentActionsMenu = ({
                 />
               </DropdownMenuItem>
             </DropdownMenuGroup>
-          )}
+          )} */}
           {agent.owner._id === user?._id && (
             <>
               {isFeatureDeploymentsEnabled &&
