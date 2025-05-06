@@ -10,6 +10,7 @@ import {
   CreationsV2GetArguments,
   CreationsV2PatchArguments,
 } from '@edenlabs/eden-sdk'
+import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const getCreation = async (
@@ -121,6 +122,15 @@ export const creationUpdate = async (
     })
   }
 
+  if (isPublic === false) {
+    const user = request.user
+    if (user.subscriptionTier === SubscriptionTier.Free) {
+      return reply.status(401).send({
+        error: 'You are not authorized to make a creation private',
+      })
+    }
+  }
+
   if (typeof isPublic !== 'undefined') {
     creation.public = isPublic
   }
@@ -189,6 +199,15 @@ export const creationBulkUpdate = async (
   }
 
   const results: UpdateResult[] = []
+
+  if (isPublic === false) {
+    const user = request.user
+    if (user.subscriptionTier === SubscriptionTier.Free) {
+      return reply.status(401).send({
+        error: 'You are not authorized to make creations private',
+      })
+    }
+  }
 
   for (const creationId of creationIds) {
     try {
