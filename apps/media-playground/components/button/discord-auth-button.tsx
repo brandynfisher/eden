@@ -33,12 +33,12 @@ const DiscordAuthButton = () => {
 
   return (
     <Button
-      className="gap-2"
+      className="gap-2 w-full sm:w-[250px]"
       onClick={handleDiscordConnection}
       disabled={isLoading}
       variant={'secondary'}
     >
-      <DiscordIcon size={24} />
+      <DiscordIcon size={16} />
       {user?.discordId ? 'Disconnect' : 'Connect'} Discord Account
     </Button>
   )
