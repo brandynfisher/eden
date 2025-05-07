@@ -64,7 +64,7 @@ export const collectionSchema = new Schema<CollectionV2Document>(
     },
     public: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {

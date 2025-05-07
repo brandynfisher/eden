@@ -7,6 +7,7 @@ import {
   ModelsV2GetArguments,
   ModelsV2ListArguments,
   ModelsV2PatchArguments,
+  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -143,6 +144,15 @@ export const modelUpdate = async (
     return reply.status(404).send({
       message: 'Model not found',
     })
+  }
+
+  if (isPublic === false) {
+    const user = request.user
+    if (user.subscriptionTier === SubscriptionTier.Free) {
+      return reply.status(401).send({
+        error: 'You are not authorized to make a model private',
+      })
+    }
   }
 
   if (typeof isPublic !== 'undefined') {
