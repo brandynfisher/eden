@@ -91,18 +91,19 @@ const defaultImageRemotePatterns = [
   },
 ]
 
-const devImageRemotePatterns = [{
-  protocol: 'http',
-  hostname: 'localhost',
-  port: '',
-  pathname: '**',
-}]
+const devImageRemotePatterns = [
+  {
+    protocol: 'http',
+    hostname: 'localhost',
+    port: '',
+    pathname: '**',
+  },
+]
 
 const imageRemotePatterns =
   process.env.NODE_ENV === 'development'
     ? [...defaultImageRemotePatterns, ...devImageRemotePatterns]
     : defaultImageRemotePatterns
-
 
 /** @type {import('next').NextConfig} */
 let nextConfig = {

@@ -1,12 +1,12 @@
-name: "Build / Deploy - Eden Create - PROD"
+name: 'Build / Deploy - Eden Create - PROD'
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "apps/media-playground/**"
-      - ".github/workflows/media-playground.yaml"
+      - 'apps/media-playground/**'
+      - '.github/workflows/media-playground.yaml'
 
 env:
   REGISTRY: ghcr.io
@@ -59,7 +59,9 @@ jobs:
           context: .
           file: ./apps/media-playground/Dockerfile
           push: true
-          tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
+          tags:
+            ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
+            }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
           build-args: |
@@ -71,12 +73,12 @@ jobs:
             "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://api.eden.art/ws/updates"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}"
             "NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN_EDEN2 }}"
+            "NEXT_PUBLIC_TWITTER_CLIENT_ID=VGFIY2lrNTIzakRRcG1naGJxcVQ6MTpjaQ"
             "NEXT_PUBLIC_DISCORD_CLIENT_ID=1001489981694554243"
             "NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID=671afca69341ec3b975de3f0"
             "NEXT_PUBLIC_GOOGLE_GTM_ID=GTM-MR2LV55Z"
             "NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID=G-W4718WCZQK"
             "NEXT_PUBLIC_AWS_CLOUDFRONT_URL=https://d14i3advvh2bvd.cloudfront.net"
-            "NEXT_PUBLIC_TWITTER_CLIENT_ID=VGFIY2lrNTIzakRRcG1naGJxcVQ6MTpjaQ"
             "SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}"
             "SENTRY_IGNORE_API_RESOLUTION_ERROR=1"
             "NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up"
@@ -99,20 +101,22 @@ jobs:
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
-          title: "🚀 Build - Eden Create - PROD"
-          status: "Success"
+          title: '🚀 Build - Eden Create - PROD'
+          status: 'Success'
           color: 0x00ff00
           description: |
             Commit: ${{ github.sha }}
             Branch: ${{ github.ref_name }}
 
       - name: Discord Failure Notification
-        if: needs.build-and-push-to-ghcr.result == 'failure' || needs.build-and-push-to-ghcr.result == 'cancelled'
+        if:
+          needs.build-and-push-to-ghcr.result == 'failure' ||
+          needs.build-and-push-to-ghcr.result == 'cancelled'
         uses: sarisia/actions-status-discord@v1
         with:
           webhook: ${{ secrets.DISCORD_GITHUB_WEBHOOK }}
-          title: "❌ Build - Eden Create - PROD"
-          status: "Failed"
+          title: '❌ Build - Eden Create - PROD'
+          status: 'Failed'
           color: 0xff0000
           description: |
             Commit: ${{ github.sha }}
