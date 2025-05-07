@@ -13,6 +13,7 @@ import {
   CollectionsV2DeleteArguments,
   CollectionsV2GetArguments,
   CollectionsV2UpdateArguments,
+  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
@@ -136,6 +137,18 @@ export const createCollection = async (
 
   const currentUserId = request.user.userId
 
+  const user = request.user
+  let canCreatePrivateCollection = true
+  if (user.subscriptionTier === SubscriptionTier.Free) {
+    canCreatePrivateCollection = false
+  }
+
+  if (isPublic === false && !canCreatePrivateCollection) {
+    return reply.status(401).send({
+      error: 'You are not authorized to create a private collection',
+    })
+  }
+
   if (creationIds) {
     const creations = await CreationV2.find(
       {
@@ -168,7 +181,7 @@ export const createCollection = async (
     name,
     description,
     creations: creationIds,
-    public: isPublic,
+    public: canCreatePrivateCollection ? false : isPublic || true,
   })
 
   try {
@@ -205,6 +218,15 @@ export const updateCollection = async (
     return reply.status(422).send({
       error: 'Missing collectionId',
     })
+  }
+
+  if (isPublic === false) {
+    const user = request.user
+    if (user.subscriptionTier === SubscriptionTier.Free) {
+      return reply.status(401).send({
+        error: 'You are not authorized to make a collection private',
+      })
+    }
   }
 
   const updateData: UpdateQuery<CollectionV2Document> = {

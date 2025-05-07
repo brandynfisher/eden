@@ -125,7 +125,7 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     public: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     stats: {
       type: {

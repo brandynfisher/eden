@@ -22,6 +22,7 @@ import {
   AgentsUpdateArguments,
   AgentsUpdateDeploymentArguments,
   FeatureFlag,
+  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -186,6 +187,15 @@ export const updateAgent = async (
     return reply.status(422).send({
       error: 'Missing agentId',
     })
+  }
+
+  if (isPublic === false) {
+    const user = request.user
+    if (user.subscriptionTier === SubscriptionTier.Free) {
+      return reply.status(401).send({
+        error: 'You are not authorized to make an agent private',
+      })
+    }
   }
 
   const query = createIdOrSlugQuery(agentId)
