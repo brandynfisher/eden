@@ -4,7 +4,6 @@ import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
-import { env } from '@/lib/config'
 import axios from 'axios'
 import { useState } from 'react'
 
