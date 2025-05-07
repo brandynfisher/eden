@@ -20,8 +20,8 @@ const TwitterAuthButton = () => {
       await invalidate()
       setIsLoading(false)
     } else {
-      const clientId = env.NEXT_PUBLIC_TWITTER_CLIENT_ID
-      const redirectUri = `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/twitter/callback`
+      const clientId = process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID
+      const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/twitter/callback`
 
       window.location.href = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
         redirectUri,
