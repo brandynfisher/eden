@@ -72,16 +72,16 @@ export const discordOAuth = async (
     await user.save()
 
     // Give delegated creations to the user
-    const creations = await CreationV2.find({
-      'attributes.discordId': discordId.toString(),
-      userId: { $ne: user._id },
-    })
-    await Promise.all(
-      creations.map(async creation => {
-        creation.user = user._id
-        await creation.save()
-      }),
-    )
+    // const creations = await CreationV2.find({
+    //   'attributes.discordId': discordId.toString(),
+    //   userId: { $ne: user._id },
+    // })
+    // await Promise.all(
+    //   creations.map(async creation => {
+    //     creation.user = user._id
+    //     await creation.save()
+    //   }),
+    // )
 
     return reply.redirect(
       `${server.config.EDEN2_FRONTEND_URL}/settings/integrations`,
