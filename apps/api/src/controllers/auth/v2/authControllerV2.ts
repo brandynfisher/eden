@@ -1,5 +1,4 @@
 import { User } from '../../../models/User'
-import { CreationV2 } from '../../../models/v2/CreationV2'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
