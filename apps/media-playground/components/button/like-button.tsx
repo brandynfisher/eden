@@ -12,6 +12,7 @@ type Props = {
   isDropdownItem?: boolean
   className?: string
   docQueryKeyId?: string
+  disabled?: boolean
 }
 
 const LikeButton = ({
@@ -22,6 +23,7 @@ const LikeButton = ({
   docQueryKeyId,
   isDropdownItem = false,
   className,
+  disabled = false,
   ...props
 }: Props) => {
   const { toggleLike } = useToggleLikeQuery({
@@ -40,9 +42,14 @@ const LikeButton = ({
   return isDropdownItem ? (
     <button
       type="button"
-      className={cn('w-full', className)}
+      className={cn(
+        'w-full',
+        className,
+        disabled && 'disabled:opacity-50 disabled:pointer-events-none',
+      )}
       {...props}
       onClick={handleToggleLike}
+      disabled={disabled}
     >
       <HeartIcon
         className={cn('h-4 w-4 mr-2', isLiked && 'text-red-500')}
@@ -52,10 +59,11 @@ const LikeButton = ({
     </button>
   ) : (
     <Button
-      className={cn(className)}
+      className={cn(className, disabled && 'disabled:opacity-100')}
       variant="outline"
       size="sm"
       onClick={handleToggleLike}
+      disabled={disabled}
     >
       <HeartIcon
         className={cn('h-4 w-4 mr-2', isLiked && 'text-red-500')}
