@@ -31,6 +31,7 @@ import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
+import TypingIndicator from '@/features/chat/components/typing-indicator'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
@@ -660,8 +661,8 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                     allowSpeak: false,
                     components: {
                       Empty: () => (
-                        <div className="text-muted-foreground italic">
-                          Thinking...
+                        <div className="col-start-3 row-start-2">
+                          <TypingIndicator />
                         </div>
                       ),
                       Text: MarkdownText,
