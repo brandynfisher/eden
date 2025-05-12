@@ -71,6 +71,12 @@ const ParameterField = ({ parameter, tool, form, icon, className }: Props) => {
       render={({ field, fieldState }) => {
         const { onChange, onBlur, value, name } = field
 
+        if (name === 'mask_image' || name === 'masking_prompt') {
+          form.register(name, {
+            deps: ['mask_image', 'masking_prompt'],
+          })
+        }
+
         // handle number input
         if (isSchemaType(parameter, 'integer')) {
           if (parameter.name === 'seed') {
