@@ -1,4 +1,5 @@
 import { User } from '../../../models/User'
+import { CreationV2 } from '../../../models/v2/CreationV2'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -71,16 +72,13 @@ export const discordOAuth = async (
     await user.save()
 
     // Give delegated creations to the user
-    // const creations = await CreationV2.find({
-    //   'attributes.discordId': discordId.toString(),
-    //   userId: { $ne: user._id },
-    // })
-    // await Promise.all(
-    //   creations.map(async creation => {
-    //     creation.user = user._id
-    //     await creation.save()
-    //   }),
-    // )
+    await CreationV2.updateMany(
+      {
+        'attributes.discordId': discordId.toString(),
+        user: { $ne: user._id },
+      },
+      { $set: { user: user._id } },
+    )
 
     return reply.redirect(
       `${server.config.EDEN2_FRONTEND_URL}/settings/integrations`,
