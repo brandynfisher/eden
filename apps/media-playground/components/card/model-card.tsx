@@ -104,6 +104,7 @@ const ModelCard = ({
                   //   id={model._id}
                   //   isLiked={model.isLiked}
                   //   likeCount={model.likeCount}
+                  //   disabled={!isSignedIn}
                   // />,
                   <Link
                     key={2}

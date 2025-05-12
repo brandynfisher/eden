@@ -4,6 +4,7 @@ import CreationCard from '@/components/card/creation-card'
 import MasonryVirtualizerVertical, {
   MasonryVirtualizerHandle,
 } from '@/components/masonry/masonry-virtualizer-vertical'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
@@ -29,6 +30,7 @@ const CreationsFeed = ({
   initialScrollIndex,
   onScrollRestored,
 }: Props) => {
+  const { isSignedIn } = useAuthState()
   const router = useRouter()
   const virtualizerRef = useRef<MasonryVirtualizerHandle>(null)
 
@@ -112,6 +114,7 @@ const CreationsFeed = ({
           linkHref={`/creations/${item._id}`}
           multiselect={multiselect}
           onClick={() => handleCardClick(item._id, index)}
+          isSignedIn={isSignedIn}
         />
       )}
     />

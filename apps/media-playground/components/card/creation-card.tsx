@@ -28,6 +28,7 @@ type Props = {
   onUpdate?: (item: CreationV2) => void
   multiselect?: boolean
   onClick?: () => void
+  isSignedIn?: boolean
 }
 
 const CreationCard = ({
@@ -36,6 +37,7 @@ const CreationCard = ({
   style,
   multiselect = false,
   onClick,
+  isSignedIn = false,
 }: Props) => {
   // const router = useRouter()
   const { hovered, ref } = useHover()
@@ -171,6 +173,7 @@ const CreationCard = ({
           id={creation._id}
           isLiked={creation.isLiked}
           likeCount={creation.likeCount}
+          disabled={!isSignedIn}
         />
       </div>
       {showFooter ? (

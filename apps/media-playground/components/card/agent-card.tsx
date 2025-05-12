@@ -93,6 +93,7 @@ const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
             docQueryKeyId={agent.username}
             likeCount={agent.likeCount}
             className="pointer-events-auto"
+            disabled={!isSignedIn}
           /> */}
           <div className="flex items-center gap-1">
             <TooltipProvider>
