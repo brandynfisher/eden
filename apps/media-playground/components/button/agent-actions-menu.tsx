@@ -180,6 +180,7 @@ const AgentActionsMenu = ({
                   docQueryKeyId={agent.username}
                   likeCount={agent.likeCount}
                   isDropdownItem={true}
+                  disabled={!isSignedIn}
                 />
               </DropdownMenuItem>
             </DropdownMenuGroup>

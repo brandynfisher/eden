@@ -123,6 +123,7 @@ const CreationActionsMenu = ({
                     isLiked={creationData.isLiked}
                     likeCount={creationData.likeCount}
                     isDropdownItem={true}
+                    disabled={!isSignedIn}
                   />
                 </DropdownMenuItem>
               )}
