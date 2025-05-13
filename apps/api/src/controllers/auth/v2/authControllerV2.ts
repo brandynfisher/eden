@@ -59,13 +59,19 @@ export const discordOAuth = async (
     }
 
     // Check to make sure this discordId isn't already in use
-    await User.findOne({ discordId }).then(existingUser => {
-      if (existingUser) {
+    const existingUsers = await User.find({ discordId })
+
+    // Check if any existing user has this Discord ID
+    for (const existingUser of existingUsers) {
+      if (
+        existingUser.userId &&
+        existingUser._id.toString() !== user._id.toString()
+      ) {
         return reply.status(400).send({
-          message: 'Discord already in use',
+          message: 'This Discord account is already connected to another user',
         })
       }
-    })
+    }
 
     user.discordId = discordId
     await user.save()
