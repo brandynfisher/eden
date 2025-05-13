@@ -80,7 +80,7 @@ const LegacyShutdownBanner: FC<LegacyShutdownBannerProps> = ({
             <span className="flex flex-col gap-2  items-center banner-text text-sm px-4  max-w-4xl">
               <div>
                 <strong>⚠️ Important:</strong> This app will be discontinued on
-                May 12.{' '}
+                May <span className="line-through">12</span> 19.{' '}
               </div>
               <div>
                 <a

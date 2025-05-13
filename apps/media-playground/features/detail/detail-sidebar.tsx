@@ -39,7 +39,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { prompt, text_input, prompt_text, lora, lora2, ...remainingArgs } =
     item?.task.args || {}
   const { TimeAgo } = useTimeAgo()
-  const { user } = useAuthState()
+  const { user, isSignedIn } = useAuthState()
 
   return (
     <div
@@ -59,6 +59,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                     id={item._id}
                     isLiked={item.isLiked}
                     likeCount={item.likeCount}
+                    disabled={!isSignedIn}
                   />
                 </div>
               )}

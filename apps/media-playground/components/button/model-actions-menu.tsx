@@ -113,6 +113,7 @@ const ModelActionsMenu = ({
                 isLiked={modelData.isLiked}
                 likeCount={modelData.likeCount}
                 isDropdownItem={true}
+                disabled={!isSignedIn}
               />
             </DropdownMenuItem>
           )} */}

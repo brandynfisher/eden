@@ -1,5 +1,6 @@
 'use client'
 
+import TwitterIcon from '@/components/icons/twitter'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import TypographyH3 from '@/components/ui/typography/TypographyH3'
@@ -8,8 +9,10 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Creator } from '@edenlabs/eden-sdk'
-import { Share2Icon, UserIcon } from 'lucide-react'
+import { InstagramLogoIcon } from '@radix-ui/react-icons'
+import { LinkIcon, Share2Icon, UserIcon } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 type Props = {
   name: string
@@ -18,7 +21,7 @@ type Props = {
 
 const ProfileHeader = ({ name, creatorSSRData }: Props) => {
   const dispatch = useAppDispatch()
-
+  const router = useRouter()
   const { user } = useAuthState()
   const { creator: creatorClientData } = useCreatorQuery({
     key: name,
@@ -38,6 +41,10 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
         shareUrl,
       }),
     )
+  }
+
+  const onConnectSocials = () => {
+    router.push(`/settings/integrations`)
   }
 
   return (
@@ -66,10 +73,50 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
                   <UserIcon className="w-3 h-3" />
                   Member since {new Date(creator.createdAt).getFullYear()}
                 </Badge>
+                {creator.twitterHandle && (
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-1 cursor-pointer hover:brightness-125"
+                    onClick={() =>
+                      window.open(
+                        `https://x.com/${creator.twitterHandle}`,
+                        '_blank',
+                      )
+                    }
+                  >
+                    <TwitterIcon size={12} />@{creator.twitterHandle}
+                  </Badge>
+                )}
+                {creator.instagramHandle && (
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-1 cursor-pointer hover:brightness-125"
+                    onClick={() =>
+                      window.open(
+                        `https://www.instagram.com/${creator.instagramHandle}`,
+                        '_blank',
+                      )
+                    }
+                  >
+                    <InstagramLogoIcon className="size-3" />@
+                    {creator.instagramHandle}
+                  </Badge>
+                )}
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {user?._id === creator?._id && (
+                <Button
+                  variant="outline"
+                  size="default"
+                  className="flex items-center gap-2"
+                  onClick={onConnectSocials}
+                >
+                  <LinkIcon className="w-4 h-4" />
+                  Connect Your Socials
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="default"

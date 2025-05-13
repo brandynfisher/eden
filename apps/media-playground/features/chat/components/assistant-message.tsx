@@ -3,7 +3,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { pinMessage, unpinMessage } from '@/features/chat/chat-api'
-import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -109,7 +108,7 @@ const MyAssistantActionBar: FC = () => {
 }
 
 const MyAssistantMessage: FC = () => {
-  const content = useMessage(m => m.content)
+  // const content = useMessage(m => m.content)
   const status = useMessage(m => m.status)
   const id = useMessage(m => m.id)
 
@@ -137,7 +136,7 @@ const MyAssistantMessage: FC = () => {
   //   getExternalStoreMessages(m),
   // ) as EdenThreadMessage[]
   const isRunning = status?.type === 'running'
-  const isEmpty = typeof content === 'undefined' || content.length === 0
+  // const isEmpty = typeof content === 'undefined' || content.length === 0
 
   // if (isRunning || isEmpty) {
   //   console.log('[MyAssistantMessage]:', status, id)
@@ -164,11 +163,11 @@ const MyAssistantMessage: FC = () => {
       <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
       {/* )} */}
       <BranchPicker />
-      {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
-        <div className="col-start-3 row-start-2">
+      {/* {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
+        <div className="col-start-3 row-start-2 bg-red-500">
           <TypingIndicator />
         </div>
-      ) : null}
+      ) : null} */}
 
       <ThreadPrimitive.If running={false} empty={false}>
         <MyAssistantActionBar />

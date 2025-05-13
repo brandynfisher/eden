@@ -18,6 +18,9 @@ export interface CreationV2Schema extends MediaOutput {
   updatedAt: Date
   public?: boolean
   metadata?: string | null
+  attributes?: {
+    discordId?: string
+  }
   likeCount?: number
   isLiked?: boolean
 }
@@ -73,6 +76,9 @@ export const creationSchema = new Schema<CreationV2Document>(
     metadata: {
       type: Schema.Types.Mixed,
     },
+    attributes: {
+      type: Schema.Types.Mixed,
+    },
     likeCount: {
       type: Number,
       default: 0,
@@ -118,6 +124,9 @@ export const creationSchema = new Schema<CreationV2Document>(
 creationSchema.index({ task: 1 })
 creationSchema.index({ createdAt: -1 })
 creationSchema.index({ deleted: -1, createdAt: -1 })
+creationSchema.index({
+  'attributes.discordId': -1,
+})
 creationSchema.index({
   public: 1,
   deleted: 1,

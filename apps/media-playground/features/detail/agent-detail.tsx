@@ -317,6 +317,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                     isLiked={agent.isLiked}
                     likeCount={agent.likeCount}
                     docQueryKeyId={id}
+                    disabled={!isSignedIn}
                   /> */}
                   <TooltipProvider>
                     <Tooltip>

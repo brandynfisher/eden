@@ -100,19 +100,23 @@
 }
 
 .card-gradient:hover {
-  background: linear-gradient(rgba(0, 0, 0, 0.32) 0%,
-      rgba(0, 0, 0, 0.16) 40%,
-      rgba(0, 0, 0, 0.04) 75%,
-      rgba(0, 0, 0, 0.02) 85%,
-      rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(
+    rgba(0, 0, 0, 0.32) 0%,
+    rgba(0, 0, 0, 0.16) 40%,
+    rgba(0, 0, 0, 0.04) 75%,
+    rgba(0, 0, 0, 0.02) 85%,
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 
 .generator-gradient {
-  background: linear-gradient(rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0.16) 32%,
-      rgba(0, 0, 0, 0.04) 64%,
-      rgba(0, 0, 0, 0.02) 85%,
-      rgba(0, 0, 0, 0) 100%);
+  background: linear-gradient(
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.16) 32%,
+    rgba(0, 0, 0, 0.04) 64%,
+    rgba(0, 0, 0, 0.02) 85%,
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 
 // hack to never let popover go off screen (or drodown menu => dropdown menu sub
@@ -137,15 +141,29 @@
 //    ) !important;
 //}
 
-.aui-composer-attachments {
+.aui-composer-attachments,
+.aui-user-message-attachments {
+  display: flex;
+  flex-wrap: wrap;
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
 
-@media all and (display-mode: fullscreen) {
+.aui-user-message-attachments {
+  justify-content: flex-end;
+}
 
-  /* every CSS goes here that you want 
-  to apply or alter in the fullscreen mode*/
+.aui-composer-attachments > *,
+.aui-user-message-attachments > * {
+  flex: 1;
+  min-width: calc(20% - 0.6rem);
+  max-width: calc(20% - 0.6rem);
+}
+
+@media all and (display-mode: fullscreen) {
+  /* every CSS goes he
+re that you want
+  to apply or alter in  the fullscreen mode*/
   video {
     object-fit: contain !important;
   }
