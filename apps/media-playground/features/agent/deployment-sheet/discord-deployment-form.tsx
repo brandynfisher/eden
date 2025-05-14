@@ -26,6 +26,14 @@ const schema = z.object({
       }),
     )
     .min(1, 'At least one channel must be added to deploy your agent'),
+  readAccessChannels: z
+    .array(
+      z.object({
+        id: z.string().min(1, 'Channel ID is required'),
+        note: z.string().optional(),
+      }),
+    )
+    .optional(),
 })
 
 type DeploymentFormDto = z.infer<typeof schema>
@@ -55,12 +63,22 @@ export const DiscordDeploymentForm = ({
               note: channel.note || '',
             }))
           : [{ id: '', note: '' }],
+      readAccessChannels:
+        deployment?.config?.discord?.read_access_channels?.map(channel => ({
+          id: channel.id || '',
+          note: channel.note || '',
+        })) || [],
     },
   })
 
   const allowedChannels = useFieldArray({
     control: form.control,
     name: 'allowedChannels',
+  })
+
+  const readAccessChannels = useFieldArray({
+    control: form.control,
+    name: 'readAccessChannels',
   })
 
   const isDeployed = useMemo(() => {
@@ -113,6 +131,26 @@ export const DiscordDeploymentForm = ({
                     allowList={allowedChannels}
                     label="Allowed Channels"
                     description="The channels your agent will be deployed to. At least one channel is required."
+                  />
+                  {fieldState.error && fieldState.error.message && (
+                    <FormMessage>{fieldState.error.message}</FormMessage>
+                  )}
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="readAccessChannels"
+              render={({ fieldState }) => (
+                <FormItem>
+                  <ChannelsField
+                    form={form}
+                    name="readAccessChannels"
+                    type="channel"
+                    allowList={readAccessChannels}
+                    label="Read Access Channels"
+                    description="The channels your agent will have read-only access to. The note field should describe what the channel is for so the agent is able to find it when asked to search."
                   />
                   {fieldState.error && fieldState.error.message && (
                     <FormMessage>{fieldState.error.message}</FormMessage>

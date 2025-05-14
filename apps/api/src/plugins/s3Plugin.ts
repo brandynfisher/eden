@@ -285,7 +285,6 @@ export const rawS3BaseUrl = (server: FastifyInstance) => {
 export enum ImageFormats {
   JPG = 'jpg',
   WEBP = 'webp',
-  // Add more here...
 }
 const EXTENSION_PATTERN = /(\.[\w_-]+)$/i
 export function changeExtension(
@@ -296,6 +295,10 @@ export function changeExtension(
 }
 
 export const s3Url = (server: FastifyInstance, filename: string) => {
+  if (!filename) {
+    return ''
+  }
+
   if (filename.startsWith('https://')) {
     return filename
   }
@@ -352,6 +355,10 @@ export const s3ThumbnailUrl = (
   filename: string,
   size?: number,
 ) => {
+  if (!filename) {
+    return ''
+  }
+
   if (filename.startsWith('https://')) {
     return filename
   }

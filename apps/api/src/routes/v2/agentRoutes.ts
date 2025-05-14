@@ -228,6 +228,14 @@ const agentRoutes: FastifyPluginAsync = async server => {
                     }),
                   ),
                 ),
+                read_access_channels: Type.Optional(
+                  Type.Array(
+                    Type.Object({
+                      id: Type.String(),
+                      note: Type.String(),
+                    }),
+                  ),
+                ),
               }),
             ),
             telegram: Type.Optional(

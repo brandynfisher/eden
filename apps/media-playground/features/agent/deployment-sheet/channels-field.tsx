@@ -20,8 +20,12 @@ interface ChannelsFieldProps {
             id: string
             note?: string | undefined
           }[]
+          readAccessChannels?: {
+            id: string
+            note?: string | undefined
+          }[]
         },
-        'allowedChannels',
+        'allowedChannels' | 'readAccessChannels',
         'id'
       >
     | UseFieldArrayReturn<
