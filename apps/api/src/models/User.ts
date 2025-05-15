@@ -15,6 +15,7 @@ export interface UserSchema extends BaseUserSchema {
   stripeSubscriptionId?: string
   lastDailyLoginBonus?: Date
   discordLinkBonusClaimed?: boolean
+  twitterLinkBonusClaimed?: boolean
   type?: 'agent' | 'user'
 }
 
@@ -80,6 +81,10 @@ const UserSchema = new Schema<UserDocument>(
       default: new Date(),
     },
     discordLinkBonusClaimed: {
+      type: Boolean,
+      default: false,
+    },
+    twitterLinkBonusClaimed: {
       type: Boolean,
       default: false,
     },
