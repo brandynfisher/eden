@@ -1,9 +1,7 @@
 'use client'
 
 import { MediaDurationBadge } from '@/components/badge/media-duration-badge'
-import ActionsDropdown from '@/components/button/actions-dropdown'
 import LikeButton from '@/components/button/like-button'
-import CardFooter from '@/components/card/components/card-footer'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
 import VideoResult from '@/components/media/video-result'
@@ -23,7 +21,6 @@ type Props = {
   creation: CreationV2
   linkHref: string
   creator?: Creator
-  showFooter?: boolean
   style?: CSSProperties
   onUpdate?: (item: CreationV2) => void
   multiselect?: boolean
@@ -33,7 +30,6 @@ type Props = {
 
 const CreationCard = ({
   creation,
-  showFooter,
   style,
   multiselect = false,
   onClick,
@@ -167,7 +163,7 @@ const CreationCard = ({
           ) : null}
         </div>
       </Link>
-      <div className="absolute bottom-2 right-2 z-10 group-hover:opacity-100 opacity-0 transition-opacity">
+      <div className="absolute bottom-2 right-2 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
         <LikeButton
           type="creation"
           id={creation._id}
@@ -176,12 +172,15 @@ const CreationCard = ({
           disabled={!isSignedIn}
         />
       </div>
-      {showFooter ? (
-        <CardFooter
-          // creator={creator}
-          actions={[<ActionsDropdown key={1} />]}
+      <div className="bg-background p-2 rounded-b-lg border border-t-0 md:hidden flex justify-end">
+        <LikeButton
+          type="creation"
+          id={creation._id}
+          isLiked={creation.isLiked}
+          likeCount={creation.likeCount}
+          disabled={!isSignedIn}
         />
-      ) : null}
+      </div>
     </Card>
   )
 }
