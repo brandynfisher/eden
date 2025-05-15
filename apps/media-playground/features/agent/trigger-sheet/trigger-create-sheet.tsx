@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   Form,
   FormControl,
@@ -16,7 +17,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { Textarea } from '@/components/ui/textarea'
 import { TriggerPlatformField } from '@/features/agent/trigger-sheet/trigger-platform-field'
 import {
   TriggerRepeatOptions,
@@ -191,7 +191,7 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
                     Task Instructions*
                   </FormLabel>
                   <FormControl>
-                    <Textarea
+                    <AutosizeTextarea
                       placeholder="Enter instructions for the task"
                       className="resize-none"
                       {...field}
