@@ -18,6 +18,7 @@ type Props = {
   scrollRef?: RefObject<HTMLDivElement>
   initialScrollIndex?: number | null
   onScrollRestored?: () => void
+  showSkeleton?: boolean
 }
 
 const CreationsFeed = ({
@@ -28,6 +29,7 @@ const CreationsFeed = ({
   scrollRef,
   initialScrollIndex,
   onScrollRestored,
+  showSkeleton = false,
 }: Props) => {
   const router = useRouter()
   const virtualizerRef = useRef<MasonryVirtualizerHandle>(null)
@@ -104,6 +106,7 @@ const CreationsFeed = ({
       scrollRef={scrollRef}
       initialScrollIndex={initialScrollIndex}
       onScrollRestored={onScrollRestored}
+      showSkeleton={showSkeleton}
       render={(item: RowItem, onUpdate, index) => (
         <CreationCard
           onUpdate={onUpdate}
