@@ -9,10 +9,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { AgentDeploymentSettings } from '@/features/agent/agent-deployment-settings'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAgentDeploymentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentDeploymentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -20,6 +22,10 @@ import { AlertCircle, Loader2, RocketIcon } from 'lucide-react'
 
 const AgentDeploymentFormSheet = () => {
   const { isOpen, agentId } = useAgentDeploymentFormSheet()
+  const agentQuery = useAgentQuery({
+    key: agentId || '',
+    enabled: isOpen,
+  })
   const dispatch = useAppDispatch()
   const deploymentsQuery = useAgentDeploymentsQuery({
     key: agentId || '',
@@ -86,6 +92,9 @@ const AgentDeploymentFormSheet = () => {
               )}
             />
           </div>
+        )}
+        {agentQuery.agent && (
+          <AgentDeploymentSettings agent={agentQuery.agent} />
         )}
       </SheetContent>
     </Sheet>
