@@ -81,7 +81,7 @@ export async function PATCH(
     discordId,
     voice,
     models,
-    ownerPays,
+    owner_pays,
   } = requestJson as AgentsUpdateArguments
 
   try {
@@ -106,7 +106,7 @@ export async function PATCH(
       models,
       knowledge,
       voice,
-      ownerPays,
+      owner_pays,
     })
 
     if (!res) {

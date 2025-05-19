@@ -16,7 +16,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const formSchema = z.object({
-  ownerPays: z.boolean().default(false),
+  owner_pays: z.boolean().default(false),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -31,14 +31,14 @@ export const AgentDeploymentSettings = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      ownerPays: agent.ownerPays,
+      owner_pays: agent.owner_pays,
     },
   })
 
   const onSubmit = async (data: FormValues) => {
     try {
       await axios.patch(`/api/agents/${agent._id}`, {
-        ownerPays: data.ownerPays,
+        owner_pays: data.owner_pays,
       })
       toast.success('Deployment settings updated successfully', {
         description: 'Your changes have been saved.',
@@ -62,7 +62,7 @@ export const AgentDeploymentSettings = ({
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="ownerPays"
+            name="owner_pays"
             render={({ field }) => (
               <FormItem className="bg-background border p-4 rounded-lg flex items-center justify-between gap-2">
                 <div className="flex flex-col gap-2">
