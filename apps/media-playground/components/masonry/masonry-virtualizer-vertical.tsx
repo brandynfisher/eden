@@ -67,6 +67,7 @@ type Props = {
   scrollRef?: RefObject<HTMLDivElement>
   initialScrollIndex?: number | null
   onScrollRestored?: () => void
+  showSkeleton?: boolean
 }
 
 export const MasonrySkeleton = () => {
@@ -129,6 +130,7 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       scrollRef,
       initialScrollIndex,
       onScrollRestored,
+      showSkeleton = false,
     },
     ref,
   ) => {
@@ -624,7 +626,7 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
               </div>
             ) : null}
 
-            {/* {status === 'pending' ? <MasonrySkeleton /> : null} */}
+            {status === 'pending' && showSkeleton ? <MasonrySkeleton /> : null}
 
             {virtualizer
               .getVirtualItems()
