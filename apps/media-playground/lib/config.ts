@@ -87,7 +87,7 @@ export const siteConfig: SiteConfig = {
     '/tools',
   ],
   featured: {
-    tools: ['flux_schnell', 'flux_dev', 'texture_flow', 'animate_3D'],
+    tools: ['flux_dev', 'texture_flow', 'kling_pro', 'flux_double_character'],
     agents:
       process.env.NEXT_PUBLIC_APP_ENV === 'production'
         ? [

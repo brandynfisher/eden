@@ -125,6 +125,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
+        ownerPays: Type.Optional(Type.Boolean()),
       }),
       response: {
         200: Type.Object({
@@ -221,6 +222,14 @@ const agentRoutes: FastifyPluginAsync = async server => {
             discord: Type.Optional(
               Type.Object({
                 channel_allowlist: Type.Optional(
+                  Type.Array(
+                    Type.Object({
+                      id: Type.String(),
+                      note: Type.String(),
+                    }),
+                  ),
+                ),
+                read_access_channels: Type.Optional(
                   Type.Array(
                     Type.Object({
                       id: Type.String(),

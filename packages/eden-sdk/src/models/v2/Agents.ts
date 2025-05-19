@@ -68,6 +68,7 @@ export type Agent = Omit<
   public?: boolean
   likeCount?: number
   isLiked?: boolean
+  ownerPays?: boolean
   stats?: AgentStats
 }
 
@@ -125,6 +126,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
     lora: string
     use_when?: string
   }>
+  ownerPays?: boolean
 }
 
 interface DiscordDeploymentConfig {

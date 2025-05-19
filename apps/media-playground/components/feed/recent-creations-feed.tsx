@@ -1,5 +1,4 @@
 import ErrorBoundary from '@/components/error-boundary'
-import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { cn } from '@/lib/utils'
 import React, { RefObject, useEffect, useRef, useState } from 'react'
@@ -35,7 +34,7 @@ export default function RecentCreationsFeed({
             }
           })
         },
-        { threshold: 0.1 },
+        { threshold: 0.1, rootMargin: '100px' },
       )
 
       observer.observe(currentObservedRef)
@@ -65,16 +64,6 @@ export default function RecentCreationsFeed({
           <div
             className={cn(
               'w-full transition-opacity duration-300 absolute inset-0',
-              shouldLoadCreations
-                ? 'opacity-0 pointer-events-none hidden'
-                : 'opacity-100',
-            )}
-          >
-            <MasonrySkeleton />
-          </div>
-          <div
-            className={cn(
-              'w-full transition-opacity duration-300 absolute inset-0',
               !shouldLoadCreations && 'opacity-0 pointer-events-none',
             )}
           >
@@ -86,6 +75,7 @@ export default function RecentCreationsFeed({
                   scrollRef={scrollRef}
                   initialScrollIndex={initialScrollIndex}
                   onScrollRestored={onScrollRestored}
+                  showSkeleton
                 />
               </ErrorBoundary>
             </Suspense>

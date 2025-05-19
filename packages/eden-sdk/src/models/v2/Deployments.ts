@@ -21,6 +21,7 @@ export type Deployment = {
   config: {
     discord: {
       channel_allowlist: AllowlistItem[]
+      read_access_channels: AllowlistItem[]
       oauth_client_id?: string
       oauth_url?: string
     }

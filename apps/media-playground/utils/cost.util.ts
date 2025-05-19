@@ -16,6 +16,7 @@ type ParameterValue =
   | number[]
   | string[][]
   | undefined
+  | boolean
 
 // Helper to get parameter value or length based on context
 const getParameterValue = (
@@ -26,6 +27,10 @@ const getParameterValue = (
   // Handle undefined/null case
   if (value === undefined || value === null) {
     return ''
+  }
+
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0
   }
 
   // If it's a direct comparison (e.g., prompt == 'something'), return the raw value
@@ -64,6 +69,7 @@ export const getCostConfig = ({
     | string[][]
     | string
     | undefined
+    | boolean
   )[]
   formula: string
 }) => {
