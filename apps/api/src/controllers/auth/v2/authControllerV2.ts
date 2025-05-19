@@ -1,3 +1,5 @@
+import { Manna } from '../../../models/Manna'
+import { Transaction } from '../../../models/Transaction'
 import { User } from '../../../models/User'
 import { CreationV2 } from '../../../models/v2/CreationV2'
 import axios from 'axios'
@@ -75,6 +77,24 @@ export const discordOAuth = async (
     }
 
     user.discordId = discordId
+
+    if (!user.discordLinkBonusClaimed) {
+      const manna = await Manna.findOneAndUpdate(
+        { user: user._id },
+        { $inc: { balance: server.config.MANNA_BONUS_DISCORD_LINK } },
+      )
+      user.discordLinkBonusClaimed = true
+
+      if (manna) {
+        const transaction = new Transaction({
+          manna: manna._id,
+          amount: server.config.MANNA_BONUS_DISCORD_LINK,
+          type: 'discord_link_bonus',
+        })
+        await transaction.save()
+      }
+    }
+
     await user.save()
 
     // Give delegated creations to the user
@@ -171,6 +191,23 @@ export const twitterOAuth = async (
     // Save Twitter handle to user
     user.twitterHandle = twitterHandle
     user.twitterId = twitterId
+
+    if (!user.twitterLinkBonusClaimed) {
+      const manna = await Manna.findOneAndUpdate(
+        { user: user._id },
+        { $inc: { balance: server.config.MANNA_BONUS_TWITTER_LINK } },
+      )
+      user.twitterLinkBonusClaimed = true
+      if (manna) {
+        const transaction = new Transaction({
+          manna: manna._id,
+          amount: server.config.MANNA_BONUS_TWITTER_LINK,
+          type: 'twitter_link_bonus',
+        })
+        await transaction.save()
+      }
+    }
+
     await user.save()
 
     return reply.redirect(

@@ -23,3 +23,4 @@ export type TransactionType =
   | 'admin_modify'
   | 'daily_login_bonus'
   | 'discord_link_bonus'
+  | 'twitter_link_bonus'
