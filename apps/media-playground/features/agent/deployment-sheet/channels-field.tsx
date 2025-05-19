@@ -5,51 +5,37 @@ import { FormDescription, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PlusIcon } from 'lucide-react'
 import { TrashIcon } from 'lucide-react'
-import { UseFieldArrayReturn, UseFormReturn } from 'react-hook-form'
+import { ArrayPath, UseFieldArrayReturn, UseFormReturn } from 'react-hook-form'
 
-interface ChannelsFieldProps {
-  name: string
+type ChannelField = {
+  id: string
+  note?: string
+}
+
+type FormValues = {
+  token: string
+  allowedChannels?: ChannelField[]
+  readAccessChannels?: ChannelField[]
+  allowedTopics?: ChannelField[]
+}
+
+interface ChannelsFieldProps<T extends FormValues, K extends ArrayPath<T>> {
+  name: K
   type: 'channel' | 'topic'
   label: string
   description: string
-  allowList:
-    | UseFieldArrayReturn<
-        {
-          token: string
-          allowedChannels: {
-            id: string
-            note?: string | undefined
-          }[]
-          readAccessChannels?: {
-            id: string
-            note?: string | undefined
-          }[]
-        },
-        'allowedChannels' | 'readAccessChannels',
-        'id'
-      >
-    | UseFieldArrayReturn<
-        {
-          token: string
-          allowedTopics: {
-            id: string
-            note?: string | undefined
-          }[]
-        },
-        'allowedTopics',
-        'id'
-      >
-  form: UseFormReturn<any>
+  allowList: UseFieldArrayReturn<T, K, 'id'>
+  form: UseFormReturn<T>
 }
 
-export const ChannelsField = ({
+export const ChannelsField = <T extends FormValues, K extends ArrayPath<T>>({
   name,
   label,
   description,
   type,
   allowList,
   form,
-}: ChannelsFieldProps) => {
+}: ChannelsFieldProps<T, K>) => {
   return (
     <div className="space-y-4 mt-4">
       <div className="flex flex-col gap-2">
@@ -60,7 +46,7 @@ export const ChannelsField = ({
         <div key={field.id} className="flex gap-2">
           <FormField
             control={form.control}
-            name={`${name}.${index}.id`}
+            name={`${String(name)}.${index}.id` as any}
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormControl>
@@ -77,7 +63,7 @@ export const ChannelsField = ({
           />
           <FormField
             control={form.control}
-            name={`${name}.${index}.note`}
+            name={`${String(name)}.${index}.note` as any}
             render={({ field }) => (
               <FormItem className="flex-1">
                 <FormControl>
@@ -104,7 +90,7 @@ export const ChannelsField = ({
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => allowList.append({ id: '', note: '' })}
+        onClick={() => allowList.append({ id: '', note: '' } as any)}
       >
         <PlusIcon className="h-4 w-4 mr-2" />
         Add
