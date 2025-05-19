@@ -41,7 +41,7 @@ import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import has from 'lodash/has'
 import { CalendarIcon, Check, ChevronsUpDown } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 
 interface TriggerScheduleFieldProps {
@@ -53,6 +53,27 @@ export const TriggerScheduleField = ({ form }: TriggerScheduleFieldProps) => {
   const [showTimezoneSelect, setShowTimezoneSelect] = useState(false)
 
   const timezones = useMemo<TimezoneOption[]>(() => getTimezones(), [])
+
+  const handleTimeChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: {
+      value?: Date
+      onChange: (date: Date) => void
+    },
+  ) => {
+    if (!e.target.value) {
+      const newDate = new Date(field.value || new Date())
+      newDate.setHours(0)
+      newDate.setMinutes(0)
+      field.onChange(newDate)
+      return
+    }
+    const [hours, minutes] = e.target.value.split(':').map(Number)
+    const newDate = new Date(field.value || new Date())
+    newDate.setHours(hours)
+    newDate.setMinutes(minutes)
+    field.onChange(newDate)
+  }
 
   const repeat = form.watch('repeat')
   const showEndDate = repeat !== 'DOES_NOT_REPEAT'
@@ -195,15 +216,7 @@ export const TriggerScheduleField = ({ form }: TriggerScheduleFieldProps) => {
                     <Input
                       type="time"
                       value={field.value ? format(field.value, 'HH:mm') : ''}
-                      onChange={e => {
-                        const [hours, minutes] = e.target.value
-                          .split(':')
-                          .map(Number)
-                        const newDate = new Date(field.value || new Date())
-                        newDate.setHours(hours)
-                        newDate.setMinutes(minutes)
-                        field.onChange(newDate)
-                      }}
+                      onChange={e => handleTimeChange(e, field)}
                     />
                   </div>
                 </div>
@@ -293,16 +306,7 @@ export const TriggerScheduleField = ({ form }: TriggerScheduleFieldProps) => {
                       <Input
                         type="time"
                         value={field.value ? format(field.value, 'HH:mm') : ''}
-                        onChange={e => {
-                          if (!field.value) return
-                          const [hours, minutes] = e.target.value
-                            .split(':')
-                            .map(Number)
-                          const newDate = new Date(field.value)
-                          newDate.setHours(hours)
-                          newDate.setMinutes(minutes)
-                          field.onChange(newDate)
-                        }}
+                        onChange={e => handleTimeChange(e, field)}
                       />
                     </div>
                   </div>
