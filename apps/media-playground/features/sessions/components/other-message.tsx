@@ -1,3 +1,4 @@
+import ActionBar from './action-bar'
 import { MarkdownText } from './markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
@@ -6,9 +7,15 @@ import { ThreadMessage } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 
 export const OtherMessage = ({ message }: { message: ThreadMessage }) => {
+  const handleCopy = () => {
+    if (message.content) {
+      navigator.clipboard.writeText(message.content)
+    }
+  }
+
   return (
     <div className="flex justify-start">
-      <div className="aui-assistant-message-root block px-2 md:grid">
+      <div className="aui-assistant-message-root block px-2 md:grid group relative">
         <div className="flex items-center md:items-start mr-2">
           <Avatar className="w-12 h-12">
             <AvatarImage
@@ -34,6 +41,21 @@ export const OtherMessage = ({ message }: { message: ThreadMessage }) => {
           {message.tool_calls?.map(toolCall => (
             <TaskResultTool key={toolCall.id} toolCall={toolCall} />
           ))}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <ActionBar
+              id={message.id}
+              createdAt={message.createdAt.toISOString()}
+              pinned={message.pinned}
+              reactions={message.reactions}
+              onCopy={handleCopy}
+              onFeedbackPositive={() => {
+                // TODO: Implement feedback positive
+              }}
+              onFeedbackNegative={() => {
+                // TODO: Implement feedback negative
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
