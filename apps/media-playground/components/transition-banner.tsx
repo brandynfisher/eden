@@ -13,8 +13,7 @@ const TransitionBanner: React.FC = () => {
   const pathname = usePathname()
 
   //hide banner on /chat/... - quick and dirty fix to not screw with full height chat layout
-  const shouldShowTransitionBanner =
-    !pathname.startsWith('/chat') && pathname !== '/'
+  const shouldShowTransitionBanner = !pathname.startsWith('/chat')
 
   const [isDismissed, setIsDismissed] = useLocalStorage(BANNER_KEY, false)
 
