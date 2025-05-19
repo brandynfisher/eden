@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { ThreadMessage } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ObjectId } from 'bson'
 import { SendIcon } from 'lucide-react'
@@ -15,18 +16,8 @@ const formSchema = z.object({
   content: z.string().min(1),
 })
 
-type Message = {
-  _id: string
-  sender: string
-  content: string
-  role: 'user' | 'assistant' | 'system'
-  attachments?: string[]
-  tool_calls?: Record<string, unknown>[]
-  createdAt: Date
-}
-
 type MessageInputProps = {
-  onSend: (message: Message) => void
+  onSend: (message: ThreadMessage) => void
 }
 
 export const MessageInput: FC<MessageInputProps> = ({ onSend }) => {
@@ -41,9 +32,9 @@ export const MessageInput: FC<MessageInputProps> = ({ onSend }) => {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     if (!user) return
 
-    const newMessage: Message = {
-      _id: new ObjectId().toString(),
-      sender: user._id || '',
+    const newMessage: ThreadMessage = {
+      id: new ObjectId().toString(),
+      sender: user,
       content: data.content,
       role: 'user',
       createdAt: new Date(),

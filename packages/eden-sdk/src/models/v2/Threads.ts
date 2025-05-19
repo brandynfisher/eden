@@ -272,6 +272,7 @@ export type ThreadMessage = {
   content?: string
   reactions?: ThreadMessageReaction
   pinned?: boolean
+  sender?: Creator | Agent
   metadata?: {
     [key: string]: string | number | boolean | Date | null
   }

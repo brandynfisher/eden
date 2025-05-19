@@ -18,6 +18,11 @@ const DUMMY_SESSION = {
       createdAt: '2025-03-18T19:43:39.624Z',
       reactions: {},
       reply_to: null,
+      sender: {
+        username: 'eve',
+        userImage:
+          'd158dc1e5c62479489c1c3d119dd211bd56ba86a127359f7476990ec9e081cba.jpg',
+      },
       session: '67d9ccc9ed235130b0c00452',
       tool_calls: [
         {
@@ -30,26 +35,22 @@ const DUMMY_SESSION = {
             n_samples: 1,
           },
           task: '67d9ccd5ed235130b0c00453',
-          result: {
-            status: 'completed',
-            error: null,
-            result: [
-              {
-                output: [
-                  {
-                    mediaAttributes: {
-                      mimeType: 'image/png',
-                      width: 1024,
-                      height: 1024,
-                      aspectRatio: 1,
-                    },
-                    creation: '67d9cceb91bb7d089c697f29',
-                    url: 'https://dtut5r9j4w7j4.cloudfront.net/91de4cd7e1d4831cff1395925d0ec074a51cb4197be5c8db3ca325ff15dea396.png',
+          result: [
+            {
+              output: [
+                {
+                  mediaAttributes: {
+                    mimeType: 'image/png',
+                    width: 1024,
+                    height: 1024,
+                    aspectRatio: 1,
                   },
-                ],
-              },
-            ],
-          },
+                  creation: '67d9cceb91bb7d089c697f29',
+                  url: 'https://dtut5r9j4w7j4.cloudfront.net/91de4cd7e1d4831cff1395925d0ec074a51cb4197be5c8db3ca325ff15dea396.png',
+                },
+              ],
+            },
+          ],
           reactions: null,
         },
       ],
@@ -70,6 +71,11 @@ const DUMMY_SESSION = {
       createdAt: '2025-03-18T19:44:04.465Z',
       reactions: {},
       reply_to: '67d9ccebed235130b0c00455',
+      sender: {
+        username: 'mycos',
+        userImage:
+          '6abf19d8c41effc5eb942565313d44831199bcb0fe93e6deb6e406fe753f2b03.jpeg',
+      },
       session: '67d9ccc9ed235130b0c00452',
       tool_calls: [
         {
@@ -82,26 +88,22 @@ const DUMMY_SESSION = {
             n_samples: 1,
           },
           task: '67d9ccfaed235130b0c00456',
-          result: {
-            status: 'completed',
-            error: null,
-            result: [
-              {
-                output: [
-                  {
-                    mediaAttributes: {
-                      mimeType: 'image/png',
-                      width: 1024,
-                      height: 1024,
-                      aspectRatio: 1,
-                    },
-                    creation: '67d9cd0491bb7d089c697f2a',
-                    url: 'https://dtut5r9j4w7j4.cloudfront.net/4614413761eeda654658331aba902fc0b4bebe434e824290b28bf1ae50e34bfd.png',
+          result: [
+            {
+              output: [
+                {
+                  mediaAttributes: {
+                    mimeType: 'image/png',
+                    width: 1024,
+                    height: 1024,
+                    aspectRatio: 1,
                   },
-                ],
-              },
-            ],
-          },
+                  creation: '67d9cd0491bb7d089c697f2a',
+                  url: 'https://dtut5r9j4w7j4.cloudfront.net/4614413761eeda654658331aba902fc0b4bebe434e824290b28bf1ae50e34bfd.png',
+                },
+              ],
+            },
+          ],
           reactions: null,
         },
       ],
@@ -118,6 +120,11 @@ const DUMMY_SESSION = {
       createdAt: '2025-03-18T19:44:26.273Z',
       reactions: {},
       reply_to: '67d9cd04ed235130b0c00458',
+      sender: {
+        username: 'eve',
+        userImage:
+          'd158dc1e5c62479489c1c3d119dd211bd56ba86a127359f7476990ec9e081cba.jpg',
+      },
       session: '67d9ccc9ed235130b0c00452',
       tool_calls: [
         {
@@ -130,26 +137,22 @@ const DUMMY_SESSION = {
             n_samples: 1,
           },
           task: '67d9cd10ed235130b0c00459',
-          result: {
-            status: 'completed',
-            error: null,
-            result: [
-              {
-                output: [
-                  {
-                    mediaAttributes: {
-                      mimeType: 'image/png',
-                      width: 1024,
-                      height: 1024,
-                      aspectRatio: 1,
-                    },
-                    creation: '67d9cd1a91bb7d089c697f2b',
-                    url: 'https://dtut5r9j4w7j4.cloudfront.net/721e8aff51dffa4d220d296c692d27d8fad8785acf9560caaec0fb90edf020d9.png',
+          result: [
+            {
+              output: [
+                {
+                  mediaAttributes: {
+                    mimeType: 'image/png',
+                    width: 1024,
+                    height: 1024,
+                    aspectRatio: 1,
                   },
-                ],
-              },
-            ],
-          },
+                  creation: '67d9cd1a91bb7d089c697f2b',
+                  url: 'https://dtut5r9j4w7j4.cloudfront.net/721e8aff51dffa4d220d296c692d27d8fad8785acf9560caaec0fb90edf020d9.png',
+                },
+              ],
+            },
+          ],
           reactions: null,
         },
       ],
@@ -166,6 +169,11 @@ const DUMMY_SESSION = {
       createdAt: '2025-03-18T19:44:48.073Z',
       reactions: {},
       reply_to: '67d9cd1aed235130b0c0045b',
+      sender: {
+        username: 'mycos',
+        userImage:
+          '6abf19d8c41effc5eb942565313d44831199bcb0fe93e6deb6e406fe753f2b03.jpeg',
+      },
       session: '67d9ccc9ed235130b0c00452',
       tool_calls: [
         {
@@ -178,26 +186,22 @@ const DUMMY_SESSION = {
             n_samples: 1,
           },
           task: '67d9cd26ed235130b0c0045c',
-          result: {
-            status: 'completed',
-            error: null,
-            result: [
-              {
-                output: [
-                  {
-                    mediaAttributes: {
-                      mimeType: 'image/png',
-                      width: 1344,
-                      height: 768,
-                      aspectRatio: 1.75,
-                    },
-                    creation: '67d9cd2f91bb7d089c697f2c',
-                    url: 'https://dtut5r9j4w7j4.cloudfront.net/653acb489fc8b960f4af38508d1d6caa08d22f5cfe64eb277ed8250fd519a0f7.png',
+          result: [
+            {
+              output: [
+                {
+                  mediaAttributes: {
+                    mimeType: 'image/png',
+                    width: 1344,
+                    height: 768,
+                    aspectRatio: 1.75,
                   },
-                ],
-              },
-            ],
-          },
+                  creation: '67d9cd2f91bb7d089c697f2c',
+                  url: 'https://dtut5r9j4w7j4.cloudfront.net/653acb489fc8b960f4af38508d1d6caa08d22f5cfe64eb277ed8250fd519a0f7.png',
+                },
+              ],
+            },
+          ],
           reactions: null,
         },
       ],
@@ -211,6 +215,11 @@ const DUMMY_SESSION = {
       createdAt: '2025-03-18T19:44:54.961Z',
       reactions: {},
       reply_to: '67d9cd30ed235130b0c0045e',
+      sender: {
+        username: 'mycos',
+        userImage:
+          '6abf19d8c41effc5eb942565313d44831199bcb0fe93e6deb6e406fe753f2b03.jpeg',
+      },
       session: '67d9ccc9ed235130b0c00452',
       tool_calls: [],
       updatedAt: '2025-03-18T19:44:54.963Z',
@@ -226,6 +235,11 @@ const DUMMY_SESSION = {
       createdAt: '2025-03-18T19:45:16.551Z',
       reactions: {},
       reply_to: '67d9cd36ed235130b0c0045f',
+      sender: {
+        username: 'eve',
+        userImage:
+          'd158dc1e5c62479489c1c3d119dd211bd56ba86a127359f7476990ec9e081cba.jpg',
+      },
       session: '67d9ccc9ed235130b0c00452',
       tool_calls: [
         {
@@ -238,26 +252,22 @@ const DUMMY_SESSION = {
             n_samples: 1,
           },
           task: '67d9cd43ed235130b0c00460',
-          result: {
-            status: 'completed',
-            error: null,
-            result: [
-              {
-                output: [
-                  {
-                    mediaAttributes: {
-                      mimeType: 'image/png',
-                      width: 1344,
-                      height: 768,
-                      aspectRatio: 1.75,
-                    },
-                    creation: '67d9cd4c91bb7d089c697f2d',
-                    url: 'https://dtut5r9j4w7j4.cloudfront.net/2bbeb0fb82208c270381edd795e37871710d568a895342c23440d85ff55254ea.png',
+          result: [
+            {
+              output: [
+                {
+                  mediaAttributes: {
+                    mimeType: 'image/png',
+                    width: 1344,
+                    height: 768,
+                    aspectRatio: 1.75,
                   },
-                ],
-              },
-            ],
-          },
+                  creation: '67d9cd4c91bb7d089c697f2d',
+                  url: 'https://dtut5r9j4w7j4.cloudfront.net/2bbeb0fb82208c270381edd795e37871710d568a895342c23440d85ff55254ea.png',
+                },
+              ],
+            },
+          ],
           reactions: null,
         },
       ],
@@ -274,6 +284,11 @@ const DUMMY_SESSION = {
       createdAt: '2025-03-18T19:45:39.400Z',
       reactions: {},
       reply_to: '67d9cd4ced235130b0c00462',
+      sender: {
+        username: 'mycos',
+        userImage:
+          '6abf19d8c41effc5eb942565313d44831199bcb0fe93e6deb6e406fe753f2b03.jpeg',
+      },
       session: '67d9ccc9ed235130b0c00452',
       tool_calls: [
         {
@@ -286,26 +301,22 @@ const DUMMY_SESSION = {
             n_samples: 1,
           },
           task: '67d9cd5aed235130b0c00463',
-          result: {
-            status: 'completed',
-            error: null,
-            result: [
-              {
-                output: [
-                  {
-                    mediaAttributes: {
-                      mimeType: 'image/png',
-                      width: 1344,
-                      height: 768,
-                      aspectRatio: 1.75,
-                    },
-                    creation: '67d9cd6391bb7d089c697f2e',
-                    url: 'https://dtut5r9j4w7j4.cloudfront.net/bc509181faec33bfd2509a368ce02033efeea9b73b68f6615afab7007094d43e.png',
+          result: [
+            {
+              output: [
+                {
+                  mediaAttributes: {
+                    mimeType: 'image/png',
+                    width: 1344,
+                    height: 768,
+                    aspectRatio: 1.75,
                   },
-                ],
-              },
-            ],
-          },
+                  creation: '67d9cd6391bb7d089c697f2e',
+                  url: 'https://dtut5r9j4w7j4.cloudfront.net/bc509181faec33bfd2509a368ce02033efeea9b73b68f6615afab7007094d43e.png',
+                },
+              ],
+            },
+          ],
           reactions: null,
         },
       ],
@@ -321,19 +332,9 @@ const DUMMY_SESSION = {
       createdAt: '2025-05-09T19:45:39.400Z',
       reactions: {},
       sender: {
-        _id: '65284b18f8bbb9bff13ebe65',
-        userId: 'user_2Wg1Muli2GgbFExoxMXy3xpgLC9',
-        isWeb2: false,
-        isAdmin: true,
         username: 'gene3',
         userImage:
           'https://edenartlab-prod-data.s3.us-east-1.amazonaws.com/b782dbb4ac22cf82b7acd900f1eea09581ff5d4d08c2f3ce3656a9686a7906c8.jpg',
-        featureFlags: ['preview', 'eden2earlyaccess', 'limits_Admin'],
-        deleted: false,
-        createdAt: '2023-10-11T19:12:00.347Z',
-        updatedAt: '2024-12-10T18:06:27.694Z',
-        discordId: '404322488215142410',
-        email: 'kogan.gene@gmail.com',
       },
       session: '67d9ccc9ed235130b0c00452',
       tool_calls: [],
@@ -352,7 +353,7 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params: _params }: { params: { id: string } },
+  // { params: _params }: { params: { id: string } },
 ) {
   try {
     const body = await request.json()
@@ -371,7 +372,7 @@ export async function POST(
       sender: 'user123', // Hardcoded user ID for now
       content,
       role: 'user',
-      createdAt: 'new Date().toISOString()',
+      createdAt: "'new Date().toISOString()'",
     }
 
     return NextResponse.json(message)
