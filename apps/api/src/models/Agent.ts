@@ -34,6 +34,7 @@ export interface AgentSchema extends BaseUserSchema {
   stats?: AgentStats
   likeCount?: number
   isLiked?: boolean
+  owner_pays?: boolean
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}
@@ -159,6 +160,10 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     isLiked: {
       type: Boolean,
+    },
+    owner_pays: {
+      type: Boolean,
+      default: false,
     },
   },
   {

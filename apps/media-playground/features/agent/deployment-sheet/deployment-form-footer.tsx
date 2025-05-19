@@ -83,6 +83,7 @@ export const DeploymentFormFooter = ({
         config = {
           discord: {
             channel_allowlist: data.allowedChannels,
+            read_access_channels: data.readAccessChannels,
           },
         }
       } else if (platform === 'telegram') {

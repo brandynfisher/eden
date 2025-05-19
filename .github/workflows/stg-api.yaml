@@ -71,6 +71,7 @@ jobs:
             "MANNA_BONUS_SIGNUP=20"
             "MANNA_BONUS_DAILY_LOGIN=10"
             "MANNA_BONUS_DISCORD_LINK=50"
+            "MANNA_BONUS_TWITTER_LINK=50"
             "MAILCHIMP_API_KEY=${{ secrets.MAILCHIMP_API_KEY }}"
             "EMAIL_FROM=no-reply-staging@eden.art"
             "EMAIL_FROM_NAME=Eden Staging"
