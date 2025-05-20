@@ -234,7 +234,7 @@ const DUMMY_SESSION = {
       _id: '67d9cd36ed235130b0c0045f',
       attachments: [],
       channel: null,
-      content: '',
+      content: 'Hello',
       createdAt: '2025-03-18T19:44:54.961Z',
       reactions: {},
       reply_to: '67d9cd30ed235130b0c0045e',

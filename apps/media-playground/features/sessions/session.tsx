@@ -1,6 +1,7 @@
 'use client'
 
 import { MessageInput } from './components/message-input'
+import { groupConsecutiveMessages } from './utils/group-messages'
 import { OtherMessage } from '@/features/sessions/components/other-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -37,17 +38,29 @@ const Session: FC<SessionProps> = ({ messages: initialMessages = [] }) => {
     return user?._id === senderId
   }
 
+  const messageGroups = groupConsecutiveMessages(messages)
+
   return (
     <div className="flex flex-col bg-aui-background">
       <div className="mx-auto flex flex-col flex-1">
         <div className="flex-1 overflow-y-auto p-4">
-          {messages.map(message => (
-            <div key={message.id}>
-              {isOwnMessage(message.sender?._id) ? (
-                <UserMessage message={message} />
+          {messageGroups.map(group => (
+            <div key={group[0].id}>
+              {isOwnMessage(group[0].sender?._id) ? (
+                <>
+                  {group.map(message => (
+                    <UserMessage key={message.id} message={message} />
+                  ))}
+                </>
               ) : (
                 <>
-                  <OtherMessage message={message} />
+                  {group.map((message, index) => (
+                    <OtherMessage
+                      key={message.id}
+                      message={message}
+                      showAvatar={index === 0}
+                    />
+                  ))}
                 </>
               )}
             </div>

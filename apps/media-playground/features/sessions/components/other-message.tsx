@@ -6,7 +6,15 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { ThreadMessage } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 
-export const OtherMessage = ({ message }: { message: ThreadMessage }) => {
+type OtherMessageProps = {
+  message: ThreadMessage
+  showAvatar?: boolean
+}
+
+export const OtherMessage = ({
+  message,
+  showAvatar = true,
+}: OtherMessageProps) => {
   const handleCopy = () => {
     if (message.content) {
       navigator.clipboard.writeText(message.content)
@@ -16,27 +24,28 @@ export const OtherMessage = ({ message }: { message: ThreadMessage }) => {
   return (
     <div className="aui-assistant-message-root block px-2 md:grid group relative">
       <div className="flex items-center md:items-start mr-1 gap-2">
-        <Avatar
-          className="w-8 h-8 md:w-12 md:h-12"
-          title={message.sender?.username}
-        >
-          <AvatarImage
-            src={
-              message.sender?.userImage
-                ? getCloudfrontUrl(message.sender.userImage)
-                : undefined
-            }
-          />
-          <AvatarFallback>
-            {message.sender?.username ? (
-              `${message.sender?.username?.charAt(
-                0,
-              )}${message.sender?.username?.charAt(1)}`
-            ) : (
-              <UserIcon className="w-4 h-4" />
-            )}
-          </AvatarFallback>
-        </Avatar>
+        <div className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0">
+          {showAvatar ? (
+            <Avatar className="w-full h-full" title={message.sender?.username}>
+              <AvatarImage
+                src={
+                  message.sender?.userImage
+                    ? getCloudfrontUrl(message.sender.userImage)
+                    : undefined
+                }
+              />
+              <AvatarFallback>
+                {message.sender?.username ? (
+                  `${message.sender?.username?.charAt(
+                    0,
+                  )}${message.sender?.username?.charAt(1)}`
+                ) : (
+                  <UserIcon className="w-4 h-4" />
+                )}
+              </AvatarFallback>
+            </Avatar>
+          ) : null}
+        </div>
         <div className="text-muted-foreground text-sm md:hidden">
           {message.sender?.username}
         </div>
