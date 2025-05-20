@@ -33,7 +33,7 @@ type Props = {
 
 const MobileSecondaryNav = ({ title, baseSegment, items }: Props) => {
   return (
-    <div className="relative flex px-1 items-center bg-muted-darker z-20 md:sticky md:top-16 drop-shadow-lg overflow-x-auto">
+    <div className="relative flex px-1 items-center bg-muted-darker z-20 md:sticky md:top-16 drop-shadow-lg">
       <NavigationMenu>
         {title ? (
           <Link href={`/${baseSegment}`} className="py-3 px-2 mr-1 sm:mr-2">
