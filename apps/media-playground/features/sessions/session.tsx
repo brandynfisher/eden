@@ -39,8 +39,8 @@ const Session: FC<SessionProps> = ({ messages: initialMessages = [] }) => {
 
   return (
     <div className="flex flex-col bg-aui-background">
-      <div className="aui-assistant-message-root mx-auto flex flex-col flex-1">
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="mx-auto flex flex-col flex-1">
+        <div className="flex-1 overflow-y-auto p-4">
           {messages.map(message => (
             <div key={message.id}>
               {isOwnMessage(message.sender?._id) ? (

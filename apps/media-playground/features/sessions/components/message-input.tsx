@@ -45,7 +45,7 @@ export const MessageInput: FC<MessageInputProps> = ({ onSend }) => {
   }
 
   return (
-    <div className="sticky pb-6 bottom-0 z-[51] bg-aui-background">
+    <div className="sticky pb-6 bottom-0 z-[51] bg-aui-background w-[calc(100%-2rem)] md:w-full mx-auto">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

@@ -14,48 +14,52 @@ export const OtherMessage = ({ message }: { message: ThreadMessage }) => {
   }
 
   return (
-    <div className="flex justify-start">
-      <div className="aui-assistant-message-root block px-2 md:grid group relative">
-        <div className="flex items-center md:items-start mr-2">
-          <Avatar className="w-12 h-12">
-            <AvatarImage
-              src={
-                message.sender?.userImage
-                  ? getCloudfrontUrl(message.sender.userImage)
-                  : undefined
-              }
-            />
-            <AvatarFallback>
-              {message.sender?.username ? (
-                `${message.sender?.username?.charAt(
-                  0,
-                )}${message.sender?.username?.charAt(1)}`
-              ) : (
-                <UserIcon className="w-4 h-4" />
-              )}
-            </AvatarFallback>
-          </Avatar>
+    <div className="aui-assistant-message-root block px-2 md:grid group relative">
+      <div className="flex items-center md:items-start mr-1 gap-2">
+        <Avatar
+          className="w-8 h-8 md:w-12 md:h-12"
+          title={message.sender?.username}
+        >
+          <AvatarImage
+            src={
+              message.sender?.userImage
+                ? getCloudfrontUrl(message.sender.userImage)
+                : undefined
+            }
+          />
+          <AvatarFallback>
+            {message.sender?.username ? (
+              `${message.sender?.username?.charAt(
+                0,
+              )}${message.sender?.username?.charAt(1)}`
+            ) : (
+              <UserIcon className="w-4 h-4" />
+            )}
+          </AvatarFallback>
+        </Avatar>
+        <div className="text-muted-foreground text-sm md:hidden">
+          {message.sender?.username}
         </div>
-        <div className="aui-assistant-message-content mt-1.5 pl-3 pr-2 max-w-full">
-          <MarkdownText>{message.content ?? ''}</MarkdownText>
-          {message.tool_calls?.map(toolCall => (
-            <TaskResultTool key={toolCall.id} toolCall={toolCall} />
-          ))}
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <ActionBar
-              id={message.id}
-              createdAt={message.createdAt.toISOString()}
-              pinned={message.pinned}
-              reactions={message.reactions}
-              onCopy={handleCopy}
-              onFeedbackPositive={() => {
-                // TODO: Implement feedback positive
-              }}
-              onFeedbackNegative={() => {
-                // TODO: Implement feedback negative
-              }}
-            />
-          </div>
+      </div>
+      <div className="aui-assistant-message-content mt-3 md:mt-1.5 md:pl-3 pr-2 max-w-full">
+        <MarkdownText>{message.content ?? ''}</MarkdownText>
+        {message.tool_calls?.map(toolCall => (
+          <TaskResultTool key={toolCall.id} toolCall={toolCall} />
+        ))}
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+          <ActionBar
+            id={message.id}
+            createdAt={message.createdAt.toISOString()}
+            pinned={message.pinned}
+            reactions={message.reactions}
+            onCopy={handleCopy}
+            onFeedbackPositive={() => {
+              // TODO: Implement feedback positive
+            }}
+            onFeedbackNegative={() => {
+              // TODO: Implement feedback negative
+            }}
+          />
         </div>
       </div>
     </div>
