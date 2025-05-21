@@ -7,7 +7,14 @@ import {
 } from '../../types'
 import { Creator } from '../Creators'
 import { Agent } from './Agents'
-import { TaskV2Args, TaskV2Result, TaskV2Status } from './TasksV2'
+import {
+  BaseAssistantMessage,
+  BaseContentMessage,
+  BaseMessage,
+  BaseMessageReaction,
+  BaseSystemMessage,
+  BaseUserMessage,
+} from './CommonTypes'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -58,7 +65,6 @@ export interface ThreadsRenameArguments extends WebAPICallOptions {
 }
 
 // Requests
-
 export const threadsCreateRequestConfig = (
   args: ThreadsCreateArguments,
 ): AxiosRequestConfig => {
@@ -161,7 +167,6 @@ export const threadsRenameRequestConfig = (
 }
 
 // Responses
-
 export type ThreadsCreateResponse = WebAPICallResult &
   (
     | {
@@ -234,72 +239,14 @@ export type ThreadsRenameResponse = WebAPICallResult &
       }
     | { success: boolean }
   )
+
 // Types
-
-export type Message = {
-  id: string
-  role: 'user' | 'assistant' | 'tool' | 'system'
-  metadata?: { [key: string]: string | boolean | number }
-  createdAt?: Date
-}
-
-export type UserMessageAttachments = string
-
-export type UserMessage = Message & {
-  role: 'user'
-  // name: string
-  content: string
-  attachments?: UserMessageAttachments[]
-}
-
-export type ToolCall = {
-  id: string
-  name: string
-  error?: string
-  status?: TaskV2Status
-  tool?: string
-  args: TaskV2Args
-  result?: TaskV2Result[]
-}
-
-export type ThreadMessageReaction = {
-  [key: string]: (string | number | boolean | Date | null)[]
-}
-
-export type ThreadMessage = {
-  id: string
-  role: 'user' | 'assistant' | 'tool' | 'system'
-  content?: string
-  reactions?: ThreadMessageReaction
-  pinned?: boolean
-  sender?: Creator | Agent
-  metadata?: {
-    [key: string]: string | number | boolean | Date | null
-  }
-  reply_to?: string
-  tool_calls?: ToolCall[]
-  attachments?: string[]
-  createdAt: Date
-}
-
-export type ToolResults = {
-  id: string
-  name: string
-  result: string
-  error?: string
-}
-
-export type AssistantMessage = Message & {
-  role: 'assistant'
-  content: string
-  status?: { type: 'running' | 'complete'; reason?: string }
-  tool_calls?: ToolCall[]
-}
-
-export type SystemMessage = Message & {
-  role: 'system'
-  content: string
-}
+export type ThreadMessage = BaseMessage
+export type ThreadUserMessage = BaseUserMessage
+export type ThreadMessageReaction = BaseMessageReaction
+export type ThreadContentMessage = BaseContentMessage
+export type ThreadAssistantMessage = BaseAssistantMessage
+export type ThreadSystemMessage = BaseSystemMessage
 
 export type Thread = {
   _id: string
@@ -309,7 +256,7 @@ export type Thread = {
   title?: string
   name: string
   active?: string[] //active message.ids
-  messages: (UserMessage | AssistantMessage | SystemMessage)[]
+  messages: (ThreadUserMessage | ThreadAssistantMessage | ThreadSystemMessage)[]
   createdAt: Date
   updatedAt: Date
 }

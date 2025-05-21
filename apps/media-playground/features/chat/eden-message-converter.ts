@@ -5,10 +5,10 @@ import {
   ToolCallContentPart,
 } from '@assistant-ui/react'
 import {
-  AssistantMessage,
-  Message,
-  SystemMessage,
-  UserMessage,
+  ThreadAssistantMessage,
+  ThreadMessage,
+  ThreadSystemMessage,
+  ThreadUserMessage,
 } from '@edenlabs/eden-sdk'
 
 export interface ToolCall {
@@ -22,7 +22,7 @@ export interface ToolCall {
   error: unknown | null
 }
 
-export interface EdenMessage extends Message {
+export interface EdenMessage extends ThreadMessage {
   role: 'user' | 'assistant'
   content: string
   attachments?: string[]
@@ -37,9 +37,9 @@ export interface EdenMessage extends Message {
 const contentToParts = (
   message: EdenMessage,
   content:
-    | UserMessage['content']
-    | AssistantMessage['content']
-    | SystemMessage['content'],
+    | ThreadUserMessage['content']
+    | ThreadAssistantMessage['content']
+    | ThreadSystemMessage['content'],
 ) => {
   if (message.role === 'assistant') {
     if (

@@ -1,13 +1,13 @@
-import { ThreadMessage } from '@edenlabs/eden-sdk'
+import { SessionContentMessage } from '@edenlabs/eden-sdk'
 
 export function groupConsecutiveMessages(
-  messages: ThreadMessage[],
-): ThreadMessage[][] {
+  messages: SessionContentMessage[],
+): SessionContentMessage[][] {
   if (!messages.length) return []
   if (messages.length === 1) return [[messages[0]]]
 
-  const groups: ThreadMessage[][] = []
-  let currentGroup: ThreadMessage[] = []
+  const groups: SessionContentMessage[][] = []
+  let currentGroup: SessionContentMessage[] = []
 
   messages.forEach((message, index) => {
     if (index === 0) {

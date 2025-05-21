@@ -1,21 +1,8 @@
 'use client'
 
 import Session from '@/features/sessions/session'
+import { SessionContentMessage, SessionV2 } from '@edenlabs/eden-sdk'
 import { useEffect, useState } from 'react'
-
-type SessionData = {
-  _id: string
-  title: string
-  messages: Array<{
-    _id: string
-    sender: string
-    content: string
-    role: 'user' | 'assistant' | 'system'
-    attachments?: string[]
-    tool_calls?: Record<string, unknown>[]
-    createdAt: string
-  }>
-}
 
 type Props = {
   params: {
@@ -24,7 +11,7 @@ type Props = {
 }
 
 export default function SessionPage({ params }: Props) {
-  const [sessionData, setSessionData] = useState<SessionData | null>(null)
+  const [sessionData, setSessionData] = useState<SessionV2 | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -65,14 +52,14 @@ export default function SessionPage({ params }: Props) {
 
   const messages = sessionData.messages.map(msg => ({
     ...msg,
-    createdAt: new Date(msg.createdAt),
+    createdAt: new Date(msg.createdAt ?? ''),
   }))
 
   return (
     <Session
       id={sessionData._id}
-      title={sessionData.title}
-      messages={messages}
+      title={sessionData.title ?? 'Untitled'}
+      messages={messages as SessionContentMessage[]}
     />
   )
 }

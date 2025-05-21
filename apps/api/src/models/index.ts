@@ -26,6 +26,10 @@ import { CollectionV2 } from './v2/CollectionV2'
 import { CreationLikeV2, CreationLikeV2Document } from './v2/CreationLikeV2'
 import { CreationV2, CreationV2Document } from './v2/CreationV2'
 import { ModelV2, ModelV2Document } from './v2/ModelV2'
+import {
+  Session as SessionV2,
+  SessionDocument as SessionV2Document,
+} from './v2/Session'
 import { TaskV2, TaskV2Document } from './v2/TaskV2'
 import { Thread, ThreadDocument } from './v2/Thread'
 import { ToolV2, ToolV2Document } from './v2/ToolV2'
@@ -64,6 +68,7 @@ export interface Database {
   DiscordAgent: Model<DiscordAgentDocument>
   Trigger: Model<TriggerDocument>
   TransactionV2: Model<TransactionV2Document>
+  SessionV2: Model<SessionV2Document>
 }
 
 export const models: Database = {
@@ -98,4 +103,5 @@ export const models: Database = {
   DiscordAgent,
   Trigger,
   TransactionV2,
+  SessionV2,
 }

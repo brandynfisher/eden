@@ -1,0 +1,94 @@
+import { AgentDocument } from '../Agent'
+import { UserDocument } from '../User'
+import { SessionContentMessage } from '@edenlabs/eden-sdk'
+import { ObjectId } from 'mongodb'
+import { Schema, model } from 'mongoose'
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
+import mongooseDelete, {
+  SoftDeleteDocument,
+  SoftDeleteModel,
+} from 'mongoose-delete'
+import paginate from 'mongoose-paginate-v2'
+
+export interface SessionSchema {
+  owner: UserDocument
+  channel?: string
+  title?: string
+  agents: AgentDocument[]
+  scenario?: string
+  messages: SessionContentMessage[]
+  budget?: number
+  spent?: number
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface SessionInput {
+  owner: ObjectId
+}
+
+export interface SessionDocument extends SessionSchema, SoftDeleteDocument {}
+
+export const sessionSchema = new Schema<SessionDocument>(
+  {
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      required: true,
+    },
+    channel: {
+      type: Schema.Types.String,
+    },
+    title: {
+      type: Schema.Types.String,
+    },
+    agents: {
+      type: [Schema.Types.ObjectId],
+      ref: 'agent',
+    },
+    scenario: {
+      type: Schema.Types.String,
+    },
+    messages: {
+      type: [Schema.Types.Mixed],
+    },
+    budget: {
+      type: Schema.Types.Number,
+    },
+    spent: {
+      type: Schema.Types.Number,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  },
+)
+
+// sessionSchema.index({ updatedAt: -1 })
+// sessionSchema.index({ agents: 1, updatedAt: -1 })
+// sessionSchema.index({ owner: 1, updatedAt: -1 })
+// sessionSchema.index({ 'messages.role': 1, agents: 1 })
+// sessionSchema.index({ agents: 1, owner: 1, updatedAt: -1 })
+// sessionSchema.index({ 'messages.role': 1, 'messages.tool_calls': 1 })
+// sessionSchema.index({ agents: 1, 'messages.role': 1, updatedAt: -1 })
+// sessionSchema.index({
+//   agents: 1,
+//   'messages.role': 1,
+//   'messages.tool_calls.task': 1,
+//   'messages.tool_calls': 1,
+// })
+// sessionSchema.index({ 'messages.pinned': 1 })
+sessionSchema.plugin(paginate)
+sessionSchema.plugin(aggregatePaginate)
+sessionSchema.plugin(mongooseDelete, {
+  overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
+
+export const Session = model<SessionDocument>(
+  'sessions',
+  sessionSchema,
+) as SoftDeleteModel<SessionDocument>

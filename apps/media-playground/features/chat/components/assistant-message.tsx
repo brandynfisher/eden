@@ -17,7 +17,7 @@ import {
   BranchPicker,
   useThreadConfig,
 } from '@assistant-ui/react-ui'
-import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
+import { type ThreadContentMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
 import { PinIcon, PinOffIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import React, { type FC, useState } from 'react'

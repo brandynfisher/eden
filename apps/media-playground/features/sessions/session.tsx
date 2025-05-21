@@ -5,19 +5,19 @@ import { groupConsecutiveMessages } from './utils/group-messages'
 import { OtherMessage } from '@/features/sessions/components/other-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { ThreadMessage } from '@edenlabs/eden-sdk'
+import { SessionContentMessage } from '@edenlabs/eden-sdk'
 import { FC, useCallback, useEffect, useRef } from 'react'
 import * as React from 'react'
 
 type SessionProps = {
   id: string
   title: string
-  messages?: ThreadMessage[]
+  messages?: SessionContentMessage[]
 }
 
 const Session: FC<SessionProps> = ({ messages: initialMessages = [] }) => {
   const [messages, setMessages] =
-    React.useState<ThreadMessage[]>(initialMessages)
+    React.useState<SessionContentMessage[]>(initialMessages)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
 
@@ -29,7 +29,7 @@ const Session: FC<SessionProps> = ({ messages: initialMessages = [] }) => {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  const handleSendMessage = (message: ThreadMessage) => {
+  const handleSendMessage = (message: SessionContentMessage) => {
     setMessages(prev => [...prev, message])
   }
 

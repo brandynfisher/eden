@@ -3,11 +3,11 @@ import { MarkdownText } from './markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { getCloudfrontUrl } from '@/lib/media'
-import { ThreadMessage } from '@edenlabs/eden-sdk'
+import { SessionContentMessage } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 
 type OtherMessageProps = {
-  message: ThreadMessage
+  message: SessionContentMessage
   showAvatar?: boolean
 }
 
@@ -15,6 +15,8 @@ export const OtherMessage = ({
   message,
   showAvatar = true,
 }: OtherMessageProps) => {
+  if (!message.content) return null
+
   const handleCopy = () => {
     if (message.content) {
       navigator.clipboard.writeText(message.content)
@@ -51,7 +53,7 @@ export const OtherMessage = ({
         </div>
       </div>
       <div className="aui-assistant-message-content mt-3 md:mt-1.5 md:pl-3 pr-2 max-w-full">
-        <MarkdownText>{message.content ?? ''}</MarkdownText>
+        <MarkdownText>{message.content}</MarkdownText>
         {message.tool_calls?.map(toolCall => (
           <TaskResultTool key={toolCall.id} toolCall={toolCall} />
         ))}
