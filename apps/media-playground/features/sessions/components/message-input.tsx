@@ -1,17 +1,16 @@
 'use client'
 
-import LoadingIndicator from '@/components/loading-indicator'
+import { Attachment, FileUploadProgress } from './attachment'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Progress } from '@/components/ui/progress'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import axios, { CancelTokenSource } from 'axios'
+import axios from 'axios'
 import { PaperclipIcon, SendIcon } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -25,14 +24,6 @@ const formSchema = z.object({
 
 type MessageInputProps = {
   sessionId: string
-}
-
-type FileUploadProgress = {
-  id: string
-  file: File
-  progress: number
-  source: CancelTokenSource | null
-  status: 'uploading' | 'complete' | 'error'
 }
 
 type AttachmentDropzoneProps = {
@@ -218,6 +209,14 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
     }
   }
 
+  const handleRemoveAttachment = (id: string) => {
+    const attachment = attachments.find(a => a.id === id)
+    if (attachment?.source) {
+      attachment.source.cancel('Upload cancelled')
+    }
+    setAttachments(prev => prev.filter(a => a.id !== id))
+  }
+
   return (
     <>
       {isDragging && (
@@ -232,30 +231,13 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
             {attachments.length > 0 && (
               <LightboxGallery>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {attachments.map(attachment => (
-                    <div
+                  {attachments.map((attachment, index) => (
+                    <Attachment
                       key={attachment.id}
-                      className="relative rounded-md border border-secondary cursor-pointer hover:bg-accent"
-                    >
-                      {attachment.status === 'uploading' && (
-                        <div className="absolute inset-0 flex flex-col justify-center rounded-md bg-background/70 w-full h-full overflow-hidden">
-                          <LoadingIndicator className="absolute w-10 h-10 text-purple-600 self-center" />
-                          <Progress
-                            max={100}
-                            value={Math.round(attachment.progress * 100)}
-                            className="h-1 rounded-none mt-auto"
-                          />
-                        </div>
-                      )}
-                      <div className="p-1 flex gap-1 h-full">
-                        <div className="w-16 h-16 text-xs flex items-center justify-center text-muted-foreground">
-                          {attachment.file.name
-                            .split('.')
-                            .pop()
-                            ?.toUpperCase() || '?'}
-                        </div>
-                      </div>
-                    </div>
+                      attachment={attachment}
+                      index={index}
+                      onRemove={() => handleRemoveAttachment(attachment.id)}
+                    />
                   ))}
                 </div>
               </LightboxGallery>
