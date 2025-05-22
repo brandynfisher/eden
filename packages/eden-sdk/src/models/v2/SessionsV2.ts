@@ -27,7 +27,6 @@ export interface SessionsV2CreateArguments extends WebAPICallOptions {
 
 export interface SessionsV2MessageArguments extends WebAPICallOptions {
   session_id?: string
-  agent_id?: string
   content: string
   attachments?: string[]
 }

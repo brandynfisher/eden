@@ -4,23 +4,21 @@ import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { SessionContentMessage } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ObjectId } from 'bson'
+import axios from 'axios'
 import { SendIcon } from 'lucide-react'
-import { FC } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
 const formSchema = z.object({
-  content: z.string().min(1),
+  content: z.string().trim().min(1),
 })
 
 type MessageInputProps = {
-  onSend: (message: SessionContentMessage) => void
+  sessionId: string
 }
 
-export const MessageInput: FC<MessageInputProps> = ({ onSend }) => {
+export const MessageInput = ({ sessionId }: MessageInputProps) => {
   const { user } = useAuthState()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -32,16 +30,17 @@ export const MessageInput: FC<MessageInputProps> = ({ onSend }) => {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     if (!user) return
 
-    const newMessage: SessionContentMessage = {
-      id: new ObjectId().toString(),
-      sender: user,
-      content: data.content,
-      role: 'user',
-      createdAt: new Date(),
-    }
+    try {
+      await axios.post(`/api/sessions/${sessionId}/messages`, {
+        session_id: sessionId,
+        content: data.content,
+        attachments: [],
+      })
 
-    onSend(newMessage)
-    form.reset()
+      form.reset()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (

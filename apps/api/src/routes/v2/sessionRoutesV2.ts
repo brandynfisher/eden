@@ -36,7 +36,6 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       ],
       body: {
         session_id: Type.Optional(Type.String()),
-        agent_id: Type.String(),
         content: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),
       },

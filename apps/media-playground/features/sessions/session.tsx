@@ -23,7 +23,7 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { BaseContentMessage, SessionContentMessage } from '@edenlabs/eden-sdk'
+import { BaseContentMessage } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -73,7 +73,6 @@ const Session = () => {
     data: session,
     isLoading: isSessionLoading,
     error: sessionError,
-    addMessage,
   } = useSessionQuery({
     sessionId: sessionId as string,
     enabled: !!sessionId,
@@ -86,10 +85,6 @@ const Session = () => {
   useEffect(() => {
     scrollToBottom()
   }, [session?.messages, scrollToBottom])
-
-  const handleSendMessage = (message: SessionContentMessage) => {
-    addMessage(message)
-  }
 
   const isOwnMessage = (senderId?: string) => {
     if (!senderId) return false
@@ -185,7 +180,7 @@ const Session = () => {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <MessageInput onSend={handleSendMessage} />
+                <MessageInput sessionId={sessionId as string} />
               </div>
             )}
           </div>

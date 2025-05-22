@@ -270,8 +270,10 @@ import {
   SessionsV2GetResponse,
   SessionsV2ListArguments,
   SessionsV2ListResponse,
+  SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
   SessionsV2MessageReactResponse,
+  SessionsV2MessageResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -334,6 +336,7 @@ import {
   sessionsGetRequestConfigV2,
   sessionsListRequestConfigV2,
   sessionsMessageReactRequestConfigV2,
+  sessionsMessageRequestConfigV2,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -894,6 +897,10 @@ export abstract class Methods {
         SessionsV2MessageReactArguments,
         SessionsV2MessageReactResponse
       >(this, sessionsMessageReactRequestConfigV2),
+      message: bindApiCall<
+        SessionsV2MessageArguments,
+        SessionsV2MessageResponse
+      >(this, sessionsMessageRequestConfigV2),
     },
   }
 

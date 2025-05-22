@@ -1,4 +1,3 @@
-import { Agent } from '../../models/Agent'
 import { User } from '../../models/User'
 import { Message } from '../../models/v2/Message'
 import { Session } from '../../models/v2/SessionV2'
@@ -6,21 +5,21 @@ import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
 import { createIdOrSlugQuery } from '../../utils/mongoUtils'
 import {
-  SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
   SessionsV2GetArguments,
   SessionsV2ListArguments,
+  SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
   SessionsV2PinMessageArguments,
   SessionsV2RenameArguments,
 } from '@edenlabs/eden-sdk'
-import axios from 'axios'
+// import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
 export const createSessionMessage = async (
   server: FastifyInstance,
-  request: FastifyRequest<{ Body: SessionsV2CreateArguments }>,
+  request: FastifyRequest<{ Body: SessionsV2MessageArguments }>,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user || {}
@@ -30,20 +29,20 @@ export const createSessionMessage = async (
     })
   }
 
-  const { session_id, agent_id, content, attachments } = request.body
+  const { session_id, content, attachments } = request.body
 
-  if (!agent_id) {
+  if (!session_id) {
     return reply.status(400).send({
-      message: 'agent_id not provided',
+      message: 'session_id not provided',
     })
   }
 
-  const query = createIdOrSlugQuery(agent_id)
-  const agent = await Agent.findOne(query)
+  const query = createIdOrSlugQuery(session_id)
+  const session = await Session.findOne(query)
 
-  if (!agent) {
+  if (!session) {
     return reply.status(404).send({
-      message: 'agent not found',
+      message: 'session not found',
     })
   }
 
@@ -54,54 +53,54 @@ export const createSessionMessage = async (
     })
   }
 
-  const modalRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/session`,
-    data: {
-      agent_id: agent._id,
-      session_id,
-      user_message: {
-        content,
-        attachments,
-      },
-      user_id: userId,
-      force_reply: true,
-    },
-    headers: {
-      'X-Client-Platform': 'web',
-      'X-Client-Agent': agent.username,
-    },
-  }
+  // const modalRequest = {
+  //   endpoint: `${server.config.EDEN_COMPUTE_API_URL}/session`,
+  //   data: {
+  //     agent_id: agent._id,
+  //     session_id,
+  //     user_message: {
+  //       content,
+  //       attachments,
+  //     },
+  //     user_id: userId,
+  //     force_reply: true,
+  //   },
+  //   headers: {
+  //     'X-Client-Platform': 'web',
+  //     'X-Client-Agent': agent.username,
+  //   },
+  // }
 
-  try {
-    const modalResponse = await axios.post(
-      modalRequest.endpoint,
-      modalRequest.data,
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-      },
-    )
+  // try {
+  //   const modalResponse = await axios.post(
+  //     modalRequest.endpoint,
+  //     modalRequest.data,
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+  //       },
+  //     },
+  //   )
 
-    if (!modalResponse?.data?.session_id) {
-      return reply.status(500).send({
-        message: `Missing session_id`,
-      })
-    }
+  //   if (!modalResponse?.data?.session_id) {
+  //     return reply.status(500).send({
+  //       message: `Missing session_id`,
+  //     })
+  //   }
 
-    const message_id =
-      modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
+  //   const message_id =
+  //     modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
 
-    return reply.status(200).send({
-      session_id: modalResponse.data.session_id,
-      message_id,
-    })
-  } catch (e) {
-    const error = e as { response?: { data?: string } }
-    const errorMessage = error?.response?.data || 'Unknown Error'
-    console.log(e)
-    return reply.status(500).send({ error: errorMessage })
-  }
+  //   return reply.status(200).send({
+  //     session_id: modalResponse.data.session_id,
+  //     message_id,
+  //   })
+  // } catch (e) {
+  //   const error = e as { response?: { data?: string } }
+  //   const errorMessage = error?.response?.data || 'Unknown Error'
+  //   console.log(e)
+  //   return reply.status(500).send({ error: errorMessage })
+  // }
 }
 
 export const listSessions = async (
