@@ -242,7 +242,7 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-const MainLeft = () => {
+const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -315,6 +315,7 @@ const MainLeft = () => {
                       title={session.title || 'Untitled'}
                       isActive={session._id === currentSessionId}
                       onItemClick={() => {
+                        onItemClick?.()
                         const url = new URL(window.location.href)
                         url.searchParams.set('id', session._id)
                         router.push(url.toString(), { scroll: false })
@@ -338,22 +339,28 @@ const MainLeft = () => {
   )
 }
 
-export const SessionsSidebarContent = () => {
+export const SessionsSidebarContent = ({
+  onItemClick,
+}: {
+  onItemClick?: () => void
+}) => {
   return (
     <>
       <div className="border-b mb-2">
-        <TopLeft />
+        <TopLeft onItemClick={onItemClick} />
       </div>
-      <MainLeft />
+      <MainLeft onItemClick={onItemClick} />
     </>
   )
 }
 
-export const SessionsSidebar = React.memo(() => {
-  return (
-    <div className="flex flex-col bg-[#0e1421] p-3 transition-all duration-300 ease-in-out w-full md:max-w-[320px]">
-      <SessionsSidebarContent />
-    </div>
-  )
-})
+export const SessionsSidebar = React.memo(
+  ({ onItemClick }: { onItemClick?: () => void }) => {
+    return (
+      <div className="flex flex-col bg-[#0e1421] p-3 transition-all duration-300 ease-in-out w-full md:max-w-[320px]">
+        <SessionsSidebarContent onItemClick={onItemClick} />
+      </div>
+    )
+  },
+)
 SessionsSidebar.displayName = 'SessionsSidebar'

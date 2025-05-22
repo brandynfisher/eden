@@ -1,6 +1,8 @@
-import { pinMessage, unpinMessage } from '@/features/chat/chat-api'
+import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
+import { SessionContentMessage } from '@edenlabs/eden-sdk'
+import axios from 'axios'
 import {
   CopyIcon,
   PinIcon,
@@ -9,43 +11,62 @@ import {
   ThumbsUpIcon,
 } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
-import React, { type FC, useState } from 'react'
+import React, { useState } from 'react'
 
 interface ActionBarProps {
-  id: string
-  createdAt: string
-  pinned?: boolean
-  reactions?: {
-    thumbs_up?: string[]
-    thumbs_down?: string[]
-  }
-  onCopy?: () => void
-  onFeedbackPositive?: () => void
-  onFeedbackNegative?: () => void
+  sessionId: string
+  message: SessionContentMessage
 }
 
-const ActionBar: FC<ActionBarProps> = ({
-  id,
-  createdAt,
-  pinned: initialPinned = false,
-  reactions = {},
-  onCopy,
-  onFeedbackPositive,
-  onFeedbackNegative,
-}) => {
+const ActionBar = ({ sessionId, message }: ActionBarProps) => {
   const { TimeAgo } = useTimeAgo()
-  const [pinnedState, setPinnedState] = useState(initialPinned)
   const { user } = useAuthState()
-  const userId = user?._id || null
+  const { updateReaction } = useSessionQuery({ sessionId, enabled: false })
+  const [isLoading, setIsLoading] = useState(false)
 
-  const hasThumbsUp = userId ? reactions.thumbs_up?.includes(userId) : false
-  const hasThumbsDown = userId ? reactions.thumbs_down?.includes(userId) : false
+  const userId = user?._id || ''
+
+  const hasThumbsUp = userId
+    ? message.reactions?.[userId]?.includes('thumbs_up')
+    : false
+  const hasThumbsDown = userId
+    ? message.reactions?.[userId]?.includes('thumbs_down')
+    : false
+  const isPinned = userId ? message.reactions?.[userId]?.includes('pin') : false
+
+  const handleCopy = () => {
+    if (message.content) {
+      navigator.clipboard.writeText(message.content)
+    }
+  }
+
+  const toggleReaction = async (reaction: string) => {
+    try {
+      setIsLoading(true)
+
+      const response = await axios.post('/api/sessions/react', {
+        message_id: message._id,
+        reaction,
+      })
+
+      updateReaction(response.data.message)
+    } catch (error) {
+      console.error('Error toggling reaction:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="aui-assistant-action-bar-root flex items-center gap-2 w-full z-10">
+    <div
+      className={cn(
+        'aui-assistant-action-bar-root flex items-center gap-2 w-full z-10',
+        isLoading && 'opacity-50 pointer-events-none',
+      )}
+    >
       <button
         className="aui-button aui-button-ghost aui-button-icon"
-        onClick={onCopy}
+        onClick={handleCopy}
       >
         <CopyIcon className="w-4 h-4" />
       </button>
@@ -55,7 +76,7 @@ const ActionBar: FC<ActionBarProps> = ({
           'aui-button aui-button-ghost aui-button-icon',
           hasThumbsUp && 'text-green-600',
         )}
-        onClick={onFeedbackPositive}
+        onClick={() => toggleReaction('thumbs_up')}
       >
         <ThumbsUpIcon className="w-4 h-4" />
       </button>
@@ -65,24 +86,16 @@ const ActionBar: FC<ActionBarProps> = ({
           'aui-button aui-button-ghost aui-button-icon',
           hasThumbsDown && 'text-red-600',
         )}
-        onClick={onFeedbackNegative}
+        onClick={() => toggleReaction('thumbs_down')}
       >
         <ThumbsDownIcon className="w-4 h-4" />
       </button>
 
       <button
         className="aui-button aui-button-ghost aui-button-icon"
-        onClick={async () => {
-          if (pinnedState) {
-            await unpinMessage(id)
-            setPinnedState(false)
-          } else {
-            await pinMessage(id)
-            setPinnedState(true)
-          }
-        }}
+        onClick={() => toggleReaction('pin')}
       >
-        {pinnedState ? (
+        {isPinned ? (
           <PinOffIcon className="w-4 h-4 text-purple-600" />
         ) : (
           <PinIcon className="w-4 h-4" />
@@ -91,9 +104,9 @@ const ActionBar: FC<ActionBarProps> = ({
 
       <div
         className="ml-auto text-xs bg-transparent"
-        title={new Date(createdAt).toLocaleString()}
+        title={new Date(message.createdAt).toLocaleString()}
       >
-        <TimeAgo date={new Date(createdAt)} />
+        <TimeAgo date={new Date(message.createdAt)} />
       </div>
     </div>
   )

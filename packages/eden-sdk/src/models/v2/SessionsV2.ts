@@ -42,7 +42,7 @@ export interface SessionsV2UnpinMessageArguments extends WebAPICallOptions {
 
 export interface SessionsV2MessageReactArguments extends WebAPICallOptions {
   message_id: string
-  reaction: 'thumbs_up' | 'thumbs_down'
+  reaction: 'thumbs_up' | 'thumbs_down' | 'pin'
 }
 
 export interface SessionsV2ListArguments
@@ -209,7 +209,7 @@ export type SessionsV2MessageReactResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { success: boolean }
+    | { success: boolean; message?: SessionContentMessage }
   )
 
 export type SessionsV2ListResponse = WebAPICallResult &

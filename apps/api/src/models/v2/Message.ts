@@ -5,6 +5,7 @@ import { BaseMessageReaction, ToolCall } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 
 export interface MessageSchema {
+  _id: string
   sender: UserDocument | AgentDocument
   session?: SessionDocument
   content?: string
@@ -41,6 +42,7 @@ const messageSchema = new Schema<MessageDocument>(
     },
     reactions: {
       type: Schema.Types.Mixed,
+      default: {},
     },
   },
   {

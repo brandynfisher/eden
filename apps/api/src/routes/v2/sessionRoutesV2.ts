@@ -82,6 +82,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           success: Type.Boolean(),
+          message: Type.Any(),
         }),
         400: {
           message: Type.Optional(Type.String()),

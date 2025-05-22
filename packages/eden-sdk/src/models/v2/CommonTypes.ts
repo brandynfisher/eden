@@ -32,6 +32,7 @@ export type BaseMessageReaction = {
 }
 
 export type BaseContentMessage = {
+  _id: string
   id: string
   role: 'user' | 'assistant' | 'tool' | 'system'
   content?: string

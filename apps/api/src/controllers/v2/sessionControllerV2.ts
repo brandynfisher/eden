@@ -1,5 +1,6 @@
 import { Agent } from '../../models/Agent'
 import { User } from '../../models/User'
+import { Message } from '../../models/v2/Message'
 import { Session } from '../../models/v2/SessionV2'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
@@ -187,16 +188,12 @@ export const getSession = async (
       })
       .populate({
         path: 'messages',
-        select: '_id content sender tool_calls',
+        select: '_id content sender tool_calls createdAt reactions',
         populate: {
           path: 'sender',
           select: '_id username userImage',
         },
       })
-
-    console.log({
-      session,
-    })
 
     if (!session) {
       return reply.status(404).send({
@@ -273,84 +270,52 @@ export const addSessionMessageReaction = async (
     })
   }
 
-  try {
-    const query = {
-      owner: userId,
-      'messages.id': new ObjectId(message_id),
-    }
+  const message = await Message.findOne({
+    _id: new ObjectId(message_id as string),
+  })
 
-    const session = await Session.findOne(query)
-
-    if (reaction === 'thumbs_up') {
-      const existingReactions =
-        session?.messages.find(m => m.id?.toString() === message_id)?.reactions
-          ?.thumbs_up || []
-
-      if (
-        existingReactions.map(id => id?.toString()).includes(userId.toString())
-      ) {
-        await Session.updateOne(
-          query,
-          {
-            $pull: { 'messages.$[msg].reactions.thumbs_up': userId },
-          },
-          {
-            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
-          },
-        )
-      } else {
-        await Session.updateOne(
-          query,
-          {
-            $push: { 'messages.$[msg].reactions.thumbs_up': userId },
-          },
-          {
-            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
-          },
-        )
-      }
-    } else if (reaction === 'thumbs_down') {
-      const existingReactions =
-        session?.messages.find(m => m.id?.toString() === message_id)?.reactions
-          ?.thumbs_down || []
-
-      if (
-        existingReactions.map(id => id?.toString()).includes(userId.toString())
-      ) {
-        await Session.updateOne(
-          query,
-          {
-            $pull: { 'messages.$[msg].reactions.thumbs_down': userId },
-          },
-          {
-            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
-          },
-        )
-      } else {
-        await Session.updateOne(
-          query,
-          {
-            $push: { 'messages.$[msg].reactions.thumbs_down': userId },
-          },
-          {
-            arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
-          },
-        )
-      }
-    }
-
-    return reply.status(200).send({ success: true })
-  } catch (e) {
-    console.log(e)
-    const error = e as { response?: { data?: string } }
-    const errorMessage = error?.response?.data || 'Unknown Error'
-
-    server.log.error({
-      message: 'Failed to add session message reaction',
-      error: errorMessage,
+  if (!message) {
+    return reply.status(404).send({
+      message: 'Message not found',
     })
-    return reply.status(500).send({ error: errorMessage })
   }
+
+  // Initialize reactions if it doesn't exist
+  if (!message.reactions) {
+    message.reactions = {}
+  }
+
+  const userIdStr = userId.toString()
+  const existingReactions = message.reactions[userIdStr] || []
+
+  // Handle reaction toggle
+  if (existingReactions.includes(reaction)) {
+    // Remove the reaction if it exists
+    message.reactions[userIdStr] = existingReactions.filter(r => r !== reaction)
+  } else {
+    // Add the reaction if it doesn't exist
+    let newReactions = [...existingReactions, reaction]
+
+    // Handle mutually exclusive thumbs up/down
+    if (reaction === 'thumbs_up') {
+      newReactions = newReactions.filter(r => r !== 'thumbs_down')
+    } else if (reaction === 'thumbs_down') {
+      newReactions = newReactions.filter(r => r !== 'thumbs_up')
+    }
+
+    message.reactions[userIdStr] = newReactions
+  }
+
+  // If the user has no reactions left, remove their entry
+  if (message.reactions[userIdStr].length === 0) {
+    delete message.reactions[userIdStr]
+  }
+
+  // Use markModified to ensure Mongoose knows the mixed type field was changed
+  message.markModified('reactions')
+  await message.save()
+
+  return reply.status(200).send({ success: true, message })
 }
 
 export const deleteSession = async (

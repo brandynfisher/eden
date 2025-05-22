@@ -7,21 +7,17 @@ import { SessionContentMessage } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 
 type OtherMessageProps = {
+  sessionId: string
   message: SessionContentMessage
   showAvatar?: boolean
 }
 
 export const OtherMessage = ({
+  sessionId,
   message,
   showAvatar = true,
 }: OtherMessageProps) => {
   if (!message.content) return null
-
-  const handleCopy = () => {
-    if (message.content) {
-      navigator.clipboard.writeText(message.content)
-    }
-  }
 
   return (
     <div className="aui-assistant-message-root block px-2 md:grid group relative">
@@ -58,19 +54,7 @@ export const OtherMessage = ({
           <TaskResultTool key={toolCall.id} toolCall={toolCall} />
         ))}
         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-          <ActionBar
-            id={message.id}
-            createdAt={message.createdAt.toISOString()}
-            pinned={message.pinned}
-            reactions={message.reactions}
-            onCopy={handleCopy}
-            onFeedbackPositive={() => {
-              // TODO: Implement feedback positive
-            }}
-            onFeedbackNegative={() => {
-              // TODO: Implement feedback negative
-            }}
-          />
+          <ActionBar sessionId={sessionId} message={message} />
         </div>
       </div>
     </div>

@@ -23,12 +23,7 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import {
-  SessionAssistantMessage,
-  SessionContentMessage,
-  SessionSystemMessage,
-  SessionUserMessage,
-} from '@edenlabs/eden-sdk'
+import { BaseContentMessage, SessionContentMessage } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -70,32 +65,19 @@ const LeftBarSheet: FC<{
 const Session = () => {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('id')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { user } = useAuthState()
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const {
     data: session,
     isLoading: isSessionLoading,
     error: sessionError,
+    addMessage,
   } = useSessionQuery({
     sessionId: sessionId as string,
     enabled: !!sessionId,
   })
-
-  const [messages, setMessages] = React.useState<
-    (SessionUserMessage | SessionAssistantMessage | SessionSystemMessage)[]
-  >([])
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { user } = useAuthState()
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-
-  useEffect(() => {
-    if (session?.messages) {
-      const messagesWithCreatedAt = session.messages.map(msg => ({
-        ...msg,
-        createdAt: msg.createdAt || new Date(),
-      }))
-      setMessages(messagesWithCreatedAt)
-    }
-  }, [session])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -103,15 +85,10 @@ const Session = () => {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages, scrollToBottom])
+  }, [session?.messages, scrollToBottom])
 
   const handleSendMessage = (message: SessionContentMessage) => {
-    const messageWithCreatedAt = {
-      ...message,
-      createdAt: message.createdAt || new Date(),
-    } as SessionUserMessage
-
-    setMessages(prev => [...prev, messageWithCreatedAt])
+    addMessage(message)
   }
 
   const isOwnMessage = (senderId?: string) => {
@@ -119,7 +96,9 @@ const Session = () => {
     return user?._id === senderId
   }
 
-  const messageGroups = groupConsecutiveMessages(messages)
+  const messageGroups = session?.messages
+    ? groupConsecutiveMessages(session.messages as BaseContentMessage[])
+    : []
 
   return (
     <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
@@ -193,6 +172,7 @@ const Session = () => {
                         <>
                           {group.map((message, index) => (
                             <OtherMessage
+                              sessionId={sessionId as string}
                               key={message.id}
                               message={message}
                               showAvatar={index === 0}

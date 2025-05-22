@@ -1,5 +1,9 @@
-import { SessionsV2GetResponse, Thread } from '@edenlabs/eden-sdk'
-import { useQuery } from '@tanstack/react-query'
+import {
+  SessionContentMessage,
+  SessionsV2GetResponse,
+  Thread,
+} from '@edenlabs/eden-sdk'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { AxiosResponse } from 'axios'
 
@@ -15,7 +19,9 @@ export function useSessionQuery({
   sessionId?: string
   enabled?: boolean
 }) {
-  return useQuery({
+  const queryClient = useQueryClient()
+
+  const query = useQuery({
     queryKey: ['session', sessionId],
     queryFn: async () => {
       const response: AxiosResponse<SessionsV2GetResponse> = await axios.get(
@@ -31,4 +37,30 @@ export function useSessionQuery({
     enabled: enabled && !!sessionId,
     staleTime: 0,
   })
+
+  const updateReaction = (message: SessionContentMessage) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    queryClient.setQueryData(['session', sessionId], (oldData: any) => {
+      if (!oldData) return oldData
+
+      return {
+        ...oldData,
+        messages: oldData.messages.map((ex: SessionContentMessage) => {
+          if (ex._id === message._id) {
+            return {
+              ...ex,
+              reactions: message.reactions,
+            }
+          }
+
+          return ex
+        }),
+      }
+    })
+  }
+
+  return {
+    ...query,
+    updateReaction,
+  }
 }
