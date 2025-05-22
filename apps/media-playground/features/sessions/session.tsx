@@ -136,7 +136,7 @@ const Session = () => {
         {/* MAIN CONTENT PANEL */}
         <ResizablePanel
           defaultSize={80}
-          className="flex flex-col bg-aui-background"
+          className="relative flex flex-col bg-aui-background"
         >
           <div className="flex flex-col overflow-y-auto h-full">
             {isSessionLoading ? (
