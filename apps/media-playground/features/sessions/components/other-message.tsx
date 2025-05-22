@@ -20,7 +20,7 @@ export const OtherMessage = ({
   if (!message.content) return null
 
   return (
-    <div className="aui-assistant-message-root block px-2 md:grid group relative">
+    <div className="aui-assistant-message-root block px-2 md:grid group relative py-2">
       <div className="flex items-center md:items-start mr-1 gap-2">
         <div className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0">
           {showAvatar ? (

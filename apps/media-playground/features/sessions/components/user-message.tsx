@@ -9,7 +9,7 @@ export const UserMessage = ({
   if (!message.content) return null
 
   return (
-    <div className="flex justify-end">
+    <div className="flex justify-end py-2">
       <div className="aui-user-message-content">
         <MarkdownText>{message.content}</MarkdownText>
       </div>

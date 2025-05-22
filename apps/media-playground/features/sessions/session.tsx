@@ -156,7 +156,7 @@ const Session = () => {
               <div className="mx-auto flex flex-col flex-1 max-w-[--aui-thread-max-width] w-full">
                 <div className="flex-1 overflow-y-auto p-4">
                   {messageGroups.map(group => (
-                    <div key={group[0].id} className="space-y-2">
+                    <div key={group[0].id}>
                       {isOwnMessage(group[0].sender?._id) ? (
                         <>
                           {group.map(message => (

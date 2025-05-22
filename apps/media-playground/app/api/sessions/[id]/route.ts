@@ -62,7 +62,7 @@ export async function DELETE(
       token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.threads.delete({ thread_id: id })
+    const res = await eden.sessions.v2.delete({ session_id: id })
 
     if (!res.success) {
       return new NextResponse(JSON.stringify({ message: res.error }), {
@@ -102,7 +102,10 @@ export async function PATCH(
       token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.threads.rename({ thread_id: id, title: title })
+    const res = await eden.sessions.v2.rename({
+      session_id: id,
+      title: title,
+    })
 
     return NextResponse.json(res)
   } catch (error) {

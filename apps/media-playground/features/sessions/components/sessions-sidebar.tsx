@@ -39,6 +39,13 @@ const SessionListItem: FC<SessionListItemProps> = ({
   isActive,
   onItemClick,
 }) => {
+  const {
+    renameSession: renameSessionQuery,
+    deleteSession: deleteSessionQuery,
+  } = useSessionListQuery({
+    enabled: false,
+  })
+
   const [isEditing, setIsEditing] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [isRenaming, setIsRenaming] = useState(false)
@@ -47,7 +54,9 @@ const SessionListItem: FC<SessionListItemProps> = ({
 
   const deleteSession = async (sessionId: string) => {
     try {
-      await axios.delete(`/api/v2/sessions/${sessionId}`)
+      await axios.delete(`/api/sessions/${sessionId}`)
+
+      await deleteSessionQuery(sessionId)
 
       toast.success('Session deleted', {
         description: 'Your session has been deleted.',
@@ -72,9 +81,11 @@ const SessionListItem: FC<SessionListItemProps> = ({
       }
       try {
         setIsRenaming(true)
-        await axios.patch(`/api/v2/sessions/${sessionId}`, {
+        await axios.patch(`/api/sessions/${sessionId}`, {
           title,
         })
+
+        await renameSessionQuery(sessionId, title)
 
         toast.success('Session renamed', {
           description: 'Your session has been renamed.',

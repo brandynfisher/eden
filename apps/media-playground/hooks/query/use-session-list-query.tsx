@@ -2,7 +2,11 @@
 
 import { fetcher } from '@/lib/fetcher'
 import { SessionsV2ListResponse } from '@edenlabs/eden-sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 
 type Props = {
   enabled?: boolean
@@ -49,6 +53,43 @@ export const useSessionListQuery = (props?: Props) => {
   const sessions = data?.pages.flatMap(page => page.docs) ?? []
   const lastPage = data?.pages[data.pages.length - 1]
 
+  const renameSession = async (sessionId: string, title: string) => {
+    queryClient.setQueryData(
+      queryKey,
+      (old: InfiniteData<SessionsV2ListResponse>) => {
+        const newPages = old.pages.map(page => {
+          return {
+            ...page,
+            docs: page.docs?.map(doc =>
+              doc._id === sessionId ? { ...doc, title } : doc,
+            ),
+          }
+        })
+
+        return {
+          ...old,
+          pages: newPages,
+        }
+      },
+    )
+  }
+
+  const deleteSession = async (sessionId: string) => {
+    queryClient.setQueryData(
+      queryKey,
+      (old: InfiniteData<SessionsV2ListResponse>) => {
+        return {
+          ...old,
+          pages: old.pages.map(page => {
+            return {
+              ...page,
+              docs: page.docs?.filter(doc => doc._id !== sessionId),
+            }
+          }),
+        }
+      },
+    )
+  }
   return {
     sessions,
     hasMore: hasNextPage,
@@ -67,5 +108,7 @@ export const useSessionListQuery = (props?: Props) => {
     isRefetchError,
     isSuccess,
     status,
+    renameSession,
+    deleteSession,
   }
 }

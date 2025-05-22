@@ -138,18 +138,13 @@ export const listSessions = async (
 
     const sessionsRepository = new SessionRepository(Session)
     const sessionQuery = {
-      // owner: userId,
+      owner: userId,
     }
 
     const paginatedResponse = await sessionsRepository.query(
       sessionQuery,
       queryOptions,
     )
-
-    // await sessionsRepository.model.populate(paginatedResponse.docs, {
-    //   path: 'agents',
-    //   select: '_id name username userImage',
-    // })
 
     return reply.status(200).send(paginatedResponse)
   } catch (e) {

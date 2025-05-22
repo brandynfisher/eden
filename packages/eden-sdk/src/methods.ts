@@ -266,6 +266,8 @@ import {
   ModelsV2PatchResponse,
   ModelsV2UnlikeArguments,
   ModelsV2UnlikeResponse,
+  SessionsV2DeleteArguments,
+  SessionsV2DeleteResponse,
   SessionsV2GetArguments,
   SessionsV2GetResponse,
   SessionsV2ListArguments,
@@ -274,6 +276,8 @@ import {
   SessionsV2MessageReactArguments,
   SessionsV2MessageReactResponse,
   SessionsV2MessageResponse,
+  SessionsV2RenameArguments,
+  SessionsV2RenameResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -333,10 +337,12 @@ import {
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
   modelsV2UnlikeRequestConfig,
+  sessionsDeleteRequestConfigV2,
   sessionsGetRequestConfigV2,
   sessionsListRequestConfigV2,
   sessionsMessageReactRequestConfigV2,
   sessionsMessageRequestConfigV2,
+  sessionsRenameRequestConfigV2,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -901,6 +907,14 @@ export abstract class Methods {
         SessionsV2MessageArguments,
         SessionsV2MessageResponse
       >(this, sessionsMessageRequestConfigV2),
+      rename: bindApiCall<SessionsV2RenameArguments, SessionsV2RenameResponse>(
+        this,
+        sessionsRenameRequestConfigV2,
+      ),
+      delete: bindApiCall<SessionsV2DeleteArguments, SessionsV2DeleteResponse>(
+        this,
+        sessionsDeleteRequestConfigV2,
+      ),
     },
   }
 
