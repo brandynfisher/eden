@@ -2,6 +2,9 @@
 
 import { MessageInput } from './components/message-input'
 import { groupConsecutiveMessages } from './utils/group-messages'
+import AlertDestructive from '@/components/alert/alert-destructive'
+import LoadingIndicator from '@/components/loading-indicator'
+import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   ResizableHandle,
@@ -17,18 +20,19 @@ import {
 import { OtherMessage } from '@/features/sessions/components/other-message'
 import { SessionsSidebar } from '@/features/sessions/components/sessions-sidebar'
 import { UserMessage } from '@/features/sessions/components/user-message'
+import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { SessionContentMessage } from '@edenlabs/eden-sdk'
+import {
+  SessionAssistantMessage,
+  SessionContentMessage,
+  SessionSystemMessage,
+  SessionUserMessage,
+} from '@edenlabs/eden-sdk'
 import { ChevronRightIcon } from 'lucide-react'
+import { useParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
-
-type SessionProps = {
-  id: string
-  title: string
-  messages?: SessionContentMessage[]
-}
 
 const LeftBarSheet: FC<{
   onItemClick?: () => void
@@ -63,12 +67,34 @@ const LeftBarSheet: FC<{
   )
 }
 
-const Session: FC<SessionProps> = ({ messages: initialMessages = [] }) => {
-  const [messages, setMessages] =
-    React.useState<SessionContentMessage[]>(initialMessages)
+const Session = () => {
+  const { id } = useParams()
+
+  const {
+    data: session,
+    isLoading: isSessionLoading,
+    error: sessionError,
+  } = useSessionQuery({
+    sessionId: id as string,
+    enabled: !!id,
+  })
+
+  const [messages, setMessages] = React.useState<
+    (SessionUserMessage | SessionAssistantMessage | SessionSystemMessage)[]
+  >([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+
+  useEffect(() => {
+    if (session?.messages) {
+      const messagesWithCreatedAt = session.messages.map(msg => ({
+        ...msg,
+        createdAt: msg.createdAt || new Date(),
+      }))
+      setMessages(messagesWithCreatedAt)
+    }
+  }, [session])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -79,7 +105,12 @@ const Session: FC<SessionProps> = ({ messages: initialMessages = [] }) => {
   }, [messages, scrollToBottom])
 
   const handleSendMessage = (message: SessionContentMessage) => {
-    setMessages(prev => [...prev, message])
+    const messageWithCreatedAt = {
+      ...message,
+      createdAt: message.createdAt || new Date(),
+    } as SessionUserMessage
+
+    setMessages(prev => [...prev, messageWithCreatedAt])
   }
 
   const isOwnMessage = (senderId?: string) => {
@@ -130,34 +161,42 @@ const Session: FC<SessionProps> = ({ messages: initialMessages = [] }) => {
         {/* MAIN CONTENT PANEL */}
         <ResizablePanel defaultSize={80} className="flex flex-col ">
           <div className="flex flex-col bg-aui-background overflow-y-auto">
-            <div className="mx-auto flex flex-col flex-1">
-              <div className="flex-1 overflow-y-auto p-4">
-                {messageGroups.map(group => (
-                  <div key={group[0].id} className="space-y-2">
-                    {isOwnMessage(group[0].sender?._id) ? (
-                      <>
-                        {group.map(message => (
-                          <UserMessage key={message.id} message={message} />
-                        ))}
-                      </>
-                    ) : (
-                      <>
-                        {group.map((message, index) => (
-                          <OtherMessage
-                            key={message.id}
-                            message={message}
-                            showAvatar={index === 0}
-                          />
-                        ))}
-                      </>
-                    )}
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
+            {isSessionLoading ? (
+              <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
+                <div className="flex-1 flex items-center justify-center">
+                  <LoadingIndicator className="h-12 w-12" />
+                </div>
               </div>
+            ) : (
+              <div className="mx-auto flex flex-col flex-1">
+                <div className="flex-1 overflow-y-auto p-4">
+                  {messageGroups.map(group => (
+                    <div key={group[0].id} className="space-y-2">
+                      {isOwnMessage(group[0].sender?._id) ? (
+                        <>
+                          {group.map(message => (
+                            <UserMessage key={message.id} message={message} />
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          {group.map((message, index) => (
+                            <OtherMessage
+                              key={message.id}
+                              message={message}
+                              showAvatar={index === 0}
+                            />
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
 
-              <MessageInput onSend={handleSendMessage} />
-            </div>
+                <MessageInput onSend={handleSendMessage} />
+              </div>
+            )}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

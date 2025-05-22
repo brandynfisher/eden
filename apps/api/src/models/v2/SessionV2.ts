@@ -1,6 +1,6 @@
 import { AgentDocument } from '../Agent'
 import { UserDocument } from '../User'
-import { SessionContentMessage } from '@edenlabs/eden-sdk'
+import { Message, MessageDocument } from './Message'
 import { ObjectId } from 'mongodb'
 import { Schema, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
@@ -16,7 +16,7 @@ export interface SessionSchema {
   title?: string
   agents: AgentDocument[]
   scenario?: string
-  messages: SessionContentMessage[]
+  messages: MessageDocument[]
   budget?: number
   spent?: number
   createdAt: Date
@@ -44,14 +44,17 @@ export const sessionSchema = new Schema<SessionDocument>(
     },
     agents: {
       type: [Schema.Types.ObjectId],
-      ref: 'agent',
+      ref: 'users3',
     },
     scenario: {
       type: Schema.Types.String,
     },
-    messages: {
-      type: [Schema.Types.Mixed],
-    },
+    messages: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'messages',
+      },
+    ],
     budget: {
       type: Schema.Types.Number,
     },
@@ -87,6 +90,11 @@ sessionSchema.plugin(aggregatePaginate)
 sessionSchema.plugin(mongooseDelete, {
   overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
 })
+
+// Ensure Message model is registered before Session
+if (!model('messages')) {
+  model('messages', Message.schema)
+}
 
 export const Session = model<SessionDocument>(
   'sessions',

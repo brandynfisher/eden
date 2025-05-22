@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import axios from 'axios'
@@ -20,6 +21,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -242,31 +244,52 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
 
 const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
-  const [sessions, setSessions] = useState<
-    Array<{ id: string; title: string }>
-  >([])
-  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
+    useSessionListQuery({
+      enabled: !!isSignedIn,
+    })
 
+  // Setup intersection observer for infinite scrolling
   useEffect(() => {
-    const fetchSessions = async () => {
-      if (!isSignedIn) {
-        setIsLoading(false)
-        return
-      }
-
-      try {
-        const response = await axios.get('/api/v2/sessions')
-        setSessions(response.data.items || [])
-      } catch (error) {
-        console.error('Failed to fetch sessions:', error)
-        toast.error('Failed to load sessions')
-      } finally {
-        setIsLoading(false)
-      }
+    if (!hasMore || isFetchingNextPage) {
+      return
     }
 
-    fetchSessions()
-  }, [isSignedIn])
+    const target = document.getElementById('session-list-observer-target')
+    if (!target) {
+      return
+    }
+
+    const container = target.closest('nav')
+    if (!container) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore) {
+          const scrollPosition = container.scrollTop
+
+          fetchNextPage().then(() => {
+            requestAnimationFrame(() => {
+              container.scrollTop = scrollPosition
+            })
+          })
+        }
+      },
+      {
+        threshold: 1.0,
+        rootMargin: '10px',
+      },
+    )
+
+    observer.observe(target)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [hasMore, isFetchingNextPage, fetchNextPage])
 
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
@@ -281,15 +304,20 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
         <>
           {isSignedIn ? (
             <>
-              {sessions.map(session => (
-                <SessionListItem
-                  key={session.id}
-                  id={session.id}
-                  title={session.title}
-                  isActive={false} // TODO: Add active session state
-                  onItemClick={onItemClick}
-                />
-              ))}
+              {sessions.map(
+                session =>
+                  session && (
+                    <SessionListItem
+                      key={session._id}
+                      id={session._id}
+                      title={session.title || 'Untitled'}
+                      isActive={false} // TODO: Add active session state
+                      onItemClick={() => {
+                        router.push(`/sessions/${session._id}`)
+                      }}
+                    />
+                  ),
+              )}
             </>
           ) : (
             <Button

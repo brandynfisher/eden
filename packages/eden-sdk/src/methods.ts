@@ -266,6 +266,10 @@ import {
   ModelsV2PatchResponse,
   ModelsV2UnlikeArguments,
   ModelsV2UnlikeResponse,
+  SessionsV2GetArguments,
+  SessionsV2GetResponse,
+  SessionsV2ListArguments,
+  SessionsV2ListResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -325,6 +329,8 @@ import {
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
   modelsV2UnlikeRequestConfig,
+  sessionsGetRequestConfigV2,
+  sessionsListRequestConfigV2,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -871,6 +877,16 @@ export abstract class Methods {
         SessionsAddCharactersArguments,
         SessionsAddCharactersResponse
       >(this, sessionsAddCharactersRequestConfig),
+    },
+    v2: {
+      list: bindApiCall<SessionsV2ListArguments, SessionsV2ListResponse>(
+        this,
+        sessionsListRequestConfigV2,
+      ),
+      get: bindApiCall<SessionsV2GetArguments, SessionsV2GetResponse>(
+        this,
+        sessionsGetRequestConfigV2,
+      ),
     },
   }
 

@@ -191,7 +191,6 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       querystring: {
         type: 'object',
         properties: {
-          agent_id: Type.Optional(Type.String()),
           ...paginationProperties(),
         },
         required: [],

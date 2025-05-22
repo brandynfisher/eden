@@ -1,7 +1,8 @@
 import { Agent } from '../../models/Agent'
 import { User } from '../../models/User'
-import { Session } from '../../models/v2/Session'
+import { Session } from '../../models/v2/SessionV2'
 import { QueryOptions } from '../../repositories/RestfulRepository'
+import SessionRepository from '../../repositories/SessionRepository'
 import { createIdOrSlugQuery } from '../../utils/mongoUtils'
 import {
   SessionsV2CreateArguments,
@@ -11,12 +12,10 @@ import {
   SessionsV2MessageReactArguments,
   SessionsV2PinMessageArguments,
   SessionsV2RenameArguments,
-  TaskV2Status,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-import { PopulateOptions } from 'mongoose'
 
 export const createSessionMessage = async (
   server: FastifyInstance,
@@ -55,7 +54,7 @@ export const createSessionMessage = async (
   }
 
   const modalRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/chat`,
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/session`,
     data: {
       agent_id: agent._id,
       session_id,
@@ -123,13 +122,11 @@ export const listSessions = async (
     })
   }
 
-  const { limit = 25, page, sort, agent_id } = request.query
+  const { limit = 25, page, sort } = request.query
 
   try {
-    const queryOptions: QueryOptions & {
-      populate?: string | string[] | PopulateOptions | PopulateOptions[]
-    } = {
-      select: '_id title scenario createdAt updatedAt owner agents',
+    const queryOptions: QueryOptions = {
+      select: '_id title name createdAt updatedAt',
       limit,
       page,
       sort: {
@@ -139,15 +136,25 @@ export const listSessions = async (
       },
     }
 
-    const query = {
-      owner: userId,
-      ...(agent_id ? { agents: agent_id } : {}),
+    const sessionsRepository = new SessionRepository(Session)
+    const sessionQuery = {
+      // owner: userId,
     }
 
-    const sessions = await Session.find(query).setOptions(queryOptions)
+    const paginatedResponse = await sessionsRepository.query(
+      sessionQuery,
+      queryOptions,
+    )
 
-    return reply.status(200).send(sessions)
+    // await sessionsRepository.model.populate(paginatedResponse.docs, {
+    //   path: 'agents',
+    //   select: '_id name username userImage',
+    // })
+
+    return reply.status(200).send(paginatedResponse)
   } catch (e) {
+    console.log(e)
+
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Unknown Error'
 
@@ -178,6 +185,18 @@ export const getSession = async (
         path: 'agents',
         select: '_id username userImage',
       })
+      .populate({
+        path: 'messages',
+        select: '_id content sender tool_calls',
+        populate: {
+          path: 'sender',
+          select: '_id username userImage',
+        },
+      })
+
+    console.log({
+      session,
+    })
 
     if (!session) {
       return reply.status(404).send({
@@ -185,28 +204,28 @@ export const getSession = async (
       })
     }
 
-    const extendedMessages = session.messages.map(msg => {
-      if (msg.role !== 'assistant') {
-        return msg
-      }
+    // const extendedMessages = session.messages.map(msg => {
+    //   if (msg.role !== 'assistant') {
+    //     return msg
+    //   }
 
-      const hasPendingToolCalls =
-        msg.tool_calls?.length &&
-        msg.tool_calls?.some(
-          call =>
-            !call.status ||
-            call.status === TaskV2Status.Running ||
-            call.status === TaskV2Status.Pending,
-        )
-      return {
-        ...msg,
-        status: hasPendingToolCalls
-          ? { type: 'running' }
-          : { type: 'complete', reason: 'stop' },
-      }
-    })
+    //   const hasPendingToolCalls =
+    //     msg.tool_calls?.length &&
+    //     msg.tool_calls?.some(
+    //       call =>
+    //         !call.status ||
+    //         call.status === TaskV2Status.Running ||
+    //         call.status === TaskV2Status.Pending,
+    //     )
+    //   return {
+    //     ...msg,
+    //     status: hasPendingToolCalls
+    //       ? { type: 'running' }
+    //       : { type: 'complete', reason: 'stop' },
+    //   }
+    // })
 
-    session.messages = extendedMessages
+    // session.messages = extendedMessages
 
     return reply.status(200).send({ session })
   } catch (e) {
