@@ -21,7 +21,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -242,9 +242,11 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
+const MainLeft = () => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const currentSessionId = searchParams.get('id')
   const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
     useSessionListQuery({
       enabled: !!isSignedIn,
@@ -311,9 +313,11 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
                       key={session._id}
                       id={session._id}
                       title={session.title || 'Untitled'}
-                      isActive={false} // TODO: Add active session state
+                      isActive={session._id === currentSessionId}
                       onItemClick={() => {
-                        router.push(`/sessions/${session._id}`)
+                        const url = new URL(window.location.href)
+                        url.searchParams.set('id', session._id)
+                        router.push(url.toString(), { scroll: false })
                       }}
                     />
                   ),
@@ -334,25 +338,22 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-export const SessionsSidebarContent: FC<{
-  onItemClick?: () => void
-}> = ({ onItemClick }) => {
+export const SessionsSidebarContent = () => {
   return (
     <>
       <div className="border-b mb-2">
-        <TopLeft onItemClick={onItemClick} />
+        <TopLeft />
       </div>
-      <MainLeft onItemClick={onItemClick} />
+      <MainLeft />
     </>
   )
 }
 
-export const SessionsSidebar: FC<{
-  onItemClick?: () => void
-}> = ({ onItemClick }) => {
+export const SessionsSidebar = React.memo(() => {
   return (
     <div className="flex flex-col bg-[#0e1421] p-3 transition-all duration-300 ease-in-out w-full md:max-w-[320px]">
-      <SessionsSidebarContent onItemClick={onItemClick} />
+      <SessionsSidebarContent />
     </div>
   )
-}
+})
+SessionsSidebar.displayName = 'SessionsSidebar'

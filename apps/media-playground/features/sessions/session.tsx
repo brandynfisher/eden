@@ -30,7 +30,7 @@ import {
   SessionUserMessage,
 } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon } from 'lucide-react'
-import { useParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 
@@ -68,15 +68,16 @@ const LeftBarSheet: FC<{
 }
 
 const Session = () => {
-  const { id } = useParams()
+  const searchParams = useSearchParams()
+  const sessionId = searchParams.get('id')
 
   const {
     data: session,
     isLoading: isSessionLoading,
     error: sessionError,
   } = useSessionQuery({
-    sessionId: id as string,
-    enabled: !!id,
+    sessionId: sessionId as string,
+    enabled: !!sessionId,
   })
 
   const [messages, setMessages] = React.useState<
@@ -159,16 +160,26 @@ const Session = () => {
         />
 
         {/* MAIN CONTENT PANEL */}
-        <ResizablePanel defaultSize={80} className="flex flex-col ">
-          <div className="flex flex-col bg-aui-background overflow-y-auto">
+        <ResizablePanel
+          defaultSize={80}
+          className="flex flex-col bg-aui-background"
+        >
+          <div className="flex flex-col overflow-y-auto h-full">
             {isSessionLoading ? (
-              <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
-                <div className="flex-1 flex items-center justify-center">
-                  <LoadingIndicator className="h-12 w-12" />
-                </div>
+              <div className="flex mx-auto py-16">
+                <LoadingIndicator />
+              </div>
+            ) : sessionError ? (
+              <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
+                <AlertDestructive>
+                  <AlertDescription>
+                    We couldn't load this session. Please try again later. If
+                    the problem persists, please contact support.
+                  </AlertDescription>
+                </AlertDestructive>
               </div>
             ) : (
-              <div className="mx-auto flex flex-col flex-1">
+              <div className="mx-auto flex flex-col flex-1 max-w-[--aui-thread-max-width] w-full">
                 <div className="flex-1 overflow-y-auto p-4">
                   {messageGroups.map(group => (
                     <div key={group[0].id} className="space-y-2">
