@@ -23,7 +23,6 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { BaseContentMessage } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
@@ -92,7 +91,7 @@ const Session = () => {
   }
 
   const messageGroups = session?.messages
-    ? groupConsecutiveMessages(session.messages as BaseContentMessage[])
+    ? groupConsecutiveMessages(session.messages)
     : []
 
   return (
@@ -156,11 +155,11 @@ const Session = () => {
               <div className="mx-auto flex flex-col flex-1 max-w-[--aui-thread-max-width] w-full">
                 <div className="flex-1 overflow-y-auto p-4">
                   {messageGroups.map(group => (
-                    <div key={group[0].id}>
+                    <div key={group[0]._id}>
                       {isOwnMessage(group[0].sender?._id) ? (
                         <>
                           {group.map(message => (
-                            <UserMessage key={message.id} message={message} />
+                            <UserMessage key={message._id} message={message} />
                           ))}
                         </>
                       ) : (
@@ -168,7 +167,7 @@ const Session = () => {
                           {group.map((message, index) => (
                             <OtherMessage
                               sessionId={sessionId as string}
-                              key={message.id}
+                              key={message._id}
                               message={message}
                               showAvatar={index === 0}
                             />

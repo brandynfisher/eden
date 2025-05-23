@@ -1,11 +1,7 @@
 import { MarkdownText } from '@/features/sessions/components/markdown-text'
-import { SessionContentMessage } from '@edenlabs/eden-sdk'
+import { Message } from '@edenlabs/eden-sdk'
 
-export const UserMessage = ({
-  message,
-}: {
-  message: SessionContentMessage
-}) => {
+export const UserMessage = ({ message }: { message: Message }) => {
   if (!message.content) return null
 
   return (

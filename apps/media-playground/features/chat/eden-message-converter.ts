@@ -5,8 +5,8 @@ import {
   ToolCallContentPart,
 } from '@assistant-ui/react'
 import {
+  BaseThreadMessage,
   ThreadAssistantMessage,
-  ThreadMessage,
   ThreadSystemMessage,
   ThreadUserMessage,
 } from '@edenlabs/eden-sdk'
@@ -22,7 +22,7 @@ export interface ToolCall {
   error: unknown | null
 }
 
-export interface EdenMessage extends ThreadMessage {
+export interface EdenMessage extends BaseThreadMessage {
   role: 'user' | 'assistant'
   content: string
   attachments?: string[]

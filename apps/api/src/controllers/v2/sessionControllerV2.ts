@@ -31,6 +31,13 @@ export const createSessionMessage = async (
 
   const { session_id, content, attachments } = request.body
 
+  console.log({
+    content,
+    attachments,
+    sender: userId,
+    session: session_id,
+  })
+
   if (!session_id) {
     return reply.status(400).send({
       message: 'session_id not provided',

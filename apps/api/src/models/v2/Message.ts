@@ -1,7 +1,7 @@
 import { AgentDocument } from '../Agent'
 import { UserDocument } from '../User'
 import { SessionDocument } from './SessionV2'
-import { BaseMessageReaction, ToolCall } from '@edenlabs/eden-sdk'
+import { MessageReaction, ToolCall } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 
 export interface MessageSchema {
@@ -9,9 +9,9 @@ export interface MessageSchema {
   sender: UserDocument | AgentDocument
   session?: SessionDocument
   content?: string
-  toolCalls?: ToolCall[]
-  replyTo?: MessageDocument
-  reactions?: BaseMessageReaction
+  tool_calls?: ToolCall[]
+  reply_to?: MessageDocument
+  reactions?: MessageReaction
   createdAt?: Date
   updatedAt?: Date
 }
@@ -33,10 +33,10 @@ const messageSchema = new Schema<MessageDocument>(
     content: {
       type: String,
     },
-    toolCalls: {
+    tool_calls: {
       type: [Schema.Types.Mixed],
     },
-    replyTo: {
+    reply_to: {
       type: Schema.Types.ObjectId,
       ref: 'messages',
     },

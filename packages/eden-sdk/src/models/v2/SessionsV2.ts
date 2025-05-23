@@ -7,14 +7,7 @@ import {
 } from '../../types'
 import { Creator } from '../Creators'
 import { Agent } from './Agents'
-import {
-  BaseAssistantMessage,
-  BaseContentMessage,
-  BaseMessage,
-  BaseMessageReaction,
-  BaseSystemMessage,
-  BaseUserMessage,
-} from './CommonTypes'
+import { Message } from './Messages'
 import { AxiosRequestConfig } from 'axios'
 
 // Arguments
@@ -208,7 +201,7 @@ export type SessionsV2MessageReactResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { success: boolean; message?: SessionContentMessage }
+    | { success: boolean; message?: Message }
   )
 
 export type SessionsV2ListResponse = WebAPICallResult &
@@ -239,14 +232,6 @@ export type SessionsV2RenameResponse = WebAPICallResult &
     | { success: boolean }
   )
 
-// Types
-export type SessionMessage = BaseMessage
-export type SessionUserMessage = BaseUserMessage
-export type SessionMessageReaction = BaseMessageReaction
-export type SessionContentMessage = BaseContentMessage
-export type SessionAssistantMessage = BaseAssistantMessage
-export type SessionSystemMessage = BaseSystemMessage
-
 export type SessionV2 = {
   _id: string
   owner: Creator
@@ -254,11 +239,7 @@ export type SessionV2 = {
   channel?: string
   title?: string
   scenario?: string
-  messages: (
-    | SessionUserMessage
-    | SessionAssistantMessage
-    | SessionSystemMessage
-  )[]
+  messages: Message[]
   budget?: number
   spent?: number
   createdAt: Date

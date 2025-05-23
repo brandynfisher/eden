@@ -1,7 +1,7 @@
 import { SessionDocument } from '../models/v2/SessionV2'
 import { TaskV2Document } from '../models/v2/TaskV2'
 import { ThreadDocument } from '../models/v2/Thread'
-import { ThreadMessage } from '@edenlabs/eden-sdk'
+import { Message, ThreadMessage } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 
 type GenericUpdate = { [key: string]: string | number | boolean }
@@ -27,7 +27,7 @@ export const handleThreadUpdateStreamEvent = async (
 export const handleSessionUpdateStreamEvent = async (
   server: FastifyInstance,
   session?: SessionDocument,
-  newMessages?: ThreadMessage[],
+  newMessages?: Message[],
 ) => {
   server.internalMessages.publish('session-updates', { session, newMessages })
 }

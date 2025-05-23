@@ -1,7 +1,7 @@
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { SessionContentMessage } from '@edenlabs/eden-sdk'
+import { Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   CopyIcon,
@@ -15,7 +15,7 @@ import React, { useState } from 'react'
 
 interface ActionBarProps {
   sessionId: string
-  message: SessionContentMessage
+  message: Message
 }
 
 const ActionBar = ({ sessionId, message }: ActionBarProps) => {

@@ -12,7 +12,7 @@ import { sendLoraTrainingCompletedEmail } from '../../utils/mailchimp'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
   MediaOutput,
-  SessionMessage,
+  Message,
   TaskV2,
   TaskV2Result,
   TaskV2Status,
@@ -21,6 +21,7 @@ import {
   TasksV2GetArguments,
   TasksV2ListArguments,
   ThreadMessage,
+  ToolCall,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { on } from 'events'
@@ -879,7 +880,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
       newMessages,
     }: {
       session: SessionDocument
-      newMessages: SessionMessage[]
+      newMessages: Message[]
     }) => {
       console.log('internalEmitterEventHandlerSessionUpdates', metaData)
 
@@ -912,7 +913,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
                     const hasPendingToolCalls =
                       msg.tool_calls?.length &&
                       msg.tool_calls?.some(
-                        call =>
+                        (call: ToolCall) =>
                           !call.status ||
                           call.status === TaskV2Status.Running ||
                           call.status === TaskV2Status.Pending,

@@ -3,12 +3,12 @@ import { MarkdownText } from './markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { getCloudfrontUrl } from '@/lib/media'
-import { SessionContentMessage } from '@edenlabs/eden-sdk'
+import { Message } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 
 type OtherMessageProps = {
   sessionId: string
-  message: SessionContentMessage
+  message: Message
   showAvatar?: boolean
 }
 

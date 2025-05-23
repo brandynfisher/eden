@@ -1,5 +1,6 @@
 import {
-  SessionContentMessage,
+  Message,
+  SessionV2,
   SessionsV2GetResponse,
   Thread,
 } from '@edenlabs/eden-sdk'
@@ -38,14 +39,13 @@ export function useSessionQuery({
     staleTime: 0,
   })
 
-  const updateReaction = (message: SessionContentMessage) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    queryClient.setQueryData(['session', sessionId], (oldData: any) => {
+  const updateReaction = (message: Message) => {
+    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
       if (!oldData) return oldData
 
       return {
         ...oldData,
-        messages: oldData.messages.map((ex: SessionContentMessage) => {
+        messages: oldData.messages.map((ex: Message) => {
           if (ex._id === message._id) {
             return {
               ...ex,
