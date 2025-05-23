@@ -1,3 +1,4 @@
+import { SessionDocument } from '../models/v2/SessionV2'
 import { TaskV2Document } from '../models/v2/TaskV2'
 import { ThreadDocument } from '../models/v2/Thread'
 import { ThreadMessage } from '@edenlabs/eden-sdk'
@@ -21,6 +22,14 @@ export const handleThreadUpdateStreamEvent = async (
   newMessages?: ThreadMessage[],
 ) => {
   server.internalMessages.publish('thread-updates', { thread, newMessages })
+}
+
+export const handleSessionUpdateStreamEvent = async (
+  server: FastifyInstance,
+  session?: SessionDocument,
+  newMessages?: ThreadMessage[],
+) => {
+  server.internalMessages.publish('session-updates', { session, newMessages })
 }
 
 export const calculateMaxDimensions = (
