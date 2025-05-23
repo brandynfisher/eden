@@ -22,6 +22,7 @@ import { SessionsSidebar } from '@/features/sessions/components/sessions-sidebar
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { cn } from '@/lib/utils'
 import { ChevronRightIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
@@ -73,6 +74,12 @@ const Session = () => {
     isLoading: isSessionLoading,
     error: sessionError,
   } = useSessionQuery({
+    sessionId: sessionId as string,
+    enabled: !!sessionId,
+  })
+
+  // Enable WebSocket updates for this session
+  useSessionWebSocket({
     sessionId: sessionId as string,
     enabled: !!sessionId,
   })
@@ -156,15 +163,11 @@ const Session = () => {
                 <div className="flex-1 overflow-y-auto p-4">
                   {messageGroups.map(group => (
                     <div key={group[0]._id}>
-                      {isOwnMessage(group[0].sender?._id) ? (
-                        <>
-                          {group.map(message => (
+                      {isOwnMessage(group[0].sender?._id)
+                        ? group.map(message => (
                             <UserMessage key={message._id} message={message} />
-                          ))}
-                        </>
-                      ) : (
-                        <>
-                          {group.map((message, index) => (
+                          ))
+                        : group.map((message, index) => (
                             <OtherMessage
                               sessionId={sessionId as string}
                               key={message._id}
@@ -172,8 +175,6 @@ const Session = () => {
                               showAvatar={index === 0}
                             />
                           ))}
-                        </>
-                      )}
                     </div>
                   ))}
                   <div ref={messagesEndRef} />

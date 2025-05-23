@@ -37,6 +37,7 @@ export function useSessionQuery({
     },
     enabled: enabled && !!sessionId,
     staleTime: 0,
+    refetchOnWindowFocus: false,
   })
 
   const updateReaction = (message: Message) => {

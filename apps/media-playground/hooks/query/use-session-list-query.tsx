@@ -48,6 +48,7 @@ export const useSessionListQuery = (props?: Props) => {
       )
       return response
     },
+    refetchOnWindowFocus: false,
   })
 
   const sessions = data?.pages.flatMap(page => page.docs) ?? []

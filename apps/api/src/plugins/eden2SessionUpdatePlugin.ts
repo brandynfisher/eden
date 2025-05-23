@@ -82,6 +82,22 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
                 return
               }
 
+              // Populate the session data for insert operations too
+              await Session.populate(cachedDoc, [
+                {
+                  path: 'messages',
+                  select: '_id content sender tool_calls createdAt reactions',
+                  populate: {
+                    path: 'sender',
+                    select: '_id username userImage',
+                  },
+                },
+                {
+                  path: 'owner',
+                  select: '_id',
+                },
+              ])
+
               await handleSessionUpdateStreamEvent(
                 fastify,
                 cachedDoc,
@@ -115,20 +131,24 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
               })
 
               if (cachedDoc) {
-                await Session.populate(cachedDoc, {
-                  path: 'messages.tool_calls.result.output.creation',
-                  model: 'creations3',
-                  select: '_id user mediaAttributes tool filename',
-                  populate: {
-                    path: 'owner',
-                    model: 'users3',
-                    select: '_id username userImage',
+                // First populate the basic messages and their senders
+                await Session.populate(cachedDoc, [
+                  {
+                    path: 'messages',
+                    select: '_id content sender tool_calls createdAt reactions',
+                    populate: {
+                      path: 'sender',
+                      select: '_id username userImage',
+                    },
                   },
-                })
-              }
+                  {
+                    path: 'owner',
+                    select: '_id',
+                  },
+                ])
 
-              if (updatedFields) {
-                await Session.populate(updatedFields, {
+                // Then populate any nested tool call creations if they exist
+                await Session.populate(cachedDoc, {
                   path: 'messages.tool_calls.result.output.creation',
                   model: 'creations3',
                   select: '_id user mediaAttributes tool filename',
@@ -142,34 +162,30 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
 
               const modifiedMessages = extractModifiedMessages(updatedFields)
 
+              // Extract the actual populated message documents from cachedDoc.messages
               const updatedMessages: Message[] = []
-              // Merge updated parts into the cached document or `fullDocument`
-              Object.entries(modifiedMessages).forEach(
-                async ([index, updates]) => {
-                  const messageIndex = parseInt(index, 10)
-                  const existingMessage =
-                    cachedDoc?.messages[messageIndex] || {}
-                  const fullUpdatedMessage = _.merge(existingMessage, updates)
-                  // console.log('fullUpdatedMessage', fullUpdatedMessage)
-                  // populate fullUpdatedMessage.tool_calls.result.output.creation
-
-                  updatedMessages.push(fullUpdatedMessage)
-                },
-              )
+              Object.keys(modifiedMessages).forEach(indexStr => {
+                const messageIndex = parseInt(indexStr, 10)
+                if (
+                  cachedDoc?.messages &&
+                  messageIndex < cachedDoc.messages.length
+                ) {
+                  const populatedMessage = cachedDoc.messages[messageIndex]
+                  // Ensure we have a fully populated message document, not just an ObjectId
+                  if (
+                    populatedMessage &&
+                    typeof populatedMessage === 'object' &&
+                    populatedMessage._id
+                  ) {
+                    updatedMessages.push(populatedMessage as Message)
+                  }
+                }
+              })
 
               if (!updatedMessages.length) {
-                // console.log('update: No messages updated')
+                console.log('update: No valid populated messages found')
                 return
               }
-
-              // const filteredModifiedMessages = updatedMessages.filter(msg => {
-              //   return msg.role !== 'user'
-              // })
-
-              // if (!filteredModifiedMessages.length) {
-              //   // console.log('update: No non-user messages updated')
-              //   return
-              // }
 
               await handleSessionUpdateStreamEvent(
                 fastify,

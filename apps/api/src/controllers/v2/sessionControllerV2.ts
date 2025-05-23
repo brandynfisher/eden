@@ -60,6 +60,23 @@ export const createSessionMessage = async (
     })
   }
 
+  // FOLLOWING IS FOR TESTING ONLY
+  /**
+  const message = new Message({
+    content,
+    sender: userId,
+    session: session._id,
+  })
+
+  await message.save()
+
+  await session.updateOne({
+    $push: { messages: message._id },
+  })
+
+  return reply.status(200).send()
+   */
+
   // const modalRequest = {
   //   endpoint: `${server.config.EDEN_COMPUTE_API_URL}/session`,
   //   data: {

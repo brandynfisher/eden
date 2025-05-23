@@ -882,8 +882,6 @@ export const subscribeWebSocketUpdates = function wsHandler(
       session: SessionDocument
       newMessages: Message[]
     }) => {
-      console.log('internalEmitterEventHandlerSessionUpdates', metaData)
-
       // if (!metaData.userId) {
       //   // this.log.error(`User not authenticated/not found - ${thread.user}`)
       //   return
@@ -897,7 +895,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
       }
 
       // socket message is only sent to the intended recipient
-      if (metaData?._id?.toString() === session.owner.toString()) {
+      if (metaData?._id?.toString() === session.owner._id.toString()) {
         this.log.info(
           `${ServerEventName.SessionUpdate}: ${metaData.connectionId} - ${metaData.msgId} ${session._id}`,
         )
@@ -910,16 +908,21 @@ export const subscribeWebSocketUpdates = function wsHandler(
             data: newMessages
               ? {
                   newMessages: newMessages.map(msg => {
+                    // Convert Mongoose document to plain object
+                    const plainMsg = (msg as any).toJSON
+                      ? (msg as any).toJSON()
+                      : msg
+
                     const hasPendingToolCalls =
-                      msg.tool_calls?.length &&
-                      msg.tool_calls?.some(
+                      plainMsg.tool_calls?.length &&
+                      plainMsg.tool_calls?.some(
                         (call: ToolCall) =>
                           !call.status ||
                           call.status === TaskV2Status.Running ||
                           call.status === TaskV2Status.Pending,
                       )
                     return {
-                      ...msg,
+                      ...plainMsg,
                       status: hasPendingToolCalls
                         ? { type: 'running' }
                         : { type: 'complete', reason: 'stop' },
@@ -1096,6 +1099,10 @@ export const subscribeWebSocketUpdates = function wsHandler(
       this.internalMessages.connection.removeListener(
         'thread-updates',
         internalEmitterEventHandlerThreadUpdates,
+      )
+      this.internalMessages.connection.removeListener(
+        'session-updates',
+        internalEmitterEventHandlerSessionUpdates,
       )
     })
   } catch (e) {
