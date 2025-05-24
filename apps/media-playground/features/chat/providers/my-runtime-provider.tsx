@@ -17,6 +17,7 @@ import {
   useExternalMessageConverter,
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
+import { useAuth } from '@clerk/nextjs'
 import { PropsWithChildren, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -60,7 +61,8 @@ export function MyRuntimeProvider({
   const abortControllerRef = useRef<AbortController | null>(null)
   const { lastMessageJson } = useWebSocketContext()
   const currentThreadIdRef = useRef<string | undefined>()
-  const { isSignedIn, user, isLoading: isAuthLoading } = useAuthState()
+  const { isSignedIn, user } = useAuthState()
+  const { isLoaded: isClerkLoaded } = useAuth()
   const initialMessageProcessedRef = useRef(false)
 
   // Add URL update tracking
@@ -214,8 +216,10 @@ export function MyRuntimeProvider({
 
           // Determine if thread is read-only based on ownership
           const isThreadReadOnly =
-            !isAuthLoading &&
-            (!user || thread.user._id.toString() !== user._id.toString())
+            isClerkLoaded &&
+            (!isSignedIn ||
+              !user ||
+              thread.user._id.toString() !== user._id.toString())
           setIsReadOnly(isThreadReadOnly)
 
           // console.log('[Initial Thread Load] Setting messages and isRunning', {
