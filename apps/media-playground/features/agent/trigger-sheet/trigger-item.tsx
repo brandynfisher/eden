@@ -12,13 +12,14 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
 import { cn } from '@/lib/utils'
 import { Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { format } from 'date-fns'
-import { ChevronDownIcon, GlobeIcon, TrashIcon } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ChevronDownIcon, CopyIcon, GlobeIcon, TrashIcon } from 'lucide-react'
+import React, { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
 export type TriggerItemProps = {
@@ -29,6 +30,7 @@ export type TriggerItemProps = {
 export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [, copy] = useCopyToClipboard()
   const { invalidate } = useAgentTriggersQuery({
     key: agentId,
     enabled: false,
@@ -59,6 +61,28 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
       error: 'Failed to delete task',
       richColors: true,
     })
+  }
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    copy(trigger.message)
+      .then(() => {
+        toast.info('Copied "Task Message"', {
+          description:
+            trigger.message && trigger.message.length > 120
+              ? `${trigger.message.substring(0, 120)}...`
+              : trigger.message,
+          dismissible: true,
+          richColors: true,
+        })
+      })
+      .catch(error => {
+        toast.error('Failed to copy!', {
+          description: error,
+          dismissible: true,
+          richColors: true,
+        })
+      })
   }
 
   const getPlatformBadgeClass = (platform: string) => {
@@ -124,11 +148,34 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
             </Button>
           </div>
         </div>
-        <TextClampMore
-          text={trigger.message}
-          className="font-medium text-sm flex-1 text-left"
-          lines={2}
-        />
+        <div
+          className="select-text cursor-text"
+          onMouseDown={e => {
+            // Allow text selection by preventing trigger click when selecting text
+            e.stopPropagation()
+          }}
+          onClick={e => {
+            // Prevent trigger click when clicking on text for selection
+            e.stopPropagation()
+          }}
+        >
+          <TextClampMore
+            text={trigger.message}
+            className="font-medium text-sm flex-1 text-left whitespace-pre-line"
+            lines={2}
+            renderActions={() => (
+              <Button
+                variant="link"
+                size="sm"
+                className="text-xs text-muted-foreground flex items-center cursor-pointer hover:text-accent-foreground h-5"
+                onClick={handleCopy}
+              >
+                <CopyIcon className="mr-1 h-3 w-3" />
+                Copy
+              </Button>
+            )}
+          />
+        </div>
 
         <span className="text-xs text-muted-foreground text-left">
           {formattedSchedule}

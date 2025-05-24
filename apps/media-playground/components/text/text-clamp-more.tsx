@@ -17,6 +17,7 @@ type Props = {
   text: string | React.ReactNode
   className?: string
   lines?: Lines
+  renderActions?: (showMore: boolean) => React.ReactNode
 }
 
 type LineClampClasses = {
@@ -71,7 +72,12 @@ const useButtonVisibility = (
 
   return showButton
 }
-const TextClampMore = ({ text, className, lines = 4 }: Props) => {
+const TextClampMore = ({
+  text,
+  className,
+  lines = 4,
+  renderActions,
+}: Props) => {
   // Clamping lines to a specific acceptable range to avoid improper usage
   const clampedLines = Math.max(1, Math.min(lines, 6)) as Lines
 
@@ -100,11 +106,12 @@ const TextClampMore = ({ text, className, lines = 4 }: Props) => {
         {text}
       </div>
       {showButton && (
-        <div className="flex">
+        <div className="flex items-center justify-end gap-1">
+          {showMore && renderActions && renderActions(showMore)}
           <Button
             variant="link"
             size="sm"
-            className="ml-auto text-xs text-muted-foreground flex items-center cursor-pointer hover:text-accent-foreground h-5"
+            className="text-xs text-muted-foreground flex items-center cursor-pointer hover:text-accent-foreground h-5"
             onClickCapture={buttonToggle}
           >
             {showMore ? (
