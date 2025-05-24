@@ -101,16 +101,16 @@ export const TwitterDeploymentForm = ({
               name="consumerKey"
               isDeployed={isDeployed}
               isSubmitting={form.formState.isSubmitting}
-              label="Consumer Key"
-              description="Your Twitter consumer key."
+              label="API Key"
+              description="Your Twitter API key."
             />
             <TokenField
               form={form}
               name="consumerSecret"
               isDeployed={isDeployed}
               isSubmitting={form.formState.isSubmitting}
-              label="Consumer Secret"
-              description="Your Twitter consumer secret."
+              label="API Secret Key"
+              description="Your Twitter API secret key."
             />
             <TokenField
               form={form}
