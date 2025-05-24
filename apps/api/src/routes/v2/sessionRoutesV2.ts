@@ -1,5 +1,6 @@
 import {
   addSessionMessageReaction,
+  createSession,
   createSessionMessage,
   deleteSession,
   getSession,
@@ -15,6 +16,7 @@ import {
   SessionsV2DeleteArguments,
   SessionsV2GetArguments,
   SessionsV2ListArguments,
+  SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
   SessionsV2PinMessageArguments,
   SessionsV2RenameArguments,
@@ -25,10 +27,50 @@ import { FastifyPluginAsync } from 'fastify'
 const sessionRoutesV2: FastifyPluginAsync = async server => {
   server.post<{
     Body: SessionsV2CreateArguments
+  }>('/v2/sessions/create', {
+    schema: {
+      tags: ['Sessions'],
+      description: 'Create a new session',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        agent_ids: Type.Array(Type.String(), { minItems: 1 }),
+        scenario: Type.String({ minLength: 10, maxLength: 1000 }),
+        budget: Type.Number({ minimum: 100, maximum: 5000 }),
+      },
+      response: {
+        201: Type.Object({
+          success: Type.Boolean(),
+          session: Type.Any(),
+        }),
+        400: {
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => createSession(server, request, reply),
+  })
+
+  server.post<{
+    Body: SessionsV2MessageArguments
   }>('/v2/sessions', {
     schema: {
       tags: ['Sessions'],
-      description: 'Add a session message',
+      description: 'Add a message to session',
       security: [
         {
           apiKey: [],

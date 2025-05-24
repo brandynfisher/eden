@@ -12,10 +12,9 @@ import { AxiosRequestConfig } from 'axios'
 
 // Arguments
 export interface SessionsV2CreateArguments extends WebAPICallOptions {
-  session_id?: string
-  agent_id: string
-  content: string
-  attachments?: string[]
+  agent_ids: string[]
+  scenario: string
+  budget: number
 }
 
 export interface SessionsV2MessageArguments extends WebAPICallOptions {
@@ -165,7 +164,10 @@ export type SessionsV2CreateResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { session_id?: SessionV2['_id']; success: boolean }
+    | {
+        session: SessionV2
+        success: boolean
+      }
   )
 
 export type SessionsV2MessageResponse = WebAPICallResult &

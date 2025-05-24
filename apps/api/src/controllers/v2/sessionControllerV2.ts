@@ -1,3 +1,4 @@
+import { Agent } from '../../models/Agent'
 import { User } from '../../models/User'
 import { Message } from '../../models/v2/Message'
 import { Session } from '../../models/v2/SessionV2'
@@ -5,6 +6,7 @@ import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
 import { createIdOrSlugQuery } from '../../utils/mongoUtils'
 import {
+  SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
   SessionsV2GetArguments,
   SessionsV2ListArguments,
@@ -16,6 +18,118 @@ import {
 // import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+
+export const createSession = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{ Body: SessionsV2CreateArguments }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { agent_ids, scenario, budget } = request.body
+
+  // Validation
+  if (!agent_ids || !Array.isArray(agent_ids) || agent_ids.length === 0) {
+    return reply.status(400).send({
+      message: 'agent_ids must be a non-empty array',
+    })
+  }
+
+  if (
+    !scenario ||
+    typeof scenario !== 'string' ||
+    scenario.length < 10 ||
+    scenario.length > 1000
+  ) {
+    return reply.status(400).send({
+      message: 'scenario must be a string between 10 and 1000 characters',
+    })
+  }
+
+  if (!budget || typeof budget !== 'number' || budget < 100 || budget > 5000) {
+    return reply.status(400).send({
+      message: 'budget must be a number between 100 and 5000',
+    })
+  }
+
+  try {
+    const userDocument = await User.findById(userId)
+    if (!userDocument) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+
+    // Validate that all agent IDs are valid ObjectIds
+    const validAgentIds = agent_ids.map(id => {
+      try {
+        return new ObjectId(id)
+      } catch (error) {
+        throw new Error(`Invalid agent ID format: ${id}`)
+      }
+    })
+
+    // Validate that all agents exist
+    const existingAgents = await Agent.find({ _id: { $in: validAgentIds } })
+    if (existingAgents.length !== validAgentIds.length) {
+      return reply.status(400).send({
+        message: 'One or more agent IDs do not exist',
+      })
+    }
+
+    // Create the session
+    const session = new Session({
+      owner: userId,
+      agents: validAgentIds,
+      scenario,
+      budget,
+      spent: 0,
+      messages: [],
+      title: `Session with ${agent_ids.length} agent${
+        agent_ids.length > 1 ? 's' : ''
+      }`,
+    })
+
+    await session.save()
+
+    // Populate the session with agent and owner data
+    const populatedSession = await Session.findById(session._id)
+      .populate({
+        path: 'owner',
+        select: '_id username userId userImage',
+      })
+      .populate({
+        path: 'agents',
+        select: '_id username userImage name description',
+      })
+
+    if (!populatedSession) {
+      return reply.status(500).send({
+        message: 'Failed to retrieve created session',
+      })
+    }
+
+    return reply.status(201).send({
+      success: true,
+      session: populatedSession,
+    })
+  } catch (error) {
+    server.log.error({
+      message: 'Failed to create session',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    return reply.status(500).send({
+      message:
+        error instanceof Error ? error.message : 'Failed to create session',
+    })
+  }
+}
 
 export const createSessionMessage = async (
   server: FastifyInstance,
@@ -162,7 +276,7 @@ export const listSessions = async (
 
     const sessionsRepository = new SessionRepository(Session)
     const sessionQuery = {
-      owner: userId,
+      // owner: userId,
     }
 
     const paginatedResponse = await sessionsRepository.query(

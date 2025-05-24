@@ -266,6 +266,8 @@ import {
   ModelsV2PatchResponse,
   ModelsV2UnlikeArguments,
   ModelsV2UnlikeResponse,
+  SessionsV2CreateArguments,
+  SessionsV2CreateResponse,
   SessionsV2DeleteArguments,
   SessionsV2DeleteResponse,
   SessionsV2GetArguments,
@@ -337,6 +339,7 @@ import {
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
   modelsV2UnlikeRequestConfig,
+  sessionsCreateRequestConfigV2,
   sessionsDeleteRequestConfigV2,
   sessionsGetRequestConfigV2,
   sessionsListRequestConfigV2,
@@ -914,6 +917,10 @@ export abstract class Methods {
       delete: bindApiCall<SessionsV2DeleteArguments, SessionsV2DeleteResponse>(
         this,
         sessionsDeleteRequestConfigV2,
+      ),
+      create: bindApiCall<SessionsV2CreateArguments, SessionsV2CreateResponse>(
+        this,
+        sessionsCreateRequestConfigV2,
       ),
     },
   }
