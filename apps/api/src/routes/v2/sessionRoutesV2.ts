@@ -5,9 +5,7 @@ import {
   deleteSession,
   getSession,
   listSessions,
-  pinSessionMessage,
   renameSession,
-  unpinSessionMessage,
 } from '../../controllers/v2/sessionControllerV2'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
@@ -18,7 +16,6 @@ import {
   SessionsV2ListArguments,
   SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
-  SessionsV2PinMessageArguments,
   SessionsV2RenameArguments,
 } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
@@ -141,82 +138,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) =>
-      addSessionMessageReaction(server, request, reply),
-  })
-
-  server.post<{
-    Body: SessionsV2PinMessageArguments
-  }>('/v2/sessions/pin', {
-    schema: {
-      tags: ['Sessions'],
-      description: 'Pin a session message',
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      body: {
-        message_id: Type.String(),
-      },
-      response: {
-        200: Type.Object({
-          success: Type.Boolean(),
-        }),
-        400: {
-          message: Type.Optional(Type.String()),
-        },
-        401: {
-          message: Type.Optional(Type.String()),
-        },
-        404: {
-          message: Type.Optional(Type.String()),
-        },
-        500: {
-          error: Type.Optional(Type.Any()),
-          message: Type.Optional(Type.String()),
-        },
-      },
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => pinSessionMessage(server, request, reply),
-  })
-
-  server.post<{
-    Body: SessionsV2PinMessageArguments
-  }>('/v2/sessions/unpin', {
-    schema: {
-      tags: ['Sessions'],
-      description: 'Unpin a session message',
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      body: {
-        message_id: Type.String(),
-      },
-      response: {
-        200: Type.Object({
-          success: Type.Boolean(),
-        }),
-        400: {
-          message: Type.Optional(Type.String()),
-        },
-        401: {
-          message: Type.Optional(Type.String()),
-        },
-        404: {
-          message: Type.Optional(Type.String()),
-        },
-        500: {
-          error: Type.Optional(Type.Any()),
-          message: Type.Optional(Type.String()),
-        },
-      },
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => unpinSessionMessage(server, request, reply),
+    handler: (request, reply) => addSessionMessageReaction(request, reply),
   })
 
   server.get<{

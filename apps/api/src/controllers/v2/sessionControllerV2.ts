@@ -12,7 +12,6 @@ import {
   SessionsV2ListArguments,
   SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
-  SessionsV2PinMessageArguments,
   SessionsV2RenameArguments,
 } from '@edenlabs/eden-sdk'
 // import axios from 'axios'
@@ -190,6 +189,11 @@ export const createSessionMessage = async (
 
   return reply.status(200).send()
    */
+
+  server.log.info({
+    message: 'REMOVE THIS WHEN FOLLOWING IS DONE',
+    request: request.body,
+  })
 
   // const modalRequest = {
   //   endpoint: `${server.config.EDEN_COMPUTE_API_URL}/session`,
@@ -370,7 +374,6 @@ export const getSession = async (
 }
 
 export const addSessionMessageReaction = async (
-  server: FastifyInstance,
   request: FastifyRequest<{ Body: SessionsV2MessageReactArguments }>,
   reply: FastifyReply,
 ) => {
@@ -530,118 +533,4 @@ export const renameSession = async (
   })
 
   return reply.status(200).send({ success: true })
-}
-
-export const pinSessionMessage = async (
-  server: FastifyInstance,
-  request: FastifyRequest<{ Body: SessionsV2PinMessageArguments }>,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.user || {}
-  if (!userId) {
-    return reply.status(400).send({
-      error: 'User missing from request',
-    })
-  }
-
-  const { message_id } = request.body
-
-  const user = await User.findById(userId)
-  if (!user) {
-    return reply.status(400).send({
-      message: 'User not found',
-    })
-  }
-
-  if (!message_id) {
-    return reply.status(400).send({
-      message: 'message_id not provided',
-    })
-  }
-
-  try {
-    const query = {
-      owner: userId,
-      'messages.id': new ObjectId(message_id),
-    }
-
-    await Session.updateOne(
-      query,
-      {
-        $set: { 'messages.$[msg].pinned': true },
-      },
-      {
-        arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
-      },
-    )
-
-    return reply.status(200).send({ success: true })
-  } catch (e) {
-    console.log(e)
-    const error = e as { response?: { data?: string } }
-    const errorMessage = error?.response?.data || 'Unknown Error'
-
-    server.log.error({
-      message: 'Failed to pin session message',
-      error: errorMessage,
-    })
-    return reply.status(500).send({ error: errorMessage })
-  }
-}
-
-export const unpinSessionMessage = async (
-  server: FastifyInstance,
-  request: FastifyRequest<{ Body: SessionsV2PinMessageArguments }>,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.user || {}
-  if (!userId) {
-    return reply.status(400).send({
-      error: 'User missing from request',
-    })
-  }
-
-  const { message_id } = request.body
-
-  const user = await User.findById(userId)
-  if (!user) {
-    return reply.status(400).send({
-      message: 'User not found',
-    })
-  }
-
-  if (!message_id) {
-    return reply.status(400).send({
-      message: 'message_id not provided',
-    })
-  }
-
-  try {
-    const query = {
-      owner: userId,
-      'messages.id': new ObjectId(message_id),
-    }
-
-    await Session.updateOne(
-      query,
-      {
-        $set: { 'messages.$[msg].pinned': false },
-      },
-      {
-        arrayFilters: [{ 'msg.id': new ObjectId(message_id) }],
-      },
-    )
-
-    return reply.status(200).send({ success: true })
-  } catch (e) {
-    console.log(e)
-    const error = e as { response?: { data?: string } }
-    const errorMessage = error?.response?.data || 'Unknown Error'
-
-    server.log.error({
-      message: 'Failed to unpin session message',
-      error: errorMessage,
-    })
-    return reply.status(500).send({ error: errorMessage })
-  }
 }

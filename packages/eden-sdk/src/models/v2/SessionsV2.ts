@@ -23,14 +23,6 @@ export interface SessionsV2MessageArguments extends WebAPICallOptions {
   attachments?: string[]
 }
 
-export interface SessionsV2PinMessageArguments extends WebAPICallOptions {
-  message_id: string
-}
-
-export interface SessionsV2UnpinMessageArguments extends WebAPICallOptions {
-  message_id: string
-}
-
 export interface SessionsV2MessageReactArguments extends WebAPICallOptions {
   message_id: string
   reaction: 'thumbs_up' | 'thumbs_down' | 'pin'
@@ -86,30 +78,6 @@ export const sessionsMessageReactRequestConfigV2 = (
   return {
     method: 'POST',
     url: 'v2/sessions/react',
-    data: {
-      ...args,
-    },
-  }
-}
-
-export const sessionsPinMessageRequestConfigV2 = (
-  args: SessionsV2PinMessageArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'v2/sessions/pin',
-    data: {
-      ...args,
-    },
-  }
-}
-
-export const sessionsUnpinMessageRequestConfigV2 = (
-  args: SessionsV2UnpinMessageArguments,
-): AxiosRequestConfig => {
-  return {
-    method: 'POST',
-    url: 'v2/sessions/unpin',
     data: {
       ...args,
     },
@@ -177,24 +145,6 @@ export type SessionsV2MessageResponse = WebAPICallResult &
         message?: string
       }
     | { session_id?: SessionV2['_id']; success: boolean }
-  )
-
-export type SessionsV2PinMessageResponse = WebAPICallResult &
-  (
-    | {
-        error?: string
-        message?: string
-      }
-    | { success: boolean }
-  )
-
-export type SessionsV2UnpinMessageResponse = WebAPICallResult &
-  (
-    | {
-        error?: string
-        message?: string
-      }
-    | { success: boolean }
   )
 
 export type SessionsV2MessageReactResponse = WebAPICallResult &
