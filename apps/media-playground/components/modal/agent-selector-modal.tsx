@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { ToggleGroup } from '@/components/ui/toggle-group'
 import AgentsFeed from '@/features/feed/agents-feed'
+import { MAX_AGENTS } from '@/features/sessions/session-config'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
@@ -54,7 +55,11 @@ const AgentSelectorModal = ({
         // Remove agent if already selected
         return prev.filter(a => a._id !== agent._id)
       } else {
-        // Add agent if not selected
+        // Check if we're at the maximum limit
+        if (prev.length >= MAX_AGENTS) {
+          return prev // Don't add if at limit
+        }
+        // Add agent if not selected and under limit
         return [...prev, agent]
       }
     })
@@ -89,6 +94,7 @@ const AgentSelectorModal = ({
 
   // Get selected agent IDs for feed component
   const selectedAgentIds = tempSelectedAgents.map(agent => agent._id)
+  const isAtLimit = tempSelectedAgents.length >= MAX_AGENTS
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -111,11 +117,19 @@ const AgentSelectorModal = ({
             </DialogTitle>
             {tempSelectedAgents.length > 0 && (
               <Badge variant="secondary">
-                {tempSelectedAgents.length} selected
+                {tempSelectedAgents.length}/{MAX_AGENTS} selected
               </Badge>
             )}
           </div>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription>
+            {description}
+            {isAtLimit && (
+              <div className="text-amber-600 dark:text-amber-400 mt-1">
+                Maximum of {MAX_AGENTS} agents reached. Deselect an agent to
+                choose a different one.
+              </div>
+            )}
+          </DialogDescription>
         </DialogHeader>
         <div className="flex-1">
           <div className="flex flex-col items-center sm:flex-row gap-2 mb-4">
@@ -155,7 +169,7 @@ const AgentSelectorModal = ({
         {/* Sticky Footer */}
         <div className="sticky bottom-0 rounded-lg bg-background border border-border p-4 mt-4 flex items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground">
-            {tempSelectedAgents.length} agent
+            {tempSelectedAgents.length}/{MAX_AGENTS} agent
             {tempSelectedAgents.length !== 1 ? 's' : ''} selected
           </div>
           <div className="flex gap-2">

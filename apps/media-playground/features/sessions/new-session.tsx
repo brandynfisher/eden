@@ -1,5 +1,6 @@
 'use client'
 
+import { MAX_AGENTS } from './session-config'
 import SliderInput from '@/components/form/input/slider-input'
 import AgentSelectorModal from '@/components/modal/agent-selector-modal'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { useToast } from '@/components/ui/use-toast'
+import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, MessageCircleIcon, UsersIcon } from 'lucide-react'
@@ -30,7 +32,8 @@ const sessionFormSchema = z.object({
         name: z.string(),
       }),
     )
-    .min(1, 'Please select at least one agent'),
+    .min(1, 'Please select at least one agent')
+    .max(MAX_AGENTS, `You can select a maximum of ${MAX_AGENTS} agents`),
   scenario: z
     .string()
     .min(10, 'Scenario must be at least 10 characters')
@@ -48,6 +51,9 @@ const NewSession = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const { invalidate: invalidateSessionList } = useSessionListQuery({
+    enabled: false, // Don't fetch sessions here, just get the invalidate function
+  })
 
   const form = useForm<SessionFormValues>({
     resolver: zodResolver(sessionFormSchema),
@@ -97,6 +103,9 @@ const NewSession = () => {
         } has been created.`,
       })
 
+      // Invalidate session list to refresh sidebar
+      await invalidateSessionList()
+
       // Redirect to the created session
       if (result.session?._id) {
         router.push(`/sessions/${result.session._id}`)
@@ -128,8 +137,8 @@ const NewSession = () => {
               Start a New Session
             </h2>
             <p className="text-muted-foreground">
-              Create a new session by selecting agents, defining a scenario, and
-              setting a budget.
+              Create a new session by selecting agents (up to {MAX_AGENTS}),
+              defining a scenario, and setting a budget.
             </p>
           </div>
         </div>
@@ -230,11 +239,11 @@ const NewSession = () => {
                       min={100}
                       max={5000}
                       step={100}
-                      unit=" mana"
+                      unit=" manna"
                     />
                   </FormControl>
                   <FormDescription>
-                    Set a budget limit for this session (100-5000 mana)
+                    Set a budget limit for this session (100-5000 manna)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
