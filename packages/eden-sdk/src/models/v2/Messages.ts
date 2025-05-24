@@ -11,6 +11,7 @@ export type Message = {
   session?: SessionV2
   content?: string
   tool_calls?: ToolCall[]
+  attachments?: string[]
   reply_to?: Message
   reactions?: MessageReaction
   createdAt: Date

@@ -10,6 +10,7 @@ export interface MessageSchema {
   session?: SessionDocument
   content?: string
   tool_calls?: ToolCall[]
+  attachments?: string[]
   reply_to?: MessageDocument
   reactions?: MessageReaction
   createdAt?: Date
@@ -39,6 +40,10 @@ const messageSchema = new Schema<MessageDocument>(
     reply_to: {
       type: Schema.Types.ObjectId,
       ref: 'messages',
+    },
+    attachments: {
+      type: [String],
+      default: [],
     },
     reactions: {
       type: Schema.Types.Mixed,

@@ -13,6 +13,9 @@ export interface ThreadResponse {
   status: number
 }
 
+// Temporary ID prefix for optimistic messages
+const OPTIMISTIC_ID_PREFIX = 'optimistic_'
+
 export function useSessionQuery({
   sessionId,
   enabled = true,
@@ -60,8 +63,104 @@ export function useSessionQuery({
     })
   }
 
+  const addOptimisticMessage = (
+    message: Partial<Message> & { content: string; sender: Message['sender'] },
+  ) => {
+    const optimisticId = `${OPTIMISTIC_ID_PREFIX}${Date.now()}`
+    const optimisticMessage: Message & { __optimistic: boolean } = {
+      _id: optimisticId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      // Mark as optimistic for identification
+      __optimistic: true,
+      ...message,
+    }
+
+    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+      if (!oldData) return oldData
+
+      return {
+        ...oldData,
+        messages: [...oldData.messages, optimisticMessage],
+      }
+    })
+
+    return optimisticId
+  }
+
+  const removeOptimisticMessage = (optimisticId: string) => {
+    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+      if (!oldData) return oldData
+
+      return {
+        ...oldData,
+        messages: oldData.messages.filter(msg => msg._id !== optimisticId),
+      }
+    })
+  }
+
+  const confirmOptimisticMessage = (
+    optimisticId: string,
+    confirmedMessage: Message,
+  ) => {
+    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+      if (!oldData) return oldData
+
+      return {
+        ...oldData,
+        messages: oldData.messages.map(msg =>
+          msg._id === optimisticId ? confirmedMessage : msg,
+        ),
+      }
+    })
+  }
+
+  const addOrUpdateMessage = (newMessage: Message) => {
+    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+      if (!oldData) return oldData
+
+      const existingMessages = oldData.messages || []
+      const existingMessageIndex = existingMessages.findIndex(
+        (m: Message) => m._id === newMessage._id,
+      )
+
+      let updatedMessages = [...existingMessages]
+
+      if (existingMessageIndex === -1) {
+        // New message - add it to the end (but check if it's not replacing an optimistic one)
+        const optimisticIndex = existingMessages.findIndex(
+          (m: Message & { __optimistic?: boolean }) =>
+            m.__optimistic && m.content === newMessage.content,
+        )
+
+        if (optimisticIndex !== -1) {
+          // Replace the optimistic message
+          updatedMessages[optimisticIndex] = newMessage
+        } else {
+          // Add new message
+          updatedMessages.push(newMessage)
+        }
+      } else {
+        // Existing message - update it
+        updatedMessages[existingMessageIndex] = {
+          ...updatedMessages[existingMessageIndex],
+          ...newMessage,
+        }
+      }
+
+      return {
+        ...oldData,
+        messages: updatedMessages,
+      }
+    })
+  }
+
   return {
     ...query,
     updateReaction,
+    addOptimisticMessage,
+    removeOptimisticMessage,
+    confirmOptimisticMessage,
+    addOrUpdateMessage,
   }
 }

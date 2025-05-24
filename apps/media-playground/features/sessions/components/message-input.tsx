@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
@@ -58,9 +59,14 @@ const AttachmentDropzone = ({
 
 export const MessageInput = ({ sessionId }: MessageInputProps) => {
   const { user } = useAuthState()
+  const { addOptimisticMessage, removeOptimisticMessage } = useSessionQuery({
+    sessionId,
+    enabled: !!sessionId && sessionId !== 'new',
+  })
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
   const [attachments, setAttachments] = useState<FileUploadProgress[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const accept = 'image/*,video/*,audio/*'
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -189,23 +195,52 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
   }, [handleFilesDropped])
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    if (!user) return
+    if (!user || isSubmitting) return
+
+    setIsSubmitting(true)
+
+    // Get completed attachments
+    const completedAttachments = attachments
+      .filter(a => a.status === 'complete')
+      .map(a => (a.file as File & { fileUrl: string }).fileUrl)
+
+    // Add optimistic message immediately
+    const optimisticId = addOptimisticMessage({
+      content: data.content,
+      sender: user,
+      attachments: completedAttachments,
+    })
+
+    // Clear form and attachments immediately
+    form.reset()
+    setAttachments([])
 
     try {
-      const completedAttachments = attachments
-        .filter(a => a.status === 'complete')
-        .map(a => (a.file as File & { fileUrl: string }).fileUrl)
-
+      // Send to server
       await axios.post(`/api/sessions/${sessionId}/messages`, {
         session_id: sessionId,
         content: data.content,
         attachments: completedAttachments,
       })
 
-      form.reset()
-      setAttachments([])
+      // Success - the websocket will handle updating with the real message
     } catch (error) {
-      console.error(error)
+      console.error('Failed to send message:', error)
+
+      // Revert optimistic update
+      removeOptimisticMessage(optimisticId)
+
+      // Restore form content
+      form.setValue('content', data.content)
+
+      // Show error toast
+      toast.error('Failed to send message', {
+        description: 'Please try again',
+        dismissible: true,
+        richColors: true,
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -258,6 +293,7 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
                 variant="ghost"
                 className="h-8 w-8"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={isSubmitting}
               >
                 <PaperclipIcon className="w-4 h-4" />
               </Button>
@@ -271,6 +307,7 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
                         {...field}
                         placeholder="Write a message..."
                         className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-1"
+                        disabled={isSubmitting}
                         onKeyDown={e => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault()
@@ -288,10 +325,13 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
                 className="h-8 w-8"
                 disabled={
                   !form.formState.isValid ||
-                  attachments.some(a => a.status === 'uploading')
+                  attachments.some(a => a.status === 'uploading') ||
+                  isSubmitting
                 }
               >
-                <SendIcon className="w-4 h-4" />
+                <SendIcon
+                  className={cn('w-4 h-4', isSubmitting && 'animate-pulse')}
+                />
               </Button>
             </div>
           </form>

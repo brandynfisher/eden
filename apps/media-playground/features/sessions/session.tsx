@@ -80,7 +80,7 @@ const Session = () => {
         <SessionTopBar agents={session.agents} title={session.title} />
       )}
 
-      <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto">
+      <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
         {messageGroups.map(group => (
           <div key={group[0]._id}>
             {isOwnMessage(group[0].sender?._id)

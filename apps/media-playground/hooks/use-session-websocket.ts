@@ -1,8 +1,8 @@
 'use client'
 
+import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useWebSocketContext } from '@/providers/websocket-provider'
-import { Message, SessionV2 } from '@edenlabs/eden-sdk'
-import { useQueryClient } from '@tanstack/react-query'
+import { Message } from '@edenlabs/eden-sdk'
 import { useEffect } from 'react'
 
 interface SessionWebSocketMessage {
@@ -22,7 +22,10 @@ export function useSessionWebSocket({
   enabled?: boolean
 }) {
   const { lastMessageJson } = useWebSocketContext()
-  const queryClient = useQueryClient()
+  const { addOrUpdateMessage } = useSessionQuery({
+    sessionId,
+    enabled: !!sessionId && sessionId !== 'new',
+  })
 
   useEffect(() => {
     console.log('useSessionWebSocket', sessionId, enabled, lastMessageJson)
@@ -42,36 +45,9 @@ export function useSessionWebSocket({
 
     // If we have new messages, update the query cache
     if (newMessages?.length) {
-      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
-        if (!oldData) return oldData
-
-        // Get existing messages
-        const existingMessages = oldData.messages || []
-        const updatedMessages = [...existingMessages]
-
-        // Add or update each new message
-        for (const newMessage of newMessages) {
-          const existingMessageIndex = updatedMessages.findIndex(
-            (m: Message) => m._id === newMessage._id,
-          )
-
-          if (existingMessageIndex === -1) {
-            // New message - add it to the end
-            updatedMessages.push(newMessage)
-          } else {
-            // Existing message - update it
-            updatedMessages[existingMessageIndex] = {
-              ...updatedMessages[existingMessageIndex],
-              ...newMessage,
-            }
-          }
-        }
-
-        return {
-          ...oldData,
-          messages: updatedMessages,
-        }
-      })
+      for (const newMessage of newMessages) {
+        addOrUpdateMessage(newMessage)
+      }
     }
-  }, [lastMessageJson, sessionId, enabled, queryClient])
+  }, [lastMessageJson, sessionId, enabled, addOrUpdateMessage])
 }
