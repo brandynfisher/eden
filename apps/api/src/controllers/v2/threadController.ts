@@ -55,6 +55,16 @@ export const createThreadMessage = async (
     })
   }
 
+  const thread = await ThreadModel.findOne({
+    _id: new ObjectId(thread_id),
+  })
+
+  if (thread && thread.user.toString() !== userId.toString()) {
+    return reply.status(401).send({
+      message: 'You are not allowed to create a message in this thread',
+    })
+  }
+
   const modalRequest = {
     endpoint: `${server.config.EDEN_COMPUTE_API_URL}/chat`,
     data: {

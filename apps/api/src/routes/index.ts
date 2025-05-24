@@ -4,7 +4,6 @@ import authRoutes from './authRoutes'
 import characterRoutes from './characterRoutes'
 import collectionRoutes from './collectionRoutes'
 import conceptRoutes from './conceptRoutes'
-import creationRoutes from './creationRoutes'
 import creatorRoutes from './creatorRoutes'
 import feedRoutes from './feedRoutes'
 import generatorRoutes from './generatorRoutes'
@@ -12,7 +11,6 @@ import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
 import paymentRoutes from './paymentRoutes'
 import sessionRoutes from './sessionRoutes'
-import taskRoutes from './taskRoutes'
 import testRoutes from './testRoutes'
 import { TSchema, Type } from '@sinclair/typebox'
 
@@ -73,11 +71,9 @@ export const routes = [
   apiKeyRoutes,
   mediaRoutes,
   creatorRoutes,
-  creationRoutes,
   collectionRoutes,
   generatorRoutes,
   conceptRoutes,
-  taskRoutes,
   feedRoutes,
   sessionRoutes,
   paymentRoutes,
