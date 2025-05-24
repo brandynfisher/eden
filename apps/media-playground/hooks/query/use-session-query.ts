@@ -36,7 +36,7 @@ export function useSessionQuery({
       return response.data.session
     },
     enabled: enabled && !!sessionId,
-    staleTime: 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes - sessions don't change often
     refetchOnWindowFocus: false,
   })
 

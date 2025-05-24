@@ -21,7 +21,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -239,11 +239,21 @@ const SessionListItem: FC<SessionListItemProps> = ({
 }
 
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
+  const router = useRouter()
+  const params = useParams()
+  const isNewSession = params.id === 'new'
+
   return (
     <Button
       variant="ghost"
-      onClick={onItemClick}
-      className={cn('flex w-full justify-between px-3 mb-1 bg-aui-muted')}
+      onClick={() => {
+        onItemClick?.()
+        router.push('/sessions/new', { scroll: false })
+      }}
+      className={cn(
+        'flex w-full justify-between px-3 mb-1',
+        isNewSession ? 'bg-muted text-primary' : 'bg-aui-muted',
+      )}
     >
       <div className="flex items-center gap-2 text-sm font-semibold">
         <span>New Session</span>
@@ -256,8 +266,8 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
 const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const currentSessionId = searchParams.get('id')
+  const params = useParams()
+  const currentSessionId = params.id as string
   const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
     useSessionListQuery({
       enabled: !!isSignedIn,
@@ -327,9 +337,9 @@ const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
                       isActive={session._id === currentSessionId}
                       onItemClick={() => {
                         onItemClick?.()
-                        const url = new URL(window.location.href)
-                        url.searchParams.set('id', session._id)
-                        router.push(url.toString(), { scroll: false })
+                        router.push(`/sessions/${session._id}`, {
+                          scroll: false,
+                        })
                       }}
                     />
                   ),

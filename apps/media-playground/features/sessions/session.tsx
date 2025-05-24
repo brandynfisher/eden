@@ -25,7 +25,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { cn } from '@/lib/utils'
 import { ChevronRightIcon } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 
@@ -63,8 +63,8 @@ const LeftBarSheet: FC<{
 }
 
 const Session = () => {
-  const searchParams = useSearchParams()
-  const sessionId = searchParams.get('id')
+  const params = useParams()
+  const sessionId = params.id as string
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -75,13 +75,13 @@ const Session = () => {
     error: sessionError,
   } = useSessionQuery({
     sessionId: sessionId as string,
-    enabled: !!sessionId,
+    enabled: !!sessionId && sessionId !== 'new',
   })
 
   // Enable WebSocket updates for this session
   useSessionWebSocket({
     sessionId: sessionId as string,
-    enabled: !!sessionId,
+    enabled: !!sessionId && sessionId !== 'new',
   })
 
   const scrollToBottom = useCallback(() => {
