@@ -1,9 +1,8 @@
 'use client'
 
 import AgentCard from '@/components/card/agent-card'
-import MasonryVirtualizerVertical, {
-  BreakpointConfig,
-} from '@/components/masonry/masonry-virtualizer-vertical'
+import GridVirtualizerVertical from '@/components/grid/grid-virtualizer-vertical'
+import { BreakpointConfig } from '@/components/masonry/masonry-virtualizer-vertical'
 import { Button } from '@/components/ui/button'
 import { RowItem } from '@/lib/query/cache-updates'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -88,7 +87,7 @@ const AgentsFeed = ({
           Create Agent
         </Button>
       )}
-      <MasonryVirtualizerVertical
+      <GridVirtualizerVertical
         key={JSON.stringify({ queryKey, breakpoints })}
         apiEndpoint={'/api/feed/agents'}
         queryKey={queryKey}
