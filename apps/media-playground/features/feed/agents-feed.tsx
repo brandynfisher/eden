@@ -12,7 +12,7 @@ import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { PlusIcon } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import { useMemo } from 'react'
+import { RefObject, useMemo } from 'react'
 
 type Props = {
   query?: FeedAgentCursorArguments
@@ -20,6 +20,10 @@ type Props = {
   maxCols?: number
   breakpoints?: BreakpointConfig[]
   hideCreateButton?: boolean
+  onClick?: (agent: Agent) => void
+  isSelectable?: boolean
+  selectedIds?: string[]
+  scrollRef?: RefObject<HTMLDivElement>
 }
 
 const AgentsFeed = ({
@@ -28,6 +32,10 @@ const AgentsFeed = ({
   maxCols,
   breakpoints,
   hideCreateButton = false,
+  onClick,
+  isSelectable = false,
+  selectedIds = [],
+  scrollRef,
 }: Props) => {
   const dispatch = useAppDispatch()
   const defaultQuery: FeedAgentCursorArguments = useMemo(
@@ -97,8 +105,21 @@ const AgentsFeed = ({
         breakpoints={breakpoints}
         onItemsLoaded={handleItemsLoaded}
         setFetchNextPage={setFetchNextPage}
+        scrollRef={scrollRef}
         render={(item: RowItem) => (
-          <AgentCard agent={item as Agent} queryKey={queryKey} />
+          <AgentCard
+            agent={item as Agent}
+            queryKey={queryKey}
+            onClick={isSelectable ? onClick : undefined}
+            isSelected={
+              isSelectable && selectedIds.includes((item as Agent)._id)
+            }
+            className={
+              isSelectable && selectedIds.includes((item as Agent)._id)
+                ? 'ring-2 ring-primary ring-offset-2'
+                : undefined
+            }
+          />
         )}
       />
     </div>

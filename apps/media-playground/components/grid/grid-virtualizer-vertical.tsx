@@ -35,7 +35,7 @@ import React, {
 } from 'react'
 
 const GRID_GAP = 16
-const DEFAULT_PAGE_LIMIT = 5 // Better for testing pagination
+const DEFAULT_PAGE_LIMIT = 35
 
 export interface BreakpointConfig {
   minWidth: 1920 | 1536 | 1280 | 1024 | 768 | 640 | 480 | 0
