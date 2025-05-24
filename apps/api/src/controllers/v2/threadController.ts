@@ -58,13 +58,8 @@ export const createThreadMessage = async (
   const thread = await ThreadModel.findOne({
     _id: new ObjectId(thread_id),
   })
-  if (!thread) {
-    return reply.status(404).send({
-      message: 'thread not found',
-    })
-  }
-  
-  if (thread.user.toString() !== userId.toString()) {
+
+  if (thread && thread.user.toString() !== userId.toString()) {
     return reply.status(401).send({
       message: 'You are not allowed to create a message in this thread',
     })
