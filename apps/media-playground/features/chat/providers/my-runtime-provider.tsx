@@ -17,7 +17,7 @@ import {
   useExternalMessageConverter,
   useExternalStoreRuntime,
 } from '@assistant-ui/react'
-import { useAuth } from '@clerk/nextjs'
+import { Thread } from '@edenlabs/eden-sdk'
 import { PropsWithChildren, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -61,13 +61,17 @@ export function MyRuntimeProvider({
   const abortControllerRef = useRef<AbortController | null>(null)
   const { lastMessageJson } = useWebSocketContext()
   const currentThreadIdRef = useRef<string | undefined>()
-  const { isSignedIn, user } = useAuthState()
-  const { isLoaded: isClerkLoaded } = useAuth()
+  const { isSignedIn, user, isLoading: isAuthLoading } = useAuthState()
   const initialMessageProcessedRef = useRef(false)
 
   // Add URL update tracking
   const lastUrlUpdateRef = useRef<string | null>(null)
   const [isReadOnly, setIsReadOnly] = useState(false)
+
+  // Function to determine if thread is read-only
+  const isThreadReadOnly = (thread: Thread) => {
+    return !user || thread.user._id.toString() !== user._id.toString()
+  }
 
   // Function to update URL without triggering Next.js navigation
   const updateUrlWithoutNavigation = (newThreadId?: string) => {
@@ -204,6 +208,8 @@ export function MyRuntimeProvider({
 
   // Load initial thread if threadId is in URL
   useEffect(() => {
+    if (isAuthLoading) return
+
     if (threadId && threadId !== currentThreadIdRef.current) {
       const loadThread = async () => {
         try {
@@ -215,12 +221,7 @@ export function MyRuntimeProvider({
           const hasActiveMessages = Boolean(thread.active?.length)
 
           // Determine if thread is read-only based on ownership
-          const isThreadReadOnly =
-            isClerkLoaded &&
-            (!isSignedIn ||
-              !user ||
-              thread.user._id.toString() !== user._id.toString())
-          setIsReadOnly(isThreadReadOnly)
+          setIsReadOnly(isThreadReadOnly(thread))
 
           // console.log('[Initial Thread Load] Setting messages and isRunning', {
           //   messageCount: thread.messages.length,
@@ -313,7 +314,7 @@ export function MyRuntimeProvider({
       }
       loadThread()
     }
-  }, [threadId])
+  }, [threadId, isAuthLoading, user])
 
   // Handle WebSocket updates
   useEffect(() => {
@@ -642,6 +643,8 @@ export function MyRuntimeProvider({
             if (!thread.messages) {
               throw new Error('Thread has no messages')
             }
+
+            setIsReadOnly(isThreadReadOnly(thread))
 
             const hasActiveMessages = Boolean(thread.active?.length)
 
