@@ -31,6 +31,7 @@ export interface SessionsV2MessageReactArguments extends WebAPICallOptions {
 export interface SessionsV2ListArguments
   extends WebAPICallOptions,
     ListQueryParams {
+  user_id?: string
   agent_id?: string
 }
 
@@ -184,12 +185,15 @@ export type SessionsV2RenameResponse = WebAPICallResult &
     | { success: boolean }
   )
 
+export type SessionStatus = 'active' | 'archived'
+
 export type SessionV2 = {
   _id: string
   owner: Creator
   agents: Agent[]
-  channel?: string
+  status: SessionStatus
   title?: string
+  channel?: string
   scenario?: string
   messages: Message[]
   budget?: number

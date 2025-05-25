@@ -1,18 +1,28 @@
 import { AgentDocument } from '../Agent'
 import { UserDocument } from '../User'
 import { SessionDocument } from './SessionV2'
-import { MessageReaction, ToolCall } from '@edenlabs/eden-sdk'
+import {
+  Channel,
+  MessageReaction,
+  MessageRole,
+  ToolCall,
+} from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
 
 export interface MessageSchema {
   _id: string
+  session: SessionDocument
   sender: UserDocument | AgentDocument
-  session?: SessionDocument
-  content?: string
-  tool_calls?: ToolCall[]
-  attachments?: string[]
+  role: MessageRole
+  content: string
+  name?: string
+  tool_call_id?: string
+  channel?: Channel
   reply_to?: MessageDocument
+  sender_name?: string
   reactions?: MessageReaction
+  attachments?: string[]
+  tool_calls?: ToolCall[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -21,18 +31,32 @@ export interface MessageDocument extends MessageSchema {}
 
 const messageSchema = new Schema<MessageDocument>(
   {
-    sender: {
-      type: Schema.Types.ObjectId,
-      ref: 'users3',
-      required: true,
-    },
     session: {
       type: Schema.Types.ObjectId,
       ref: 'sessions',
       required: true,
     },
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      required: true,
+    },
+    role: {
+      type: Schema.Types.String,
+      enum: ['user', 'assistant', 'system', 'tool'],
+      required: true,
+    },
     content: {
       type: String,
+    },
+    name: {
+      type: String,
+    },
+    tool_call_id: {
+      type: String,
+    },
+    channel: {
+      type: Schema.Types.Mixed,
     },
     tool_calls: {
       type: [Schema.Types.Mixed],
@@ -40,6 +64,9 @@ const messageSchema = new Schema<MessageDocument>(
     reply_to: {
       type: Schema.Types.ObjectId,
       ref: 'messages',
+    },
+    sender_name: {
+      type: String,
     },
     attachments: {
       type: [String],
