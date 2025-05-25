@@ -294,6 +294,21 @@ export const listTasks = async (
     }
   }
 
+  if (query.tool) {
+    if (typeof query.tool === 'object') {
+      if (query.tool.$nin) {
+        query.tool.$nin.push('twitter_mentions', 'tweet', 'twitter_search')
+      } else {
+        query.tool = {
+          ...query.tool,
+          $nin: ['twitter_mentions', 'tweet', 'twitter_search'],
+        }
+      }
+    }
+  } else {
+    query.tool = { $nin: ['twitter_mentions', 'tweet', 'twitter_search'] }
+  }
+
   const queryOptions: QueryOptions = {
     select: '',
     limit,
