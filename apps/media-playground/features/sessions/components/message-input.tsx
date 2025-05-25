@@ -1,15 +1,20 @@
 'use client'
 
 import { Attachment, FileUploadProgress } from './attachment'
+import { MentionInput } from './mention-input'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
-import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
+import {
+  AutosizeTextAreaRef,
+  AutosizeTextarea,
+} from '@/components/ui/custom/autoresize-textarea'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
+import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { PaperclipIcon, SendIcon } from 'lucide-react'
@@ -59,7 +64,11 @@ const AttachmentDropzone = ({
 
 export const MessageInput = ({ sessionId }: MessageInputProps) => {
   const { user } = useAuthState()
-  const { addOptimisticMessage, removeOptimisticMessage } = useSessionQuery({
+  const {
+    addOptimisticMessage,
+    removeOptimisticMessage,
+    data: session,
+  } = useSessionQuery({
     sessionId,
     enabled: !!sessionId && sessionId !== 'new',
   })
@@ -69,6 +78,10 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const accept = 'image/*,video/*,audio/*'
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showMention, setShowMention] = useState(false)
+  const [mentionTrigger, setMentionTrigger] = useState('')
+  const [mentionPosition, setMentionPosition] = useState(0)
+  const textareaRef = useRef<AutosizeTextAreaRef>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -252,6 +265,40 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
     setAttachments(prev => prev.filter(a => a.id !== id))
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === '@') {
+      const textarea = e.currentTarget
+      const cursorPosition = textarea.selectionStart
+      setMentionPosition(cursorPosition)
+      setMentionTrigger('')
+      setShowMention(true)
+    }
+  }
+
+  const handleMentionSelect = (agent: Agent) => {
+    const currentValue = form.getValues('content')
+    const beforeMention = currentValue.slice(0, mentionPosition)
+    const afterMention = currentValue.slice(
+      mentionPosition + mentionTrigger.length + 1,
+    )
+    const newValue = `${beforeMention}@${agent.username} ${afterMention}`
+    form.setValue('content', newValue)
+    setShowMention(false)
+    // Focus the textarea after a short delay to ensure the value is updated
+    setTimeout(() => {
+      textareaRef.current?.textArea?.focus()
+    }, 0)
+  }
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    if (showMention) {
+      const cursorPosition = e.target.selectionStart
+      const textAfterTrigger = value.slice(mentionPosition + 1, cursorPosition)
+      setMentionTrigger(textAfterTrigger)
+    }
+  }
+
   return (
     <>
       {isDragging && (
@@ -297,28 +344,45 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
               >
                 <PaperclipIcon className="w-4 h-4" />
               </Button>
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormControl>
-                      <AutosizeTextarea
-                        {...field}
-                        placeholder="Write a message..."
-                        className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-1"
-                        disabled={isSubmitting}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault()
-                            form.handleSubmit(onSubmit)()
-                          }
-                        }}
-                      />
-                    </FormControl>
-                  </FormItem>
+              <div className="flex-1 relative">
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormControl>
+                        <AutosizeTextarea
+                          {...field}
+                          ref={textareaRef}
+                          placeholder="Write a message..."
+                          className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-1"
+                          disabled={isSubmitting}
+                          onKeyDown={e => {
+                            handleKeyDown(e)
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault()
+                              form.handleSubmit(onSubmit)()
+                            }
+                          }}
+                          onChange={e => {
+                            field.onChange(e)
+                            handleTextChange(e)
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                {showMention && session?.agents && (
+                  <div className="absolute bottom-full mb-2">
+                    <MentionInput
+                      agents={session.agents}
+                      onSelect={handleMentionSelect}
+                      onClose={() => setShowMention(false)}
+                    />
+                  </div>
                 )}
-              />
+              </div>
               <Button
                 type="submit"
                 size="icon"

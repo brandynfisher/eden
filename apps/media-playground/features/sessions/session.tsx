@@ -29,6 +29,8 @@ const Session = () => {
     enabled: !!sessionId && sessionId !== 'new',
   })
 
+  console.log('***debug session', session?.messages)
+
   // Enable WebSocket updates for this session
   useSessionWebSocket({
     sessionId: sessionId as string,
