@@ -214,33 +214,9 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
       })
     }
 
-    // Set up mutation observer to watch for image loads
-    const observer = new MutationObserver(mutations => {
-      for (const mutation of mutations) {
-        const addedNodes = Array.from(mutation.addedNodes)
-        const hasNewImages = addedNodes.some(
-          node =>
-            node instanceof HTMLElement &&
-            (node.tagName === 'IMG' || node.querySelector('img')),
-        )
-
-        if (hasNewImages) {
-          // Wait for images to load before scrolling
-          setTimeout(performScroll, 100)
-        }
-      }
-    })
-
-    observer.observe(viewport, {
-      childList: true,
-      subtree: true,
-    })
-
-    // Initial scroll
+    // Just perform the scroll without watching for mutations
+    // The MutationObserver was causing unwanted scrolls when tools expanded
     performScroll()
-
-    // Cleanup observer
-    return () => observer.disconnect()
   }, [assistantMessagesContent, hasGeneratingMessage])
 
   // Auto-scroll when near bottom and:
@@ -260,10 +236,11 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
 
     lastMessagesLengthRef.current = messages.length
   }, [
-    messages.length,
+    messages,
     allAssistantMessages,
     hasGeneratingMessage,
     scrollToBottom,
+    isNearBottom,
   ])
 
   // Track new messages - show indicator when not near bottom
