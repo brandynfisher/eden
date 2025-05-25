@@ -1,6 +1,7 @@
 import { taskRateLimitCheck } from '../../lib/ratelimit'
 import { User } from '../../models/User'
 import { ModelV2 } from '../../models/v2/ModelV2'
+import { SessionDocument } from '../../models/v2/SessionV2'
 import { TaskV2Document, TaskV2 as TaskV2Model } from '../../models/v2/TaskV2'
 import { ThreadDocument } from '../../models/v2/Thread'
 import { ToolV2 } from '../../models/v2/ToolV2'
@@ -11,6 +12,7 @@ import { sendLoraTrainingCompletedEmail } from '../../utils/mailchimp'
 import { verifyToken } from '@clerk/clerk-sdk-node'
 import {
   MediaOutput,
+  Message,
   TaskV2,
   TaskV2Result,
   TaskV2Status,
@@ -19,6 +21,7 @@ import {
   TasksV2GetArguments,
   TasksV2ListArguments,
   ThreadMessage,
+  ToolCall,
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { on } from 'events'
@@ -35,6 +38,7 @@ export enum SocketClientEventName {
 export enum ServerEventName {
   TaskUpdate = 'task-update',
   ThreadUpdate = 'thread-update',
+  SessionUpdate = 'session-update',
   AuthInfo = 'auth-info',
   MessageError = 'message-error',
 }
@@ -871,6 +875,78 @@ export const subscribeWebSocketUpdates = function wsHandler(
       internalEmitterEventHandlerThreadUpdates,
     )
 
+    const internalEmitterEventHandlerSessionUpdates = async ({
+      session,
+      newMessages,
+    }: {
+      session: SessionDocument
+      newMessages: Message[]
+    }) => {
+      // if (!metaData.userId) {
+      //   // this.log.error(`User not authenticated/not found - ${thread.user}`)
+      //   return
+      // }
+
+      if (!session.owner) {
+        this.log.error(
+          `Session ${session._id} has no owner field, skipping update message`,
+        )
+        return
+      }
+
+      // socket message is only sent to the intended recipient
+      if (metaData?._id?.toString() === session.owner._id.toString()) {
+        this.log.info(
+          `${ServerEventName.SessionUpdate}: ${metaData.connectionId} - ${metaData.msgId} ${session._id}`,
+        )
+
+        socket.send(
+          JSON.stringify({
+            event: ServerEventName.SessionUpdate,
+            msgId: metaData.msgId,
+            connectionId: metaData.connectionId,
+            data: newMessages
+              ? {
+                  newMessages: newMessages.map(msg => {
+                    // Convert Mongoose document to plain object
+                    const plainMsg = (msg as any).toJSON
+                      ? (msg as any).toJSON()
+                      : msg
+
+                    const hasPendingToolCalls =
+                      plainMsg.tool_calls?.length &&
+                      plainMsg.tool_calls?.some(
+                        (call: ToolCall) =>
+                          !call.status ||
+                          call.status === TaskV2Status.Running ||
+                          call.status === TaskV2Status.Pending,
+                      )
+                    return {
+                      ...plainMsg,
+                      status: hasPendingToolCalls
+                        ? { type: 'running' }
+                        : { type: 'complete', reason: 'stop' },
+                    }
+                  }),
+                  session_id: session._id,
+                  title: session.title,
+                }
+              : {
+                  session: session,
+                  session_id: session._id,
+                },
+          }),
+        )
+
+        metaData.msgId += 1
+      }
+    }
+
+    this.internalMessages.connection.on(
+      'session-updates',
+      internalEmitterEventHandlerSessionUpdates,
+    )
+
     socket.on('message', async message => {
       try {
         const msgJson = JSON.parse(message.toString()) as SocketClientEvent
@@ -1023,6 +1099,10 @@ export const subscribeWebSocketUpdates = function wsHandler(
       this.internalMessages.connection.removeListener(
         'thread-updates',
         internalEmitterEventHandlerThreadUpdates,
+      )
+      this.internalMessages.connection.removeListener(
+        'session-updates',
+        internalEmitterEventHandlerSessionUpdates,
       )
     })
   } catch (e) {

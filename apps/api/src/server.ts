@@ -5,6 +5,7 @@ import registerChroma from './plugins/chromaPlugin'
 import registerClerk from './plugins/clerkPlugin'
 import registerCloudinary from './plugins/cloudinaryPlugin'
 import config from './plugins/config'
+import registerEden2SessionUpdates from './plugins/eden2SessionUpdatePlugin'
 import registerEden2TaskUpdates from './plugins/eden2TaskUpdatePlugin'
 import registerEden2ThreadUpdates from './plugins/eden2ThreadUpdatePlugin'
 import registerElevenLabs from './plugins/elevenLabsPlugin'
@@ -104,6 +105,7 @@ const createServer = async (
   await registerS3(server)
   await registerEden2TaskUpdates(server, opts)
   await registerEden2ThreadUpdates(server, opts)
+  await registerEden2SessionUpdates(server, opts)
 
   registerTaskHandlers(server, opts.taskHandlers)
 

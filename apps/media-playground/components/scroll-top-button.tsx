@@ -19,7 +19,7 @@ const ScrollTopButton = () => {
   }
 
   return (
-    <div className="flex justify-center w-full fixed bottom-2 pointer-events-none">
+    <div className="flex justify-center w-full fixed bottom-2 pointer-events-none z-50">
       <Button
         data-test-id="scroll-top-button"
         variant="outline"

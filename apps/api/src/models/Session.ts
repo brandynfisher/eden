@@ -50,4 +50,4 @@ session.pre<SessionDocument>('save', function (next) {
 session.index({ createdAt: 1 })
 session.plugin(paginate)
 
-export const Session = model<SessionDocument>('sessions', session)
+export const Session = model<SessionDocument>('sessions_old', session)

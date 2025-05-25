@@ -236,7 +236,7 @@ export type ThreadsRenameResponse = WebAPICallResult &
   )
 // Types
 
-export type Message = {
+export type BaseThreadMessage = {
   id: string
   role: 'user' | 'assistant' | 'tool' | 'system'
   metadata?: { [key: string]: string | boolean | number }
@@ -245,7 +245,7 @@ export type Message = {
 
 export type UserMessageAttachments = string
 
-export type UserMessage = Message & {
+export type ThreadUserMessage = BaseThreadMessage & {
   role: 'user'
   // name: string
   content: string
@@ -288,14 +288,14 @@ export type ToolResults = {
   error?: string
 }
 
-export type AssistantMessage = Message & {
+export type ThreadAssistantMessage = BaseThreadMessage & {
   role: 'assistant'
   content: string
   status?: { type: 'running' | 'complete'; reason?: string }
   tool_calls?: ToolCall[]
 }
 
-export type SystemMessage = Message & {
+export type ThreadSystemMessage = BaseThreadMessage & {
   role: 'system'
   content: string
 }
@@ -308,7 +308,7 @@ export type Thread = {
   title?: string
   name: string
   active?: string[] //active message.ids
-  messages: (UserMessage | AssistantMessage | SystemMessage)[]
+  messages: (ThreadUserMessage | ThreadAssistantMessage | ThreadSystemMessage)[]
   createdAt: Date
   updatedAt: Date
 }
