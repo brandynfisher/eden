@@ -258,7 +258,7 @@ export const listSessions = async (
 
     const sessionsRepository = new SessionRepository(Session)
     const sessionQuery = {
-      // owner: userId,
+      owner: userId,
     }
 
     const paginatedResponse = await sessionsRepository.query(
