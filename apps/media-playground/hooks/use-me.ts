@@ -1,9 +1,6 @@
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
-import {
-  CreatorsGetMeResponse,
-  FeatureFlag,
-  SubscriptionTier,
-} from '@edenlabs/eden-sdk'
+import { CreatorsGetMeResponse, SubscriptionTier } from '@edenlabs/eden-sdk'
+import isNumber from 'lodash/isNumber'
 
 export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
   const {
@@ -23,20 +20,17 @@ export const useMe = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
       return false
     }
 
-    if (!currentUser.subscriptionTier && !currentUser.featureFlags) {
+    const hasSubscriptionTier = isNumber(currentUser.subscriptionTier)
+
+    if (!hasSubscriptionTier) {
       return false
     }
 
-    if (
-      currentUser.subscriptionTier &&
-      currentUser.subscriptionTier >= minimumTier
-    ) {
+    if (hasSubscriptionTier && currentUser.subscriptionTier! >= minimumTier) {
       return true
     }
 
-    return currentUser.featureFlags
-      ? currentUser.featureFlags.includes(FeatureFlag.Preview)
-      : false
+    return false
   }
 
   return {
