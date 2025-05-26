@@ -266,6 +266,20 @@ import {
   ModelsV2PatchResponse,
   ModelsV2UnlikeArguments,
   ModelsV2UnlikeResponse,
+  SessionsV2CreateArguments,
+  SessionsV2CreateResponse,
+  SessionsV2DeleteArguments,
+  SessionsV2DeleteResponse,
+  SessionsV2GetArguments,
+  SessionsV2GetResponse,
+  SessionsV2ListArguments,
+  SessionsV2ListResponse,
+  SessionsV2MessageArguments,
+  SessionsV2MessageReactArguments,
+  SessionsV2MessageReactResponse,
+  SessionsV2MessageResponse,
+  SessionsV2RenameArguments,
+  SessionsV2RenameResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -325,6 +339,13 @@ import {
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
   modelsV2UnlikeRequestConfig,
+  sessionsCreateRequestConfigV2,
+  sessionsDeleteRequestConfigV2,
+  sessionsGetRequestConfigV2,
+  sessionsListRequestConfigV2,
+  sessionsMessageReactRequestConfigV2,
+  sessionsMessageRequestConfigV2,
+  sessionsRenameRequestConfigV2,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -871,6 +892,36 @@ export abstract class Methods {
         SessionsAddCharactersArguments,
         SessionsAddCharactersResponse
       >(this, sessionsAddCharactersRequestConfig),
+    },
+    v2: {
+      list: bindApiCall<SessionsV2ListArguments, SessionsV2ListResponse>(
+        this,
+        sessionsListRequestConfigV2,
+      ),
+      get: bindApiCall<SessionsV2GetArguments, SessionsV2GetResponse>(
+        this,
+        sessionsGetRequestConfigV2,
+      ),
+      react: bindApiCall<
+        SessionsV2MessageReactArguments,
+        SessionsV2MessageReactResponse
+      >(this, sessionsMessageReactRequestConfigV2),
+      message: bindApiCall<
+        SessionsV2MessageArguments,
+        SessionsV2MessageResponse
+      >(this, sessionsMessageRequestConfigV2),
+      rename: bindApiCall<SessionsV2RenameArguments, SessionsV2RenameResponse>(
+        this,
+        sessionsRenameRequestConfigV2,
+      ),
+      delete: bindApiCall<SessionsV2DeleteArguments, SessionsV2DeleteResponse>(
+        this,
+        sessionsDeleteRequestConfigV2,
+      ),
+      create: bindApiCall<SessionsV2CreateArguments, SessionsV2CreateResponse>(
+        this,
+        sessionsCreateRequestConfigV2,
+      ),
     },
   }
 

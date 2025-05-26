@@ -25,6 +25,8 @@
 - git submodule update
 - `docker-compose up --build`
 
+- First setup may require you to cd packages/eden-sdk and yarn run dev:eden
+
 ### Launch in dummy mode (with fake test generators)
 
 - `yarn dev:dummy`

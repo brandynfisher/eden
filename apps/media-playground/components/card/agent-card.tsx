@@ -15,7 +15,11 @@ import { formatCompactNumber } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { MessageSquareIcon, SquareMousePointerIcon } from 'lucide-react'
+import {
+  CheckIcon,
+  MessageSquareIcon,
+  SquareMousePointerIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -24,24 +28,37 @@ type Props = {
   queryKey: QueryKey
   onClick?: (item: Agent) => void
   className?: string
+  isSelected?: boolean
 }
 
-const AgentCard = ({ agent, queryKey, onClick, className }: Props) => {
+const AgentCard = ({
+  agent,
+  queryKey,
+  onClick,
+  className,
+  isSelected,
+}: Props) => {
   return (
     <Card
       className={cn([
         'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary/70 hover:ring-2 ring-purple-600/40',
+        isSelected && 'ring-2 ring-primary ring-offset-2',
         className,
       ])}
     >
       {!agent.public ? <PrivateIcon className="" /> : null}
+      {isSelected && (
+        <div className="absolute top-2 right-2 z-50 bg-primary text-primary-foreground rounded-full p-1">
+          <CheckIcon className="h-4 w-4" />
+        </div>
+      )}
       {onClick ? (
         <div
           className="absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer z-50 opacity-0 bg-popover group-hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all"
           onClick={() => onClick(agent)}
         >
           <SquareMousePointerIcon className="mr-2 h-4 w-4" />
-          Select
+          {isSelected ? 'Deselect' : 'Select'}
         </div>
       ) : null}
 
