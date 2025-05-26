@@ -10,15 +10,18 @@ import { OtherMessage } from '@/features/sessions/components/other-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { useParams } from 'next/navigation'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const Session = () => {
   const params = useParams()
   const sessionId = params.id as string
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
+  const [streamingText, setStreamingText] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
 
   const {
     data: session,
@@ -37,13 +40,38 @@ const Session = () => {
     enabled: !!sessionId && sessionId !== 'new',
   })
 
+  // Set up streaming
+  const { sendMessage: sendStreamingMessage } = useSessionStream({
+    sessionId,
+    onToken: text => {
+      setStreamingText(prev => prev + text)
+      // Scroll to bottom as tokens come in
+      setTimeout(scrollToBottom, 0)
+    },
+    onMessage: () => {
+      setStreamingText('')
+      setIsStreaming(false)
+    },
+    onToolComplete: (tool, result) => {
+      console.log('Tool completed:', tool, result)
+    },
+    onError: error => {
+      console.error('Streaming error:', error)
+      setStreamingText('')
+      setIsStreaming(false)
+    },
+    onDone: () => {
+      setIsStreaming(false)
+    },
+  })
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
   useEffect(() => {
     scrollToBottom()
-  }, [session?.messages, scrollToBottom])
+  }, [session?.messages, streamingText, scrollToBottom])
 
   const isOwnMessage = (senderId?: string) => {
     if (!senderId) return false
@@ -99,11 +127,45 @@ const Session = () => {
                 ))}
           </div>
         ))}
+
+        {/* Show streaming message */}
+        {isStreaming && streamingText && (
+          <div className="mb-4">
+            <OtherMessage
+              sessionId={sessionId as string}
+              message={
+                {
+                  _id: 'streaming',
+                  content: streamingText,
+                  sender: session?.agents?.[0] || {
+                    _id: 'agent',
+                    username: 'Assistant',
+                  },
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                  session: sessionId,
+                  role: 'assistant',
+                } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+              }
+              showAvatar={true}
+            />
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
       <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
-        <MessageInput sessionId={sessionId as string} />
+        <MessageInput
+          sessionId={sessionId as string}
+          onStreamingMessage={(content, attachments) => {
+            setIsStreaming(true)
+            setStreamingText('')
+            sendStreamingMessage(content, attachments)
+            // Scroll to bottom when streaming starts
+            setTimeout(scrollToBottom, 100)
+          }}
+        />
       </div>
     </>
   )

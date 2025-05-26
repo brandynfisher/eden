@@ -30,6 +30,7 @@ const formSchema = z.object({
 
 type MessageInputProps = {
   sessionId: string
+  onStreamingMessage?: (content: string, attachments?: string[]) => void
 }
 
 type AttachmentDropzoneProps = {
@@ -62,7 +63,10 @@ const AttachmentDropzone = ({
   )
 }
 
-export const MessageInput = ({ sessionId }: MessageInputProps) => {
+export const MessageInput = ({
+  sessionId,
+  onStreamingMessage,
+}: MessageInputProps) => {
   const { user } = useAuthState()
   const {
     addOptimisticMessage,
@@ -229,12 +233,17 @@ export const MessageInput = ({ sessionId }: MessageInputProps) => {
     setAttachments([])
 
     try {
-      // Send to server
-      await axios.post(`/api/sessions/${sessionId}/messages`, {
-        session_id: sessionId,
-        content: data.content,
-        attachments: completedAttachments,
-      })
+      // Use streaming if available, otherwise fall back to regular message
+      if (onStreamingMessage) {
+        onStreamingMessage(data.content, completedAttachments)
+      } else {
+        // Send to server
+        await axios.post(`/api/sessions/${sessionId}/messages`, {
+          session_id: sessionId,
+          content: data.content,
+          attachments: completedAttachments,
+        })
+      }
 
       // Success - the websocket will handle updating with the real message
     } catch (error) {

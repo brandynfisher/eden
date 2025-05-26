@@ -223,6 +223,116 @@ export const createSessionMessage = async (
   }
 }
 
+export const createSessionMessageStream = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Body: SessionsV2MessageArguments & { stream?: boolean }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { session_id, content, attachments } = request.body
+
+  if (!session_id) {
+    return reply.status(400).send({
+      message: 'session_id not provided',
+    })
+  }
+
+  const query = createIdOrSlugQuery(session_id)
+  const session = await Session.findOne(query)
+
+  if (!session) {
+    return reply.status(404).send({
+      message: 'session not found',
+    })
+  }
+
+  const userDocument = await User.findById(userId)
+  if (!userDocument) {
+    return reply.status(404).send({
+      message: `User not found`,
+    })
+  }
+
+  try {
+    // Set up SSE headers
+    reply.raw.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control',
+    })
+
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/prompt`,
+      data: {
+        session_id,
+        message: {
+          content,
+          attachments,
+        },
+        user_id: userId,
+        stream: true,
+      },
+      headers: {
+        'X-Client-Platform': 'web',
+        'X-Client-Deployment-Id': session.id,
+      },
+    }
+
+    const response = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+        responseType: 'stream',
+      },
+    )
+
+    // Pipe the stream from the compute API to the client
+    response.data.on('data', (chunk: Buffer) => {
+      reply.raw.write(chunk)
+    })
+
+    response.data.on('end', () => {
+      reply.raw.end()
+    })
+
+    response.data.on('error', (error: Error) => {
+      console.error('Stream error:', error)
+      reply.raw.write(
+        `data: ${JSON.stringify({
+          event: 'error',
+          data: { error: error.message },
+        })}\n\n`,
+      )
+      reply.raw.end()
+    })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage = error?.response?.data || 'Unknown Error'
+    console.log(e)
+
+    reply.raw.write(
+      `data: ${JSON.stringify({
+        event: 'error',
+        data: { error: errorMessage },
+      })}\n\n`,
+    )
+    reply.raw.end()
+  }
+}
+
 export const listSessions = async (
   server: FastifyInstance,
   request: FastifyRequest<{ Querystring: SessionsV2ListArguments }>,

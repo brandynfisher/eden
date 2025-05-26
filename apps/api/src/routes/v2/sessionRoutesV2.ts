@@ -2,6 +2,7 @@ import {
   addSessionMessageReaction,
   createSession,
   createSessionMessage,
+  createSessionMessageStream,
   deleteSession,
   getSession,
   listSessions,
@@ -100,6 +101,29 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createSessionMessage(server, request, reply),
+  })
+
+  server.post<{
+    Body: SessionsV2MessageArguments & { stream?: boolean }
+  }>('/v2/sessions/stream', {
+    schema: {
+      tags: ['Sessions'],
+      description: 'Interact with a session (streaming)',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        session_id: Type.Optional(Type.String()),
+        content: Type.Optional(Type.String()),
+        attachments: Type.Optional(Type.Array(Type.String())),
+        stream: Type.Optional(Type.Boolean()),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      createSessionMessageStream(server, request, reply),
   })
 
   server.post<{
