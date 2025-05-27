@@ -412,7 +412,7 @@ export const getSession = async (
       })
       .populate({
         path: 'messages',
-        select: '_id content sender tool_calls createdAt reactions',
+        select: '_id content sender role tool_calls createdAt reactions',
         populate: {
           path: 'sender',
           select: '_id username userImage',

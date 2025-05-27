@@ -93,6 +93,8 @@ const Session = () => {
     )
   }
 
+  console.log('***debug messages', session?.messages)
+
   if (sessionError) {
     return (
       <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
@@ -120,14 +122,16 @@ const Session = () => {
               ? group.map(message => (
                   <UserMessage key={message._id} message={message} />
                 ))
-              : group.map((message, index) => (
-                  <OtherMessage
-                    sessionId={sessionId as string}
-                    key={message._id}
-                    message={message}
-                    showAvatar={index === 0}
-                  />
-                ))}
+              : group
+                  .filter(message => message.role !== 'tool')
+                  .map((message, index) => (
+                    <OtherMessage
+                      sessionId={sessionId as string}
+                      key={message._id}
+                      message={message}
+                      showAvatar={index === 0}
+                    />
+                  ))}
           </div>
         ))}
 

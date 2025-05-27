@@ -12,7 +12,7 @@ import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { generateFilename } from '@/utils/slug.util'
-import { ToolCall } from '@edenlabs/eden-sdk'
+import { TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
@@ -59,7 +59,19 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
     <div className="mb-2 max-w-full">
       <ToolFallback
         type="tool-call"
-        result={toolResults || []}
+        result={{
+          tool: tool!,
+          result: toolResults || [],
+          status:
+            toolCall.status === 'completed'
+              ? TaskV2Status.Completed
+              : toolCall.status === 'failed'
+              ? TaskV2Status.Failed
+              : toolCall.status === 'running'
+              ? TaskV2Status.Running
+              : TaskV2Status.Pending,
+          error: toolCall.error,
+        }}
         toolCallId={tool!}
         toolName={tool!}
         args={toolCall.args}
@@ -67,6 +79,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
         status={
           toolCall.status === 'completed'
             ? { type: 'complete' }
+            : toolCall.status === 'failed'
+            ? { type: 'incomplete', reason: 'error' }
             : { type: 'running' }
         }
         addResult={() => true}
