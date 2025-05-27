@@ -21,7 +21,6 @@ export const OtherMessage = ({
   showAvatar = true,
   isStreamingTokens = false,
 }: OtherMessageProps) => {
-  console.log('***debug message has tool calls', message.tool_calls)
   if (
     !message.content &&
     !isStreamingTokens &&
@@ -71,12 +70,11 @@ export const OtherMessage = ({
         {message.tool_calls &&
           message.tool_calls.length > 0 &&
           message.tool_calls.map(toolCall => {
-            console.log('***debug toolCall', toolCall)
             return <TaskResultTool key={toolCall.id} toolCall={toolCall} />
           })}
 
         {/* Show typing indicator when streaming tokens and content is empty */}
-        {isStreamingTokens && isEmpty && (
+        {!message.tool_calls && isStreamingTokens && (
           <div className="py-2">
             <TypingIndicator />
           </div>

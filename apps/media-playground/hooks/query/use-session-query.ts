@@ -69,6 +69,8 @@ export function useSessionQuery({
     const optimisticId = `${OPTIMISTIC_ID_PREFIX}${Date.now()}`
     const optimisticMessage: Message & { __optimistic: boolean } = {
       _id: optimisticId,
+      session: sessionId,
+      role: 'user',
       createdAt: new Date(),
       updatedAt: new Date(),
       // Mark as optimistic for identification
@@ -116,6 +118,11 @@ export function useSessionQuery({
   }
 
   const addOrUpdateMessage = (newMessage: Message) => {
+    // Filter out tool messages - they shouldn't be displayed in the UI
+    if (newMessage.role === 'tool') {
+      return
+    }
+
     queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
       if (!oldData) return oldData
 

@@ -71,6 +71,7 @@ export const useSessionStream = ({
 
         const processStream = async () => {
           try {
+            // eslint-disable-next-line no-constant-condition
             while (true) {
               const { done, value } = await reader.read()
 
@@ -96,11 +97,8 @@ export const useSessionStream = ({
                         data.data.text
                       ) {
                         onToken?.(data.data.text)
-                      } else if (
-                        data.data.type === 'assistant_message' &&
-                        data.data.content
-                      ) {
-                        onMessage?.(data.data.content)
+                      } else if (data.data.type === 'assistant_message') {
+                        onMessage?.(data.data.content || '')
                       } else if (
                         data.data.type === 'tool_complete' &&
                         data.data.tool

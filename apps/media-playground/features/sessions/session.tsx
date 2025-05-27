@@ -13,7 +13,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { useParams } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const Session = () => {
   const params = useParams()
@@ -33,7 +33,6 @@ const Session = () => {
     enabled: !!sessionId && sessionId !== 'new',
   })
 
-  // Enable WebSocket updates for this session
   useSessionWebSocket({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
@@ -52,8 +51,10 @@ const Session = () => {
       setIsStreamingTokens(false)
       setHasReceivedTokens(false)
     },
-    onToolComplete: (tool, result) => {
-      console.log('Tool completed:', tool, result)
+    onToolComplete: () => {
+      setStreamingText('')
+      setIsStreamingTokens(false)
+      setHasReceivedTokens(false)
     },
     onError: error => {
       console.error('Streaming error:', error)
@@ -87,9 +88,14 @@ const Session = () => {
     return user?._id === senderId
   }
 
-  const messageGroups = session?.messages
-    ? groupConsecutiveMessages(session.messages)
-    : []
+  const filteredMessages = useMemo(
+    () => session?.messages?.filter(m => m.role !== 'tool') ?? [],
+    [session?.messages],
+  )
+  const messageGroups = useMemo(
+    () => groupConsecutiveMessages(filteredMessages),
+    [filteredMessages],
+  )
 
   if (isSessionLoading) {
     return (
@@ -98,8 +104,6 @@ const Session = () => {
       </div>
     )
   }
-
-  console.log('***debug messages', session?.messages)
 
   if (sessionError) {
     return (

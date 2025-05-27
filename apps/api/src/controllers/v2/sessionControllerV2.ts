@@ -425,29 +425,6 @@ export const getSession = async (
       })
     }
 
-    // const extendedMessages = session.messages.map(msg => {
-    //   if (msg.role !== 'assistant') {
-    //     return msg
-    //   }
-
-    //   const hasPendingToolCalls =
-    //     msg.tool_calls?.length &&
-    //     msg.tool_calls?.some(
-    //       call =>
-    //         !call.status ||
-    //         call.status === TaskV2Status.Running ||
-    //         call.status === TaskV2Status.Pending,
-    //     )
-    //   return {
-    //     ...msg,
-    //     status: hasPendingToolCalls
-    //       ? { type: 'running' }
-    //       : { type: 'complete', reason: 'stop' },
-    //   }
-    // })
-
-    // session.messages = extendedMessages
-
     return reply.status(200).send({ session })
   } catch (e) {
     const error = e as { response?: { data?: string } }
