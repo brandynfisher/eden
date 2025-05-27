@@ -2,6 +2,7 @@ import {
   addSessionMessageReaction,
   createSession,
   createSessionMessage,
+  createSessionMessageStream,
   deleteSession,
   getSession,
   listSessions,
@@ -37,6 +38,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         agent_ids: Type.Array(Type.String(), { minItems: 1 }),
         scenario: Type.String({ minLength: 10, maxLength: 1000 }),
         budget: Type.Number({ minimum: 100, maximum: 5000 }),
+        title: Type.Optional(Type.String({ minLength: 1, maxLength: 1000 })),
       },
       response: {
         201: Type.Object({
@@ -67,7 +69,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions', {
     schema: {
       tags: ['Sessions'],
-      description: 'Add a message to session',
+      description: 'Interact with a session',
       security: [
         {
           apiKey: [],
@@ -81,7 +83,6 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           session_id: Type.String(),
-          message_id: Type.Optional(Type.String()),
         }),
         400: {
           message: Type.Optional(Type.String()),
@@ -100,6 +101,29 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createSessionMessage(server, request, reply),
+  })
+
+  server.post<{
+    Body: SessionsV2MessageArguments & { stream?: boolean }
+  }>('/v2/sessions/stream', {
+    schema: {
+      tags: ['Sessions'],
+      description: 'Interact with a session (streaming)',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: {
+        session_id: Type.Optional(Type.String()),
+        content: Type.Optional(Type.String()),
+        attachments: Type.Optional(Type.Array(Type.String())),
+        stream: Type.Optional(Type.Boolean()),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      createSessionMessageStream(server, request, reply),
   })
 
   server.post<{
@@ -197,7 +221,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
-      description: 'Rename a session',
+      description: 'Modify a session',
       security: [
         {
           apiKey: [],
@@ -207,7 +231,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         session_id: Type.String(),
       },
       body: {
-        title: Type.String(),
+        title: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
       },
       response: {
         200: Type.Object({

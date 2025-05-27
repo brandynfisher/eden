@@ -14,7 +14,7 @@ import {
   SessionsV2MessageReactArguments,
   SessionsV2RenameArguments,
 } from '@edenlabs/eden-sdk'
-// import axios from 'axios'
+import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
@@ -30,7 +30,7 @@ export const createSession = async (
     })
   }
 
-  const { agent_ids, scenario, budget } = request.body
+  const { agent_ids, scenario, budget, title } = request.body
 
   // Validation
   if (!agent_ids || !Array.isArray(agent_ids) || agent_ids.length === 0) {
@@ -89,9 +89,11 @@ export const createSession = async (
       budget,
       spent: 0,
       messages: [],
-      title: `Session with ${agent_ids.length} agent${
-        agent_ids.length > 1 ? 's' : ''
-      }`,
+      title:
+        title ||
+        `Session with ${agent_ids.length} agent${
+          agent_ids.length > 1 ? 's' : ''
+        }`,
     })
 
     await session.save()
@@ -173,76 +175,162 @@ export const createSessionMessage = async (
     })
   }
 
-  // FOLLOWING IS FOR TESTING ONLY
-  /**
-  const message = new Message({
-    content,
-    sender: userId,
-    session: session._id,
-  })
+  const modalRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/prompt`,
+    data: {
+      session_id,
+      message: {
+        content,
+        attachments,
+      },
+      user_id: userId,
+    },
+    headers: {
+      'X-Client-Platform': 'web',
+      'X-Client-Deployment-Id': session.id,
+    },
+  }
 
-  await message.save()
+  try {
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
 
-  await session.updateOne({
-    $push: { messages: message._id },
-  })
+    if (!modalResponse?.data?.session_id) {
+      return reply.status(500).send({
+        message: `Missing session_id`,
+      })
+    }
 
-  return reply.status(200).send()
-   */
+    const message_id =
+      modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
 
-  server.log.info({
-    message: 'REMOVE THIS WHEN FOLLOWING IS DONE',
-    request: request.body,
-  })
+    return reply.status(200).send({
+      session_id: modalResponse.data.session_id,
+      message_id,
+    })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage = error?.response?.data || 'Unknown Error'
+    console.log(e)
+    return reply.status(500).send({ error: errorMessage })
+  }
+}
 
-  // const modalRequest = {
-  //   endpoint: `${server.config.EDEN_COMPUTE_API_URL}/session`,
-  //   data: {
-  //     agent_id: agent._id,
-  //     session_id,
-  //     user_message: {
-  //       content,
-  //       attachments,
-  //     },
-  //     user_id: userId,
-  //     force_reply: true,
-  //   },
-  //   headers: {
-  //     'X-Client-Platform': 'web',
-  //     'X-Client-Agent': agent.username,
-  //   },
-  // }
+export const createSessionMessageStream = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Body: SessionsV2MessageArguments & { stream?: boolean }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
 
-  // try {
-  //   const modalResponse = await axios.post(
-  //     modalRequest.endpoint,
-  //     modalRequest.data,
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-  //       },
-  //     },
-  //   )
+  const { session_id, content, attachments } = request.body
 
-  //   if (!modalResponse?.data?.session_id) {
-  //     return reply.status(500).send({
-  //       message: `Missing session_id`,
-  //     })
-  //   }
+  if (!session_id) {
+    return reply.status(400).send({
+      message: 'session_id not provided',
+    })
+  }
 
-  //   const message_id =
-  //     modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
+  const query = createIdOrSlugQuery(session_id)
+  const session = await Session.findOne(query)
 
-  //   return reply.status(200).send({
-  //     session_id: modalResponse.data.session_id,
-  //     message_id,
-  //   })
-  // } catch (e) {
-  //   const error = e as { response?: { data?: string } }
-  //   const errorMessage = error?.response?.data || 'Unknown Error'
-  //   console.log(e)
-  //   return reply.status(500).send({ error: errorMessage })
-  // }
+  if (!session) {
+    return reply.status(404).send({
+      message: 'session not found',
+    })
+  }
+
+  const userDocument = await User.findById(userId)
+  if (!userDocument) {
+    return reply.status(404).send({
+      message: `User not found`,
+    })
+  }
+
+  try {
+    // Set up SSE headers
+    reply.raw.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control',
+    })
+
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/prompt`,
+      data: {
+        session_id,
+        message: {
+          content,
+          attachments,
+        },
+        user_id: userId,
+        stream: true,
+      },
+      headers: {
+        'X-Client-Platform': 'web',
+        'X-Client-Deployment-Id': session.id,
+      },
+    }
+
+    const response = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+        responseType: 'stream',
+      },
+    )
+
+    // Pipe the stream from the compute API to the client
+    response.data.on('data', (chunk: Buffer) => {
+      reply.raw.write(chunk)
+    })
+
+    response.data.on('end', () => {
+      reply.raw.end()
+    })
+
+    response.data.on('error', (error: Error) => {
+      console.error('Stream error:', error)
+      reply.raw.write(
+        `data: ${JSON.stringify({
+          event: 'error',
+          data: { error: error.message },
+        })}\n\n`,
+      )
+      reply.raw.end()
+    })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage = error?.response?.data || 'Unknown Error'
+    console.log(e)
+
+    reply.raw.write(
+      `data: ${JSON.stringify({
+        event: 'error',
+        data: { error: errorMessage },
+      })}\n\n`,
+    )
+    reply.raw.end()
+  }
 }
 
 export const listSessions = async (
@@ -280,7 +368,7 @@ export const listSessions = async (
 
     const sessionsRepository = new SessionRepository(Session)
     const sessionQuery = {
-      // owner: userId,
+      owner: userId,
     }
 
     const paginatedResponse = await sessionsRepository.query(
@@ -324,7 +412,7 @@ export const getSession = async (
       })
       .populate({
         path: 'messages',
-        select: '_id content sender tool_calls createdAt reactions',
+        select: '_id content sender role tool_calls createdAt reactions',
         populate: {
           path: 'sender',
           select: '_id username userImage',
@@ -336,29 +424,6 @@ export const getSession = async (
         message: 'Session not found',
       })
     }
-
-    // const extendedMessages = session.messages.map(msg => {
-    //   if (msg.role !== 'assistant') {
-    //     return msg
-    //   }
-
-    //   const hasPendingToolCalls =
-    //     msg.tool_calls?.length &&
-    //     msg.tool_calls?.some(
-    //       call =>
-    //         !call.status ||
-    //         call.status === TaskV2Status.Running ||
-    //         call.status === TaskV2Status.Pending,
-    //     )
-    //   return {
-    //     ...msg,
-    //     status: hasPendingToolCalls
-    //       ? { type: 'running' }
-    //       : { type: 'complete', reason: 'stop' },
-    //   }
-    // })
-
-    // session.messages = extendedMessages
 
     return reply.status(200).send({ session })
   } catch (e) {
