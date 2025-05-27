@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { getCloudfrontUrl } from '@/lib/media'
+import { cn } from '@/lib/utils'
 import { Message } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 
@@ -11,19 +12,19 @@ type OtherMessageProps = {
   sessionId: string
   message: Message
   showAvatar?: boolean
-  isStreaming?: boolean
+  isStreamingTokens?: boolean
 }
 
 export const OtherMessage = ({
   sessionId,
   message,
   showAvatar = true,
-  isStreaming = false,
+  isStreamingTokens = false,
 }: OtherMessageProps) => {
   console.log('***debug message has tool calls', message.tool_calls)
   if (
     !message.content &&
-    !isStreaming &&
+    !isStreamingTokens &&
     (!message.tool_calls || message.tool_calls.length === 0)
   )
     return null
@@ -31,7 +32,13 @@ export const OtherMessage = ({
   const isEmpty = !message.content || message.content.length === 0
 
   return (
-    <div className="aui-assistant-message-root block px-2 md:grid group relative py-2">
+    <div
+      className={cn([
+        'aui-assistant-message-root block px-2 md:grid group relative py-2',
+        isStreamingTokens &&
+          'border border-purple-600/40 bg-purple-900/5 rounded-lg',
+      ])}
+    >
       <div className="flex items-center md:items-start mr-1 gap-2">
         <div className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0">
           {showAvatar ? (
@@ -68,14 +75,14 @@ export const OtherMessage = ({
             return <TaskResultTool key={toolCall.id} toolCall={toolCall} />
           })}
 
-        {/* Show typing indicator when streaming and content is empty */}
-        {isStreaming && isEmpty && (
+        {/* Show typing indicator when streaming tokens and content is empty */}
+        {isStreamingTokens && isEmpty && (
           <div className="py-2">
             <TypingIndicator />
           </div>
         )}
 
-        {!isStreaming && (
+        {!isStreamingTokens && (
           <div className="opacity-0 group-hover:opacity-100 transition-opacity">
             <ActionBar sessionId={sessionId} message={message} />
           </div>

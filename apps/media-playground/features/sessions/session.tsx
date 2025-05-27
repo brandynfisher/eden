@@ -21,7 +21,8 @@ const Session = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
   const [streamingText, setStreamingText] = useState('')
-  const [isStreaming, setIsStreaming] = useState(false)
+  const [isStreamingTokens, setIsStreamingTokens] = useState(false)
+  const [hasReceivedTokens, setHasReceivedTokens] = useState(false)
 
   const {
     data: session,
@@ -43,10 +44,13 @@ const Session = () => {
     sessionId,
     onToken: text => {
       setStreamingText(prev => prev + text)
+      setIsStreamingTokens(true)
+      setHasReceivedTokens(true)
     },
     onMessage: () => {
       setStreamingText('')
-      setIsStreaming(false)
+      setIsStreamingTokens(false)
+      setHasReceivedTokens(false)
     },
     onToolComplete: (tool, result) => {
       console.log('Tool completed:', tool, result)
@@ -54,10 +58,12 @@ const Session = () => {
     onError: error => {
       console.error('Streaming error:', error)
       setStreamingText('')
-      setIsStreaming(false)
+      setIsStreamingTokens(false)
+      setHasReceivedTokens(false)
     },
     onDone: () => {
-      setIsStreaming(false)
+      setIsStreamingTokens(false)
+      setHasReceivedTokens(false)
     },
   })
 
@@ -71,10 +77,10 @@ const Session = () => {
 
   // Separate effect for streaming text to avoid double scroll
   useEffect(() => {
-    if (streamingText && isStreaming) {
+    if (streamingText && isStreamingTokens) {
       scrollToBottom()
     }
-  }, [streamingText, isStreaming, scrollToBottom])
+  }, [streamingText, isStreamingTokens, scrollToBottom])
 
   const isOwnMessage = (senderId?: string) => {
     if (!senderId) return false
@@ -135,7 +141,8 @@ const Session = () => {
           </div>
         ))}
 
-        {isStreaming && (
+        {/* Only show streaming message when actively streaming tokens */}
+        {isStreamingTokens && (
           <div className="mb-4">
             <OtherMessage
               sessionId={sessionId as string}
@@ -154,7 +161,7 @@ const Session = () => {
                 } as any // eslint-disable-line @typescript-eslint/no-explicit-any
               }
               showAvatar={true}
-              isStreaming={true}
+              isStreamingTokens={isStreamingTokens && !hasReceivedTokens}
             />
           </div>
         )}
@@ -166,7 +173,8 @@ const Session = () => {
         <MessageInput
           sessionId={sessionId as string}
           onStreamingMessage={(content, attachments) => {
-            setIsStreaming(true)
+            setIsStreamingTokens(true)
+            setHasReceivedTokens(false)
             setStreamingText('')
             sendStreamingMessage(content, attachments)
             // Scroll to bottom when streaming starts
