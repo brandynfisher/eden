@@ -53,12 +53,13 @@ const MediaDownloadMenu = ({
 
 export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
   const { tool, result: toolResults } = toolCall
+  console.log('***debug toolCall', toolCall)
 
   return (
     <div className="mb-2 max-w-full">
       <ToolFallback
         type="tool-call"
-        result={toolResults}
+        result={toolResults || []}
         toolCallId={tool!}
         toolName={tool!}
         args={toolCall.args}

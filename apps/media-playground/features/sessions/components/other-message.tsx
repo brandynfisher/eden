@@ -20,7 +20,13 @@ export const OtherMessage = ({
   showAvatar = true,
   isStreaming = false,
 }: OtherMessageProps) => {
-  if (!message.content && !isStreaming) return null
+  console.log('***debug message has tool calls', message.tool_calls)
+  if (
+    !message.content &&
+    !isStreaming &&
+    (!message.tool_calls || message.tool_calls.length === 0)
+  )
+    return null
 
   const isEmpty = !message.content || message.content.length === 0
 
@@ -55,9 +61,12 @@ export const OtherMessage = ({
       </div>
       <div className="aui-assistant-message-content mt-3 md:mt-1.5 md:pl-3 pr-2 max-w-full">
         {!isEmpty && <MarkdownText>{message.content}</MarkdownText>}
-        {message.tool_calls?.map(toolCall => (
-          <TaskResultTool key={toolCall.id} toolCall={toolCall} />
-        ))}
+        {message.tool_calls &&
+          message.tool_calls.length > 0 &&
+          message.tool_calls.map(toolCall => {
+            console.log('***debug toolCall', toolCall)
+            return <TaskResultTool key={toolCall.id} toolCall={toolCall} />
+          })}
 
         {/* Show typing indicator when streaming and content is empty */}
         {isStreaming && isEmpty && (
