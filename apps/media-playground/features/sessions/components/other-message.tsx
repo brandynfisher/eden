@@ -34,8 +34,6 @@ export const OtherMessage = ({
     <div
       className={cn([
         'aui-assistant-message-root block px-2 md:grid group relative py-2',
-        isStreamingTokens &&
-          'border border-purple-600/40 bg-purple-900/5 rounded-lg',
       ])}
     >
       <div className="flex items-center md:items-start mr-1 gap-2">
