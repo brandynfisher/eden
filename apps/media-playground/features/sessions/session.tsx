@@ -23,6 +23,8 @@ const Session = () => {
   const [streamingText, setStreamingText] = useState('')
   const [isStreamingTokens, setIsStreamingTokens] = useState(false)
   const [hasReceivedTokens, setHasReceivedTokens] = useState(false)
+  const [waitingForWebSocket, setWaitingForWebSocket] = useState(false)
+  const streamingMessageIdRef = useRef<string | null>(null)
 
   const {
     data: session,
@@ -38,6 +40,27 @@ const Session = () => {
     enabled: !!sessionId && sessionId !== 'new',
   })
 
+  // Clear streaming state when websocket delivers the real message
+  useEffect(() => {
+    if (
+      waitingForWebSocket &&
+      streamingMessageIdRef.current &&
+      session?.messages
+    ) {
+      const lastMessage = session.messages[session.messages.length - 1]
+      if (
+        lastMessage &&
+        lastMessage.content === streamingMessageIdRef.current
+      ) {
+        setStreamingText('')
+        setIsStreamingTokens(false)
+        setHasReceivedTokens(false)
+        setWaitingForWebSocket(false)
+        streamingMessageIdRef.current = null
+      }
+    }
+  }, [session?.messages, waitingForWebSocket])
+
   // Set up streaming
   const { sendMessage: sendStreamingMessage } = useSessionStream({
     sessionId,
@@ -46,25 +69,45 @@ const Session = () => {
       setIsStreamingTokens(true)
       setHasReceivedTokens(true)
     },
-    onMessage: () => {
-      setStreamingText('')
-      setIsStreamingTokens(false)
-      setHasReceivedTokens(false)
+    onMessage: content => {
+      // Message is complete - set final content and wait for websocket confirmation
+      setStreamingText(content)
+      setIsStreamingTokens(false) // Stop showing typing indicator
+      setWaitingForWebSocket(true)
+      streamingMessageIdRef.current = content
+
+      // Fallback timeout in case websocket doesn't deliver
+      setTimeout(() => {
+        if (streamingMessageIdRef.current === content) {
+          setStreamingText('')
+          setIsStreamingTokens(false)
+          setHasReceivedTokens(false)
+          setWaitingForWebSocket(false)
+          streamingMessageIdRef.current = null
+        }
+      }, 2000)
     },
     onToolComplete: () => {
       setStreamingText('')
       setIsStreamingTokens(false)
       setHasReceivedTokens(false)
+      setWaitingForWebSocket(false)
+      streamingMessageIdRef.current = null
     },
     onError: error => {
       console.error('Streaming error:', error)
       setStreamingText('')
       setIsStreamingTokens(false)
       setHasReceivedTokens(false)
+      setWaitingForWebSocket(false)
+      streamingMessageIdRef.current = null
     },
     onDone: () => {
-      setIsStreamingTokens(false)
-      setHasReceivedTokens(false)
+      // Only clear if we're not waiting for websocket
+      if (!waitingForWebSocket) {
+        setIsStreamingTokens(false)
+        setHasReceivedTokens(false)
+      }
     },
   })
 
@@ -145,8 +188,8 @@ const Session = () => {
           </div>
         ))}
 
-        {/* Only show streaming message when actively streaming tokens */}
-        {isStreamingTokens && (
+        {/* Show streaming message when actively streaming tokens or waiting for websocket */}
+        {(isStreamingTokens || waitingForWebSocket) && streamingText && (
           <div className="mb-4">
             <OtherMessage
               sessionId={sessionId as string}
