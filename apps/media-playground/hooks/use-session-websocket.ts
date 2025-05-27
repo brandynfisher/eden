@@ -28,8 +28,6 @@ export function useSessionWebSocket({
   })
 
   useEffect(() => {
-    console.log('useSessionWebSocket', sessionId, enabled, lastMessageJson)
-
     if (!enabled || !sessionId || !lastMessageJson) return
 
     // Only process session-update events
@@ -43,7 +41,7 @@ export function useSessionWebSocket({
       return
     }
 
-    // If we have new messages, update the query cache
+    // If we have new messages, update the query cache (filter out tool messages)
     if (newMessages?.length) {
       for (const newMessage of newMessages) {
         addOrUpdateMessage(newMessage)
