@@ -1,6 +1,7 @@
 import ActionBar from './action-bar'
 import { MarkdownText } from './markdown-text'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { getCloudfrontUrl } from '@/lib/media'
 import { Message } from '@edenlabs/eden-sdk'
@@ -10,14 +11,18 @@ type OtherMessageProps = {
   sessionId: string
   message: Message
   showAvatar?: boolean
+  isStreaming?: boolean
 }
 
 export const OtherMessage = ({
   sessionId,
   message,
   showAvatar = true,
+  isStreaming = false,
 }: OtherMessageProps) => {
-  if (!message.content) return null
+  if (!message.content && !isStreaming) return null
+
+  const isEmpty = !message.content || message.content.length === 0
 
   return (
     <div className="aui-assistant-message-root block px-2 md:grid group relative py-2">
@@ -49,13 +54,23 @@ export const OtherMessage = ({
         </div>
       </div>
       <div className="aui-assistant-message-content mt-3 md:mt-1.5 md:pl-3 pr-2 max-w-full">
-        <MarkdownText>{message.content}</MarkdownText>
+        {!isEmpty && <MarkdownText>{message.content}</MarkdownText>}
         {message.tool_calls?.map(toolCall => (
           <TaskResultTool key={toolCall.id} toolCall={toolCall} />
         ))}
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-          <ActionBar sessionId={sessionId} message={message} />
-        </div>
+
+        {/* Show typing indicator when streaming and content is empty */}
+        {isStreaming && isEmpty && (
+          <div className="py-2">
+            <TypingIndicator />
+          </div>
+        )}
+
+        {!isStreaming && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <ActionBar sessionId={sessionId} message={message} />
+          </div>
+        )}
       </div>
     </div>
   )

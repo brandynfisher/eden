@@ -45,8 +45,6 @@ const Session = () => {
     sessionId,
     onToken: text => {
       setStreamingText(prev => prev + text)
-      // Scroll to bottom as tokens come in
-      setTimeout(scrollToBottom, 0)
     },
     onMessage: () => {
       setStreamingText('')
@@ -71,7 +69,14 @@ const Session = () => {
 
   useEffect(() => {
     scrollToBottom()
-  }, [session?.messages, streamingText, scrollToBottom])
+  }, [session?.messages, scrollToBottom])
+
+  // Separate effect for streaming text to avoid double scroll
+  useEffect(() => {
+    if (streamingText && isStreaming) {
+      scrollToBottom()
+    }
+  }, [streamingText, isStreaming, scrollToBottom])
 
   const isOwnMessage = (senderId?: string) => {
     if (!senderId) return false
@@ -129,7 +134,7 @@ const Session = () => {
         ))}
 
         {/* Show streaming message */}
-        {isStreaming && streamingText && (
+        {isStreaming && (
           <div className="mb-4">
             <OtherMessage
               sessionId={sessionId as string}
@@ -148,6 +153,7 @@ const Session = () => {
                 } as any // eslint-disable-line @typescript-eslint/no-explicit-any
               }
               showAvatar={true}
+              isStreaming={true}
             />
           </div>
         )}

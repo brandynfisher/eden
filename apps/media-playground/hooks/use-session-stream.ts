@@ -9,7 +9,7 @@ interface StreamMessage {
     text?: string
     content?: string
     tool?: string
-    result?: any
+    result?: unknown
     error?: string
   }
 }
@@ -18,7 +18,7 @@ interface UseSessionStreamProps {
   sessionId: string
   onToken?: (text: string) => void
   onMessage?: (content: string) => void
-  onToolComplete?: (tool: string, result: any) => void
+  onToolComplete?: (tool: string, result: unknown) => void
   onError?: (error: string) => void
   onDone?: () => void
 }
@@ -89,7 +89,6 @@ export const useSessionStream = ({
                 if (line.startsWith('data: ')) {
                   try {
                     const data = JSON.parse(line.slice(6)) as StreamMessage
-                    console.log('***debug data', data)
 
                     if (data.event === 'update') {
                       if (
