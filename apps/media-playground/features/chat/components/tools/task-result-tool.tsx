@@ -68,6 +68,7 @@ export const TaskResultTool = makeAssistantToolUI({
     const isTwitterTool =
       tool === 'twitter_mentions' ||
       tool === 'twitter_search' ||
+      tool === 'tweet' ||
       tool?.includes('twitter')
 
     return (
