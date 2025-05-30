@@ -96,12 +96,26 @@ const Session = () => {
       }, 2000)
     },
     onToolComplete: () => {
+      // After tool calls complete, we expect more tokens from the LLM
+      // So set up streaming state for the follow-up response
       setStreamingText('')
-      setIsStreamingTokens(false)
+      setIsStreamingTokens(true)
       setHasReceivedTokens(false)
       setWaitingForWebSocket(false)
-      setStreamingAgent(null)
+      // Keep the streaming agent for continuity
       streamingMessageIdRef.current = null
+
+      // Fallback timeout in case no follow-up response comes
+      setTimeout(() => {
+        if (!hasReceivedTokens) {
+          setStreamingText('')
+          setIsStreamingTokens(false)
+          setHasReceivedTokens(false)
+          setWaitingForWebSocket(false)
+          setStreamingAgent(null)
+          streamingMessageIdRef.current = null
+        }
+      }, 3000)
     },
     onError: error => {
       console.error('Streaming error:', error)
