@@ -7,8 +7,6 @@ export const UserMessage = ({ message }: { message: Message }) => {
   const hasAttachments = message.attachments && message.attachments.length > 0
   const hasContent = message.content && message.content.trim().length > 0
 
-  console.log('***debug***', message)
-
   if (!hasContent && !hasAttachments) return null
 
   return (

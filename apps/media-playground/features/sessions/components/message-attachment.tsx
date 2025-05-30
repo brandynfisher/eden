@@ -39,13 +39,13 @@ export const MessageAttachment: FC<MessageAttachmentProps> = ({
           }}
           imageProps={{
             className:
-              'max-w-xs max-h-32 w-auto h-auto object-contain rounded-lg',
+              'max-w-256 max-h-256 w-auto h-auto object-contain rounded-lg',
             unoptimized: true,
             loading: 'lazy',
           }}
           videoProps={{
             className:
-              'max-w-xs max-h-32 w-auto h-auto object-contain rounded-lg',
+              'max-w-256 max-h-256 w-auto h-auto object-contain rounded-lg',
           }}
         />
       ) : (
