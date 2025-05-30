@@ -71,8 +71,8 @@ export const OtherMessage = ({
             return <TaskResultTool key={toolCall.id} toolCall={toolCall} />
           })}
 
-        {/* Show typing indicator when streaming tokens and content is empty */}
-        {!message.tool_calls && isStreamingTokens && (
+        {/* Show typing indicator when streaming tokens and no content yet */}
+        {isStreamingTokens && isEmpty && !message.tool_calls && (
           <div className="py-2">
             <TypingIndicator />
           </div>

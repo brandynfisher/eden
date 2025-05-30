@@ -203,7 +203,7 @@ const Session = () => {
         ))}
 
         {/* Show streaming message when actively streaming tokens or waiting for websocket */}
-        {(isStreamingTokens || waitingForWebSocket) && streamingText && (
+        {(isStreamingTokens || waitingForWebSocket) && (
           <div className="mb-4">
             <OtherMessage
               sessionId={sessionId as string}
