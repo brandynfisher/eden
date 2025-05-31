@@ -34,14 +34,21 @@ const sessionFormSchema = z.object({
     )
     .min(1, 'Please select at least one agent')
     .max(MAX_AGENTS, `You can select a maximum of ${MAX_AGENTS} agents`),
+  title: z
+    .string()
+    .max(1000, 'Title must not exceed 1000 characters')
+    .optional()
+    .or(z.literal('')),
   scenario: z
     .string()
-    .min(10, 'Scenario must be at least 10 characters')
-    .max(1000, 'Scenario must not exceed 1000 characters'),
+    .max(1000, 'Scenario must not exceed 1000 characters')
+    .optional()
+    .or(z.literal('')),
   budget: z
     .number()
     .min(100, 'Budget must be at least 100')
-    .max(5000, 'Budget must not exceed 5000'),
+    .max(5000, 'Budget must not exceed 5000')
+    .optional(),
 })
 
 type SessionFormValues = z.infer<typeof sessionFormSchema>
@@ -59,6 +66,7 @@ const NewSession = () => {
     resolver: zodResolver(sessionFormSchema),
     defaultValues: {
       agents: [],
+      title: '',
       scenario: '',
       budget: 1000,
     },
@@ -77,16 +85,33 @@ const NewSession = () => {
     try {
       setIsLoading(true)
 
+      const requestBody: {
+        agent_ids: string[]
+        title?: string
+        scenario?: string
+        budget?: number
+      } = {
+        agent_ids: data.agents.map(agent => agent._id),
+      }
+
+      if (data.title && data.title.trim()) {
+        requestBody.title = data.title
+      }
+
+      if (data.scenario && data.scenario.trim()) {
+        requestBody.scenario = data.scenario
+      }
+
+      if (data.budget) {
+        requestBody.budget = data.budget
+      }
+
       const response = await fetch('/api/sessions/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          agent_ids: data.agents.map(agent => agent._id),
-          scenario: data.scenario,
-          budget: data.budget,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
@@ -201,13 +226,35 @@ const NewSession = () => {
               )}
             />
 
+            {/* Title */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title (Optional)</FormLabel>
+                  <FormControl>
+                    <AutosizeTextarea
+                      placeholder="Give your session a title..."
+                      variant="sm"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Optional title for your session (max 1000 characters)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Scenario */}
             <FormField
               control={form.control}
               name="scenario"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Scenario</FormLabel>
+                  <FormLabel>Scenario (Optional)</FormLabel>
                   <FormControl>
                     <AutosizeTextarea
                       placeholder="Describe what you want to accomplish in this session..."
@@ -216,7 +263,7 @@ const NewSession = () => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Describe the context or goal for this session (10-1000
+                    Optional context or goal for this session (max 1000
                     characters)
                   </FormDescription>
                   <FormMessage />
@@ -230,11 +277,11 @@ const NewSession = () => {
               name="budget"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Budget (Mana)</FormLabel>
+                  <FormLabel>Budget (Optional)</FormLabel>
                   <FormControl>
                     <SliderInput
                       type="integer"
-                      value={field.value}
+                      value={field.value || 1000}
                       onChange={value => field.onChange(value)}
                       min={100}
                       max={5000}
@@ -243,7 +290,7 @@ const NewSession = () => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Set a budget limit for this session (100-5000 manna)
+                    Optional budget limit for this session (100-5000 manna)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

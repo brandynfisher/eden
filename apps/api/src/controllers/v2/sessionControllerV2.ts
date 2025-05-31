@@ -40,19 +40,29 @@ export const createSession = async (
   }
 
   if (
-    !scenario ||
-    typeof scenario !== 'string' ||
-    scenario.length < 10 ||
-    scenario.length > 1000
+    scenario !== undefined &&
+    (typeof scenario !== 'string' || scenario.length > 1000)
   ) {
     return reply.status(400).send({
-      message: 'scenario must be a string between 10 and 1000 characters',
+      message: 'scenario must be a string with max 1000 characters',
     })
   }
 
-  if (!budget || typeof budget !== 'number' || budget < 100 || budget > 5000) {
+  if (
+    budget !== undefined &&
+    (typeof budget !== 'number' || budget < 100 || budget > 5000)
+  ) {
     return reply.status(400).send({
       message: 'budget must be a number between 100 and 5000',
+    })
+  }
+
+  if (
+    title !== undefined &&
+    (typeof title !== 'string' || title.length > 1000)
+  ) {
+    return reply.status(400).send({
+      message: 'title must be a string with max 1000 characters',
     })
   }
 
@@ -82,11 +92,9 @@ export const createSession = async (
     }
 
     // Create the session
-    const session = new Session({
+    const sessionData: any = {
       owner: userId,
       agents: validAgentIds,
-      scenario,
-      budget,
       spent: 0,
       messages: [],
       title:
@@ -94,7 +102,17 @@ export const createSession = async (
         `Session with ${agent_ids.length} agent${
           agent_ids.length > 1 ? 's' : ''
         }`,
-    })
+    }
+
+    if (scenario) {
+      sessionData.scenario = scenario
+    }
+
+    if (budget) {
+      sessionData.budget = budget
+    }
+
+    const session = new Session(sessionData)
 
     await session.save()
 

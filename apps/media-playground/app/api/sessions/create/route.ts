@@ -1,6 +1,6 @@
 import { getAuthToken } from '@/lib/auth'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { EdenClient } from '@edenlabs/eden-sdk'
+import { EdenClient, SessionsV2CreateArguments } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const { agent_ids, scenario, budget } = await request.json()
+  const { agent_ids, scenario, budget, title } = await request.json()
 
   // Validation
   if (!agent_ids || !Array.isArray(agent_ids) || agent_ids.length === 0) {
@@ -25,14 +25,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (
-    !scenario ||
-    typeof scenario !== 'string' ||
-    scenario.length < 10 ||
-    scenario.length > 1000
+    scenario !== undefined &&
+    (typeof scenario !== 'string' || scenario.length > 1000)
   ) {
     return new NextResponse(
       JSON.stringify({
-        message: 'scenario must be a string between 10 and 1000 characters',
+        message: 'scenario must be a string with max 1000 characters',
       }),
       {
         status: 400,
@@ -40,10 +38,27 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  if (!budget || typeof budget !== 'number' || budget < 100 || budget > 5000) {
+  if (
+    budget !== undefined &&
+    (typeof budget !== 'number' || budget < 100 || budget > 5000)
+  ) {
     return new NextResponse(
       JSON.stringify({
         message: 'budget must be a number between 100 and 5000',
+      }),
+      {
+        status: 400,
+      },
+    )
+  }
+
+  if (
+    title !== undefined &&
+    (typeof title !== 'string' || title.length > 1000)
+  ) {
+    return new NextResponse(
+      JSON.stringify({
+        message: 'title must be a string with max 1000 characters',
       }),
       {
         status: 400,
@@ -57,11 +72,23 @@ export async function POST(request: NextRequest) {
       token: authToken,
     })
 
-    const res = await eden.sessions.v2.create({
+    const createArgs: SessionsV2CreateArguments = {
       agent_ids,
-      scenario,
-      budget,
-    })
+    }
+
+    if (scenario) {
+      createArgs.scenario = scenario
+    }
+
+    if (budget) {
+      createArgs.budget = budget
+    }
+
+    if (title) {
+      createArgs.title = title
+    }
+
+    const res = await eden.sessions.v2.create(createArgs)
 
     if (!res.success) {
       return new NextResponse(
