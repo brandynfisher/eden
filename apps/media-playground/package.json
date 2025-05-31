@@ -68,6 +68,7 @@
     "dayjs": "^1.11.13",
     "elevenlabs": "^1.56.0",
     "event-source-polyfill": "^1.0.31",
+    "exifr": "^7.1.3",
     "expr-eval": "^2.0.2",
     "holy-loader": "^2.3.8",
     "lodash.throttle": "^4.1.1",

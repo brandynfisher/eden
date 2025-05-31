@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import { arrayMove } from '@dnd-kit/sortable'
 import axios, { AxiosError, AxiosProgressEvent, CancelTokenSource } from 'axios'
+import exifr from 'exifr'
 import {
   AudioWaveform,
   BanIcon,
@@ -275,14 +276,135 @@ const FileUploader = ({
     )
   }
 
+  // Add EXIF rotation function here too
+  const rotateImageBasedOnExif = async (file: File): Promise<File> => {
+    // Only process image files
+    if (!file.type.startsWith('image/')) {
+      return file
+    }
+
+    try {
+      // Read EXIF data
+      const exifData = await exifr.parse(file)
+      const orientation = exifData?.Orientation || 1
+
+      // If orientation is 1 (normal), no rotation needed
+      if (orientation === 1) {
+        return file
+      }
+
+      // Create canvas to rotate image
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return file
+      }
+
+      // Create image element
+      const img = new Image()
+      const imageUrl = URL.createObjectURL(file)
+
+      return new Promise(resolve => {
+        img.onload = () => {
+          let { width, height } = img
+
+          // Calculate new dimensions based on orientation
+          if (orientation >= 5 && orientation <= 8) {
+            // For orientations 5-8, swap width and height
+            [width, height] = [height, width]
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          // Apply rotation based on EXIF orientation
+          switch (orientation) {
+            case 2:
+              // Flip horizontal
+              ctx.scale(-1, 1)
+              ctx.translate(-width, 0)
+              break
+            case 3:
+              // Rotate 180°
+              ctx.translate(width, height)
+              ctx.rotate(Math.PI)
+              break
+            case 4:
+              // Flip vertical
+              ctx.scale(1, -1)
+              ctx.translate(0, -height)
+              break
+            case 5:
+              // Flip horizontal + rotate 90° CCW
+              ctx.rotate(-Math.PI / 2)
+              ctx.scale(-1, 1)
+              ctx.translate(-width, -height)
+              break
+            case 6:
+              // Rotate 90° CW
+              ctx.rotate(Math.PI / 2)
+              ctx.translate(0, -height)
+              break
+            case 7:
+              // Flip horizontal + rotate 90° CW
+              ctx.rotate(Math.PI / 2)
+              ctx.scale(-1, 1)
+              ctx.translate(-width, 0)
+              break
+            case 8:
+              // Rotate 90° CCW
+              ctx.rotate(-Math.PI / 2)
+              ctx.translate(-width, 0)
+              break
+          }
+
+          // Draw the rotated image
+          ctx.drawImage(img, 0, 0)
+
+          // Convert canvas to blob and create new file
+          canvas.toBlob(
+            blob => {
+              if (blob) {
+                const rotatedFile = new File([blob], file.name, {
+                  type: file.type,
+                  lastModified: file.lastModified,
+                })
+                resolve(rotatedFile)
+              } else {
+                resolve(file)
+              }
+            },
+            file.type,
+            0.95,
+          ) // 95% quality
+
+          URL.revokeObjectURL(imageUrl)
+        }
+
+        img.onerror = () => {
+          URL.revokeObjectURL(imageUrl)
+          resolve(file) // Return original file on error
+        }
+
+        img.src = imageUrl
+      })
+    } catch (error) {
+      console.warn('Failed to process EXIF data:', error)
+      return file // Return original file on error
+    }
+  }
+
   const uploadAsset = async (
     file: File,
     onUploadProgress: (progressEvent: AxiosProgressEvent) => void,
     cancelSource: CancelTokenSource,
   ) => {
     try {
+      // Auto-rotate image based on EXIF data before upload
+      const processedFile = await rotateImageBasedOnExif(file)
+
       return uploadFileToS3({
-        file,
+        file: processedFile,
         onUploadProgress,
         cancelSource,
       })
