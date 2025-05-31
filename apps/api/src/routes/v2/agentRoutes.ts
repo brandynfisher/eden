@@ -202,7 +202,6 @@ const agentRoutes: FastifyPluginAsync = async server => {
             farcaster: Type.Optional(
               Type.Object({
                 mnemonic: Type.String(),
-                neynarWebhookSecret: Type.String(),
               }),
             ),
             twitter: Type.Optional(

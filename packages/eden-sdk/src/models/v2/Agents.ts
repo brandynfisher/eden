@@ -159,7 +159,6 @@ interface TelegramDeploymentSecrets {
 
 interface FarcasterDeploymentSecrets {
   mnemonic: string
-  neynarWebhookSecret: string
 }
 
 interface TwitterDeploymentSecrets {

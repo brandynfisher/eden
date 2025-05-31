@@ -129,7 +129,6 @@ export const DeploymentFormFooter = ({
           payload.secrets = {
             farcaster: {
               mnemonic: data.mnemonic,
-              neynarWebhookSecret: data.neynarWebhookSecret,
             },
           }
         } else if (platform === 'twitter') {
