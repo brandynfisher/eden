@@ -6,7 +6,7 @@ import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
-import { AgentsGetDeploymentsResponse } from '@edenlabs/eden-sdk'
+import { Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -14,14 +14,13 @@ import { z } from 'zod'
 
 const schema = z.object({
   mnemonic: z.string(),
-  neynarWebhookSecret: z.string(),
 })
 
 type DeploymentFormDto = z.infer<typeof schema>
 
 interface FarcasterDeploymentFormProps {
   agentId: string
-  deployment?: AgentsGetDeploymentsResponse['deployments']['farcaster']
+  deployment?: Deployment
 }
 
 export const FarcasterDeploymentForm = ({
@@ -34,12 +33,11 @@ export const FarcasterDeploymentForm = ({
     resolver: zodResolver(schema),
     defaultValues: {
       mnemonic: '',
-      neynarWebhookSecret: '',
     },
   })
 
   const isDeployed = useMemo(() => {
-    return deployment
+    return deployment !== undefined
   }, [deployment])
 
   return (
@@ -69,14 +67,7 @@ export const FarcasterDeploymentForm = ({
               label="Mnemonic"
               description="Your Farcaster mnemonic."
               isSubmitting={form.formState.isSubmitting}
-            />
-            <TokenField
-              form={form}
-              name="neynarWebhookSecret"
-              isDeployed={isDeployed ?? false}
-              label="Neynar Webhook Secret"
-              description="Your Neynar webhook secret."
-              isSubmitting={form.formState.isSubmitting}
+              placeholder="Enter mnemonic"
             />
             <DeploymentFormFooter
               form={form}

@@ -22,6 +22,7 @@ interface TokenFieldProps {
   description: string
   isDeployed: boolean
   isSubmitting: boolean
+  placeholder?: string
 }
 
 export const TokenField = ({
@@ -31,6 +32,7 @@ export const TokenField = ({
   label,
   description,
   isSubmitting,
+  placeholder,
 }: TokenFieldProps) => {
   const [isEditing, setIsEditing] = useState(true)
 
@@ -49,6 +51,10 @@ export const TokenField = ({
     setIsEditing(!isEditing)
   }
 
+  const placeholderText = isEditing
+    ? placeholder || 'Enter token'
+    : 'the-token-is-secret'
+
   return (
     <FormField
       control={form.control}
@@ -59,8 +65,8 @@ export const TokenField = ({
           <div className="flex items-center gap-2">
             <FormControl>
               <Input
-                type="text"
-                placeholder={isEditing ? 'Enter token' : 'the-token-is-secret'}
+                type="password"
+                placeholder={placeholderText}
                 disabled={!isEditing}
                 {...field}
               />
