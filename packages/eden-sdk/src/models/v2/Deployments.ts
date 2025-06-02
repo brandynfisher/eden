@@ -30,6 +30,7 @@ export type Deployment = {
     }
     farcaster: {
       webhook_id?: string
+      auto_reply?: boolean
     }
   }
   valid?: boolean

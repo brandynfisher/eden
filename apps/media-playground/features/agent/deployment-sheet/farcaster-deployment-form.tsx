@@ -1,7 +1,15 @@
 'use client'
 
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Form } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form'
+import { Switch } from '@/components/ui/switch'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
@@ -14,6 +22,7 @@ import { z } from 'zod'
 
 const schema = z.object({
   mnemonic: z.string(),
+  autoReply: z.boolean().default(true),
 })
 
 type DeploymentFormDto = z.infer<typeof schema>
@@ -33,6 +42,7 @@ export const FarcasterDeploymentForm = ({
     resolver: zodResolver(schema),
     defaultValues: {
       mnemonic: '',
+      autoReply: deployment?.config?.farcaster?.auto_reply ?? true,
     },
   })
 
@@ -68,6 +78,27 @@ export const FarcasterDeploymentForm = ({
               description="Your Farcaster mnemonic."
               isSubmitting={form.formState.isSubmitting}
               placeholder="Enter mnemonic"
+            />
+            <FormField
+              control={form.control}
+              name="autoReply"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Auto Reply</FormLabel>
+                    <FormDescription>
+                      Automatically reply to mentions and casts
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={form.formState.isSubmitting}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
             />
             <DeploymentFormFooter
               form={form}

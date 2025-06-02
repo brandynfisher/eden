@@ -92,6 +92,12 @@ export const DeploymentFormFooter = ({
             topic_allowlist: data.allowedTopics,
           },
         }
+      } else if (platform === 'farcaster') {
+        config = {
+          farcaster: {
+            auto_reply: data.autoReply,
+          },
+        }
       } else if (platform === 'twitter') {
         config = {
           twitter: {
