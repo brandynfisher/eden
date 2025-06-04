@@ -37,8 +37,30 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       body: {
         agent_ids: Type.Array(Type.String(), { minItems: 1 }),
         scenario: Type.Optional(Type.String({ maxLength: 1000 })),
-        budget: Type.Optional(Type.Number({ minimum: 100, maximum: 5000 })),
+        budget: Type.Optional(
+          Type.Object({
+            manna_budget: Type.Optional(
+              Type.Number({ minimum: 100, maximum: 50000 }),
+            ),
+            token_budget: Type.Optional(
+              Type.Number({ minimum: 1000, maximum: 1000000 }),
+            ),
+            turn_budget: Type.Optional(
+              Type.Number({ minimum: 1, maximum: 1000 }),
+            ),
+          }),
+        ),
         title: Type.Optional(Type.String({ maxLength: 1000 })),
+        autonomy_settings: Type.Optional(
+          Type.Object({
+            auto_reply: Type.Boolean(),
+            reply_interval: Type.Number({ minimum: 0, maximum: 3600 }),
+            actor_selection_method: Type.Union([
+              Type.Literal('random'),
+              Type.Literal('random_exclude_last'),
+            ]),
+          }),
+        ),
       },
       response: {
         201: Type.Object({

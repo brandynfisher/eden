@@ -18,8 +18,20 @@ export interface SessionSchema {
   channel?: string
   scenario?: string
   messages: MessageDocument[]
-  budget?: number
-  spent?: number
+  budget?: {
+    token_budget?: number
+    manna_budget?: number
+    turn_budget?: number
+    tokens_spent?: number
+    manna_spent?: number
+    turns_spent?: number
+  }
+  autonomy_settings?: {
+    auto_reply: boolean
+    reply_interval: number
+    actor_selection_method: 'random' | 'random_exclude_last'
+  }
+  last_actor_id?: ObjectId
   createdAt: Date
   updatedAt: Date
 }
@@ -62,10 +74,46 @@ export const sessionSchema = new Schema<SessionDocument>(
       },
     ],
     budget: {
-      type: Schema.Types.Number,
+      token_budget: {
+        type: Schema.Types.Number,
+      },
+      manna_budget: {
+        type: Schema.Types.Number,
+      },
+      turn_budget: {
+        type: Schema.Types.Number,
+      },
+      tokens_spent: {
+        type: Schema.Types.Number,
+        default: 0,
+      },
+      manna_spent: {
+        type: Schema.Types.Number,
+        default: 0,
+      },
+      turns_spent: {
+        type: Schema.Types.Number,
+        default: 0,
+      },
     },
-    spent: {
-      type: Schema.Types.Number,
+    autonomy_settings: {
+      auto_reply: {
+        type: Schema.Types.Boolean,
+        default: false,
+      },
+      reply_interval: {
+        type: Schema.Types.Number,
+        default: 0,
+      },
+      actor_selection_method: {
+        type: Schema.Types.String,
+        enum: ['random', 'random_exclude_last'],
+        default: 'random',
+      },
+    },
+    last_actor_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
     },
     deleted: {
       type: Boolean,
