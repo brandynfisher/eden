@@ -13,8 +13,9 @@ import { AxiosRequestConfig } from 'axios'
 // Arguments
 export interface SessionsV2CreateArguments extends WebAPICallOptions {
   agent_ids: string[]
-  scenario: string
-  budget: number
+  scenario?: string
+  budget?: number
+  title?: string
 }
 
 export interface SessionsV2MessageArguments extends WebAPICallOptions {

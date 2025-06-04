@@ -1,3 +1,4 @@
+import { AllowlistItem } from './Deployments'
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { ModelV2 } from 'src/models/v2'
@@ -139,14 +140,15 @@ interface DiscordDeploymentConfig {
 }
 
 interface TelegramDeploymentConfig {
-  topic_allowlist: {
-    id: string
-    note: string
-  }[]
+  topic_allowlist?: AllowlistItem[]
 }
 
 interface TwitterDeploymentConfig {
-  username: string
+  username?: string
+}
+
+interface FarcasterDeploymentConfig {
+  auto_reply?: boolean
 }
 
 interface DiscordDeploymentSecrets {
@@ -159,7 +161,6 @@ interface TelegramDeploymentSecrets {
 
 interface FarcasterDeploymentSecrets {
   mnemonic: string
-  neynarWebhookSecret: string
 }
 
 interface TwitterDeploymentSecrets {
@@ -181,6 +182,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
   config?: {
     discord?: DiscordDeploymentConfig
     telegram?: TelegramDeploymentConfig
+    farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
   }
   secrets?: {

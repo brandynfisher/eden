@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sheet'
 import { AgentDeploymentSettings } from '@/features/agent/agent-deployment-settings'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
+import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
@@ -83,6 +84,12 @@ const AgentDeploymentFormSheet = () => {
               agentId={agentId}
               deployment={deploymentsQuery.deployments?.find(
                 deployment => deployment.platform === 'telegram',
+              )}
+            />
+            <FarcasterDeploymentForm
+              agentId={agentId}
+              deployment={deploymentsQuery.deployments?.find(
+                deployment => deployment.platform === 'farcaster',
               )}
             />
             <TwitterDeploymentForm

@@ -64,7 +64,7 @@ export const TwitterEmbed: React.FC<TwitterEmbedProps> = ({ mentions }) => {
   if (!validMentions || validMentions.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-4">
-        No Twitter mentions found.
+        No posts found
       </div>
     )
   }

@@ -24,6 +24,12 @@ const Session = () => {
   const [isStreamingTokens, setIsStreamingTokens] = useState(false)
   const [hasReceivedTokens, setHasReceivedTokens] = useState(false)
   const [waitingForWebSocket, setWaitingForWebSocket] = useState(false)
+  const [streamingAgent, setStreamingAgent] = useState<{
+    _id: string
+    username: string
+    name: string
+    userImage?: string
+  } | null>(null)
   const streamingMessageIdRef = useRef<string | null>(null)
 
   const {
@@ -56,6 +62,7 @@ const Session = () => {
         setIsStreamingTokens(false)
         setHasReceivedTokens(false)
         setWaitingForWebSocket(false)
+        setStreamingAgent(null)
         streamingMessageIdRef.current = null
       }
     }
@@ -83,16 +90,32 @@ const Session = () => {
           setIsStreamingTokens(false)
           setHasReceivedTokens(false)
           setWaitingForWebSocket(false)
+          setStreamingAgent(null)
           streamingMessageIdRef.current = null
         }
       }, 2000)
     },
     onToolComplete: () => {
+      // After tool calls complete, we expect more tokens from the LLM
+      // So set up streaming state for the follow-up response
       setStreamingText('')
-      setIsStreamingTokens(false)
+      setIsStreamingTokens(true)
       setHasReceivedTokens(false)
       setWaitingForWebSocket(false)
+      // Keep the streaming agent for continuity
       streamingMessageIdRef.current = null
+
+      // Fallback timeout in case no follow-up response comes
+      setTimeout(() => {
+        if (!hasReceivedTokens) {
+          setStreamingText('')
+          setIsStreamingTokens(false)
+          setHasReceivedTokens(false)
+          setWaitingForWebSocket(false)
+          setStreamingAgent(null)
+          streamingMessageIdRef.current = null
+        }
+      }, 3000)
     },
     onError: error => {
       console.error('Streaming error:', error)
@@ -100,6 +123,7 @@ const Session = () => {
       setIsStreamingTokens(false)
       setHasReceivedTokens(false)
       setWaitingForWebSocket(false)
+      setStreamingAgent(null)
       streamingMessageIdRef.current = null
     },
     onDone: () => {
@@ -107,7 +131,11 @@ const Session = () => {
       if (!waitingForWebSocket) {
         setIsStreamingTokens(false)
         setHasReceivedTokens(false)
+        // Don't clear streamingAgent here - let the websocket effect handle it
       }
+    },
+    onAgentInfo: agent => {
+      setStreamingAgent(agent)
     },
   })
 
@@ -189,7 +217,7 @@ const Session = () => {
         ))}
 
         {/* Show streaming message when actively streaming tokens or waiting for websocket */}
-        {(isStreamingTokens || waitingForWebSocket) && streamingText && (
+        {(isStreamingTokens || waitingForWebSocket) && (
           <div className="mb-4">
             <OtherMessage
               sessionId={sessionId as string}
@@ -197,10 +225,11 @@ const Session = () => {
                 {
                   _id: 'streaming',
                   content: streamingText,
-                  sender: session?.agents?.[0] || {
-                    _id: 'agent',
-                    username: 'Assistant',
-                  },
+                  sender: streamingAgent ||
+                    session?.agents?.[0] || {
+                      _id: 'agent',
+                      username: 'Assistant',
+                    },
                   createdAt: new Date(),
                   updatedAt: new Date(),
                   session: sessionId,
@@ -223,6 +252,7 @@ const Session = () => {
             setIsStreamingTokens(true)
             setHasReceivedTokens(false)
             setStreamingText('')
+            setStreamingAgent(null)
             sendStreamingMessage(content, attachments)
             // Scroll to bottom when streaming starts
             setTimeout(scrollToBottom, 100)

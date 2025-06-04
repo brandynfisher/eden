@@ -84,7 +84,7 @@ export const TriggerPlatformField = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {['web', 'discord', 'twitter', 'telegram'].map(platform => (
+                    {['web', 'discord', 'telegram'].map(platform => (
                       <SelectItem
                         key={platform}
                         value={platform}

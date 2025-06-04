@@ -28,6 +28,10 @@ export type Deployment = {
     telegram: {
       topic_allowlist: AllowlistItem[]
     }
+    farcaster: {
+      webhook_id?: string
+      auto_reply?: boolean
+    }
   }
   valid?: boolean
   createdAt: Date

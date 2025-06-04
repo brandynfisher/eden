@@ -11,6 +11,12 @@ interface StreamMessage {
     tool?: string
     result?: unknown
     error?: string
+    agent?: {
+      _id: string
+      username: string
+      name: string
+      userImage?: string
+    }
   }
 }
 
@@ -21,6 +27,12 @@ interface UseSessionStreamProps {
   onToolComplete?: (tool: string, result: unknown) => void
   onError?: (error: string) => void
   onDone?: () => void
+  onAgentInfo?: (agent: {
+    _id: string
+    username: string
+    name: string
+    userImage?: string
+  }) => void
 }
 
 export const useSessionStream = ({
@@ -30,6 +42,7 @@ export const useSessionStream = ({
   onToolComplete,
   onError,
   onDone,
+  onAgentInfo,
 }: UseSessionStreamProps) => {
   const eventSourceRef = useRef<EventSource | null>(null)
 
@@ -106,6 +119,11 @@ export const useSessionStream = ({
                         onToolComplete?.(data.data.tool, data.data.result)
                       } else if (data.data.type === 'error') {
                         onError?.(data.data.error || 'Unknown error')
+                      } else if (
+                        data.data.type === 'start_prompt' &&
+                        data.data.agent
+                      ) {
+                        onAgentInfo?.(data.data.agent)
                       }
                     } else if (data.event === 'done') {
                       onDone?.()
@@ -134,7 +152,15 @@ export const useSessionStream = ({
         onError?.('Failed to send message')
       }
     },
-    [sessionId, onToken, onMessage, onToolComplete, onError, onDone],
+    [
+      sessionId,
+      onToken,
+      onMessage,
+      onToolComplete,
+      onError,
+      onDone,
+      onAgentInfo,
+    ],
   )
 
   const stopStream = useCallback(() => {
