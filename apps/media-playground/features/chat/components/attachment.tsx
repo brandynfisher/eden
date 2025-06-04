@@ -205,7 +205,7 @@ const MyAttachment: FC = () => {
         handleAttachmentUpdate as EventListener,
       )
     }
-  }, [attachment.id, attachment.file])
+  }, [attachment.id, attachment.file, attachment.name])
 
   const attachments = useComposer(s => s.attachments)
   const attachmentIndex = canRemove
@@ -247,7 +247,13 @@ const MyAttachment: FC = () => {
     }
   }, [canRemove, attachmentIndex, setSlides])
 
-  const componentKey = `${attachment.id}-${attachment.status?.type}-${fileUrl}`
+  const componentKey = `${attachment.id}-${
+    attachment.status?.type
+  }-${fileUrl}-${
+    attachment.file
+      ? (attachment.file as File & { fileUrl?: string }).fileUrl || ''
+      : ''
+  }-${timestamp}`
 
   // Log component render
   // console.log(

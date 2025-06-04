@@ -198,17 +198,42 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
 
     // Add a completion handler to update the attachment status when the upload completes
     uploadPromise
-      .then(() => {
-        // console.log(`Upload completed for ${file.name}, updating status to complete`);
-
+      .then(uploadedFile => {
         // Mark the attachment as not uploading
         const attachmentWithExtras = attachment as PendingAttachment &
           AttachmentWithCancelSource
         attachmentWithExtras.isUploading = false
 
-        attachment.name = getCloudfrontOriginalUrl(
-          (attachment.file as File & { fileUrl: string }).fileUrl,
-        )
+        // Update the attachment's file reference with the uploaded file that has properties
+        if (uploadedFile) {
+          // Create a completely new attachment object to force React to detect the change
+          const newAttachment = {
+            ...attachment,
+            file: uploadedFile,
+            name: getCloudfrontOriginalUrl(
+              (uploadedFile as File & { fileUrl: string }).fileUrl,
+            ),
+          }
+
+          // Replace all properties to force object identity change
+          Object.keys(attachment).forEach(key => {
+            delete (attachment as Record<string, unknown>)[key]
+          })
+          Object.assign(attachment, newAttachment)
+
+          // Force UI update immediately without setTimeout
+          emitAttachmentUpdate(attachment.id, {
+            type: 'running',
+            reason: 'uploading',
+            progress: 1,
+          })
+
+          // Emit again with tiny delay to trigger another render cycle
+          setTimeout(() => {
+            emitAttachmentUpdate(attachment.id, attachment.status)
+          }, 1)
+        }
+
         // Update the status to complete
         attachment.status = {
           type: 'running',
