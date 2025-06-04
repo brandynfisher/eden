@@ -77,7 +77,7 @@ const rotateImageBasedOnExif = async (file: File): Promise<File> => {
         // Calculate new dimensions based on orientation
         if (orientation >= 5 && orientation <= 8) {
           // For orientations 5-8, swap width and height
-          ;[width, height] = [height, width]
+          [width, height] = [height, width]
         }
 
         canvas.width = width
