@@ -257,4 +257,5 @@ export enum FeatureFlag {
   FreeTools = 'freeTools',
   FeatureDeployments = 'feature_Deployments',
   TestAgentRateLimit = 'test_agent_rate_limit',
+  SessionsV2 = 'sessions_v2',
 }
