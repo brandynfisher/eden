@@ -2,6 +2,7 @@
 
 import AgentLink from '../agent/agent-link'
 import { AgentBar } from './components/agent-bar'
+import AgentEditView from './components/views/agent-edit-view'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -33,8 +34,6 @@ import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
-import AgentEditView from '@/features/chat/components/views/agent-edit-view'
-import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
@@ -658,7 +657,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           agent && <div>CREATIONS</div>
         ) : viewMode === 'tasks' ? (
           /* TASKS VIEW - Full width */
-          agent && <AgentTasksView agent={agent} user={user} />
+          agent && <div>TASKS</div>
         ) : viewMode === 'settings' ? (
           /* SETTINGS VIEW - Full width */
           agent && <AgentEditView agent={agent} user={user} />
