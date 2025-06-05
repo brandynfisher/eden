@@ -2,6 +2,7 @@
 
 import AgentLink from '../agent/agent-link'
 import { AgentBar } from './components/agent-bar'
+import AgentEditView from './components/views/agent-edit-view'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -649,114 +650,127 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           </div>
         </div>
         {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 !overflow-y-hidden"
-          autoSaveId={`resizable-chat-layout-${agentId}`}
-        >
-          {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
-          <ResizablePanel
-            defaultSize={20}
-            minSize={15}
-            maxSize={30}
-            collapsible
-            collapsedSize={0}
-            onCollapse={() => setIsSidebarCollapsed(true)}
-            onExpand={() => setIsSidebarCollapsed(false)}
-            className={cn(
-              'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out',
-              'max-w-[320px]',
-              isSidebarCollapsed && 'p-0 border-none',
-            )}
+
+        {/* CONDITIONAL MAIN CONTENT BASED ON VIEW MODE */}
+        {viewMode === 'creations' ? (
+          /* CREATIONS VIEW - Full width */
+          agent && <div>CREATIONS</div>
+        ) : viewMode === 'tasks' ? (
+          /* TASKS VIEW - Full width */
+          agent && <div>TASKS</div>
+        ) : viewMode === 'settings' ? (
+          /* SETTINGS VIEW - Full width */
+          agent && <AgentEditView agent={agent} user={user} />
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="flex-1 !overflow-y-hidden"
+            autoSaveId={`resizable-chat-layout-${agentId}`}
           >
-            {/* Render content only if not collapsed */}
-            {!isSidebarCollapsed && (
-              <ChatSidebarContent
-                agent={agent}
-                isOwner={isOwner}
-                handleEditClick={handleEditClick}
-              />
-            )}
-          </ResizablePanel>
-
-          {/* Separator Handle - visible only on desktop */}
-          <ResizableHandle
-            withHandle
-            className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
-          />
-
-          {/* MAIN CONTENT PANEL */}
-          <ResizablePanel defaultSize={80} className="flex flex-col">
-            {/* Ensure main takes full height within the panel */}
-            <main className="bg-accent flex-1 overflow-auto flex flex-col">
-              {!agent ? (
-                <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
-                  <LoadingIndicator className="w-10 h-10 text-purple-600" />
-                </div>
-              ) : (
-                <Thread
-                  components={{
-                    //@ts-expect-error We're extending thread welcome hackishly with children
-                    ThreadWelcome: MyThreadWelcome,
-                    // @ts-expect-error We're extending composer hackishly with drag and drop
-                    Composer: MyComposer,
-                  }}
-                  welcome={{
-                    suggestions:
-                      agent?.suggestions && agent?.suggestions.length > 0
-                        ? agent?.suggestions.map(suggestion => ({
-                            text: suggestion.label,
-                            prompt: suggestion.prompt,
-                          }))
-                        : undefined,
-                    message:
-                      agent?.greeting ?? 'What do you want to create today?',
-                  }}
-                  assistantAvatar={{
-                    src: getCloudfrontOriginalUrl(agent?.userImage),
-                    fallback: agent?.name,
-                    alt: agent?.name,
-                  }}
-                  assistantMessage={{
-                    allowReload: false,
-                    allowSpeak: false,
-                    components: {
-                      Empty: () => (
-                        <div className="col-start-3 row-start-2">
-                          <TypingIndicator />
-                        </div>
-                      ),
-                      Text: MarkdownText,
-                      ToolFallback,
-                    },
-                  }}
-                  userMessage={{
-                    allowEdit: false,
-                  }}
-                  branchPicker={{
-                    allowBranchPicker: false,
-                  }}
-                  composer={{
-                    allowAttachments: true,
-                  }}
-                  tools={[TaskResultTool]}
-                  config={{
-                    threadId,
-                    defaultMessages: [],
-                  }}
+            {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
+            <ResizablePanel
+              defaultSize={20}
+              minSize={15}
+              maxSize={30}
+              collapsible
+              collapsedSize={0}
+              onCollapse={() => setIsSidebarCollapsed(true)}
+              onExpand={() => setIsSidebarCollapsed(false)}
+              className={cn(
+                'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+                'max-w-[320px]',
+                isSidebarCollapsed && 'p-0 border-none',
+              )}
+            >
+              {/* Render content only if not collapsed */}
+              {!isSidebarCollapsed && (
+                <ChatSidebarContent
+                  agent={agent}
+                  isOwner={isOwner}
+                  handleEditClick={handleEditClick}
                 />
               )}
+            </ResizablePanel>
 
-              {isError ? (
-                <div className="p-4">
-                  <AlertDestructive title={'Error loading agent'}>
-                    <AlertDescription>{error?.message}</AlertDescription>
-                  </AlertDestructive>
-                </div>
-              ) : null}
-            </main>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            {/* Separator Handle - visible only on desktop */}
+            <ResizableHandle
+              withHandle
+              className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
+            />
+
+            {/* MAIN CONTENT PANEL */}
+            <ResizablePanel defaultSize={80} className="flex flex-col">
+              {/* Ensure main takes full height within the panel */}
+              <main className="bg-accent flex-1 overflow-auto flex flex-col">
+                {!agent ? (
+                  <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
+                    <LoadingIndicator className="w-10 h-10 text-purple-600" />
+                  </div>
+                ) : (
+                  <Thread
+                    components={{
+                      //@ts-expect-error We're extending thread welcome hackishly with children
+                      ThreadWelcome: MyThreadWelcome,
+                      // @ts-expect-error We're extending composer hackishly with drag and drop
+                      Composer: MyComposer,
+                    }}
+                    welcome={{
+                      suggestions:
+                        agent?.suggestions && agent?.suggestions.length > 0
+                          ? agent?.suggestions.map(suggestion => ({
+                              text: suggestion.label,
+                              prompt: suggestion.prompt,
+                            }))
+                          : undefined,
+                      message:
+                        agent?.greeting ?? 'What do you want to create today?',
+                    }}
+                    assistantAvatar={{
+                      src: getCloudfrontOriginalUrl(agent?.userImage),
+                      fallback: agent?.name,
+                      alt: agent?.name,
+                    }}
+                    assistantMessage={{
+                      allowReload: false,
+                      allowSpeak: false,
+                      components: {
+                        Empty: () => (
+                          <div className="col-start-3 row-start-2">
+                            <TypingIndicator />
+                          </div>
+                        ),
+                        Text: MarkdownText,
+                        ToolFallback,
+                      },
+                    }}
+                    userMessage={{
+                      allowEdit: false,
+                    }}
+                    branchPicker={{
+                      allowBranchPicker: false,
+                    }}
+                    composer={{
+                      allowAttachments: true,
+                    }}
+                    tools={[TaskResultTool]}
+                    config={{
+                      threadId,
+                      defaultMessages: [],
+                    }}
+                  />
+                )}
+
+                {isError ? (
+                  <div className="p-4">
+                    <AlertDestructive title={'Error loading agent'}>
+                      <AlertDescription>{error?.message}</AlertDescription>
+                    </AlertDestructive>
+                  </div>
+                ) : null}
+              </main>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
     </MyRuntimeProvider>
   )
