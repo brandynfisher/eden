@@ -1,6 +1,7 @@
 'use client'
 
 import AgentLink from '../agent/agent-link'
+import { AgentBar } from './components/agent-bar'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -60,6 +61,7 @@ import {
   SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -490,6 +492,7 @@ type Props = {
 
 const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   const dispatch = useAppDispatch()
+  const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
   const { user } = useAuthState()
 
@@ -536,11 +539,60 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
 
   const agent = agentClientData || agentSSRData
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<
+    'chat' | 'creations' | 'tasks' | 'settings'
+  >('chat')
 
   const isOwner = useMemo(() => {
     const ownershipStatus = user?._id === agent?.owner._id
     return ownershipStatus
   }, [user, agent])
+
+  // Redirect non-owners away from owner-only views
+  useEffect(() => {
+    if (
+      agent &&
+      user &&
+      !isOwner &&
+      (viewMode === 'tasks' || viewMode === 'settings')
+    ) {
+      setViewMode('chat')
+    }
+  }, [agent, user, isOwner, viewMode])
+
+  // Close agent selector modal when component unmounts (route change)
+  useEffect(() => {
+    return () => {
+      setIsAgentSelectorOpen(false)
+    }
+  }, [])
+
+  const handleAgentSelect = (selectedAgent: Agent) => {
+    // If selecting the same agent we're already on, just close the modal
+    if (selectedAgent.username === agentId) {
+      setIsAgentSelectorOpen(false)
+      return
+    }
+
+    router.push(`/chat/${selectedAgent.username}`)
+    // Don't close modal immediately - it will close when navigation completes
+  }
+
+  const handleChatClick = () => {
+    // Check if we're on mobile (window width < 768px for md breakpoint)
+    const isMobile = window.innerWidth < 768
+
+    if (isMobile) {
+      // Mobile: Open the slideout sidebar
+      setIsSheetOpen(true)
+    } else {
+      // Desktop: Start a new thread by navigating to base chat URL (no threadId)
+      // This mimics the behavior of clicking "New Thread" in the sidebar
+      router.push(`/chat/${agentId}`)
+    }
+  }
 
   if (!isMounted) {
     return null
@@ -557,6 +609,15 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
          top-16
        "
       >
+        {/* AGENT BAR - Always visible */}
+        <AgentBar
+          agent={agent}
+          isOwner={isOwner}
+          onChatClick={handleChatClick}
+          onAgentSelect={() => setIsAgentSelectorOpen(true)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
         {/* MOBILE-ONLY HEADER */}
         <div className="bg-[#0e1421]  border-b px-2 py-2 md:hidden flex items-center justify-between">
           <LeftBarSheet
