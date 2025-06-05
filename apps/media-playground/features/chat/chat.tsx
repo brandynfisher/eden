@@ -20,12 +20,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { Separator } from '@/components/ui/separator'
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MyComposer } from '@/features/chat/components/composer'
 import Thread from '@/features/chat/components/thread'
@@ -408,39 +403,11 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
 
 // Extracted Sidebar Content
 const ChatSidebarContent: FC<{
-  agent: Agent | null | undefined
-  isOwner: boolean
-  handleEditClick: () => void
   onItemClick?: () => void
-}> = ({ agent, isOwner, handleEditClick, onItemClick }) => {
+}> = ({ onItemClick }) => {
   return (
     <>
-      <div className="flex items-center justify-between gap-2 ml-2">
-        {agent ? (
-          <>
-            <AgentLink
-              agent={agent}
-              className={cn(
-                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
-              )}
-            />
-            {isOwner && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 size-8"
-                onClick={handleEditClick}
-              >
-                <SettingsIcon className="size-4" />
-              </Button>
-            )}
-          </>
-        ) : (
-          <Skeleton className="w-[120px] h-8" />
-        )}
-      </div>
-      <Separator orientation="horizontal" className="my-2 mb-1" />
-      <div className="border-b mb-2">
+      <div className="mb-4">
         <TopLeft onItemClick={onItemClick} />
       </div>
       <MainLeft onItemClick={onItemClick} />
@@ -449,39 +416,19 @@ const ChatSidebarContent: FC<{
 }
 
 const LeftBarSheet: FC<{
-  // Updated to accept props needed by ChatSidebarContent
-  agent: Agent | null | undefined
-  isOwner: boolean
-  handleEditClick: () => void
-}> = ({ agent, isOwner, handleEditClick }) => {
-  const [open, setOpen] = useState(false)
-  const handleCloseSheet = () => setOpen(false)
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}> = ({ open, onOpenChange }) => {
+  const handleCloseSheet = () => onOpenChange(false)
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0 md:hidden gap-1"
-        >
-          <ChevronRightIcon className={'size-4'} />
-          View Threads
-          <span className="sr-only">Toggle thread list menu</span>
-        </Button>
-      </SheetTrigger>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="left"
-        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
+        className="flex flex-col max-h-full pt-10 px-3 bg-accent border-r gap-0"
       >
         <SheetTitle className="sr-only">Thread List</SheetTitle>
-        {/* Use extracted content here */}
-        <ChatSidebarContent
-          agent={agent}
-          isOwner={isOwner}
-          handleEditClick={handleEditClick}
-          onItemClick={handleCloseSheet}
-        />
+        <ChatSidebarContent onItemClick={handleCloseSheet} />
       </SheetContent>
     </Sheet>
   )
@@ -623,11 +570,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         />
         {/* MOBILE-ONLY HEADER */}
         <div className="bg-[#0e1421]  border-b px-2 py-2 md:hidden flex items-center justify-between">
-          <LeftBarSheet
-            agent={agent}
-            isOwner={isOwner}
-            handleEditClick={handleEditClick}
-          />
+          <LeftBarSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
           <div className="ml-auto flex items-center gap-2">
             {agent ? (
               <>
@@ -685,13 +628,8 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
               )}
             >
               {/* Render content only if not collapsed */}
-              {!isSidebarCollapsed && (
-                <ChatSidebarContent
-                  agent={agent}
-                  isOwner={isOwner}
-                  handleEditClick={handleEditClick}
-                />
-              )}
+              {/* Render content only if not collapsed */}
+              {!isSidebarCollapsed && <ChatSidebarContent />}
             </ResizablePanel>
 
             {/* Separator Handle - visible only on desktop */}
