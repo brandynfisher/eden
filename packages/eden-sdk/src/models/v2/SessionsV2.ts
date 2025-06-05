@@ -14,8 +14,17 @@ import { AxiosRequestConfig } from 'axios'
 export interface SessionsV2CreateArguments extends WebAPICallOptions {
   agent_ids: string[]
   scenario?: string
-  budget?: number
+  budget?: {
+    manna_budget?: number
+    token_budget?: number
+    turn_budget?: number
+  }
   title?: string
+  autonomy_settings?: {
+    auto_reply: boolean
+    reply_interval: number
+    actor_selection_method: 'random' | 'random_exclude_last'
+  }
 }
 
 export interface SessionsV2MessageArguments extends WebAPICallOptions {
@@ -197,8 +206,20 @@ export type SessionV2 = {
   channel?: string
   scenario?: string
   messages: Message[]
-  budget?: number
-  spent?: number
+  budget?: {
+    token_budget?: number
+    manna_budget?: number
+    turn_budget?: number
+    tokens_spent?: number
+    manna_spent?: number
+    turns_spent?: number
+  }
+  autonomy_settings?: {
+    auto_reply: boolean
+    reply_interval: number
+    actor_selection_method: 'random' | 'random_exclude_last'
+  }
+  last_actor_id?: string
   createdAt: Date
   updatedAt: Date
 }
