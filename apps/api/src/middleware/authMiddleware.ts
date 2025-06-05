@@ -131,9 +131,19 @@ export const hasMinimumSubscriptionTier = (
 
 export const hasFeatureFlag = (
   request: FastifyRequest,
+  reply: FastifyReply,
   featureFlag: FeatureFlag,
 ) => {
-  return checkUserFlags(request.user.featureFlags, featureFlag)
+  try {
+    checkUserFlags(request.user.featureFlags, featureFlag)
+    return // Signal successful completion
+  } catch (error) {
+    return reply.status(403).send({
+      statusCode: 403,
+      error: 'Forbidden',
+      message: 'Forbidden',
+    })
+  }
 }
 
 // used for public routes that may contain elements with extra data when authed (think like count on a feed)

@@ -21,8 +21,12 @@ export const checkUserFlags = (
   flag?: FeatureFlag,
 ): boolean => {
   if (!featureFlags || !flag) {
-    return false
+    throw new Error('Feature flag not found')
   }
 
-  return featureFlags.includes(flag)
+  if (!featureFlags.includes(flag)) {
+    throw new Error('Feature flag not found')
+  }
+
+  return true
 }

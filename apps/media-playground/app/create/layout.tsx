@@ -16,6 +16,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
   }
 
   const eden2Tools = tools.filter(tool => !tool.key.includes('legacy'))
+  const legacyTools = tools.filter(tool => tool.key.includes('legacy'))
 
   // Helper function to create navigation items
   const createNavigationItem = (title: string, outputType: string) => ({
@@ -30,11 +31,22 @@ const PageLayout = ({ children }: PropsWithChildren) => {
       })),
   })
 
+  const createLegacyNavigationItem = () => ({
+    title: 'Legacy',
+    links: legacyTools.map(tool => ({
+      label: tool.name,
+      mediaUrl: tool.thumbnail,
+      segments: [baseSegment, 'legacy', tool.key],
+      description: tool.description,
+    })),
+  })
+
   const navigation = [
     createNavigationItem('Image', 'image'),
     createNavigationItem('Video', 'video'),
     createNavigationItem('Model', 'lora'),
     createNavigationItem('Audio', 'audio'),
+    createLegacyNavigationItem(),
   ]
 
   return (

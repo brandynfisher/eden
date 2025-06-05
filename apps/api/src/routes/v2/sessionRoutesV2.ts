@@ -8,9 +8,10 @@ import {
   listSessions,
   renameSession,
 } from '../../controllers/v2/sessionControllerV2'
-import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
+import { hasFeatureFlag, isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import {
+  FeatureFlag,
   SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
   SessionsV2GetArguments,
@@ -20,9 +21,18 @@ import {
   SessionsV2RenameArguments,
 } from '@edenlabs/eden-sdk'
 import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
 
 const sessionRoutesV2: FastifyPluginAsync = async server => {
+  // Helper to create consistent preHandlers
+  const sessionPreHandler = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
+    await isAuth(server, request, reply)
+    await hasFeatureFlag(request, reply, FeatureFlag.SessionsV2)
+  }
+
   server.post<{
     Body: SessionsV2CreateArguments
   }>('/v2/sessions/create', {
@@ -37,8 +47,30 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       body: {
         agent_ids: Type.Array(Type.String(), { minItems: 1 }),
         scenario: Type.Optional(Type.String({ maxLength: 1000 })),
-        budget: Type.Optional(Type.Number({ minimum: 100, maximum: 5000 })),
+        budget: Type.Optional(
+          Type.Object({
+            manna_budget: Type.Optional(
+              Type.Number({ minimum: 100, maximum: 50000 }),
+            ),
+            token_budget: Type.Optional(
+              Type.Number({ minimum: 1000, maximum: 1000000 }),
+            ),
+            turn_budget: Type.Optional(
+              Type.Number({ minimum: 1, maximum: 1000 }),
+            ),
+          }),
+        ),
         title: Type.Optional(Type.String({ maxLength: 1000 })),
+        autonomy_settings: Type.Optional(
+          Type.Object({
+            auto_reply: Type.Boolean(),
+            reply_interval: Type.Number({ minimum: 0, maximum: 3600 }),
+            actor_selection_method: Type.Union([
+              Type.Literal('random'),
+              Type.Literal('random_exclude_last'),
+            ]),
+          }),
+        ),
       },
       response: {
         201: Type.Object({
@@ -60,7 +92,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => createSession(server, request, reply),
   })
 
@@ -99,7 +131,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => createSessionMessage(server, request, reply),
   })
 
@@ -121,7 +153,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         stream: Type.Optional(Type.Boolean()),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) =>
       createSessionMessageStream(server, request, reply),
   })
@@ -161,7 +193,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => addSessionMessageReaction(request, reply),
   })
 
@@ -187,7 +219,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         200: paginatedResponse(Type.Any()),
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => listSessions(server, request, reply),
   })
 
@@ -211,7 +243,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [request => maybeAuth(server, request)],
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => getSession(server, request, reply),
   })
 
@@ -251,7 +283,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => renameSession(request, reply),
   })
 
@@ -287,7 +319,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => deleteSession(request, reply),
   })
 }

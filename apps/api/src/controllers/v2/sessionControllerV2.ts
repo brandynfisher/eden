@@ -30,7 +30,7 @@ export const createSession = async (
     })
   }
 
-  const { agent_ids, scenario, budget, title } = request.body
+  const { agent_ids, scenario, budget, title, autonomy_settings } = request.body
 
   // Validation
   if (!agent_ids || !Array.isArray(agent_ids) || agent_ids.length === 0) {
@@ -48,13 +48,46 @@ export const createSession = async (
     })
   }
 
-  if (
-    budget !== undefined &&
-    (typeof budget !== 'number' || budget < 100 || budget > 5000)
-  ) {
-    return reply.status(400).send({
-      message: 'budget must be a number between 100 and 5000',
-    })
+  // Updated budget validation
+  if (budget !== undefined) {
+    if (typeof budget !== 'object') {
+      return reply.status(400).send({
+        message: 'budget must be an object',
+      })
+    }
+
+    if (
+      budget.manna_budget !== undefined &&
+      (typeof budget.manna_budget !== 'number' ||
+        budget.manna_budget < 100 ||
+        budget.manna_budget > 50000)
+    ) {
+      return reply.status(400).send({
+        message: 'manna_budget must be a number between 100 and 50000',
+      })
+    }
+
+    if (
+      budget.token_budget !== undefined &&
+      (typeof budget.token_budget !== 'number' ||
+        budget.token_budget < 1000 ||
+        budget.token_budget > 1000000)
+    ) {
+      return reply.status(400).send({
+        message: 'token_budget must be a number between 1000 and 1000000',
+      })
+    }
+
+    if (
+      budget.turn_budget !== undefined &&
+      (typeof budget.turn_budget !== 'number' ||
+        budget.turn_budget < 1 ||
+        budget.turn_budget > 1000)
+    ) {
+      return reply.status(400).send({
+        message: 'turn_budget must be a number between 1 and 1000',
+      })
+    }
   }
 
   if (
@@ -64,6 +97,47 @@ export const createSession = async (
     return reply.status(400).send({
       message: 'title must be a string with max 1000 characters',
     })
+  }
+
+  // Validate autonomy_settings
+  if (autonomy_settings !== undefined) {
+    if (typeof autonomy_settings !== 'object') {
+      return reply.status(400).send({
+        message: 'autonomy_settings must be an object',
+      })
+    }
+
+    if (
+      autonomy_settings.auto_reply !== undefined &&
+      typeof autonomy_settings.auto_reply !== 'boolean'
+    ) {
+      return reply.status(400).send({
+        message: 'auto_reply must be a boolean',
+      })
+    }
+
+    if (
+      autonomy_settings.reply_interval !== undefined &&
+      (typeof autonomy_settings.reply_interval !== 'number' ||
+        autonomy_settings.reply_interval < 0 ||
+        autonomy_settings.reply_interval > 3600)
+    ) {
+      return reply.status(400).send({
+        message: 'reply_interval must be a number between 0 and 3600',
+      })
+    }
+
+    if (
+      autonomy_settings.actor_selection_method !== undefined &&
+      !['random', 'random_exclude_last'].includes(
+        autonomy_settings.actor_selection_method,
+      )
+    ) {
+      return reply.status(400).send({
+        message:
+          'actor_selection_method must be "random" or "random_exclude_last"',
+      })
+    }
   }
 
   try {
@@ -95,7 +169,6 @@ export const createSession = async (
     const sessionData: any = {
       owner: userId,
       agents: validAgentIds,
-      spent: 0,
       messages: [],
       title:
         title ||
@@ -109,7 +182,18 @@ export const createSession = async (
     }
 
     if (budget) {
-      sessionData.budget = budget
+      sessionData.budget = {
+        token_budget: budget.token_budget,
+        manna_budget: budget.manna_budget,
+        turn_budget: budget.turn_budget,
+        tokens_spent: 0,
+        manna_spent: 0,
+        turns_spent: 0,
+      }
+    }
+
+    if (autonomy_settings) {
+      sessionData.autonomy_settings = autonomy_settings
     }
 
     const session = new Session(sessionData)

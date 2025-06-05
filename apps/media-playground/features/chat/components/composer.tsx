@@ -7,6 +7,7 @@ import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { useEdenRuntimeExtras } from '@/features/chat/providers/my-runtime-provider'
 import { fileMatchesAccept } from '@/features/chat/utils/files'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { rotateImageBasedOnExif } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { ThreadPrimitive, useComposerRuntime } from '@assistant-ui/react'
 import { Composer } from '@assistant-ui/react-ui'
@@ -80,8 +81,19 @@ export const MyComposer: FC<MyComposerProps> = ({
         })
         return
       }
+      // Rotate *before* passing to the runtime
+      const readyFiles = await Promise.all(
+        acceptedFiles.map(async f => {
+          try {
+            return await rotateImageBasedOnExif(f)
+          } catch {
+            return f // fall back if EXIF parse fails
+          }
+        }),
+      )
 
-      await Promise.all(files.map(file => composerRuntime.addAttachment(file)))
+      // Composer now receives the final file it will keep forever
+      await Promise.all(readyFiles.map(f => composerRuntime.addAttachment(f)))
     },
     [accept, composerRuntime],
   )
@@ -259,7 +271,8 @@ export const MyComposer: FC<MyComposerProps> = ({
               e.preventDefault()
               const file = item.getAsFile()
               if (file) {
-                await composerRuntime.addAttachment(file)
+                const rotated = await rotateImageBasedOnExif(file)
+                await composerRuntime.addAttachment(rotated)
               }
             }
           }
