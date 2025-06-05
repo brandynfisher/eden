@@ -43,7 +43,7 @@ export const requestSignedUrl = async (
 }
 
 // Add this function to handle EXIF rotation
-const rotateImageBasedOnExif = async (file: File): Promise<File> => {
+export const rotateImageBasedOnExif = async (file: File): Promise<File> => {
   // Only process image files
   if (!file.type.startsWith('image/')) {
     return file
@@ -77,7 +77,7 @@ const rotateImageBasedOnExif = async (file: File): Promise<File> => {
         // Calculate new dimensions based on orientation
         if (orientation >= 5 && orientation <= 8) {
           // For orientations 5-8, swap width and height
-          [width, height] = [height, width]
+          ;[width, height] = [height, width]
         }
 
         canvas.width = width
@@ -169,7 +169,7 @@ export const uploadFileToS3 = async (
   const { onUploadProgress, cancelSource } = options
 
   // Auto-rotate image based on EXIF data before upload
-  file = await rotateImageBasedOnExif(file)
+  //file = await rotateImageBasedOnExif(file)
 
   const fileHash = await getFileHash(file)
   const signedUrl = await requestSignedUrl(fileHash, file.type)
