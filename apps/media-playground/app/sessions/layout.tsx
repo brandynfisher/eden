@@ -13,9 +13,12 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { SessionsSidebar } from '@/features/sessions/components/sessions-sidebar'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon } from 'lucide-react'
-import { FC, PropsWithChildren, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { FC, PropsWithChildren, useEffect, useState } from 'react'
 
 const LeftBarSheet: FC<{
   onItemClick?: () => void
@@ -52,6 +55,19 @@ const LeftBarSheet: FC<{
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const { user, isSignedIn } = useAuthState()
+  const router = useRouter()
+
+  // Check if user has sessions_v2 feature flag
+  useEffect(() => {
+    if (
+      isSignedIn &&
+      user &&
+      !user.featureFlags?.includes(FeatureFlag.SessionsV2)
+    ) {
+      router.push('/')
+    }
+  }, [isSignedIn, user, router])
 
   return (
     <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
