@@ -33,6 +33,7 @@ import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
+import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import {
@@ -655,7 +656,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         {/* CONDITIONAL MAIN CONTENT BASED ON VIEW MODE */}
         {viewMode === 'creations' ? (
           /* CREATIONS VIEW - Full width */
-          agent && <div>CREATIONS</div>
+          agent && <AgentCreationsView agent={agent} user={user} />
         ) : viewMode === 'tasks' ? (
           /* TASKS VIEW - Full width */
           agent && <AgentTasksView agent={agent} user={user} />
