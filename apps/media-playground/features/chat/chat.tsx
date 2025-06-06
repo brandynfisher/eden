@@ -31,6 +31,7 @@ import TypingIndicator from '@/features/chat/components/typing-indicator'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
+import SingleAgentSelectorModal from '@/features/chat/components/views/single-agent-selector-modal'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
@@ -52,7 +53,6 @@ import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   CheckIcon,
-  ChevronRightIcon,
   EditIcon,
   MoreHorizontal,
   PencilIcon,
@@ -568,6 +568,14 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
           viewMode={viewMode}
           onViewModeChange={setViewMode}
         />
+
+        {/* AGENT SELECTOR MODAL */}
+        <SingleAgentSelectorModal
+          open={isAgentSelectorOpen}
+          onOpenChange={setIsAgentSelectorOpen}
+          onSelect={handleAgentSelect}
+        />
+
         {/* MOBILE-ONLY HEADER */}
         <div className="bg-[#0e1421]  border-b px-2 py-2 md:hidden flex items-center justify-between">
           <LeftBarSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
