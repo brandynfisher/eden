@@ -577,31 +577,9 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         />
 
         {/* MOBILE-ONLY HEADER */}
-        <div className="bg-[#0e1421]  border-b px-2 py-2 md:hidden flex items-center justify-between">
-          <LeftBarSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
-          <div className="ml-auto flex items-center gap-2">
-            {agent ? (
-              <>
-                <AgentLink
-                  agent={agent}
-                  className={`max-w-[120px] xs:max-w-[300px]`}
-                />
-                {isOwner && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 size-8"
-                    onClick={handleEditClick}
-                  >
-                    <SettingsIcon className="size-4" />
-                  </Button>
-                )}
-              </>
-            ) : (
-              <Skeleton className="w-[120px] h-8" />
-            )}
-          </div>
-        </div>
+
+        <LeftBarSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
+
         {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
 
         {/* CONDITIONAL MAIN CONTENT BASED ON VIEW MODE */}
@@ -630,12 +608,11 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
               onCollapse={() => setIsSidebarCollapsed(true)}
               onExpand={() => setIsSidebarCollapsed(false)}
               className={cn(
-                'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+                'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
                 'max-w-[320px]',
                 isSidebarCollapsed && 'p-0 border-none',
               )}
             >
-              {/* Render content only if not collapsed */}
               {/* Render content only if not collapsed */}
               {!isSidebarCollapsed && <ChatSidebarContent />}
             </ResizablePanel>
@@ -652,7 +629,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
               <main className="bg-accent flex-1 overflow-auto flex flex-col">
                 {!agent ? (
                   <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
-                    <LoadingIndicator className="w-10 h-10 text-purple-600" />
+                    <LoadingIndicator className="w-10 h-10 text-primary" />
                   </div>
                 ) : (
                   <Thread
@@ -662,6 +639,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                       // @ts-expect-error We're extending composer hackishly with drag and drop
                       Composer: MyComposer,
                     }}
+                    onAgentSelectorOpen={() => setIsAgentSelectorOpen(true)}
                     welcome={{
                       suggestions:
                         agent?.suggestions && agent?.suggestions.length > 0
@@ -707,7 +685,6 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
                     }}
                   />
                 )}
-
                 {isError ? (
                   <div className="p-4">
                     <AlertDestructive title={'Error loading agent'}>

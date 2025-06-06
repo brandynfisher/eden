@@ -24,6 +24,8 @@ type Props = {
   isSelectable?: boolean
   selectedIds?: string[]
   scrollRef?: RefObject<HTMLDivElement>
+  hideContextMenu?: boolean
+  improvedLayout?: boolean
 }
 
 const AgentsFeed = ({
@@ -36,6 +38,8 @@ const AgentsFeed = ({
   isSelectable = false,
   selectedIds = [],
   scrollRef,
+  hideContextMenu = false,
+  improvedLayout = false,
 }: Props) => {
   const dispatch = useAppDispatch()
   const defaultQuery: FeedAgentCursorArguments = useMemo(
@@ -119,6 +123,8 @@ const AgentsFeed = ({
                 ? 'ring-2 ring-primary ring-offset-2'
                 : undefined
             }
+            hideContextMenu={hideContextMenu}
+            improvedLayout={improvedLayout}
           />
         )}
       />
