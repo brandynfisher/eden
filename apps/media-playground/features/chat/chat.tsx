@@ -1,6 +1,5 @@
 'use client'
 
-import AgentLink from '../agent/agent-link'
 import { AgentBar } from './components/agent-bar'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
@@ -56,7 +55,6 @@ import {
   EditIcon,
   MoreHorizontal,
   PencilIcon,
-  SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
