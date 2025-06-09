@@ -141,7 +141,7 @@ const TaskFormModal: FC<{
     defaultValues: editingTask
       ? {
           instructions: editingTask.message,
-          platform: editingTask.platform as string,
+          platform: editingTask.platform as TaskFormDto['platform'],
           channelId: editingTask.channel?.id || '',
           startDate: editingTask.schedule.start_date
             ? new Date(editingTask.schedule.start_date)
@@ -150,7 +150,7 @@ const TaskFormModal: FC<{
           time: editingTask.schedule.start_date
             ? format(new Date(editingTask.schedule.start_date), 'HH:mm')
             : undefined,
-          dayOfWeek: editingTask.schedule.dayOfWeek?.toString() || undefined,
+          dayOfWeek: editingTask.schedule.day_of_week?.toString() || undefined,
           dayOfMonth: editingTask.schedule.dayOfMonth?.toString() || undefined,
           month: editingTask.schedule.month?.toString() || undefined,
         }
@@ -216,16 +216,16 @@ const TaskFormModal: FC<{
         // Add schedule pattern based on repeat type
         switch (values.repeat) {
           case ExtendedTriggerRepeatOptions.DAILY:
-            schedule.dayOfWeek = '*'
+            schedule.day_of_week = '*'
             break
           case ExtendedTriggerRepeatOptions.WEEKLY:
             if (values.dayOfWeek) {
-              schedule.dayOfWeek = values.dayOfWeek
+              schedule.day_of_week = values.dayOfWeek
             }
             break
           case ExtendedTriggerRepeatOptions.MONTHLY:
             if (values.dayOfMonth) {
-              schedule.dayOfMonth = values.dayOfMonth
+              schedule.day_of_week = values.dayOfMonth
             }
             break
           case ExtendedTriggerRepeatOptions.ANNUALLY:

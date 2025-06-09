@@ -22,6 +22,7 @@ import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MyComposer } from '@/features/chat/components/composer'
+import SingleAgentSelectorModal from '@/features/chat/components/single-agent-selector-modal'
 import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
@@ -30,7 +31,6 @@ import TypingIndicator from '@/features/chat/components/typing-indicator'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
-import SingleAgentSelectorModal from '@/features/chat/components/views/single-agent-selector-modal'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
@@ -40,8 +40,8 @@ import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
-import { useAppDispatch } from '@/stores/store'
+//import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+//import { useAppDispatch } from '@/stores/store'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
@@ -65,7 +65,7 @@ import { toast } from 'sonner'
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const isNewSelected = useThreadListItem(t => t.id === 'DEFAULT_THREAD_ID')
   const threadId = useEdenRuntimeExtras(extras => extras.threadId)
-  const isLoading = false
+  //const isLoading = false
 
   // Only show as selected if we're in a new thread state (no threadId)
   const shouldShowSelected = !threadId && isNewSelected
@@ -76,14 +76,14 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
         variant="ghost"
         onClick={onItemClick}
         className={cn(
-          'flex w-full justify-between px-3 mb-1',
-          !isLoading && shouldShowSelected && 'bg-aui-muted',
+          'flex w-full justify-start gap-2 px-4 py-3 mb-4 rounded-lg font-medium transition-colors',
+          shouldShowSelected
+            ? 'bg-primary text-primary-foreground hover:bg-primary/90 border border-primary'
+            : 'bg-white text-black hover:bg-gray-100 hover:text-black border border-gray-200',
         )}
       >
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <span>New Thread</span>
-        </div>
         <EditIcon className="size-4" />
+        <span>New Chat</span>
       </Button>
     </ThreadListPrimitive.New>
   )
@@ -439,7 +439,7 @@ type Props = {
 }
 
 const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
-  const dispatch = useAppDispatch()
+  //const dispatch = useAppDispatch()
   const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
   const { user } = useAuthState()
@@ -448,7 +448,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
     agent: agentClientData,
     isError,
     error,
-    invalidate,
+    //invalidate,
   } = useAgentQuery({
     key: agentId,
     initialData: agentSSRData
@@ -472,18 +472,18 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
     }
   }, [])
 
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agentId: agentId,
-        onAction: async () => {
-          await invalidate()
-        },
-      }),
-    )
-  }
+  //const handleEditClick = () => {
+  //  dispatch(
+  //    updateAgentFormSheet({
+  //      isOpen: true,
+  //      mode: 'update',
+  //      agentId: agentId,
+  //      onAction: async () => {
+  //        await invalidate()
+  //      },
+  //    }),
+  //  )
+  //}
 
   const agent = agentClientData || agentSSRData
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
