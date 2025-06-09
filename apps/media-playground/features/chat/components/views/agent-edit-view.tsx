@@ -1,6 +1,6 @@
 'use client'
 
-import { ProfileImageUploader } from './profile-image-uploader'
+import { ProfileImageUploader } from '../profile-image-uploader'
 import ModelMiniCard from '@/components/card/model-mini-card'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
