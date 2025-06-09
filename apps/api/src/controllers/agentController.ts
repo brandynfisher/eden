@@ -541,10 +541,15 @@ export const deployAgent = async (
     return reply.status(200).send({
       deploymentId: deployment.deployment_id,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    console.log(error.response?.data)
     return reply.status(500).send({
-      error: 'An error occurred while deploying the agent',
+      error:
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        error.message ||
+        'An error occurred while deploying the agent',
     })
   }
 }

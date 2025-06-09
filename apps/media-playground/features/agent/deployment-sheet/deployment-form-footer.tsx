@@ -46,8 +46,15 @@ export const DeploymentFormFooter = ({
         richColors: true,
         dismissible: true,
       })
-    } catch {
-      toast.error('Failed to delete deployment', {
+    } catch (error: any) {
+      const apiErrorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        error.message
+      const actualErrorMessage = apiErrorMessage
+        ? `Failed to delete deployment - ${apiErrorMessage}`
+        : 'Failed to delete deployment'
+      toast.error(actualErrorMessage, {
         description: `The ${platform} deployment could not be deleted. Please try again.`,
         richColors: true,
         dismissible: true,
@@ -158,9 +165,19 @@ export const DeploymentFormFooter = ({
         richColors: true,
         dismissible: true,
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      toast.error(errorMessage, {
+      const apiErrorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        error.message
+      const prefix = isDeployed
+        ? 'Failed to update deployment'
+        : 'Failed to deploy agent'
+      const actualErrorMessage = apiErrorMessage
+        ? `${prefix} - ${apiErrorMessage}`
+        : errorMessage
+      toast.error(actualErrorMessage, {
         id: toastId,
         richColors: true,
         dismissible: true,
@@ -184,9 +201,16 @@ export const DeploymentFormFooter = ({
         richColors: true,
         dismissible: true,
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      toast.error('Failed to stop deployment', {
+      const apiErrorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        error.message
+      const actualErrorMessage = apiErrorMessage
+        ? `Failed to stop deployment - ${apiErrorMessage}`
+        : 'Failed to stop deployment'
+      toast.error(actualErrorMessage, {
         description: `The ${platform} deployment could not be stopped. Please try again.`,
         richColors: true,
         dismissible: true,
