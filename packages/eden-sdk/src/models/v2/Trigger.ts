@@ -27,6 +27,7 @@ export type Trigger = {
     note?: string
   }
   message: string
+  status?: 'active' | 'paused' | 'finished'
   createdAt: Date
   updatedAt: Date
 }

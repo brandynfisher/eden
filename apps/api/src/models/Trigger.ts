@@ -22,6 +22,7 @@ export interface TriggerSchema {
   deployment: ObjectId
   message: string
   channel_id: string
+  status?: 'active' | 'paused' | 'finished'
 }
 
 export interface TriggerDocument extends TriggerSchema {}
@@ -59,6 +60,11 @@ const TriggerSchema = new Schema<TriggerDocument>(
     channel_id: {
       type: String,
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ['active', 'paused', 'finished'],
+      default: 'active',
     },
   },
   {
