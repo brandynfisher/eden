@@ -6,6 +6,7 @@ import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
+import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { OtherMessage } from '@/features/sessions/components/other-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
@@ -159,6 +160,8 @@ const Session = () => {
     return user?._id === senderId
   }
 
+  console.log(session?.messages)
+
   const filteredMessages = useMemo(
     () => session?.messages?.filter(m => m.role !== 'tool') ?? [],
     [session?.messages],
@@ -199,7 +202,11 @@ const Session = () => {
       <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
         {messageGroups.map(group => (
           <div key={group[0]._id}>
-            {isOwnMessage(group[0].sender?._id)
+            {group[0].role === 'eden'
+              ? group.map(message => (
+                  <EdenMessage key={message._id} message={message} />
+                ))
+              : isOwnMessage(group[0].sender?._id)
               ? group.map(message => (
                   <UserMessage key={message._id} message={message} />
                 ))

@@ -547,7 +547,7 @@ export const getSession = async (
       .populate({
         path: 'messages',
         select:
-          '_id content sender role tool_calls attachments createdAt reactions',
+          '_id content sender role eden_message_data tool_calls attachments createdAt reactions',
         populate: {
           path: 'sender',
           select: '_id username userImage',
