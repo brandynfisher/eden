@@ -3,6 +3,7 @@ import { UserDocument } from '../User'
 import { SessionDocument } from './SessionV2'
 import {
   Channel,
+  EdenMessageData,
   MessageReaction,
   MessageRole,
   ToolCall,
@@ -14,6 +15,7 @@ export interface MessageSchema {
   session: SessionDocument
   sender: UserDocument | AgentDocument
   role: MessageRole
+  eden_message_data?: EdenMessageData
   content: string
   name?: string
   tool_call_id?: string
@@ -43,8 +45,11 @@ const messageSchema = new Schema<MessageDocument>(
     },
     role: {
       type: Schema.Types.String,
-      enum: ['user', 'assistant', 'system', 'tool'],
+      enum: ['user', 'assistant', 'system', 'tool', 'eden'],
       required: true,
+    },
+    eden_message_data: {
+      type: Schema.Types.Mixed,
     },
     content: {
       type: String,

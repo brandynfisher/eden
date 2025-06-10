@@ -18,6 +18,31 @@ import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+// Helper function to create eden messages for agent operations
+const createEdenMessage = async (
+  sessionId: ObjectId,
+  messageType: 'agent_add' | 'agent_remove',
+  agents: any[],
+) => {
+  const edenMessage = new Message({
+    session: sessionId,
+    sender: new ObjectId('000000000000000000000000'), // System sender
+    role: 'eden',
+    content: '',
+    eden_message_data: {
+      message_type: messageType,
+      agents: agents.map(agent => ({
+        id: agent._id,
+        name: agent.name || agent.username,
+        avatar: agent.userImage,
+      })),
+    },
+  })
+
+  await edenMessage.save()
+  return edenMessage
+}
+
 export const createSession = async (
   server: FastifyInstance,
   request: FastifyRequest<{ Body: SessionsV2CreateArguments }>,
@@ -198,6 +223,13 @@ export const createSession = async (
 
     const session = new Session(sessionData)
 
+    // Create an eden message for agent additions
+    const edenMessage = await createEdenMessage(
+      session._id,
+      'agent_add',
+      existingAgents,
+    )
+    session.messages.push(edenMessage.id)
     await session.save()
 
     // Populate the session with agent and owner data
