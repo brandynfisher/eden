@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import axios from 'axios'
 import {
   CheckIcon,
+  ClockIcon,
   EditIcon,
   MoreHorizontal,
   PencilIcon,
@@ -31,6 +32,7 @@ interface SessionListItemProps {
   title: string
   isActive: boolean
   onItemClick?: () => void
+  isFromTrigger?: boolean
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -38,6 +40,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   title,
   isActive,
   onItemClick,
+  isFromTrigger = false,
 }) => {
   const {
     renameSession: renameSessionQuery,
@@ -186,10 +189,13 @@ const SessionListItem: FC<SessionListItemProps> = ({
           </div>
         ) : (
           <button
-            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
+            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center gap-2"
             onClick={onItemClick}
             disabled={isEditing}
           >
+            {isFromTrigger && (
+              <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            )}
             <div className="overflow-hidden whitespace-nowrap text-ellipsis">
               {title || 'Untitled'}
             </div>
@@ -314,6 +320,8 @@ const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
     }
   }, [hasMore, isFetchingNextPage, fetchNextPage])
 
+  console.log('***debug*** sessions', sessions)
+
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
       <div className="mb-1 text-muted-foreground">Recent</div>
@@ -335,6 +343,7 @@ const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
                       id={session._id}
                       title={session.title || 'Untitled'}
                       isActive={session._id === currentSessionId}
+                      isFromTrigger={!!session.trigger}
                       onItemClick={() => {
                         onItemClick?.()
                         router.push(`/sessions/${session._id}`, {
