@@ -490,7 +490,7 @@ export const listSessions = async (
 
   try {
     const queryOptions: QueryOptions = {
-      select: '_id title name createdAt updatedAt',
+      select: '_id title name createdAt updatedAt trigger',
       limit,
       page,
       sort: {

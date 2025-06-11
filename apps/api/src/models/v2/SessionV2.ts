@@ -32,6 +32,7 @@ export interface SessionSchema {
     actor_selection_method: 'random' | 'random_exclude_last'
   }
   last_actor_id?: ObjectId
+  trigger?: ObjectId
   createdAt: Date
   updatedAt: Date
 }
@@ -114,6 +115,10 @@ export const sessionSchema = new Schema<SessionDocument>(
     last_actor_id: {
       type: Schema.Types.ObjectId,
       ref: 'users3',
+    },
+    trigger: {
+      type: Schema.Types.ObjectId,
+      ref: 'triggers2',
     },
     deleted: {
       type: Boolean,
