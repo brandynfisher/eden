@@ -270,7 +270,11 @@ const Session = () => {
     <>
       {/* Sticky top bar showing agents */}
       {session?.agents && session.agents.length > 0 && (
-        <SessionTopBar agents={session.agents} title={session.title} />
+        <SessionTopBar
+          agents={session.agents}
+          title={session.title}
+          sessionBudget={session.budget}
+        />
       )}
 
       <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">

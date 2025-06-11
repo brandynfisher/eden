@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { SessionBudget } from '@/features/sessions/components/session-budget'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -17,12 +18,21 @@ interface SessionTopBarProps {
   agents: Agent[]
   title?: string
   className?: string
+  sessionBudget?: {
+    token_budget?: number
+    manna_budget?: number
+    turn_budget?: number
+    tokens_spent?: number
+    manna_spent?: number
+    turns_spent?: number
+  }
 }
 
 export const SessionTopBar = ({
   agents,
   title,
   className,
+  sessionBudget,
 }: SessionTopBarProps) => {
   const AgentsPopoverContent = ({ agents }: { agents: Agent[] }) => (
     <div className="grid grid-cols-1 gap-2 min-w-48">
@@ -76,7 +86,12 @@ export const SessionTopBar = ({
         </div>
 
         {/* Right side - Agents popover trigger */}
-        <div className="flex-shrink-0">
+        {sessionBudget && (
+          <div className="mx-1">
+            <SessionBudget budget={sessionBudget} />
+          </div>
+        )}
+        <div className="flex-shrink-0 ">
           <Popover>
             <PopoverTrigger asChild>
               <Button
