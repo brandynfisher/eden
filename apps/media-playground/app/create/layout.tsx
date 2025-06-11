@@ -32,7 +32,7 @@ const PageLayout = ({ children }: PropsWithChildren) => {
   })
 
   const createLegacyNavigationItem = () => ({
-    title: 'Legacy',
+    title: 'Classic',
     links: legacyTools.map(tool => ({
       label: tool.name,
       mediaUrl: tool.thumbnail,
