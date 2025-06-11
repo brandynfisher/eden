@@ -96,9 +96,9 @@ const Session = () => {
         addError({
           type: 'budget_exceeded',
           message:
-            'Your session budget has been exceeded. Please upgrade your plan or wait for the next billing cycle.',
+            'Your session budget has been exceeded. Please top up or increase budget.',
           recoveryAction: {
-            label: 'Upgrade Plan',
+            label: 'Update budget',
             //should be updated with actual section that allows user to top up or increase budget
             action: () => router.push('/billing'),
           },
