@@ -220,6 +220,7 @@ export type SessionV2 = {
     actor_selection_method: 'random' | 'random_exclude_last'
   }
   last_actor_id?: string
+  trigger?: string
   createdAt: Date
   updatedAt: Date
 }

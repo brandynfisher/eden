@@ -1,8 +1,7 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { getAuth } from '@clerk/nextjs/server'
 import {
-  AgentsCreateTriggerArguments,
-  AgentsDeployResponse,
+  AgentsCreateTriggerResponse,
   AgentsGetTriggersResponse,
   EdenClient,
 } from '@edenlabs/eden-sdk'
@@ -33,11 +32,11 @@ export async function GET(
       token: authToken,
     })
 
-    const res = await eden.agents.triggers.getAll({
+    const result = await eden.agents.triggers.getAll({
       agentId: id,
     })
 
-    return NextResponse.json<AgentsGetTriggersResponse>(res)
+    return NextResponse.json<AgentsGetTriggersResponse>(result)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)
@@ -67,9 +66,7 @@ export async function POST(
   }
 
   const requestJson = await request.json()
-
-  const { message, schedule, deploymentId, channelId, platform } =
-    requestJson as AgentsCreateTriggerArguments
+  const { instruction, schedule } = requestJson
 
   try {
     const eden = new EdenClient({
@@ -77,25 +74,13 @@ export async function POST(
       token: authToken,
     })
 
-    const res = await eden.agents.triggers.create({
+    const result = await eden.agents.triggers.create({
       agentId: id,
-      message,
+      instruction,
       schedule,
-      deploymentId,
-      channelId,
-      platform,
     })
 
-    if (!res) {
-      return new NextResponse(
-        JSON.stringify({ message: 'Agent trigger creation error' }),
-        {
-          status: 500,
-        },
-      )
-    }
-
-    return NextResponse.json<AgentsDeployResponse>(res)
+    return NextResponse.json<AgentsCreateTriggerResponse>(result)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

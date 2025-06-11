@@ -12,13 +12,27 @@ export type Channel = {
   key: string
 }
 
-export type MessageRole = 'user' | 'assistant' | 'system' | 'tool'
+export type MessageRole = 'user' | 'assistant' | 'system' | 'tool' | 'eden'
+
+export type EdenMessageType = 'agent_add' | 'agent_remove'
+
+export type EdenMessageAgentData = {
+  id: string
+  name: string
+  avatar?: string
+}
+
+export type EdenMessageData = {
+  message_type: EdenMessageType
+  agents?: EdenMessageAgentData[]
+}
 
 export type Message = {
   _id: string
   session: SessionV2
   sender: Creator | Agent
   role: MessageRole
+  eden_message_data?: EdenMessageData
   content: string
   name?: string
   tool_call_id?: string

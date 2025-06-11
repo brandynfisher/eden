@@ -15,19 +15,24 @@ export interface CronSchedule {
 }
 
 export interface TriggerSchema {
-  agent: ObjectId
+  trigger_id: string
   user: ObjectId
-  thread: ObjectId
+  agent: ObjectId
+  session?: ObjectId
   schedule: CronSchedule
-  deployment: ObjectId
-  message: string
-  channel_id: string
+  instruction: string
+  update_config?: any
+  status?: 'active' | 'paused' | 'finished'
 }
 
 export interface TriggerDocument extends TriggerSchema {}
 
 const TriggerSchema = new Schema<TriggerDocument>(
   {
+    trigger_id: {
+      type: String,
+      required: true,
+    },
     agent: {
       type: Schema.Types.ObjectId,
       ref: 'users3',
@@ -38,27 +43,27 @@ const TriggerSchema = new Schema<TriggerDocument>(
       ref: 'users3',
       required: true,
     },
-    deployment: {
+    session: {
       type: Schema.Types.ObjectId,
-      ref: 'deployments',
-      required: true,
+      ref: 'sessions',
+      required: false,
     },
     schedule: {
       type: Object,
       required: true,
     },
-    thread: {
-      type: Schema.Types.ObjectId,
-      ref: 'threads',
-      required: true,
-    },
-    message: {
+    instruction: {
       type: String,
       required: true,
     },
-    channel_id: {
+    update_config: {
+      type: Object,
+      required: false,
+    },
+    status: {
       type: String,
-      required: true,
+      enum: ['active', 'paused', 'finished'],
+      default: 'active',
     },
   },
   {
@@ -68,4 +73,4 @@ const TriggerSchema = new Schema<TriggerDocument>(
 
 TriggerSchema.index({ agent: 1 })
 
-export const Trigger = model<TriggerDocument>('triggers', TriggerSchema)
+export const Trigger = model<TriggerDocument>('triggers2', TriggerSchema)

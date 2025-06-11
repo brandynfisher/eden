@@ -1,5 +1,5 @@
 import { Creator } from 'src/models'
-import { Agent, Thread } from 'src/models/v2'
+import { Agent } from 'src/models/v2'
 
 export type CronSchedule = {
   year?: number | string
@@ -17,16 +17,14 @@ export type CronSchedule = {
 
 export type Trigger = {
   _id: string
-  agent: Agent
+  trigger_id: string
   user: Creator
-  thread: Thread
+  agent: Agent
+  session?: string | null
   schedule: CronSchedule
-  platform: string
-  channel: {
-    id: string
-    note?: string
-  }
-  message: string
+  instruction: string
+  update_config?: any
+  status?: 'active' | 'paused' | 'finished'
   createdAt: Date
   updatedAt: Date
 }

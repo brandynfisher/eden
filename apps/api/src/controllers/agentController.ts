@@ -8,7 +8,6 @@ import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import {
-  AgentClientType,
   AgentGetArguments,
   AgentsCreateArguments,
   AgentsCreateTriggerArguments,
@@ -290,51 +289,19 @@ export const getAgentTriggers = async (
 
   const triggers = await Trigger.find({
     agent: agentId,
-  }).populate('deployment', '_id platform config')
+  })
 
   return reply.status(200).send({
     triggers,
   })
 }
 
-const createUpdateConfig = async (
-  server: FastifyInstance,
-  platform: AgentClientType,
-  deploymentId: string,
-  channelId: string,
-) => {
-  if (platform === 'web') {
-    return null
-  }
-  // check if deploymentId is a valid deployment
-  const deployment = await Deployment.findById(deploymentId)
-  if (!deployment) {
-    throw new Error('Deployment not found')
-  }
-
-  switch (deployment.platform) {
-    case 'discord':
-      return {
-        update_endpoint: `${server.config.EDEN_COMPUTE_API_URL}/emissions/platform/discord`,
-        deployment_id: deploymentId,
-        discord_channel_id: channelId,
-      }
-    case 'telegram':
-      return {
-        update_endpoint: `${server.config.EDEN_COMPUTE_API_URL}/emissions/platform/telegram`,
-        deployment_id: deploymentId,
-        telegram_chat_id: channelId,
-      }
-    default:
-      throw new Error('Unsupported platform')
-  }
-}
 export const createAgentTrigger = async (
   server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { agentId, message, schedule, deploymentId, channelId, platform } =
+  const { agentId, instruction, schedule } =
     request.body as AgentsCreateTriggerArguments
   const currentUserId = request.user.userId
 
@@ -352,39 +319,11 @@ export const createAgentTrigger = async (
     })
   }
 
-  const deployment = await Deployment.findById(deploymentId)
-
-  if (!deployment && platform !== 'web') {
-    return reply.status(404).send({
-      error: 'Deployment not found',
-    })
-  }
-
-  const updateConfig = await createUpdateConfig(
-    server,
-    platform,
-    deploymentId,
-    channelId,
-  )
-
   const updateData = {
-    agent_id: agentId,
-    message,
+    agent: agentId,
+    user: currentUserId,
+    instruction,
     schedule,
-    platform,
-    channel:
-      platform === 'web'
-        ? null
-        : {
-            id: channelId,
-            note: deployment?.config[
-              deployment?.platform
-            ].channel_allowlist.find(
-              (channel: { id: string; note: string }) =>
-                channel.id === channelId,
-            )?.note,
-          },
-    update_config: updateConfig,
   }
 
   const edenComputeRequest = {
@@ -541,10 +480,15 @@ export const deployAgent = async (
     return reply.status(200).send({
       deploymentId: deployment.deployment_id,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
+    console.log(error.response?.data)
     return reply.status(500).send({
-      error: 'An error occurred while deploying the agent',
+      error:
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        error.message ||
+        'An error occurred while deploying the agent',
     })
   }
 }
