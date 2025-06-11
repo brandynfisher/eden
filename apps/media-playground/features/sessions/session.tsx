@@ -169,11 +169,11 @@ const Session = () => {
       // Fallback timeout in case websocket doesn't deliver
       setTimeout(() => {
         if (streamingMessageIdRef.current === content) {
-          setStreamingText('')
-          setIsStreamingTokens(false)
+          //setStreamingText('')
+          //setIsStreamingTokens(false)
           setHasReceivedTokens(false)
           setWaitingForWebSocket(false)
-          setStreamingAgent(null)
+          //setStreamingAgent(null)
           streamingMessageIdRef.current = null
         }
       }, 2000)
@@ -302,7 +302,9 @@ const Session = () => {
         ))}
 
         {/* Show streaming message when actively streaming tokens or waiting for websocket */}
-        {(isStreamingTokens || waitingForWebSocket) && (
+        {(isStreamingTokens ||
+          waitingForWebSocket ||
+          streamingText.length > 0) && (
           <div className="mb-4">
             <OtherMessage
               sessionId={sessionId as string}
