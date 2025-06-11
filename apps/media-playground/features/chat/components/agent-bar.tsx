@@ -80,29 +80,38 @@ export const AgentBar: FC<{
       </div>
       <div className="flex items-center gap-2">
         <Button
-          variant={viewMode === 'chat' ? 'default' : 'outline'}
+          variant="outline"
           size="sm"
           onClick={handleChatButtonClick}
-          className="shrink-0 gap-1"
+          className={`shrink-0 gap-1 text-sm ${
+            viewMode === 'chat' &&
+            'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+          }`}
         >
           <MessageSquareIcon className="size-4" />
           {!isNarrow && <span>Chat</span>}
         </Button>
         <Button
-          variant={viewMode === 'creations' ? 'default' : 'outline'}
+          variant="outline"
           size="sm"
           onClick={() => onViewModeChange('creations')}
-          className="shrink-0 gap-1"
+          className={`shrink-0 gap-1 text-sm ${
+            viewMode === 'creations' &&
+            'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+          }`}
         >
           <ImageIcon className="size-4" />
           {!isNarrow && <span>Creations</span>}
         </Button>
         {isOwner && (
           <Button
-            variant={viewMode === 'tasks' ? 'default' : 'outline'}
+            variant="outline"
             size="sm"
             onClick={() => onViewModeChange('tasks')}
-            className="shrink-0 gap-1"
+            className={`shrink-0 gap-1 text-sm ${
+              viewMode === 'tasks' &&
+              'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+            }`}
           >
             <ClockIcon className="size-4" />
             {!isNarrow && <span>Tasks</span>}
@@ -110,10 +119,13 @@ export const AgentBar: FC<{
         )}
         {isOwner && (
           <Button
-            variant={viewMode === 'settings' ? 'default' : 'outline'}
+            variant="outline"
             size="sm"
             onClick={() => onViewModeChange('settings')}
-            className="shrink-0 gap-1"
+            className={`shrink-0 gap-1 text-sm ${
+              viewMode === 'settings' &&
+              'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+            }`}
           >
             <SettingsIcon className="size-4" />
             {!isNarrow && <span>Settings</span>}

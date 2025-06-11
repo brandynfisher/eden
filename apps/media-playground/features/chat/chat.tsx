@@ -73,13 +73,13 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   return (
     <ThreadListPrimitive.New asChild>
       <Button
-        variant="ghost"
+        variant={shouldShowSelected ? 'outline' : 'default'}
         onClick={onItemClick}
         className={cn(
-          'flex w-full justify-start gap-2 px-4 py-3 mb-4 rounded-lg font-medium transition-colors',
+          'flex w-full justify-start gap-2 py-3 mb-2 rounded-md font-medium transition-colors',
           shouldShowSelected
-            ? 'bg-primary text-primary-foreground hover:bg-primary/90 border border-primary'
-            : 'bg-white text-black hover:bg-gray-100 hover:text-black border border-gray-200',
+            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+            : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
         )}
       >
         <EditIcon className="size-4" />
@@ -344,7 +344,7 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   }, [hasMore, isFetchingNextPage, fetchNextPage])
 
   return (
-    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
+    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto mr-2">
       <div className="mb-1 text-muted-foreground">Recent</div>
       {isLoading ? (
         <>
@@ -405,7 +405,7 @@ const ChatSidebarContent: FC<{
 }> = ({ onItemClick }) => {
   return (
     <>
-      <div className="mb-4">
+      <div className="mb-2 mr-2">
         <TopLeft onItemClick={onItemClick} />
       </div>
       <MainLeft onItemClick={onItemClick} />

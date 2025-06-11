@@ -232,7 +232,7 @@ const AgentEditView: FC<{
             className={cn(
               'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
               activeTab === 'profile'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted',
             )}
           >
@@ -247,7 +247,7 @@ const AgentEditView: FC<{
             className={cn(
               'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
               activeTab === 'concepts'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted',
             )}
           >
@@ -262,7 +262,7 @@ const AgentEditView: FC<{
             className={cn(
               'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
               activeTab === 'deployments'
-                ? 'bg-primary text-primary-foreground'
+                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted',
             )}
           >

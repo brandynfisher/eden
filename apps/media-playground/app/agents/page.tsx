@@ -52,7 +52,8 @@ const AgentsPage = () => {
           </div>
           <Button
             onClick={handleCreateClick}
-            className="gap-x-2 text-sm font-semibold bg-primary hover:bg-primary/90"
+            variant="outline"
+            className="gap-x-2 text-sm font-semibold bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-purple-600"
           >
             <PlusIcon className="size-4" />
             Create Agent
