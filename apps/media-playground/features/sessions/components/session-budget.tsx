@@ -108,7 +108,7 @@ export const SessionBudget = ({ budget, className }: SessionBudgetProps) => {
 
   const getSummaryText = () => {
     if (criticalCount > 0) {
-      return `${criticalCount} critical${criticalCount >= 2 ? 's' : ''}`
+      return `${criticalCount} critical`
     }
     if (warningCount > 0) {
       return `${warningCount} warning${warningCount >= 2 ? 's' : ''}`
