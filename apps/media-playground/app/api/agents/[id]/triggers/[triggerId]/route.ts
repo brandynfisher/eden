@@ -31,12 +31,12 @@ export async function DELETE(
       token: authToken,
     })
 
-    const res = await eden.agents.triggers.delete({
+    const result = await eden.agents.triggers.delete({
       agentId: id,
       triggerId,
     })
 
-    return NextResponse.json<AgentsDeleteTriggerResponse>(res)
+    return NextResponse.json<AgentsDeleteTriggerResponse>(result)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error(errorMessage)

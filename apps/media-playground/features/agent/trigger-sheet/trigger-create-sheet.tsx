@@ -17,45 +17,26 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { TriggerPlatformField } from '@/features/agent/trigger-sheet/trigger-platform-field'
 import {
   TriggerRepeatOptions,
   triggerRepeatOptions,
 } from '@/features/agent/trigger-sheet/trigger-repeat-options'
 import { TriggerScheduleField } from '@/features/agent/trigger-sheet/trigger-schedule-field'
-import { getChannelsForPlatform } from '@/features/agent/trigger-sheet/trigger-utils'
-import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
-import { CronSchedule } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-export const createTriggerSchema = z
-  .object({
-    instructions: z.string().min(1, 'Instructions are required'),
-    platform: z.enum(['web', 'discord', 'twitter', 'telegram']),
-    channelId: z.string().optional(),
-    startDate: z.date(),
-    repeat: z.nativeEnum(TriggerRepeatOptions),
-    endDate: z.date().optional(),
-    timezone: z.string(),
-  })
-  .refine(
-    data => {
-      if (data.platform !== 'twitter' && data.platform !== 'web') {
-        return data.channelId && data.channelId.length > 0
-      }
-      return true
-    },
-    {
-      message: 'Channel is required',
-      path: ['channelId'],
-    },
-  )
+export const createTriggerSchema = z.object({
+  instructions: z.string().min(1, 'Instructions are required'),
+  startDate: z.date(),
+  repeat: z.nativeEnum(TriggerRepeatOptions),
+  endDate: z.date().optional(),
+  timezone: z.string(),
+})
 
 export type CreateTriggerDto = z.infer<typeof createTriggerSchema>
 
@@ -70,50 +51,28 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
     enabled: false,
   })
 
-  const { deployments } = useAgentDeploymentsQuery({
-    key: agentId,
-  })
-
   const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
   const form = useForm<CreateTriggerDto>({
     resolver: zodResolver(createTriggerSchema),
     defaultValues: {
       instructions: '',
-      platform: undefined,
-      channelId: '',
       startDate: new Date(),
       repeat: TriggerRepeatOptions.DOES_NOT_REPEAT,
       timezone: defaultTimezone,
     },
   })
 
-  const platform = form.watch('platform')
-
-  const channels = useMemo(() => {
-    if (!deployments) return []
-
-    const deployment = deployments?.find(
-      deployment => deployment.platform === platform,
-    )
-
-    if (!deployment) return []
-
-    return getChannelsForPlatform(platform, deployment)
-  }, [deployments, platform])
-
   useEffect(() => {
     if (!isOpen) {
       form.reset({
         instructions: '',
-        platform: undefined,
-        channelId: '',
         startDate: new Date(),
         repeat: TriggerRepeatOptions.DOES_NOT_REPEAT,
         timezone: defaultTimezone,
       })
     }
-  }, [isOpen])
+  }, [isOpen, form, defaultTimezone])
 
   const onSubmit = async (values: CreateTriggerDto) => {
     try {
@@ -124,7 +83,7 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
       const hour = values.startDate.getHours()
       const minute = values.startDate.getMinutes()
 
-      const schedule: CronSchedule = {
+      const schedule = {
         ...predefinedSchedule,
         hour,
         minute,
@@ -137,16 +96,9 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
         schedule.end_date = schedule.start_date
       }
 
-      const deployment = deployments?.find(
-        deployment => deployment.platform === platform,
-      )
-
       await axios.post(`/api/agents/${agentId}/triggers`, {
-        message: values.instructions,
+        instruction: values.instructions,
         schedule,
-        platform: values.platform,
-        deploymentId: deployment?._id,
-        channelId: values.channelId,
       })
 
       await invalidate()
@@ -200,15 +152,6 @@ export const TriggerCreateSheet = ({ agentId }: TriggerCreateSheetProps) => {
                   <FormMessage />
                 </FormItem>
               )}
-            />
-
-            <TriggerPlatformField
-              form={form}
-              platform={platform}
-              channels={channels}
-              availablePlatforms={
-                deployments?.map(deployment => deployment.platform) || []
-              }
             />
 
             <TriggerScheduleField form={form} />
