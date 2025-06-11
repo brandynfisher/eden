@@ -279,13 +279,6 @@ const Session = () => {
       )}
 
       <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
-        {/* Error Display */}
-        <ErrorDisplay
-          errors={errors}
-          onDismiss={removeError}
-          className="mb-4"
-        />
-
         {messageGroups.map(group => (
           <div key={group[0]._id}>
             {group[0].role === 'eden'
