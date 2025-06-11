@@ -99,6 +99,7 @@ const Session = () => {
             'Your session budget has been exceeded. Please upgrade your plan or wait for the next billing cycle.',
           recoveryAction: {
             label: 'Upgrade Plan',
+            //should be updated with actual section that allows user to top up or increase budget
             action: () => router.push('/billing'),
           },
           dismissible: true,
