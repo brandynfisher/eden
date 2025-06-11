@@ -1,10 +1,14 @@
 import { fetcher } from '@/lib/fetcher'
-import { Agent, AgentsGetTriggersResponse, Trigger } from '@edenlabs/eden-sdk'
+import { Trigger } from '@edenlabs/eden-sdk'
 import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query'
 
+interface TriggersResponse {
+  triggers: Trigger[]
+}
+
 type Props = {
-  key: Agent['_id']
-  initialData?: AgentsGetTriggersResponse
+  key: string
+  initialData?: TriggersResponse
   enabled?: boolean
 }
 
@@ -29,8 +33,7 @@ export const useAgentTriggersQuery = ({
     enabled,
     initialData,
     queryKey,
-    queryFn: () =>
-      fetcher<AgentsGetTriggersResponse>(`/api/agents/${key}/triggers`),
+    queryFn: () => fetcher<TriggersResponse>(`/api/agents/${key}/triggers`),
   })
 
   const queryClient = useQueryClient()

@@ -1,8 +1,5 @@
 'use client'
 
-import DiscordIcon from '@/components/icons/discord'
-import { TelegramIcon } from '@/components/icons/telegram'
-import TwitterIcon from '@/components/icons/twitter'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,7 +16,7 @@ import { Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { format } from 'date-fns'
 import { ChevronDownIcon, CopyIcon, GlobeIcon, TrashIcon } from 'lucide-react'
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { toast } from 'sonner'
 
 export type TriggerItemProps = {
@@ -37,10 +34,6 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
   })
 
   const formattedSchedule = formatCronSchedule(trigger.schedule)
-
-  const channel = useMemo(() => {
-    return trigger.channel?.note || trigger.channel?.id
-  }, [trigger])
 
   const handleDelete = async () => {
     const deletePromise = async () => {
@@ -65,13 +58,13 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation()
-    copy(trigger.message)
+    copy(trigger.instruction)
       .then(() => {
-        toast.info('Copied "Task Message"', {
+        toast.info('Copied "Task Instruction"', {
           description:
-            trigger.message && trigger.message.length > 120
-              ? `${trigger.message.substring(0, 120)}...`
-              : trigger.message,
+            trigger.instruction && trigger.instruction.length > 120
+              ? `${trigger.instruction.substring(0, 120)}...`
+              : trigger.instruction,
           dismissible: true,
           richColors: true,
         })
@@ -83,21 +76,6 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
           richColors: true,
         })
       })
-  }
-
-  const getPlatformBadgeClass = (platform: string) => {
-    switch (platform) {
-      case 'web':
-        return 'bg-blue-500/20 hover:bg-blue-500/30 text-white'
-      case 'discord':
-        return 'bg-[#5865F2]/20 hover:bg-[#5865F2]/30 text-white'
-      case 'telegram':
-        return 'bg-sky-500/20 hover:bg-sky-500/30 text-white'
-      case 'twitter':
-        return 'bg-blue-500/20 hover:bg-blue-500/30 text-white'
-      default:
-        return 'bg-secondary'
-    }
   }
 
   return (
@@ -114,14 +92,11 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
           <Badge
             className={cn(
               'w-fit text-xs border-transparent capitalize gap-1 cursor-default',
-              getPlatformBadgeClass(trigger.platform),
+              'bg-blue-500/20 hover:bg-blue-500/30 text-white',
             )}
           >
-            {trigger.platform === 'discord' && <DiscordIcon size={16} />}
-            {trigger.platform === 'telegram' && <TelegramIcon size={16} />}
-            {trigger.platform === 'twitter' && <TwitterIcon size={16} />}
-            {trigger.platform === 'web' && <GlobeIcon size={16} />}
-            {trigger.platform}
+            <GlobeIcon size={16} />
+            Web
           </Badge>
           <div className="flex items-center gap-2">
             <ChevronDownIcon
@@ -160,7 +135,7 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
           }}
         >
           <TextClampMore
-            text={trigger.message}
+            text={trigger.instruction}
             className="font-medium text-sm flex-1 text-left whitespace-pre-line"
             lines={2}
             renderActions={() => (
@@ -185,18 +160,12 @@ export const TriggerItem = ({ agentId, trigger }: TriggerItemProps) => {
         <div className="space-y-3 px-4 py-3">
           <div>
             <h4 className="text-sm font-semibold">Platform</h4>
-            <p className="text-sm text-muted-foreground">{trigger.platform}</p>
+            <p className="text-sm text-muted-foreground">Web</p>
           </div>
           <div>
             <h4 className="text-sm font-semibold">Schedule</h4>
             <p className="text-sm text-muted-foreground">{formattedSchedule}</p>
           </div>
-          {channel && (
-            <div>
-              <h4 className="text-sm font-semibold">Channel</h4>
-              <div className="text-sm text-muted-foreground">{channel}</div>
-            </div>
-          )}
           {trigger.createdAt && (
             <div>
               <h4 className="text-sm font-semibold">Created</h4>

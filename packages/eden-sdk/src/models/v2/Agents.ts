@@ -224,11 +224,8 @@ export interface AgentsGetTriggersArguments extends WebAPICallOptions {
 
 export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
   agentId: string
-  message: string
+  instruction: string
   schedule: CronSchedule
-  deploymentId: string
-  channelId: string
-  platform: AgentClientType
 }
 
 export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
@@ -433,7 +430,7 @@ export type AgentsGetTriggersResponse = WebAPICallResult & {
 }
 
 export type AgentsCreateTriggerResponse = WebAPICallResult & {
-  trigger: Trigger
+  triggerId: string
   error?: string
 }
 
