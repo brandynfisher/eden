@@ -1,5 +1,6 @@
 'use client'
 
+import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { SessionTopBar } from './components/session-top-bar'
 import { groupConsecutiveMessages } from './utils/group-messages'
@@ -11,13 +12,15 @@ import { OtherMessage } from '@/features/sessions/components/other-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { useSessionErrors } from '@/hooks/use-session-errors'
 import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const Session = () => {
   const params = useParams()
+  const router = useRouter()
   const sessionId = params.id as string
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
@@ -32,6 +35,9 @@ const Session = () => {
     userImage?: string
   } | null>(null)
   const streamingMessageIdRef = useRef<string | null>(null)
+
+  // Error handling
+  const { errors, addError, removeError, clearErrors } = useSessionErrors()
 
   const {
     data: session,
@@ -69,7 +75,84 @@ const Session = () => {
     }
   }, [session?.messages, waitingForWebSocket])
 
-  // Set up streaming
+  // Error handling function
+  const handleStreamingError = useCallback(
+    (error: string) => {
+      console.error('Streaming error:', error)
+
+      // Clear streaming state
+      setStreamingText('')
+      setIsStreamingTokens(false)
+      setHasReceivedTokens(false)
+      setWaitingForWebSocket(false)
+      setStreamingAgent(null)
+      streamingMessageIdRef.current = null
+
+      // Determine error type and add appropriate error
+      if (
+        error.toLowerCase().includes('budget') ||
+        error.toLowerCase().includes('quota')
+      ) {
+        addError({
+          type: 'budget_exceeded',
+          message:
+            'Your session budget has been exceeded. Please top up or increase budget.',
+          recoveryAction: {
+            label: 'Update budget',
+            //should be updated with actual section that allows user to top up or increase budget
+            action: () => router.push('/billing'),
+          },
+          dismissible: true,
+        })
+      } else if (error.toLowerCase().includes('rate limit')) {
+        addError({
+          type: 'rate_limit',
+          message:
+            "You're sending messages too quickly. Please wait a moment before trying again.",
+          recoveryAction: {
+            label: 'Try Again',
+            action: () => {
+              // Clear this specific error and allow retry
+              clearErrors()
+            },
+          },
+          dismissible: true,
+        })
+      } else if (
+        error.toLowerCase().includes('connection') ||
+        error.toLowerCase().includes('network')
+      ) {
+        addError({
+          type: 'connection_error',
+          message:
+            'Connection lost. Please check your internet connection and try again.',
+          recoveryAction: {
+            label: 'Retry Connection',
+            action: () => {
+              clearErrors()
+              window.location.reload()
+            },
+          },
+          dismissible: true,
+        })
+      } else {
+        addError({
+          type: 'stream_error',
+          message:
+            error ||
+            'An unexpected error occurred while processing your message.',
+          recoveryAction: {
+            label: 'Try Again',
+            action: () => clearErrors(),
+          },
+          dismissible: true,
+        })
+      }
+    },
+    [addError, clearErrors, router],
+  )
+
+  // Set up streaming with error handling
   const { sendMessage: sendStreamingMessage } = useSessionStream({
     sessionId,
     onToken: text => {
@@ -87,11 +170,11 @@ const Session = () => {
       // Fallback timeout in case websocket doesn't deliver
       setTimeout(() => {
         if (streamingMessageIdRef.current === content) {
-          setStreamingText('')
-          setIsStreamingTokens(false)
+          //setStreamingText('')
+          //setIsStreamingTokens(false)
           setHasReceivedTokens(false)
           setWaitingForWebSocket(false)
-          setStreamingAgent(null)
+          //setStreamingAgent(null)
           streamingMessageIdRef.current = null
         }
       }, 2000)
@@ -118,15 +201,7 @@ const Session = () => {
         }
       }, 3000)
     },
-    onError: error => {
-      console.error('Streaming error:', error)
-      setStreamingText('')
-      setIsStreamingTokens(false)
-      setHasReceivedTokens(false)
-      setWaitingForWebSocket(false)
-      setStreamingAgent(null)
-      streamingMessageIdRef.current = null
-    },
+    onError: handleStreamingError,
     onDone: () => {
       // Only clear if we're not waiting for websocket
       if (!waitingForWebSocket) {
@@ -196,7 +271,11 @@ const Session = () => {
     <>
       {/* Sticky top bar showing agents */}
       {session?.agents && session.agents.length > 0 && (
-        <SessionTopBar agents={session.agents} title={session.title} />
+        <SessionTopBar
+          agents={session.agents}
+          title={session.title}
+          sessionBudget={session.budget}
+        />
       )}
 
       <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
@@ -224,7 +303,9 @@ const Session = () => {
         ))}
 
         {/* Show streaming message when actively streaming tokens or waiting for websocket */}
-        {(isStreamingTokens || waitingForWebSocket) && (
+        {(isStreamingTokens ||
+          waitingForWebSocket ||
+          streamingText.length > 0) && (
           <div className="mb-4">
             <OtherMessage
               sessionId={sessionId as string}
@@ -248,6 +329,12 @@ const Session = () => {
             />
           </div>
         )}
+        {/* Error Display */}
+        <ErrorDisplay
+          errors={errors}
+          onDismiss={removeError}
+          className="mb-4"
+        />
 
         <div ref={messagesEndRef} />
       </div>
@@ -256,6 +343,9 @@ const Session = () => {
         <MessageInput
           sessionId={sessionId as string}
           onStreamingMessage={(content, attachments) => {
+            // Clear any existing errors when starting a new message
+            clearErrors()
+
             setIsStreamingTokens(true)
             setHasReceivedTokens(false)
             setStreamingText('')
