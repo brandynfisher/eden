@@ -1,6 +1,5 @@
 'use client'
 
-import ToggleButton from '@/components/button/toggle-button'
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -13,7 +12,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ToggleGroup } from '@/components/ui/toggle-group'
 import ModelsFeed from '@/features/feed/models-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
