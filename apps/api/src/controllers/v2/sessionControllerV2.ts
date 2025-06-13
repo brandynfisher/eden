@@ -486,7 +486,7 @@ export const listSessions = async (
     })
   }
 
-  const { limit = 25, page, sort } = request.query
+  const { limit = 25, page, sort, agent_id } = request.query
 
   try {
     const queryOptions: QueryOptions = {
@@ -501,8 +501,19 @@ export const listSessions = async (
     }
 
     const sessionsRepository = new SessionRepository(Session)
-    const sessionQuery = {
+    const sessionQuery: any = {
       owner: userId,
+    }
+
+    // Add agent filter if provided - look up agent by username first
+    if (agent_id) {
+      const agent = await Agent.findOne({ username: agent_id })
+      if (!agent) {
+        return reply.status(404).send({
+          message: 'Agent not found',
+        })
+      }
+      sessionQuery.agents = agent._id
     }
 
     const paginatedResponse = await sessionsRepository.query(

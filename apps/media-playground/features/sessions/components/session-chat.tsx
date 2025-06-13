@@ -93,7 +93,7 @@ const SessionChatSidebarContent: FC<{
   onItemClick?: () => void
   onSessionSelect: (sessionId: string) => void
   onNewSession: () => void
-}> = ({ agent, isOwner, handleEditClick, onItemClick }) => {
+}> = ({ agent, isOwner, handleEditClick, onItemClick, agentId }) => {
   return (
     <>
       <div className="flex items-center justify-between gap-2 ml-2">
@@ -123,7 +123,7 @@ const SessionChatSidebarContent: FC<{
       {/* New session button */}
       <div className="border-b mb-2 mt-2" />
       {/* Use existing sessions sidebar content for the rest */}
-      <SessionsSidebarContent onItemClick={onItemClick} />
+      <SessionsSidebarContent onItemClick={onItemClick} agentId={agentId} />
     </>
   )
 }
@@ -253,6 +253,7 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
               currentSessionId={currentSessionId}
               onSessionSelect={handleSessionSelect}
               onNewSession={handleNewSession}
+              onItemClick={() => {}}
             />
           )}
         </ResizablePanel>

@@ -269,7 +269,13 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   )
 }
 
-const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
+const MainLeft = ({
+  onItemClick,
+  agentId,
+}: {
+  onItemClick?: () => void
+  agentId?: string
+}) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const router = useRouter()
   const params = useParams()
@@ -277,6 +283,7 @@ const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
   const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
     useSessionListQuery({
       enabled: !!isSignedIn,
+      agent_id: agentId,
     })
 
   // Setup intersection observer for infinite scrolling
@@ -319,8 +326,6 @@ const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
       observer.disconnect()
     }
   }, [hasMore, isFetchingNextPage, fetchNextPage])
-
-  console.log('***debug*** sessions', sessions)
 
   return (
     <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
@@ -371,24 +376,32 @@ const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
 
 export const SessionsSidebarContent = ({
   onItemClick,
+  agentId,
 }: {
   onItemClick?: () => void
+  agentId?: string
 }) => {
   return (
     <>
       <div className="border-b mb-2">
         <TopLeft onItemClick={onItemClick} />
       </div>
-      <MainLeft onItemClick={onItemClick} />
+      <MainLeft onItemClick={onItemClick} agentId={agentId} />
     </>
   )
 }
 
 export const SessionsSidebar = React.memo(
-  ({ onItemClick }: { onItemClick?: () => void }) => {
+  ({
+    onItemClick,
+    agentId,
+  }: {
+    onItemClick?: () => void
+    agentId?: string
+  }) => {
     return (
       <div className="flex flex-col bg-[#0e1421] p-3 transition-all duration-300 ease-in-out w-full md:max-w-[320px]">
-        <SessionsSidebarContent onItemClick={onItemClick} />
+        <SessionsSidebarContent onItemClick={onItemClick} agentId={agentId} />
       </div>
     )
   },
