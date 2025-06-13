@@ -1,7 +1,7 @@
 'use client'
 
 import AgentLink from '../agent/agent-link'
-import { groupConsecutiveMessages } from '../sessions/utils/group-messages'
+import Session from '../sessions/session'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -26,26 +26,16 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import { EdenMessage } from '@/features/sessions/components/eden-message'
-import { ErrorDisplay } from '@/features/sessions/components/error-display'
 import { MessageInput } from '@/features/sessions/components/message-input'
-import { OtherMessage } from '@/features/sessions/components/other-message'
-import { SessionTopBar } from '@/features/sessions/components/session-top-bar'
-import { UserMessage } from '@/features/sessions/components/user-message'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAgentSessionListQuery } from '@/hooks/query/use-agent-session-list-query'
 import { useSessionMessageMutation } from '@/hooks/query/use-session-message-mutation'
-import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { useSessionErrors } from '@/hooks/use-session-errors'
-import { useSessionStream } from '@/hooks/use-session-stream'
-import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent, SessionV2 } from '@edenlabs/eden-sdk'
-import { ArrowDownIcon } from '@radix-ui/react-icons'
 import axios from 'axios'
 import {
   CheckIcon,
@@ -56,17 +46,17 @@ import {
   SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
-// Session Welcome Component (exactly like MyThreadWelcome)
+// Session Welcome Component
 const SessionWelcome: FC<{
   agent: Agent | null | undefined
   onSendMessage: (content: string) => void
   isLoading: boolean
-  children?: React.ReactNode
-}> = ({ agent, onSendMessage, isLoading, children }) => {
+}> = ({ agent, onSendMessage, isLoading }) => {
   const suggestions = agent?.suggestions || []
 
   return (
@@ -95,8 +85,6 @@ const SessionWelcome: FC<{
           )}
         </div>
 
-        {children}
-
         {suggestions.length > 0 && (
           <div className="mt-6 w-full">
             <div className="flex flex-row gap-2 flex-wrap justify-center">
@@ -115,524 +103,6 @@ const SessionWelcome: FC<{
         )}
       </div>
     </div>
-  )
-}
-
-// Session Messages Component (like Thread.Messages)
-const SessionMessages: FC<{
-  session: SessionV2
-  sessionId: string
-  streamingText: string
-  isStreamingTokens: boolean
-  hasReceivedTokens: boolean
-  waitingForWebSocket: boolean
-  streamingAgent: Agent | null
-}> = ({
-  session,
-  sessionId,
-  streamingText,
-  isStreamingTokens,
-  hasReceivedTokens,
-  waitingForWebSocket,
-  streamingAgent,
-}) => {
-  const { user } = useAuthState()
-
-  const isOwnMessage = (senderId?: string) => {
-    if (!senderId) return false
-    return user?._id === senderId
-  }
-
-  const filteredMessages = useMemo(
-    () => session?.messages?.filter(m => m.role !== 'tool') ?? [],
-    [session?.messages],
-  )
-
-  const messageGroups = useMemo(
-    () => groupConsecutiveMessages(filteredMessages),
-    [filteredMessages],
-  )
-
-  return (
-    <div className="max-w-[--aui-thread-max-width] mx-auto w-full py-4">
-      {messageGroups.map(group => (
-        <div key={group[0]._id}>
-          {group[0].role === 'eden'
-            ? group.map(message => (
-                <EdenMessage key={message._id} message={message} />
-              ))
-            : isOwnMessage(group[0].sender?._id)
-            ? group.map(message => (
-                <UserMessage key={message._id} message={message} />
-              ))
-            : group
-                .filter(message => message.role !== 'tool')
-                .map((message, index) => (
-                  <OtherMessage
-                    sessionId={sessionId}
-                    key={message._id}
-                    message={message}
-                    showAvatar={index === 0}
-                  />
-                ))}
-        </div>
-      ))}
-
-      {/* Show streaming message when actively streaming tokens or waiting for websocket */}
-      {(isStreamingTokens ||
-        waitingForWebSocket ||
-        streamingText.length > 0) && (
-        <div>
-          <OtherMessage
-            sessionId={sessionId}
-            message={
-              {
-                _id: 'streaming',
-                content: streamingText,
-                sender: streamingAgent ||
-                  session?.agents?.[0] || {
-                    _id: 'agent',
-                    username: 'Assistant',
-                  },
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                session: sessionId,
-                role: 'assistant',
-              } as SessionV2['messages'][0]
-            }
-            showAvatar={true}
-            isStreamingTokens={isStreamingTokens && !hasReceivedTokens}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
-
-// MySession Component (exactly like MyThread structure)
-const MySession: FC<{
-  sessionId?: string
-  agentId: string
-  agent: Agent | null | undefined
-}> = ({ sessionId, agentId, agent }) => {
-  const [isMounted, setIsMounted] = useState(false)
-  const viewportRef = useRef<HTMLDivElement>(null)
-  const isInitialLoadRef = useRef(true)
-  const [hasNewMessages, setHasNewMessages] = useState(false)
-  const [isAtBottom, setIsAtBottom] = useState(true)
-  const [isNearBottom, setIsNearBottom] = useState(true)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const lastSeenContentRef = useRef('')
-  const lastMessagesLengthRef = useRef(0)
-
-  // Session state (matching MyThread pattern)
-  const [streamingText, setStreamingText] = useState('')
-  const [isStreamingTokens, setIsStreamingTokens] = useState(false)
-  const [hasReceivedTokens, setHasReceivedTokens] = useState(false)
-  const [waitingForWebSocket, setWaitingForWebSocket] = useState(false)
-  const [streamingAgent, setStreamingAgent] = useState<Agent | null>(null)
-  const streamingMessageIdRef = useRef<string | null>(null)
-
-  // Error handling
-  const { errors, addError, removeError, clearErrors } = useSessionErrors()
-
-  const { data: currentSession, isLoading: sessionLoading } = useSessionQuery({
-    sessionId: sessionId,
-    enabled: !!sessionId,
-  })
-
-  const sendMessageMutation = useSessionMessageMutation()
-
-  // Use WebSocket for real-time updates
-  useSessionWebSocket({
-    sessionId: sessionId || '',
-    enabled: !!sessionId && sessionId !== 'new',
-  })
-
-  // Constants for scroll calculations (matching MyThread)
-  const BOTTOM_THRESHOLD = 60
-  const NEAR_BOTTOM_THRESHOLD = 1.2
-
-  // Get messages for scroll tracking
-  const messages = currentSession?.messages || []
-
-  // Get a string representation of all complete assistant messages
-  const assistantMessagesContent = messages
-    .filter(m => m.role === 'assistant' && m.content && m.content.length > 0)
-    .map(m => m.content)
-    .join('')
-
-  // Check if any messages are still being generated
-  const hasGeneratingMessage = isStreamingTokens || waitingForWebSocket
-
-  // Show welcome screen when no sessionId is present (matching MyThread logic)
-  const showWelcomeScreen = !sessionId
-
-  // Only show loading when we have a sessionId but no messages yet (matching MyThread)
-  const showLoadingState = !showWelcomeScreen
-    ? false
-    : isMounted && Boolean(sessionId) && messages.length === 0
-
-  // Mount effect (matching MyThread)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const timer = setTimeout(() => setIsMounted(true), 0)
-    return () => clearTimeout(timer)
-  }, [])
-
-  // Clear streaming state when websocket delivers the real message
-  useEffect(() => {
-    if (
-      waitingForWebSocket &&
-      streamingMessageIdRef.current &&
-      currentSession?.messages
-    ) {
-      const lastMessage =
-        currentSession.messages[currentSession.messages.length - 1]
-      if (
-        lastMessage &&
-        lastMessage.content === streamingMessageIdRef.current
-      ) {
-        setStreamingText('')
-        setIsStreamingTokens(false)
-        setHasReceivedTokens(false)
-        setWaitingForWebSocket(false)
-        setStreamingAgent(null)
-        streamingMessageIdRef.current = null
-      }
-    }
-  }, [currentSession?.messages, waitingForWebSocket])
-
-  // Error handling function
-  const handleStreamingError = useCallback(
-    (error: string) => {
-      console.error('Streaming error:', error)
-
-      // Clear streaming state
-      setStreamingText('')
-      setIsStreamingTokens(false)
-      setHasReceivedTokens(false)
-      setWaitingForWebSocket(false)
-      setStreamingAgent(null)
-      streamingMessageIdRef.current = null
-
-      // Add appropriate error
-      addError({
-        type: 'stream_error',
-        message:
-          error ||
-          'An unexpected error occurred while processing your message.',
-        recoveryAction: {
-          label: 'Try Again',
-          action: () => clearErrors(),
-        },
-        dismissible: true,
-      })
-    },
-    [addError, clearErrors],
-  )
-
-  // Set up streaming with error handling
-  const { sendMessage: sendStreamingMessage } = useSessionStream({
-    sessionId: sessionId || '',
-    onToken: text => {
-      setStreamingText(prev => prev + text)
-      setIsStreamingTokens(true)
-      setHasReceivedTokens(true)
-    },
-    onMessage: content => {
-      setStreamingText(content)
-      setIsStreamingTokens(false)
-      setWaitingForWebSocket(true)
-      streamingMessageIdRef.current = content
-
-      setTimeout(() => {
-        if (streamingMessageIdRef.current === content) {
-          setHasReceivedTokens(false)
-          setWaitingForWebSocket(false)
-          streamingMessageIdRef.current = null
-        }
-      }, 2000)
-    },
-    onToolComplete: () => {
-      setStreamingText('')
-      setIsStreamingTokens(true)
-      setHasReceivedTokens(false)
-      setWaitingForWebSocket(false)
-      streamingMessageIdRef.current = null
-    },
-    onError: handleStreamingError,
-    onDone: () => {
-      if (!waitingForWebSocket) {
-        setIsStreamingTokens(false)
-        setHasReceivedTokens(false)
-      }
-    },
-    onAgentInfo: agent => {
-      setStreamingAgent(agent as Agent)
-    },
-  })
-
-  // Track scroll position and new messages (matching MyThread)
-  useEffect(() => {
-    const viewport = viewportRef.current
-    if (!viewport) return
-
-    const handleScroll = () => {
-      const { scrollHeight, scrollTop, clientHeight } = viewport
-      const distanceFromBottom = Math.abs(
-        scrollHeight - scrollTop - clientHeight,
-      )
-
-      const atBottom = distanceFromBottom < BOTTOM_THRESHOLD
-      const nearBottom =
-        distanceFromBottom < clientHeight * NEAR_BOTTOM_THRESHOLD
-
-      setIsAtBottom(atBottom)
-      setIsNearBottom(nearBottom)
-      setIsScrolled(scrollTop > 100)
-
-      if (atBottom && !hasGeneratingMessage) {
-        setHasNewMessages(false)
-        lastSeenContentRef.current = assistantMessagesContent
-      }
-    }
-
-    viewport.addEventListener('scroll', handleScroll)
-    handleScroll()
-    return () => viewport.removeEventListener('scroll', handleScroll)
-  }, [assistantMessagesContent, hasGeneratingMessage])
-
-  // Scroll to bottom helper (matching MyThread)
-  const scrollToBottom = useCallback(() => {
-    if (!viewportRef.current) return
-    const viewport = viewportRef.current
-
-    const performScroll = () => {
-      requestAnimationFrame(() => {
-        const extraPadding = 60
-        const targetScroll =
-          viewport.scrollHeight - viewport.clientHeight + extraPadding
-
-        viewport.scrollTo({
-          top: targetScroll,
-          behavior: isInitialLoadRef.current ? 'instant' : 'smooth',
-        })
-
-        setTimeout(() => {
-          if (
-            viewport.scrollTop + viewport.clientHeight <
-            viewport.scrollHeight - BOTTOM_THRESHOLD
-          ) {
-            viewport.scrollTo({
-              top: viewport.scrollHeight,
-              behavior: 'instant',
-            })
-          }
-        }, 500)
-
-        if (!hasGeneratingMessage) {
-          setHasNewMessages(false)
-          lastSeenContentRef.current = assistantMessagesContent
-        }
-      })
-    }
-
-    performScroll()
-  }, [assistantMessagesContent, hasGeneratingMessage])
-
-  // Auto-scroll when near bottom (matching MyThread)
-  useEffect(() => {
-    const hasNewMessage = messages.length > lastMessagesLengthRef.current
-    const shouldAutoScroll =
-      (isNearBottom || isInitialLoadRef.current) &&
-      (hasNewMessage || hasGeneratingMessage)
-
-    if (shouldAutoScroll) {
-      scrollToBottom()
-    }
-
-    lastMessagesLengthRef.current = messages.length
-  }, [messages, hasGeneratingMessage, scrollToBottom, isNearBottom])
-
-  // Track new messages (matching MyThread)
-  useEffect(() => {
-    if (
-      !isAtBottom &&
-      assistantMessagesContent !== lastSeenContentRef.current &&
-      !isInitialLoadRef.current &&
-      !hasGeneratingMessage
-    ) {
-      setHasNewMessages(true)
-    }
-  }, [assistantMessagesContent, isAtBottom, hasGeneratingMessage])
-
-  // Scroll to bottom on initial load (matching MyThread)
-  useEffect(() => {
-    if (!viewportRef.current || !isInitialLoadRef.current || !messages.length)
-      return
-
-    requestAnimationFrame(() => {
-      if (viewportRef.current) {
-        scrollToBottom()
-        isInitialLoadRef.current = false
-        lastSeenContentRef.current = assistantMessagesContent
-      }
-    })
-  }, [messages.length, assistantMessagesContent, scrollToBottom])
-
-  const handleSendMessage = async (content: string, attachments?: string[]) => {
-    try {
-      clearErrors()
-
-      if (sessionId && sessionId !== 'new') {
-        // Use streaming for existing sessions
-        setIsStreamingTokens(true)
-        setHasReceivedTokens(false)
-        setStreamingText('')
-        setStreamingAgent(null)
-        sendStreamingMessage(content, attachments)
-      } else {
-        // Create new session for first message
-        const result = await sendMessageMutation.mutateAsync({
-          content,
-          attachments,
-          agent_ids: [agentId],
-          title: content.length > 50 ? content.slice(0, 50) + '...' : content,
-        })
-
-        if ('session_id' in result && result.session_id) {
-          // This would need to be handled by parent component
-          console.log('New session created:', result.session_id)
-        }
-      }
-    } catch (error) {
-      console.error('Failed to send message:', error)
-      handleStreamingError('Failed to send message')
-    }
-  }
-
-  // Memoized composer (matching MyThread pattern)
-  const memoizedComposer = React.useMemo(
-    () => (
-      <MessageInput
-        sessionId={sessionId || 'new'}
-        onStreamingMessage={handleSendMessage}
-      />
-    ),
-    [sessionId, handleSendMessage],
-  )
-
-  return (
-    <div className="flex-1 overflow-hidden flex flex-col">
-      <div
-        ref={viewportRef}
-        className="flex-1 overflow-y-auto pt-0 px-1 md:px-2 relative"
-      >
-        {showLoadingState ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-50">
-            <LoadingIndicator className="w-12 h-12" />
-          </div>
-        ) : (
-          <>
-            {showWelcomeScreen && (
-              <SessionWelcome
-                agent={agent}
-                onSendMessage={handleSendMessage}
-                isLoading={
-                  sendMessageMutation.isPending ||
-                  isStreamingTokens ||
-                  sessionLoading
-                }
-              >
-                {memoizedComposer}
-              </SessionWelcome>
-            )}
-
-            {currentSession && sessionId && (
-              <>
-                {/* Session Top Bar */}
-                {currentSession.agents && currentSession.agents.length > 0 && (
-                  <SessionTopBar
-                    agents={currentSession.agents}
-                    title={currentSession.title}
-                    sessionBudget={currentSession.budget}
-                  />
-                )}
-
-                <SessionMessages
-                  session={currentSession}
-                  sessionId={sessionId}
-                  streamingText={streamingText}
-                  isStreamingTokens={isStreamingTokens}
-                  hasReceivedTokens={hasReceivedTokens}
-                  waitingForWebSocket={waitingForWebSocket}
-                  streamingAgent={streamingAgent}
-                />
-              </>
-            )}
-          </>
-        )}
-
-        <ErrorDisplay
-          errors={errors}
-          onDismiss={removeError}
-          className="mb-4 max-w-[--aui-thread-max-width] mx-auto"
-        />
-      </div>
-
-      {/* Footer with scroll button and composer (matching MyThread) */}
-      <div className="relative">
-        {/* Show button only when NOT initial load AND NOT at bottom AND (scrolled up OR has new messages) */}
-        {!isInitialLoadRef.current &&
-          !isAtBottom &&
-          (isScrolled || hasNewMessages) && (
-            <Button
-              variant="outline"
-              onClick={scrollToBottom}
-              className="absolute bottom-2 w-7 h-7 p-0 rounded-full hover:bg-accent flex items-center justify-center z-10"
-            >
-              <ArrowDownIcon className="w-5 h-5" />
-              {hasNewMessages && (
-                <div
-                  onClick={scrollToBottom}
-                  className="absolute right-8 text-xs text-accent-foreground bg-purple-950 border border-purple-600 px-2 py-1 rounded-md cursor-pointer hover:bg-purple-700"
-                >
-                  <span className="text-xs animate-pulse">New messages</span>
-                </div>
-              )}
-            </Button>
-          )}
-
-        {!showWelcomeScreen && (
-          <div className="max-w-[--aui-thread-max-width] mx-auto w-full">
-            {memoizedComposer}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// Top Left - New Session Button
-const TopLeft: FC<{
-  onItemClick?: () => void
-  onNewSession: () => void
-}> = ({ onItemClick, onNewSession }) => {
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => {
-        onNewSession()
-        onItemClick?.()
-      }}
-      className="flex w-full justify-between px-3 mb-1"
-    >
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <span>New Session</span>
-      </div>
-      <EditIcon className="size-4" />
-    </Button>
   )
 }
 
@@ -827,6 +297,28 @@ const SessionListItem: FC<SessionListItemProps> = ({
   )
 }
 
+// Top Left - New Session Button
+const TopLeft: FC<{
+  onItemClick?: () => void
+  onNewSession: () => void
+}> = ({ onItemClick, onNewSession }) => {
+  return (
+    <Button
+      variant="ghost"
+      onClick={() => {
+        onNewSession()
+        onItemClick?.()
+      }}
+      className="flex w-full justify-between px-3 mb-1"
+    >
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <span>New Session</span>
+      </div>
+      <EditIcon className="size-4" />
+    </Button>
+  )
+}
+
 // Main Left Sidebar
 const MainLeft: FC<{
   agentId: string
@@ -882,16 +374,18 @@ const MainLeft: FC<{
         <>
           {isSignedIn ? (
             <>
-              {sessions.filter(Boolean).map(session => (
-                <SessionListItem
-                  key={session._id}
-                  session={session}
-                  currentSessionId={currentSessionId}
-                  agentId={agentId}
-                  onItemClick={onItemClick}
-                  onSessionSelect={onSessionSelect}
-                />
-              ))}
+              {sessions
+                .filter((session): session is SessionV2 => Boolean(session))
+                .map(session => (
+                  <SessionListItem
+                    key={session._id}
+                    session={session}
+                    currentSessionId={currentSessionId}
+                    agentId={agentId}
+                    onItemClick={onItemClick}
+                    onSessionSelect={onSessionSelect}
+                  />
+                ))}
               {hasMore && (
                 <div id="session-list-observer-target" className="h-8 w-full">
                   <Separator orientation="horizontal" className="my-2" />
@@ -1039,7 +533,7 @@ const LeftBarSheet: FC<{
   )
 }
 
-// Main Component (matches Chat structure exactly)
+// Main Component - Wrapper that uses Session component once sessionId exists
 type Props = {
   agentId: string
   sessionId?: string
@@ -1047,6 +541,7 @@ type Props = {
 
 const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
   const dispatch = useAppDispatch()
+  const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
   const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(
     initialSessionId,
@@ -1060,7 +555,9 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
     invalidate: invalidateAgent,
   } = useAgentQuery({ key: agentId })
 
-  // Mount effect (matching Chat)
+  const sendMessageMutation = useSessionMessageMutation()
+
+  // Mount effect
   useEffect(() => {
     if (typeof window === 'undefined') return
     setIsMounted(true)
@@ -1091,16 +588,45 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
 
   const handleSessionSelect = (sessionId: string) => {
     setCurrentSessionId(sessionId)
+    // Navigate to the session URL
+    router.push(`/chat/${agentId}/${sessionId}`)
   }
 
   const handleNewSession = () => {
     setCurrentSessionId(undefined)
+    // Navigate to the new session URL
+    router.push(`/chat/${agentId}`)
+  }
+
+  const handleSendMessage = async (content: string, attachments?: string[]) => {
+    try {
+      // Create new session for first message
+      const result = await sendMessageMutation.mutateAsync({
+        content,
+        attachments,
+        agent_ids: [agentId],
+        title: content.length > 50 ? content.slice(0, 50) + '...' : content,
+      })
+
+      if ('session_id' in result && result.session_id) {
+        // Navigate to the new session
+        router.push(`/chat/${agentId}/${result.session_id}`)
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error)
+    }
   }
 
   if (!isMounted) {
     return null
   }
 
+  // If we have a sessionId, use the actual Session component
+  if (currentSessionId) {
+    return <Session />
+  }
+
+  // Otherwise show the welcome screen with sidebar
   return (
     <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
       {/* Mobile Header */}
@@ -1178,17 +704,19 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
 
         {/* Main Content */}
         <ResizablePanel defaultSize={80} className="flex flex-col">
-          <main className="bg-accent flex-1 overflow-hidden flex flex-col">
+          <main className="flex-1 overflow-hidden flex flex-col">
             {!agent ? (
               <div className="flex-1 flex justify-center items-center">
                 <LoadingIndicator className="w-10 h-10 text-purple-600" />
               </div>
             ) : (
-              <MySession
-                sessionId={currentSessionId}
-                agentId={agentId}
-                agent={agent}
-              />
+              <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
+                <SessionWelcome
+                  agent={agent}
+                  onSendMessage={handleSendMessage}
+                  isLoading={sendMessageMutation.isPending}
+                />
+              </div>
             )}
 
             {agentError && (
@@ -1201,6 +729,16 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
               </div>
             )}
           </main>
+
+          {/* Message Input - Only show when no session exists */}
+          {!currentSessionId && agent && (
+            <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
+              <MessageInput
+                sessionId="new"
+                onStreamingMessage={handleSendMessage}
+              />
+            </div>
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
