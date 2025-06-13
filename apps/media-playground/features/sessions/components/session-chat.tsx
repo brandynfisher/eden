@@ -13,12 +13,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MessageInput } from '@/features/sessions/components/message-input'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
@@ -29,7 +23,7 @@ import { cn } from '@/lib/utils'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
-import { ChevronRightIcon, SettingsIcon } from 'lucide-react'
+import { SettingsIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { FC, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
@@ -134,59 +128,6 @@ const SessionChatSidebarContent: FC<{
   )
 }
 
-// Mobile Sheet
-const LeftBarSheet: FC<{
-  agent: Agent | null | undefined
-  isOwner: boolean
-  handleEditClick: () => void
-  agentId: string
-  currentSessionId?: string
-  onSessionSelect: (sessionId: string) => void
-  onNewSession: () => void
-}> = ({
-  agent,
-  isOwner,
-  handleEditClick,
-  agentId,
-  currentSessionId,
-  onSessionSelect,
-  onNewSession,
-}) => {
-  const [open, setOpen] = useState(false)
-  const handleCloseSheet = () => setOpen(false)
-
-  return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0 md:hidden gap-1"
-        >
-          <ChevronRightIcon className={'size-4'} />
-          View Sessions
-        </Button>
-      </SheetTrigger>
-      <SheetContent
-        side="left"
-        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
-      >
-        <SheetTitle className="sr-only">Session List</SheetTitle>
-        <SessionChatSidebarContent
-          agent={agent}
-          isOwner={isOwner}
-          handleEditClick={handleEditClick}
-          agentId={agentId}
-          currentSessionId={currentSessionId}
-          onItemClick={handleCloseSheet}
-          onSessionSelect={onSessionSelect}
-          onNewSession={onNewSession}
-        />
-      </SheetContent>
-    </Sheet>
-  )
-}
-
 // Main Component - Wrapper that uses Session component once sessionId exists
 type Props = {
   agentId: string
@@ -283,41 +224,6 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
   // Otherwise show the welcome screen with sidebar
   return (
     <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
-      {/* Mobile Header */}
-      <div className="bg-[#0e1421] border-b px-2 py-2 md:hidden flex items-center justify-between">
-        <LeftBarSheet
-          agent={agent}
-          isOwner={isOwner}
-          handleEditClick={handleEditClick}
-          agentId={agentId}
-          currentSessionId={currentSessionId}
-          onSessionSelect={handleSessionSelect}
-          onNewSession={handleNewSession}
-        />
-        <div className="ml-auto flex items-center gap-2">
-          {agent ? (
-            <>
-              <AgentLink
-                agent={agent}
-                className="max-w-[120px] xs:max-w-[300px]"
-              />
-              {isOwner && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 size-8"
-                  onClick={handleEditClick}
-                >
-                  <SettingsIcon className="size-4" />
-                </Button>
-              )}
-            </>
-          ) : (
-            <Skeleton className="w-[120px] h-8" />
-          )}
-        </div>
-      </div>
-
       {/* Resizable Layout */}
       <ResizablePanelGroup
         direction="horizontal"
