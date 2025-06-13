@@ -1,6 +1,5 @@
 'use client'
 
-import ToggleButton from '@/components/button/toggle-button'
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { ToggleGroup } from '@/components/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import ModelsFeed from '@/features/feed/models-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
@@ -84,25 +83,21 @@ const ModelSelectorModal = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div>
-          <div className="flex flex-col items-center sm:flex-row gap-2 mb-4">
-            <ToggleGroup
-              type="single"
+          <div className="flex flex-wrap flex-col sm:flex-row gap-4 w-full mb-4">
+            <Tabs
               value={currentTab}
-              className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
+              onValueChange={value => setCurrentTab(value as 'user' | 'public')}
+              className="w-full max-w-full"
             >
-              <ToggleButton
-                className="w-full sm:w-32 h-8"
-                value={'user'}
-                label={'My Models'}
-                onClick={() => setCurrentTab('user')}
-              />
-              <ToggleButton
-                className="w-full sm:w-32 h-8"
-                value={'public'}
-                label={'Public Models'}
-                onClick={() => setCurrentTab('public')}
-              />
-            </ToggleGroup>
+              <TabsList className="flex justify-stretch min-w-[328px] w-full md:w-auto md:min-w-[420px]">
+                <TabsTrigger value="user" className="w-full">
+                  My Models
+                </TabsTrigger>
+                <TabsTrigger value="public" className="w-full">
+                  Public Models
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <FeedSearchForm handleSearch={setSearchQuery} />
           </div>
 

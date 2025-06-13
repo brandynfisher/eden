@@ -699,7 +699,8 @@ const TaskFormModal: FC<{
                                 selected={field.value}
                                 onSelect={field.onChange}
                                 disabled={date =>
-                                  date < new Date().setHours(0, 0, 0, 0)
+                                  date <
+                                  new Date(new Date().setHours(0, 0, 0, 0))
                                 }
                                 initialFocus
                               />

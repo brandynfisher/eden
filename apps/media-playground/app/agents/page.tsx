@@ -3,7 +3,7 @@
 import ToggleButton from '@/components/button/toggle-button'
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Button } from '@/components/ui/button'
-import { ToggleGroup } from '@/components/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -52,7 +52,8 @@ const AgentsPage = () => {
           </div>
           <Button
             onClick={handleCreateClick}
-            className="gap-x-2 text-sm font-semibold bg-primary hover:bg-primary/90"
+            variant="outline"
+            className="gap-x-2 text-sm font-semibold bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-purple-600"
           >
             <PlusIcon className="size-4" />
             Create Agent
@@ -60,25 +61,21 @@ const AgentsPage = () => {
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col items-center sm:flex-row gap-4">
-          <ToggleGroup
-            type="single"
+        <div className="flex flex-wrap flex-col sm:flex-row gap-4 w-full">
+          <Tabs
             value={currentTab}
-            className="w-full border border-border rounded-lg p-1 flex items-center sm:max-w-fit bg-card"
+            onValueChange={value => setCurrentTab(value as 'user' | 'public')}
+            className="w-full sm:max-w-fit"
           >
-            <ToggleButton
-              className="w-full sm:w-32 h-9"
-              value="public"
-              label="Public Agents"
-              onClick={() => setCurrentTab('public')}
-            />
-            <ToggleButton
-              className="w-full sm:w-32 h-9"
-              value="user"
-              label="My Agents"
-              onClick={() => setCurrentTab('user')}
-            />
-          </ToggleGroup>
+            <TabsList className="flex justify-stretch min-w-[328px] w-full md:w-auto md:min-w-[420px]">
+              <TabsTrigger value="public" className="w-full">
+                Public Agents
+              </TabsTrigger>
+              <TabsTrigger value="user" className="w-full">
+                My Agents
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           <FeedSearchForm handleSearch={setSearchQuery} />
         </div>
       </div>
