@@ -1,4 +1,4 @@
-import SessionChat from '@/features/session-chat/session-chat'
+import SessionChat from '@/features/sessions/components/session-chat'
 
 type Props = {
   params: {

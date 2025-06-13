@@ -1,24 +1,18 @@
 'use client'
 
-import AgentLink from '../agent/agent-link'
-import Session from '../sessions/session'
+import AgentLink from '../../agent/agent-link'
+import Session from '../session'
+// Import shared components
+import { SessionsSidebarContent } from './sessions-sidebar'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
-import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
   SheetContent,
@@ -28,28 +22,17 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { MessageInput } from '@/features/sessions/components/message-input'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
-import { useAgentSessionListQuery } from '@/hooks/query/use-agent-session-list-query'
 import { useSessionMessageMutation } from '@/hooks/query/use-session-message-mutation'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { Agent, SessionV2 } from '@edenlabs/eden-sdk'
-import axios from 'axios'
-import {
-  CheckIcon,
-  ChevronRightIcon,
-  EditIcon,
-  MoreHorizontal,
-  PencilIcon,
-  SettingsIcon,
-  TrashIcon,
-} from 'lucide-react'
+import { Agent } from '@edenlabs/eden-sdk'
+import { ChevronRightIcon, SettingsIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
-import { toast } from 'sonner'
 
 // Session Welcome Component
 const SessionWelcome: FC<{
@@ -106,321 +89,7 @@ const SessionWelcome: FC<{
   )
 }
 
-// Session List Item
-type SessionListItemProps = {
-  session: SessionV2
-  currentSessionId?: string
-  agentId: string
-  onItemClick?: () => void
-  onSessionSelect: (sessionId: string) => void
-}
-
-const SessionListItem: FC<SessionListItemProps> = ({
-  session,
-  currentSessionId,
-  agentId,
-  onItemClick,
-  onSessionSelect,
-}) => {
-  const { invalidate } = useAgentSessionListQuery({
-    agentId,
-    enabled: false,
-  })
-  const [isEditing, setIsEditing] = useState(false)
-  const [newTitle, setNewTitle] = useState('')
-  const [isRenaming, setIsRenaming] = useState(false)
-  const isSubmittingRef = useRef(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const isActive = session._id === currentSessionId
-
-  const deleteSession = async (sessionId: string) => {
-    try {
-      await axios.delete(`/api/sessions/${sessionId}`)
-      await invalidate()
-      toast.success('Session deleted')
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to delete session')
-    }
-  }
-
-  const renameSession = useCallback(
-    async (sessionId: string, title: string) => {
-      if (!title) {
-        setIsEditing(false)
-        return
-      }
-      try {
-        setIsRenaming(true)
-        await axios.patch(`/api/sessions/${sessionId}`, { title })
-        await invalidate()
-        toast.success('Session renamed')
-      } catch (error) {
-        console.error(error)
-        toast.error('Failed to rename session')
-      } finally {
-        setIsRenaming(false)
-        setIsEditing(false)
-      }
-    },
-    [invalidate],
-  )
-
-  const handleRenameSubmit = useCallback(
-    async (event?: React.FormEvent | React.MouseEvent) => {
-      event?.preventDefault()
-      isSubmittingRef.current = true
-      await renameSession(session._id, newTitle.trim())
-    },
-    [session._id, newTitle, renameSession],
-  )
-
-  const handleRenameCancel = useCallback(() => {
-    if (!isSubmittingRef.current) {
-      setIsEditing(false)
-      setNewTitle('')
-    }
-    setTimeout(() => {
-      isSubmittingRef.current = false
-    }, 150)
-  }, [])
-
-  useEffect(() => {
-    if (isEditing) {
-      setTimeout(() => inputRef.current?.focus(), 50)
-    }
-  }, [isEditing])
-
-  useEffect(() => {
-    if (!isEditing) {
-      isSubmittingRef.current = false
-    }
-  }, [isEditing])
-
-  return (
-    <div
-      className={cn(
-        'group flex justify-between hover:text-primary font-normal hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-1 text-sm relative',
-        isActive && 'bg-muted text-primary font-medium',
-      )}
-    >
-      <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
-        {isEditing ? (
-          <div className="flex items-center gap-1 flex-grow min-w-0">
-            <Input
-              ref={inputRef}
-              value={newTitle}
-              disabled={isRenaming}
-              onChange={e => setNewTitle(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !isRenaming) {
-                  handleRenameSubmit(e)
-                } else if (e.key === 'Escape') {
-                  e.preventDefault()
-                  handleRenameCancel()
-                }
-              }}
-              onBlur={handleRenameCancel}
-              className="h-8 flex-grow px-1 py-0 text-sm min-w-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border"
-              onClick={e => e.stopPropagation()}
-              onPointerDown={e => e.stopPropagation()}
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0 text-primary hover:text-primary"
-              onClick={handleRenameSubmit}
-              onMouseDown={e => e.preventDefault()}
-              disabled={isRenaming}
-            >
-              {isRenaming ? (
-                <LoadingIndicator className="h-4 w-4 animate-spin" />
-              ) : (
-                <CheckIcon className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        ) : (
-          <button
-            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
-            onClick={() => {
-              onSessionSelect(session._id)
-              onItemClick?.()
-            }}
-            disabled={isEditing}
-          >
-            <div className="overflow-hidden whitespace-nowrap text-ellipsis">
-              {session.title || 'Untitled Session'}
-            </div>
-          </button>
-        )}
-      </div>
-
-      {!isEditing && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 h-7 w-7 mr-1 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-opacity"
-              onClick={e => e.stopPropagation()}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              className="flex items-center gap-2"
-              onSelect={() => {
-                setIsEditing(true)
-                setNewTitle(session.title || '')
-              }}
-            >
-              <PencilIcon className="size-4" />
-              Rename
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center gap-2 text-destructive hover:!text-destructive focus:!text-destructive focus:!bg-destructive/10"
-              onSelect={e => {
-                e.preventDefault()
-                deleteSession(session._id)
-              }}
-            >
-              <TrashIcon className="size-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </div>
-  )
-}
-
-// Top Left - New Session Button
-const TopLeft: FC<{
-  onItemClick?: () => void
-  onNewSession: () => void
-}> = ({ onItemClick, onNewSession }) => {
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => {
-        onNewSession()
-        onItemClick?.()
-      }}
-      className="flex w-full justify-between px-3 mb-1"
-    >
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <span>New Session</span>
-      </div>
-      <EditIcon className="size-4" />
-    </Button>
-  )
-}
-
-// Main Left Sidebar
-const MainLeft: FC<{
-  agentId: string
-  currentSessionId?: string
-  onItemClick?: () => void
-  onSessionSelect: (sessionId: string) => void
-}> = ({ agentId, currentSessionId, onItemClick, onSessionSelect }) => {
-  const { isSignedIn, verifyAuth } = useAuthState()
-  const { sessions, isLoading, hasMore, isFetchingNextPage, fetchNextPage } =
-    useAgentSessionListQuery({
-      agentId,
-      enabled: !!isSignedIn && !!agentId,
-    })
-
-  // Setup intersection observer for infinite scrolling
-  useEffect(() => {
-    if (!hasMore || isFetchingNextPage) return
-
-    const target = document.getElementById('session-list-observer-target')
-    if (!target) return
-
-    const container = target.closest('nav')
-    if (!container) return
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore) {
-          const scrollPosition = container.scrollTop
-          fetchNextPage().then(() => {
-            requestAnimationFrame(() => {
-              container.scrollTop = scrollPosition
-            })
-          })
-        }
-      },
-      { threshold: 1.0, rootMargin: '10px' },
-    )
-
-    observer.observe(target)
-    return () => observer.disconnect()
-  }, [hasMore, isFetchingNextPage, fetchNextPage])
-
-  return (
-    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
-      <div className="mb-1 text-muted-foreground">Recent</div>
-      {isLoading ? (
-        <>
-          <Skeleton className="w-full h-9" />
-          <Skeleton className="w-full h-9" />
-          <Skeleton className="w-full h-9" />
-        </>
-      ) : (
-        <>
-          {isSignedIn ? (
-            <>
-              {sessions
-                .filter((session): session is SessionV2 => Boolean(session))
-                .map(session => (
-                  <SessionListItem
-                    key={session._id}
-                    session={session}
-                    currentSessionId={currentSessionId}
-                    agentId={agentId}
-                    onItemClick={onItemClick}
-                    onSessionSelect={onSessionSelect}
-                  />
-                ))}
-              {hasMore && (
-                <div id="session-list-observer-target" className="h-8 w-full">
-                  <Separator orientation="horizontal" className="my-2" />
-                  <div
-                    className={cn(
-                      'flex justify-center text-muted-foreground text-sm py-2',
-                      isFetchingNextPage && 'text-purple-600',
-                    )}
-                  >
-                    {isFetchingNextPage ? (
-                      <LoadingIndicator className="w-4 h-4" />
-                    ) : (
-                      'Older Sessions'
-                    )}
-                  </div>
-                  <Separator orientation="horizontal" className="my-2" />
-                </div>
-              )}
-            </>
-          ) : (
-            <Button
-              className="text-muted-foreground text-center"
-              variant="link"
-              onClick={verifyAuth}
-            >
-              Not signed in
-            </Button>
-          )}
-        </>
-      )}
-    </nav>
-  )
-}
-
-// Sidebar Content
+// Custom sidebar content for agent chat
 const SessionChatSidebarContent: FC<{
   agent: Agent | null | undefined
   isOwner: boolean
@@ -430,16 +99,7 @@ const SessionChatSidebarContent: FC<{
   onItemClick?: () => void
   onSessionSelect: (sessionId: string) => void
   onNewSession: () => void
-}> = ({
-  agent,
-  isOwner,
-  handleEditClick,
-  agentId,
-  currentSessionId,
-  onItemClick,
-  onSessionSelect,
-  onNewSession,
-}) => {
+}> = ({ agent, isOwner, handleEditClick, onItemClick }) => {
   return (
     <>
       <div className="flex items-center justify-between gap-2 ml-2">
@@ -466,16 +126,10 @@ const SessionChatSidebarContent: FC<{
           <Skeleton className="w-[120px] h-8" />
         )}
       </div>
-      <Separator orientation="horizontal" className="my-2 mb-1" />
-      <div className="border-b mb-2">
-        <TopLeft onItemClick={onItemClick} onNewSession={onNewSession} />
-      </div>
-      <MainLeft
-        agentId={agentId}
-        currentSessionId={currentSessionId}
-        onItemClick={onItemClick}
-        onSessionSelect={onSessionSelect}
-      />
+      {/* New session button */}
+      <div className="border-b mb-2 mt-2" />
+      {/* Use existing sessions sidebar content for the rest */}
+      <SessionsSidebarContent onItemClick={onItemClick} />
     </>
   )
 }
