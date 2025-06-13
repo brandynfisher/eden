@@ -1,11 +1,7 @@
-import type { ReactNode } from 'react'
+import { PropsWithChildren } from 'react'
 
-type Props = {
-  children: ReactNode
-}
-
-const SessionChatLayout = ({ children }: Props) => {
-  return <>{children}</>
+const SessionChatLayout = async ({ children }: PropsWithChildren) => {
+  return <div>{children}</div>
 }
 
 export default SessionChatLayout

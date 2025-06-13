@@ -71,13 +71,13 @@ const SessionWelcome: FC<{
 
   return (
     <div className="aui-thread-welcome">
-      <div className="aui-thread-welcome-center relative">
+      <div className="aui-thread-welcome-center relative flex flex-col items-center justify-center min-h-full py-8">
         {agent && (
           <>
             <div className="text-sm text-muted-foreground mb-2">
               {agent.name}
             </div>
-            <div className="w-16 h-16 md:w-24 md:h-24 col-start-1 row-span-full row-start-1 mb-4">
+            <div className="w-16 h-16 md:w-24 md:h-24 mb-4">
               <img
                 src={getCloudfrontOriginalUrl(agent.userImage)}
                 alt={agent.name}
@@ -87,7 +87,7 @@ const SessionWelcome: FC<{
           </>
         )}
 
-        <div className="aui-thread-welcome-message mb-8">
+        <div className="mb-8">
           {agent && (
             <p className="text-lg text-center">
               {agent.greeting || 'What do you want to create today?'}
@@ -369,7 +369,7 @@ const MySession: FC<{
       }
     },
     onAgentInfo: agent => {
-      setStreamingAgent(agent)
+      setStreamingAgent(agent as Agent)
     },
   })
 
@@ -582,29 +582,27 @@ const MySession: FC<{
       </div>
 
       {/* Footer with scroll button and composer (matching MyThread) */}
-      <div className="z-20 relative">
-        <div className="relative">
-          {/* Show button only when NOT initial load AND NOT at bottom AND (scrolled up OR has new messages) */}
-          {!isInitialLoadRef.current &&
-            !isAtBottom &&
-            (isScrolled || hasNewMessages) && (
-              <Button
-                variant="outline"
-                onClick={scrollToBottom}
-                className="absolute drop-shadow-md bottom-2 w-7 h-7 p-0 rounded-full hover:bg-accent flex items-center justify-center"
-              >
-                <ArrowDownIcon className="w-5 h-5 drop-shadow-md" />
-                {hasNewMessages && (
-                  <div
-                    onClick={scrollToBottom}
-                    className="absolute drop-shadow-md right-8 text-xs text-accent-foreground bg-purple-950 border border-purple-600 px-2 py-1 rounded-md cursor-pointer hover:bg-purple-700"
-                  >
-                    <span className="text-xs animate-pulse">New messages</span>
-                  </div>
-                )}
-              </Button>
-            )}
-        </div>
+      <div className="relative">
+        {/* Show button only when NOT initial load AND NOT at bottom AND (scrolled up OR has new messages) */}
+        {!isInitialLoadRef.current &&
+          !isAtBottom &&
+          (isScrolled || hasNewMessages) && (
+            <Button
+              variant="outline"
+              onClick={scrollToBottom}
+              className="absolute bottom-2 w-7 h-7 p-0 rounded-full hover:bg-accent flex items-center justify-center z-10"
+            >
+              <ArrowDownIcon className="w-5 h-5" />
+              {hasNewMessages && (
+                <div
+                  onClick={scrollToBottom}
+                  className="absolute right-8 text-xs text-accent-foreground bg-purple-950 border border-purple-600 px-2 py-1 rounded-md cursor-pointer hover:bg-purple-700"
+                >
+                  <span className="text-xs animate-pulse">New messages</span>
+                </div>
+              )}
+            </Button>
+          )}
 
         {!showWelcomeScreen && (
           <div className="max-w-[--aui-thread-max-width] mx-auto w-full">
@@ -884,7 +882,7 @@ const MainLeft: FC<{
         <>
           {isSignedIn ? (
             <>
-              {sessions.map(session => (
+              {sessions.filter(Boolean).map(session => (
                 <SessionListItem
                   key={session._id}
                   session={session}
