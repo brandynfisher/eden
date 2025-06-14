@@ -23,7 +23,7 @@ const SingleAgentSelectorModal: FC<{
   onSelect: (agent: Agent) => void
 }> = ({ open, onOpenChange, onSelect }) => {
   const [searchQuery, setSearchQuery] = useState('')
-  const [currentTab, setCurrentTab] = useState<'user' | 'public'>('public')
+  const [currentTab, setCurrentTab] = useState<'user' | 'public'>('user')
   const [isNavigating, setIsNavigating] = useState(false)
   const { user } = useAuthState()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -67,15 +67,15 @@ const SingleAgentSelectorModal: FC<{
             >
               <ToggleButton
                 className="w-full sm:w-32 h-8"
-                value={'public'}
-                label={'Explore Agents'}
-                onClick={() => setCurrentTab('public')}
-              />
-              <ToggleButton
-                className="w-full sm:w-32 h-8"
                 value={'user'}
                 label={'My Agents'}
                 onClick={() => setCurrentTab('user')}
+              />
+              <ToggleButton
+                className="w-full sm:w-32 h-8"
+                value={'public'}
+                label={'Explore Agents'}
+                onClick={() => setCurrentTab('public')}
               />
             </ToggleGroup>
             <FeedSearchForm handleSearch={setSearchQuery} />

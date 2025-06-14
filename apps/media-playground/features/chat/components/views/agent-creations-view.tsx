@@ -10,7 +10,7 @@ const AgentCreationsView: FC<{
   agent: Agent
   user: unknown
 }> = ({ agent, user }) => {
-  const [filterMode, setFilterMode] = useState<'all' | 'mine'>('all')
+  const [filterMode, setFilterMode] = useState<'mine' | 'all'>('mine')
 
   // Construct the query for RecentCreationsFeed based on filterMode
   const recentCreationsQuery = useMemo(() => {
@@ -36,16 +36,6 @@ const AgentCreationsView: FC<{
           <div className="flex justify-center mb-6">
             <div className="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
               <button
-                onClick={() => setFilterMode('all')}
-                className={cn(
-                  'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all',
-                  filterMode === 'all' &&
-                    'bg-background text-foreground shadow-sm',
-                )}
-              >
-                All Creations
-              </button>
-              <button
                 onClick={() => setFilterMode('mine')}
                 className={cn(
                   'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all',
@@ -54,6 +44,16 @@ const AgentCreationsView: FC<{
                 )}
               >
                 My Creations
+              </button>
+              <button
+                onClick={() => setFilterMode('all')}
+                className={cn(
+                  'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all',
+                  filterMode === 'all' &&
+                    'bg-background text-foreground shadow-sm',
+                )}
+              >
+                All Creations
               </button>
             </div>
           </div>
