@@ -7,6 +7,12 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
@@ -15,7 +21,7 @@ import { cn } from '@/lib/utils'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
-import { SettingsIcon } from 'lucide-react'
+import { ChevronRightIcon, SettingsIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react'
 
@@ -65,6 +71,64 @@ const SessionChatSidebarContent: FC<{
         isChat
       />
     </>
+  )
+}
+
+const LeftBarSheet: FC<{
+  onItemClick?: () => void
+  agent: Agent | null | undefined
+  isOwner: boolean
+  handleEditClick: () => void
+  agentId: string
+  currentSessionId?: string
+  onSessionSelect: (sessionId: string) => void
+  onNewSession: () => void
+}> = ({
+  onItemClick,
+  agent,
+  isOwner,
+  handleEditClick,
+  agentId,
+  currentSessionId,
+  onSessionSelect,
+  onNewSession,
+}) => {
+  const [open, setOpen] = useState(false)
+  const handleCloseSheet = () => {
+    setOpen(false)
+    onItemClick?.()
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0 md:hidden gap-1"
+        >
+          <ChevronRightIcon className={'size-4'} />
+          View Sessions
+          <span className="sr-only">Toggle session list menu</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
+      >
+        <SheetTitle className="sr-only">Session List</SheetTitle>
+        <SessionChatSidebarContent
+          agent={agent}
+          isOwner={isOwner}
+          handleEditClick={handleEditClick}
+          agentId={agentId}
+          currentSessionId={currentSessionId}
+          onSessionSelect={onSessionSelect}
+          onNewSession={onNewSession}
+          onItemClick={handleCloseSheet}
+        />
+      </SheetContent>
+    </Sheet>
   )
 }
 
@@ -124,7 +188,21 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
 
   return (
     <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
-      {/* Resizable Layout */}
+      {/* MOBILE-ONLY HEADER */}
+      <div className="bg-[#0e1421] border-b px-2 py-2 md:hidden flex items-center justify-between">
+        <LeftBarSheet
+          onItemClick={() => {}}
+          agent={agent}
+          isOwner={isOwner}
+          handleEditClick={handleEditClick}
+          agentId={agentId}
+          currentSessionId={sessionId}
+          onSessionSelect={handleSessionSelect}
+          onNewSession={handleNewSession}
+        />
+      </div>
+
+      {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
       <ResizablePanelGroup
         direction="horizontal"
         className="flex-1 !overflow-y-hidden"
