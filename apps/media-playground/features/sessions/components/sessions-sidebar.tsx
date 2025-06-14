@@ -244,17 +244,23 @@ const SessionListItem: FC<SessionListItemProps> = ({
   )
 }
 
-const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
+const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
+  onItemClick,
+  isChat,
+}) => {
   const router = useRouter()
   const params = useParams()
   const isNewSession = params.id === 'new'
+  const agentId = params.agentId as string
 
   return (
     <Button
       variant="ghost"
       onClick={() => {
         onItemClick?.()
-        router.push('/sessions/new', { scroll: false })
+        router.push(isChat ? `/sessions/chat/${agentId}` : '/sessions/new', {
+          scroll: false,
+        })
       }}
       className={cn(
         'flex w-full justify-between px-3 mb-1',
@@ -262,7 +268,7 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
       )}
     >
       <div className="flex items-center gap-2 text-sm font-semibold">
-        <span>New Session</span>
+        <span>{isChat ? 'New Chat' : 'New Session'}</span>
       </div>
       <EditIcon className="size-4" />
     </Button>
@@ -377,14 +383,16 @@ const MainLeft = ({
 export const SessionsSidebarContent = ({
   onItemClick,
   agentId,
+  isChat,
 }: {
   onItemClick?: () => void
   agentId?: string
+  isChat?: boolean
 }) => {
   return (
     <>
       <div className="border-b mb-2">
-        <TopLeft onItemClick={onItemClick} />
+        <TopLeft onItemClick={onItemClick} isChat={isChat} />
       </div>
       <MainLeft onItemClick={onItemClick} agentId={agentId} />
     </>

@@ -16,7 +16,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { MessageInput } from '@/features/sessions/components/message-input'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
-import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -31,7 +30,7 @@ import * as React from 'react'
 // Session Welcome Component
 const SessionWelcome: FC<{
   agent: Agent | null | undefined
-  onSendMessage: (content: string) => void
+  onSendMessage: () => void
   isLoading: boolean
 }> = ({ agent, onSendMessage, isLoading }) => {
   const suggestions = agent?.suggestions || []
@@ -69,7 +68,7 @@ const SessionWelcome: FC<{
                 <button
                   key={index}
                   className="text-sm hover:bg-secondary/20 flex-shrink-0 border border-border rounded-full bg-popover/30 px-3 py-2"
-                  onClick={() => onSendMessage(suggestion.prompt)}
+                  onClick={() => onSendMessage()}
                   disabled={isLoading}
                 >
                   {suggestion.label}
@@ -123,7 +122,11 @@ const SessionChatSidebarContent: FC<{
       {/* New session button */}
       <div className="border-b mb-2 mt-2" />
       {/* Use existing sessions sidebar content for the rest */}
-      <SessionsSidebarContent onItemClick={onItemClick} agentId={agentId} />
+      <SessionsSidebarContent
+        onItemClick={onItemClick}
+        agentId={agentId}
+        isChat
+      />
     </>
   )
 }
@@ -142,7 +145,6 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
     initialSessionId,
   )
   const { user } = useAuthState()
-  const [isCreatingSession, setIsCreatingSession] = useState(false)
 
   const {
     agent,
@@ -150,10 +152,6 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
     error: agentErrorDetails,
     invalidate: invalidateAgent,
   } = useAgentQuery({ key: agentId })
-
-  const { invalidate: invalidateSessionList } = useSessionListQuery({
-    enabled: false,
-  })
 
   // Mount effect
   useEffect(() => {
@@ -196,59 +194,11 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
     router.push(`/chat/${agentId}`)
   }
 
-  const handleSendMessage = async (content: string, attachments?: string[]) => {
-    if (!user || isCreatingSession) return
+  const handleSendMessage = async () => {
+    if (!user) return
 
-    try {
-      setIsCreatingSession(true)
-
-      // Create new session with the first message
-      const response = await fetch('/api/sessions/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          agent_ids: [agentId],
-          title: content.length > 50 ? content.slice(0, 50) + '...' : content,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to create session')
-      }
-
-      const result = await response.json()
-      const sessionId = result.session?._id
-
-      if (!sessionId) {
-        throw new Error('No session ID returned')
-      }
-
-      // Send the initial message to the created session
-      await fetch(`/api/sessions/${sessionId}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          session_id: sessionId,
-          content,
-          attachments: attachments || [],
-        }),
-      })
-
-      // Invalidate session list to refresh sidebar
-      await invalidateSessionList()
-
-      // Navigate to the new session
-      router.push(`/chat/${agentId}/${sessionId}`)
-    } catch (error) {
-      console.error('Failed to create session and send message:', error)
-    } finally {
-      setIsCreatingSession(false)
-    }
+    // Just switch to the Session component
+    setCurrentSessionId('new')
   }
 
   if (!isMounted) {
@@ -314,7 +264,7 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
                 <SessionWelcome
                   agent={agent}
                   onSendMessage={handleSendMessage}
-                  isLoading={isCreatingSession}
+                  isLoading={false}
                 />
               </div>
             )}

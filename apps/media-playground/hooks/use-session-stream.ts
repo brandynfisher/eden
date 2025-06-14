@@ -55,19 +55,17 @@ export const useSessionStream = ({
 
       try {
         // Start the stream by posting to the streaming endpoint
-        const response = await fetch(
-          `/api/sessions/${sessionId}/messages/stream`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              content,
-              attachments,
-            }),
+        const response = await fetch(`/api/sessions/prompt`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-        )
+          body: JSON.stringify({
+            session_id: sessionId,
+            content,
+            attachments,
+          }),
+        })
 
         if (!response.ok) {
           throw new Error('Failed to start stream')

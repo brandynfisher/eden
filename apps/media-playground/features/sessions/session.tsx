@@ -235,8 +235,6 @@ const Session = () => {
     return user?._id === senderId
   }
 
-  console.log(session?.messages)
-
   const filteredMessages = useMemo(
     () => session?.messages?.filter(m => m.role !== 'tool') ?? [],
     [session?.messages],
