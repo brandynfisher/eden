@@ -94,10 +94,19 @@ const AgentTasksView: FC<{
   const filteredTriggers = useMemo(() => {
     if (!triggersQuery.triggers) return []
     return triggersQuery.triggers.filter(trigger => {
-      if (!trigger.schedule.end_date) return true
-      const endDate = new Date(trigger.schedule.end_date)
-      const currentDate = new Date()
-      return endDate > currentDate
+      // Check if trigger has status 'finished'
+      if (trigger.status === 'finished') {
+        return false
+      }
+
+      // Also check if trigger has an end_date that has passed
+      if (trigger.schedule.end_date) {
+        const endDate = new Date(trigger.schedule.end_date)
+        const currentDate = new Date()
+        return endDate > currentDate
+      }
+
+      return true
     })
   }, [triggersQuery.triggers])
 

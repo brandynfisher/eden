@@ -140,7 +140,7 @@ const TaskFormModal: FC<{
             ? format(new Date(editingTask.schedule.start_date), 'HH:mm')
             : undefined,
           dayOfWeek: editingTask.schedule.day_of_week?.toString() || undefined,
-          dayOfMonth: editingTask.schedule.dayOfMonth?.toString() || undefined,
+          dayOfMonth: editingTask.schedule.day?.toString() || undefined,
           month: editingTask.schedule.month?.toString() || undefined,
         }
       : {
@@ -199,13 +199,13 @@ const TaskFormModal: FC<{
             break
           case ExtendedTriggerRepeatOptions.MONTHLY:
             if (values.dayOfMonth) {
-              schedule.day_of_week = values.dayOfMonth
+              schedule.day = values.dayOfMonth
             }
             break
           case ExtendedTriggerRepeatOptions.ANNUALLY:
             if (values.month && values.dayOfMonth) {
               schedule.month = values.month
-              schedule.dayOfMonth = values.dayOfMonth
+              schedule.day = values.dayOfMonth
             }
             break
         }
