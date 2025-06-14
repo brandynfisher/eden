@@ -18,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import {
   Popover,
   PopoverContent,
@@ -99,6 +100,7 @@ export const taskSchema = z
     dayOfMonth: z.string().optional(), // For monthly/annually
     month: z.string().optional(), // For annually
     endDate: z.date().optional(),
+    timezone: z.string(),
   })
   .refine(
     data => {
@@ -127,6 +129,9 @@ const TaskFormModal: FC<{
     enabled: false,
   })
 
+  const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const currentTime = format(new Date(), 'HH:mm')
+
   const form = useForm<TaskFormDto>({
     resolver: zodResolver(taskSchema),
     defaultValues: editingTask
@@ -138,32 +143,31 @@ const TaskFormModal: FC<{
           repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT, // Default for editing
           time: editingTask.schedule.start_date
             ? format(new Date(editingTask.schedule.start_date), 'HH:mm')
-            : undefined,
+            : currentTime,
           dayOfWeek: editingTask.schedule.day_of_week?.toString() || undefined,
           dayOfMonth: editingTask.schedule.day?.toString() || undefined,
           month: editingTask.schedule.month?.toString() || undefined,
+          timezone: editingTask.schedule.timezone || defaultTimezone,
         }
       : {
           instructions: '',
           platform: undefined,
           channelId: '',
-          startDate: undefined,
+          startDate: new Date(),
           repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
-          time: undefined,
+          time: currentTime,
           dayOfWeek: undefined,
           dayOfMonth: undefined,
           month: undefined,
+          timezone: defaultTimezone,
         },
   })
 
   const onSubmit = async (values: TaskFormDto) => {
     try {
-      // Auto-detect timezone
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-
       // Convert form values to backend format
       let schedule: CronSchedule = {
-        timezone,
+        timezone: values.timezone,
       }
 
       // Handle different repeat options
@@ -224,7 +228,7 @@ const TaskFormModal: FC<{
         await axios.patch(
           `/api/agents/${agent._id}/triggers/${editingTask._id}`,
           {
-            message: values.instructions,
+            instruction: values.instructions,
             schedule,
           },
         )
@@ -252,7 +256,7 @@ const TaskFormModal: FC<{
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader className="space-y-3 pb-6">
           <DialogTitle className="text-2xl font-semibold">
             {editingTask ? 'Edit Task' : 'Create New Task'}
@@ -494,39 +498,12 @@ const TaskFormModal: FC<{
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <SelectTrigger className="h-12">
-                              <SelectValue placeholder="Choose time to run" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-80">
-                              {Array.from({ length: 96 }, (_, i) => {
-                                const hour = Math.floor(i / 4)
-                                const minute = (i % 4) * 15
-                                const time24 = `${hour
-                                  .toString()
-                                  .padStart(2, '0')}:${minute
-                                  .toString()
-                                  .padStart(2, '0')}`
-                                const hour12 =
-                                  hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
-                                const ampm = hour < 12 ? 'AM' : 'PM'
-                                const time12 = `${hour12}:${minute
-                                  .toString()
-                                  .padStart(2, '0')} ${ampm}`
-
-                                return (
-                                  <SelectItem key={time24} value={time24}>
-                                    <div className="py-1 font-medium">
-                                      {time12}
-                                    </div>
-                                  </SelectItem>
-                                )
-                              })}
-                            </SelectContent>
-                          </Select>
+                          <Input
+                            type="time"
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            className="h-12"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -543,10 +520,11 @@ const TaskFormModal: FC<{
                       name="startDate"
                       render={({ field }) => (
                         <FormItem>
-                          <Popover>
+                          <Popover modal={true}>
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
+                                  type="button"
                                   variant={'outline'}
                                   className={cn(
                                     'w-full h-12 justify-start text-left font-normal',
@@ -567,10 +545,6 @@ const TaskFormModal: FC<{
                                 mode="single"
                                 selected={field.value}
                                 onSelect={field.onChange}
-                                disabled={date =>
-                                  date <
-                                  new Date(new Date().setHours(0, 0, 0, 0))
-                                }
                                 initialFocus
                               />
                             </PopoverContent>
@@ -585,43 +559,12 @@ const TaskFormModal: FC<{
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <SelectTrigger className="h-12">
-                                <SelectValue placeholder="Choose time" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-80">
-                                {Array.from({ length: 96 }, (_, i) => {
-                                  const hour = Math.floor(i / 4)
-                                  const minute = (i % 4) * 15
-                                  const time24 = `${hour
-                                    .toString()
-                                    .padStart(2, '0')}:${minute
-                                    .toString()
-                                    .padStart(2, '0')}`
-                                  const hour12 =
-                                    hour === 0
-                                      ? 12
-                                      : hour > 12
-                                      ? hour - 12
-                                      : hour
-                                  const ampm = hour < 12 ? 'AM' : 'PM'
-                                  const time12 = `${hour12}:${minute
-                                    .toString()
-                                    .padStart(2, '0')} ${ampm}`
-
-                                  return (
-                                    <SelectItem key={time24} value={time24}>
-                                      <div className="py-1 font-medium">
-                                        {time12}
-                                      </div>
-                                    </SelectItem>
-                                  )
-                                })}
-                              </SelectContent>
-                            </Select>
+                            <Input
+                              type="time"
+                              value={field.value || ''}
+                              onChange={field.onChange}
+                              className="h-12"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
