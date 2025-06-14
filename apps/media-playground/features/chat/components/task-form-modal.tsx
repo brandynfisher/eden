@@ -88,32 +88,17 @@ export const extendedTriggerRepeatOptions: {
 ]
 
 // Task schema for the simplified tasks interface
-export const taskSchema = z
-  .object({
-    instructions: z.string().min(1, 'Instructions are required'),
-    platform: z.enum(['web', 'discord', 'twitter', 'telegram']),
-    channelId: z.string().optional(),
-    startDate: z.date().optional(), // Only needed for "doesn't repeat"
-    repeat: z.nativeEnum(ExtendedTriggerRepeatOptions),
-    time: z.string().optional(), // HH:MM format
-    dayOfWeek: z.string().optional(), // For weekly
-    dayOfMonth: z.string().optional(), // For monthly/annually
-    month: z.string().optional(), // For annually
-    endDate: z.date().optional(),
-    timezone: z.string(),
-  })
-  .refine(
-    data => {
-      if (data.platform !== 'twitter' && data.platform !== 'web') {
-        return data.channelId && data.channelId.length > 0
-      }
-      return true
-    },
-    {
-      message: 'Channel is required',
-      path: ['channelId'],
-    },
-  )
+export const taskSchema = z.object({
+  instructions: z.string().min(1, 'Instructions are required'),
+  startDate: z.date().optional(), // Only needed for "doesn't repeat"
+  repeat: z.nativeEnum(ExtendedTriggerRepeatOptions),
+  time: z.string().optional(), // HH:MM format
+  dayOfWeek: z.string().optional(), // For weekly
+  dayOfMonth: z.string().optional(), // For monthly/annually
+  month: z.string().optional(), // For annually
+  endDate: z.date().optional(),
+  timezone: z.string(),
+})
 
 type TaskFormDto = z.infer<typeof taskSchema>
 
@@ -151,8 +136,6 @@ const TaskFormModal: FC<{
         }
       : {
           instructions: '',
-          platform: undefined,
-          channelId: '',
           startDate: new Date(),
           repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
           time: currentTime,
@@ -236,7 +219,7 @@ const TaskFormModal: FC<{
       } else {
         // Create new task
         await axios.post(`/api/agents/${agent._id}/triggers`, {
-          message: values.instructions,
+          instruction: values.instructions,
           schedule,
         })
         toast.success('Task created successfully')
@@ -269,7 +252,12 @@ const TaskFormModal: FC<{
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form
+            onSubmit={form.handleSubmit(onSubmit, () => {
+              toast.error('Unknown error')
+            })}
+            className="space-y-8"
+          >
             {/* Task Instructions */}
             <div className="space-y-3">
               <FormField

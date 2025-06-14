@@ -1,6 +1,11 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import TaskFormModal from '@/features/chat/components/task-form-modal'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
@@ -9,6 +14,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   AlertCircle,
+  ChevronDownIcon,
   ClockIcon,
   EditIcon,
   Loader2,
@@ -54,7 +60,7 @@ const TaskItem: FC<{
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-2">
         <Button
           variant="ghost"
           size="sm"
@@ -85,22 +91,40 @@ const AgentTasksView: FC<{
 }> = ({ agent }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Trigger | null>(null)
+  const [showFinished, setShowFinished] = useState(false)
 
   const triggersQuery = useAgentTriggersQuery({
     key: agent._id,
     enabled: true,
   })
 
-  const filteredTriggers = useMemo(() => {
-    if (!triggersQuery.triggers) return []
-    return triggersQuery.triggers.filter(trigger => {
+  const { activeTriggers, finishedTriggers } = useMemo(() => {
+    const allTriggers = triggersQuery.triggers || []
+
+    const finished = allTriggers.filter(trigger => {
+      // Check if trigger has status 'finished'
+      if (trigger.status === 'finished') {
+        return true
+      }
+
+      // Also check if trigger has an end_date that has passed
+      if (trigger.schedule?.end_date) {
+        const endDate = new Date(trigger.schedule.end_date)
+        const currentDate = new Date()
+        return endDate <= currentDate
+      }
+
+      return false
+    })
+
+    const active = allTriggers.filter(trigger => {
       // Check if trigger has status 'finished'
       if (trigger.status === 'finished') {
         return false
       }
 
       // Also check if trigger has an end_date that has passed
-      if (trigger.schedule.end_date) {
+      if (trigger.schedule?.end_date) {
         const endDate = new Date(trigger.schedule.end_date)
         const currentDate = new Date()
         return endDate > currentDate
@@ -108,6 +132,18 @@ const AgentTasksView: FC<{
 
       return true
     })
+
+    // Sort both arrays by updatedAt in descending order (most recent first)
+    const sortByUpdatedAt = (a: Trigger, b: Trigger) => {
+      const aDate = new Date(a.updatedAt || a.createdAt)
+      const bDate = new Date(b.updatedAt || b.createdAt)
+      return bDate.getTime() - aDate.getTime()
+    }
+
+    return {
+      activeTriggers: active.sort(sortByUpdatedAt),
+      finishedTriggers: finished.sort(sortByUpdatedAt),
+    }
   }, [triggersQuery.triggers])
 
   const handleCreateNew = () => {
@@ -163,36 +199,94 @@ const AgentTasksView: FC<{
         />
 
         {/* Tasks List */}
-        <div className="bg-background rounded-lg border">
+        <div className="space-y-6">
           {triggersQuery.isPending ? (
-            <div className="flex items-center justify-center p-8">
-              <Loader2 className="w-6 h-6 animate-spin" />
+            <div className="bg-background rounded-lg border">
+              <div className="flex items-center justify-center p-8">
+                <Loader2 className="w-6 h-6 animate-spin" />
+              </div>
             </div>
           ) : triggersQuery.isError ? (
-            <div className="flex items-center justify-center gap-2 p-8 text-destructive">
-              <AlertCircle className="w-5 h-5" />
-              <p>Failed to load tasks. Please try again later.</p>
+            <div className="bg-background rounded-lg border">
+              <div className="flex items-center justify-center gap-2 p-8 text-destructive">
+                <AlertCircle className="w-5 h-5" />
+                <p>Failed to load tasks. Please try again later.</p>
+              </div>
             </div>
-          ) : filteredTriggers.length === 0 ? (
-            <div className="text-center p-8 text-muted-foreground">
-              <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">No scheduled tasks</p>
-              <p className="text-sm">
-                Create your first automated task to get started.
-              </p>
+          ) : activeTriggers.length === 0 && finishedTriggers.length === 0 ? (
+            <div className="bg-background rounded-lg border">
+              <div className="text-center p-8 text-muted-foreground">
+                <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No scheduled tasks</p>
+                <p className="text-sm">
+                  Create your first automated task to get started.
+                </p>
+              </div>
             </div>
           ) : (
-            <div className="divide-y">
-              {filteredTriggers.map(trigger => (
-                <TaskItem
-                  key={trigger._id}
-                  trigger={trigger}
-                  agentId={agent._id}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
+            <>
+              {/* Active Tasks */}
+              <div className="bg-background rounded-lg border">
+                <div className="p-4 border-b">
+                  <h3 className="font-semibold">Active Tasks</h3>
+                </div>
+                {activeTriggers.length === 0 ? (
+                  <div className="text-center p-8 text-muted-foreground">
+                    <p className="text-sm">No active tasks</p>
+                  </div>
+                ) : (
+                  <div className="divide-y">
+                    {activeTriggers.map(trigger => (
+                      <TaskItem
+                        key={trigger._id}
+                        trigger={trigger}
+                        agentId={agent._id}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Finished Tasks - Collapsible Section */}
+              {finishedTriggers.length > 0 && (
+                <div className="bg-background rounded-lg border">
+                  <Collapsible
+                    open={showFinished}
+                    onOpenChange={setShowFinished}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <div className="p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold">
+                            Finished Tasks ({finishedTriggers.length})
+                          </h3>
+                          <ChevronDownIcon
+                            className={`h-4 w-4 transition-transform ${
+                              showFinished ? 'rotate-180' : ''
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="divide-y">
+                        {finishedTriggers.map(trigger => (
+                          <TaskItem
+                            key={trigger._id}
+                            trigger={trigger}
+                            agentId={agent._id}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                          />
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
