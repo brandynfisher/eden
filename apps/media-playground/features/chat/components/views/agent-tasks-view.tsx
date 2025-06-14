@@ -1,13 +1,9 @@
 'use client'
 
-import DiscordIcon from '@/components/icons/discord'
-import { TelegramIcon } from '@/components/icons/telegram'
-import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import TaskFormModal from '@/features/chat/components/task-form-modal'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
-import { cn } from '@/lib/utils'
 import { Trigger } from '@edenlabs/eden-sdk'
 import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -15,7 +11,6 @@ import {
   AlertCircle,
   ClockIcon,
   EditIcon,
-  GlobeIcon,
   Loader2,
   PlusIcon,
   TrashIcon,
@@ -47,46 +42,13 @@ const TaskItem: FC<{
     }
   }
 
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case 'discord':
-        return <DiscordIcon size={16} />
-      case 'telegram':
-        return <TelegramIcon size={16} />
-      case 'twitter':
-        return <TwitterIcon size={16} />
-      case 'web':
-        return <GlobeIcon size={16} />
-      default:
-        return <GlobeIcon size={16} />
-    }
-  }
-
-  const getPlatformColor = (platform: string) => {
-    switch (platform) {
-      case 'discord':
-        return 'text-primary'
-      case 'telegram':
-        return 'text-sky-500'
-      case 'twitter':
-        return 'text-blue-500'
-      case 'web':
-        return 'text-blue-500'
-      default:
-        return 'text-muted-foreground'
-    }
-  }
-
   return (
     <div className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div
-          className={cn('flex-shrink-0', getPlatformColor(trigger.platform))}
-        >
-          {getPlatformIcon(trigger.platform)}
-        </div>
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm truncate">{trigger.message}</div>
+          <div className="font-medium text-sm truncate">
+            {trigger.instruction}
+          </div>
           <div className="text-xs text-muted-foreground mt-1">
             {formattedSchedule}
           </div>

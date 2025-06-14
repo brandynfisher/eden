@@ -1,8 +1,5 @@
 'use client'
 
-import DiscordIcon from '@/components/icons/discord'
-import { TelegramIcon } from '@/components/icons/telegram'
-import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
@@ -33,8 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getChannelsForPlatform } from '@/features/agent/trigger-sheet/trigger-utils'
-import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { cn } from '@/lib/utils'
 import { CronSchedule, Trigger } from '@edenlabs/eden-sdk'
@@ -42,8 +37,8 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { format } from 'date-fns'
-import { CalendarIcon, GlobeIcon, Loader2 } from 'lucide-react'
-import { FC, useMemo } from 'react'
+import { CalendarIcon, Loader2 } from 'lucide-react'
+import { FC } from 'react'
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -132,17 +127,11 @@ const TaskFormModal: FC<{
     enabled: false,
   })
 
-  const { deployments } = useAgentDeploymentsQuery({
-    key: agent._id,
-  })
-
   const form = useForm<TaskFormDto>({
     resolver: zodResolver(taskSchema),
     defaultValues: editingTask
       ? {
-          instructions: editingTask.message,
-          platform: editingTask.platform as TaskFormDto['platform'],
-          channelId: editingTask.channel?.id || '',
+          instructions: editingTask.instruction,
           startDate: editingTask.schedule.start_date
             ? new Date(editingTask.schedule.start_date)
             : undefined,
@@ -166,21 +155,6 @@ const TaskFormModal: FC<{
           month: undefined,
         },
   })
-
-  const platform = form.watch('platform')
-
-  const channels = useMemo(() => {
-    if (!deployments) return []
-    const deployment = deployments?.find(d => d.platform === platform)
-    if (!deployment) return []
-    return getChannelsForPlatform(platform, deployment)
-  }, [deployments, platform])
-
-  const availablePlatforms = useMemo(() => {
-    const deploymentPlatforms = deployments?.map(d => d.platform) || []
-    // Always include 'web' platform
-    return ['web', ...deploymentPlatforms.filter(p => p !== 'web')]
-  }, [deployments])
 
   const onSubmit = async (values: TaskFormDto) => {
     try {
@@ -245,8 +219,6 @@ const TaskFormModal: FC<{
         }
       }
 
-      const deployment = deployments?.find(d => d.platform === platform)
-
       if (editingTask) {
         // Update existing task
         await axios.patch(
@@ -254,9 +226,6 @@ const TaskFormModal: FC<{
           {
             message: values.instructions,
             schedule,
-            platform: values.platform,
-            deploymentId: deployment?._id,
-            channelId: values.channelId,
           },
         )
         toast.success('Task updated successfully')
@@ -265,9 +234,6 @@ const TaskFormModal: FC<{
         await axios.post(`/api/agents/${agent._id}/triggers`, {
           message: values.instructions,
           schedule,
-          platform: values.platform,
-          deploymentId: deployment?._id,
-          channelId: values.channelId,
         })
         toast.success('Task created successfully')
       }
@@ -322,103 +288,6 @@ const TaskFormModal: FC<{
                   </FormItem>
                 )}
               />
-            </div>
-
-            {/* Platform and Channel */}
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <FormField
-                  control={form.control}
-                  name="platform"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-base font-medium">
-                        Platform
-                        <span className="text-destructive ml-1">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="Choose where to run this task" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availablePlatforms.map(platform => (
-                              <SelectItem key={platform} value={platform}>
-                                <div className="flex items-center gap-3 py-1">
-                                  {platform === 'discord' && (
-                                    <DiscordIcon size={18} />
-                                  )}
-                                  {platform === 'telegram' && (
-                                    <TelegramIcon size={18} />
-                                  )}
-                                  {platform === 'twitter' && (
-                                    <TwitterIcon size={18} />
-                                  )}
-                                  {platform === 'web' && (
-                                    <GlobeIcon size={18} />
-                                  )}
-                                  <span className="capitalize font-medium">
-                                    {platform}
-                                  </span>
-                                  {platform !== 'web' &&
-                                    !deployments?.find(
-                                      d => d.platform === platform,
-                                    ) && (
-                                      <span className="text-xs text-muted-foreground ml-2">
-                                        (No deployments)
-                                      </span>
-                                    )}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {platform && platform !== 'web' && platform !== 'twitter' && (
-                <div className="space-y-3">
-                  <FormField
-                    control={form.control}
-                    name="channelId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-base font-medium">
-                          Channel
-                          <span className="text-destructive ml-1">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <SelectTrigger className="h-12">
-                              <SelectValue placeholder="Select a channel" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {channels.map(channel => (
-                                <SelectItem key={channel.id} value={channel.id}>
-                                  <div className="py-1">
-                                    {channel.note || channel.id}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
             </div>
 
             {/* Schedule Section */}

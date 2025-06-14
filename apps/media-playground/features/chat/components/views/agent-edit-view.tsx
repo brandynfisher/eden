@@ -19,6 +19,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
+import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
@@ -764,6 +765,13 @@ const AgentEditView: FC<{
                                 deployment => deployment.platform === 'twitter',
                               )}
                             />
+                            <FarcasterDeploymentForm
+                              agentId={agent._id}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment =>
+                                  deployment.platform === 'farcaster',
+                              )}
+                            />
                           </div>
                         )}
 
@@ -783,7 +791,7 @@ const AgentEditView: FC<{
           </div>
 
           {/* Global Update Button */}
-          {activeTab !== 'deployments' && (
+          {activeTab !== 'deployments' && activeTab !== 'tasks' && (
             <div className="border-t border-border p-6">
               <div className="mx-auto max-w-3xl lg:max-w-3xl">
                 <Button

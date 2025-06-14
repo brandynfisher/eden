@@ -362,7 +362,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
           {(agent?.isPersonaPublic || user?._id === agent?.owner._id) && (
             <div className="flex flex-1 flex-col p-4 md:max-w-[50%] bg-muted/50 rounded-lg border border-border/50">
               <div className="flex items-center gap-2 mb-2">
-                <TypographyH6 className="text-primary">Persona</TypographyH6>
+                <TypographyH6 className="font-semibold">Persona</TypographyH6>
               </div>
               {!agent?.isPersonaPublic && user?._id === agent?.owner._id && (
                 <>
