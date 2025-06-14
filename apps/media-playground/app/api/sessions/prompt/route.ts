@@ -31,6 +31,18 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // If no session_id, we need agent_ids for creation
+  if (!requestJson.session_id && !requestJson.agent_ids) {
+    return new Response(
+      JSON.stringify({
+        message: 'agent_ids required when creating new session',
+      }),
+      {
+        status: 400,
+      },
+    )
+  }
+
   try {
     const response = await fetch(
       `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions/stream`,
@@ -44,6 +56,12 @@ export async function POST(request: NextRequest) {
           session_id: requestJson.session_id,
           content: requestJson.content,
           attachments: requestJson.attachments,
+          // Creation args (used when session_id is not provided)
+          agent_ids: requestJson.agent_ids,
+          scenario: requestJson.scenario,
+          budget: requestJson.budget,
+          title: requestJson.title,
+          autonomy_settings: requestJson.autonomy_settings,
           stream: true,
         }),
       },

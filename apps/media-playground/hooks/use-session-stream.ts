@@ -17,11 +17,12 @@ interface StreamMessage {
       name: string
       userImage?: string
     }
+    session_id?: string
   }
 }
 
 interface UseSessionStreamProps {
-  sessionId: string
+  sessionId?: string
   onToken?: (text: string) => void
   onMessage?: (content: string) => void
   onToolComplete?: (tool: string, result: unknown) => void
@@ -33,6 +34,7 @@ interface UseSessionStreamProps {
     name: string
     userImage?: string
   }) => void
+  onSessionCreated?: (sessionId: string) => void
 }
 
 export const useSessionStream = ({
@@ -43,11 +45,30 @@ export const useSessionStream = ({
   onError,
   onDone,
   onAgentInfo,
+  onSessionCreated,
 }: UseSessionStreamProps) => {
   const eventSourceRef = useRef<EventSource | null>(null)
 
   const sendMessage = useCallback(
-    async (content: string, attachments?: string[]) => {
+    async (
+      content: string,
+      attachments?: string[],
+      creationArgs?: {
+        agent_ids: string[]
+        scenario?: string
+        budget?: {
+          manna_budget?: number
+          token_budget?: number
+          turn_budget?: number
+        }
+        title?: string
+        autonomy_settings?: {
+          auto_reply: boolean
+          reply_interval: number
+          actor_selection_method: 'random' | 'random_exclude_last'
+        }
+      },
+    ) => {
       // Close any existing stream
       if (eventSourceRef.current) {
         eventSourceRef.current.close()
@@ -64,10 +85,13 @@ export const useSessionStream = ({
             session_id: sessionId,
             content,
             attachments,
+            // Include creation args if provided (for new sessions)
+            ...creationArgs,
           }),
         })
 
         if (!response.ok) {
+          console.error('Failed to start stream', response)
           throw new Error('Failed to start stream')
         }
 
@@ -79,6 +103,7 @@ export const useSessionStream = ({
 
         const decoder = new TextDecoder()
         let buffer = ''
+        let sessionIdReceived = false
 
         const processStream = async () => {
           try {
@@ -122,6 +147,15 @@ export const useSessionStream = ({
                         data.data.agent
                       ) {
                         onAgentInfo?.(data.data.agent)
+                        // Extract session ID from agent context if available
+                        if (
+                          !sessionIdReceived &&
+                          !sessionId &&
+                          data.data.session_id
+                        ) {
+                          sessionIdReceived = true
+                          onSessionCreated?.(data.data.session_id)
+                        }
                       }
                     } else if (data.event === 'done') {
                       onDone?.()
@@ -158,6 +192,7 @@ export const useSessionStream = ({
       onError,
       onDone,
       onAgentInfo,
+      onSessionCreated,
     ],
   )
 

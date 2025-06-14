@@ -38,7 +38,6 @@ const Session = () => {
 
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
-  console.log('sessionId', sessionId)
 
   const {
     data: session,
