@@ -18,6 +18,7 @@ import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
+import { useParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 // Session Welcome Component
@@ -75,13 +76,8 @@ const SessionWelcome: FC<{
   )
 }
 
-// Main Component - Shows welcome screen until user sends message, then switches to session view
-type Props = {
-  agentId: string
-  resetKey?: string | number // Add reset key to force reset
-}
-
-const SessionChat: FC<Props> = ({ agentId, resetKey }) => {
+const SessionChat: FC = () => {
+  const { agentId } = useParams()
   const [isMounted, setIsMounted] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [streamingText, setStreamingText] = useState('')
@@ -104,7 +100,7 @@ const SessionChat: FC<Props> = ({ agentId, resetKey }) => {
     agent,
     isError: agentError,
     error: agentErrorDetails,
-  } = useAgentQuery({ key: agentId })
+  } = useAgentQuery({ key: agentId as string })
 
   // Only fetch session data if we have a sessionId
   const {
@@ -127,20 +123,6 @@ const SessionChat: FC<Props> = ({ agentId, resetKey }) => {
     if (typeof window === 'undefined') return
     setIsMounted(true)
   }, [])
-
-  // Reset effect - clear all session state when resetKey changes
-  useEffect(() => {
-    if (resetKey) {
-      setSessionId(null)
-      setStreamingText('')
-      setIsStreamingTokens(false)
-      setHasReceivedTokens(false)
-      setWaitingForWebSocket(false)
-      setStreamingAgent(null)
-      streamingMessageIdRef.current = null
-      clearErrors()
-    }
-  }, [resetKey, clearErrors])
 
   // Clear streaming state when websocket delivers the real message
   useEffect(() => {
@@ -194,7 +176,7 @@ const SessionChat: FC<Props> = ({ agentId, resetKey }) => {
   )
 
   // Set up streaming
-  const { sendMessage: sendStreamingMessage, stopStream } = useSessionStream({
+  const { sendMessage: sendStreamingMessage } = useSessionStream({
     sessionId: sessionId || undefined,
     onToken: text => {
       setStreamingText(prev => prev + text)
@@ -251,23 +233,6 @@ const SessionChat: FC<Props> = ({ agentId, resetKey }) => {
       setSessionId(newSessionId)
     },
   })
-
-  // Update reset effect to also stop streaming
-  useEffect(() => {
-    if (resetKey) {
-      // Stop any active streaming
-      stopStream()
-
-      setSessionId(null)
-      setStreamingText('')
-      setIsStreamingTokens(false)
-      setHasReceivedTokens(false)
-      setWaitingForWebSocket(false)
-      setStreamingAgent(null)
-      streamingMessageIdRef.current = null
-      clearErrors()
-    }
-  }, [resetKey, clearErrors, stopStream])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
