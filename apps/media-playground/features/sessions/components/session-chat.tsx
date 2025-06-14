@@ -1,31 +1,14 @@
 'use client'
 
-import AgentLink from '../../agent/agent-link'
-import Session from '../session'
-// Import shared components
-import { SessionsSidebarContent } from './sessions-sidebar'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/ui/resizable'
-import { Skeleton } from '@/components/ui/skeleton'
 import { MessageInput } from '@/features/sessions/components/message-input'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { cn } from '@/lib/utils'
-import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
-import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
-import { SettingsIcon } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { FC, useEffect, useMemo, useState } from 'react'
-import * as React from 'react'
+import { FC, useEffect, useState } from 'react'
 
 // Session Welcome Component
 const SessionWelcome: FC<{
@@ -82,216 +65,72 @@ const SessionWelcome: FC<{
   )
 }
 
-// Custom sidebar content for agent chat
-const SessionChatSidebarContent: FC<{
-  agent: Agent | null | undefined
-  isOwner: boolean
-  handleEditClick: () => void
-  agentId: string
-  currentSessionId?: string
-  onItemClick?: () => void
-  onSessionSelect: (sessionId: string) => void
-  onNewSession: () => void
-}> = ({ agent, isOwner, handleEditClick, onItemClick, agentId }) => {
-  return (
-    <>
-      <div className="flex items-center justify-between gap-2 ml-2">
-        {agent ? (
-          <>
-            <AgentLink
-              agent={agent}
-              className={cn(
-                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
-              )}
-            />
-            {isOwner && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 size-8"
-                onClick={handleEditClick}
-              >
-                <SettingsIcon className="size-4" />
-              </Button>
-            )}
-          </>
-        ) : (
-          <Skeleton className="w-[120px] h-8" />
-        )}
-      </div>
-      {/* New session button */}
-      <div className="border-b mb-2 mt-2" />
-      {/* Use existing sessions sidebar content for the rest */}
-      <SessionsSidebarContent
-        onItemClick={onItemClick}
-        agentId={agentId}
-        isChat
-      />
-    </>
-  )
-}
-
-// Main Component - Wrapper that uses Session component once sessionId exists
+// Main Component - Shows welcome screen until user sends message
 type Props = {
   agentId: string
   sessionId?: string
 }
 
-const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
-  const dispatch = useAppDispatch()
-  const router = useRouter()
+const SessionChat: FC<Props> = ({ agentId }) => {
   const [isMounted, setIsMounted] = useState(false)
-  const [currentSessionId, setCurrentSessionId] = useState<string | undefined>(
-    initialSessionId,
-  )
   const { user } = useAuthState()
 
   const {
     agent,
     isError: agentError,
     error: agentErrorDetails,
-    invalidate: invalidateAgent,
   } = useAgentQuery({ key: agentId })
 
   // Mount effect
   useEffect(() => {
     if (typeof window === 'undefined') return
     setIsMounted(true)
-    document.body.classList.add('overflow-hidden')
-    return () => {
-      document.body.classList.remove('overflow-hidden')
-    }
   }, [])
-
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agentId: agentId,
-        onAction: async () => {
-          await invalidateAgent()
-        },
-      }),
-    )
-  }
-
-  const isOwner = useMemo(() => {
-    return user?._id === agent?.owner._id
-  }, [user, agent])
-
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-
-  const handleSessionSelect = (sessionId: string) => {
-    setCurrentSessionId(sessionId)
-    // Navigate to the session URL
-    router.push(`/chat/${agentId}/${sessionId}`)
-  }
-
-  const handleNewSession = () => {
-    setCurrentSessionId(undefined)
-    // Navigate to the new session URL
-    router.push(`/chat/${agentId}`)
-  }
 
   const handleSendMessage = async () => {
     if (!user) return
-
-    // Just switch to the Session component
-    setCurrentSessionId('new')
+    // Navigate to create a new session
+    console.log('handleSendMessage')
   }
 
   if (!isMounted) {
     return null
   }
 
-  // If we have a sessionId, use the actual Session component
-  if (currentSessionId) {
-    return <Session />
-  }
-
-  // Otherwise show the welcome screen with sidebar
   return (
-    <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
-      {/* Resizable Layout */}
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="flex-1 !overflow-y-hidden"
-        autoSaveId={`resizable-session-chat-layout-${agentId}`}
-      >
-        {/* Desktop Sidebar */}
-        <ResizablePanel
-          defaultSize={20}
-          minSize={15}
-          maxSize={30}
-          collapsible
-          collapsedSize={0}
-          onCollapse={() => setIsSidebarCollapsed(true)}
-          onExpand={() => setIsSidebarCollapsed(false)}
-          className={cn(
-            'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out max-w-[320px]',
-            isSidebarCollapsed && 'p-0 border-none',
-          )}
-        >
-          {!isSidebarCollapsed && (
-            <SessionChatSidebarContent
+    <main className="flex-1 overflow-hidden flex flex-col">
+      {!agent ? (
+        <div className="flex-1 flex justify-center items-center">
+          <LoadingIndicator className="w-10 h-10 text-purple-600" />
+        </div>
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
+            <SessionWelcome
               agent={agent}
-              isOwner={isOwner}
-              handleEditClick={handleEditClick}
-              agentId={agentId}
-              currentSessionId={currentSessionId}
-              onSessionSelect={handleSessionSelect}
-              onNewSession={handleNewSession}
-              onItemClick={() => {}}
+              onSendMessage={handleSendMessage}
+              isLoading={false}
             />
-          )}
-        </ResizablePanel>
+          </div>
 
-        <ResizableHandle
-          withHandle
-          className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
-        />
+          {/* Message Input */}
+          <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
+            <MessageInput
+              sessionId="new"
+              onStreamingMessage={handleSendMessage}
+            />
+          </div>
+        </>
+      )}
 
-        {/* Main Content */}
-        <ResizablePanel defaultSize={80} className="flex flex-col">
-          <main className="flex-1 overflow-hidden flex flex-col">
-            {!agent ? (
-              <div className="flex-1 flex justify-center items-center">
-                <LoadingIndicator className="w-10 h-10 text-purple-600" />
-              </div>
-            ) : (
-              <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
-                <SessionWelcome
-                  agent={agent}
-                  onSendMessage={handleSendMessage}
-                  isLoading={false}
-                />
-              </div>
-            )}
-
-            {agentError && (
-              <div className="p-4">
-                <AlertDestructive title="Error loading agent">
-                  <AlertDescription>
-                    {agentErrorDetails?.message}
-                  </AlertDescription>
-                </AlertDestructive>
-              </div>
-            )}
-          </main>
-
-          {/* Message Input - Only show when no session exists */}
-          {!currentSessionId && agent && (
-            <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
-              <MessageInput
-                sessionId="new"
-                onStreamingMessage={handleSendMessage}
-              />
-            </div>
-          )}
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+      {agentError && (
+        <div className="p-4">
+          <AlertDestructive title="Error loading agent">
+            <AlertDescription>{agentErrorDetails?.message}</AlertDescription>
+          </AlertDestructive>
+        </div>
+      )}
+    </main>
   )
 }
 

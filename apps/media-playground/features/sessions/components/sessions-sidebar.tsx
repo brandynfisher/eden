@@ -250,18 +250,25 @@ const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
 }) => {
   const router = useRouter()
   const params = useParams()
-  const isNewSession = params.id === 'new'
+  const isNewSession =
+    params.id === 'new' || (!params.sessionId && params.agentId)
   const agentId = params.agentId as string
+
+  const handleClick = () => {
+    onItemClick?.()
+    if (isChat && agentId) {
+      // For chat2 routes, go to agent's welcome page
+      router.push(`/chat2/${agentId}`, { scroll: false })
+    } else {
+      // For regular sessions, go to new session page
+      router.push('/sessions/new', { scroll: false })
+    }
+  }
 
   return (
     <Button
       variant="ghost"
-      onClick={() => {
-        onItemClick?.()
-        router.push(isChat ? `/sessions/chat/${agentId}` : '/sessions/new', {
-          scroll: false,
-        })
-      }}
+      onClick={handleClick}
       className={cn(
         'flex w-full justify-between px-3 mb-1',
         isNewSession ? 'bg-muted text-primary' : 'bg-aui-muted',
@@ -278,14 +285,16 @@ const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
 const MainLeft = ({
   onItemClick,
   agentId,
+  isChat,
 }: {
   onItemClick?: () => void
   agentId?: string
+  isChat?: boolean
 }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const router = useRouter()
   const params = useParams()
-  const currentSessionId = params.id as string
+  const currentSessionId = (params.id as string) || (params.sessionId as string)
   const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
     useSessionListQuery({
       enabled: !!isSignedIn,
@@ -357,9 +366,17 @@ const MainLeft = ({
                       isFromTrigger={!!session.trigger}
                       onItemClick={() => {
                         onItemClick?.()
-                        router.push(`/sessions/${session._id}`, {
-                          scroll: false,
-                        })
+                        if (isChat && agentId) {
+                          // For chat2 routes, go to /chat2/[agentId]/[sessionId]
+                          router.push(`/chat2/${agentId}/${session._id}`, {
+                            scroll: false,
+                          })
+                        } else {
+                          // For regular sessions, go to /sessions/[sessionId]
+                          router.push(`/sessions/${session._id}`, {
+                            scroll: false,
+                          })
+                        }
                       }}
                     />
                   ),
@@ -394,7 +411,7 @@ export const SessionsSidebarContent = ({
       <div className="border-b mb-2">
         <TopLeft onItemClick={onItemClick} isChat={isChat} />
       </div>
-      <MainLeft onItemClick={onItemClick} agentId={agentId} />
+      <MainLeft onItemClick={onItemClick} agentId={agentId} isChat={isChat} />
     </>
   )
 }
