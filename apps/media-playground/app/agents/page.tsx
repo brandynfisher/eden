@@ -5,14 +5,15 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
-import { useAppDispatch } from '@/stores/store'
+//import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+//import { useAppDispatch } from '@/stores/store'
 import { PlusIcon } from 'lucide-react'
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 const AgentsPage = () => {
   const { user } = useAuthState()
-  const dispatch = useAppDispatch()
+  //const dispatch = useAppDispatch()
 
   const [currentTab, setCurrentTab] = useState<'user' | 'public'>('public')
   const [searchQuery, setSearchQuery] = useState('')
@@ -27,14 +28,14 @@ const AgentsPage = () => {
     [currentTab, user?._id, searchQuery],
   )
 
-  const handleCreateClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'create',
-      }),
-    )
-  }
+  //const handleCreateClick = () => {
+  //  dispatch(
+  //    updateAgentFormSheet({
+  //      isOpen: true,
+  //      mode: 'create',
+  //    }),
+  //  )
+  //}
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-screen-2xl">
@@ -50,12 +51,14 @@ const AgentsPage = () => {
             </p>
           </div>
           <Button
-            onClick={handleCreateClick}
             variant="outline"
             className="gap-x-2 text-sm font-semibold bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-purple-600"
+            asChild
           >
-            <PlusIcon className="size-4" />
-            Create Agent
+            <Link title="Create Agent" href="/new/agent">
+              <PlusIcon className="size-4" />
+              <span>Create Agent</span>
+            </Link>
           </Button>
         </div>
 

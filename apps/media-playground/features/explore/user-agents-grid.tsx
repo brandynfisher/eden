@@ -6,9 +6,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { useAgentsListQuery } from '@/hooks/query/use-agents-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
-import { useAppDispatch } from '@/stores/store'
-import { useQueryClient } from '@tanstack/react-query'
+//import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+//import { useAppDispatch } from '@/stores/store'
+//import { useQueryClient } from '@tanstack/react-query'
 import { ChevronRight, LogIn, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -17,8 +17,8 @@ import React, { useMemo } from 'react'
 export default function UserAgentsGrid() {
   const { user, verifyAuth, isLoading: isAuthLoading = false } = useAuthState()
   const pathname = usePathname()
-  const dispatch = useAppDispatch()
-  const queryClient = useQueryClient()
+  //const dispatch = useAppDispatch()
+  //const queryClient = useQueryClient()
 
   const queryOptions = useMemo(
     () => ({
@@ -37,26 +37,24 @@ export default function UserAgentsGrid() {
     [user?._id, pathname],
   )
 
-  const onCreated = async () => {
-    await queryClient.invalidateQueries({
-      queryKey: queryKey as unknown as unknown[],
-    })
-  }
+  //const onCreated = async () => {
+  //  await queryClient.invalidateQueries({
+  //    queryKey: queryKey as unknown as unknown[],
+  //  })
+  //}
 
-  const handleCreateClick = () => {
-    if (!user) {
-      verifyAuth()
-      return
-    }
-
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'create',
-        onAction: onCreated,
-      }),
-    )
-  }
+  //const handleCreateClick = () => {
+  //  if (!user) {
+  //    verifyAuth()
+  //    return
+  //  }
+  //  dispatch(
+  //    updateAgentFormSheet({
+  //      isOpen: true,
+  //      mode: 'create',
+  //      onAction: onCreated,
+  //    }),
+  //  )
 
   // Show loading state while auth is being determined
   const isLoadingState = isAuthLoading || isLoading
@@ -122,11 +120,13 @@ export default function UserAgentsGrid() {
         className={`mt-4 gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600 ${
           !user && !isAuthLoading ? 'opacity-0 pointer-events-none' : ''
         }`}
-        onClick={handleCreateClick}
         disabled={!!isAuthLoading}
+        asChild
       >
-        <PlusIcon className="w-4 h-4" />
-        Create Agent
+        <Link title="Create Agent" href="/new/agent">
+          <PlusIcon className="w-4 h-4" />
+          <span>Create Agent</span>
+        </Link>
       </Button>
     </div>
   )
