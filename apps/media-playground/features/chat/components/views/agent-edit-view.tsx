@@ -784,7 +784,7 @@ const AgentEditView: FC<{
 
           {/* Global Update Button */}
           {activeTab !== 'deployments' && (
-            <div className="border-t border-border p-6 ">
+            <div className="border-t border-border p-6">
               <div className="mx-auto max-w-3xl lg:max-w-3xl">
                 <Button
                   onClick={form.handleSubmit(handleSubmit)}

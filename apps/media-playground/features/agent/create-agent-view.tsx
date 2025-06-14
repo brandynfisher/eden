@@ -267,7 +267,7 @@ const CreateAgentView = () => {
 
             {/* Scrollable form content */}
             <div className="flex-1 overflow-auto">
-              <div className="mx-auto max-w-3xl p-6">
+              <div className="mx-auto max-w-3xl ">
                 <Form {...form}>
                   <form
                     className="w-full space-y-4"
