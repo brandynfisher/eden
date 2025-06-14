@@ -196,13 +196,13 @@ const ThreadListItem: FC<{
   return (
     <ThreadListItemPrimitive.Root
       className={cn(
-        'group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-1 text-sm relative',
-        isActive && 'bg-muted text-primary font-medium',
+        'group flex justify-between hover:text-white data-[active]:bg-primary/30 data-[active]:text-white font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5',
+        isActive && 'bg-muted text-white font-medium',
       )}
     >
       <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
         {isEditing ? (
-          <div className="flex items-center gap-1 flex-grow min-w-0">
+          <div className="flex items-center gap-1 flex-grow min-w-0 text-white">
             <Input
               id="thread-title-input"
               name="title"
@@ -226,7 +226,7 @@ const ThreadListItem: FC<{
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0 text-primary hover:text-primary"
+              className="h-7 w-7 shrink-0 text-white hover:text-white"
               onClick={handleRenameSubmit}
               onMouseDown={e => e.preventDefault()}
               disabled={isRenaming}
@@ -241,7 +241,7 @@ const ThreadListItem: FC<{
           </div>
         ) : (
           <ThreadListItemPrimitive.Trigger
-            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
+            className="flex-grow min-w-0 text-white text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
             onClick={onItemClick}
             disabled={isEditing}
           >
