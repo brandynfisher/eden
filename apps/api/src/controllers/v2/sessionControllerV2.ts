@@ -371,21 +371,98 @@ export const createSessionMessageStream = async (
     })
   }
 
-  const { session_id, content, attachments } = request.body
+  const {
+    session_id,
+    content,
+    attachments,
+    agent_ids,
+    scenario,
+    budget,
+    title,
+    autonomy_settings,
+  } = request.body
 
+  let session: any = null
+  let sessionId = session_id
+
+  // If no session_id provided, create a new session
   if (!session_id) {
-    return reply.status(400).send({
-      message: 'session_id not provided',
-    })
-  }
+    if (!agent_ids || !Array.isArray(agent_ids) || agent_ids.length === 0) {
+      return reply.status(400).send({
+        message: 'agent_ids must be provided when creating a new session',
+      })
+    }
 
-  const query = createIdOrSlugQuery(session_id)
-  const session = await Session.findOne(query)
-
-  if (!session) {
-    return reply.status(404).send({
-      message: 'session not found',
+    // Validate agent IDs
+    const validAgentIds = agent_ids.map(id => {
+      try {
+        return new ObjectId(id)
+      } catch (error) {
+        throw new Error(`Invalid agent ID format: ${id}`)
+      }
     })
+
+    // Validate that all agents exist
+    const existingAgents = await Agent.find({ _id: { $in: validAgentIds } })
+    if (existingAgents.length !== validAgentIds.length) {
+      return reply.status(400).send({
+        message: 'One or more agent IDs do not exist',
+      })
+    }
+
+    // Create the session
+    const sessionData: any = {
+      owner: userId,
+      agents: validAgentIds,
+      messages: [],
+      title:
+        title ||
+        `Session with ${agent_ids.length} agent${
+          agent_ids.length > 1 ? 's' : ''
+        }`,
+    }
+
+    if (scenario) {
+      sessionData.scenario = scenario
+    }
+
+    if (budget) {
+      sessionData.budget = {
+        token_budget: budget.token_budget,
+        manna_budget: budget.manna_budget,
+        turn_budget: budget.turn_budget,
+        tokens_spent: 0,
+        manna_spent: 0,
+        turns_spent: 0,
+      }
+    }
+
+    if (autonomy_settings) {
+      sessionData.autonomy_settings = autonomy_settings
+    }
+
+    session = new Session(sessionData)
+
+    // Create an eden message for agent additions
+    const edenMessage = await createEdenMessage(
+      session._id,
+      'agent_add',
+      existingAgents,
+    )
+    session.messages.push(edenMessage.id)
+    await session.save()
+
+    sessionId = session._id.toString()
+  } else {
+    // Find existing session
+    const query = createIdOrSlugQuery(session_id)
+    session = await Session.findOne(query)
+
+    if (!session) {
+      return reply.status(404).send({
+        message: 'session not found',
+      })
+    }
   }
 
   const userDocument = await User.findById(userId)
@@ -408,7 +485,7 @@ export const createSessionMessageStream = async (
     const modalRequest = {
       endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/prompt`,
       data: {
-        session_id,
+        session_id: sessionId,
         message: {
           content,
           attachments,
@@ -486,7 +563,7 @@ export const listSessions = async (
     })
   }
 
-  const { limit = 25, page, sort } = request.query
+  const { limit = 25, page, sort, agent_id } = request.query
 
   try {
     const queryOptions: QueryOptions = {
@@ -501,8 +578,19 @@ export const listSessions = async (
     }
 
     const sessionsRepository = new SessionRepository(Session)
-    const sessionQuery = {
+    const sessionQuery: any = {
       owner: userId,
+    }
+
+    // Add agent filter if provided - look up agent by username first
+    if (agent_id) {
+      const agent = await Agent.findOne({ username: agent_id })
+      if (!agent) {
+        return reply.status(404).send({
+          message: 'Agent not found',
+        })
+      }
+      sessionQuery.agents = agent._id
     }
 
     const paginatedResponse = await sessionsRepository.query(
