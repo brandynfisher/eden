@@ -258,21 +258,6 @@ const AgentEditView: FC<{
           </button>
           <button
             onClick={() => {
-              setActiveTab('tasks')
-              setIsMobileSidebarOpen(false)
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              activeTab === 'tasks'
-                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-            )}
-          >
-            <ClockIcon className="w-4 h-4" />
-            Tasks
-          </button>
-          <button
-            onClick={() => {
               setActiveTab('deployments')
               setIsMobileSidebarOpen(false)
             }}
