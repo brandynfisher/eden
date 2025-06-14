@@ -20,7 +20,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon, SettingsIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import React, {
@@ -139,14 +139,24 @@ const LeftBarSheet: FC<{
 }
 
 const SessionChatLayout = ({ children }: PropsWithChildren) => {
-  const dispatch = useAppDispatch()
+  const { user, isSignedIn } = useAuthState()
   const router = useRouter()
+  // Check if user has sessions_v2 feature flag
+  useEffect(() => {
+    if (
+      isSignedIn &&
+      user &&
+      !user.featureFlags?.includes(FeatureFlag.SessionsV2)
+    ) {
+      router.push('/')
+    }
+  }, [isSignedIn, user, router])
+  const dispatch = useAppDispatch()
   const params = useParams()
   const agentId = params.agentId as string
   const sessionId = params.sessionId as string
   const [isMounted, setIsMounted] = useState(false)
   const [resetKey, setResetKey] = useState<number>(0)
-  const { user } = useAuthState()
 
   const { agent, invalidate: invalidateAgent } = useAgentQuery({ key: agentId })
 
