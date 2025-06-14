@@ -120,7 +120,6 @@ const TaskItem: FC<{
 }
 const AgentTasksView: FC<{
   agent: Agent
-  user: unknown
 }> = ({ agent }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Trigger | null>(null)

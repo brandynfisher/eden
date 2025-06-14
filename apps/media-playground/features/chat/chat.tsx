@@ -30,7 +30,6 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
-import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
@@ -489,9 +488,9 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<
-    'chat' | 'creations' | 'tasks' | 'settings'
-  >('chat')
+  const [viewMode, setViewMode] = useState<'chat' | 'creations' | 'settings'>(
+    'chat',
+  )
 
   const isOwner = useMemo(() => {
     const ownershipStatus = user?._id === agent?.owner._id
@@ -500,12 +499,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
 
   // Redirect non-owners away from owner-only views
   useEffect(() => {
-    if (
-      agent &&
-      user &&
-      !isOwner &&
-      (viewMode === 'tasks' || viewMode === 'settings')
-    ) {
+    if (agent && user && !isOwner && viewMode === 'settings') {
       setViewMode('chat')
     }
   }, [agent, user, isOwner, viewMode])
@@ -584,9 +578,6 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
         {viewMode === 'creations' ? (
           /* CREATIONS VIEW - Full width */
           agent && <AgentCreationsView agent={agent} user={user} />
-        ) : viewMode === 'tasks' ? (
-          /* TASKS VIEW - Full width */
-          agent && <AgentTasksView agent={agent} user={user} />
         ) : viewMode === 'settings' ? (
           /* SETTINGS VIEW - Full width */
           agent && <AgentEditView agent={agent} user={user} />

@@ -21,6 +21,7 @@ import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
+import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { cn } from '@/lib/utils'
 import { slugifyName } from '@/utils/slug.util'
@@ -30,6 +31,7 @@ import axios from 'axios'
 import {
   AlertCircle,
   ChevronRightIcon,
+  ClockIcon,
   Edit2Icon,
   Loader2,
   SettingsIcon,
@@ -253,6 +255,21 @@ const AgentEditView: FC<{
           >
             <WrenchIcon className="w-4 h-4" />
             Concepts
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('tasks')
+              setIsMobileSidebarOpen(false)
+            }}
+            className={cn(
+              'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+              activeTab === 'tasks'
+                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+            )}
+          >
+            <ClockIcon className="w-4 h-4" />
+            Tasks
           </button>
           <button
             onClick={() => {
@@ -698,7 +715,7 @@ const AgentEditView: FC<{
                       </div>
                     </div>
                   )}
-
+                  {activeTab === 'tasks' && <AgentTasksView agent={agent} />}
                   {activeTab === 'deployments' && (
                     <div className="space-y-6">
                       <div>
