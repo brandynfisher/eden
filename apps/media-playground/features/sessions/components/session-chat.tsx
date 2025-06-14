@@ -16,7 +16,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { MessageInput } from '@/features/sessions/components/message-input'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
-import { useSessionMessageMutation } from '@/hooks/query/use-session-message-mutation'
+import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -142,6 +142,7 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
     initialSessionId,
   )
   const { user } = useAuthState()
+  const [isCreatingSession, setIsCreatingSession] = useState(false)
 
   const {
     agent,
@@ -150,7 +151,9 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
     invalidate: invalidateAgent,
   } = useAgentQuery({ key: agentId })
 
-  const sendMessageMutation = useSessionMessageMutation()
+  const { invalidate: invalidateSessionList } = useSessionListQuery({
+    enabled: false,
+  })
 
   // Mount effect
   useEffect(() => {
@@ -194,21 +197,57 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
   }
 
   const handleSendMessage = async (content: string, attachments?: string[]) => {
+    if (!user || isCreatingSession) return
+
     try {
-      // Create new session for first message
-      const result = await sendMessageMutation.mutateAsync({
-        content,
-        attachments,
-        agent_ids: [agentId],
-        title: content.length > 50 ? content.slice(0, 50) + '...' : content,
+      setIsCreatingSession(true)
+
+      // Create new session with the first message
+      const response = await fetch('/api/sessions/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agent_ids: [agentId],
+          title: content.length > 50 ? content.slice(0, 50) + '...' : content,
+        }),
       })
 
-      if ('session_id' in result && result.session_id) {
-        // Navigate to the new session
-        router.push(`/chat/${agentId}/${result.session_id}`)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to create session')
       }
+
+      const result = await response.json()
+      const sessionId = result.session?._id
+
+      if (!sessionId) {
+        throw new Error('No session ID returned')
+      }
+
+      // Send the initial message to the created session
+      await fetch(`/api/sessions/${sessionId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          content,
+          attachments: attachments || [],
+        }),
+      })
+
+      // Invalidate session list to refresh sidebar
+      await invalidateSessionList()
+
+      // Navigate to the new session
+      router.push(`/chat/${agentId}/${sessionId}`)
     } catch (error) {
-      console.error('Failed to send message:', error)
+      console.error('Failed to create session and send message:', error)
+    } finally {
+      setIsCreatingSession(false)
     }
   }
 
@@ -275,7 +314,7 @@ const SessionChat: FC<Props> = ({ agentId, sessionId: initialSessionId }) => {
                 <SessionWelcome
                   agent={agent}
                   onSendMessage={handleSendMessage}
-                  isLoading={sendMessageMutation.isPending}
+                  isLoading={isCreatingSession}
                 />
               </div>
             )}
