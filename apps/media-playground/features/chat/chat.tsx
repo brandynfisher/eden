@@ -30,6 +30,7 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
+import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
@@ -435,7 +436,7 @@ type Props = {
   agentId: string
   threadId?: string
   agentSSRData?: Agent
-  defaultTab?: 'chat' | 'creations' | 'settings'
+  defaultTab?: 'chat' | 'creations' | 'tasks' | 'settings'
 }
 
 const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
@@ -489,9 +490,9 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'chat' | 'creations' | 'settings'>(
-    defaultTab || 'chat',
-  )
+  const [viewMode, setViewMode] = useState<
+    'chat' | 'creations' | 'tasks' | 'settings'
+  >(defaultTab || 'chat')
 
   const isOwner = useMemo(() => {
     const ownershipStatus = user?._id === agent?.owner._id
@@ -579,6 +580,9 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
         {viewMode === 'creations' ? (
           /* CREATIONS VIEW - Full width */
           agent && <AgentCreationsView agent={agent} user={user} />
+        ) : viewMode === 'tasks' ? (
+          /* CREATIONS VIEW - Full width */
+          agent && <AgentTasksView agent={agent} />
         ) : viewMode === 'settings' ? (
           /* SETTINGS VIEW - Full width */
           agent && <AgentEditView agent={agent} user={user} />
