@@ -775,11 +775,8 @@ const AgentFormSheet = () => {
                                     <div className="flex items-center justify-between">
                                       <div>
                                         <h4 className="font-medium">
-                                          {trigger.message}
+                                          {trigger.instruction}
                                         </h4>
-                                        <p className="text-sm text-muted-foreground">
-                                          Platform: {trigger.platform}
-                                        </p>
                                       </div>
                                       <Button
                                         variant="ghost"

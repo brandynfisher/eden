@@ -2,13 +2,13 @@
 
 import CreationsFeed from '@/features/feed/creations-feed'
 import { cn } from '@/lib/utils'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, Creator } from '@edenlabs/eden-sdk'
 import { FC, useMemo, useState } from 'react'
 import * as React from 'react'
 
 const AgentCreationsView: FC<{
   agent: Agent
-  user: unknown
+  user?: Creator
 }> = ({ agent, user }) => {
   const [filterMode, setFilterMode] = useState<'mine' | 'all'>('mine')
 
@@ -65,16 +65,6 @@ const AgentCreationsView: FC<{
             query={recentCreationsQuery}
             minCols={1}
             maxCols={8}
-            breakpoints={[
-              { minWidth: 1800, columns: 8 }, // Full desktop screens
-              { minWidth: 1600, columns: 7 }, // Large desktop
-              { minWidth: 1400, columns: 6 }, // Desktop
-              { minWidth: 1200, columns: 5 }, // Large laptop
-              { minWidth: 1000, columns: 4 }, // Laptop
-              { minWidth: 768, columns: 3 }, // Tablet landscape
-              { minWidth: 640, columns: 2 }, // Large tablet/small desktop only
-              { minWidth: 0, columns: 1 }, // Mobile phones (iPhone, Android) - single column
-            ]}
             showSkeleton
           />
         </div>
