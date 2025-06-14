@@ -267,15 +267,17 @@ const CreateAgentView = () => {
 
             {/* Scrollable form content */}
             <div className="flex-1 overflow-auto">
-              <div className="mx-auto max-w-3xl ">
+              <div className="mx-auto max-w-3xl pt-6">
                 <Form {...form}>
                   <form
                     className="w-full space-y-4"
                     onSubmit={form.handleSubmit(handleSubmit)}
                   >
                     {activeTab === 'profile' && (
-                      <div className="space-y-4">
-                        {/* Name Field with Key */}
+                      <div className="space-y-6">
+                        <h3 className="text-2xl font-semibold mb-6 text-foreground">
+                          Profile Information
+                        </h3>
                         <FormField
                           control={form.control}
                           name="name"
