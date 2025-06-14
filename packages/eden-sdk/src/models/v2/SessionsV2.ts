@@ -28,9 +28,23 @@ export interface SessionsV2CreateArguments extends WebAPICallOptions {
 }
 
 export interface SessionsV2MessageArguments extends WebAPICallOptions {
-  session_id?: string
+  session_id?: string // If not provided, will create a new session
   content: string
   attachments?: string[]
+  // Creation args (used when session_id is not provided)
+  agent_ids?: string[]
+  scenario?: string
+  budget?: {
+    manna_budget?: number
+    token_budget?: number
+    turn_budget?: number
+  }
+  title?: string
+  autonomy_settings?: {
+    auto_reply: boolean
+    reply_interval: number
+    actor_selection_method: 'random' | 'random_exclude_last'
+  }
 }
 
 export interface SessionsV2MessageReactArguments extends WebAPICallOptions {
@@ -155,7 +169,11 @@ export type SessionsV2MessageResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { session_id?: SessionV2['_id']; success: boolean }
+    | {
+        session_id: SessionV2['_id']
+        message_id?: string
+        success: boolean
+      }
   )
 
 export type SessionsV2MessageReactResponse = WebAPICallResult &

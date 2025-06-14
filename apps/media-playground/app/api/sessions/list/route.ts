@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     })
     const res = await eden.sessions.v2.list({
       ...paginationParams,
+      agent_id: request.nextUrl.searchParams.get('agent_id') || undefined,
     })
 
     return NextResponse.json(res)

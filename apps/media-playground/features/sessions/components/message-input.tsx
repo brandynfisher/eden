@@ -313,11 +313,11 @@ export const MessageInput = ({
       {isDragging && (
         <AttachmentDropzone isDragging={isDragging} accept={accept} />
       )}
-      <div className="sticky pb-6 bottom-0 z-[51] bg-aui-background w-[calc(100%-2rem)] md:w-full mx-auto">
+      <div className="relative z-[51] bg-accent-foreground/5 w-full">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="sticky bottom-6 z-[51] border border-aui-border bg-accent-foreground/5 rounded-md items-start p-2.5 focus-within:border-aui-ring/20 transition-all duration-300"
+            className="relative z-[51] border border-aui-border bg-accent-foreground/5 rounded-md items-start p-2.5 focus-within:border-aui-ring/20 transition-all duration-300"
           >
             {attachments.length > 0 && (
               <LightboxGallery>

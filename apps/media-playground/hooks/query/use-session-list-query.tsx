@@ -12,12 +12,13 @@ type Props = {
   enabled?: boolean
   page?: number
   limit?: number
+  agent_id?: string
 }
 
 export const useSessionListQuery = (props?: Props) => {
-  const queryKey = ['sessions', 'list']
+  const queryKey = ['sessions', 'list', props?.agent_id]
 
-  const { enabled, limit = 50 } = props || {}
+  const { enabled, limit = 50, agent_id } = props || {}
 
   const queryClient = useQueryClient()
 
@@ -43,8 +44,17 @@ export const useSessionListQuery = (props?: Props) => {
     },
     queryFn: async ({ pageParam = 1 }) => {
       // console.log('queryFn', pageParam)
+      const params = new URLSearchParams({
+        page: pageParam.toString(),
+        limit: limit.toString(),
+      })
+
+      if (agent_id) {
+        params.append('agent_id', agent_id)
+      }
+
       const response = await fetcher<SessionsV2ListResponse>(
-        `/api/sessions/list?page=${pageParam}&limit=${limit}`,
+        `/api/sessions/list?${params.toString()}`,
       )
       return response
     },
