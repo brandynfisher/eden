@@ -4,10 +4,14 @@ type Props = {
   params: {
     agentId: string
   }
+  resetKey?: number
 }
 
-const SessionChatAgentPage = async ({ params: { agentId } }: Props) => {
-  return <SessionChat agentId={agentId} />
+const SessionChatAgentPage = async ({
+  params: { agentId },
+  resetKey,
+}: Props) => {
+  return <SessionChat agentId={agentId} resetKey={resetKey} />
 }
 
 export default SessionChatAgentPage

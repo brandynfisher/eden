@@ -23,7 +23,13 @@ import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon, SettingsIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
-import { FC, PropsWithChildren, useEffect, useMemo, useState } from 'react'
+import React, {
+  FC,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 // Custom sidebar content for agent chat
 const SessionChatSidebarContent: FC<{
@@ -139,6 +145,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   const agentId = params.agentId as string
   const sessionId = params.sessionId as string
   const [isMounted, setIsMounted] = useState(false)
+  const [resetKey, setResetKey] = useState<number>(0)
   const { user } = useAuthState()
 
   const { agent, invalidate: invalidateAgent } = useAgentQuery({ key: agentId })
@@ -178,8 +185,13 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   }
 
   const handleNewSession = () => {
-    // Navigate to the new session URL
-    router.push(`/chat2/${agentId}`)
+    // If we're already on the base agent route, just reset the state
+    if (!sessionId) {
+      setResetKey(prev => prev + 1)
+    } else {
+      // Navigate to the new session URL
+      router.push(`/chat2/${agentId}`)
+    }
   }
 
   if (!isMounted) {
@@ -247,7 +259,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
           className="relative flex flex-col bg-aui-background"
         >
           <div className="flex flex-col overflow-y-auto h-full">
-            <div className="mx-auto flex flex-col flex-1 w-full">
+            <div className="mx-auto flex flex-col flex-1 w-full" key={resetKey}>
               {children}
             </div>
           </div>

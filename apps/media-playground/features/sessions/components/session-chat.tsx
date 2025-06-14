@@ -78,9 +78,10 @@ const SessionWelcome: FC<{
 // Main Component - Shows welcome screen until user sends message, then switches to session view
 type Props = {
   agentId: string
+  resetKey?: string | number // Add reset key to force reset
 }
 
-const SessionChat: FC<Props> = ({ agentId }) => {
+const SessionChat: FC<Props> = ({ agentId, resetKey }) => {
   const [isMounted, setIsMounted] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [streamingText, setStreamingText] = useState('')
@@ -126,6 +127,20 @@ const SessionChat: FC<Props> = ({ agentId }) => {
     if (typeof window === 'undefined') return
     setIsMounted(true)
   }, [])
+
+  // Reset effect - clear all session state when resetKey changes
+  useEffect(() => {
+    if (resetKey) {
+      setSessionId(null)
+      setStreamingText('')
+      setIsStreamingTokens(false)
+      setHasReceivedTokens(false)
+      setWaitingForWebSocket(false)
+      setStreamingAgent(null)
+      streamingMessageIdRef.current = null
+      clearErrors()
+    }
+  }, [resetKey, clearErrors])
 
   // Clear streaming state when websocket delivers the real message
   useEffect(() => {
@@ -179,7 +194,7 @@ const SessionChat: FC<Props> = ({ agentId }) => {
   )
 
   // Set up streaming
-  const { sendMessage: sendStreamingMessage } = useSessionStream({
+  const { sendMessage: sendStreamingMessage, stopStream } = useSessionStream({
     sessionId: sessionId || undefined,
     onToken: text => {
       setStreamingText(prev => prev + text)
@@ -236,6 +251,23 @@ const SessionChat: FC<Props> = ({ agentId }) => {
       setSessionId(newSessionId)
     },
   })
+
+  // Update reset effect to also stop streaming
+  useEffect(() => {
+    if (resetKey) {
+      // Stop any active streaming
+      stopStream()
+
+      setSessionId(null)
+      setStreamingText('')
+      setIsStreamingTokens(false)
+      setHasReceivedTokens(false)
+      setWaitingForWebSocket(false)
+      setStreamingAgent(null)
+      streamingMessageIdRef.current = null
+      clearErrors()
+    }
+  }, [resetKey, clearErrors, stopStream])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
