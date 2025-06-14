@@ -21,19 +21,12 @@ import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import {
-  updateAgentDeploymentFormSheet,
-  updateAgentFormSheet,
-  updateAgentTriggerFormSheet,
-} from '@/stores/dialogs/dialogs.slice'
+//import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent } from '@edenlabs/eden-sdk'
 import {
-  ChevronDownIcon,
-  ClockIcon,
   EyeOffIcon,
   MessageSquareIcon,
-  RocketIcon,
   SettingsIcon,
   Share2Icon,
 } from 'lucide-react'
@@ -168,11 +161,11 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   }, [filterMode, searchParams])
 
   const feedSectionRef = useRef<HTMLDivElement>(null)
-  const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
-    FeatureFlag.FeatureDeployments,
-  )
+  //const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
+  //  FeatureFlag.FeatureDeployments,
+  //)
 
-  const { agent: agentClientData, invalidate } = useAgentQuery({
+  const { agent: agentClientData } = useAgentQuery({
     key: id,
     initialData: agentSSRData
       ? {
@@ -193,38 +186,38 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
     return baseAgentQuery
   }, [agent, filterMode, user?._id])
 
-  const onUpdateAgent = async () => {
-    await invalidate()
-  }
+  //const onUpdateAgent = async () => {
+  //  await invalidate()
+  //}
 
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agentId: agent?._id,
-        onAction: onUpdateAgent,
-      }),
-    )
-  }
+  //const handleEditClick = () => {
+  //  dispatch(
+  //    updateAgentFormSheet({
+  //      isOpen: true,
+  //      mode: 'update',
+  //      agentId: agent?._id,
+  //      onAction: onUpdateAgent,
+  //    }),
+  //  )
+  //}
 
-  const handleConfigureDeployments = () => {
-    dispatch(
-      updateAgentDeploymentFormSheet({
-        isOpen: true,
-        agentId: agent?._id,
-      }),
-    )
-  }
+  //const handleConfigureDeployments = () => {
+  //  dispatch(
+  //    updateAgentDeploymentFormSheet({
+  //      isOpen: true,
+  //      agentId: agent?._id,
+  //    }),
+  //  )
+  //}
 
-  const handleConfigureTriggers = () => {
-    dispatch(
-      updateAgentTriggerFormSheet({
-        isOpen: true,
-        agentId: agent?._id,
-      }),
-    )
-  }
+  //const handleConfigureTriggers = () => {
+  //  dispatch(
+  //    updateAgentTriggerFormSheet({
+  //      isOpen: true,
+  //      agentId: agent?._id,
+  //    }),
+  //  )
+  //}
 
   if (!agent) return null
 
@@ -273,15 +266,13 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
               <div className="flex flex-wrap gap-2 mt-auto">
                 {user?._id === agent?.owner._id && (
                   <>
-                    <Button
-                      className="gap-2"
-                      variant="outline"
-                      onClick={handleEditClick}
-                    >
-                      <SettingsIcon className="w-4 h-4" />
-                      Edit
+                    <Button className="gap-2" variant="outline" asChild>
+                      <Link href={`/edit/${agent.username}`}>
+                        <SettingsIcon className="w-4 h-4" />
+                        <span>Edit </span>
+                      </Link>
                     </Button>
-                    {isFeatureDeploymentsEnabled && (
+                    {/*isFeatureDeploymentsEnabled && (
                       <>
                         <Button
                           className="gap-2"
@@ -300,7 +291,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
                           Tasks
                         </Button>
                       </>
-                    )}
+                    )*/}
                     <AgentActionsMenu
                       className="size-10"
                       key={1}
@@ -402,18 +393,8 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
         </div>
       </div>
 
-      {/* Bouncy Arrow and Title (Moved Here) */}
       {agent && (
         <>
-          <div className="flex justify-center mt-4">
-            <Button
-              variant="outline"
-              size="icon"
-              className="cursor-pointer self-center animate-bounce"
-            >
-              <ChevronDownIcon className="w-10 h-10" />
-            </Button>
-          </div>
           <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8 px-4">
             {`Creations with ${agent.name}`}
           </div>
