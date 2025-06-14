@@ -17,9 +17,18 @@ type ToolsGridProps = {
 const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
   const { tools } = useToolsListQuery({ output_type })
 
+  // Generate all possible accordion values including classic tools
+  const allAccordionValues = [
+    ...(showFeatured ? ['featured'] : []),
+    ...output_type,
+    ...(output_type[0] !== 'lora'
+      ? output_type.map(type => `classic-${type}`)
+      : []),
+  ]
+
   const [accordionStateQuery, setAccordionState] = useLocalStorage<string[]>(
     'generatorsGridAccordionState',
-    ['featured', ...output_type],
+    allAccordionValues,
   )
 
   const handleAccordionChange = (value: string[]) => {
@@ -39,45 +48,38 @@ const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
       <Accordion
         type="multiple"
         defaultValue={
-          output_type.length === 1 ? [output_type[0]] : accordionStateQuery.data
+          output_type.length === 1
+            ? allAccordionValues
+            : accordionStateQuery.data
         }
         onValueChange={handleAccordionChange}
         className="rounded-md overflow-hidden"
       >
-        <div className="p-2 rounded-lg bg-secondary">
-          <div className="mb-2">Tools</div>
-
-          <div className="rounded-md overflow-hidden">
-            {/* FEATURED */}
-            {showFeatured && (
-              <ToolsAccordionItem
-                label="Featured"
-                value="featured"
-                tools={tools?.filter(tool =>
-                  siteConfig.featured.tools.includes(tool.key),
-                )}
-                priority
-              />
+        {/* FEATURED */}
+        {showFeatured && (
+          <ToolsAccordionItem
+            label="Featured"
+            value="featured"
+            tools={tools?.filter(tool =>
+              siteConfig.featured.tools.includes(tool.key),
             )}
+            priority
+          />
+        )}
 
-            {/* REGULAR TOOLS */}
-            {output_type.map(type => (
-              <ToolsAccordionItem
-                key={type}
-                label={type === 'lora' ? 'Model Trainers' : type}
-                value={type}
-                tools={eden2Tools?.filter(tool => tool.output_type === type)}
-              />
-            ))}
-          </div>
-        </div>
-      </Accordion>
+        {/* REGULAR TOOLS */}
+        {output_type.map(type => (
+          <ToolsAccordionItem
+            key={type}
+            label={type === 'lora' ? 'Model Trainers' : type}
+            value={type}
+            tools={eden2Tools?.filter(tool => tool.output_type === type)}
+          />
+        ))}
 
-      {/* CLASSIC TOOLS */}
-      {output_type && output_type[0] !== 'lora' && (
-        <div className="p-2 mt-4 rounded-lg bg-secondary">
-          <div className="mb-2">Classic Tools</div>
-          <Accordion type="multiple" className="rounded-md overflow-hidden">
+        {/* CLASSIC TOOLS */}
+        {output_type && output_type[0] !== 'lora' && (
+          <>
             {output_type.map(type => {
               const classicTools = legacyTools?.filter(
                 tool => tool.output_type === type,
@@ -86,16 +88,16 @@ const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
 
               return (
                 <ToolsAccordionItem
-                  key={type}
-                  label={type}
-                  value={type}
+                  key={`classic-${type}`}
+                  label={`Classic ${type}`}
+                  value={`classic-${type}`}
                   tools={classicTools}
                 />
               )
             })}
-          </Accordion>
-        </div>
-      )}
+          </>
+        )}
+      </Accordion>
     </div>
   )
 }

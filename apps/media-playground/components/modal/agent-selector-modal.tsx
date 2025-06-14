@@ -1,6 +1,5 @@
 'use client'
 
-import ToggleButton from '@/components/button/toggle-button'
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { ToggleGroup } from '@/components/ui/toggle-group'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import { MAX_AGENTS } from '@/features/sessions/session-config'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -133,24 +132,20 @@ const AgentSelectorModal = ({
         </DialogHeader>
         <div className="flex-1">
           <div className="flex flex-col items-center sm:flex-row gap-2 mb-4">
-            <ToggleGroup
-              type="single"
+            <Tabs
               value={currentTab}
-              className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
+              onValueChange={value => setCurrentTab(value as 'user' | 'public')}
+              className="w-full sm:max-w-fit"
             >
-              <ToggleButton
-                className="w-full sm:w-32 h-8"
-                value={'user'}
-                label={'My Agents'}
-                onClick={() => setCurrentTab('user')}
-              />
-              <ToggleButton
-                className="w-full sm:w-32 h-8"
-                value={'public'}
-                label={'Public Agents'}
-                onClick={() => setCurrentTab('public')}
-              />
-            </ToggleGroup>
+              <TabsList className="w-full border border-muted rounded-lg p-1 bg-popover">
+                <TabsTrigger value="user" className="w-full sm:w-32 h-8">
+                  My Agents
+                </TabsTrigger>
+                <TabsTrigger value="public" className="w-full sm:w-32 h-8">
+                  Public Agents
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
             <FeedSearchForm handleSearch={setSearchQuery} />
           </div>
 

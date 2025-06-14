@@ -1,6 +1,6 @@
 'use client'
 
-import AgentLink from '../agent/agent-link'
+import { AgentBar } from './components/agent-bar'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -19,19 +19,17 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { Separator } from '@/components/ui/separator'
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MyComposer } from '@/features/chat/components/composer'
+import SingleAgentSelectorModal from '@/features/chat/components/single-agent-selector-modal'
 import Thread from '@/features/chat/components/thread'
 import MyThreadWelcome from '@/features/chat/components/thread-welcome'
 import { TaskResultTool } from '@/features/chat/components/tools/task-result-tool'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
+import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
+import AgentEditView from '@/features/chat/components/views/agent-edit-view'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
@@ -41,8 +39,8 @@ import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
-import { useAppDispatch } from '@/stores/store'
+//import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+//import { useAppDispatch } from '@/stores/store'
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
@@ -53,13 +51,12 @@ import { Agent } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   CheckIcon,
-  ChevronRightIcon,
   EditIcon,
   MoreHorizontal,
   PencilIcon,
-  SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -67,7 +64,7 @@ import { toast } from 'sonner'
 const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   const isNewSelected = useThreadListItem(t => t.id === 'DEFAULT_THREAD_ID')
   const threadId = useEdenRuntimeExtras(extras => extras.threadId)
-  const isLoading = false
+  //const isLoading = false
 
   // Only show as selected if we're in a new thread state (no threadId)
   const shouldShowSelected = !threadId && isNewSelected
@@ -75,17 +72,17 @@ const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   return (
     <ThreadListPrimitive.New asChild>
       <Button
-        variant="ghost"
+        variant={shouldShowSelected ? 'outline' : 'default'}
         onClick={onItemClick}
         className={cn(
-          'flex w-full justify-between px-3 mb-1',
-          !isLoading && shouldShowSelected && 'bg-aui-muted',
+          'flex w-full justify-start gap-2 py-3 mb-2 rounded-md font-medium transition-colors',
+          shouldShowSelected
+            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+            : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
         )}
       >
-        <div className="flex items-center gap-2 text-sm font-semibold">
-          <span>New Thread</span>
-        </div>
         <EditIcon className="size-4" />
+        <span>New Chat</span>
       </Button>
     </ThreadListPrimitive.New>
   )
@@ -346,7 +343,7 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
   }, [hasMore, isFetchingNextPage, fetchNextPage])
 
   return (
-    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
+    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto mr-2">
       <div className="mb-1 text-muted-foreground">Recent</div>
       {isLoading ? (
         <>
@@ -403,39 +400,11 @@ const MainLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
 
 // Extracted Sidebar Content
 const ChatSidebarContent: FC<{
-  agent: Agent | null | undefined
-  isOwner: boolean
-  handleEditClick: () => void
   onItemClick?: () => void
-}> = ({ agent, isOwner, handleEditClick, onItemClick }) => {
+}> = ({ onItemClick }) => {
   return (
     <>
-      <div className="flex items-center justify-between gap-2 ml-2">
-        {agent ? (
-          <>
-            <AgentLink
-              agent={agent}
-              className={cn(
-                isOwner ? 'max-w-[calc(100%-2.5rem)]' : 'max-w-full',
-              )}
-            />
-            {isOwner && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 size-8"
-                onClick={handleEditClick}
-              >
-                <SettingsIcon className="size-4" />
-              </Button>
-            )}
-          </>
-        ) : (
-          <Skeleton className="w-[120px] h-8" />
-        )}
-      </div>
-      <Separator orientation="horizontal" className="my-2 mb-1" />
-      <div className="border-b mb-2">
+      <div className="mb-2 mr-2">
         <TopLeft onItemClick={onItemClick} />
       </div>
       <MainLeft onItemClick={onItemClick} />
@@ -444,39 +413,19 @@ const ChatSidebarContent: FC<{
 }
 
 const LeftBarSheet: FC<{
-  // Updated to accept props needed by ChatSidebarContent
-  agent: Agent | null | undefined
-  isOwner: boolean
-  handleEditClick: () => void
-}> = ({ agent, isOwner, handleEditClick }) => {
-  const [open, setOpen] = useState(false)
-  const handleCloseSheet = () => setOpen(false)
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}> = ({ open, onOpenChange }) => {
+  const handleCloseSheet = () => onOpenChange(false)
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0 md:hidden gap-1"
-        >
-          <ChevronRightIcon className={'size-4'} />
-          View Threads
-          <span className="sr-only">Toggle thread list menu</span>
-        </Button>
-      </SheetTrigger>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="left"
-        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
+        className="flex flex-col max-h-full pt-10 px-3 bg-accent border-r gap-0"
       >
         <SheetTitle className="sr-only">Thread List</SheetTitle>
-        {/* Use extracted content here */}
-        <ChatSidebarContent
-          agent={agent}
-          isOwner={isOwner}
-          handleEditClick={handleEditClick}
-          onItemClick={handleCloseSheet}
-        />
+        <ChatSidebarContent onItemClick={handleCloseSheet} />
       </SheetContent>
     </Sheet>
   )
@@ -486,10 +435,12 @@ type Props = {
   agentId: string
   threadId?: string
   agentSSRData?: Agent
+  defaultTab?: 'chat' | 'creations' | 'settings'
 }
 
-const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
-  const dispatch = useAppDispatch()
+const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
+  //const dispatch = useAppDispatch()
+  const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
   const { user } = useAuthState()
 
@@ -497,7 +448,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
     agent: agentClientData,
     isError,
     error,
-    invalidate,
+    //invalidate,
   } = useAgentQuery({
     key: agentId,
     initialData: agentSSRData
@@ -521,26 +472,70 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
     }
   }, [])
 
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agentId: agentId,
-        onAction: async () => {
-          await invalidate()
-        },
-      }),
-    )
-  }
+  //const handleEditClick = () => {
+  //  dispatch(
+  //    updateAgentFormSheet({
+  //      isOpen: true,
+  //      mode: 'update',
+  //      agentId: agentId,
+  //      onAction: async () => {
+  //        await invalidate()
+  //      },
+  //    }),
+  //  )
+  //}
 
   const agent = agentClientData || agentSSRData
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<'chat' | 'creations' | 'settings'>(
+    defaultTab || 'chat',
+  )
 
   const isOwner = useMemo(() => {
     const ownershipStatus = user?._id === agent?.owner._id
     return ownershipStatus
   }, [user, agent])
+
+  // Redirect non-owners away from owner-only views
+  useEffect(() => {
+    if (agent && user && !isOwner && viewMode === 'settings') {
+      setViewMode('chat')
+    }
+  }, [agent, user, isOwner, viewMode])
+
+  // Close agent selector modal when component unmounts (route change)
+  useEffect(() => {
+    return () => {
+      setIsAgentSelectorOpen(false)
+    }
+  }, [])
+
+  const handleAgentSelect = (selectedAgent: Agent) => {
+    // If selecting the same agent we're already on, just close the modal
+    if (selectedAgent.username === agentId) {
+      setIsAgentSelectorOpen(false)
+      return
+    }
+
+    router.push(`/chat/${selectedAgent.username}`)
+    // Don't close modal immediately - it will close when navigation completes
+  }
+
+  const handleChatClick = () => {
+    // Check if we're on mobile (window width < 768px for md breakpoint)
+    const isMobile = window.innerWidth < 768
+
+    if (isMobile) {
+      // Mobile: Open the slideout sidebar
+      setIsSheetOpen(true)
+    } else {
+      // Desktop: Start a new thread by navigating to base chat URL (no threadId)
+      // This mimics the behavior of clicking "New Thread" in the sidebar
+      router.push(`/chat/${agentId}`)
+    }
+  }
 
   if (!isMounted) {
     return null
@@ -557,145 +552,140 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
          top-16
        "
       >
+        {/* AGENT BAR - Always visible */}
+        <AgentBar
+          agent={agent}
+          isOwner={isOwner}
+          onChatClick={handleChatClick}
+          onAgentSelect={() => setIsAgentSelectorOpen(true)}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
+
+        {/* AGENT SELECTOR MODAL */}
+        <SingleAgentSelectorModal
+          open={isAgentSelectorOpen}
+          onOpenChange={setIsAgentSelectorOpen}
+          onSelect={handleAgentSelect}
+        />
+
         {/* MOBILE-ONLY HEADER */}
-        <div className="bg-[#0e1421]  border-b px-2 py-2 md:hidden flex items-center justify-between">
-          <LeftBarSheet
-            agent={agent}
-            isOwner={isOwner}
-            handleEditClick={handleEditClick}
-          />
-          <div className="ml-auto flex items-center gap-2">
-            {agent ? (
-              <>
-                <AgentLink
-                  agent={agent}
-                  className={`max-w-[120px] xs:max-w-[300px]`}
-                />
-                {isOwner && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 size-8"
-                    onClick={handleEditClick}
-                  >
-                    <SettingsIcon className="size-4" />
-                  </Button>
-                )}
-              </>
-            ) : (
-              <Skeleton className="w-[120px] h-8" />
-            )}
-          </div>
-        </div>
+
+        <LeftBarSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
+
         {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 !overflow-y-hidden"
-          autoSaveId={`resizable-chat-layout-${agentId}`}
-        >
-          {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
-          <ResizablePanel
-            defaultSize={20}
-            minSize={15}
-            maxSize={30}
-            collapsible
-            collapsedSize={0}
-            onCollapse={() => setIsSidebarCollapsed(true)}
-            onExpand={() => setIsSidebarCollapsed(false)}
-            className={cn(
-              'hidden md:flex md:flex-col bg-[#0e1421] border-r p-3 pr-0 transition-all duration-300 ease-in-out',
-              'max-w-[320px]',
-              isSidebarCollapsed && 'p-0 border-none',
-            )}
+
+        {/* CONDITIONAL MAIN CONTENT BASED ON VIEW MODE */}
+        {viewMode === 'creations' ? (
+          /* CREATIONS VIEW - Full width */
+          agent && <AgentCreationsView agent={agent} user={user} />
+        ) : viewMode === 'settings' ? (
+          /* SETTINGS VIEW - Full width */
+          agent && <AgentEditView agent={agent} user={user} />
+        ) : (
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="flex-1 !overflow-y-hidden"
+            autoSaveId={`resizable-chat-layout-${agentId}`}
           >
-            {/* Render content only if not collapsed */}
-            {!isSidebarCollapsed && (
-              <ChatSidebarContent
-                agent={agent}
-                isOwner={isOwner}
-                handleEditClick={handleEditClick}
-              />
-            )}
-          </ResizablePanel>
-
-          {/* Separator Handle - visible only on desktop */}
-          <ResizableHandle
-            withHandle
-            className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
-          />
-
-          {/* MAIN CONTENT PANEL */}
-          <ResizablePanel defaultSize={80} className="flex flex-col">
-            {/* Ensure main takes full height within the panel */}
-            <main className="bg-accent flex-1 overflow-auto flex flex-col">
-              {!agent ? (
-                <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
-                  <LoadingIndicator className="w-10 h-10 text-purple-600" />
-                </div>
-              ) : (
-                <Thread
-                  components={{
-                    //@ts-expect-error We're extending thread welcome hackishly with children
-                    ThreadWelcome: MyThreadWelcome,
-                    // @ts-expect-error We're extending composer hackishly with drag and drop
-                    Composer: MyComposer,
-                  }}
-                  welcome={{
-                    suggestions:
-                      agent?.suggestions && agent?.suggestions.length > 0
-                        ? agent?.suggestions.map(suggestion => ({
-                            text: suggestion.label,
-                            prompt: suggestion.prompt,
-                          }))
-                        : undefined,
-                    message:
-                      agent?.greeting ?? 'What do you want to create today?',
-                  }}
-                  assistantAvatar={{
-                    src: getCloudfrontOriginalUrl(agent?.userImage),
-                    fallback: agent?.name,
-                    alt: agent?.name,
-                  }}
-                  assistantMessage={{
-                    allowReload: false,
-                    allowSpeak: false,
-                    components: {
-                      Empty: () => (
-                        <div className="col-start-3 row-start-2">
-                          <TypingIndicator />
-                        </div>
-                      ),
-                      Text: MarkdownText,
-                      ToolFallback,
-                    },
-                  }}
-                  userMessage={{
-                    allowEdit: false,
-                  }}
-                  branchPicker={{
-                    allowBranchPicker: false,
-                  }}
-                  composer={{
-                    allowAttachments: true,
-                  }}
-                  tools={[TaskResultTool]}
-                  config={{
-                    threadId,
-                    defaultMessages: [],
-                  }}
-                />
+            {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
+            <ResizablePanel
+              defaultSize={20}
+              minSize={15}
+              maxSize={30}
+              collapsible
+              collapsedSize={0}
+              onCollapse={() => setIsSidebarCollapsed(true)}
+              onExpand={() => setIsSidebarCollapsed(false)}
+              className={cn(
+                'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+                'max-w-[320px]',
+                isSidebarCollapsed && 'p-0 border-none',
               )}
+            >
+              {/* Render content only if not collapsed */}
+              {!isSidebarCollapsed && <ChatSidebarContent />}
+            </ResizablePanel>
 
-              {isError ? (
-                <div className="p-4">
-                  <AlertDestructive title={'Error loading agent'}>
-                    <AlertDescription>{error?.message}</AlertDescription>
-                  </AlertDestructive>
-                </div>
-              ) : null}
-            </main>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            {/* Separator Handle - visible only on desktop */}
+            <ResizableHandle
+              withHandle
+              className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
+            />
+
+            {/* MAIN CONTENT PANEL */}
+            <ResizablePanel defaultSize={80} className="flex flex-col">
+              {/* Ensure main takes full height within the panel */}
+              <main className="bg-accent flex-1 overflow-auto flex flex-col">
+                {!agent ? (
+                  <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
+                    <LoadingIndicator className="w-10 h-10 text-primary" />
+                  </div>
+                ) : (
+                  <Thread
+                    components={{
+                      //@ts-expect-error We're extending thread welcome hackishly with children
+                      ThreadWelcome: MyThreadWelcome,
+                      // @ts-expect-error We're extending composer hackishly with drag and drop
+                      Composer: MyComposer,
+                    }}
+                    onAgentSelectorOpen={() => setIsAgentSelectorOpen(true)}
+                    welcome={{
+                      suggestions:
+                        agent?.suggestions && agent?.suggestions.length > 0
+                          ? agent?.suggestions.map(suggestion => ({
+                              text: suggestion.label,
+                              prompt: suggestion.prompt,
+                            }))
+                          : undefined,
+                      message:
+                        agent?.greeting ?? 'What do you want to create today?',
+                    }}
+                    assistantAvatar={{
+                      src: getCloudfrontOriginalUrl(agent?.userImage),
+                      fallback: agent?.name,
+                      alt: agent?.name,
+                    }}
+                    assistantMessage={{
+                      allowReload: false,
+                      allowSpeak: false,
+                      components: {
+                        Empty: () => (
+                          <div className="col-start-3 row-start-2">
+                            <TypingIndicator />
+                          </div>
+                        ),
+                        Text: MarkdownText,
+                        ToolFallback,
+                      },
+                    }}
+                    userMessage={{
+                      allowEdit: false,
+                    }}
+                    branchPicker={{
+                      allowBranchPicker: false,
+                    }}
+                    composer={{
+                      allowAttachments: true,
+                    }}
+                    tools={[TaskResultTool]}
+                    config={{
+                      threadId,
+                      defaultMessages: [],
+                    }}
+                  />
+                )}
+                {isError ? (
+                  <div className="p-4">
+                    <AlertDestructive title={'Error loading agent'}>
+                      <AlertDescription>{error?.message}</AlertDescription>
+                    </AlertDestructive>
+                  </div>
+                ) : null}
+              </main>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        )}
       </div>
     </MyRuntimeProvider>
   )

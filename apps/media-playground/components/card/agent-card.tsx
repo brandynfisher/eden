@@ -29,6 +29,8 @@ type Props = {
   onClick?: (item: Agent) => void
   className?: string
   isSelected?: boolean
+  hideContextMenu?: boolean
+  improvedLayout?: boolean
 }
 
 const AgentCard = ({
@@ -37,11 +39,92 @@ const AgentCard = ({
   onClick,
   className,
   isSelected,
+  hideContextMenu = false,
+  improvedLayout = false,
 }: Props) => {
+  if (improvedLayout) {
+    return (
+      <Card
+        className={cn([
+          'relative overflow-hidden border-2 border-border/60 z-10 transition-all group cursor-pointer bg-card/80 h-full w-full',
+          onClick
+            ? 'hover:bg-muted/80 hover:shadow-md hover:border-border/80'
+            : 'hover:ring-2 ring-primary/40 hover:shadow-lg hover:shadow-primary/10',
+          isSelected && 'ring-2 ring-primary ring-offset-2',
+          className,
+        ])}
+        onClick={onClick ? () => onClick(agent) : undefined}
+      >
+        {!agent.public ? <PrivateIcon className="" /> : null}
+        {isSelected && (
+          <div className="absolute top-2 right-2 z-50 bg-primary text-primary-foreground rounded-full p-1">
+            <CheckIcon className="h-4 w-4" />
+          </div>
+        )}
+
+        <Link
+          href={`/agents/${agent.username}`}
+          prefetch={false}
+          className={cn('block', onClick && 'pointer-events-none')}
+        >
+          <div className="flex items-center p-4 gap-3 h-full min-h-[140px] w-full overflow-hidden">
+            {/* Avatar on the left - vertically centered */}
+            <div className="flex-shrink-0 flex items-center w-20">
+              <div className="relative w-20 h-20 rounded-full overflow-hidden">
+                <CardImage
+                  media={{
+                    url: agent.userImage,
+                    thumbnail: agent.userImage,
+                    width: 512,
+                    height: 512,
+                    type: 'image',
+                    blurhash: agent.blurhash,
+                  }}
+                  unoptimized={true}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            </div>
+
+            {/* Metadata on the right - strict width control */}
+            <div className="flex-1 min-w-0 flex flex-col justify-between h-full space-y-2 overflow-hidden">
+              <div className="space-y-1 overflow-hidden">
+                {/* Name - strictly truncated */}
+                <h3 className="font-semibold text-base leading-tight truncate overflow-hidden">
+                  {agent.name}
+                </h3>
+
+                {/* Owner - strictly truncated */}
+                <p className="text-xs text-muted-foreground truncate overflow-hidden">
+                  By{' '}
+                  <span className="font-medium">@{agent.owner.username}</span>
+                </p>
+
+                {/* Description - limited to 2 lines */}
+                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed overflow-hidden">
+                  {agent.description}
+                </p>
+              </div>
+
+              {/* Chat count - aligned to bottom */}
+              <div className="flex items-center gap-1 mt-auto flex-shrink-0">
+                <MessageSquareIcon className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                <span className="text-xs text-muted-foreground">
+                  {formatCompactNumber(agent.stats?.userMessageCount || 0)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </Card>
+    )
+  }
+
+  // Original layout
   return (
     <Card
       className={cn([
-        'relative overflow-hidden border-0 z-10 transition-shadow group bg-secondary/70 hover:ring-2 ring-purple-600/40',
+        'relative overflow-hidden border-0 z-10 transition-all group bg-card/70 hover:ring-2 ring-primary/40 hover:shadow-lg hover:shadow-primary/10',
         isSelected && 'ring-2 ring-primary ring-offset-2',
         className,
       ])}
@@ -150,11 +233,13 @@ const AgentCard = ({
               </Tooltip>
             </TooltipProvider>
           </div>
-          <AgentActionsMenu
-            agent={agent}
-            queryKey={queryKey}
-            hiddenItems={['like']}
-          />
+          {!hideContextMenu && (
+            <AgentActionsMenu
+              agent={agent}
+              queryKey={queryKey}
+              hiddenItems={['like']}
+            />
+          )}
         </div>
       </div>
     </Card>

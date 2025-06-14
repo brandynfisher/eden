@@ -19,22 +19,34 @@ import React, {
 
 const MyThreadWelcomeAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
-  // console.log({ avatar, thumb: getCloudfrontUrl(avatar.src, 1024), src: getCloudfrontOriginalUrl(avatar.src) })
+
   return (
-    <>
-      <div className="text-sm text-muted-foreground mb-2">
+    <div className="relative flex flex-col items-center">
+      {/* Subtle glow effect behind avatar */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent rounded-full blur-3xl scale-150 opacity-60 animate-pulse"></div>
+
+      {/* Agent name with elegant typography */}
+      <div className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 tracking-wide">
         {avatar.fallback}
       </div>
-      <Avatar className="w-16 h-16 md:w-24 md:h-24 col-start-1 row-span-full row-start-1">
-        <AvatarImage
-          className={'object-cover'}
-          src={getCloudfrontOriginalUrl(avatar.src)}
-        />
-        <AvatarFallback delayMs={250} className="w-16 h-16 md:w-24 md:h-24">
-          {avatar.fallback}
-        </AvatarFallback>
-      </Avatar>
-    </>
+
+      {/* Large, prominent avatar with beautiful border */}
+      <div className="relative group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/25 to-primary/10 rounded-full scale-105 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out"></div>
+        <Avatar className="w-24 h-24 md:w-32 md:h-32 relative z-10 ring-4 ring-primary/25 ring-offset-4 ring-offset-background transition-all duration-300 hover:ring-primary/50 hover:scale-105">
+          <AvatarImage
+            className="object-cover transition-transform duration-300 group-hover:scale-110"
+            src={getCloudfrontOriginalUrl(avatar.src)}
+          />
+          <AvatarFallback
+            delayMs={250}
+            className="w-24 h-24 md:w-32 md:h-32 text-xl md:text-2xl font-bold bg-gradient-to-br from-primary/15 to-primary/8 text-primary border-2 border-primary/20"
+          >
+            {avatar.fallback}
+          </AvatarFallback>
+        </Avatar>
+      </div>
+    </div>
   )
 }
 

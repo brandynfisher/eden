@@ -24,7 +24,7 @@ export const ToolsAccordionItem = ({
 }: ToolsAccordionItemProps) => {
   return (
     <AccordionItem key={value} value={value} className="bg-popover">
-      <AccordionTrigger className="capitalize bg-primary-foreground hover:bg-primary-foreground/60 px-4">
+      <AccordionTrigger className="capitalize bg-secondary hover:bg-secondary/60 px-4">
         <TypographyH5 className="capitalize">{label}</TypographyH5>
       </AccordionTrigger>
       <AccordionContent className="my-4 px-4">
