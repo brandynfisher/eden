@@ -435,9 +435,10 @@ type Props = {
   agentId: string
   threadId?: string
   agentSSRData?: Agent
+  defaultTab?: 'chat' | 'creations' | 'settings'
 }
 
-const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
+const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
   //const dispatch = useAppDispatch()
   const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
@@ -489,7 +490,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'chat' | 'creations' | 'settings'>(
-    'chat',
+    defaultTab || 'chat',
   )
 
   const isOwner = useMemo(() => {

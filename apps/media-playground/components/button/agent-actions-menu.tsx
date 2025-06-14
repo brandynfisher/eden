@@ -1,6 +1,6 @@
 'use client'
 
-import { getQueryClient } from '@/app/get-query-client'
+//import { getQueryClient } from '@/app/get-query-client'
 import ActionsDropdown from '@/components/button/actions-dropdown'
 import DeleteActionItem from '@/components/button/delete-action-item'
 // import LikeButton from '@/components/button/like-button'
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+//import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -83,23 +83,23 @@ const AgentActionsMenu = ({
     router.push(`/agents/${agent.username}`)
   }
 
-  const onUpdate = async () => {
-    const queryClient = getQueryClient()
-    await queryClient.invalidateQueries({ queryKey })
-  }
+  //const onUpdate = async () => {
+  //  const queryClient = getQueryClient()
+  //  await queryClient.invalidateQueries({ queryKey })
+  //}
 
-  const handleEditClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-    setIsOpen(false)
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agentId: agent._id,
-        onAction: onUpdate,
-      }),
-    )
-  }
+  //const handleEditClick = (evt: React.MouseEvent<HTMLButtonElement>) => {
+  //  evt.preventDefault()
+  //  setIsOpen(false)
+  //  dispatch(
+  //    updateAgentFormSheet({
+  //      isOpen: true,
+  //      mode: 'update',
+  //      agentId: agent._id,
+  //      onAction: onUpdate,
+  //    }),
+  //  )
+  //}
 
   //const handleConfigureDeployments = (
   //  evt: React.MouseEvent<HTMLButtonElement>,
@@ -215,13 +215,11 @@ const AgentActionsMenu = ({
                 )*/}
               {!hiddenItems?.includes('edit') && (
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <button
-                    type="button"
-                    onClick={handleEditClick}
-                    className="w-full"
-                  >
-                    <SettingsIcon className="mr-2 h-4 w-4" />
-                    Edit
+                  <button type="button" className="w-full">
+                    <Link href={`/edit/${agent.username}`} className="flex">
+                      <SettingsIcon className="mr-2 h-4 w-4" />
+                      <span>Edit</span>
+                    </Link>
                   </button>
                 </DropdownMenuItem>
               )}

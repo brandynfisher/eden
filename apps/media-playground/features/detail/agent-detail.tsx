@@ -21,7 +21,7 @@ import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
+//import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
 import {
@@ -165,7 +165,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   //  FeatureFlag.FeatureDeployments,
   //)
 
-  const { agent: agentClientData, invalidate } = useAgentQuery({
+  const { agent: agentClientData } = useAgentQuery({
     key: id,
     initialData: agentSSRData
       ? {
@@ -186,20 +186,20 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
     return baseAgentQuery
   }, [agent, filterMode, user?._id])
 
-  const onUpdateAgent = async () => {
-    await invalidate()
-  }
+  //const onUpdateAgent = async () => {
+  //  await invalidate()
+  //}
 
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agentId: agent?._id,
-        onAction: onUpdateAgent,
-      }),
-    )
-  }
+  //const handleEditClick = () => {
+  //  dispatch(
+  //    updateAgentFormSheet({
+  //      isOpen: true,
+  //      mode: 'update',
+  //      agentId: agent?._id,
+  //      onAction: onUpdateAgent,
+  //    }),
+  //  )
+  //}
 
   //const handleConfigureDeployments = () => {
   //  dispatch(
@@ -266,13 +266,11 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
               <div className="flex flex-wrap gap-2 mt-auto">
                 {user?._id === agent?.owner._id && (
                   <>
-                    <Button
-                      className="gap-2"
-                      variant="outline"
-                      onClick={handleEditClick}
-                    >
-                      <SettingsIcon className="w-4 h-4" />
-                      Edit
+                    <Button className="gap-2" variant="outline" asChild>
+                      <Link href={`/edit/${agent.username}`}>
+                        <SettingsIcon className="w-4 h-4" />
+                        <span>Edit </span>
+                      </Link>
                     </Button>
                     {/*isFeatureDeploymentsEnabled && (
                       <>
