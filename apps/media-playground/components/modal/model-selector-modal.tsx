@@ -83,7 +83,7 @@ const ModelSelectorModal = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div>
-          <div className="flex flex-wrap flex-col sm:flex-row gap-4 w-full mb-4">
+          <div className="flex flex-col sm:flex-row gap-4 w-full mb-4">
             <Tabs
               value={currentTab}
               onValueChange={value => setCurrentTab(value as 'user' | 'public')}
