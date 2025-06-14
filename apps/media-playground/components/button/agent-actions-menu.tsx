@@ -12,20 +12,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAuthState } from '@/hooks/use-auth-state'
-import {
-  updateAgentDeploymentFormSheet,
-  updateAgentFormSheet,
-  updateAgentTriggerFormSheet,
-} from '@/stores/dialogs/dialogs.slice'
+import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import {
-  ClockIcon,
   ExternalLinkIcon,
   MessageSquareIcon,
-  RocketIcon,
   SettingsIcon,
   Share2Icon,
 } from 'lucide-react'
@@ -61,9 +55,9 @@ const AgentActionsMenu = ({
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
-    FeatureFlag.FeatureDeployments,
-  )
+  //const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
+  //  FeatureFlag.FeatureDeployments,
+  //)
 
   // Include pathname in feedId to differentiate between same queries in different routes
   const feedId = useMemo(
@@ -107,21 +101,21 @@ const AgentActionsMenu = ({
     )
   }
 
-  const handleConfigureDeployments = (
-    evt: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    evt.preventDefault()
-    setIsOpen(false)
-    dispatch(
-      updateAgentDeploymentFormSheet({ isOpen: true, agentId: agent._id }),
-    )
-  }
+  //const handleConfigureDeployments = (
+  //  evt: React.MouseEvent<HTMLButtonElement>,
+  //) => {
+  //  evt.preventDefault()
+  //  setIsOpen(false)
+  //  dispatch(
+  //    updateAgentDeploymentFormSheet({ isOpen: true, agentId: agent._id }),
+  //  )
+  //}
 
-  const handleConfigureTasks = (evt: React.MouseEvent<HTMLButtonElement>) => {
-    evt.preventDefault()
-    setIsOpen(false)
-    dispatch(updateAgentTriggerFormSheet({ isOpen: true, agentId: agent._id }))
-  }
+  //const handleConfigureTasks = (evt: React.MouseEvent<HTMLButtonElement>) => {
+  //  evt.preventDefault()
+  //  setIsOpen(false)
+  //  dispatch(updateAgentTriggerFormSheet({ isOpen: true, agentId: agent._id }))
+  //}
 
   return (
     <ActionsDropdown
@@ -187,7 +181,7 @@ const AgentActionsMenu = ({
           )} */}
           {agent.owner._id === user?._id && (
             <>
-              {isFeatureDeploymentsEnabled &&
+              {/*isFeatureDeploymentsEnabled &&
                 !hiddenItems?.includes('deployments') && (
                   <>
                     <DropdownMenuSeparator />
@@ -202,8 +196,8 @@ const AgentActionsMenu = ({
                       </button>
                     </DropdownMenuItem>
                   </>
-                )}
-              {isFeatureDeploymentsEnabled &&
+                )*/}
+              {/*isFeatureDeploymentsEnabled &&
                 !hiddenItems?.includes('tasks') && (
                   <>
                     <DropdownMenuItem asChild className="cursor-pointer">
@@ -218,7 +212,7 @@ const AgentActionsMenu = ({
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
-                )}
+                )*/}
               {!hiddenItems?.includes('edit') && (
                 <DropdownMenuItem asChild className="cursor-pointer">
                   <button
