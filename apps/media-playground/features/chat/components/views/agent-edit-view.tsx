@@ -22,7 +22,6 @@ import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
-import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { cn } from '@/lib/utils'
 import { slugifyName } from '@/utils/slug.util'
@@ -32,7 +31,6 @@ import axios from 'axios'
 import {
   AlertCircle,
   ChevronRightIcon,
-  ClockIcon,
   Edit2Icon,
   Loader2,
   SettingsIcon,
@@ -259,21 +257,6 @@ const AgentEditView: FC<{
           </button>
           <button
             onClick={() => {
-              setActiveTab('tasks')
-              setIsMobileSidebarOpen(false)
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              activeTab === 'tasks'
-                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-            )}
-          >
-            <ClockIcon className="w-4 h-4" />
-            Tasks
-          </button>
-          <button
-            onClick={() => {
               setActiveTab('deployments')
               setIsMobileSidebarOpen(false)
             }}
@@ -332,472 +315,460 @@ const AgentEditView: FC<{
 
           <div className="flex-1 overflow-auto p-6">
             <div className="mx-auto max-w-3xl">
-              {activeTab === 'tasks' ? (
-                <AgentTasksView agent={agent} />
-              ) : (
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(handleSubmit)}
-                    className="space-y-8"
-                  >
-                    {activeTab === 'profile' && (
-                      <div className="space-y-8">
-                        <div>
-                          <h3 className="text-2xl font-semibold mb-6 text-foreground">
-                            Profile Information
-                          </h3>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(handleSubmit)}
+                  className="space-y-8"
+                >
+                  {activeTab === 'profile' && (
+                    <div className="space-y-8">
+                      <div>
+                        <h3 className="text-2xl font-semibold mb-6 text-foreground">
+                          Profile Information
+                        </h3>
 
-                          {/* Name Field */}
-                          <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                                <FormLabel className="text-base font-medium">
-                                  Display Name
-                                  <span className="text-red-500 ml-1">*</span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="text"
-                                    placeholder="My helpful Agent"
-                                    {...field}
-                                    onChange={e => {
-                                      field.onChange(
-                                        e.target.value.slice(0, 42),
-                                      )
-                                    }}
-                                    className="mt-2"
-                                  />
-                                </FormControl>
-                                {field.value && (
-                                  <div className="flex items-center gap-2 mt-3">
-                                    <div className="text-sm text-muted-foreground flex-1">
-                                      {isKeyEditMode ? (
-                                        <div className="flex items-center gap-2">
-                                          <Input
-                                            type="text"
-                                            value={key}
-                                            placeholder="unique-name"
-                                            onChange={e => {
-                                              const value = e.target.value
-                                                .toLowerCase()
-                                                .slice(0, 42)
-                                              form.setValue('key', value)
-                                              setIsManualKeyEdit(true)
-                                            }}
-                                            onBlur={e => {
-                                              form.setValue(
-                                                'key',
-                                                slugifyName(e.target.value),
-                                              )
-                                              setIsKeyEditMode(false)
-                                            }}
-                                            className="h-7 text-sm"
-                                          />
-                                        </div>
-                                      ) : (
-                                        <div className="flex items-center gap-2">
-                                          <span>
-                                            Auto generated unique name: {key}
-                                          </span>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-6 w-6 p-0"
-                                            onClick={() =>
-                                              setIsKeyEditMode(true)
-                                            }
-                                          >
-                                            <Edit2Icon size={12} />
-                                          </Button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                )}
-                                <div className="flex gap-2 flex-wrap mt-1">
-                                  <FormDescription>
-                                    Friendly Name of your agent. This will be
-                                    displayed to users.
-                                  </FormDescription>
-                                  <CharacterCount
-                                    current={field.value?.length || 0}
-                                    max={42}
-                                  />
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Image Field */}
-                          <FormField
-                            control={form.control}
-                            name="image"
-                            render={({ field }) => (
-                              <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                                <FormLabel className="text-base font-medium">
-                                  Profile Image
-                                  <span className="text-red-500 ml-1">*</span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    className={'hidden'}
-                                    onChange={field.onChange}
-                                    onBlur={field.onBlur}
-                                    value={
-                                      field.value === null
-                                        ? ''
-                                        : field.value || ''
-                                    }
-                                  />
-                                </FormControl>
-                                <div className="mt-4">
-                                  <ProfileImageUploader
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                  />
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Description Field */}
-                          <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                              <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                                <FormLabel className="text-base font-medium">
-                                  Description
-                                  <span className="text-red-500 ml-1">*</span>
-                                </FormLabel>
-                                <FormDescription className="mt-1 mb-3">
-                                  Short description of the agent shown on
-                                  profile and cards.
-                                </FormDescription>
-                                <FormControl>
-                                  <AutosizeTextarea
-                                    placeholder="This agent helps you with your tasks"
-                                    {...field}
-                                    className="min-h-[80px]"
-                                  />
-                                </FormControl>
-                                <div className="flex justify-end mt-2">
-                                  <CharacterCount
-                                    current={field.value?.length || 0}
-                                    max={5000}
-                                  />
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Persona Field */}
-                          <div className="p-6 bg-card rounded-xl border border-border flex flex-col gap-6 mb-6">
-                            <FormField
-                              control={form.control}
-                              name="persona"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">
-                                    Persona
-                                    <span className="text-red-500 ml-1">*</span>
-                                  </FormLabel>
-                                  <FormDescription className="mt-1 mb-3">
-                                    Personality and behaviour of the agent. This
-                                    won't be visible to others.
-                                  </FormDescription>
-                                  <FormControl>
-                                    <AutosizeTextarea
-                                      placeholder="You are a helpful agent, always ready to help users with their tasks"
-                                      {...field}
-                                      className="min-h-[120px]"
-                                    />
-                                  </FormControl>
-                                  <div className="flex justify-end mt-2">
-                                    <CharacterCount
-                                      current={field.value?.length || 0}
-                                      max={30000}
-                                    />
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="isPersonaPublic"
-                              render={({ field }) => (
-                                <FormItem className="bg-background p-4 rounded-lg flex items-center justify-between gap-2">
-                                  <div className="flex flex-col gap-1">
-                                    <FormLabel>Public Persona</FormLabel>
-                                    <FormDescription>
-                                      Whether the persona is public to others.
-                                    </FormDescription>
-                                  </div>
-                                  <FormControl>
-                                    <Switch
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-
-                          {/* Greeting Field */}
-                          <FormField
-                            control={form.control}
-                            name="greeting"
-                            render={({ field }) => (
-                              <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                                <FormLabel className="text-base font-medium">
-                                  Greeting
-                                  <span className="text-red-500 ml-1">*</span>
-                                </FormLabel>
-                                <FormDescription className="mt-1 mb-3">
-                                  This will be displayed to users when they
-                                  first interact with the agent.
-                                </FormDescription>
-                                <FormControl>
-                                  <AutosizeTextarea
-                                    placeholder="Hello, how can I help you today?"
-                                    {...field}
-                                    className="min-h-[60px]"
-                                  />
-                                </FormControl>
-                                <div className="flex justify-end mt-2">
-                                  <CharacterCount
-                                    current={field.value?.length || 0}
-                                    max={140}
-                                  />
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {activeTab === 'concepts' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-xl font-semibold mb-4">
-                            Models & Voice
-                          </h3>
-
-                          {/* Voice Field */}
-                          <FormField
-                            control={form.control}
-                            name="voice"
-                            render={({ field }) => (
-                              <FormItem className="p-4 bg-secondary rounded-lg mb-4">
-                                <FormLabel>Voice (Optional)</FormLabel>
-                                <FormDescription>
-                                  Your agent will speak with this voice. Voices
-                                  provided by ElevenLabs.
-                                </FormDescription>
-                                <FormControl>
-                                  <VoiceSelector
-                                    value={field.value || ''}
-                                    onChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Models Field */}
-                          <FormField
-                            control={form.control}
-                            name="models"
-                            render={() => (
-                              <FormItem className="p-4 bg-secondary rounded-lg">
-                                <FormLabel>Flux LoRA Models</FormLabel>
-                                <FormDescription>
-                                  Select models and specify when to use each one
-                                  (max 10 models).
-                                </FormDescription>
-                                <div>
-                                  {models.fields.map((model, index) => (
-                                    <div
-                                      key={model.lora}
-                                      className="relative mb-4 p-4 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
-                                    >
-                                      <div className="space-y-4">
-                                        <div className="flex items-stretch gap-2 min-h-[82px]">
-                                          <div className="flex-grow">
-                                            <ModelMiniCard
-                                              className="w-full h-full"
-                                              modelId={model.lora}
-                                            />
-                                          </div>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            className="hover:bg-destructive hover:text-destructive-foreground h-auto"
-                                            size="icon"
-                                            onClick={() => models.remove(index)}
-                                          >
-                                            <XIcon className="size-4" />
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <FormField
-                                            control={form.control}
-                                            name={`models.${index}.use_when`}
-                                            render={({ field }) => (
-                                              <FormItem className="flex-1">
-                                                <FormLabel className="text-sm text-muted-foreground">
-                                                  When to use this model
-                                                </FormLabel>
-                                                <FormControl>
-                                                  <Input
-                                                    type="text"
-                                                    placeholder="e.g., 'when user asks for realistic images' or 'for anime style'"
-                                                    {...field}
-                                                  />
-                                                </FormControl>
-                                                <FormMessage />
-                                              </FormItem>
-                                            )}
-                                          />
-                                        </div>
+                        {/* Name Field */}
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
+                              <FormLabel className="text-base font-medium">
+                                Display Name
+                                <span className="text-red-500 ml-1">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="text"
+                                  placeholder="My helpful Agent"
+                                  {...field}
+                                  onChange={e => {
+                                    field.onChange(e.target.value.slice(0, 42))
+                                  }}
+                                  className="mt-2"
+                                />
+                              </FormControl>
+                              {field.value && (
+                                <div className="flex items-center gap-2 mt-3">
+                                  <div className="text-sm text-muted-foreground flex-1">
+                                    {isKeyEditMode ? (
+                                      <div className="flex items-center gap-2">
+                                        <Input
+                                          type="text"
+                                          value={key}
+                                          placeholder="unique-name"
+                                          onChange={e => {
+                                            const value = e.target.value
+                                              .toLowerCase()
+                                              .slice(0, 42)
+                                            form.setValue('key', value)
+                                            setIsManualKeyEdit(true)
+                                          }}
+                                          onBlur={e => {
+                                            form.setValue(
+                                              'key',
+                                              slugifyName(e.target.value),
+                                            )
+                                            setIsKeyEditMode(false)
+                                          }}
+                                          className="h-7 text-sm"
+                                        />
                                       </div>
-                                    </div>
-                                  ))}
-                                  <div className="mt-4">
-                                    <ModelSelectorModal
-                                      className="p-4 md:p-8 w-full"
-                                      title="Select LoRA Model"
-                                      description="Pick a LoRA model to add to this agent"
-                                      currentValue=""
-                                      selectedIds={models.fields.map(
-                                        m => m.lora,
-                                      )}
-                                      onChange={id => {
-                                        const modelId =
-                                          typeof id === 'string' ? id : id[0]
-                                        if (!modelId) return
-
-                                        // Check if model already exists
-                                        if (
-                                          models.fields.some(
-                                            m => m.lora === modelId,
-                                          )
-                                        ) {
-                                          toast.error(
-                                            'This model is already added',
-                                          )
-                                          return
-                                        }
-
-                                        // Add new model
-                                        form.setValue('models', [
-                                          ...models.fields,
-                                          { lora: modelId, use_when: '' },
-                                        ])
-                                      }}
-                                      trigger={
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        <span>
+                                          Auto generated unique name: {key}
+                                        </span>
                                         <Button
                                           type="button"
-                                          variant="outline"
-                                          disabled={models.fields.length >= 10}
-                                          className="w-full"
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-6 w-6 p-0"
+                                          onClick={() => setIsKeyEditMode(true)}
                                         >
-                                          Add LoRA Model
+                                          <Edit2Icon size={12} />
                                         </Button>
-                                      }
-                                    />
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
+                              )}
+                              <div className="flex gap-2 flex-wrap mt-1">
+                                <FormDescription>
+                                  Friendly Name of your agent. This will be
+                                  displayed to users.
+                                </FormDescription>
+                                <CharacterCount
+                                  current={field.value?.length || 0}
+                                  max={42}
+                                />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Image Field */}
+                        <FormField
+                          control={form.control}
+                          name="image"
+                          render={({ field }) => (
+                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
+                              <FormLabel className="text-base font-medium">
+                                Profile Image
+                                <span className="text-red-500 ml-1">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  className={'hidden'}
+                                  onChange={field.onChange}
+                                  onBlur={field.onBlur}
+                                  value={
+                                    field.value === null
+                                      ? ''
+                                      : field.value || ''
+                                  }
+                                />
+                              </FormControl>
+                              <div className="mt-4">
+                                <ProfileImageUploader
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Description Field */}
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
+                              <FormLabel className="text-base font-medium">
+                                Description
+                                <span className="text-red-500 ml-1">*</span>
+                              </FormLabel>
+                              <FormDescription className="mt-1 mb-3">
+                                Short description of the agent shown on profile
+                                and cards.
+                              </FormDescription>
+                              <FormControl>
+                                <AutosizeTextarea
+                                  placeholder="This agent helps you with your tasks"
+                                  {...field}
+                                  className="min-h-[80px]"
+                                />
+                              </FormControl>
+                              <div className="flex justify-end mt-2">
+                                <CharacterCount
+                                  current={field.value?.length || 0}
+                                  max={5000}
+                                />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Persona Field */}
+                        <div className="p-6 bg-card rounded-xl border border-border flex flex-col gap-6 mb-6">
+                          <FormField
+                            control={form.control}
+                            name="persona"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">
+                                  Persona
+                                  <span className="text-red-500 ml-1">*</span>
+                                </FormLabel>
+                                <FormDescription className="mt-1 mb-3">
+                                  Personality and behaviour of the agent. This
+                                  won't be visible to others.
+                                </FormDescription>
+                                <FormControl>
+                                  <AutosizeTextarea
+                                    placeholder="You are a helpful agent, always ready to help users with their tasks"
+                                    {...field}
+                                    className="min-h-[120px]"
+                                  />
+                                </FormControl>
+                                <div className="flex justify-end mt-2">
+                                  <CharacterCount
+                                    current={field.value?.length || 0}
+                                    max={30000}
+                                  />
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="isPersonaPublic"
+                            render={({ field }) => (
+                              <FormItem className="bg-background p-4 rounded-lg flex items-center justify-between gap-2">
+                                <div className="flex flex-col gap-1">
+                                  <FormLabel>Public Persona</FormLabel>
+                                  <FormDescription>
+                                    Whether the persona is public to others.
+                                  </FormDescription>
+                                </div>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
                               </FormItem>
                             )}
                           />
                         </div>
+
+                        {/* Greeting Field */}
+                        <FormField
+                          control={form.control}
+                          name="greeting"
+                          render={({ field }) => (
+                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
+                              <FormLabel className="text-base font-medium">
+                                Greeting
+                                <span className="text-red-500 ml-1">*</span>
+                              </FormLabel>
+                              <FormDescription className="mt-1 mb-3">
+                                This will be displayed to users when they first
+                                interact with the agent.
+                              </FormDescription>
+                              <FormControl>
+                                <AutosizeTextarea
+                                  placeholder="Hello, how can I help you today?"
+                                  {...field}
+                                  className="min-h-[60px]"
+                                />
+                              </FormControl>
+                              <div className="flex justify-end mt-2">
+                                <CharacterCount
+                                  current={field.value?.length || 0}
+                                  max={140}
+                                />
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                    )}
-                    {activeTab === 'deployments' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-xl font-semibold mb-4">
-                            Configure Deployment
-                          </h3>
-                          <p className="text-muted-foreground mb-6">
-                            Configure your agent's deployment settings across
-                            different platforms.
-                          </p>
+                    </div>
+                  )}
 
-                          {deploymentsQuery.isPending && (
-                            <div className="flex items-center justify-center mt-10">
-                              <Loader2 className="size-4 animate-spin" />
-                            </div>
+                  {activeTab === 'concepts' && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-xl font-semibold mb-4">
+                          Models & Voice
+                        </h3>
+
+                        {/* Voice Field */}
+                        <FormField
+                          control={form.control}
+                          name="voice"
+                          render={({ field }) => (
+                            <FormItem className="p-4 bg-secondary rounded-lg mb-4">
+                              <FormLabel>Voice (Optional)</FormLabel>
+                              <FormDescription>
+                                Your agent will speak with this voice. Voices
+                                provided by ElevenLabs.
+                              </FormDescription>
+                              <FormControl>
+                                <VoiceSelector
+                                  value={field.value || ''}
+                                  onChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
                           )}
+                        />
 
-                          {deploymentsQuery.isError && (
-                            <div className="flex items-center justify-center gap-2 mt-10">
-                              <AlertCircle className="size-4 text-destructive" />
-                              <p className="text-destructive">
-                                We were unable to fetch your deployments. Please
-                                try again later.
-                              </p>
-                            </div>
+                        {/* Models Field */}
+                        <FormField
+                          control={form.control}
+                          name="models"
+                          render={() => (
+                            <FormItem className="p-4 bg-secondary rounded-lg">
+                              <FormLabel>Flux LoRA Models</FormLabel>
+                              <FormDescription>
+                                Select models and specify when to use each one
+                                (max 10 models).
+                              </FormDescription>
+                              <div>
+                                {models.fields.map((model, index) => (
+                                  <div
+                                    key={model.lora}
+                                    className="relative mb-4 p-4 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
+                                  >
+                                    <div className="space-y-4">
+                                      <div className="flex items-stretch gap-2 min-h-[82px]">
+                                        <div className="flex-grow">
+                                          <ModelMiniCard
+                                            className="w-full h-full"
+                                            modelId={model.lora}
+                                          />
+                                        </div>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          className="hover:bg-destructive hover:text-destructive-foreground h-auto"
+                                          size="icon"
+                                          onClick={() => models.remove(index)}
+                                        >
+                                          <XIcon className="size-4" />
+                                        </Button>
+                                      </div>
+                                      <div className="space-y-2">
+                                        <FormField
+                                          control={form.control}
+                                          name={`models.${index}.use_when`}
+                                          render={({ field }) => (
+                                            <FormItem className="flex-1">
+                                              <FormLabel className="text-sm text-muted-foreground">
+                                                When to use this model
+                                              </FormLabel>
+                                              <FormControl>
+                                                <Input
+                                                  type="text"
+                                                  placeholder="e.g., 'when user asks for realistic images' or 'for anime style'"
+                                                  {...field}
+                                                />
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                                <div className="mt-4">
+                                  <ModelSelectorModal
+                                    className="p-4 md:p-8 w-full"
+                                    title="Select LoRA Model"
+                                    description="Pick a LoRA model to add to this agent"
+                                    currentValue=""
+                                    selectedIds={models.fields.map(m => m.lora)}
+                                    onChange={id => {
+                                      const modelId =
+                                        typeof id === 'string' ? id : id[0]
+                                      if (!modelId) return
+
+                                      // Check if model already exists
+                                      if (
+                                        models.fields.some(
+                                          m => m.lora === modelId,
+                                        )
+                                      ) {
+                                        toast.error(
+                                          'This model is already added',
+                                        )
+                                        return
+                                      }
+
+                                      // Add new model
+                                      form.setValue('models', [
+                                        ...models.fields,
+                                        { lora: modelId, use_when: '' },
+                                      ])
+                                    }}
+                                    trigger={
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={models.fields.length >= 10}
+                                        className="w-full"
+                                      >
+                                        Add LoRA Model
+                                      </Button>
+                                    }
+                                  />
+                                </div>
+                              </div>
+                            </FormItem>
                           )}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {activeTab === 'deployments' && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-xl font-semibold mb-4">
+                          Configure Deployment
+                        </h3>
+                        <p className="text-muted-foreground mb-6">
+                          Configure your agent's deployment settings across
+                          different platforms.
+                        </p>
 
-                          {deploymentsQuery.isSuccess && (
-                            <div className="space-y-4">
-                              <DiscordDeploymentForm
-                                agentId={agent._id}
-                                deployment={deploymentsQuery.deployments?.find(
-                                  deployment =>
-                                    deployment.platform === 'discord',
-                                )}
-                              />
-                              <TelegramDeploymentForm
-                                agentId={agent._id}
-                                deployment={deploymentsQuery.deployments?.find(
-                                  deployment =>
-                                    deployment.platform === 'telegram',
-                                )}
-                              />
-                              <TwitterDeploymentForm
-                                agentId={agent._id}
-                                deployment={deploymentsQuery.deployments?.find(
-                                  deployment =>
-                                    deployment.platform === 'twitter',
-                                )}
-                              />
-                              <FarcasterDeploymentForm
-                                agentId={agent._id}
-                                deployment={deploymentsQuery.deployments?.find(
-                                  deployment =>
-                                    deployment.platform === 'farcaster',
-                                )}
-                              />
-                            </div>
-                          )}
-
-                          {/* Deployment Settings - Inline version to avoid form nesting */}
-                          <div className="mt-8 space-y-4 rounded-lg">
-                            <h2 className="text-lg font-medium">
-                              Deployment Settings
-                            </h2>
-                            <DeploymentSettingsInline agent={agent} />
+                        {deploymentsQuery.isPending && (
+                          <div className="flex items-center justify-center mt-10">
+                            <Loader2 className="size-4 animate-spin" />
                           </div>
+                        )}
+
+                        {deploymentsQuery.isError && (
+                          <div className="flex items-center justify-center gap-2 mt-10">
+                            <AlertCircle className="size-4 text-destructive" />
+                            <p className="text-destructive">
+                              We were unable to fetch your deployments. Please
+                              try again later.
+                            </p>
+                          </div>
+                        )}
+
+                        {deploymentsQuery.isSuccess && (
+                          <div className="space-y-4">
+                            <DiscordDeploymentForm
+                              agentId={agent._id}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment => deployment.platform === 'discord',
+                              )}
+                            />
+                            <TelegramDeploymentForm
+                              agentId={agent._id}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment =>
+                                  deployment.platform === 'telegram',
+                              )}
+                            />
+                            <TwitterDeploymentForm
+                              agentId={agent._id}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment => deployment.platform === 'twitter',
+                              )}
+                            />
+                            <FarcasterDeploymentForm
+                              agentId={agent._id}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment =>
+                                  deployment.platform === 'farcaster',
+                              )}
+                            />
+                          </div>
+                        )}
+
+                        {/* Deployment Settings - Inline version to avoid form nesting */}
+                        <div className="mt-8 space-y-4 rounded-lg">
+                          <h2 className="text-lg font-medium">
+                            Deployment Settings
+                          </h2>
+                          <DeploymentSettingsInline agent={agent} />
                         </div>
                       </div>
-                    )}
-                  </form>
-                </Form>
-              )}
+                    </div>
+                  )}
+                </form>
+              </Form>
             </div>
           </div>
 

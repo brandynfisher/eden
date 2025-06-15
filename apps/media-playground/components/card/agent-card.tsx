@@ -63,7 +63,7 @@ const AgentCard = ({
         )}
 
         <Link
-          href={`/agents/${agent.username}`}
+          href={`/chat/${agent.username}`}
           prefetch={false}
           className={cn('block', onClick && 'pointer-events-none')}
         >
@@ -145,11 +145,7 @@ const AgentCard = ({
         </div>
       ) : null}
 
-      <Link
-        href={`/agents/${agent.username}`}
-        prefetch={false}
-        className="block"
-      >
+      <Link href={`/chat/${agent.username}`} prefetch={false} className="block">
         <div className="relative flex p-2">
           <div className="relative flex-grow shrink-0">
             <div className="relative flex rounded-lg overflow-hidden aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0">

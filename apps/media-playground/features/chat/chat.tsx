@@ -30,6 +30,7 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
+import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
@@ -195,13 +196,13 @@ const ThreadListItem: FC<{
   return (
     <ThreadListItemPrimitive.Root
       className={cn(
-        'group flex justify-between hover:text-primary data-[active]:bg-muted data-[active]:text-primary font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-1 text-sm relative',
-        isActive && 'bg-muted text-primary font-medium',
+        'group flex justify-between hover:text-white data-[active]:bg-primary/30 data-[active]:text-white font-normal data-[active]:font-medium hover:bg-muted/50 items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5',
+        isActive && 'bg-muted text-white font-medium',
       )}
     >
       <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
         {isEditing ? (
-          <div className="flex items-center gap-1 flex-grow min-w-0">
+          <div className="flex items-center gap-1 flex-grow min-w-0 text-white">
             <Input
               id="thread-title-input"
               name="title"
@@ -225,7 +226,7 @@ const ThreadListItem: FC<{
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0 text-primary hover:text-primary"
+              className="h-7 w-7 shrink-0 text-white hover:text-white"
               onClick={handleRenameSubmit}
               onMouseDown={e => e.preventDefault()}
               disabled={isRenaming}
@@ -240,7 +241,7 @@ const ThreadListItem: FC<{
           </div>
         ) : (
           <ThreadListItemPrimitive.Trigger
-            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
+            className="flex-grow min-w-0 text-white text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
             onClick={onItemClick}
             disabled={isEditing}
           >
@@ -435,7 +436,7 @@ type Props = {
   agentId: string
   threadId?: string
   agentSSRData?: Agent
-  defaultTab?: 'chat' | 'creations' | 'settings'
+  defaultTab?: 'chat' | 'creations' | 'tasks' | 'settings'
 }
 
 const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
@@ -489,9 +490,9 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'chat' | 'creations' | 'settings'>(
-    defaultTab || 'chat',
-  )
+  const [viewMode, setViewMode] = useState<
+    'chat' | 'creations' | 'tasks' | 'settings'
+  >(defaultTab || 'chat')
 
   const isOwner = useMemo(() => {
     const ownershipStatus = user?._id === agent?.owner._id
@@ -579,6 +580,9 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
         {viewMode === 'creations' ? (
           /* CREATIONS VIEW - Full width */
           agent && <AgentCreationsView agent={agent} user={user} />
+        ) : viewMode === 'tasks' ? (
+          /* CREATIONS VIEW - Full width */
+          agent && <AgentTasksView agent={agent} />
         ) : viewMode === 'settings' ? (
           /* SETTINGS VIEW - Full width */
           agent && <AgentEditView agent={agent} user={user} />

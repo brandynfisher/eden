@@ -18,8 +18,8 @@ export const AgentBar: FC<{
   isOwner: boolean
   onChatClick?: () => void
   onAgentSelect?: () => void
-  viewMode: 'chat' | 'creations' | 'settings'
-  onViewModeChange: (mode: 'chat' | 'creations' | 'settings') => void
+  viewMode: 'chat' | 'creations' | 'tasks' | 'settings'
+  onViewModeChange: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
 }> = ({
   agent,
   isOwner,
@@ -103,18 +103,32 @@ export const AgentBar: FC<{
           {!isNarrow && <span>Creations</span>}
         </Button>
         {isOwner && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewModeChange('settings')}
-            className={`shrink-0 gap-1 text-sm ${
-              viewMode === 'settings' &&
-              'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-            }`}
-          >
-            <SettingsIcon className="size-4" />
-            {!isNarrow && <span>Settings</span>}
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onViewModeChange('tasks')}
+              className={`shrink-0 gap-1 text-sm ${
+                viewMode === 'tasks' &&
+                'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+              }`}
+            >
+              <SettingsIcon className="size-4" />
+              {!isNarrow && <span>Tasks</span>}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onViewModeChange('settings')}
+              className={`shrink-0 gap-1 text-sm ${
+                viewMode === 'settings' &&
+                'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+              }`}
+            >
+              <SettingsIcon className="size-4" />
+              {!isNarrow && <span>Settings</span>}
+            </Button>
+          </>
         )}
       </div>
     </div>
