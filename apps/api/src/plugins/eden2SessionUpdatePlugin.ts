@@ -65,7 +65,6 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
         'change',
         async (data: ChangeStreamDocument<SessionDocument>) => {
           fastify.log.info(`Change stream onChange: ${WATCHED_COLLECTION}`)
-          console.log(data.operationType, data)
           try {
             if (data.operationType === 'insert') {
               const cachedDoc = data.fullDocument

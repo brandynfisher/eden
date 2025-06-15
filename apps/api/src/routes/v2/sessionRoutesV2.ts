@@ -1,5 +1,6 @@
 import {
   addSessionMessageReaction,
+  cancelSession,
   createSession,
   createSessionMessage,
   createSessionMessageStream,
@@ -348,6 +349,43 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => deleteSession(request, reply),
+  })
+
+  server.post<{
+    Params: { session_id: string }
+  }>('/v2/sessions/:session_id/cancel', {
+    schema: {
+      tags: ['Sessions'],
+      description: 'Cancel a running session',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        session_id: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          status: Type.String(),
+          session_id: Type.String(),
+        }),
+        400: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => cancelSession(server, request, reply),
   })
 }
 

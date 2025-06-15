@@ -814,3 +814,65 @@ export const renameSession = async (
 
   return reply.status(200).send({ success: true })
 }
+
+export const cancelSession = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{ Params: { session_id: string } }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  const { session_id } = request.params
+
+  const session = await Session.findOne({
+    _id: new ObjectId(session_id as string),
+  })
+
+  if (!session || session.deleted) {
+    return reply.status(404).send({
+      error: 'Session not found',
+    })
+  }
+
+  if (session.owner.toString() !== userId.toString()) {
+    return reply.status(401).send({
+      error: 'You are not allowed to cancel this session',
+    })
+  }
+
+  try {
+    // Send cancel request to the Python API
+    const modalRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/cancel`,
+      data: {
+        session_id,
+        user_id: userId,
+      },
+    }
+
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    return reply.status(200).send({
+      status: modalResponse.data.status || 'cancel_signal_sent',
+      session_id,
+    })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage = error?.response?.data || 'Failed to cancel session'
+    console.log(e)
+    return reply.status(500).send({ error: errorMessage })
+  }
+}
