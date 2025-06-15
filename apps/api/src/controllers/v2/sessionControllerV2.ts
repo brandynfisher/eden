@@ -195,11 +195,7 @@ export const createSession = async (
       owner: userId,
       agents: validAgentIds,
       messages: [],
-      title:
-        title ||
-        `Session with ${agent_ids.length} agent${
-          agent_ids.length > 1 ? 's' : ''
-        }`,
+      title,
     }
 
     if (scenario) {
@@ -415,11 +411,7 @@ export const createSessionMessageStream = async (
       owner: userId,
       agents: validAgentIds,
       messages: [],
-      title:
-        title ||
-        `Session with ${agent_ids.length} agent${
-          agent_ids.length > 1 ? 's' : ''
-        }`,
+      title,
     }
 
     if (scenario) {

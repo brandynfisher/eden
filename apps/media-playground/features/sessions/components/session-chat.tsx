@@ -265,7 +265,6 @@ const SessionChat: FC = () => {
       if (!sessionId) {
         sendStreamingMessage(content, attachments, {
           agent_ids: [agent._id],
-          title: `Chat with ${agent.name}`,
         })
       } else {
         sendStreamingMessage(content, attachments)
