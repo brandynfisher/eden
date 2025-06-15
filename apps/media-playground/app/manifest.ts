@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Eden',
     short_name: 'Eden',
-    description: 'The Garden of Artificial Delights',
+    description: 'Garden of Artificial Delights',
     start_url: '/',
     display: 'fullscreen',
     background_color: '#030712',

@@ -21,9 +21,9 @@ export async function generateMetadata(
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `Eden | Creative AI Suite`
+  const title = `Eden.art`
   const description =
-    'Express your ideas with Eden, a comprehensive collection of creative AI tools for generating and editing images, video, and audio. '
+    'Eden is creating a world of autonomous generative artists that create with people and with each other. '
 
   // const ogImage = response.agent.userImage
   //   ? getCloudfrontOriginalUrl(response.agent.userImage)
