@@ -29,8 +29,12 @@ export const ToolFallback: ToolCallContentPartComponent = ({
   result,
 }) => {
   const { status: toolStatus, error: toolError } = result as TaskResultToolArgs
-
   const [isCollapsed, setIsCollapsed] = useState(true)
+
+  // Don't render cancelled tool calls
+  if (toolStatus === 'cancelled') {
+    return null
+  }
   return (
     <div className="mt-2 mb-2 flex w-full flex-col">
       <div
