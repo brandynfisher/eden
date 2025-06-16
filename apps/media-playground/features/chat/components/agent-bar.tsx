@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
@@ -60,7 +61,9 @@ export const AgentBar: FC<{
             className="flex items-center gap-3 hover:bg-muted/10 rounded-lg px-2 py-1 transition-all duration-200 hover:scale-[1.02] min-w-0"
           >
             <img
-              src={agent.userImage || '/placeholder.png'}
+              src={
+                getCloudfrontOriginalUrl(agent.userImage) || '/placeholder.png'
+              }
               alt={agent.name}
               className="w-10 h-10 rounded-full object-cover border-2 border-primary/20 hover:border-primary/40 transition-colors"
             />

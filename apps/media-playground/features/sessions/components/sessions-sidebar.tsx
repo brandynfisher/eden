@@ -274,10 +274,10 @@ const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
         isNewSession ? 'bg-muted text-primary' : 'bg-aui-muted',
       )}
     >
-      <div className="flex items-center gap-2 text-sm font-semibold">
+      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <span>{isChat ? 'New Chat' : 'New Session'}</span>
       </div>
-      <EditIcon className="size-4" />
+      <EditIcon className="size-4 text-foreground" />
     </Button>
   )
 }
