@@ -6,6 +6,7 @@ import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
+  ClockIcon,
   ImageIcon,
   MessageSquareIcon,
   SettingsIcon,
@@ -116,7 +117,7 @@ export const AgentBar: FC<{
                 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
               }`}
             >
-              <SettingsIcon className="size-4" />
+              <ClockIcon className="size-4" />
               {!isNarrow && <span>Tasks</span>}
             </Button>
             <Button
