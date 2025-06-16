@@ -72,6 +72,10 @@ export interface SessionsV2RenameArguments extends WebAPICallOptions {
   title: string
 }
 
+export interface SessionsV2CancelArguments extends WebAPICallOptions {
+  session_id: string
+}
+
 // Requests
 export const sessionsCreateRequestConfigV2 = (
   args: SessionsV2CreateArguments,
@@ -150,6 +154,19 @@ export const sessionsRenameRequestConfigV2 = (
   }
 }
 
+export const sessionsCancelRequestConfigV2 = (
+  args: SessionsV2CancelArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/sessions/${args.session_id}/cancel`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: {},
+  }
+}
+
 // Responses
 export type SessionsV2CreateResponse = WebAPICallResult &
   (
@@ -211,6 +228,18 @@ export type SessionsV2RenameResponse = WebAPICallResult &
         message?: string
       }
     | { success: boolean }
+  )
+
+export type SessionsV2CancelResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | {
+        status: string
+        session_id: string
+      }
   )
 
 export type SessionStatus = 'active' | 'archived'

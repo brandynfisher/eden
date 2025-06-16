@@ -54,6 +54,11 @@ const MediaDownloadMenu = ({
 export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
   const { tool, result: toolResults } = toolCall
 
+  // Don't render cancelled tool calls
+  if (toolCall.status === 'cancelled') {
+    return null
+  }
+
   return (
     <div className="mb-2 max-w-full">
       <ToolFallback

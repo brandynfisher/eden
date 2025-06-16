@@ -152,6 +152,37 @@ const Session = () => {
     [addError, clearErrors, router],
   )
 
+  // Cancel session function
+  const cancelSession = useCallback(async () => {
+    try {
+      await fetch(`/api/sessions/${sessionId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      // Clear streaming state immediately
+      setStreamingText('')
+      setIsStreamingTokens(false)
+      setHasReceivedTokens(false)
+      setWaitingForWebSocket(false)
+      setStreamingAgent(null)
+      streamingMessageIdRef.current = null
+    } catch (error) {
+      console.error('Failed to cancel session:', error)
+      addError({
+        type: 'generic',
+        message: 'Failed to cancel the session. Please try again.',
+        recoveryAction: {
+          label: 'Try Again',
+          action: () => clearErrors(),
+        },
+        dismissible: true,
+      })
+    }
+  }, [sessionId, addError, clearErrors])
+
   // Set up streaming with error handling
   const { sendMessage: sendStreamingMessage } = useSessionStream({
     sessionId,
@@ -352,6 +383,10 @@ const Session = () => {
             // Scroll to bottom when streaming starts
             setTimeout(scrollToBottom, 100)
           }}
+          onCancel={cancelSession}
+          isStreaming={
+            isStreamingTokens || waitingForWebSocket || streamingText.length > 0
+          }
         />
       </div>
     </>

@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { PaperclipIcon, SendIcon } from 'lucide-react'
+import { PaperclipIcon, SendIcon, SquareIcon } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -31,6 +31,8 @@ const formSchema = z.object({
 type MessageInputProps = {
   sessionId: string
   onStreamingMessage?: (content: string, attachments?: string[]) => void
+  onCancel?: () => void
+  isStreaming?: boolean
 }
 
 type AttachmentDropzoneProps = {
@@ -66,6 +68,8 @@ const AttachmentDropzone = ({
 export const MessageInput = ({
   sessionId,
   onStreamingMessage,
+  onCancel,
+  isStreaming,
 }: MessageInputProps) => {
   const { user } = useAuthState()
   const {
@@ -392,20 +396,33 @@ export const MessageInput = ({
                   </div>
                 )}
               </div>
-              <Button
-                type="submit"
-                size="icon"
-                className="h-8 w-8"
-                disabled={
-                  !form.formState.isValid ||
-                  attachments.some(a => a.status === 'uploading') ||
-                  isSubmitting
-                }
-              >
-                <SendIcon
-                  className={cn('w-4 h-4', isSubmitting && 'animate-pulse')}
-                />
-              </Button>
+              {isStreaming ? (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8 animate-pulse border-purple-500/50 hover:border-purple-500"
+                  onClick={onCancel}
+                >
+                  <SquareIcon className="w-3 h-3 fill-current" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8"
+                  disabled={
+                    !form.formState.isValid ||
+                    attachments.some(a => a.status === 'uploading') ||
+                    isSubmitting
+                  }
+                >
+                  <SendIcon
+                    className={cn('w-4 h-4', isSubmitting && 'animate-pulse')}
+                  />
+                </Button>
+              )}
             </div>
           </form>
         </Form>
