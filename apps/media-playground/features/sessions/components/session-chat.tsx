@@ -9,6 +9,7 @@ import { MessageInput } from '@/features/sessions/components/message-input'
 import { OtherMessage } from '@/features/sessions/components/other-message'
 import { SessionTopBar } from '@/features/sessions/components/session-top-bar'
 import { UserMessage } from '@/features/sessions/components/user-message'
+import Session from '@/features/sessions/session'
 import { groupConsecutiveMessages } from '@/features/sessions/utils/group-messages'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
@@ -18,7 +19,8 @@ import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
-import { useParams } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
+import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 // Session Welcome Component
@@ -78,8 +80,14 @@ const SessionWelcome: FC<{
 
 const SessionChat: FC = () => {
   const { agentId } = useParams()
+  const router = useRouter()
+  const queryClient = useQueryClient()
   const [isMounted, setIsMounted] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [optimisticSessionId, setOptimisticSessionId] = useState<string | null>(
+    null,
+  )
+  const optimisticSessionIdRef = useRef<string | null>(null)
   const [streamingText, setStreamingText] = useState('')
   const [isStreamingTokens, setIsStreamingTokens] = useState(false)
   const [hasReceivedTokens, setHasReceivedTokens] = useState(false)
@@ -175,9 +183,9 @@ const SessionChat: FC = () => {
     [addError, clearErrors],
   )
 
-  // Set up streaming
+  // Set up streaming - use optimistic session ID if available
   const { sendMessage: sendStreamingMessage } = useSessionStream({
-    sessionId: sessionId || undefined,
+    sessionId: sessionId || optimisticSessionId || undefined,
     onToken: text => {
       setStreamingText(prev => prev + text)
       setIsStreamingTokens(true)
@@ -230,7 +238,69 @@ const SessionChat: FC = () => {
       setStreamingAgent(agent)
     },
     onSessionCreated: newSessionId => {
+      console.log(
+        '***debug*** onSessionCreated called with:',
+        newSessionId,
+        'optimistic state:',
+        optimisticSessionId,
+        'optimistic ref:',
+        optimisticSessionIdRef.current,
+      )
       setSessionId(newSessionId)
+
+      // ***debug*** If we were in optimistic mode, replace temp session with real session
+      const currentOptimisticId = optimisticSessionIdRef.current
+      if (currentOptimisticId) {
+        console.log(
+          '***debug*** Handling optimistic to real session transition',
+        )
+        // Copy any cached data from optimistic session to real session
+        const optimisticData = queryClient.getQueryData([
+          'session',
+          currentOptimisticId,
+        ])
+        console.log('***debug*** Optimistic data:', optimisticData)
+        if (optimisticData) {
+          queryClient.setQueryData(['session', newSessionId], {
+            ...optimisticData,
+            _id: newSessionId,
+          })
+        }
+
+        // Clear optimistic session
+        queryClient.removeQueries({
+          queryKey: ['session', currentOptimisticId],
+        })
+        setOptimisticSessionId(null)
+        optimisticSessionIdRef.current = null
+
+        // Navigate to real session URL
+        console.log(
+          '***debug*** Navigating to real session:',
+          `/chat2/${agentId}/${newSessionId}`,
+        )
+        router.push(`/chat2/${agentId}/${newSessionId}`)
+      } else {
+        // ***debug*** Cache initial session data to avoid loading state on navigation
+        // Pre-populate the cache with basic session data so session.tsx loads instantly
+        if (agent && user) {
+          const initialSessionData = {
+            _id: newSessionId,
+            agents: [agent],
+            messages: [],
+            title: null,
+            budget: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }
+
+          // Cache the initial session data so session.tsx can load instantly
+          queryClient.setQueryData(
+            ['session', newSessionId],
+            initialSessionData,
+          )
+        }
+      }
     },
   })
 
@@ -256,6 +326,48 @@ const SessionChat: FC = () => {
       // Clear any existing errors when starting a new message
       clearErrors()
 
+      // ***debug*** IMMEDIATE optimistic transition - generate temp session ID and switch to session view
+      if (!sessionId && !optimisticSessionId) {
+        const tempSessionId = `temp-${Date.now()}-${Math.random()
+          .toString(36)
+          .substr(2, 9)}`
+        console.log('***debug*** Creating optimistic session:', tempSessionId)
+        setOptimisticSessionId(tempSessionId)
+        optimisticSessionIdRef.current = tempSessionId
+
+        // Cache optimistic session data IMMEDIATELY - don't include user message, backend will handle it
+        const optimisticSessionData = {
+          _id: tempSessionId,
+          agents: [agent],
+          messages: [], // Empty - backend will add user message, we'll stream agent response
+          title: null,
+          budget: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+
+        console.log(
+          '***debug*** Caching optimistic session data:',
+          optimisticSessionData,
+        )
+        queryClient.setQueryData(
+          ['session', tempSessionId],
+          optimisticSessionData,
+        )
+
+        // Start streaming to the optimistic session
+        console.log('***debug*** Starting streaming for optimistic session')
+        setIsStreamingTokens(true)
+        setHasReceivedTokens(false)
+        setStreamingText('')
+        setStreamingAgent(null)
+        sendStreamingMessage(content, attachments, {
+          agent_ids: [agent._id],
+        })
+
+        return // Exit early - we're now in optimistic mode
+      }
+
       setIsStreamingTokens(true)
       setHasReceivedTokens(false)
       setStreamingText('')
@@ -273,7 +385,17 @@ const SessionChat: FC = () => {
       // Scroll to bottom when streaming starts
       setTimeout(scrollToBottom, 100)
     },
-    [user, agent, clearErrors, sendStreamingMessage, scrollToBottom, sessionId],
+    [
+      user,
+      agent,
+      clearErrors,
+      sendStreamingMessage,
+      scrollToBottom,
+      sessionId,
+      optimisticSessionId,
+      queryClient,
+      setOptimisticSessionId,
+    ],
   )
 
   const isOwnMessage = (senderId?: string) => {
@@ -350,6 +472,24 @@ const SessionChat: FC = () => {
   const hasSessionContent =
     sessionId &&
     (session?.messages?.length || streamingText || isStreamingTokens)
+
+  // ***debug*** IMMEDIATE optimistic rendering - if we have optimistic session, render Session component
+  // but keep streaming logic in this component
+  if (optimisticSessionId) {
+    console.log(
+      '***debug*** Rendering optimistic session component:',
+      optimisticSessionId,
+    )
+    return (
+      <>
+        <Session optimisticSessionId={optimisticSessionId} />
+        {/* Keep streaming logic active but hidden */}
+        <div style={{ display: 'none' }}>
+          {isStreamingTokens && 'Streaming active in background'}
+        </div>
+      </>
+    )
+  }
 
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
