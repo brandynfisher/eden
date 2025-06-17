@@ -28,9 +28,23 @@ export interface SessionsV2CreateArguments extends WebAPICallOptions {
 }
 
 export interface SessionsV2MessageArguments extends WebAPICallOptions {
-  session_id?: string
+  session_id?: string // If not provided, will create a new session
   content: string
   attachments?: string[]
+  // Creation args (used when session_id is not provided)
+  agent_ids?: string[]
+  scenario?: string
+  budget?: {
+    manna_budget?: number
+    token_budget?: number
+    turn_budget?: number
+  }
+  title?: string
+  autonomy_settings?: {
+    auto_reply: boolean
+    reply_interval: number
+    actor_selection_method: 'random' | 'random_exclude_last'
+  }
 }
 
 export interface SessionsV2MessageReactArguments extends WebAPICallOptions {
@@ -56,6 +70,10 @@ export interface SessionsV2DeleteArguments extends WebAPICallOptions {
 export interface SessionsV2RenameArguments extends WebAPICallOptions {
   session_id: string
   title: string
+}
+
+export interface SessionsV2CancelArguments extends WebAPICallOptions {
+  session_id: string
 }
 
 // Requests
@@ -136,6 +154,19 @@ export const sessionsRenameRequestConfigV2 = (
   }
 }
 
+export const sessionsCancelRequestConfigV2 = (
+  args: SessionsV2CancelArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/sessions/${args.session_id}/cancel`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: {},
+  }
+}
+
 // Responses
 export type SessionsV2CreateResponse = WebAPICallResult &
   (
@@ -155,7 +186,11 @@ export type SessionsV2MessageResponse = WebAPICallResult &
         error?: string
         message?: string
       }
-    | { session_id?: SessionV2['_id']; success: boolean }
+    | {
+        session_id: SessionV2['_id']
+        message_id?: string
+        success: boolean
+      }
   )
 
 export type SessionsV2MessageReactResponse = WebAPICallResult &
@@ -195,6 +230,18 @@ export type SessionsV2RenameResponse = WebAPICallResult &
     | { success: boolean }
   )
 
+export type SessionsV2CancelResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | {
+        status: string
+        session_id: string
+      }
+  )
+
 export type SessionStatus = 'active' | 'archived'
 
 export type SessionV2 = {
@@ -220,6 +267,7 @@ export type SessionV2 = {
     actor_selection_method: 'random' | 'random_exclude_last'
   }
   last_actor_id?: string
+  trigger?: string
   createdAt: Date
   updatedAt: Date
 }

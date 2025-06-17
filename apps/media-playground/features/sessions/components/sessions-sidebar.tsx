@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import axios from 'axios'
 import {
   CheckIcon,
+  ClockIcon,
   EditIcon,
   MoreHorizontal,
   PencilIcon,
@@ -31,6 +32,7 @@ interface SessionListItemProps {
   title: string
   isActive: boolean
   onItemClick?: () => void
+  isFromTrigger?: boolean
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -38,6 +40,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   title,
   isActive,
   onItemClick,
+  isFromTrigger = false,
 }) => {
   const {
     renameSession: renameSessionQuery,
@@ -186,10 +189,13 @@ const SessionListItem: FC<SessionListItemProps> = ({
           </div>
         ) : (
           <button
-            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center"
+            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center gap-2"
             onClick={onItemClick}
             disabled={isEditing}
           >
+            {isFromTrigger && (
+              <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            )}
             <div className="overflow-hidden whitespace-nowrap text-ellipsis">
               {title || 'Untitled'}
             </div>
@@ -238,39 +244,61 @@ const SessionListItem: FC<SessionListItemProps> = ({
   )
 }
 
-const TopLeft: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
+const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
+  onItemClick,
+  isChat,
+}) => {
   const router = useRouter()
   const params = useParams()
-  const isNewSession = params.id === 'new'
+  const isNewSession =
+    params.id === 'new' || (!params.sessionId && params.agentId)
+  const agentId = params.agentId as string
+
+  const handleClick = () => {
+    onItemClick?.()
+    if (isChat && agentId) {
+      // For chat2 routes, go to agent's welcome page
+      router.push(`/chat2/${agentId}`, { scroll: false })
+    } else {
+      // For regular sessions, go to new session page
+      router.push('/sessions/new', { scroll: false })
+    }
+  }
 
   return (
     <Button
       variant="ghost"
-      onClick={() => {
-        onItemClick?.()
-        router.push('/sessions/new', { scroll: false })
-      }}
+      onClick={handleClick}
       className={cn(
         'flex w-full justify-between px-3 mb-1',
         isNewSession ? 'bg-muted text-primary' : 'bg-aui-muted',
       )}
     >
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        <span>New Session</span>
+      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        <span>{isChat ? 'New Chat' : 'New Session'}</span>
       </div>
-      <EditIcon className="size-4" />
+      <EditIcon className="size-4 text-foreground" />
     </Button>
   )
 }
 
-const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
+const MainLeft = ({
+  onItemClick,
+  agentId,
+  isChat,
+}: {
+  onItemClick?: () => void
+  agentId?: string
+  isChat?: boolean
+}) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const router = useRouter()
   const params = useParams()
-  const currentSessionId = params.id as string
+  const currentSessionId = (params.id as string) || (params.sessionId as string)
   const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
     useSessionListQuery({
       enabled: !!isSignedIn,
+      agent_id: agentId,
     })
 
   // Setup intersection observer for infinite scrolling
@@ -335,11 +363,20 @@ const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
                       id={session._id}
                       title={session.title || 'Untitled'}
                       isActive={session._id === currentSessionId}
+                      isFromTrigger={!!session.trigger}
                       onItemClick={() => {
                         onItemClick?.()
-                        router.push(`/sessions/${session._id}`, {
-                          scroll: false,
-                        })
+                        if (isChat && agentId) {
+                          // For chat2 routes, go to /chat2/[agentId]/[sessionId]
+                          router.push(`/chat2/${agentId}/${session._id}`, {
+                            scroll: false,
+                          })
+                        } else {
+                          // For regular sessions, go to /sessions/[sessionId]
+                          router.push(`/sessions/${session._id}`, {
+                            scroll: false,
+                          })
+                        }
                       }}
                     />
                   ),
@@ -362,24 +399,34 @@ const MainLeft = ({ onItemClick }: { onItemClick?: () => void }) => {
 
 export const SessionsSidebarContent = ({
   onItemClick,
+  agentId,
+  isChat,
 }: {
   onItemClick?: () => void
+  agentId?: string
+  isChat?: boolean
 }) => {
   return (
     <>
       <div className="border-b mb-2">
-        <TopLeft onItemClick={onItemClick} />
+        <TopLeft onItemClick={onItemClick} isChat={isChat} />
       </div>
-      <MainLeft onItemClick={onItemClick} />
+      <MainLeft onItemClick={onItemClick} agentId={agentId} isChat={isChat} />
     </>
   )
 }
 
 export const SessionsSidebar = React.memo(
-  ({ onItemClick }: { onItemClick?: () => void }) => {
+  ({
+    onItemClick,
+    agentId,
+  }: {
+    onItemClick?: () => void
+    agentId?: string
+  }) => {
     return (
       <div className="flex flex-col bg-[#0e1421] p-3 transition-all duration-300 ease-in-out w-full md:max-w-[320px]">
-        <SessionsSidebarContent onItemClick={onItemClick} />
+        <SessionsSidebarContent onItemClick={onItemClick} agentId={agentId} />
       </div>
     )
   },

@@ -228,6 +228,8 @@ import {
   AgentsUnlikeResponse,
   AgentsUpdateDeploymentArguments,
   AgentsUpdateDeploymentResponse,
+  AgentsUpdateTriggerArguments,
+  AgentsUpdateTriggerResponse,
   CollectionsV2AddCreationsArguments,
   CollectionsV2AddCreationsResponse,
   CollectionsV2CreateArguments,
@@ -266,6 +268,8 @@ import {
   ModelsV2PatchResponse,
   ModelsV2UnlikeArguments,
   ModelsV2UnlikeResponse,
+  SessionsV2CancelArguments,
+  SessionsV2CancelResponse,
   SessionsV2CreateArguments,
   SessionsV2CreateResponse,
   SessionsV2DeleteArguments,
@@ -320,6 +324,7 @@ import {
   agentsStopDeploymentRequestConfig,
   agentsUnlikeRequestConfig,
   agentsUpdateDeploymentRequestConfig,
+  agentsUpdateTriggerRequestConfig,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -339,6 +344,7 @@ import {
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
   modelsV2UnlikeRequestConfig,
+  sessionsCancelRequestConfigV2,
   sessionsCreateRequestConfigV2,
   sessionsDeleteRequestConfigV2,
   sessionsGetRequestConfigV2,
@@ -673,6 +679,10 @@ export abstract class Methods {
         AgentsCreateTriggerArguments,
         AgentsCreateTriggerResponse
       >(this, agentsCreateTriggerRequestConfig),
+      update: bindApiCall<
+        AgentsUpdateTriggerArguments,
+        AgentsUpdateTriggerResponse
+      >(this, agentsUpdateTriggerRequestConfig),
       delete: bindApiCall<
         AgentsDeleteTriggerArguments,
         AgentsDeleteTriggerResponse
@@ -921,6 +931,10 @@ export abstract class Methods {
       create: bindApiCall<SessionsV2CreateArguments, SessionsV2CreateResponse>(
         this,
         sessionsCreateRequestConfigV2,
+      ),
+      cancel: bindApiCall<SessionsV2CancelArguments, SessionsV2CancelResponse>(
+        this,
+        sessionsCancelRequestConfigV2,
       ),
     },
   }

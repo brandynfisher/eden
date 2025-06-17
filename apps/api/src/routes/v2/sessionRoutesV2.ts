@@ -1,5 +1,6 @@
 import {
   addSessionMessageReaction,
+  cancelSession,
   createSession,
   createSessionMessage,
   createSessionMessageStream,
@@ -151,6 +152,32 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         content: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),
         stream: Type.Optional(Type.Boolean()),
+        agent_ids: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
+        scenario: Type.Optional(Type.String({ maxLength: 1000 })),
+        budget: Type.Optional(
+          Type.Object({
+            manna_budget: Type.Optional(
+              Type.Number({ minimum: 100, maximum: 50000 }),
+            ),
+            token_budget: Type.Optional(
+              Type.Number({ minimum: 1000, maximum: 1000000 }),
+            ),
+            turn_budget: Type.Optional(
+              Type.Number({ minimum: 1, maximum: 1000 }),
+            ),
+          }),
+        ),
+        title: Type.Optional(Type.String({ maxLength: 1000 })),
+        autonomy_settings: Type.Optional(
+          Type.Object({
+            auto_reply: Type.Boolean(),
+            reply_interval: Type.Number({ minimum: 0, maximum: 3600 }),
+            actor_selection_method: Type.Union([
+              Type.Literal('random'),
+              Type.Literal('random_exclude_last'),
+            ]),
+          }),
+        ),
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
@@ -212,6 +239,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         type: 'object',
         properties: {
           ...paginationProperties(),
+          agent_id: Type.Optional(Type.String()),
         },
         required: [],
       },
@@ -321,6 +349,43 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => deleteSession(request, reply),
+  })
+
+  server.post<{
+    Params: { session_id: string }
+  }>('/v2/sessions/:session_id/cancel', {
+    schema: {
+      tags: ['Sessions'],
+      description: 'Cancel a running session',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        session_id: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          status: Type.String(),
+          session_id: Type.String(),
+        }),
+        400: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => cancelSession(server, request, reply),
   })
 }
 

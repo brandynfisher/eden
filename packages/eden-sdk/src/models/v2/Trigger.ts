@@ -1,5 +1,5 @@
 import { Creator } from 'src/models'
-import { Agent, Thread } from 'src/models/v2'
+import { Agent } from 'src/models/v2'
 
 export type CronSchedule = {
   year?: number | string
@@ -17,16 +17,21 @@ export type CronSchedule = {
 
 export type Trigger = {
   _id: string
-  agent: Agent
+  trigger_id: string
   user: Creator
-  thread: Thread
+  agent: Agent
+  session_type: 'new' | 'another'
+  session?: string | null
   schedule: CronSchedule
-  platform: string
-  channel: {
-    id: string
-    note?: string
+  instruction: string
+  update_config?: any
+  status?: 'active' | 'paused' | 'finished'
+  posting_instructions?: {
+    post_to: 'same' | 'another' | 'discord' | 'telegram' | 'x' | 'farcaster'
+    session_id?: string | null
+    channel_id?: string | null
+    custom_instructions?: string
   }
-  message: string
   createdAt: Date
   updatedAt: Date
 }

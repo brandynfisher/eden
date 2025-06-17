@@ -7,6 +7,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { AxiosResponse } from 'axios'
+import { useCallback } from 'react'
 
 export interface ThreadResponse {
   data: Thread
@@ -43,124 +44,139 @@ export function useSessionQuery({
     refetchOnWindowFocus: false,
   })
 
-  const updateReaction = (message: Message) => {
-    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
-      if (!oldData) return oldData
+  const updateReaction = useCallback(
+    (message: Message) => {
+      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+        if (!oldData) return oldData
 
-      return {
-        ...oldData,
-        messages: oldData.messages.map((ex: Message) => {
-          if (ex._id === message._id) {
-            return {
-              ...ex,
-              reactions: message.reactions,
+        return {
+          ...oldData,
+          messages: oldData.messages.map((ex: Message) => {
+            if (ex._id === message._id) {
+              return {
+                ...ex,
+                reactions: message.reactions,
+              }
             }
-          }
 
-          return ex
-        }),
+            return ex
+          }),
+        }
+      })
+    },
+    [queryClient, sessionId],
+  )
+
+  const addOptimisticMessage = useCallback(
+    (
+      message: Partial<Message> & {
+        content: string
+        sender: Message['sender']
+      },
+    ) => {
+      const optimisticId = `${OPTIMISTIC_ID_PREFIX}${Date.now()}`
+      const optimisticMessage: Message & { __optimistic: boolean } = {
+        _id: optimisticId,
+        session: sessionId,
+        role: 'user',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        // Mark as optimistic for identification
+        __optimistic: true,
+        ...message,
       }
-    })
-  }
 
-  const addOptimisticMessage = (
-    message: Partial<Message> & { content: string; sender: Message['sender'] },
-  ) => {
-    const optimisticId = `${OPTIMISTIC_ID_PREFIX}${Date.now()}`
-    const optimisticMessage: Message & { __optimistic: boolean } = {
-      _id: optimisticId,
-      session: sessionId,
-      role: 'user',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      // Mark as optimistic for identification
-      __optimistic: true,
-      ...message,
-    }
+      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+        if (!oldData) return oldData
 
-    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
-      if (!oldData) return oldData
+        return {
+          ...oldData,
+          messages: [...oldData.messages, optimisticMessage],
+        }
+      })
 
-      return {
-        ...oldData,
-        messages: [...oldData.messages, optimisticMessage],
+      return optimisticId
+    },
+    [queryClient, sessionId],
+  )
+
+  const removeOptimisticMessage = useCallback(
+    (optimisticId: string) => {
+      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+        if (!oldData) return oldData
+
+        return {
+          ...oldData,
+          messages: oldData.messages.filter(msg => msg._id !== optimisticId),
+        }
+      })
+    },
+    [queryClient, sessionId],
+  )
+
+  const confirmOptimisticMessage = useCallback(
+    (optimisticId: string, confirmedMessage: Message) => {
+      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+        if (!oldData) return oldData
+
+        return {
+          ...oldData,
+          messages: oldData.messages.map(msg =>
+            msg._id === optimisticId ? confirmedMessage : msg,
+          ),
+        }
+      })
+    },
+    [queryClient, sessionId],
+  )
+
+  const addOrUpdateMessage = useCallback(
+    (newMessage: Message) => {
+      // Filter out tool messages - they shouldn't be displayed in the UI
+      if (newMessage.role === 'tool') {
+        return
       }
-    })
 
-    return optimisticId
-  }
+      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+        if (!oldData) return oldData
 
-  const removeOptimisticMessage = (optimisticId: string) => {
-    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
-      if (!oldData) return oldData
-
-      return {
-        ...oldData,
-        messages: oldData.messages.filter(msg => msg._id !== optimisticId),
-      }
-    })
-  }
-
-  const confirmOptimisticMessage = (
-    optimisticId: string,
-    confirmedMessage: Message,
-  ) => {
-    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
-      if (!oldData) return oldData
-
-      return {
-        ...oldData,
-        messages: oldData.messages.map(msg =>
-          msg._id === optimisticId ? confirmedMessage : msg,
-        ),
-      }
-    })
-  }
-
-  const addOrUpdateMessage = (newMessage: Message) => {
-    // Filter out tool messages - they shouldn't be displayed in the UI
-    if (newMessage.role === 'tool') {
-      return
-    }
-
-    queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
-      if (!oldData) return oldData
-
-      const existingMessages = oldData.messages || []
-      const existingMessageIndex = existingMessages.findIndex(
-        (m: Message) => m._id === newMessage._id,
-      )
-
-      let updatedMessages = [...existingMessages]
-
-      if (existingMessageIndex === -1) {
-        // New message - add it to the end (but check if it's not replacing an optimistic one)
-        const optimisticIndex = existingMessages.findIndex(
-          (m: Message & { __optimistic?: boolean }) =>
-            m.__optimistic && m.content === newMessage.content,
+        const existingMessages = oldData.messages || []
+        const existingMessageIndex = existingMessages.findIndex(
+          (m: Message) => m._id === newMessage._id,
         )
 
-        if (optimisticIndex !== -1) {
-          // Replace the optimistic message
-          updatedMessages[optimisticIndex] = newMessage
-        } else {
-          // Add new message
-          updatedMessages.push(newMessage)
-        }
-      } else {
-        // Existing message - update it
-        updatedMessages[existingMessageIndex] = {
-          ...updatedMessages[existingMessageIndex],
-          ...newMessage,
-        }
-      }
+        let updatedMessages = [...existingMessages]
 
-      return {
-        ...oldData,
-        messages: updatedMessages,
-      }
-    })
-  }
+        if (existingMessageIndex === -1) {
+          // New message - add it to the end (but check if it's not replacing an optimistic one)
+          const optimisticIndex = existingMessages.findIndex(
+            (m: Message & { __optimistic?: boolean }) =>
+              m.__optimistic && m.content === newMessage.content,
+          )
+
+          if (optimisticIndex !== -1) {
+            // Replace the optimistic message
+            updatedMessages[optimisticIndex] = newMessage
+          } else {
+            // Add new message
+            updatedMessages.push(newMessage)
+          }
+        } else {
+          // Existing message - update it
+          updatedMessages[existingMessageIndex] = {
+            ...updatedMessages[existingMessageIndex],
+            ...newMessage,
+          }
+        }
+
+        return {
+          ...oldData,
+          messages: updatedMessages,
+        }
+      })
+    },
+    [queryClient, sessionId],
+  )
 
   return {
     ...query,

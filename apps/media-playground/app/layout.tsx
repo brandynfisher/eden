@@ -41,11 +41,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_HOST),
   title: 'Eden',
   applicationName: 'Eden',
-  description: 'A Garden Of Artificial Delights',
+  description: 'Garden Of Artificial Delights',
   openGraph: {
     title: 'Eden',
     siteName: 'Eden',
-    description: 'A Garden Of Artificial Delights',
+    description: 'Garden Of Artificial Delights',
     type: 'website',
     images: [
       'https://d14i3advvh2bvd.cloudfront.net/app/landing/logo_badge_square.png',
@@ -106,7 +106,7 @@ export default function RootLayout({
         >
           <HolyLoader color="#9333ea" height="1px" />
           <Providers>
-            <div className="flex min-h-screen w-full flex-col">
+            <div className="flex min-h-screen w-full flex-col ">
               <Header />
               {modal}
               {children}

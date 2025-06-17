@@ -21,10 +21,17 @@ export const OtherMessage = ({
   showAvatar = true,
   isStreamingTokens = false,
 }: OtherMessageProps) => {
+  // Check if all tool calls are cancelled
+  const hasActiveToolCalls = message.tool_calls?.some(
+    toolCall => toolCall.status !== 'cancelled',
+  )
+
   if (
     !message.content &&
     !isStreamingTokens &&
-    (!message.tool_calls || message.tool_calls.length === 0)
+    (!message.tool_calls ||
+      message.tool_calls.length === 0 ||
+      !hasActiveToolCalls)
   )
     return null
 
@@ -67,9 +74,11 @@ export const OtherMessage = ({
         {!isEmpty && <MarkdownText>{message.content}</MarkdownText>}
         {message.tool_calls &&
           message.tool_calls.length > 0 &&
-          message.tool_calls.map(toolCall => {
-            return <TaskResultTool key={toolCall.id} toolCall={toolCall} />
-          })}
+          message.tool_calls
+            .filter(toolCall => toolCall.status !== 'cancelled')
+            .map(toolCall => {
+              return <TaskResultTool key={toolCall.id} toolCall={toolCall} />
+            })}
 
         {/* Show typing indicator when streaming tokens and no content yet */}
         {isStreamingTokens && isEmpty && !message.tool_calls && (

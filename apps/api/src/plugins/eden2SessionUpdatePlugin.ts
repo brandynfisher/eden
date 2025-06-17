@@ -65,7 +65,6 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
         'change',
         async (data: ChangeStreamDocument<SessionDocument>) => {
           fastify.log.info(`Change stream onChange: ${WATCHED_COLLECTION}`)
-          console.log(data.operationType, data)
           try {
             if (data.operationType === 'insert') {
               const cachedDoc = data.fullDocument
@@ -87,7 +86,7 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
                 {
                   path: 'messages',
                   select:
-                    '_id content sender role attachments tool_calls createdAt reactions',
+                    '_id content sender role eden_message_data attachments tool_calls createdAt reactions',
                   populate: {
                     path: 'sender',
                     select: '_id username userImage',
@@ -137,7 +136,7 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
                   {
                     path: 'messages',
                     select:
-                      '_id content sender role tool_calls attachments createdAt reactions',
+                      '_id content sender role eden_message_data tool_calls attachments createdAt reactions',
                     populate: {
                       path: 'sender',
                       select: '_id username userImage',

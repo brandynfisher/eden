@@ -224,11 +224,32 @@ export interface AgentsGetTriggersArguments extends WebAPICallOptions {
 
 export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
   agentId: string
-  message: string
+  instruction: string
+  session_type: 'new' | 'another'
+  session?: string | null
   schedule: CronSchedule
-  deploymentId: string
-  channelId: string
-  platform: AgentClientType
+  posting_instructions?: {
+    post_to: 'same' | 'another' | 'discord' | 'telegram' | 'x' | 'farcaster'
+    session_id?: string | null
+    channel_id?: string | null
+    custom_instructions?: string
+  }
+}
+
+export interface AgentsUpdateTriggerArguments extends WebAPICallOptions {
+  agentId: string
+  triggerId: string
+  instruction?: string
+  session_type?: 'new' | 'another'
+  session?: string | null
+  schedule?: CronSchedule
+  status?: 'active' | 'paused' | 'finished'
+  posting_instructions?: {
+    post_to: 'same' | 'another' | 'discord' | 'telegram' | 'x' | 'farcaster'
+    session_id?: string | null
+    channel_id?: string | null
+    custom_instructions?: string
+  }
 }
 
 export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
@@ -353,6 +374,16 @@ export const agentsCreateTriggerRequestConfig = (
   }
 }
 
+export const agentsUpdateTriggerRequestConfig = (
+  args: AgentsUpdateTriggerArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PATCH',
+    url: `v2/agents/${args.agentId}/triggers/${args.triggerId}`,
+    data: args,
+  }
+}
+
 export const agentsDeleteTriggerRequestConfig = (
   args: AgentsDeleteTriggerArguments,
 ): AxiosRequestConfig => {
@@ -433,6 +464,11 @@ export type AgentsGetTriggersResponse = WebAPICallResult & {
 }
 
 export type AgentsCreateTriggerResponse = WebAPICallResult & {
+  triggerId: string
+  error?: string
+}
+
+export type AgentsUpdateTriggerResponse = WebAPICallResult & {
   trigger: Trigger
   error?: string
 }
