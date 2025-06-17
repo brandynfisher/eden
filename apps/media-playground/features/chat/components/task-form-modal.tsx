@@ -386,9 +386,9 @@ const TaskFormModal: FC<{
       if (values.enablePosting) {
         posting_instructions = {
           post_to: values.postTo,
-          session_id: null,
-          channel_id: null,
-          custom_instructions: undefined,
+          session_id: null as string | null,
+          channel_id: null as string | null,
+          custom_instructions: undefined as string | undefined,
         }
 
         // Only add session_id if posting to another session
@@ -541,17 +541,24 @@ const TaskFormModal: FC<{
                                 <div className="py-1">No sessions found</div>
                               </SelectItem>
                             ) : (
-                              sessions.map(session => (
-                                <SelectItem
-                                  key={session._id}
-                                  value={session._id}
-                                >
-                                  <div className="py-1">
-                                    {session.title ||
-                                      `Session ${session._id.slice(-6)}`}
-                                  </div>
-                                </SelectItem>
-                              ))
+                              sessions
+                                .filter(
+                                  (
+                                    session,
+                                  ): session is NonNullable<typeof session> =>
+                                    Boolean(session),
+                                )
+                                .map(session => (
+                                  <SelectItem
+                                    key={session._id}
+                                    value={session._id}
+                                  >
+                                    <div className="py-1">
+                                      {session.title ||
+                                        `Session ${session._id.slice(-6)}`}
+                                    </div>
+                                  </SelectItem>
+                                ))
                             )}
                           </SelectContent>
                         </Select>
@@ -703,17 +710,27 @@ const TaskFormModal: FC<{
                                       </div>
                                     </SelectItem>
                                   ) : (
-                                    sessions.map(session => (
-                                      <SelectItem
-                                        key={session._id}
-                                        value={session._id}
-                                      >
-                                        <div className="py-1">
-                                          {session.title ||
-                                            `Session ${session._id.slice(-6)}`}
-                                        </div>
-                                      </SelectItem>
-                                    ))
+                                    sessions
+                                      .filter(
+                                        (
+                                          session,
+                                        ): session is NonNullable<
+                                          typeof session
+                                        > => Boolean(session),
+                                      )
+                                      .map(session => (
+                                        <SelectItem
+                                          key={session._id}
+                                          value={session._id}
+                                        >
+                                          <div className="py-1">
+                                            {session.title ||
+                                              `Session ${session._id.slice(
+                                                -6,
+                                              )}`}
+                                          </div>
+                                        </SelectItem>
+                                      ))
                                   )}
                                 </SelectContent>
                               </Select>
