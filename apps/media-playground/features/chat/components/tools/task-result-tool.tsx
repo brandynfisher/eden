@@ -7,6 +7,7 @@ import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { DropdownMenuGroup } from '@/components/ui/dropdown-menu'
+import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { TwitterEmbed } from '@/features/chat/components/tools/twitter-embed'
 import { getFileTypeByMimeType } from '@/lib/files'
@@ -71,6 +72,11 @@ export const TaskResultTool = makeAssistantToolUI({
       tool === 'tweet' ||
       tool?.includes('twitter')
 
+    // Check if this is a Discord or Telegram post tool
+    const isDiscordPost = tool === 'discord_post'
+    const isTelegramPost = tool === 'telegram_post'
+    const isSocialPost = isDiscordPost || isTelegramPost
+
     return (
       <div className="mb-2">
         <ToolFallback
@@ -107,6 +113,14 @@ export const TaskResultTool = makeAssistantToolUI({
                     </div>
                   ))
                 : null}
+            </div>
+          ) : isSocialPost ? (
+            // Handle Discord and Telegram post results
+            <div className="mt-4 mb-4">
+              <SocialPostEmbed
+                results={toolResults || []}
+                platform={isDiscordPost ? 'discord' : 'telegram'}
+              />
             </div>
           ) : (
             // Handle other tool results (existing logic)
