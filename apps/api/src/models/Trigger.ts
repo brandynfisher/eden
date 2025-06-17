@@ -18,11 +18,18 @@ export interface TriggerSchema {
   trigger_id: string
   user: ObjectId
   agent: ObjectId
+  session_type: 'new' | 'another'
   session?: ObjectId
   schedule: CronSchedule
   instruction: string
   update_config?: any
   status?: 'active' | 'paused' | 'finished'
+  posting_instructions?: {
+    post_to: 'same' | 'another' | 'discord' | 'telegram' | 'x' | 'farcaster'
+    session_id?: ObjectId | null
+    channel_id?: string | null
+    custom_instructions?: string
+  }
 }
 
 export interface TriggerDocument extends TriggerSchema {}
@@ -42,6 +49,11 @@ const TriggerSchema = new Schema<TriggerDocument>(
       type: Schema.Types.ObjectId,
       ref: 'users3',
       required: true,
+    },
+    session_type: {
+      type: String,
+      enum: ['new', 'another'],
+      default: 'new',
     },
     session: {
       type: Schema.Types.ObjectId,
@@ -64,6 +76,10 @@ const TriggerSchema = new Schema<TriggerDocument>(
       type: String,
       enum: ['active', 'paused', 'finished'],
       default: 'active',
+    },
+    posting_instructions: {
+      type: Object,
+      required: false,
     },
   },
   {

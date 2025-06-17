@@ -20,11 +20,18 @@ export type Trigger = {
   trigger_id: string
   user: Creator
   agent: Agent
+  session_type: 'new' | 'another'
   session?: string | null
   schedule: CronSchedule
   instruction: string
   update_config?: any
   status?: 'active' | 'paused' | 'finished'
+  posting_instructions?: {
+    post_to: 'same' | 'another' | 'discord' | 'telegram' | 'x' | 'farcaster'
+    session_id?: string | null
+    channel_id?: string | null
+    custom_instructions?: string
+  }
   createdAt: Date
   updatedAt: Date
 }

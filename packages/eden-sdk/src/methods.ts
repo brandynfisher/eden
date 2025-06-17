@@ -228,6 +228,8 @@ import {
   AgentsUnlikeResponse,
   AgentsUpdateDeploymentArguments,
   AgentsUpdateDeploymentResponse,
+  AgentsUpdateTriggerArguments,
+  AgentsUpdateTriggerResponse,
   CollectionsV2AddCreationsArguments,
   CollectionsV2AddCreationsResponse,
   CollectionsV2CreateArguments,
@@ -322,6 +324,7 @@ import {
   agentsStopDeploymentRequestConfig,
   agentsUnlikeRequestConfig,
   agentsUpdateDeploymentRequestConfig,
+  agentsUpdateTriggerRequestConfig,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
   collectionsV2DeleteRequestConfig,
@@ -676,6 +679,10 @@ export abstract class Methods {
         AgentsCreateTriggerArguments,
         AgentsCreateTriggerResponse
       >(this, agentsCreateTriggerRequestConfig),
+      update: bindApiCall<
+        AgentsUpdateTriggerArguments,
+        AgentsUpdateTriggerResponse
+      >(this, agentsUpdateTriggerRequestConfig),
       delete: bindApiCall<
         AgentsDeleteTriggerArguments,
         AgentsDeleteTriggerResponse
