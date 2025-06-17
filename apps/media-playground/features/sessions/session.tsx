@@ -18,10 +18,12 @@ import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-const Session = () => {
+const Session = ({
+  optimisticSessionId,
+}: { optimisticSessionId?: string } = {}) => {
   const params = useParams()
   const router = useRouter()
-  const sessionId = params.id as string
+  const sessionId = optimisticSessionId || (params.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
   const [streamingText, setStreamingText] = useState('')
@@ -275,7 +277,8 @@ const Session = () => {
     [filteredMessages],
   )
 
-  if (isSessionLoading) {
+  // Only show loading if we have no data at all and are actively loading
+  if (isSessionLoading && !session) {
     return (
       <div className="flex mx-auto py-16">
         <LoadingIndicator />

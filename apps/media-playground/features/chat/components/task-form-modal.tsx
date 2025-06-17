@@ -449,12 +449,11 @@ const TaskFormModal: FC<{
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-8">
-          <DialogTitle className="text-3xl font-semibold">
+        <DialogHeader className="space-y-3 pb-6">
+          <DialogTitle className="text-2xl font-semibold">
             {editingTask ? 'Edit Task' : 'Create New Task'}
           </DialogTitle>
         </DialogHeader>
-
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit, () => {
