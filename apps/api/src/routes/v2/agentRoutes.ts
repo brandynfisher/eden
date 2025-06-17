@@ -12,6 +12,7 @@ import {
   unlikeAgent,
   updateAgent,
   updateAgentDeployment,
+  updateAgentTrigger,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -153,6 +154,15 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createAgentTrigger(server, request, reply),
+  })
+
+  server.patch('/v2/agents/:agentId/triggers/:triggerId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Update an agent trigger',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateAgentTrigger(server, request, reply),
   })
 
   server.delete('/v2/agents/:agentId/triggers/:triggerId', {

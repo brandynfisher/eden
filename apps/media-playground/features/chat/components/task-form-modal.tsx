@@ -1,12 +1,16 @@
 'use client'
 
+import DiscordIcon from '@/components/icons/discord'
+import { FarcasterIcon } from '@/components/icons/farcaster'
+import { TelegramIcon } from '@/components/icons/telegram'
+import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
+import { Checkbox } from '@/components/ui/checkbox'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -31,7 +35,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
+import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { cn } from '@/lib/utils'
 import { CronSchedule, Trigger } from '@edenlabs/eden-sdk'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -88,17 +94,65 @@ export const extendedTriggerRepeatOptions: {
 ]
 
 // Task schema for the simplified tasks interface
-export const taskSchema = z.object({
-  instructions: z.string().min(1, 'Instructions are required'),
-  startDate: z.date().optional(), // Only needed for "doesn't repeat"
-  repeat: z.nativeEnum(ExtendedTriggerRepeatOptions),
-  time: z.string().optional(), // HH:MM format
-  dayOfWeek: z.string().optional(), // For weekly
-  dayOfMonth: z.string().optional(), // For monthly/annually
-  month: z.string().optional(), // For annually
-  endDate: z.date().optional(),
-  timezone: z.string(),
-})
+export const taskSchema = z
+  .object({
+    instructions: z.string().min(1, 'Instructions are required'),
+    // Session targeting (moved from posting instructions)
+    sessionType: z.enum(['new', 'another']).default('new'),
+    sessionId: z.string().optional(),
+    startDate: z.date().optional(), // Only needed for "doesn't repeat"
+    repeat: z.nativeEnum(ExtendedTriggerRepeatOptions),
+    time: z.string().optional(), // HH:MM format
+    dayOfWeek: z.string().optional(), // For weekly
+    dayOfMonth: z.string().optional(), // For monthly/annually
+    month: z.string().optional(), // For annually
+    endDate: z.date().optional(),
+    timezone: z.string(),
+    // Posting instructions
+    enablePosting: z.boolean().default(false),
+    postTo: z
+      .enum(['same', 'another', 'discord', 'telegram', 'x', 'farcaster'])
+      .default('same'),
+    postToSessionId: z.string().optional(), // Different from sessionId above
+    channelId: z.string().optional(),
+    customInstructions: z.string().optional(),
+  })
+  .refine(data => {
+    // If sessionType is "another", sessionId must be provided
+    if (data.sessionType === 'another' && !data.sessionId) {
+      return false
+    }
+    // If enablePosting and postTo is "another", postToSessionId must be provided
+    if (
+      data.enablePosting &&
+      data.postTo === 'another' &&
+      !data.postToSessionId
+    ) {
+      return false
+    }
+    return true
+  })
+  .superRefine((data, ctx) => {
+    // Custom validation for each field
+    if (data.sessionType === 'another' && !data.sessionId) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Please select a session when targeting another session',
+        path: ['sessionId'],
+      })
+    }
+    if (
+      data.enablePosting &&
+      data.postTo === 'another' &&
+      !data.postToSessionId
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Please select a session to post to',
+        path: ['postToSessionId'],
+      })
+    }
+  })
 
 type TaskFormDto = z.infer<typeof taskSchema>
 
@@ -109,9 +163,71 @@ const TaskFormModal: FC<{
   onOpenChange: (open: boolean) => void
   onSave: () => void
 }> = ({ agent, editingTask, open, onOpenChange, onSave }) => {
+  // Fetch deployments separately since agent.deployments is empty
+  const deploymentsQuery = useAgentDeploymentsQuery({
+    key: agent._id,
+    enabled: open, // Only fetch when modal is open
+  })
+
+  // Get available social platforms based on agent deployments
+  const availablePlatforms = React.useMemo(() => {
+    const platforms: string[] = []
+
+    // Use deployments from the query since agent.deployments is empty
+    const deployments = deploymentsQuery.deployments || []
+
+    deployments.forEach(deployment => {
+      if (deployment.platform === 'discord') platforms.push('discord')
+      if (deployment.platform === 'telegram') platforms.push('telegram')
+      if (deployment.platform === 'twitter') platforms.push('x')
+      if (deployment.platform === 'farcaster') platforms.push('farcaster')
+    })
+    return platforms
+  }, [deploymentsQuery.deployments, deploymentsQuery.isLoading, open])
+
+  // Get channel options for Discord and Telegram
+  const getChannelOptions = React.useMemo(() => {
+    const discordChannels = []
+    const telegramChannels = []
+
+    // Get from deployments query
+    const deployments = deploymentsQuery.deployments || []
+    deployments.forEach(deployment => {
+      if (
+        deployment.platform === 'discord' &&
+        deployment.config?.discord?.channel_allowlist
+      ) {
+        discordChannels.push(...deployment.config.discord.channel_allowlist)
+      }
+      if (
+        deployment.platform === 'telegram' &&
+        deployment.config?.telegram?.topic_allowlist
+      ) {
+        telegramChannels.push(...deployment.config.telegram.topic_allowlist)
+      }
+    })
+
+    // Fallback to agent's direct allowlists
+    if (discordChannels.length === 0 && agent.discordChannelAllowlist) {
+      discordChannels.push(...agent.discordChannelAllowlist)
+    }
+    if (telegramChannels.length === 0 && agent.telegramTopicAllowlist) {
+      telegramChannels.push(...agent.telegramTopicAllowlist)
+    }
+
+    return { discordChannels, telegramChannels }
+  }, [
+    deploymentsQuery.deployments,
+    agent.discordChannelAllowlist,
+    agent.telegramTopicAllowlist,
+  ])
   const { invalidate } = useAgentTriggersQuery({
     key: agent._id,
     enabled: false,
+  })
+
+  const { sessions, isLoading: isLoadingSessions } = useSessionListQuery({
+    enabled: open, // Only fetch when modal is open
   })
 
   const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -119,32 +235,91 @@ const TaskFormModal: FC<{
 
   const form = useForm<TaskFormDto>({
     resolver: zodResolver(taskSchema),
-    defaultValues: editingTask
-      ? {
-          instructions: editingTask.instruction,
-          startDate: editingTask.schedule.start_date
-            ? new Date(editingTask.schedule.start_date)
-            : undefined,
-          repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT, // Default for editing
-          time: editingTask.schedule.start_date
-            ? format(new Date(editingTask.schedule.start_date), 'HH:mm')
-            : currentTime,
-          dayOfWeek: editingTask.schedule.day_of_week?.toString() || undefined,
-          dayOfMonth: editingTask.schedule.day?.toString() || undefined,
-          month: editingTask.schedule.month?.toString() || undefined,
-          timezone: editingTask.schedule.timezone || defaultTimezone,
-        }
-      : {
-          instructions: '',
-          startDate: new Date(),
-          repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
-          time: currentTime,
-          dayOfWeek: undefined,
-          dayOfMonth: undefined,
-          month: undefined,
-          timezone: defaultTimezone,
-        },
+    defaultValues: {
+      instructions: '',
+      sessionType: 'new',
+      sessionId: undefined,
+      startDate: new Date(),
+      repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
+      time: currentTime,
+      dayOfWeek: undefined,
+      dayOfMonth: undefined,
+      month: undefined,
+      timezone: defaultTimezone,
+      // Posting instructions
+      enablePosting: false,
+      postTo: 'same',
+      postToSessionId: undefined,
+      channelId: undefined,
+      customInstructions:
+        "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
+    },
   })
+
+  // Reset form when editingTask changes
+  React.useEffect(() => {
+    if (editingTask) {
+      // Reset form with the editing task data
+      const formData = {
+        instructions: editingTask.instruction,
+        sessionType: (editingTask.session_type as 'new' | 'another') || 'new',
+        sessionId: editingTask.session || undefined,
+        startDate: editingTask.schedule.start_date
+          ? new Date(editingTask.schedule.start_date)
+          : undefined,
+        repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT, // Default for editing
+        time: editingTask.schedule.start_date
+          ? format(new Date(editingTask.schedule.start_date), 'HH:mm')
+          : currentTime,
+        dayOfWeek: editingTask.schedule.day_of_week?.toString() || undefined,
+        dayOfMonth: editingTask.schedule.day?.toString() || undefined,
+        month: editingTask.schedule.month?.toString() || undefined,
+        timezone: editingTask.schedule.timezone || defaultTimezone,
+        // Posting instructions
+        enablePosting: !!editingTask.posting_instructions,
+        postTo:
+          (editingTask.posting_instructions?.post_to as
+            | 'same'
+            | 'another'
+            | 'discord'
+            | 'telegram'
+            | 'x'
+            | 'farcaster') || 'same',
+        postToSessionId:
+          editingTask.posting_instructions?.session_id || undefined,
+        channelId: editingTask.posting_instructions?.channel_id || undefined,
+        customInstructions:
+          editingTask.posting_instructions?.custom_instructions ||
+          "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
+      }
+
+      form.reset(formData)
+    }
+  }, [editingTask, form, currentTime, defaultTimezone])
+
+  // Reset form when modal is closed
+  React.useEffect(() => {
+    if (!open) {
+      form.reset({
+        instructions: '',
+        sessionType: 'new',
+        sessionId: undefined,
+        startDate: new Date(),
+        repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
+        time: currentTime,
+        dayOfWeek: undefined,
+        dayOfMonth: undefined,
+        month: undefined,
+        timezone: defaultTimezone,
+        postTo: 'same',
+        postToSessionId: undefined,
+        channelId: undefined,
+        customInstructions:
+          "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
+        enablePosting: false,
+      })
+    }
+  }, [open, form, currentTime, defaultTimezone])
 
   const onSubmit = async (values: TaskFormDto) => {
     try {
@@ -206,22 +381,56 @@ const TaskFormModal: FC<{
         }
       }
 
+      // Build posting instructions only if posting is enabled
+      let posting_instructions = null
+      if (values.enablePosting) {
+        posting_instructions = {
+          post_to: values.postTo,
+          session_id: null,
+          channel_id: null,
+          custom_instructions: undefined,
+        }
+
+        // Only add session_id if posting to another session
+        if (values.postTo === 'another' && values.postToSessionId) {
+          posting_instructions.session_id = values.postToSessionId
+        }
+
+        if (
+          (values.postTo === 'discord' || values.postTo === 'telegram') &&
+          values.channelId
+        ) {
+          posting_instructions.channel_id = values.channelId
+        }
+
+        if (values.customInstructions) {
+          posting_instructions.custom_instructions = values.customInstructions
+        }
+      }
+
       if (editingTask) {
         // Update existing task
         await axios.patch(
           `/api/agents/${agent._id}/triggers/${editingTask._id}`,
           {
             instruction: values.instructions,
+            session_type: values.sessionType,
+            session: values.sessionType === 'another' ? values.sessionId : null,
             schedule,
+            posting_instructions,
           },
         )
         toast.success('Task updated successfully')
       } else {
         // Create new task
-        await axios.post(`/api/agents/${agent._id}/triggers`, {
+        const requestData = {
           instruction: values.instructions,
+          session_type: values.sessionType,
+          session: values.sessionType === 'another' ? values.sessionId : null,
           schedule,
-        })
+          posting_instructions,
+        }
+        await axios.post(`/api/agents/${agent._id}/triggers`, requestData)
         toast.success('Task created successfully')
       }
 
@@ -244,11 +453,6 @@ const TaskFormModal: FC<{
           <DialogTitle className="text-2xl font-semibold">
             {editingTask ? 'Edit Task' : 'Create New Task'}
           </DialogTitle>
-          <DialogDescription className="text-base text-muted-foreground">
-            {editingTask
-              ? 'Update the automated task settings below.'
-              : 'Set up an automated task that will run on your chosen schedule.'}
-          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -258,13 +462,13 @@ const TaskFormModal: FC<{
             className="space-y-8"
           >
             {/* Task Instructions */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <FormField
                 control={form.control}
                 name="instructions"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-base font-medium">
+                    <FormLabel className="text-lg font-semibold">
                       Task Instructions
                       <span className="text-destructive ml-1">*</span>
                     </FormLabel>
@@ -279,15 +483,367 @@ const TaskFormModal: FC<{
                   </FormItem>
                 )}
               />
+
+              {/* Session Targeting */}
+              <FormField
+                control={form.control}
+                name="sessionType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">
+                      Session
+                    </FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="h-12">
+                          <SelectValue placeholder="Choose session target" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">
+                            Create new Session
+                          </SelectItem>
+                          <SelectItem value="another">
+                            Target another Session
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Session Dropdown - only shown if "Target another Session" is selected */}
+              {form.watch('sessionType') === 'another' && (
+                <FormField
+                  control={form.control}
+                  name="sessionId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <SelectTrigger className="h-12">
+                            <SelectValue placeholder="Select target session" />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-80">
+                            {isLoadingSessions ? (
+                              <SelectItem value="loading" disabled>
+                                <div className="py-1">Loading sessions...</div>
+                              </SelectItem>
+                            ) : sessions.length === 0 ? (
+                              <SelectItem value="no-sessions" disabled>
+                                <div className="py-1">No sessions found</div>
+                              </SelectItem>
+                            ) : (
+                              sessions.map(session => (
+                                <SelectItem
+                                  key={session._id}
+                                  value={session._id}
+                                >
+                                  <div className="py-1">
+                                    {session.title ||
+                                      `Session ${session._id.slice(-6)}`}
+                                  </div>
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            {/* Posting Instructions Section */}
+            <div className="space-y-6 border-t pt-6">
+              <div className="space-y-4">
+                {/* Toggle for posting summary */}
+                <FormField
+                  control={form.control}
+                  name="enablePosting"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-lg font-semibold cursor-pointer">
+                          Post a summary of the results
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Conditional posting options - only shown if enablePosting is true */}
+                {form.watch('enablePosting') && (
+                  <div className="space-y-4 ml-6 border-l-2 border-muted pl-4">
+                    {/* Custom posting instructions */}
+                    <FormField
+                      control={form.control}
+                      name="customInstructions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium">
+                            Posting instructions
+                          </FormLabel>
+                          <FormControl>
+                            <AutosizeTextarea
+                              placeholder="Describe what should be included in the results summary..."
+                              className="resize-none min-h-[80px] text-base"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Post To */}
+                    <FormField
+                      control={form.control}
+                      name="postTo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium">
+                            Post to
+                          </FormLabel>
+                          <FormControl>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="h-12">
+                                <SelectValue placeholder="Choose where to post" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="same">
+                                  Same Session
+                                </SelectItem>
+                                <SelectItem value="another">
+                                  Another Session
+                                </SelectItem>
+                                {availablePlatforms.includes('discord') && (
+                                  <SelectItem value="discord">
+                                    <div className="flex items-center gap-2">
+                                      <DiscordIcon size={16} />
+                                      Discord
+                                    </div>
+                                  </SelectItem>
+                                )}
+                                {availablePlatforms.includes('telegram') && (
+                                  <SelectItem value="telegram">
+                                    <div className="flex items-center gap-2">
+                                      <TelegramIcon size={16} />
+                                      Telegram
+                                    </div>
+                                  </SelectItem>
+                                )}
+                                {availablePlatforms.includes('x') && (
+                                  <SelectItem value="x">
+                                    <div className="flex items-center gap-2">
+                                      <TwitterIcon size={16} />X
+                                    </div>
+                                  </SelectItem>
+                                )}
+                                {availablePlatforms.includes('farcaster') && (
+                                  <SelectItem value="farcaster">
+                                    <div className="flex items-center gap-2">
+                                      <FarcasterIcon size={16} />
+                                      Farcaster
+                                    </div>
+                                  </SelectItem>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Session Dropdown for posting - only shown if "Another Session" is selected */}
+                    {form.watch('postTo') === 'another' && (
+                      <FormField
+                        control={form.control}
+                        name="postToSessionId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger className="h-12">
+                                  <SelectValue placeholder="Select session to post to" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-80">
+                                  {isLoadingSessions ? (
+                                    <SelectItem value="loading" disabled>
+                                      <div className="py-1">
+                                        Loading sessions...
+                                      </div>
+                                    </SelectItem>
+                                  ) : sessions.length === 0 ? (
+                                    <SelectItem value="no-sessions" disabled>
+                                      <div className="py-1">
+                                        No sessions found
+                                      </div>
+                                    </SelectItem>
+                                  ) : (
+                                    sessions.map(session => (
+                                      <SelectItem
+                                        key={session._id}
+                                        value={session._id}
+                                      >
+                                        <div className="py-1">
+                                          {session.title ||
+                                            `Session ${session._id.slice(-6)}`}
+                                        </div>
+                                      </SelectItem>
+                                    ))
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Discord Channel Dropdown */}
+                    {form.watch('postTo') === 'discord' &&
+                      getChannelOptions.discordChannels.length > 0 && (
+                        <FormField
+                          control={form.control}
+                          name="channelId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">
+                                Discord Channel
+                              </FormLabel>
+                              <FormControl>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <SelectTrigger className="h-12">
+                                    <SelectValue placeholder="Select Discord channel" />
+                                  </SelectTrigger>
+                                  <SelectContent className="max-h-80">
+                                    {getChannelOptions.discordChannels.map(
+                                      channel => (
+                                        <SelectItem
+                                          key={channel.id}
+                                          value={channel.id}
+                                        >
+                                          <div className="py-1">
+                                            {channel.note || channel.id}
+                                          </div>
+                                        </SelectItem>
+                                      ),
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
+                    {/* Telegram Channel Dropdown */}
+                    {form.watch('postTo') === 'telegram' &&
+                      getChannelOptions.telegramChannels.length > 0 && (
+                        <FormField
+                          control={form.control}
+                          name="channelId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">
+                                Telegram Channel
+                              </FormLabel>
+                              <FormControl>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <SelectTrigger className="h-12">
+                                    <SelectValue placeholder="Select Telegram channel" />
+                                  </SelectTrigger>
+                                  <SelectContent className="max-h-80">
+                                    {getChannelOptions.telegramChannels.map(
+                                      channel => (
+                                        <SelectItem
+                                          key={channel.id}
+                                          value={channel.id}
+                                        >
+                                          <div className="py-1">
+                                            {channel.note || channel.id}
+                                          </div>
+                                        </SelectItem>
+                                      ),
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
+                    {/* Fallback input for Discord/Telegram when no channels configured */}
+                    {((form.watch('postTo') === 'discord' &&
+                      getChannelOptions.discordChannels.length === 0) ||
+                      (form.watch('postTo') === 'telegram' &&
+                        getChannelOptions.telegramChannels.length === 0)) && (
+                      <FormField
+                        control={form.control}
+                        name="channelId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium">
+                              {form.watch('postTo') === 'discord'
+                                ? 'Discord Channel ID'
+                                : 'Telegram Channel ID'}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={`Enter ${form.watch(
+                                  'postTo',
+                                )} channel ID`}
+                                className="h-12"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Schedule Section */}
             <div className="space-y-6 border-t pt-6">
               <div>
                 <h3 className="text-lg font-semibold mb-2">Schedule</h3>
-                <p className="text-sm text-muted-foreground">
-                  Choose when and how often this task should run
-                </p>
               </div>
 
               <div className="space-y-4">
