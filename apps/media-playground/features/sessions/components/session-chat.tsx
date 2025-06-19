@@ -3,6 +3,8 @@
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { ErrorDisplay } from '@/features/sessions/components/error-display'
 import { MessageInput } from '@/features/sessions/components/message-input'
@@ -20,6 +22,7 @@ import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
+import { PlusIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -30,47 +33,142 @@ const SessionWelcome: FC<{
   isLoading: boolean
 }> = ({ agent, onSendMessage, isLoading }) => {
   const suggestions = agent?.suggestions || []
+  const [showAll, setShowAll] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [visibleCount, setVisibleCount] = useState(suggestions.length)
+
+  const measureAndUpdate = useCallback(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const welcomeCenter = container.closest('.aui-thread-welcome-center')
+    if (!welcomeCenter) return
+
+    const containerWidth = welcomeCenter.clientWidth - 86 // Account for button width
+    const items = Array.from(container.querySelectorAll('.suggestion-item'))
+
+    let totalWidth = 0
+    let count = items.length
+
+    for (let i = 0; i < items.length; i++) {
+      const itemWidth = items[i].getBoundingClientRect().width + 8 // Gap
+      if (totalWidth + itemWidth > containerWidth) {
+        count = Math.max(1, i)
+        break
+      }
+      totalWidth += itemWidth
+    }
+
+    setVisibleCount(count)
+  }, [])
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const welcomeCenter = container.closest('.aui-thread-welcome-center')
+    if (!welcomeCenter) return
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (!showAll) {
+        measureAndUpdate()
+      }
+    })
+
+    resizeObserver.observe(welcomeCenter)
+    measureAndUpdate()
+
+    return () => resizeObserver.disconnect()
+  }, [showAll, suggestions.length, measureAndUpdate])
 
   return (
     <div className="aui-thread-welcome">
-      <div className="aui-thread-welcome-center relative flex flex-col items-center justify-center min-h-full py-8">
+      <div className="aui-thread-welcome-center relative flex flex-col items-center justify-center min-h-full py-8 px-4 sm:px-6 lg:px-8">
         {agent && (
           <>
-            <div className="text-sm text-muted-foreground mb-2">
-              {agent.name}
+            <div className="relative flex flex-col items-center p-2 mt-8">
+              {/* Subtle glow effect behind avatar */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent rounded-full blur-3xl scale-150 opacity-60 animate-pulse"></div>
+
+              {/* Agent name with elegant typography */}
+              <div className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 tracking-wide">
+                {agent.name}
+              </div>
+
+              {/* Large, prominent avatar with beautiful border */}
+              <div className="relative group mb-4">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/25 to-primary/10 rounded-full scale-105 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out"></div>
+                <Avatar className="w-24 h-24 md:w-32 md:h-32 relative z-10 ring-4 ring-primary/25 ring-offset-4 ring-offset-background transition-all duration-300 hover:ring-primary/50 hover:scale-105">
+                  <AvatarImage
+                    className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    src={getCloudfrontOriginalUrl(agent.userImage)}
+                  />
+                  <AvatarFallback
+                    delayMs={250}
+                    className="w-24 h-24 md:w-32 md:h-32 text-xl md:text-2xl font-bold bg-gradient-to-br from-primary/15 to-primary/8 text-primary border-2 border-primary/20"
+                  >
+                    {agent.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
             </div>
-            <div className="w-16 h-16 md:w-24 md:h-24 mb-4">
-              <img
-                src={getCloudfrontOriginalUrl(agent.userImage)}
-                alt={agent.name}
-                className="w-full h-full rounded-full object-cover"
+
+            <div className="mb-8">
+              <p className=" text-center">
+                {agent.greeting || 'What do you want to create today?'}
+              </p>
+            </div>
+
+            {/* Message Input for Welcome Screen */}
+            <div className="w-full max-w-[--aui-thread-max-width] mx-auto mb-6">
+              <MessageInput
+                sessionId={'new'}
+                onStreamingMessage={onSendMessage}
               />
             </div>
           </>
         )}
 
-        <div className="mb-8">
-          {agent && (
-            <p className="text-lg text-center">
-              {agent.greeting || 'What do you want to create today?'}
-            </p>
-          )}
-        </div>
-
         {suggestions.length > 0 && (
-          <div className="mt-6 w-full">
-            <div className="flex flex-row gap-2 flex-wrap justify-center">
-              {suggestions.slice(0, 3).map((suggestion, index) => (
-                <button
-                  key={index}
-                  className="text-sm hover:bg-secondary/20 flex-shrink-0 border border-border rounded-full bg-popover/30 px-3 py-2"
-                  onClick={() => onSendMessage(suggestion.label)}
-                  disabled={isLoading}
+          <div
+            className="w-full max-w-[--aui-thread-max-width] mx-auto relative"
+            ref={containerRef}
+          >
+            <div
+              className={`flex flex-row gap-2 flex-wrap justify-center transition-[height,opacity] duration-200 ${
+                !showAll ? 'overflow-hidden pr-[84px]' : 'flex-wrap'
+              }`}
+            >
+              {suggestions.map((suggestion, index) => (
+                <div
+                  className={`text-sm suggestion-item hover:bg-secondary/20 flex-shrink-0 border border-border rounded-full bg-popover/30 transition-opacity duration-200 ${
+                    !showAll && index >= visibleCount
+                      ? 'opacity-0 absolute pointer-events-none'
+                      : 'opacity-100'
+                  }`}
+                  key={`${suggestion.label}-${index}`}
                 >
-                  {suggestion.label}
-                </button>
+                  <button
+                    className="px-3 py-2 rounded-full"
+                    onClick={() => onSendMessage(suggestion.label)}
+                    disabled={isLoading}
+                  >
+                    {suggestion.label}
+                  </button>
+                </div>
               ))}
             </div>
+            {suggestions.length > visibleCount && !showAll && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute text-xs bg-muted/30 right-0 top-1/2 -translate-y-1/2 z-10 rounded-full"
+                onClick={() => setShowAll(true)}
+              >
+                <PlusIcon className="w-4 h-4 mr-1" />
+                More
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -577,12 +675,12 @@ const SessionChat: FC = () => {
       </div>
 
       {/* Message Input */}
-      <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-4">
+      {/*<div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
         <MessageInput
           sessionId={sessionId || 'new'}
           onStreamingMessage={handleSendMessage}
         />
-      </div>
+      </div>*/}
     </main>
   )
 }
