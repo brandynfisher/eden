@@ -144,8 +144,8 @@ const SessionListItem: FC<SessionListItemProps> = ({
   return (
     <div
       className={cn(
-        'group flex justify-between hover:text-primary font-normal hover:bg-muted/50 items-center gap-1 rounded-lg transition-all mr-1 text-sm relative',
-        isActive && 'bg-muted text-primary font-medium',
+        'group flex justify-between hover:text-white font-normal hover:bg-muted/50 items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5',
+        isActive && 'bg-primary/30 text-white font-medium',
       )}
     >
       <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
@@ -174,7 +174,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0 text-primary hover:text-primary"
+              className="h-7 w-7 shrink-0 text-white hover:text-white"
               onClick={handleRenameSubmit}
               onMouseDown={e => e.preventDefault()}
               disabled={isRenaming}
@@ -257,27 +257,25 @@ const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
   const handleClick = () => {
     onItemClick?.()
     if (isChat && agentId) {
-      // For chat2 routes, go to agent's welcome page
       router.push(`/chat2/${agentId}`, { scroll: false })
     } else {
-      // For regular sessions, go to new session page
       router.push('/sessions/new', { scroll: false })
     }
   }
 
   return (
     <Button
-      variant="ghost"
+      variant={isNewSession ? 'outline' : 'default'}
       onClick={handleClick}
       className={cn(
-        'flex w-full justify-between px-3 mb-1',
-        isNewSession ? 'bg-muted text-primary' : 'bg-aui-muted',
+        'flex w-full justify-start gap-2 py-3 mb-2 rounded-md font-medium transition-colors',
+        isNewSession
+          ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+          : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
       )}
     >
-      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-        <span>{isChat ? 'New Chat' : 'New Session'}</span>
-      </div>
-      <EditIcon className="size-4 text-foreground" />
+      <EditIcon className="size-4" />
+      <span>{isChat ? 'New Chat' : 'New Session'}</span>
     </Button>
   )
 }
@@ -343,7 +341,7 @@ const MainLeft = ({
   }, [hasMore, isFetchingNextPage, fetchNextPage])
 
   return (
-    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto">
+    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto mr-2">
       <div className="mb-1 text-muted-foreground">Recent</div>
       {isLoading ? (
         <>
@@ -408,7 +406,7 @@ export const SessionsSidebarContent = ({
 }) => {
   return (
     <>
-      <div className="border-b mb-2">
+      <div className="mb-2 mr-2">
         <TopLeft onItemClick={onItemClick} isChat={isChat} />
       </div>
       <MainLeft onItemClick={onItemClick} agentId={agentId} isChat={isChat} />
@@ -425,7 +423,7 @@ export const SessionsSidebar = React.memo(
     agentId?: string
   }) => {
     return (
-      <div className="flex flex-col bg-[#0e1421] p-3 transition-all duration-300 ease-in-out w-full md:max-w-[320px]">
+      <div className="flex flex-col w-full">
         <SessionsSidebarContent onItemClick={onItemClick} agentId={agentId} />
       </div>
     )
