@@ -92,7 +92,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           onCollapse={() => setIsSidebarCollapsed(true)}
           onExpand={() => setIsSidebarCollapsed(false)}
           className={cn(
-            'hidden md:flex md:flex-col bg-[#0e1421] border-r transition-all duration-300 ease-in-out',
+            'hidden md:flex md:flex-col bg-accent border-r p-1 pr-0 transition-all duration-300 ease-in-out',
             'max-w-[320px]',
             isSidebarCollapsed && 'p-0 border-none',
           )}

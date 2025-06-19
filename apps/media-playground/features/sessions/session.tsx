@@ -377,7 +377,6 @@ const Session = ({
           onStreamingMessage={(content, attachments) => {
             // Clear any existing errors when starting a new message
             clearErrors()
-
             setIsStreamingTokens(true)
             setHasReceivedTokens(false)
             setStreamingText('')
