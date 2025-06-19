@@ -38,7 +38,7 @@ const AgentsPage = () => {
   //}
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-screen-2xl">
+    <div className="w-full px-4 py-6">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -86,11 +86,12 @@ const AgentsPage = () => {
       <AgentsFeed
         query={currentQuery}
         minCols={1}
-        maxCols={5}
+        maxCols={6}
         hideCreateButton={true}
         improvedLayout={true}
         hideContextMenu={true}
         breakpoints={[
+          { minWidth: 2400, columns: 6 },
           { minWidth: 1536, columns: 5 },
           { minWidth: 1280, columns: 4 },
           { minWidth: 1024, columns: 3 },
