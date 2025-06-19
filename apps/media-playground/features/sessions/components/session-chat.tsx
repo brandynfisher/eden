@@ -577,7 +577,7 @@ const SessionChat: FC = () => {
       </div>
 
       {/* Message Input */}
-      <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
+      <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-4">
         <MessageInput
           sessionId={sessionId || 'new'}
           onStreamingMessage={handleSendMessage}
