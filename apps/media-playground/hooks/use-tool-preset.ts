@@ -115,16 +115,16 @@ export const useToolPreset = () => {
       hasAppliedPresets.current = true
 
       // Clean up URL params after applying presets
-      //if (loraParam || creationParam || taskParam) {
-      // Get current URL and remove preset-related params
-      //  const url = new URL(window.location.href)
-      //  url.searchParams.delete('lora')
-      //  url.searchParams.delete('creation')
-      //  url.searchParams.delete('task')
+      if (loraParam || creationParam || taskParam) {
+        // Get current URL and remove preset-related params
+        const url = new URL(window.location.href)
+        url.searchParams.delete('lora')
+        url.searchParams.delete('creation')
+        url.searchParams.delete('task')
 
-      // Replace URL without triggering a re-render
-      //  router.replace(url.pathname + url.search, { scroll: false })
-      //}
+        // Replace URL without triggering a re-render
+        router.replace(url.pathname + url.search, { scroll: false })
+      }
     }
 
     derivePresetValues()

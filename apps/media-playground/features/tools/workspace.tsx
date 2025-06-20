@@ -8,6 +8,7 @@ import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import { useState } from 'react'
 
 type Props = {
   toolKey: ToolV2['key']
@@ -17,8 +18,14 @@ type Props = {
 const Workspace = ({ toolKey, toolSSRData }: Props) => {
   // 🔑 Every time ?creation= or ?task= changes, we want a fresh form
   const searchParams = useSearchParams()
-  const presetKey =
-    searchParams.get('creation') ?? searchParams.get('task') ?? 'default'
+  const [presetKey] = useState(() => {
+    return (
+      searchParams.get('creation') ??
+      searchParams.get('task') ??
+      searchParams.get('lora') ??
+      'default'
+    )
+  })
 
   const { tool: toolClientData } = useToolQuery({
     key: toolKey,
