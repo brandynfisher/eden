@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import CreationUiContainer from '@/features/tools/creation-ui-container'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { ToolV2 } from '@edenlabs/eden-sdk'
+import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 
 type Props = {
@@ -14,6 +15,11 @@ type Props = {
 }
 
 const Workspace = ({ toolKey, toolSSRData }: Props) => {
+  // 🔑 Every time ?creation= or ?task= changes, we want a fresh form
+  const searchParams = useSearchParams()
+  const presetKey =
+    searchParams.get('creation') ?? searchParams.get('task') ?? 'default'
+
   const { tool: toolClientData } = useToolQuery({
     key: toolKey,
     initialData: toolSSRData
@@ -35,7 +41,7 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
       <div className="lg:pr-4 lg:sticky lg:top-[120px] lg:h-screen min-w-[324px] w-full lg:max-w-[420px] lg:pt-4">
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
           <ErrorBoundary>
-            <CreationUiContainer tool={tool} />
+            <CreationUiContainer key={presetKey} tool={tool} />
           </ErrorBoundary>
         </Suspense>
       </div>
