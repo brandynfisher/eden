@@ -175,6 +175,7 @@ export const updateAgent = async (
     models,
     public: isPublic,
     owner_pays,
+    tools,
   } = request.body as AgentsUpdateArguments
 
   if (models && models.length > 10) {
@@ -212,6 +213,7 @@ export const updateAgent = async (
     voice,
     public: isPublic,
     owner_pays,
+    tools,
   }
 
   // Handle models array

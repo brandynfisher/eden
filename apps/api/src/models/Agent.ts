@@ -15,7 +15,7 @@ export interface AgentSchema extends BaseUserSchema {
   knowledge?: string
   suggestions?: AgentSuggestion[]
   deployments?: DeploymentDocument[]
-  tools?: string[]
+  tools?: { [key: string]: boolean }
   discordId?: string
   voice?: string
   models?: Array<{

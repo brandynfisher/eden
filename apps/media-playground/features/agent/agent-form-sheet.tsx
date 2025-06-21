@@ -87,6 +87,7 @@ export const agentSchema = z.object({
       }),
     )
     .optional(),
+  tools: z.object({}).passthrough().optional(),
 })
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -140,6 +141,7 @@ const AgentFormSheet = () => {
       voice: agentQuery.agent?.voice || '',
       models: agentQuery.agent?.models || [],
       suggestions: agentQuery.agent?.suggestions || [],
+      tools: agentQuery.agent?.tools || {},
     },
   })
 
@@ -165,6 +167,7 @@ const AgentFormSheet = () => {
         voice: agentQuery.agent.voice || '',
         models: agentQuery.agent.models || [],
         suggestions: agentQuery.agent.suggestions || [],
+        tools: agentQuery.agent.tools || {},
       })
     } else {
       form.reset({
@@ -179,6 +182,7 @@ const AgentFormSheet = () => {
         voice: '',
         models: [],
         suggestions: [],
+        tools: {},
       })
     }
   }, [agentQuery.agent, form])
@@ -245,7 +249,14 @@ const AgentFormSheet = () => {
         key: '',
         image: '',
         description: '',
+        persona: '',
+        isPersonaPublic: false,
+        knowledge: '',
+        greeting: '',
+        voice: '',
         models: [],
+        suggestions: [],
+        tools: {},
       })
     }
   }
@@ -719,6 +730,57 @@ const AgentFormSheet = () => {
                                 />
                               </div>
                             </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Tools Field */}
+                      <FormField
+                        control={form.control}
+                        name="tools"
+                        render={({ field }) => (
+                          <FormItem className="p-4 bg-secondary rounded-lg mt-4">
+                            <FormLabel>Tools</FormLabel>
+                            <FormDescription>
+                              Select which tools this agent can use to help
+                              users.
+                            </FormDescription>
+                            <FormControl>
+                              <div className="space-y-3">
+                                {[
+                                  {
+                                    key: 'Create images',
+                                    label: 'Create images',
+                                  },
+                                  {
+                                    key: 'Create videos',
+                                    label: 'Create videos',
+                                  },
+                                  { key: 'VJ Tools', label: 'VJ Tools' },
+                                  { key: 'News', label: 'News' },
+                                ].map(tool => (
+                                  <div
+                                    key={tool.key}
+                                    className="flex items-center space-x-2"
+                                  >
+                                    <Switch
+                                      checked={field.value?.[tool.key] || false}
+                                      onCheckedChange={checked => {
+                                        const currentTools = field.value || {}
+                                        field.onChange({
+                                          ...currentTools,
+                                          [tool.key]: checked,
+                                        })
+                                      }}
+                                    />
+                                    <label className="text-sm font-medium">
+                                      {tool.label}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />

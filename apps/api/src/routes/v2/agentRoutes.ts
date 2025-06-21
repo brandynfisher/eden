@@ -127,6 +127,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
           ),
         ),
         owner_pays: Type.Optional(Type.Boolean()),
+        tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
       }),
       response: {
         200: Type.Object({

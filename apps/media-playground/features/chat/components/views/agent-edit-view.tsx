@@ -133,6 +133,7 @@ export const agentSchema = z.object({
   persona: z.string().max(30000).optional(),
   isPersonaPublic: z.boolean().optional(),
   knowledge: z.string().max(100000).optional(),
+  tools: z.object({}).passthrough().optional(),
 })
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -165,6 +166,7 @@ const AgentEditView: FC<{
       greeting: agent?.greeting || '',
       voice: agent?.voice || '',
       models: agent?.models || [],
+      tools: agent?.tools || {},
     },
   })
 
@@ -189,6 +191,7 @@ const AgentEditView: FC<{
         greeting: agent.greeting || '',
         voice: agent.voice || '',
         models: agent.models || [],
+        tools: agent.tools || {},
       })
     }
   }, [agent, form])
@@ -327,119 +330,129 @@ const AgentEditView: FC<{
                           Profile Information
                         </h3>
 
-                        {/* Name Field */}
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                              <FormLabel className="text-base font-medium">
-                                Display Name
-                                <span className="text-red-500 ml-1">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="text"
-                                  placeholder="My helpful Agent"
-                                  {...field}
-                                  onChange={e => {
-                                    field.onChange(e.target.value.slice(0, 42))
-                                  }}
-                                  className="mt-2"
-                                />
-                              </FormControl>
-                              {field.value && (
-                                <div className="flex items-center gap-2 mt-3">
-                                  <div className="text-sm text-muted-foreground flex-1">
-                                    {isKeyEditMode ? (
-                                      <div className="flex items-center gap-2">
-                                        <Input
-                                          type="text"
-                                          value={key}
-                                          placeholder="unique-name"
-                                          onChange={e => {
-                                            const value = e.target.value
-                                              .toLowerCase()
-                                              .slice(0, 42)
-                                            form.setValue('key', value)
-                                            setIsManualKeyEdit(true)
-                                          }}
-                                          onBlur={e => {
-                                            form.setValue(
-                                              'key',
-                                              slugifyName(e.target.value),
-                                            )
-                                            setIsKeyEditMode(false)
-                                          }}
-                                          className="h-7 text-sm"
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="flex items-center gap-2">
-                                        <span>
-                                          Auto generated unique name: {key}
-                                        </span>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-6 w-6 p-0"
-                                          onClick={() => setIsKeyEditMode(true)}
-                                        >
-                                          <Edit2Icon size={12} />
-                                        </Button>
+                        {/* Combined Profile Section */}
+                        <div className="p-6 bg-card rounded-xl border border-border mb-6">
+                          <div className="flex flex-col lg:flex-row gap-6">
+                            {/* Profile Image */}
+                            <div className="flex-shrink-0">
+                              <FormField
+                                control={form.control}
+                                name="image"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        className={'hidden'}
+                                        onChange={field.onChange}
+                                        onBlur={field.onBlur}
+                                        value={
+                                          field.value === null
+                                            ? ''
+                                            : field.value || ''
+                                        }
+                                      />
+                                    </FormControl>
+                                    <ProfileImageUploader
+                                      value={field.value}
+                                      onChange={field.onChange}
+                                    />
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+
+                            {/* Display Name */}
+                            <div className="flex-1">
+                              <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-base font-medium">
+                                      Display Name
+                                      <span className="text-red-500 ml-1">
+                                        *
+                                      </span>
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="text"
+                                        placeholder="My helpful Agent"
+                                        {...field}
+                                        onChange={e => {
+                                          field.onChange(
+                                            e.target.value.slice(0, 42),
+                                          )
+                                        }}
+                                        className="mt-2"
+                                      />
+                                    </FormControl>
+                                    {field.value && (
+                                      <div className="flex items-center gap-2 mt-3">
+                                        <div className="text-sm text-muted-foreground flex-1">
+                                          {isKeyEditMode ? (
+                                            <div className="flex items-center gap-2">
+                                              <Input
+                                                type="text"
+                                                value={key}
+                                                placeholder="unique-name"
+                                                onChange={e => {
+                                                  const value = e.target.value
+                                                    .toLowerCase()
+                                                    .slice(0, 42)
+                                                  form.setValue('key', value)
+                                                  setIsManualKeyEdit(true)
+                                                }}
+                                                onBlur={e => {
+                                                  form.setValue(
+                                                    'key',
+                                                    slugifyName(e.target.value),
+                                                  )
+                                                  setIsKeyEditMode(false)
+                                                }}
+                                                className="h-7 text-sm"
+                                              />
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-2">
+                                              <span>
+                                                Auto generated unique name:{' '}
+                                                {key}
+                                              </span>
+                                              <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 w-6 p-0"
+                                                onClick={() =>
+                                                  setIsKeyEditMode(true)
+                                                }
+                                              >
+                                                <Edit2Icon size={12} />
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
                                     )}
-                                  </div>
-                                </div>
-                              )}
-                              <div className="flex gap-2 flex-wrap mt-1">
-                                <FormDescription>
-                                  Friendly Name of your agent. This will be
-                                  displayed to users.
-                                </FormDescription>
-                                <CharacterCount
-                                  current={field.value?.length || 0}
-                                  max={42}
-                                />
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Image Field */}
-                        <FormField
-                          control={form.control}
-                          name="image"
-                          render={({ field }) => (
-                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                              <FormLabel className="text-base font-medium">
-                                Profile Image
-                                <span className="text-red-500 ml-1">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <Input
-                                  className={'hidden'}
-                                  onChange={field.onChange}
-                                  onBlur={field.onBlur}
-                                  value={
-                                    field.value === null
-                                      ? ''
-                                      : field.value || ''
-                                  }
-                                />
-                              </FormControl>
-                              <div className="mt-4">
-                                <ProfileImageUploader
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                />
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                                    <div className="flex gap-2 flex-wrap mt-1">
+                                      <FormDescription>
+                                        Friendly Name of your agent. This will
+                                        be displayed to users.
+                                      </FormDescription>
+                                      <CharacterCount
+                                        current={field.value?.length || 0}
+                                        max={42}
+                                      />
+                                    </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+                        </div>
 
                         {/* Description Field */}
                         <FormField
@@ -693,6 +706,59 @@ const AgentEditView: FC<{
                                   />
                                 </div>
                               </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Tools Field */}
+                        <FormField
+                          control={form.control}
+                          name="tools"
+                          render={({ field }) => (
+                            <FormItem className="p-4 bg-secondary rounded-lg mt-4">
+                              <FormLabel>Tools</FormLabel>
+                              <FormDescription>
+                                Select which tools this agent can use to help
+                                users.
+                              </FormDescription>
+                              <FormControl>
+                                <div className="space-y-3">
+                                  {[
+                                    {
+                                      key: 'Create images',
+                                      label: 'Create images',
+                                    },
+                                    {
+                                      key: 'Create videos',
+                                      label: 'Create videos',
+                                    },
+                                    { key: 'VJ Tools', label: 'VJ Tools' },
+                                    { key: 'News', label: 'News' },
+                                  ].map(tool => (
+                                    <div
+                                      key={tool.key}
+                                      className="flex items-center space-x-2"
+                                    >
+                                      <Switch
+                                        checked={
+                                          field.value?.[tool.key] || false
+                                        }
+                                        onCheckedChange={checked => {
+                                          const currentTools = field.value || {}
+                                          field.onChange({
+                                            ...currentTools,
+                                            [tool.key]: checked,
+                                          })
+                                        }}
+                                      />
+                                      <label className="text-sm font-medium">
+                                        {tool.label}
+                                      </label>
+                                    </div>
+                                  ))}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
                             </FormItem>
                           )}
                         />

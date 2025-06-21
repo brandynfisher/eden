@@ -45,7 +45,7 @@ export type Agent = Omit<
   greeting?: string
   knowledge?: string
   suggestions?: AgentSuggestion[]
-  tools?: { [key: string]: string[] }
+  tools?: { [key: string]: boolean }
   deployments?: Deployment[]
   discordChannelAllowlist?: {
     id: string
@@ -99,7 +99,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   knowledge?: string
   suggestions?: AgentSuggestion[]
   image: string
-  tools?: { [key: string]: string[] }
+  tools?: { [key: string]: boolean }
   discordId?: string
   voice?: string
   models?: Array<{
@@ -119,7 +119,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   knowledge?: string
   suggestions?: AgentSuggestion[]
   image?: string
-  tools?: { [key: string]: string[] }
+  tools?: { [key: string]: boolean }
   discordId?: string
   public?: boolean
   voice?: string
