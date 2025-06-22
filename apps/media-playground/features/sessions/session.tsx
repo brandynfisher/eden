@@ -45,6 +45,7 @@ const Session = ({
 
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
+  const [cancelledNotice, setCancelledNotice] = useState(false)
 
   const {
     data: session,
@@ -176,6 +177,8 @@ const Session = ({
       setWaitingForWebSocket(false)
       setStreamingAgent(null)
       streamingMessageIdRef.current = null
+
+      setCancelledNotice(true)
     } catch (error) {
       console.error('Failed to cancel session:', error)
       addError({
@@ -410,6 +413,11 @@ const Session = ({
           onDismiss={removeError}
           className="mb-4"
         />
+        {cancelledNotice && (
+          <div className="text-center text-sm text-muted-foreground py-2">
+            ⛔ Cancelled by user
+          </div>
+        )}
 
         <div ref={messagesEndRef} />
       </div>
