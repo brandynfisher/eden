@@ -137,7 +137,8 @@ const ExplorePage = () => {
       case 'models':
         return {
           title: 'Explore Models',
-          description: 'Browse AI models trained by the community',
+          description:
+            'Browse through diverse models custom-trained by Eden creators',
           actionButton: (
             <Button asChild size="lg" className="gap-2">
               <Link href="/train">
@@ -151,7 +152,7 @@ const ExplorePage = () => {
       default:
         return {
           title: 'Explore Creations',
-          description: 'Discover amazing creations from the Eden community',
+          description: 'Discover what people are creating with Eden',
           actionButton: null,
         }
     }
