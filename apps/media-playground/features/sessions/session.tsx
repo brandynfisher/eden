@@ -3,6 +3,7 @@
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { SessionTopBar } from './components/session-top-bar'
+import SessionWelcome from './components/session-welcome'
 import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 //import LoadingIndicator from '@/components/loading-indicator'
@@ -16,6 +17,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
 import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
+import { cn } from '@/lib/utils'
 import { Message } from '@edenlabs/eden-sdk'
 import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -280,7 +282,12 @@ const Session = ({
 
   const filteredMessages = useMemo(() => {
     const existingMessages =
-      session?.messages?.filter(m => m.role !== 'tool') ?? []
+      session?.messages?.filter(
+        m =>
+          (m.role === 'user' || m.role === 'assistant') &&
+          m.content &&
+          m.content.trim() !== '',
+      ) ?? []
     if (sessionId === 'new' && isSessionLoading) {
       return [...existingMessages, ...optimisticMessages]
     }
@@ -312,7 +319,13 @@ const Session = ({
         />
       )}
 
-      <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
+      <div
+        className={cn(
+          'flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full',
+          messageGroups.length === 0 &&
+            'flex flex-col justify-center items-center',
+        )}
+      >
         {/* Only show loading skeleton if we are on a new session */}
         {sessionId === 'new' && isSessionLoading ? (
           <div className="space-y-4">
@@ -328,6 +341,21 @@ const Session = ({
               </AlertDescription>
             </AlertDestructive>
           </div>
+        ) : messageGroups.length === 0 ? (
+          session?.agents && session.agents.length > 0 ? (
+            <>
+              <SessionWelcome
+                agents={session.agents}
+                sessionTitle={session.title}
+              />
+              {messageGroups.map(group => (
+                <div key={group[0]._id}>
+                  {group[0].role === 'eden' &&
+                    group.map(message => <div>hello</div>)}
+                </div>
+              ))}
+            </>
+          ) : null
         ) : (
           <>
             {messageGroups.map(group => (
@@ -392,7 +420,11 @@ const Session = ({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-4">
+      <div
+        className={`max-w-[--aui-thread-max-width] mx-auto w-full sticky ${
+          messageGroups.length === 0 ? 'bottom-36' : 'bottom-4'
+        }`}
+      >
         <MessageInput
           sessionId={sessionId as string}
           onStreamingMessage={(content, attachments) => {
