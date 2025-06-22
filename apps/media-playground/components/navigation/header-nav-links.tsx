@@ -47,21 +47,13 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         items={[
           {
             label: 'Agents',
-            segments: [`agents`],
+            segments: [`explore`, `agents`],
+            href: '/agents',
           },
-        ]}
-        segments={segments}
-        inSheet={inSheet}
-      />
-      <div className="md:self-stretch md:flex md:items-center">
-        <Separator orientation="vertical" className="hidden md:block" />
-        <Separator orientation="horizontal" className="md:hidden" />
-      </div>
-      <NavLinkList
-        items={[
           {
             label: 'Models',
-            segments: [`models`],
+            segments: [`explore`, `models`],
+            href: '/models',
           },
         ]}
         segments={segments}
@@ -75,7 +67,8 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         items={[
           {
             label: 'Creations',
-            segments: [`creations`],
+            segments: [`explore`, `creations`],
+            href: '/creations',
           },
         ]}
         segments={segments}

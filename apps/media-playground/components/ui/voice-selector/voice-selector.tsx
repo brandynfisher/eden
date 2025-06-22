@@ -145,7 +145,7 @@ export function VoiceSelector({
           }}
         >
           <Play className="h-3 w-3" />
-          Test voice: <strong>{selectedVoice.name}</strong>
+          Preview voice
         </Button>
       )}
     </div>

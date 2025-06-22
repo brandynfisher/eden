@@ -18,6 +18,7 @@ import {
   CheckIcon,
   ClockIcon,
   EditIcon,
+  ImageIcon,
   MoreHorizontal,
   PencilIcon,
   TrashIcon,
@@ -280,6 +281,29 @@ const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
   )
 }
 
+const CreationsButton: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
+  const router = useRouter()
+
+  const handleClick = () => {
+    onItemClick?.()
+    router.push('/creations', { scroll: false })
+  }
+
+  return (
+    <Button
+      variant="default"
+      onClick={handleClick}
+      className={cn(
+        'flex w-full justify-start gap-2 py-3 mb-2 rounded-md font-medium transition-colors',
+        'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+      )}
+    >
+      <ImageIcon className="size-4" />
+      <span>Creations</span>
+    </Button>
+  )
+}
+
 const MainLeft = ({
   onItemClick,
   agentId,
@@ -408,6 +432,7 @@ export const SessionsSidebarContent = ({
     <>
       <div className="mb-2 mr-2">
         <TopLeft onItemClick={onItemClick} isChat={isChat} />
+        <CreationsButton onItemClick={onItemClick} />
       </div>
       <MainLeft onItemClick={onItemClick} agentId={agentId} isChat={isChat} />
     </>

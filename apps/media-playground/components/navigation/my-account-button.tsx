@@ -20,6 +20,8 @@ import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import * as Sentry from '@sentry/nextjs'
+import { feedbackIntegration } from '@sentry/nextjs'
 import {
   BookmarkIcon,
   BotIcon,
@@ -27,6 +29,7 @@ import {
   CreditCardIcon,
   ImageIcon,
   LogOutIcon,
+  MessageCircleWarningIcon,
   SettingsIcon,
   TicketIcon,
 } from 'lucide-react'
@@ -62,6 +65,9 @@ const AccountDropdown = () => {
   const [hasOpenDialog, setHasOpenDialog] = useState(false)
   const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
   const focusRef = useRef<HTMLButtonElement | null>(null)
+  const [feedback, setFeedback] =
+    useState<ReturnType<typeof feedbackIntegration>>()
+  const feedbackButtonRef = useRef<HTMLDivElement>(null)
 
   function handleDialogItemSelect() {
     focusRef.current = dropdownTriggerRef.current
@@ -72,6 +78,26 @@ const AccountDropdown = () => {
     if (!open) {
       setDropdownOpen(false)
     }
+  }
+
+  React.useEffect(() => {
+    setFeedback(Sentry.getFeedback())
+  }, [])
+
+  React.useEffect(() => {
+    let unsubscribe: () => void
+
+    if (feedback && feedbackButtonRef && feedbackButtonRef.current) {
+      unsubscribe = feedback.attachTo(feedbackButtonRef.current)
+    }
+
+    return () => {
+      unsubscribe && unsubscribe()
+    }
+  }, [feedback])
+
+  const handleFeedbackClick = () => {
+    setDropdownOpen(false)
   }
 
   return (
@@ -203,6 +229,18 @@ const AccountDropdown = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <div
+            ref={feedbackButtonRef}
+            className="flex items-center w-full"
+            onClick={handleFeedbackClick}
+            data-test-id="sentry-feedback-trigger-anchor"
+          >
+            <MessageCircleWarningIcon className="mr-2 h-4 w-4" />
+            <span>Feedback</span>
+          </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={logout}>

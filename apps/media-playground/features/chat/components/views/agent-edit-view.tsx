@@ -24,14 +24,12 @@ import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegr
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { cn } from '@/lib/utils'
-import { slugifyName } from '@/utils/slug.util'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import {
   AlertCircle,
   ChevronRightIcon,
-  Edit2Icon,
   Loader2,
   SettingsIcon,
   UserIcon,
@@ -143,8 +141,6 @@ const AgentEditView: FC<{
   user: unknown
 }> = ({ agent }) => {
   const [activeTab, setActiveTab] = useState('profile')
-  const [isKeyEditMode, setIsKeyEditMode] = useState(false)
-  const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   // Fetch deployments for the deployments tab
@@ -175,9 +171,6 @@ const AgentEditView: FC<{
     name: 'models',
   })
 
-  const name = form.watch('name')
-  const key = form.watch('key')
-
   useEffect(() => {
     if (agent) {
       form.reset({
@@ -196,12 +189,6 @@ const AgentEditView: FC<{
     }
   }, [agent, form])
 
-  useEffect(() => {
-    if (!isManualKeyEdit && name) {
-      form.setValue('key', slugifyName(name))
-    }
-  }, [form, name, isManualKeyEdit])
-
   const handleSubmit = async (data: AgentFormDto) => {
     try {
       await axios.patch(`/api/agents/${agent._id}`, data)
@@ -211,8 +198,17 @@ const AgentEditView: FC<{
         dismissible: true,
       })
     } catch (error) {
+      const errorMessage =
+        (error as AxiosError<{ message?: string }>).response?.data?.message ||
+        (error as AxiosError).message ||
+        'Please try again later.'
+      const description =
+        errorMessage === 'An agent with this key already exists'
+          ? 'This username is taken. Please try another.'
+          : errorMessage
+
       toast.error('Agent update failed', {
-        description: 'Please try again later.',
+        description,
         richColors: true,
         dismissible: true,
       })
@@ -256,7 +252,7 @@ const AgentEditView: FC<{
             )}
           >
             <WrenchIcon className="w-4 h-4" />
-            Concepts
+            Tools
           </button>
           <button
             onClick={() => {
@@ -326,10 +322,6 @@ const AgentEditView: FC<{
                   {activeTab === 'profile' && (
                     <div className="space-y-8">
                       <div>
-                        <h3 className="text-2xl font-semibold mb-6 text-foreground">
-                          Profile Information
-                        </h3>
-
                         {/* Combined Profile Section */}
                         <div className="p-6 bg-card rounded-xl border border-border mb-6">
                           <div className="flex flex-col lg:flex-row gap-6">
@@ -362,15 +354,16 @@ const AgentEditView: FC<{
                               />
                             </div>
 
-                            {/* Display Name */}
-                            <div className="flex-1">
+                            {/* Username and Display Name */}
+                            <div className="flex-1 space-y-4">
+                              {/* Username Field */}
                               <FormField
                                 control={form.control}
-                                name="name"
+                                name="key"
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-base font-medium">
-                                      Display Name
+                                      Username
                                       <span className="text-red-500 ml-1">
                                         *
                                       </span>
@@ -378,74 +371,44 @@ const AgentEditView: FC<{
                                     <FormControl>
                                       <Input
                                         type="text"
-                                        placeholder="My helpful Agent"
+                                        placeholder="Username on Eden"
                                         {...field}
                                         onChange={e => {
                                           field.onChange(
                                             e.target.value.slice(0, 42),
                                           )
                                         }}
-                                        className="mt-2"
                                       />
                                     </FormControl>
-                                    {field.value && (
-                                      <div className="flex items-center gap-2 mt-3">
-                                        <div className="text-sm text-muted-foreground flex-1">
-                                          {isKeyEditMode ? (
-                                            <div className="flex items-center gap-2">
-                                              <Input
-                                                type="text"
-                                                value={key}
-                                                placeholder="unique-name"
-                                                onChange={e => {
-                                                  const value = e.target.value
-                                                    .toLowerCase()
-                                                    .slice(0, 42)
-                                                  form.setValue('key', value)
-                                                  setIsManualKeyEdit(true)
-                                                }}
-                                                onBlur={e => {
-                                                  form.setValue(
-                                                    'key',
-                                                    slugifyName(e.target.value),
-                                                  )
-                                                  setIsKeyEditMode(false)
-                                                }}
-                                                className="h-7 text-sm"
-                                              />
-                                            </div>
-                                          ) : (
-                                            <div className="flex items-center gap-2">
-                                              <span>
-                                                Auto generated unique name:{' '}
-                                                {key}
-                                              </span>
-                                              <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-6 w-6 p-0"
-                                                onClick={() =>
-                                                  setIsKeyEditMode(true)
-                                                }
-                                              >
-                                                <Edit2Icon size={12} />
-                                              </Button>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    )}
-                                    <div className="flex gap-2 flex-wrap mt-1">
-                                      <FormDescription>
-                                        Friendly Name of your agent. This will
-                                        be displayed to users.
-                                      </FormDescription>
-                                      <CharacterCount
-                                        current={field.value?.length || 0}
-                                        max={42}
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              {/* Display Name Field */}
+                              <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-base font-medium">
+                                      Name
+                                      <span className="text-red-500 ml-1">
+                                        *
+                                      </span>
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="text"
+                                        placeholder="Display name"
+                                        {...field}
+                                        onChange={e => {
+                                          field.onChange(
+                                            e.target.value.slice(0, 42),
+                                          )
+                                        }}
                                       />
-                                    </div>
+                                    </FormControl>
                                     <FormMessage />
                                   </FormItem>
                                 )}
@@ -464,13 +427,9 @@ const AgentEditView: FC<{
                                 Description
                                 <span className="text-red-500 ml-1">*</span>
                               </FormLabel>
-                              <FormDescription className="mt-1 mb-3">
-                                Short description of the agent shown on profile
-                                and cards.
-                              </FormDescription>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder="This agent helps you with your tasks"
+                                  placeholder="Short description of the agent shown on profile and cards."
                                   {...field}
                                   className="min-h-[80px]"
                                 />
@@ -494,18 +453,15 @@ const AgentEditView: FC<{
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-base font-medium">
-                                  Persona
+                                  Instructions
                                   <span className="text-red-500 ml-1">*</span>
                                 </FormLabel>
-                                <FormDescription className="mt-1 mb-3">
-                                  Personality and behaviour of the agent. This
-                                  won't be visible to others.
-                                </FormDescription>
                                 <FormControl>
                                   <AutosizeTextarea
-                                    placeholder="You are a helpful agent, always ready to help users with their tasks"
+                                    placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
                                     {...field}
-                                    className="min-h-[120px]"
+                                    className="min-h-[240px]"
+                                    variant="xl"
                                   />
                                 </FormControl>
                                 <div className="flex justify-end mt-2">
@@ -515,26 +471,6 @@ const AgentEditView: FC<{
                                   />
                                 </div>
                                 <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="isPersonaPublic"
-                            render={({ field }) => (
-                              <FormItem className="bg-background p-4 rounded-lg flex items-center justify-between gap-2">
-                                <div className="flex flex-col gap-1">
-                                  <FormLabel>Public Persona</FormLabel>
-                                  <FormDescription>
-                                    Whether the persona is public to others.
-                                  </FormDescription>
-                                </div>
-                                <FormControl>
-                                  <Switch
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
                               </FormItem>
                             )}
                           />
@@ -548,7 +484,6 @@ const AgentEditView: FC<{
                             <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
                               <FormLabel className="text-base font-medium">
                                 Greeting
-                                <span className="text-red-500 ml-1">*</span>
                               </FormLabel>
                               <FormDescription className="mt-1 mb-3">
                                 This will be displayed to users when they first
@@ -578,20 +513,15 @@ const AgentEditView: FC<{
                   {activeTab === 'concepts' && (
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-xl font-semibold mb-4">
-                          Models & Voice
-                        </h3>
-
                         {/* Voice Field */}
                         <FormField
                           control={form.control}
                           name="voice"
                           render={({ field }) => (
                             <FormItem className="p-4 bg-secondary rounded-lg mb-4">
-                              <FormLabel>Voice (Optional)</FormLabel>
+                              <FormLabel>Voice</FormLabel>
                               <FormDescription>
-                                Your agent will speak with this voice. Voices
-                                provided by ElevenLabs.
+                                Your agent will speak with this voice.
                               </FormDescription>
                               <FormControl>
                                 <VoiceSelector
@@ -610,10 +540,10 @@ const AgentEditView: FC<{
                           name="models"
                           render={() => (
                             <FormItem className="p-4 bg-secondary rounded-lg">
-                              <FormLabel>Flux LoRA Models</FormLabel>
+                              <FormLabel>Custom Models</FormLabel>
                               <FormDescription>
-                                Select models and specify when to use each one
-                                (max 10 models).
+                                Give your agent a unique aesthetic using up to
+                                10 custom models.
                               </FormDescription>
                               <div>
                                 {models.fields.map((model, index) => (
@@ -725,24 +655,41 @@ const AgentEditView: FC<{
                                 <div className="space-y-3">
                                   {[
                                     {
-                                      key: 'Create images',
+                                      key: 'create_image',
                                       label: 'Create images',
                                     },
                                     {
-                                      key: 'Create videos',
-                                      label: 'Create videos',
+                                      key: 'create_video',
+                                      label: 'Create Video',
                                     },
-                                    { key: 'VJ Tools', label: 'VJ Tools' },
-                                    { key: 'News', label: 'News' },
+                                    {
+                                      key: 'create_audio',
+                                      label:
+                                        'Create Audio (including music and speech)',
+                                    },
+                                    {
+                                      key: 'vj_tools',
+                                      label:
+                                        'VJ Tools (Texture Flow and Video FX)',
+                                    },
+                                    {
+                                      key: 'news',
+                                      label: 'Read the news',
+                                    },
+                                    {
+                                      key: 'social_media_tools',
+                                      label:
+                                        'Social media tools (read and post)',
+                                    },
                                   ].map(tool => (
                                     <div
                                       key={tool.key}
                                       className="flex items-center space-x-2"
                                     >
                                       <Switch
-                                        checked={
-                                          field.value?.[tool.key] || false
-                                        }
+                                        checked={Boolean(
+                                          field.value?.[tool.key],
+                                        )}
                                         onCheckedChange={checked => {
                                           const currentTools = field.value || {}
                                           field.onChange({
@@ -768,14 +715,6 @@ const AgentEditView: FC<{
                   {activeTab === 'deployments' && (
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-xl font-semibold mb-4">
-                          Configure Deployment
-                        </h3>
-                        <p className="text-muted-foreground mb-6">
-                          Configure your agent's deployment settings across
-                          different platforms.
-                        </p>
-
                         {deploymentsQuery.isPending && (
                           <div className="flex items-center justify-center mt-10">
                             <Loader2 className="size-4 animate-spin" />

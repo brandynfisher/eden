@@ -76,6 +76,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
+        tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
       }),
       response: {
         200: {

@@ -36,7 +36,6 @@ import { cn } from '@/lib/utils'
 import { useAgentFormSheet } from '@/stores/dialogs/dialogs.selector'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { slugifyName } from '@/utils/slug.util'
 import { Trigger } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -124,9 +123,6 @@ const AgentFormSheet = () => {
     enabled: activeTab === 'tasks' && isOpen,
   })
 
-  const [isKeyEditMode, setIsKeyEditMode] = useState(false)
-  const [isManualKeyEdit, setIsManualKeyEdit] = useState(false)
-
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
     defaultValues: {
@@ -149,9 +145,6 @@ const AgentFormSheet = () => {
     control: form.control,
     name: 'models',
   })
-
-  const name = form.watch('name')
-  const key = form.watch('key')
 
   useEffect(() => {
     if (agentQuery.agent) {
@@ -187,12 +180,6 @@ const AgentFormSheet = () => {
     }
   }, [agentQuery.agent, form])
 
-  useEffect(() => {
-    if (!isManualKeyEdit && name && mode === 'create') {
-      form.setValue('key', slugifyName(name))
-    }
-  }, [form, name, isManualKeyEdit, mode])
-
   const handleSubmit = async (data: AgentFormDto) => {
     try {
       if (mode === 'update') {
@@ -221,13 +208,19 @@ const AgentFormSheet = () => {
       )
       await onAction?.()
     } catch (error) {
+      const errorMessage =
+        (error as AxiosError<{ message?: string }>).response?.data?.message ||
+        (error as AxiosError).message ||
+        'Unknown Error has occurred'
+      const description =
+        errorMessage === 'An agent with this key already exists'
+          ? 'This username is taken. Please try another.'
+          : errorMessage
+
       toast.error(
         `${mode === 'update' ? 'Agent update' : 'Agent creation'} failed`,
         {
-          description:
-            // @ts-expect-error needs proper typings
-            (error as AxiosError).response?.data?.message ||
-            'Unknown Error has occurred',
+          description,
           richColors: true,
           dismissible: true,
         },
@@ -338,7 +331,7 @@ const AgentFormSheet = () => {
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted',
                   )}
                 >
-                  Concepts
+                  Tools
                 </button>
                 {mode === 'update' && (
                   <>
@@ -375,116 +368,96 @@ const AgentFormSheet = () => {
                 >
                   {activeTab === 'profile' && (
                     <div className="space-y-4">
-                      {/* Name Field with Key */}
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem className="p-4 bg-card rounded-xl border border-border">
-                            <FormLabel className="text-base font-medium">
-                              Display Name
-                              <span className="text-red-500 ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                placeholder="My helpful Agent"
-                                {...field}
-                                onChange={e => {
-                                  field.onChange(e.target.value.slice(0, 42))
-                                }}
-                              />
-                            </FormControl>
-                            {field.value && (
-                              <div className="flex items-center gap-2 mt-2">
-                                <div className="text-sm text-muted-foreground flex-1">
-                                  {isKeyEditMode ? (
-                                    <div className="flex items-center gap-2">
-                                      <Input
-                                        type="text"
-                                        value={key}
-                                        placeholder="unique-name"
-                                        onChange={e => {
-                                          const value = e.target.value
-                                            .toLowerCase()
-                                            .slice(0, 42)
-                                          form.setValue('key', value)
-                                          setIsManualKeyEdit(true)
-                                        }}
-                                        onBlur={e => {
-                                          form.setValue(
-                                            'key',
-                                            slugifyName(e.target.value),
-                                          )
-                                          setIsKeyEditMode(false)
-                                        }}
-                                        className="h-7 text-sm"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div className="flex items-center gap-2">
-                                      <span>
-                                        Auto generated unique name: {key}
-                                      </span>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 w-6 p-0"
-                                        onClick={() => setIsKeyEditMode(true)}
-                                      >
-                                        <Edit2Icon size={12} />
-                                      </Button>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                            <div className="flex gap-2 flex-wrap mt-1">
-                              <FormDescription>
-                                Friendly Name of your agent. This will be
-                                displayed to users.
-                              </FormDescription>
-                              <CharacterCount
-                                current={field.value?.length || 0}
-                                max={42}
-                              />
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      {/* Combined Profile Section */}
+                      <div className="p-4 bg-card rounded-xl border border-border mb-4">
+                        <div className="flex flex-col lg:flex-row gap-6">
+                          {/* Profile Image */}
+                          <div className="flex-shrink-0">
+                            <FormField
+                              control={form.control}
+                              name="image"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      className={'hidden'}
+                                      onChange={field.onChange}
+                                      onBlur={field.onBlur}
+                                      value={
+                                        field.value === null
+                                          ? ''
+                                          : field.value || ''
+                                      }
+                                    />
+                                  </FormControl>
+                                  <ProfileImageUploader
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                  />
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
 
-                      {/* Image Field */}
-                      <FormField
-                        control={form.control}
-                        name="image"
-                        render={({ field }) => (
-                          <FormItem className="p-4 bg-card rounded-xl border border-border">
-                            <FormLabel className="text-base font-medium">
-                              Profile Image
-                              <span className="text-red-500 ml-1">*</span>
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className={'hidden'}
-                                onChange={field.onChange}
-                                onBlur={field.onBlur}
-                                value={
-                                  field.value === null ? '' : field.value || ''
-                                }
-                              />
-                            </FormControl>
-                            <div className="mt-4">
-                              <ProfileImageUploader
-                                value={field.value}
-                                onChange={field.onChange}
-                              />
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                          {/* Username and Display Name */}
+                          <div className="flex-1 space-y-4">
+                            {/* Username Field */}
+                            <FormField
+                              control={form.control}
+                              name="key"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">
+                                    Username
+                                    <span className="text-red-500 ml-1">*</span>
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="text"
+                                      placeholder="Username on Eden"
+                                      {...field}
+                                      onChange={e => {
+                                        field.onChange(
+                                          e.target.value.slice(0, 42),
+                                        )
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            {/* Display Name Field */}
+                            <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">
+                                    Name
+                                    <span className="text-red-500 ml-1">*</span>
+                                  </FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="text"
+                                      placeholder="Display name"
+                                      {...field}
+                                      onChange={e => {
+                                        field.onChange(
+                                          e.target.value.slice(0, 42),
+                                        )
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </div>
 
                       {/* Description Field */}
                       <FormField
@@ -496,13 +469,9 @@ const AgentFormSheet = () => {
                               Description
                               <span className="text-red-500 ml-1">*</span>
                             </FormLabel>
-                            <FormDescription className="mt-1 mb-3">
-                              Short description of the agent shown on profile
-                              and cards.
-                            </FormDescription>
                             <FormControl>
                               <AutosizeTextarea
-                                placeholder="This agent helps you with your tasks"
+                                placeholder="Short description of the agent shown on profile and cards."
                                 {...field}
                                 className="min-h-[80px]"
                               />
@@ -526,18 +495,15 @@ const AgentFormSheet = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-base font-medium">
-                                Persona
+                                Instructions
                                 <span className="text-red-500 ml-1">*</span>
                               </FormLabel>
-                              <FormDescription className="mt-1 mb-3">
-                                Personality and behaviour of the agent. This
-                                won't be visible to others.
-                              </FormDescription>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder="You are a helpful agent, always ready to help users with their tasks"
+                                  placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
                                   {...field}
-                                  className="min-h-[120px]"
+                                  className="min-h-[240px]"
+                                  variant="xl"
                                 />
                               </FormControl>
                               <div className="flex justify-end mt-2">
@@ -547,26 +513,6 @@ const AgentFormSheet = () => {
                                 />
                               </div>
                               <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="isPersonaPublic"
-                          render={({ field }) => (
-                            <FormItem className="bg-background p-4 rounded-lg flex items-center justify-between gap-2">
-                              <div className="flex flex-col gap-1">
-                                <FormLabel>Public Persona</FormLabel>
-                                <FormDescription>
-                                  Whether the persona is public to others.
-                                </FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
                             </FormItem>
                           )}
                         />
@@ -580,7 +526,6 @@ const AgentFormSheet = () => {
                           <FormItem className="p-4 bg-card rounded-xl border border-border">
                             <FormLabel className="text-base font-medium">
                               Greeting
-                              <span className="text-red-500 ml-1">*</span>
                             </FormLabel>
                             <FormDescription className="mt-1 mb-3">
                               This will be displayed to users when they first
@@ -615,11 +560,10 @@ const AgentFormSheet = () => {
                         render={({ field }) => (
                           <FormItem className="p-4 bg-card rounded-xl border border-border">
                             <FormLabel className="text-base font-medium">
-                              Voice (Optional)
+                              Voice
                             </FormLabel>
                             <FormDescription className="mt-1 mb-3">
-                              Your agent will speak with this voice. Voices
-                              provided by ElevenLabs.
+                              Your agent will speak with this voice.
                             </FormDescription>
                             <FormControl>
                               <VoiceSelector
@@ -639,11 +583,11 @@ const AgentFormSheet = () => {
                         render={() => (
                           <FormItem className="p-4 bg-card rounded-xl border border-border">
                             <FormLabel className="text-base font-medium">
-                              Flux LoRA Models
+                              Custom Models
                             </FormLabel>
                             <FormDescription className="mt-1 mb-3">
-                              Select models and specify when to use each one
-                              (max 10 models).
+                              Give your agent a unique aesthetic using up to 10
+                              custom models.
                             </FormDescription>
                             <div>
                               {models.fields.map((model, index) => (
@@ -749,22 +693,38 @@ const AgentFormSheet = () => {
                               <div className="space-y-3">
                                 {[
                                   {
-                                    key: 'Create images',
+                                    key: 'create_image',
                                     label: 'Create images',
                                   },
                                   {
-                                    key: 'Create videos',
-                                    label: 'Create videos',
+                                    key: 'create_video',
+                                    label: 'Create Video',
                                   },
-                                  { key: 'VJ Tools', label: 'VJ Tools' },
-                                  { key: 'News', label: 'News' },
+                                  {
+                                    key: 'create_audio',
+                                    label:
+                                      'Create Audio (including music and speech)',
+                                  },
+                                  {
+                                    key: 'vj_tools',
+                                    label:
+                                      'VJ Tools (Texture Flow and Video FX)',
+                                  },
+                                  {
+                                    key: 'news',
+                                    label: 'Read the news',
+                                  },
+                                  {
+                                    key: 'social_media_tools',
+                                    label: 'Social media tools (read and post)',
+                                  },
                                 ].map(tool => (
                                   <div
                                     key={tool.key}
                                     className="flex items-center space-x-2"
                                   >
                                     <Switch
-                                      checked={field.value?.[tool.key] || false}
+                                      checked={Boolean(field.value?.[tool.key])}
                                       onCheckedChange={checked => {
                                         const currentTools = field.value || {}
                                         field.onChange({

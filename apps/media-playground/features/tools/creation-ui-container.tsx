@@ -3,6 +3,7 @@
 import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
+import { useSidebar } from '@/components/layout/sidebar-layout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -32,7 +33,7 @@ import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Loader2, Settings2Icon } from 'lucide-react'
+import { Loader2, MenuIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
@@ -81,14 +82,43 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const { presetValues } = useToolPreset()
 
-  const [showSettings, setShowSettings] = useState(false)
+  const [, setShowSettings] = useState(false)
 
   const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
+  const [showSidebarButton, setShowSidebarButton] = useState(false)
+
+  // Get sidebar context (may throw if not within SidebarLayout)
+  let sidebarContext: {
+    openSidebar: () => void
+    isSidebarOpen: boolean
+  } | null = null
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    sidebarContext = useSidebar()
+  } catch {
+    // Not within SidebarLayout context, which is fine
+  }
 
   useEffect(() => {
-    const isMobile = window.innerWidth < 1024 // lg breakpoint
-    setMobileIsFormVisible(isMobile)
-  }, [])
+    const checkScreenSize = () => {
+      const width = window.innerWidth
+      const isMobile = width < 1024 // lg breakpoint - show modal on mobile/tablet
+      const shouldShowSidebarButton = width < 1280 && width >= 1024 // between lg and xl - show sidebar button
+
+      // Only close the modal if switching to desktop, never open it automatically
+      if (!isMobile && mobileIsFormVisible) {
+        setMobileIsFormVisible(false)
+      }
+      setShowSidebarButton(shouldShowSidebarButton)
+    }
+
+    // Check on mount
+    checkScreenSize()
+
+    // Add resize listener
+    window.addEventListener('resize', checkScreenSize)
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [mobileIsFormVisible])
 
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
@@ -236,24 +266,50 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const formContent = (
     <Form {...form}>
-      <form className="w-full">
-        <div className="flex items-center lg:justify-between p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-          <TypographyH4 className="text-sm md:text-base pl-8 md:pl-12 lg:pl-0">
-            {tool.name}
-          </TypographyH4>
-          {tool.base_model ? (
-            <div className="flex-shrink-0">
-              <Badge
-                variant="secondary"
-                className="ml-2 border-muted-foreground"
-              >
-                {tool.base_model}
-              </Badge>
+      <form className="w-full flex flex-col justify-start h-full min-w-full">
+        <div
+          className={cn(
+            'flex p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700',
+            mobileIsFormVisible && sidebarContext && 'pl-12',
+          )}
+        >
+          {/* Sidebar button - shown when sidebar is hidden but not on mobile/tablet modal */}
+          {showSidebarButton && sidebarContext && !mobileIsFormVisible && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={sidebarContext.openSidebar}
+              className="p-1 h-9 w-9 mr-2 self-start flex-shrink-0"
+            >
+              <MenuIcon className="h-5 w-5" />
+            </Button>
+          )}
+
+          <div className="flex flex-col flex-1">
+            <div className="flex items-center justify-between">
+              <TypographyH4 className="text-sm lg:text-base">
+                {tool.name}
+              </TypographyH4>
+              {tool.base_model ? (
+                <div className="flex-shrink-0">
+                  <Badge
+                    variant="secondary"
+                    className="ml-2 border-muted-foreground"
+                  >
+                    {tool.base_model}
+                  </Badge>
+                </div>
+              ) : null}
             </div>
-          ) : null}
+            {tool.description && (
+              <div className="text-xs text-muted-foreground mt-1">
+                {tool.description}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="max-h-[calc(100dvh_-_264px)] overflow-y-auto p-2 py-4">
+        <div className="flex-1 overflow-y-auto p-2 py-4 flex flex-col justify-start min-h-0">
           <div
             data-test-id="tool-form-settings-required"
             className="flex flex-col gap-2"
@@ -332,77 +388,9 @@ const CreationUIContainer = ({ tool }: Props) => {
             ) : null}
           </div>
 
-          <div className="gap-2 mt-2">
-            <div className="flex gap-2 items-center">
-              {optionalParameters?.length ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="flex items-center gap-2"
-                  onClick={() => setShowSettings(!showSettings)}
-                >
-                  <Settings2Icon className="h-4 w-4" />
-                  Settings
-                </Button>
-              ) : null}
-
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground px-1"
-                onClick={!isSubmitting ? handleReset : undefined}
-                disabled={isSubmitting}
-              >
-                Reset
-              </Button>
-              <FormField
-                name="makePublic"
-                render={({ field, fieldState }) => (
-                  <FormItem
-                    data-test-id={'makePublic'}
-                    className="ml-auto flex items-center gap-2 space-y-0 relative"
-                  >
-                    <div className={'flex items-center gap-2'}>
-                      <SubscriptionCrownBadge
-                        type={
-                          tool.output_type === 'lora' ? 'model' : 'creation'
-                        }
-                        className="h-5 w-5"
-                      />
-                      <FormControl id={field.name} className="mt-0">
-                        <Switch
-                          checked={
-                            field.value === undefined ? true : field.value
-                          }
-                          onCheckedChange={field.onChange}
-                          disabled={!isAllowedPrivacy}
-                        />
-                      </FormControl>
-                      <FormLabel
-                        htmlFor={field.name}
-                        className={'text-muted-foreground !mt-0'}
-                      >
-                        Public
-                      </FormLabel>
-                    </div>
-                    <FormMessage>{fieldState.error?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
           {optionalParameters?.length ? (
-            <div
-              data-test-id="tool-form-settings-optional"
-              className={cn([showSettings ? 'mt-2' : 'overflow-hidden'])}
-            >
-              <div
-                className={cn([
-                  'flex flex-col gap-2 w-full relative transition-all',
-                  showSettings ? '' : 'max-h-0 ',
-                ])}
-              >
+            <div data-test-id="tool-form-settings-optional" className="mt-2">
+              <div className="flex flex-col gap-2 w-full relative">
                 {groupedOptionalParameters?.map((element, index) => (
                   <div key={index} className="bg-muted/50 rounded-lg">
                     {element.type === 'standalone' && element.parameter ? (
@@ -425,9 +413,9 @@ const CreationUIContainer = ({ tool }: Props) => {
           ) : null}
         </div>
 
-        <div className="flex gap-2 justify-end p-2 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
+        <div className="flex justify-between items-center p-3 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
           {isRunwayPoweredTool ? (
-            <div className="flex items-center mr-auto">
+            <div className="flex items-center">
               <a
                 href={'https://runwayml.com'}
                 target={'_blank'}
@@ -443,6 +431,48 @@ const CreationUIContainer = ({ tool }: Props) => {
               </a>
             </div>
           ) : null}
+
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="text-muted-foreground px-1"
+            onClick={!isSubmitting ? handleReset : undefined}
+            disabled={isSubmitting}
+          >
+            Reset
+          </Button>
+
+          <FormField
+            name="makePublic"
+            render={({ field, fieldState }) => (
+              <FormItem
+                data-test-id={'makePublic'}
+                className="flex items-center gap-2 space-y-0 relative"
+              >
+                <div className={'flex items-center gap-2'}>
+                  <SubscriptionCrownBadge
+                    type={tool.output_type === 'lora' ? 'model' : 'creation'}
+                    className="h-5 w-5"
+                  />
+                  <FormControl id={field.name} className="mt-0">
+                    <Switch
+                      checked={field.value === undefined ? true : field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={!isAllowedPrivacy}
+                    />
+                  </FormControl>
+                  <FormLabel
+                    htmlFor={field.name}
+                    className={'text-muted-foreground !mt-0'}
+                  >
+                    Public
+                  </FormLabel>
+                </div>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )}
+          />
 
           <CostIndicatorV2 cost={cost} />
 
@@ -487,7 +517,7 @@ const CreationUIContainer = ({ tool }: Props) => {
       <div
         data-test-id="tool-form"
         className={cn([
-          'flex flex-col items-start overflow-y-auto bg-muted-darker rounded-md',
+          'flex flex-col items-start justify-start bg-muted-darker rounded-md h-full w-full',
           'hidden lg:flex',
         ])}
       >
@@ -499,6 +529,8 @@ const CreationUIContainer = ({ tool }: Props) => {
         open={mobileIsFormVisible}
         onOpenChange={setMobileIsFormVisible}
         tool={tool}
+        showSidebarButton={!!sidebarContext}
+        onSidebarOpen={sidebarContext?.openSidebar}
       >
         {formContent}
       </CreationUIMobile>

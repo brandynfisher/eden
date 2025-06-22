@@ -26,6 +26,7 @@ type Props = {
   onClick?: (item: ModelV2) => void
   isSelectable?: boolean
   isSelected?: boolean
+  variant?: 'default' | 'creation-page'
 }
 
 const ModelCard = ({
@@ -36,8 +37,104 @@ const ModelCard = ({
   onClick,
   isSelectable,
   isSelected,
+  variant = 'default',
 }: Props) => {
   const hideFooter = !showFooterItems.name && !showFooterItems.actions
+  const isCreationPageVariant = variant === 'creation-page'
+
+  if (isCreationPageVariant) {
+    return (
+      <Card
+        className="relative overflow-hidden border-0 z-10 group"
+        style={style}
+      >
+        {!model.public ? (
+          <PrivateIcon className="absolute right-2 top-2 pointer-events-none z-20" />
+        ) : null}
+        {isSelectable && !isSelected ? (
+          <div
+            className={cn([
+              'absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all',
+            ])}
+            onClick={() => onClick?.(model)}
+          >
+            <>
+              <SquareMousePointerIcon className="mr-2 h-4 w-4" />
+              Select
+            </>
+          </div>
+        ) : null}
+        {isSelected ? (
+          <div className="absolute z-50 inset-0 flex items-center justify-center w-full h-full">
+            <div className="flex items-center justify-center bg-black px-2 py-1 rounded-md text-white text-sm">
+              Already Selected
+            </div>
+          </div>
+        ) : null}
+        <Link
+          href={`/models/${model._id}`}
+          prefetch={false}
+          className="relative w-full block group"
+          onClick={() => onClick?.(model)}
+        >
+          <CardImage
+            className="rounded-md"
+            media={{
+              url: model.thumbnail ?? undefined,
+              thumbnail: model.thumbnail,
+              width: 256,
+              height: 256,
+              type: 'image',
+            }}
+          />
+        </Link>
+        {/* Creation count and play button overlay - styled like like button */}
+        <div className="absolute bottom-2 right-2 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
+          <Link
+            className="cursor-pointer"
+            href={`/create/image/${
+              model.base_model && model.base_model === 'flux-dev'
+                ? 'flux_dev'
+                : 'txt2img'
+            }?lora=${model._id}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <Button
+              className="h-10 px-3 bg-black/75 hover:bg-black/90 text-white border-0 backdrop-blur-sm rounded-full shadow-lg"
+              size="sm"
+              variant="outline"
+              type="button"
+            >
+              <PlayIcon className="h-4 w-4 mr-1.5" />
+              {model.creationCount || 0}
+            </Button>
+          </Link>
+        </div>
+        {/* Mobile version - always visible */}
+        <div className="bg-background p-2 rounded-b-lg border border-t-0 md:hidden flex justify-end">
+          <Link
+            className="cursor-pointer"
+            href={`/create/image/${
+              model.base_model && model.base_model === 'flux-dev'
+                ? 'flux_dev'
+                : 'txt2img'
+            }?lora=${model._id}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <Button
+              className="h-8 px-2 bg-black/75 hover:bg-black/90 text-white border-0"
+              size="sm"
+              variant="outline"
+              type="button"
+            >
+              <PlayIcon className="h-3 w-3 mr-1" />
+              {model.creationCount || 0}
+            </Button>
+          </Link>
+        </div>
+      </Card>
+    )
+  }
 
   return (
     <Card
@@ -135,7 +232,15 @@ const ModelCard = ({
           }
         >
           {showFooterItems.name && (
-            <div className="text-xs truncate">{model.name}</div>
+            <div className="flex flex-col gap-1">
+              <div className="text-xs truncate">{model.name}</div>
+              {model.creationCount !== undefined && (
+                <div className="text-xs text-muted-foreground">
+                  {model.creationCount}{' '}
+                  {model.creationCount === 1 ? 'creation' : 'creations'}
+                </div>
+              )}
+            </div>
           )}
         </CardFooter>
       )}
