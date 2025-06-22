@@ -348,12 +348,6 @@ const Session = ({
                 agents={session.agents}
                 sessionTitle={session.title}
               />
-              {messageGroups.map(group => (
-                <div key={group[0]._id}>
-                  {group[0].role === 'eden' &&
-                    group.map(message => <div>hello</div>)}
-                </div>
-              ))}
             </>
           ) : null
         ) : (
