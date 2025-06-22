@@ -186,18 +186,6 @@ const ExplorePage = () => {
         className="w-full"
       >
         <div className="flex flex-wrap gap-2 lg:gap-3 w-full mb-6">
-          <TabsList className="flex justify-stretch min-w-0 w-full sm:w-auto sm:min-w-[240px] lg:min-w-[280px]">
-            <TabsTrigger value="creations" className="w-full text-sm">
-              Creations
-            </TabsTrigger>
-            <TabsTrigger value="models" className="w-full text-sm">
-              Models
-            </TabsTrigger>
-            <TabsTrigger value="agents" className="w-full text-sm">
-              Agents
-            </TabsTrigger>
-          </TabsList>
-
           {/* Ownership Type Tabs */}
           <Tabs
             value={creatorType}
@@ -227,7 +215,7 @@ const ExplorePage = () => {
             <>
               <CreationsFilter
                 initialFilter={creationsFilter}
-                onChange={setCreationsFilter}
+                onChange={filter => setCreationsFilter(filter)}
                 className="min-w-0 w-full sm:w-auto"
               />
               <SortMenu

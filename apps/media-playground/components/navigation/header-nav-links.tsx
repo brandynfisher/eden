@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { SheetClose } from '@/components/ui/sheet'
 import Link, { LinkProps } from 'next/link'
 import { useSelectedLayoutSegments } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { PropsWithChildren } from 'react'
 
 const HomeNavLink = ({
@@ -39,21 +40,25 @@ type Props = {
 
 const HeaderNavLinks = ({ inSheet }: Props) => {
   const segments = useSelectedLayoutSegments()
+  const searchParams = useSearchParams()
+  const contentType = searchParams.get('type')
 
   return (
     <>
-      <HomeNavLink href="/" inSheet={inSheet} />
+      <HomeNavLink href="/chat/eve" inSheet={inSheet} />
       <NavLinkList
         items={[
           {
             label: 'Agents',
-            segments: [`explore`, `agents`],
-            href: '/agents',
+            segments: [`explore`],
+            href: '/explore?type=agents',
+            active: segments[0] === 'explore' && contentType === 'agents',
           },
           {
             label: 'Models',
-            segments: [`explore`, `models`],
-            href: '/models',
+            segments: [`explore`],
+            href: '/explore?type=models',
+            active: segments[0] === 'explore' && contentType === 'models',
           },
         ]}
         segments={segments}
@@ -67,8 +72,11 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         items={[
           {
             label: 'Creations',
-            segments: [`explore`, `creations`],
-            href: '/creations',
+            segments: [`explore`],
+            href: '/explore?type=creations',
+            active:
+              segments[0] === 'explore' &&
+              (contentType === 'creations' || !contentType),
           },
         ]}
         segments={segments}
