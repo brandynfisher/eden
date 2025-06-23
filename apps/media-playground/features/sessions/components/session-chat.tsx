@@ -199,6 +199,12 @@ const SessionChat: FC = () => {
   const streamingMessageIdRef = useRef<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Add state to control when to redirect
+  const [pendingRedirect, setPendingRedirect] = useState<{
+    agentId: string
+    sessionId: string
+  } | null>(null)
+
   const { user } = useAuthState()
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
 
@@ -214,14 +220,14 @@ const SessionChat: FC = () => {
     isLoading: isSessionLoading,
     error: sessionError,
   } = useSessionQuery({
-    sessionId: sessionId as string,
-    enabled: !!sessionId,
+    sessionId: sessionId || pendingRedirect?.sessionId || '',
+    enabled: !!(sessionId || pendingRedirect?.sessionId),
   })
 
   // Only set up websockets if we have a sessionId
   useSessionWebSocket({
-    sessionId: sessionId as string,
-    enabled: !!sessionId,
+    sessionId: sessionId || pendingRedirect?.sessionId || '',
+    enabled: !!(sessionId || pendingRedirect?.sessionId),
   })
 
   // Mount effect
@@ -248,9 +254,120 @@ const SessionChat: FC = () => {
         setWaitingForWebSocket(false)
         setStreamingAgent(null)
         streamingMessageIdRef.current = null
+
+        // Check if we should redirect now that streaming is complete
+        if (pendingRedirect && session?.title) {
+          console.log(
+            '***debug*** Redirecting after streaming complete with title:',
+            session.title,
+          )
+
+          // Pre-populate the destination session cache with complete data
+          queryClient.setQueryData(['session', pendingRedirect.sessionId], {
+            ...session,
+            _id: pendingRedirect.sessionId,
+          })
+
+          // Use replace instead of push for smoother transition
+          router.replace(
+            `/chat2/${pendingRedirect.agentId}/${pendingRedirect.sessionId}`,
+          )
+          setPendingRedirect(null)
+        }
       }
     }
-  }, [session?.messages, waitingForWebSocket])
+  }, [
+    session?.messages,
+    waitingForWebSocket,
+    pendingRedirect,
+    router,
+    queryClient,
+  ])
+
+  // Add this effect to invalidate sessions list when the session title changes
+  useEffect(() => {
+    if (session?.title && sessionId) {
+      console.log(
+        '***debug*** Session title updated, invalidating sessions list:',
+        session.title,
+      )
+
+      // Invalidate the sessions list so the sidebar updates with the new title
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list', agentId],
+      })
+
+      // Also invalidate the general sessions list
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list'],
+      })
+    }
+  }, [session?.title, sessionId, queryClient, agentId])
+
+  // Replace the multiple redirect effects with a single, more reliable one
+  useEffect(() => {
+    if (!pendingRedirect) return
+
+    console.log('***debug*** Checking redirect conditions:', {
+      pendingRedirect,
+      hasTitle: !!session?.title,
+      sessionTitle: session?.title,
+      sessionId: session?._id,
+      isStreamingTokens,
+      waitingForWebSocket,
+      streamingTextLength: streamingText.length,
+      hasReceivedTokens,
+      fullSession: session,
+    })
+
+    const streamingComplete =
+      !isStreamingTokens && !waitingForWebSocket && streamingText.length === 0
+
+    if (session?.title && streamingComplete) {
+      console.log(
+        '***debug*** Executing redirect to:',
+        `/chat2/${pendingRedirect.agentId}/${pendingRedirect.sessionId}`,
+      )
+
+      // Pre-populate the destination session cache
+      queryClient.setQueryData(['session', pendingRedirect.sessionId], {
+        ...session,
+        _id: pendingRedirect.sessionId,
+      })
+
+      // Invalidate sessions list before redirect to ensure sidebar updates
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list', agentId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list'],
+      })
+
+      router.push(
+        `/chat2/${pendingRedirect.agentId}/${pendingRedirect.sessionId}`,
+      )
+      setPendingRedirect(null)
+    } else if (streamingComplete && pendingRedirect) {
+      console.log(
+        '***debug*** Streaming complete but no title, refetching session',
+      )
+      queryClient.invalidateQueries({
+        queryKey: ['session', pendingRedirect.sessionId],
+      })
+    }
+  }, [
+    pendingRedirect,
+    session?.title,
+    session?._id,
+    session, // Add full session as dependency
+    isStreamingTokens,
+    waitingForWebSocket,
+    streamingText.length,
+    hasReceivedTokens,
+    router,
+    queryClient,
+    agentId, // Add agentId to dependencies
+  ])
 
   // Error handling function
   const handleStreamingError = useCallback(
@@ -296,14 +413,15 @@ const SessionChat: FC = () => {
       setWaitingForWebSocket(true)
       streamingMessageIdRef.current = content
 
-      // Fallback timeout in case websocket doesn't deliver
+      // Shorter timeout and more reliable cleanup
       setTimeout(() => {
         if (streamingMessageIdRef.current === content) {
+          setStreamingText('') // Clear streaming text
           setHasReceivedTokens(false)
           setWaitingForWebSocket(false)
           streamingMessageIdRef.current = null
         }
-      }, 2000)
+      }, 1000) // Reduced from 2000ms to 1000ms
     },
     onToolComplete: () => {
       // After tool calls complete, we expect more tokens from the LLM
@@ -372,12 +490,14 @@ const SessionChat: FC = () => {
         setOptimisticSessionId(null)
         optimisticSessionIdRef.current = null
 
-        // Navigate to real session URL
+        // Instead of immediate redirect, set pending redirect
         console.log(
-          '***debug*** Navigating to real session:',
-          `/chat2/${agentId}/${newSessionId}`,
+          '***debug*** Setting pending redirect instead of immediate navigation',
         )
-        router.push(`/chat2/${agentId}/${newSessionId}`)
+        setPendingRedirect({
+          agentId: agentId as string,
+          sessionId: newSessionId,
+        })
       } else {
         // ***debug*** Cache initial session data to avoid loading state on navigation
         // Pre-populate the cache with basic session data so session.tsx loads instantly
@@ -398,7 +518,26 @@ const SessionChat: FC = () => {
             initialSessionData,
           )
         }
+
+        // Set pending redirect for non-optimistic case too
+        console.log(
+          '***debug*** Setting pending redirect for non-optimistic session',
+        )
+        setPendingRedirect({
+          agentId: agentId as string,
+          sessionId: newSessionId,
+        })
       }
+
+      // Fix: Use the correct query key structure to invalidate sessions list
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list', agentId],
+      })
+
+      // Also invalidate the general sessions list (without agent filter)
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list'],
+      })
     },
   })
 
@@ -420,50 +559,43 @@ const SessionChat: FC = () => {
   const handleSendMessage = useCallback(
     async (content: string, attachments?: string[]) => {
       if (!user || !agent) return
-
-      // Clear any existing errors when starting a new message
       clearErrors()
 
-      // ***debug*** IMMEDIATE optimistic transition - generate temp session ID and switch to session view
+      // If creating a new session optimistically:
       if (!sessionId && !optimisticSessionId) {
         const tempSessionId = `temp-${Date.now()}-${Math.random()
           .toString(36)
           .substr(2, 9)}`
-        console.log('***debug*** Creating optimistic session:', tempSessionId)
         setOptimisticSessionId(tempSessionId)
         optimisticSessionIdRef.current = tempSessionId
-
-        // Cache optimistic session data IMMEDIATELY - don't include user message, backend will handle it
+        // Include an optimistic user message so "Session" won't show the welcome screen
         const optimisticSessionData = {
           _id: tempSessionId,
           agents: [agent],
-          messages: [], // Empty - backend will add user message, we'll stream agent response
+          messages: [
+            {
+              _id: `tempMessage-${Date.now()}`,
+              content,
+              sender: { _id: user._id, username: user.username },
+              role: 'user',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ],
           title: null,
           budget: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         }
-
-        console.log(
-          '***debug*** Caching optimistic session data:',
-          optimisticSessionData,
-        )
         queryClient.setQueryData(
           ['session', tempSessionId],
           optimisticSessionData,
         )
 
-        // Start streaming to the optimistic session
-        console.log('***debug*** Starting streaming for optimistic session')
+        // Start streaming
         setIsStreamingTokens(true)
-        setHasReceivedTokens(false)
-        setStreamingText('')
-        setStreamingAgent(null)
-        sendStreamingMessage(content, attachments, {
-          agent_ids: [agent._id],
-        })
-
-        return // Exit early - we're now in optimistic mode
+        sendStreamingMessage(content, attachments, { agent_ids: [agent._id] })
+        return
       }
 
       setIsStreamingTokens(true)
@@ -675,12 +807,19 @@ const SessionChat: FC = () => {
       </div>
 
       {/* Message Input */}
-      {/*<div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
-        <MessageInput
-          sessionId={sessionId || 'new'}
-          onStreamingMessage={handleSendMessage}
-        />
-      </div>*/}
+      {hasSessionContent && (
+        <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-4">
+          <MessageInput
+            sessionId={sessionId || 'new'}
+            onStreamingMessage={handleSendMessage}
+            isStreaming={
+              isStreamingTokens ||
+              waitingForWebSocket ||
+              streamingText.length > 0
+            }
+          />
+        </div>
+      )}
     </main>
   )
 }
