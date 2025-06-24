@@ -16,7 +16,6 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
 import CreationUIMobile from '@/features/tools/creation-ui-mobile'
 import ParameterField from '@/features/tools/parameters/parameter-field'
 import ParameterGroupCollapse from '@/features/tools/parameters/parameter-group-collapse'
@@ -254,23 +253,21 @@ const CreationUIContainer = ({ tool }: Props) => {
   const formContent = (
     <Form {...form}>
       <form className="w-full flex flex-col justify-start h-full min-w-full">
-        <div className="flex p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-          <div className="flex flex-col flex-1">
+        <div className="flex items-start gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setToolSelectorOpen(true)}
+            className="p-2 h-10 w-10 flex-shrink-0 mt-1"
+          >
+            <MenuIcon className="h-5 w-5" />
+          </Button>
+          <div className="flex flex-col flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setToolSelectorOpen(true)}
-                  className="p-1 h-7 w-7 flex-shrink-0"
-                >
-                  <MenuIcon className="h-4 w-4" />
-                </Button>
-                <TypographyH4 className="text-sm lg:text-base">
-                  {tool.name}
-                </TypographyH4>
-              </div>
+              <TypographyH4 className="text-sm lg:text-base">
+                {tool.name}
+              </TypographyH4>
               {tool.base_model ? (
                 <div className="flex-shrink-0">
                   <Badge
@@ -455,8 +452,6 @@ const CreationUIContainer = ({ tool }: Props) => {
             )}
           />
 
-          <CostIndicatorV2 cost={cost} />
-
           {isSignedIn && !hasEnoughBalance && (
             <Button
               type="button"
@@ -473,7 +468,7 @@ const CreationUIContainer = ({ tool }: Props) => {
           <Button
             type="button"
             size="sm"
-            className="w-[72px]"
+            className="min-w-[100px] flex items-center justify-between gap-3"
             onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
             disabled={
               isSubmitting ||
@@ -484,7 +479,17 @@ const CreationUIContainer = ({ tool }: Props) => {
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <>Create</>
+              <>
+                <span>Create</span>
+                <div className="flex items-center text-xs opacity-80">
+                  <span className="font-mono">
+                    {cost.toLocaleString(undefined, {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+              </>
             )}
           </Button>
         </div>
