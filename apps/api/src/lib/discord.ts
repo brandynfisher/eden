@@ -53,7 +53,7 @@ async function sendDiscordNotification(
             {
               name: 'Handler',
               value: task.handler_id
-                ? `[${task.handler_id}](https://modal.com/apps/edenartlab/main/ap-NYQWipauyaWLt0YEAM9Fvm?fcId=${task.handler_id}&activeTab=functions&functionSection=calls&limit=100)`
+                ? `[${task.handler_id}](https://modal.com/apps/edenartlab/main/deployed/api-prod?fcId=${task.handler_id}&activeTab=functions&functionId=fu-ilUKSZFmNY1cvazkGUwFLh&functionSection=calls)`
                 : 'n/a',
               inline: true,
             },
