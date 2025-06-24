@@ -681,6 +681,17 @@ const AgentEditView: FC<{
                                       label:
                                         'Social media tools (read and post)',
                                     },
+                                    {
+                                      key: 'legacy_tools',
+                                      label: 'Legacy tools',
+                                      description: '2023 Eden tools',
+                                    },
+                                    {
+                                      key: 'all_tools',
+                                      label: 'All individual tools',
+                                      description:
+                                        'Make available individual tools inside the image, video, and audio multi-tools (50+ individual tools)',
+                                    },
                                   ].map(tool => (
                                     <div
                                       key={tool.key}
@@ -698,9 +709,16 @@ const AgentEditView: FC<{
                                           })
                                         }}
                                       />
-                                      <label className="text-sm font-medium">
-                                        {tool.label}
-                                      </label>
+                                      <div className="flex flex-col">
+                                        <label className="text-sm font-medium">
+                                          {tool.label}
+                                        </label>
+                                        {tool.description && (
+                                          <span className="text-xs text-muted-foreground">
+                                            {tool.description}
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
                                   ))}
                                 </div>
