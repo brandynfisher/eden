@@ -3,7 +3,6 @@
 import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
-import { useSidebar } from '@/components/layout/sidebar-layout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +20,7 @@ import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
 import CreationUIMobile from '@/features/tools/creation-ui-mobile'
 import ParameterField from '@/features/tools/parameters/parameter-field'
 import ParameterGroupCollapse from '@/features/tools/parameters/parameter-group-collapse'
+import ToolSelectorModal from '@/features/tools/tool-selector-modal'
 import { groupParameters } from '@/features/tools/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedActions } from '@/hooks/use-subscription-gate'
@@ -85,31 +85,18 @@ const CreationUIContainer = ({ tool }: Props) => {
   const [, setShowSettings] = useState(false)
 
   const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
-  const [showSidebarButton, setShowSidebarButton] = useState(false)
-
-  // Get sidebar context (may throw if not within SidebarLayout)
-  let sidebarContext: {
-    openSidebar: () => void
-    isSidebarOpen: boolean
-  } | null = null
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    sidebarContext = useSidebar()
-  } catch {
-    // Not within SidebarLayout context, which is fine
-  }
+  const [toolSelectorOpen, setToolSelectorOpen] = useState(false)
 
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth
       const isMobile = width < 1024 // lg breakpoint - show modal on mobile/tablet
-      const shouldShowSidebarButton = width < 1280 && width >= 1024 // between lg and xl - show sidebar button
 
-      // Only close the modal if switching to desktop, never open it automatically
+      // Only close the mobile form modal if switching to desktop, never open it automatically
+      // Do NOT close the tool selector modal here
       if (!isMobile && mobileIsFormVisible) {
         setMobileIsFormVisible(false)
       }
-      setShowSidebarButton(shouldShowSidebarButton)
     }
 
     // Check on mount
@@ -267,29 +254,23 @@ const CreationUIContainer = ({ tool }: Props) => {
   const formContent = (
     <Form {...form}>
       <form className="w-full flex flex-col justify-start h-full min-w-full">
-        <div
-          className={cn(
-            'flex p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700',
-            mobileIsFormVisible && sidebarContext && 'pl-12',
-          )}
-        >
-          {/* Sidebar button - shown when sidebar is hidden but not on mobile/tablet modal */}
-          {showSidebarButton && sidebarContext && !mobileIsFormVisible && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={sidebarContext.openSidebar}
-              className="p-1 h-9 w-9 mr-2 self-start flex-shrink-0"
-            >
-              <MenuIcon className="h-5 w-5" />
-            </Button>
-          )}
-
+        <div className="flex p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
           <div className="flex flex-col flex-1">
             <div className="flex items-center justify-between">
-              <TypographyH4 className="text-sm lg:text-base">
-                {tool.name}
-              </TypographyH4>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setToolSelectorOpen(true)}
+                  className="p-1 h-7 w-7 flex-shrink-0"
+                >
+                  <MenuIcon className="h-4 w-4" />
+                </Button>
+                <TypographyH4 className="text-sm lg:text-base">
+                  {tool.name}
+                </TypographyH4>
+              </div>
               {tool.base_model ? (
                 <div className="flex-shrink-0">
                   <Badge
@@ -529,11 +510,17 @@ const CreationUIContainer = ({ tool }: Props) => {
         open={mobileIsFormVisible}
         onOpenChange={setMobileIsFormVisible}
         tool={tool}
-        showSidebarButton={!!sidebarContext}
-        onSidebarOpen={sidebarContext?.openSidebar}
+        onToolSelectorOpen={() => setToolSelectorOpen(true)}
       >
         {formContent}
       </CreationUIMobile>
+
+      {/* Tool Selector Modal */}
+      <ToolSelectorModal
+        currentTool={tool}
+        open={toolSelectorOpen}
+        onOpenChange={setToolSelectorOpen}
+      />
     </>
   )
 }

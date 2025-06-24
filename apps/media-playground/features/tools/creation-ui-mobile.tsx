@@ -17,16 +17,14 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   tool: ToolV2
-  showSidebarButton?: boolean
-  onSidebarOpen?: () => void
+  onToolSelectorOpen?: () => void
 } & PropsWithChildren
 
 const CreationUiMobile = ({
   open,
   onOpenChange,
   tool,
-  showSidebarButton,
-  onSidebarOpen,
+  onToolSelectorOpen,
   children,
 }: Props) => {
   return (
@@ -48,16 +46,16 @@ const CreationUiMobile = ({
 
         {children}
 
-        {/* Show sidebar button in modal if available, otherwise show close button */}
-        {showSidebarButton && onSidebarOpen ? (
+        {/* Show hamburger button if provided, otherwise show close button */}
+        {onToolSelectorOpen ? (
           <Button
             variant="ghost"
             size="sm"
-            onClick={onSidebarOpen}
+            onClick={onToolSelectorOpen}
             className="absolute w-10 h-10 top-0 left-0 rounded-t-none rounded-l-none flex items-center justify-center lg:left-2 lg:right-auto lg:top-2 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none bg-accent z-20"
           >
             <MenuIcon className="h-5 w-5" />
-            <span className="sr-only">Open Sidebar</span>
+            <span className="sr-only">Open Tool Selector</span>
           </Button>
         ) : (
           <DialogClose
