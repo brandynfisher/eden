@@ -30,15 +30,17 @@ const CreationUiMobile = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <div className="lg:hidden fixed left-0 bottom-0 flex z-10 bg-accent p-2 w-full justify-between items-center gap-2">
-          <div className="text-sm text-muted-foreground">{tool.name}</div>
-          <Button onClick={() => onOpenChange(true)}>
-            <PlusIcon className="h-4 w-4 mr-1" />
-            Create
+        <div className="lg:hidden fixed left-0 bottom-0 flex z-10 bg-accent p-3 w-full justify-center items-center">
+          <Button
+            onClick={() => onOpenChange(true)}
+            className="w-full max-w-md h-12 text-base"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Create with {tool.name}
           </Button>
         </div>
       </DialogTrigger>
-      <DialogContentOverlayBlur className="p-0 rounded-md overflow-hidden bg-muted-darker">
+      <DialogContentOverlayBlur className="p-0 rounded-md overflow-hidden bg-muted-darker max-h-[95vh] h-auto w-full max-w-none sm:max-w-lg flex flex-col !translate-y-[-47.5%]">
         <VisuallyHidden>
           <DialogTitle>{tool.name}</DialogTitle>
           <DialogDescription>Creation UI</DialogDescription>

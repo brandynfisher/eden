@@ -32,7 +32,7 @@ import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Loader2, MenuIcon } from 'lucide-react'
+import { CoinsIcon, Loader2, MenuIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
@@ -42,6 +42,7 @@ import { z } from 'zod'
 
 type Props = {
   tool: ToolV2
+  hideBurgerButton?: boolean
 }
 
 const RUNWAY_TOOL_KEYS = ['runway', 'reel']
@@ -49,7 +50,7 @@ const RUNWAY_TOOL_KEYS = ['runway', 'reel']
 const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
 const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
-const CreationUIContainer = ({ tool }: Props) => {
+const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
   const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
     GatedActions.MakePrivate,
@@ -252,18 +253,24 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const formContent = (
     <Form {...form}>
-      <form className="w-full flex flex-col justify-start h-full min-w-full">
+      <form className="w-full flex flex-col justify-start h-full min-w-full min-h-0">
         <div className="flex items-start gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setToolSelectorOpen(true)}
-            className="p-2 h-10 w-10 flex-shrink-0 mt-1"
+          {!hideBurgerButton && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setToolSelectorOpen(true)}
+              className="p-2 h-10 w-10 flex-shrink-0 mt-1"
+            >
+              <MenuIcon className="h-5 w-5" />
+            </Button>
+          )}
+          <div
+            className={`flex flex-col flex-1 min-w-0 ${
+              hideBurgerButton ? '' : ''
+            }`}
           >
-            <MenuIcon className="h-5 w-5" />
-          </Button>
-          <div className="flex flex-col flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <TypographyH4 className="text-sm lg:text-base">
                 {tool.name}
@@ -482,6 +489,7 @@ const CreationUIContainer = ({ tool }: Props) => {
               <>
                 <span>Create</span>
                 <div className="flex items-center text-xs opacity-80">
+                  <CoinsIcon className="mr-1 h-3 w-3" />
                   <span className="font-mono">
                     {cost.toLocaleString(undefined, {
                       minimumFractionDigits: 0,
@@ -517,7 +525,251 @@ const CreationUIContainer = ({ tool }: Props) => {
         tool={tool}
         onToolSelectorOpen={() => setToolSelectorOpen(true)}
       >
-        {formContent}
+        <Form {...form}>
+          <form className="w-full flex flex-col justify-start h-full min-w-full min-h-0">
+            <div className="flex items-start gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <TypographyH4 className="text-sm lg:text-base">
+                    {tool.name}
+                  </TypographyH4>
+                  {tool.base_model ? (
+                    <div className="flex-shrink-0">
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 border-muted-foreground"
+                      >
+                        {tool.base_model}
+                      </Badge>
+                    </div>
+                  ) : null}
+                </div>
+                {tool.description && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {tool.description}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-2 py-4 flex flex-col justify-start min-h-0">
+              <div
+                data-test-id="tool-form-settings-required"
+                className="flex flex-col gap-2"
+              >
+                {groupedRequiredParameters?.map((element, index) => (
+                  <div key={index} className="bg-muted rounded-lg">
+                    {element.type === 'standalone' && element.parameter ? (
+                      <ParameterField
+                        form={form}
+                        tool={tool}
+                        parameter={element.parameter}
+                      />
+                    ) : (
+                      <ParameterGroupCollapse
+                        tool={tool}
+                        group={element}
+                        form={form}
+                      />
+                    )}
+                  </div>
+                ))}
+
+                {maskingParameters && maskingParameters.length > 0 ? (
+                  <div className="bg-muted-darker border border-secondary rounded-lg space-y-2 mt-0 !p-2 md:!p-4 !pt-2">
+                    <div className="text-sm font-medium text-foreground">
+                      Masking
+                    </div>
+                    <Tabs
+                      defaultValue={'mask_image'}
+                      className="rounded-lg bg-secondary"
+                    >
+                      <TabsList className="w-full flex gap-1">
+                        <TabsTrigger value="mask_image" className="w-full">
+                          Use Image
+                        </TabsTrigger>
+                        <TabsTrigger value="masking_prompt" className="w-full">
+                          Use Prompt
+                        </TabsTrigger>
+                      </TabsList>
+
+                      {maskingParameters?.map(parameter => (
+                        <TabsContent
+                          key={parameter.name}
+                          value={parameter.name}
+                          className="mt-0"
+                        >
+                          <ParameterField
+                            form={form}
+                            tool={tool}
+                            parameter={{ ...parameter, required: false }}
+                          />
+                        </TabsContent>
+                      ))}
+                    </Tabs>
+                  </div>
+                ) : null}
+
+                {(presetResolutions && presetResolutions.length) ||
+                sampleCountParameter ? (
+                  <div className="flex flex-col gap-1">
+                    {sampleCountParameter ? (
+                      <SampleCountSelector parameter={sampleCountParameter} />
+                    ) : null}
+                    {presetResolutions && presetResolutions.length ? (
+                      <div className="w-full">
+                        <AspectRatioSelector
+                          presetResolutions={presetResolutions}
+                          form={form}
+                          tool={tool}
+                          widthParameter={widthParameter}
+                          heightParameter={heightParameter}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+
+              {optionalParameters?.length ? (
+                <div
+                  data-test-id="tool-form-settings-optional"
+                  className="mt-2"
+                >
+                  <div className="flex flex-col gap-2 w-full relative">
+                    {groupedOptionalParameters?.map((element, index) => (
+                      <div key={index} className="bg-muted/50 rounded-lg">
+                        {element.type === 'standalone' && element.parameter ? (
+                          <ParameterField
+                            form={form}
+                            tool={tool}
+                            parameter={element.parameter}
+                          />
+                        ) : (
+                          <ParameterGroupCollapse
+                            tool={tool}
+                            group={element}
+                            form={form}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
+              {isRunwayPoweredTool ? (
+                <div className="flex items-center">
+                  <a
+                    href={'https://runwayml.com'}
+                    target={'_blank'}
+                    rel="noreferrer noopener nofollow"
+                    className="dark:invert"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className="object-contain h-4"
+                      alt="powered by runway"
+                      src="https://runway-static-assets.s3.amazonaws.com/site/images/api-page/powered-by-runway-black.png"
+                    ></img>
+                  </a>
+                </div>
+              ) : null}
+
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="text-muted-foreground px-1"
+                onClick={!isSubmitting ? handleReset : undefined}
+                disabled={isSubmitting}
+              >
+                Reset
+              </Button>
+
+              <FormField
+                name="makePublic"
+                render={({ field, fieldState }) => (
+                  <FormItem
+                    data-test-id={'makePublic'}
+                    className="flex items-center gap-2 space-y-0 relative"
+                  >
+                    <div className={'flex items-center gap-2'}>
+                      <SubscriptionCrownBadge
+                        type={
+                          tool.output_type === 'lora' ? 'model' : 'creation'
+                        }
+                        className="h-5 w-5"
+                      />
+                      <FormControl id={field.name} className="mt-0">
+                        <Switch
+                          checked={
+                            field.value === undefined ? true : field.value
+                          }
+                          onCheckedChange={field.onChange}
+                          disabled={!isAllowedPrivacy}
+                        />
+                      </FormControl>
+                      <FormLabel
+                        htmlFor={field.name}
+                        className={'text-muted-foreground !mt-0'}
+                      >
+                        Public
+                      </FormLabel>
+                    </div>
+                    <FormMessage>{fieldState.error?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+
+              {isSignedIn && !hasEnoughBalance && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    router.push('/settings/subscription')
+                  }}
+                >
+                  Buy More Manna
+                </Button>
+              )}
+
+              <Button
+                type="button"
+                size="sm"
+                className="min-w-[100px] flex items-center justify-between gap-3"
+                onClick={
+                  !isSubmitting ? form.handleSubmit(onSubmit) : undefined
+                }
+                disabled={
+                  isSubmitting ||
+                  !hasEnoughBalance ||
+                  Object.keys(form.formState.errors).length > 0
+                }
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <span>Create</span>
+                    <div className="flex items-center text-xs opacity-80">
+                      <CoinsIcon className="mr-1 h-3 w-3" />
+                      <span className="font-mono">
+                        {cost.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </CreationUIMobile>
 
       {/* Tool Selector Modal */}
