@@ -301,8 +301,14 @@ export const createAgentTrigger = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { agentId, instruction, schedule } =
-    request.body as AgentsCreateTriggerArguments
+  const {
+    agentId,
+    instruction,
+    session_type,
+    session,
+    schedule,
+    posting_instructions,
+  } = request.body as AgentsCreateTriggerArguments
   const currentUserId = request.user.userId
 
   const agent = await Agent.findById(agentId)
@@ -323,7 +329,10 @@ export const createAgentTrigger = async (
     agent: agentId,
     user: currentUserId,
     instruction,
+    session_type,
+    session,
     schedule,
+    posting_instructions,
   }
 
   const edenComputeRequest = {
@@ -345,6 +354,78 @@ export const createAgentTrigger = async (
 
   return reply.status(200).send({
     triggerId: response.trigger_id,
+  })
+}
+
+export const updateAgentTrigger = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId, triggerId } = request.params as {
+    agentId: string
+    triggerId: string
+  }
+  const {
+    instruction,
+    session_type,
+    session,
+    schedule,
+    status,
+    posting_instructions,
+  } = request.body as {
+    instruction?: string
+    session_type?: 'new' | 'another'
+    session?: string | null
+    schedule?: any
+    status?: 'active' | 'paused' | 'finished'
+    posting_instructions?: any
+  }
+  const currentUserId = request.user.userId
+
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (agent.owner.toString() !== currentUserId.toString()) {
+    return reply.status(401).send({
+      error: 'User not authorized to update triggers for this agent',
+    })
+  }
+
+  const updateData = {
+    id: triggerId,
+    instruction,
+    session_type,
+    session,
+    schedule,
+    status,
+    posting_instructions,
+  }
+
+  const edenComputeRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/update`,
+    data: updateData,
+  }
+
+  const edenComputeResponse = await axios.post(
+    edenComputeRequest.endpoint,
+    edenComputeRequest.data,
+    {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+    },
+  )
+
+  const response = edenComputeResponse.data
+
+  return reply.status(200).send({
+    trigger: response.trigger || response,
   })
 }
 

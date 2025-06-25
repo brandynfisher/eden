@@ -66,7 +66,8 @@ export async function POST(
   }
 
   const requestJson = await request.json()
-  const { instruction, schedule } = requestJson
+  const { instruction, session_type, session, schedule, posting_instructions } =
+    requestJson
 
   try {
     const eden = new EdenClient({
@@ -77,7 +78,10 @@ export async function POST(
     const result = await eden.agents.triggers.create({
       agentId: id,
       instruction,
+      session_type,
+      session,
       schedule,
+      posting_instructions,
     })
 
     return NextResponse.json<AgentsCreateTriggerResponse>(result)
