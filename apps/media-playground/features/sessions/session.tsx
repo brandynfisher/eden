@@ -6,7 +6,7 @@ import { SessionTopBar } from './components/session-top-bar'
 import SessionWelcome from './components/session-welcome'
 import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
-//import LoadingIndicator from '@/components/loading-indicator'
+import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
@@ -310,6 +310,14 @@ const Session = ({
       </div>
     </div>
   )
+
+  if (isSessionLoading && !session) {
+    return (
+      <div className="flex mx-auto py-16">
+        <LoadingIndicator />
+      </div>
+    )
+  }
 
   return (
     <>
