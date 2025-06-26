@@ -288,7 +288,7 @@ const SessionChat: FC = () => {
           setStreamingAgent(null)
           streamingMessageIdRef.current = null
         }
-      }, 100)
+      }, 3000)
     },
     onError: handleStreamingError,
     onDone: () => {
@@ -405,6 +405,8 @@ const SessionChat: FC = () => {
 
   const handleSendMessage = useCallback(
     async (content: string, attachments?: string[]) => {
+      // start showing indicator as soon as message is sent
+      setIsStreamingTokens(true)
       if (!user || !agent) return
       clearErrors()
 
