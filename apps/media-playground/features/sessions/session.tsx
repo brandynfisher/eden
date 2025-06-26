@@ -348,6 +348,7 @@ const Session = ({
           session?.agents && session.agents.length > 0 ? (
             <>
               <SessionWelcome
+                variant="session"
                 agents={session.agents}
                 sessionTitle={session.title}
               />
