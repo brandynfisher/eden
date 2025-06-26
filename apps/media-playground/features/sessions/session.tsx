@@ -332,7 +332,7 @@ const Session = ({
 
       <div
         className={cn(
-          'flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full',
+          'flex-1 p-4 max-w-[--aui-thread-max-width] mx-auto w-full',
           messageGroups.length === 0 &&
             'flex flex-col justify-center items-center',
         )}
