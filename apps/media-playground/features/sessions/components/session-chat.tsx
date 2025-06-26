@@ -268,7 +268,7 @@ const SessionChat: FC = () => {
           setWaitingForWebSocket(false)
           streamingMessageIdRef.current = null
         }
-      }, 1000) // Reduced from 2000ms to 1000ms
+      }, 100) // Reduced from 2000ms to 100ms
     },
     onToolComplete: () => {
       // After tool calls complete, we expect more tokens from the LLM
@@ -288,7 +288,7 @@ const SessionChat: FC = () => {
           setStreamingAgent(null)
           streamingMessageIdRef.current = null
         }
-      }, 3000)
+      }, 100)
     },
     onError: handleStreamingError,
     onDone: () => {
@@ -570,8 +570,7 @@ const SessionChat: FC = () => {
 
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
-      {/* Sticky top bar showing agents - only show if we have session content */}
-      {hasSessionContent && session?.agents && session.agents.length > 0 && (
+      {session?.agents && session.agents.length > 0 && (
         <SessionTopBar
           agents={session.agents}
           title={session.title}
