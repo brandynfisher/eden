@@ -199,7 +199,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
             disabled={isEditing}
           >
             {isFromTrigger && (
-              <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0 mr-1" />
             )}
             <div className="overflow-hidden whitespace-nowrap text-ellipsis">
               {title || 'Untitled'}
@@ -369,13 +369,14 @@ const MainLeft = ({
         <>
           {isSignedIn ? (
             <>
-              {sessions.map(
-                session =>
-                  session && (
+              {sessions
+                .filter(session => session && session.title && session.title !== 'Untitled')
+                .map(
+                session => (
                     <SessionListItem
                       key={session._id}
                       id={session._id}
-                      title={session.title || 'Untitled'}
+                      title={session.title}
                       isActive={session._id === currentSessionId}
                       isFromTrigger={!!session.trigger}
                       onItemClick={() => {

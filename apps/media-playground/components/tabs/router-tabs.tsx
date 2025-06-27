@@ -25,6 +25,7 @@ export type RouterTab = {
   sortMenu?: (props: SortMenuProps) => ReactElement
   canSearch?: boolean
   initialFilter?: FeedCursorRouteQueryParams['filter']
+  actionButton?: ReactElement
 }
 
 type Props = {
@@ -178,41 +179,47 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
       onValueChange={handleTabChange}
       className="w-full max-w-full"
     >
-      <div className="flex flex-wrap flex-col sm:flex-row gap-4 w-full mb-4">
-        <TabsList className="flex justify-stretch min-w-[328px] w-full md:w-auto md:min-w-[420px]">
-          {tabs.map(tab => (
-            <TabsTrigger key={tab.key} value={tab.key} className="w-full">
-              {tab.title}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <div className="flex flex-wrap flex-col sm:flex-row gap-4 w-full mb-4 sm:justify-between">
+        <div className="flex flex-wrap flex-col sm:flex-row gap-4 flex-1">
+          <TabsList className="flex justify-stretch min-w-[328px] w-full md:w-auto md:min-w-[420px]">
+            {tabs.map(tab => (
+              <TabsTrigger key={tab.key} value={tab.key} className="w-full">
+                {tab.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {activeRouterTab?.filterMenu ? (
-          <activeRouterTab.filterMenu
-            initialFilter={
-              activeRouterTab.initialFilter || tabCaches[activeTab]?.filterQuery
-            }
-            onChange={handleTabFilterChange}
-          />
-        ) : null}
+          {activeRouterTab?.filterMenu ? (
+            <activeRouterTab.filterMenu
+              initialFilter={
+                activeRouterTab.initialFilter || tabCaches[activeTab]?.filterQuery
+              }
+              onChange={handleTabFilterChange}
+            />
+          ) : null}
 
-        {activeRouterTab?.sortMenu ? (
-          <activeRouterTab.sortMenu
-            initialSort={tabCaches[activeTab]?.filterQuery?.sort as string}
-            onChange={handleTabSortChange}
-          />
-        ) : null}
+          {activeRouterTab?.sortMenu ? (
+            <activeRouterTab.sortMenu
+              initialSort={tabCaches[activeTab]?.filterQuery?.sort as string}
+              onChange={handleTabSortChange}
+            />
+          ) : null}
 
-        {sharedFilterMenu
-          ? sharedFilterMenu({
-              initialFilter: baseQuery,
-              onChange: handleGlobalFilterChange,
-            })
-          : null}
+          {sharedFilterMenu
+            ? sharedFilterMenu({
+                initialFilter: baseQuery,
+                onChange: handleGlobalFilterChange,
+              })
+            : null}
 
-        {activeRouterTab?.canSearch ? (
-          <FeedSearchForm handleSearch={handleSearch} />
-        ) : null}
+          {activeRouterTab?.canSearch ? (
+            <FeedSearchForm handleSearch={handleSearch} />
+          ) : null}
+        </div>
+
+        {activeRouterTab?.actionButton && (
+          <div className="flex-shrink-0">{activeRouterTab.actionButton}</div>
+        )}
       </div>
 
       {tabs.map(tab => (

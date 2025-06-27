@@ -56,7 +56,7 @@ const agentSchema = z.object({
     .array(
       z.object({
         lora: z.string(),
-        use_when: z.string().optional().default(''),
+        use_when: z.string().trim().max(500).min(1),
       }),
     )
     .max(10)
@@ -544,6 +544,7 @@ const CreateAgentView = () => {
                                               <FormItem className="flex-1">
                                                 <FormLabel className="text-sm text-muted-foreground">
                                                   When to use this model
+                                                  <span className="text-red-500 ml-1">*</span>
                                                 </FormLabel>
                                                 <FormControl>
                                                   <Input

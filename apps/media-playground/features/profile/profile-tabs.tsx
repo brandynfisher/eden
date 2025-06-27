@@ -1,6 +1,9 @@
 'use client'
 
 import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+import Link from 'next/link'
 import AgentsFeed from '@/features/feed/agents-feed'
 import CollectionsFeed from '@/features/feed/collections-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
@@ -66,6 +69,14 @@ const ProfileTabs = () => {
       filterMenu: ProfileAgentsFilter,
       canSearch: true,
       sortMenu: props => <SortMenu {...props} variant="agent" />,
+      actionButton: isOwnProfile ? (
+        <Button asChild size="lg" className="gap-2">
+          <Link href="/new/agent">
+            <Plus className="h-4 w-4" />
+            Create Agent
+          </Link>
+        </Button>
+      ) : undefined,
       content: (
         <AgentsFeed
           query={baseQuery}

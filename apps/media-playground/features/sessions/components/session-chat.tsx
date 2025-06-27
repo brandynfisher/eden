@@ -465,18 +465,7 @@ const SessionChat: FC = () => {
     )
   }
 
-  // Show session loading if we have a sessionId but session is still loading
-  if (sessionId && isSessionLoading) {
-    return (
-      <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex mx-auto py-16">
-          <LoadingIndicator />
-        </div>
-      </main>
-    )
-  }
-
-  // Show session error
+  // Show session error first to prevent infinite loading
   if (sessionError) {
     return (
       <main className="flex-1 overflow-hidden flex flex-col">
@@ -487,6 +476,17 @@ const SessionChat: FC = () => {
               problem persists, please contact support.
             </AlertDescription>
           </AlertDestructive>
+        </div>
+      </main>
+    )
+  }
+
+  // Show session loading if we have a sessionId but session is still loading
+  if (sessionId && isSessionLoading) {
+    return (
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex mx-auto py-16">
+          <LoadingIndicator />
         </div>
       </main>
     )
