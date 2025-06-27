@@ -370,32 +370,40 @@ const MainLeft = ({
           {isSignedIn ? (
             <>
               {sessions
-                .filter(session => session && session.title && session.title !== 'Untitled')
-                .map(
-                session => (
-                    <SessionListItem
-                      key={session._id}
-                      id={session._id}
-                      title={session.title}
-                      isActive={session._id === currentSessionId}
-                      isFromTrigger={!!session.trigger}
-                      onItemClick={() => {
-                        onItemClick?.()
-                        if (isChat && agentId) {
-                          // For chat2 routes, go to /chat2/[agentId]/[sessionId]
-                          router.push(`/chat2/${agentId}/${session._id}`, {
-                            scroll: false,
-                          })
-                        } else {
-                          // For regular sessions, go to /sessions/[sessionId]
-                          router.push(`/sessions/${session._id}`, {
-                            scroll: false,
-                          })
-                        }
-                      }}
-                    />
-                  ),
-              )}
+                .filter(
+                  (
+                    session,
+                  ): session is NonNullable<typeof session> & {
+                    title: string
+                  } =>
+                    session != null &&
+                    session.title != null &&
+                    session.title !== '' &&
+                    session.title !== 'Untitled',
+                )
+                .map(session => (
+                  <SessionListItem
+                    key={session._id}
+                    id={session._id}
+                    title={session.title}
+                    isActive={session._id === currentSessionId}
+                    isFromTrigger={!!session.trigger}
+                    onItemClick={() => {
+                      onItemClick?.()
+                      if (isChat && agentId) {
+                        // For chat2 routes, go to /chat2/[agentId]/[sessionId]
+                        router.push(`/chat2/${agentId}/${session._id}`, {
+                          scroll: false,
+                        })
+                      } else {
+                        // For regular sessions, go to /sessions/[sessionId]
+                        router.push(`/sessions/${session._id}`, {
+                          scroll: false,
+                        })
+                      }
+                    }}
+                  />
+                ))}
             </>
           ) : (
             <Button
@@ -420,6 +428,7 @@ export const SessionsSidebarContent = ({
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
+  
 }) => {
   return (
     <>
