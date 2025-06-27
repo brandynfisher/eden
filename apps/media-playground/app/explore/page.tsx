@@ -215,6 +215,7 @@ const ExplorePage = () => {
             <>
               <CreationsFilter
                 initialFilter={creationsFilter}
+                // @ts-ignore
                 onChange={filter => setCreationsFilter(filter)}
                 className="min-w-0 w-full sm:w-auto"
               />

@@ -250,7 +250,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
 }
 
 function isNewSessionRoute(
-  params: Record<string, string>,
+  params: Record<string, string | string[]>,
   isChat?: boolean,
 ): boolean {
   // For chat2: /chat2/[agentId] (no sessionId)
