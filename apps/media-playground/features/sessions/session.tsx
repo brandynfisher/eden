@@ -304,7 +304,6 @@ const Session = ({
     [filteredMessages],
   )
 
-  console.log('***debug messageGroups', messageGroups)
 
   const MessageSkeleton = () => (
     <div className="mb-4 flex space-x-2">
