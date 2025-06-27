@@ -58,7 +58,8 @@ export const useSessionListQuery = (props?: Props) => {
       )
       return response
     },
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
+    refetchInterval: 5000, // Refetch every 5 seconds to pick up newly titled sessions
   })
 
   const sessions = data?.pages.flatMap(page => page.docs) ?? []

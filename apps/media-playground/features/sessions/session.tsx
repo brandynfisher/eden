@@ -304,7 +304,6 @@ const Session = ({
     [filteredMessages],
   )
 
-  console.log('***debug messageGroups', messageGroups)
 
   const MessageSkeleton = () => (
     <div className="mb-4 flex space-x-2">
@@ -315,6 +314,19 @@ const Session = ({
       </div>
     </div>
   )
+
+  if (sessionError) {
+    return (
+      <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
+        <AlertDestructive>
+          <AlertDescription>
+            We couldn't load this session. Please try again later. If the
+            problem persists, please contact support.
+          </AlertDescription>
+        </AlertDestructive>
+      </div>
+    )
+  }
 
   if (isSessionLoading && !session) {
     return (
@@ -337,74 +349,141 @@ const Session = ({
 
       <div
         className={cn(
-          'flex-1 p-4 max-w-[--aui-thread-max-width] mx-auto w-full',
+          'flex-1 pb-4 overflow-y-auto',
           messageGroups.length === 0 &&
             'flex flex-col justify-center items-center',
         )}
       >
-        {/* Only show loading skeleton if we are on a new session */}
-        {sessionId === 'new' && isSessionLoading ? (
-          <div className="space-y-4">
-            <MessageSkeleton />
-            <MessageSkeleton />
-          </div>
-        ) : sessionError ? (
-          <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
-            <AlertDestructive>
-              <AlertDescription>
-                We couldn't load this session. Please try again later. If the
-                problem persists, please contact support.
-              </AlertDescription>
-            </AlertDestructive>
-          </div>
-        ) : messageGroups.length === 0 ? (
-          session?.agents && session.agents.length > 0 ? (
+        <div className="p-4 pb-8 max-w-[--aui-thread-max-width] mx-auto w-full">
+          {/* Only show loading skeleton if we are on a new session */}
+          {sessionId === 'new' && isSessionLoading ? (
+            <div className="space-y-4">
+              <MessageSkeleton />
+              <MessageSkeleton />
+            </div>
+          ) : sessionError ? (
+            <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
+              <AlertDestructive>
+                <AlertDescription>
+                  We couldn't load this session. Please try again later. If the
+                  problem persists, please contact support.
+                </AlertDescription>
+              </AlertDestructive>
+            </div>
+          ) : messageGroups.length === 0 ? (
+            session?.agents && session.agents.length > 0 ? (
+              <>
+                <SessionWelcome
+                  variant="session"
+                  agents={session.agents}
+                  sessionTitle={session.title}
+                />
+              </>
+            ) : null
+          ) : (
             <>
-              <SessionWelcome
-                variant="session"
-                agents={session.agents}
-                sessionTitle={session.title}
-              />
+              {messageGroups.map(group => (
+                <div key={group[0]._id}>
+                  {group[0].role === 'eden'
+                    ? group.map(message => (
+                        <EdenMessage key={message._id} message={message} />
+                      ))
+                    : isOwnMessage(group[0].sender?._id)
+                    ? group.map(message => (
+                        <UserMessage key={message._id} message={message} />
+                      ))
+                    : group
+                        .filter(message => message.role !== 'tool')
+                        .map((message, index) => (
+                          <OtherMessage
+                            sessionId={sessionId as string}
+                            key={message._id}
+                            message={message}
+                            showAvatar={index === 0}
+                          />
+                        ))}
+                </div>
+              ))}
             </>
-          ) : null
-        ) : (
-          <>
-            {messageGroups.map(group => (
-              <div key={group[0]._id}>
-                {group[0].role === 'eden'
-                  ? group.map(message => (
-                      <EdenMessage key={message._id} message={message} />
-                    ))
-                  : isOwnMessage(group[0].sender?._id)
-                  ? group.map(message => (
-                      <UserMessage key={message._id} message={message} />
-                    ))
-                  : group
-                      .filter(message => message.role !== 'tool')
-                      .map((message, index) => (
-                        <OtherMessage
-                          sessionId={sessionId as string}
-                          key={message._id}
-                          message={message}
-                          showAvatar={index === 0}
-                        />
-                      ))}
-              </div>
-            ))}
-          </>
-        )}
+          )}
 
-        {/* Show streaming message when actively streaming tokens or waiting for websocket */}
-        {(isStreamingTokens ||
-          waitingForWebSocket ||
-          streamingText.length > 0) && (
-          <div className="mb-4">
-            <OtherMessage
-              sessionId={sessionId as string}
-              message={
+          {/* Show streaming message when actively streaming tokens or waiting for websocket */}
+          {(isStreamingTokens ||
+            waitingForWebSocket ||
+            streamingText.length > 0) && (
+            <div className="mb-4">
+              <OtherMessage
+                sessionId={sessionId as string}
+                message={
+                  {
+                    _id: 'streaming',
+                    content: streamingText,
+                    sender: streamingAgent ||
+                      session?.agents?.[0] || {
+                        _id: 'agent',
+                        username: 'Assistant',
+                      },
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    session: sessionId,
+                    role: 'assistant',
+                  } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                }
+                showAvatar={true}
+                isStreamingTokens={isStreamingTokens && !hasReceivedTokens}
+              />
+            </div>
+          )}
+          {/* Error Display */}
+          <ErrorDisplay
+            errors={errors}
+            onDismiss={removeError}
+            className="mb-4"
+          />
+          {cancelledNotice && (
+            <div className="text-center text-sm text-muted-foreground py-2">
+              ⛔ Cancelled by user
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      <div className="sticky bottom-0 bg-aui-background p-4 z-10">
+        <div className="max-w-[--aui-thread-max-width] mx-auto w-full">
+          <MessageInput
+            sessionId={sessionId as string}
+            onStreamingMessage={(content, attachments) => {
+              // Clear any existing errors when starting a new message
+              clearErrors()
+              setCancelledNotice(false)
+              setIsStreamingTokens(true)
+              setHasReceivedTokens(false)
+              setStreamingText('')
+              setStreamingAgent(null)
+              sendStreamingMessage(content, attachments)
+
+              // Add optimistic user message
+              setOptimisticMessages(prev => [
+                ...prev,
                 {
-                  _id: 'streaming',
-                  content: streamingText,
+                  _id: `optimistic-user-${Date.now()}`,
+                  content: content,
+                  sender: {
+                    _id: user?._id || 'user',
+                    username: user?.username || 'User',
+                    name: user?.username || 'You',
+                    userImage: user?.userImage,
+                  },
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                  session: sessionId,
+                  role: 'user',
+                } as Message,
+                {
+                  _id: `optimistic-agent-${Date.now()}`,
+                  content: '',
                   sender: streamingAgent ||
                     session?.agents?.[0] || {
                       _id: 'agent',
@@ -414,85 +493,19 @@ const Session = ({
                   updatedAt: new Date(),
                   session: sessionId,
                   role: 'assistant',
-                } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              }
-              showAvatar={true}
-              isStreamingTokens={isStreamingTokens && !hasReceivedTokens}
-            />
-          </div>
-        )}
-        {/* Error Display */}
-        <ErrorDisplay
-          errors={errors}
-          onDismiss={removeError}
-          className="mb-4"
-        />
-        {cancelledNotice && (
-          <div className="text-center text-sm text-muted-foreground py-2">
-            ⛔ Cancelled by user
-          </div>
-        )}
+                  __optimistic: true,
+                } as Message,
+              ])
 
-        <div ref={messagesEndRef} />
-      </div>
-
-      <div
-        className={`max-w-[--aui-thread-max-width] mx-auto w-full sticky ${
-          messageGroups.length === 0 ? 'bottom-36' : 'bottom-4'
-        }`}
-      >
-        <MessageInput
-          sessionId={sessionId as string}
-          onStreamingMessage={(content, attachments) => {
-            // Clear any existing errors when starting a new message
-            clearErrors()
-            setIsStreamingTokens(true)
-            setHasReceivedTokens(false)
-            setStreamingText('')
-            setStreamingAgent(null)
-            sendStreamingMessage(content, attachments)
-
-            // Add optimistic user message
-            setOptimisticMessages(prev => [
-              ...prev,
-              {
-                _id: `optimistic-user-${Date.now()}`,
-                content: content,
-                sender: {
-                  _id: user?._id || 'user',
-                  username: user?.username || 'User',
-                  name: user?.username || 'You',
-                  userImage: user?.userImage,
-                },
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                session: sessionId,
-                role: 'user',
-              } as Message,
-              {
-                _id: `optimistic-agent-${Date.now()}`,
-                content: '',
-                sender: streamingAgent ||
-                  session?.agents?.[0] || {
-                    _id: 'agent',
-                    username: 'Assistant',
-                  },
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                session: sessionId,
-                role: 'assistant',
-                __optimistic: true,
-              } as Message,
-            ])
-
-            // Scroll to bottom when streaming starts
-            setTimeout(scrollToBottom, 100)
-          }}
-          onCancel={cancelSession}
-          isStreaming={
-            isStreamingTokens || waitingForWebSocket || streamingText.length > 0
-          }
-        />
+              // Scroll to bottom when streaming starts
+              setTimeout(scrollToBottom, 100)
+            }}
+            onCancel={cancelSession}
+            isStreaming={
+              isStreamingTokens || waitingForWebSocket || streamingText.length > 0
+            }
+          />
+        </div>
       </div>
     </>
   )

@@ -199,7 +199,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
             disabled={isEditing}
           >
             {isFromTrigger && (
-              <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0 mr-1" />
             )}
             <div className="overflow-hidden whitespace-nowrap text-ellipsis">
               {title || 'Untitled'}
@@ -369,32 +369,41 @@ const MainLeft = ({
         <>
           {isSignedIn ? (
             <>
-              {sessions.map(
-                session =>
-                  session && (
-                    <SessionListItem
-                      key={session._id}
-                      id={session._id}
-                      title={session.title || 'Untitled'}
-                      isActive={session._id === currentSessionId}
-                      isFromTrigger={!!session.trigger}
-                      onItemClick={() => {
-                        onItemClick?.()
-                        if (isChat && agentId) {
-                          // For chat2 routes, go to /chat2/[agentId]/[sessionId]
-                          router.push(`/chat2/${agentId}/${session._id}`, {
-                            scroll: false,
-                          })
-                        } else {
-                          // For regular sessions, go to /sessions/[sessionId]
-                          router.push(`/sessions/${session._id}`, {
-                            scroll: false,
-                          })
-                        }
-                      }}
-                    />
-                  ),
-              )}
+              {sessions
+                .filter(
+                  (
+                    session,
+                  ): session is NonNullable<typeof session> & {
+                    title: string
+                  } =>
+                    session != null &&
+                    session.title != null &&
+                    session.title !== '' &&
+                    session.title !== 'Untitled',
+                )
+                .map(session => (
+                  <SessionListItem
+                    key={session._id}
+                    id={session._id}
+                    title={session.title}
+                    isActive={session._id === currentSessionId}
+                    isFromTrigger={!!session.trigger}
+                    onItemClick={() => {
+                      onItemClick?.()
+                      if (isChat && agentId) {
+                        // For chat2 routes, go to /chat2/[agentId]/[sessionId]
+                        router.push(`/chat2/${agentId}/${session._id}`, {
+                          scroll: false,
+                        })
+                      } else {
+                        // For regular sessions, go to /sessions/[sessionId]
+                        router.push(`/sessions/${session._id}`, {
+                          scroll: false,
+                        })
+                      }
+                    }}
+                  />
+                ))}
             </>
           ) : (
             <Button
@@ -419,6 +428,7 @@ export const SessionsSidebarContent = ({
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
+  
 }) => {
   return (
     <>

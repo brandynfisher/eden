@@ -54,6 +54,16 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
             href: '/explore?type=agents',
             active: segments[0] === 'explore' && contentType === 'agents',
           },
+        ]}
+        segments={segments}
+        inSheet={inSheet}
+      />
+      <div className="md:self-stretch md:flex md:items-center">
+        <Separator orientation="vertical" className="hidden md:block" />
+        <Separator orientation="horizontal" className="md:hidden" />
+      </div>
+      <NavLinkList
+        items={[
           {
             label: 'Models',
             segments: [`explore`],

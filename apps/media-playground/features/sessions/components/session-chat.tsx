@@ -104,11 +104,6 @@ const SessionChat: FC = () => {
 
         // Check if we should redirect now that streaming is complete
         if (pendingRedirect && session?.title) {
-          console.log(
-            '***debug*** Redirecting after streaming complete with title:',
-            session.title,
-          )
-
           // Pre-populate the destination session cache with complete data
           queryClient.setQueryData(['session', pendingRedirect.sessionId], {
             ...session,
@@ -134,11 +129,6 @@ const SessionChat: FC = () => {
   // Add this effect to invalidate sessions list when the session title changes
   useEffect(() => {
     if (session?.title && sessionId) {
-      console.log(
-        '***debug*** Session title updated, invalidating sessions list:',
-        session.title,
-      )
-
       // Invalidate the sessions list so the sidebar updates with the new title
       queryClient.invalidateQueries({
         queryKey: ['sessions', 'list', agentId],
@@ -155,27 +145,10 @@ const SessionChat: FC = () => {
   useEffect(() => {
     if (!pendingRedirect) return
 
-    console.log('***debug*** Checking redirect conditions:', {
-      pendingRedirect,
-      hasTitle: !!session?.title,
-      sessionTitle: session?.title,
-      sessionId: session?._id,
-      isStreamingTokens,
-      waitingForWebSocket,
-      streamingTextLength: streamingText.length,
-      hasReceivedTokens,
-      fullSession: session,
-    })
-
     const streamingComplete =
       !isStreamingTokens && !waitingForWebSocket && streamingText.length === 0
 
     if (session?.title && streamingComplete) {
-      console.log(
-        '***debug*** Executing redirect to:',
-        `/chat2/${pendingRedirect.agentId}/${pendingRedirect.sessionId}`,
-      )
-
       // Pre-populate the destination session cache
       queryClient.setQueryData(['session', pendingRedirect.sessionId], {
         ...session,
@@ -195,9 +168,6 @@ const SessionChat: FC = () => {
       )
       setPendingRedirect(null)
     } else if (streamingComplete && pendingRedirect) {
-      console.log(
-        '***debug*** Streaming complete but no title, refetching session',
-      )
       queryClient.invalidateQueries({
         queryKey: ['session', pendingRedirect.sessionId],
       })
@@ -346,9 +316,6 @@ const SessionChat: FC = () => {
         }
 
         // Set pending redirect for non-optimistic case too
-        console.log(
-          '***debug*** Setting pending redirect for non-optimistic session',
-        )
         setPendingRedirect({
           agentId: agentId as string,
           sessionId: newSessionId,
@@ -498,18 +465,7 @@ const SessionChat: FC = () => {
     )
   }
 
-  // Show session loading if we have a sessionId but session is still loading
-  if (sessionId && isSessionLoading) {
-    return (
-      <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex mx-auto py-16">
-          <LoadingIndicator />
-        </div>
-      </main>
-    )
-  }
-
-  // Show session error
+  // Show session error first to prevent infinite loading
   if (sessionError) {
     return (
       <main className="flex-1 overflow-hidden flex flex-col">
@@ -520,6 +476,17 @@ const SessionChat: FC = () => {
               problem persists, please contact support.
             </AlertDescription>
           </AlertDestructive>
+        </div>
+      </main>
+    )
+  }
+
+  // Show session loading if we have a sessionId but session is still loading
+  if (sessionId && isSessionLoading) {
+    return (
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex mx-auto py-16">
+          <LoadingIndicator />
         </div>
       </main>
     )

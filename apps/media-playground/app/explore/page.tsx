@@ -127,7 +127,7 @@ const ExplorePage = () => {
             'Discover and chat with AI agents created by the community',
           actionButton: (
             <Button asChild size="lg" className="gap-2">
-              <Link href="/create/agent">
+              <Link href="/new/agent">
                 <Plus className="h-4 w-4" />
                 Create Agent
               </Link>

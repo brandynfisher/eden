@@ -17,7 +17,8 @@ import { MAX_AGENTS } from '@/features/sessions/session-config'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
-import { CheckIcon, XIcon } from 'lucide-react'
+import { CheckIcon, Plus, XIcon } from 'lucide-react'
+import Link from 'next/link'
 import { PropsWithChildren, ReactNode, useRef, useState } from 'react'
 
 type Props = {
@@ -131,22 +132,34 @@ const AgentSelectorModal = ({
           </DialogDescription>
         </DialogHeader>
         <div className="flex-1">
-          <div className="flex flex-col items-center sm:flex-row gap-2 mb-4">
-            <Tabs
-              value={currentTab}
-              onValueChange={value => setCurrentTab(value as 'user' | 'public')}
-              className="w-full sm:max-w-fit"
-            >
-              <TabsList className="w-full border border-muted rounded-lg p-1 bg-popover">
-                <TabsTrigger value="user" className="w-full sm:w-32 h-8">
-                  My Agents
-                </TabsTrigger>
-                <TabsTrigger value="public" className="w-full sm:w-32 h-8">
-                  Public Agents
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <FeedSearchForm handleSearch={setSearchQuery} />
+          <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:justify-between sm:items-center">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Tabs
+                value={currentTab}
+                onValueChange={value => setCurrentTab(value as 'user' | 'public')}
+                className="w-full sm:max-w-fit"
+              >
+                <TabsList className="w-full border border-muted rounded-lg p-1 bg-popover">
+                  <TabsTrigger value="user" className="w-full sm:w-32 h-8">
+                    My Agents
+                  </TabsTrigger>
+                  <TabsTrigger value="public" className="w-full sm:w-32 h-8">
+                    Public Agents
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <FeedSearchForm handleSearch={setSearchQuery} />
+            </div>
+            {currentTab === 'user' && (
+              <div className="flex-shrink-0">
+                <Button asChild size="sm" className="gap-2">
+                  <Link href="/new/agent">
+                    <Plus className="h-4 w-4" />
+                    Create Agent
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           <AgentsFeed
