@@ -99,6 +99,7 @@ export const createAgent = async (
     knowledge,
     suggestions,
     voice,
+    tools,
   } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
@@ -132,6 +133,7 @@ export const createAgent = async (
     suggestions,
     voice,
     models: models || [],
+    tools,
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -175,6 +177,7 @@ export const updateAgent = async (
     models,
     public: isPublic,
     owner_pays,
+    tools,
   } = request.body as AgentsUpdateArguments
 
   if (models && models.length > 10) {
@@ -212,6 +215,7 @@ export const updateAgent = async (
     voice,
     public: isPublic,
     owner_pays,
+    tools,
   }
 
   // Handle models array

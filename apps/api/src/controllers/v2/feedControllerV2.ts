@@ -978,9 +978,19 @@ export const getModelsFeedCursorV2 = async (
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
 
   let results = []
+  // Ensure creationCount defaults to 0 for missing values
+  const defaultCreationCountStage: PipelineStage[] = [
+    {
+      $addFields: {
+        creationCount: { $ifNull: ['$creationCount', 0] },
+      },
+    },
+  ]
+
   const lateLookupStages = [
     ...taskLookup,
     ...userLookup,
+    ...defaultCreationCountStage,
     ...(authUserId ? likesLookup(new ObjectId(authUserId), 'model') : []),
   ]
 
@@ -990,6 +1000,8 @@ export const getModelsFeedCursorV2 = async (
     sortCursor:
       customFilterOptions.likeCount && nextValue !== undefined
         ? { likeCount: { $lte: nextValue } }
+        : customFilterOptions.creationCount && nextValue !== undefined
+        ? { creationCount: { $lte: nextValue } }
         : undefined,
     cursor,
   })
@@ -1080,6 +1092,11 @@ export const getModelsFeedCursorV2 = async (
     if (customFilterOptions.likeCount) {
       feed.nextValue =
         results && results.length && results[results.length - 1].likeCount
+    }
+
+    if (customFilterOptions.creationCount) {
+      feed.nextValue =
+        results && results.length && results[results.length - 1].creationCount
     }
 
     feed.docs.forEach(doc => {

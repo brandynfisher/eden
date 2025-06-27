@@ -12,6 +12,7 @@ export async function GET() {
     const client = new ElevenLabsClient({ apiKey })
     const voices = await client.voices.search({
       include_total_count: true,
+      page_size: 100,
     })
 
     return NextResponse.json(voices)

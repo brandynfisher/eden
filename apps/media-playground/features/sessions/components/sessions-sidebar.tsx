@@ -250,7 +250,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
 }
 
 function isNewSessionRoute(
-  params: Record<string, any>,
+  params: Record<string, string | string[]>,
   isChat?: boolean,
 ): boolean {
   // For chat2: /chat2/[agentId] (no sessionId)
@@ -273,10 +273,8 @@ const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
   const handleClick = () => {
     onItemClick?.()
     if (isChat && agentId) {
-      // For chat2 routes, go to agent's welcome page
       router.push(`/chat2/${agentId}`, { scroll: false })
     } else {
-      // For regular sessions, go to new session page
       router.push('/sessions/new', { scroll: false })
     }
   }
@@ -426,6 +424,9 @@ export const SessionsSidebarContent = ({
     <>
       <div className="mb-2 mr-2">
         <TopLeft onItemClick={onItemClick} isChat={isChat} />
+
+        {/* Disable this for now */}
+        {/* <CreationsButton onItemClick={onItemClick} /> */}
       </div>
       <MainLeft onItemClick={onItemClick} agentId={agentId} isChat={isChat} />
     </>

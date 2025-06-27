@@ -7,8 +7,7 @@ import CreationUiContainer from '@/features/tools/creation-ui-container'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
-import { useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 type Props = {
   toolKey: ToolV2['key']
@@ -35,7 +34,21 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
         }
       : undefined,
   })
-  // console.log({ toolKey, toolSSRData, toolClientData })
+
+  const [showFormInline, setShowFormInline] = useState(true)
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const width = window.innerWidth
+      const showInline = width >= 1024 // show inline form on desktop only
+
+      setShowFormInline(showInline)
+    }
+
+    checkScreenSize()
+    window.addEventListener('resize', checkScreenSize)
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
 
   const tool = toolClientData || toolSSRData
 
@@ -43,20 +56,55 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
     return null
   }
 
+  if (showFormInline) {
+    // Desktop layout with inline form
+    return (
+      <div
+        data-test-id="workspace"
+        className="flex flex-col lg:flex-row lg:items-start w-full h-[calc(100vh-theme(spacing.16))]"
+      >
+        {/* Tool Form */}
+        <div className="lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex flex-col justify-start items-start lg:self-start h-[calc(100vh-theme(spacing.16))]">
+          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+            <ErrorBoundary>
+              <CreationUiContainer tool={tool} />
+            </ErrorBoundary>
+          </Suspense>
+        </div>
+
+        {/* Timeline - right pane */}
+        <div className="mb-8 px-2 sm:px-4 lg:px-2 lg:pt-4 flex flex-col gap-y-4 flex-1 h-[calc(100vh-theme(spacing.16))] overflow-y-auto">
+          <Suspense>
+            <ErrorBoundary>
+              <Timeline tool={tool} />
+            </ErrorBoundary>
+          </Suspense>
+        </div>
+      </div>
+    )
+  }
+
+  // Mobile/Tablet layout with modal form
   return (
-    <div data-test-id="workspace" className="flex flex-col lg:flex-row">
-      <div className="lg:pr-4 lg:sticky lg:top-[120px] lg:h-screen min-w-[324px] w-full lg:max-w-[420px] lg:pt-4">
-        <Suspense fallback={<Skeleton className="h-full w-full" />}>
+    <div
+      data-test-id="workspace"
+      className="flex flex-col w-full h-[calc(100vh-theme(spacing.16))]"
+    >
+      {/* Timeline - full width */}
+      <div className="mb-8 px-2 sm:px-4 pt-4 flex flex-col gap-y-4 flex-1 h-[calc(100vh-theme(spacing.16))] overflow-y-auto">
+        <Suspense>
           <ErrorBoundary>
+            <Timeline tool={tool} />
             <CreationUiContainer key={presetKey} tool={tool} />
           </ErrorBoundary>
         </Suspense>
       </div>
 
-      <div className="mb-8 px-2 sm:px-4 lg:px-0 lg:pt-4 flex flex-col gap-y-4 w-full">
-        <Suspense>
+      {/* Mobile Form Modal */}
+      <div>
+        <Suspense fallback={<Skeleton className="h-full w-full" />}>
           <ErrorBoundary>
-            <Timeline tool={tool} />
+            <CreationUiContainer tool={tool} />
           </ErrorBoundary>
         </Suspense>
       </div>

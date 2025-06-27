@@ -8,8 +8,10 @@ import React, { useMemo, useState } from 'react'
 
 export default function FeedSearchForm({
   handleSearch,
+  className,
 }: {
   handleSearch: (value: string) => void
+  className?: string
 }) {
   const [searchInput, setSearchInput] = useState('')
 
@@ -29,7 +31,12 @@ export default function FeedSearchForm({
   }
 
   return (
-    <div className="flex items-center sm:mb-0 w-full sm:w-auto min-w-[160px] shrink-0">
+    <div
+      className={cn(
+        'flex items-center sm:mb-0 w-full sm:w-auto min-w-[160px] shrink-0',
+        className,
+      )}
+    >
       <div className="shrink-0 border rounded-l-md size-10 items-center justify-center flex bg-muted/40 md:ml-auto">
         <SearchIcon className="w-4 h-4" />
       </div>

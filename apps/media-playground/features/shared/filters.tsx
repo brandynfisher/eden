@@ -1,4 +1,5 @@
 import { FilterSection } from '@/components/filter/base-filter'
+import { env } from '@/lib/config'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 import { AudioLinesIcon, ImageIcon, StarIcon, VideoIcon } from 'lucide-react'
 
@@ -52,7 +53,7 @@ export const collectionFilterSection: FilterSection = {
   label: 'Collection',
   items: [
     {
-      id: process.env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID || '',
+      id: env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID || '',
       name: 'Featured',
       icon: <StarIcon className="h-4 w-4" />,
     },

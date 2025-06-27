@@ -1,14 +1,21 @@
-import UserModelsGrid from '@/features/explore/user-models-grid'
-import SortModelsFeed from '@/features/feed/sort-models-feed'
+'use client'
+
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 
 const ModelsPage = () => {
-  return (
-    <div className="p-2 md:p-4">
-      <UserModelsGrid />
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
-      <SortModelsFeed />
-    </div>
-  )
+  useEffect(() => {
+    // Preserve any existing search parameters and add type=models
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('type', 'models')
+    router.replace(`/explore?${params.toString()}`)
+  }, [router, searchParams])
+
+  // Return null since we're redirecting
+  return null
 }
 
 export default ModelsPage

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import axios from 'axios'
-import { Loader2, Upload } from 'lucide-react'
+import { Loader2, Upload, User } from 'lucide-react'
 import { FC, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -96,15 +96,12 @@ export const ProfileImageUploader: FC<{
             }}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500">
+          <div className="flex flex-col items-center justify-center h-full bg-muted">
             {isUploading ? (
-              <Loader2 className="w-8 h-8 mb-2 animate-spin" />
+              <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
             ) : (
-              <Upload className="w-8 h-8 mb-2" />
+              <User className="w-12 h-12 text-muted-foreground" />
             )}
-            <span className="text-sm font-medium">
-              {isUploading ? 'Uploading...' : 'Upload'}
-            </span>
           </div>
         )}
         {!isUploading && (
@@ -124,11 +121,6 @@ export const ProfileImageUploader: FC<{
         className="hidden"
         disabled={isUploading}
       />
-      <p className="text-sm text-muted-foreground text-center max-w-xs">
-        {isUploading
-          ? 'Uploading image...'
-          : 'Click or drag to upload a profile image'}
-      </p>
       {value && !isUploading && (
         <Button
           type="button"

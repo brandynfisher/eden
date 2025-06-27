@@ -15,17 +15,20 @@ const creationSections = [
 interface CreationsFilterProps {
   onChange: (filter: FeedCursorRouteQueryParams['filter']) => void
   initialFilter?: FeedCursorRouteQueryParams['filter']
+  className?: string
 }
 
 export function CreationsFilter({
   onChange,
   initialFilter,
+  className,
 }: CreationsFilterProps) {
   return (
     <BaseFilter
       sections={creationSections}
       onChange={onChange}
       initialFilter={initialFilter}
+      className={className}
     />
   )
 }
