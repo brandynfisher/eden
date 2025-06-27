@@ -301,28 +301,15 @@ const SessionChat: FC = () => {
       setStreamingAgent(agent)
     },
     onSessionCreated: newSessionId => {
-      console.log(
-        '***debug*** onSessionCreated called with:',
-        newSessionId,
-        'optimistic state:',
-        optimisticSessionId,
-        'optimistic ref:',
-        optimisticSessionIdRef.current,
-      )
       setSessionId(newSessionId)
 
-      // ***debug*** If we were in optimistic mode, replace temp session with real session
       const currentOptimisticId = optimisticSessionIdRef.current
       if (currentOptimisticId) {
-        console.log(
-          '***debug*** Handling optimistic to real session transition',
-        )
         // Copy any cached data from optimistic session to real session
         const optimisticData = queryClient.getQueryData([
           'session',
           currentOptimisticId,
         ])
-        console.log('***debug*** Optimistic data:', optimisticData)
         if (optimisticData) {
           queryClient.setQueryData(['session', newSessionId], {
             ...optimisticData,
@@ -337,16 +324,8 @@ const SessionChat: FC = () => {
         setOptimisticSessionId(null)
         optimisticSessionIdRef.current = null
 
-        // Instead of immediate redirect, set pending redirect
-        console.log(
-          '***debug*** Setting pending redirect instead of immediate navigation',
-        )
-        setPendingRedirect({
-          agentId: agentId as string,
-          sessionId: newSessionId,
-        })
+        router.push(`/chat2/${agentId}/${newSessionId}`)
       } else {
-        // ***debug*** Cache initial session data to avoid loading state on navigation
         // Pre-populate the cache with basic session data so session.tsx loads instantly
         if (agent && user) {
           const initialSessionData = {
@@ -410,7 +389,6 @@ const SessionChat: FC = () => {
       if (!user || !agent) return
       clearErrors()
 
-      // If creating a new session optimistically:
       if (!sessionId && !optimisticSessionId) {
         const tempSessionId = `temp-${Date.now()}-${Math.random()
           .toString(36)
@@ -441,7 +419,7 @@ const SessionChat: FC = () => {
           optimisticSessionData,
         )
 
-        // Start streaming
+        // Start streaming to the optimistic session
         setIsStreamingTokens(true)
         sendStreamingMessage(content, attachments, { agent_ids: [agent._id] })
         return
@@ -552,13 +530,8 @@ const SessionChat: FC = () => {
     sessionId &&
     (session?.messages?.length || streamingText || isStreamingTokens)
 
-  // ***debug*** IMMEDIATE optimistic rendering - if we have optimistic session, render Session component
   // but keep streaming logic in this component
   if (optimisticSessionId) {
-    console.log(
-      '***debug*** Rendering optimistic session component:',
-      optimisticSessionId,
-    )
     return (
       <>
         <Session optimisticSessionId={optimisticSessionId} />
