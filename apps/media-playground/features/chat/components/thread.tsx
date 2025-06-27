@@ -52,6 +52,7 @@ const ThreadFollowupSuggestions: FC = () => {
 type ThreadConfigWithExtras = ThreadConfig & {
   connectionLost?: boolean
   threadId?: string
+  onAgentSelectorOpen?: () => void
 }
 
 const MyThread: FC<ThreadConfigWithExtras> = config => {
@@ -61,6 +62,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
       ThreadWelcome: ThreadWelcomeComponent = ThreadWelcome,
     } = {},
     threadId,
+    onAgentSelectorOpen,
   } = config
 
   const [isMounted, setIsMounted] = useState(false)
@@ -366,7 +368,7 @@ const MyThread: FC<ThreadConfigWithExtras> = config => {
             )}
             {showWelcomeScreen && (
               /* @ts-expect-error We're extending thread welcome hackishly with children */
-              <ThreadWelcomeComponent>
+              <ThreadWelcomeComponent onAgentSelectorOpen={onAgentSelectorOpen}>
                 <ThreadPrimitive.If empty={true}>
                   {memoizedComposer}
                 </ThreadPrimitive.If>
