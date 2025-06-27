@@ -170,7 +170,7 @@ export const DiscordDeploymentForm = ({
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <div className="text-sm text-gray-600 truncate max-w-[70%] overflow-hidden">
-                    {deployment.config.discord.oauth_url}
+                    {deployment?.config?.discord?.oauth_url}
                   </div>
                   <Button
                     variant="outline"
@@ -178,9 +178,9 @@ export const DiscordDeploymentForm = ({
                     onClick={e => {
                       e.preventDefault()
 
-                      if (deployment.config.discord.oauth_url) {
+                      if (deployment?.config?.discord?.oauth_url) {
                         navigator.clipboard.writeText(
-                          deployment.config.discord.oauth_url,
+                          deployment?.config?.discord?.oauth_url,
                         )
                         toast.success('Copied to clipboard', {
                           description:
