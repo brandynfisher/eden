@@ -287,9 +287,12 @@ const Session = ({
     const existingMessages =
       session?.messages?.filter(
         m =>
-          (m.role === 'user' || m.role === 'assistant') &&
-          m.content &&
-          m.content.trim() !== '',
+          (m.role === 'user' || m.role === 'assistant' || m.role === 'eden') &&
+          ((m.content && m.content.trim() !== '') ||
+            (m.role === 'assistant' &&
+              m.tool_calls &&
+              m.tool_calls.length > 0) ||
+            (m.role === 'eden' && m.eden_message_data)),
       ) ?? []
     if (sessionId === 'new' && isSessionLoading) {
       return [...existingMessages, ...optimisticMessages]
@@ -300,6 +303,8 @@ const Session = ({
     () => groupConsecutiveMessages(filteredMessages),
     [filteredMessages],
   )
+
+  console.log('***debug messageGroups', messageGroups)
 
   const MessageSkeleton = () => (
     <div className="mb-4 flex space-x-2">
