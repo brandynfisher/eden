@@ -1,20 +1,91 @@
 import { ObjectId, Schema, model } from 'mongoose'
 
-export enum DeploymentPlatform {
+export enum ClientType {
   DISCORD = 'discord',
   TELEGRAM = 'telegram',
   FARCASTER = 'farcaster',
   TWITTER = 'twitter',
-  DISCORD_MODAL = 'discord_modal',
-  TELEGRAM_MODAL = 'telegram_modal',
+}
+
+// Allowlist item base interface
+export interface AllowlistItem {
+  id: string
+  note?: string
+}
+
+// Discord Types
+export interface DiscordAllowlistItem extends AllowlistItem {}
+
+export interface DeploymentSettingsDiscord {
+  oauth_client_id?: string
+  oauth_url?: string
+  channel_allowlist?: DiscordAllowlistItem[]
+  read_access_channels?: DiscordAllowlistItem[]
+}
+
+export interface DeploymentSecretsDiscord {
+  token: string
+  application_id?: string
+}
+
+// Telegram Types
+export interface TelegramAllowlistItem extends AllowlistItem {}
+
+export interface DeploymentSettingsTelegram {
+  topic_allowlist?: TelegramAllowlistItem[]
+}
+
+export interface DeploymentSecretsTelegram {
+  token: string
+  webhook_secret?: string
+}
+
+// Farcaster Types
+export interface DeploymentSettingsFarcaster {
+  webhook_id?: string
+  auto_reply?: boolean
+}
+
+export interface DeploymentSecretsFarcaster {
+  mnemonic: string
+  neynar_webhook_secret?: string
+}
+
+// Twitter Types
+export interface DeploymentSettingsTwitter {
+  username?: string
+}
+
+export interface DeploymentSecretsTwitter {
+  user_id: string
+  bearer_token: string
+  consumer_key: string
+  consumer_secret: string
+  access_token: string
+  access_token_secret: string
+}
+
+// Combined Types
+export interface DeploymentSecrets {
+  discord?: DeploymentSecretsDiscord
+  telegram?: DeploymentSecretsTelegram
+  farcaster?: DeploymentSecretsFarcaster
+  twitter?: DeploymentSecretsTwitter
+}
+
+export interface DeploymentConfig {
+  discord?: DeploymentSettingsDiscord
+  telegram?: DeploymentSettingsTelegram
+  farcaster?: DeploymentSettingsFarcaster
+  twitter?: DeploymentSettingsTwitter
 }
 
 export interface DeploymentSchema {
   agent: ObjectId
   user: ObjectId
-  platform: DeploymentPlatform
-  secrets: Record<string, any>
-  config: Record<string, any>
+  platform: ClientType
+  secrets?: DeploymentSecrets
+  config?: DeploymentConfig
   valid?: boolean
 }
 
@@ -35,7 +106,7 @@ const DeploymentSchema = new Schema<DeploymentDocument>(
     platform: {
       type: String,
       required: true,
-      enum: Object.values(DeploymentPlatform),
+      enum: Object.values(ClientType),
     },
     secrets: {
       type: Object,
@@ -52,9 +123,9 @@ const DeploymentSchema = new Schema<DeploymentDocument>(
   },
 )
 
-DeploymentSchema.index({ agent: 1 })
+DeploymentSchema.index({ agent: 1, platform: 1 }, { unique: true })
 
 export const Deployment = model<DeploymentDocument>(
-  'deployments',
+  'deployments2',
   DeploymentSchema,
 )

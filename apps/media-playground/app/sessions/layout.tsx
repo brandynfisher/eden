@@ -83,6 +83,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
         autoSaveId="resizable-session-layout"
       >
         {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
+
         <ResizablePanel
           defaultSize={20}
           minSize={15}

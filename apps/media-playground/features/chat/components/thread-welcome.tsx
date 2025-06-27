@@ -6,16 +6,8 @@ import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { ThreadPrimitive } from '@assistant-ui/react'
 import { ThreadWelcome, useThreadConfig } from '@assistant-ui/react-ui'
-import { PlusIcon } from 'lucide-react'
-import React, {
-  FC,
-  ReactNode,
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { RotateCcwIcon } from 'lucide-react'
+import React, { FC, ReactNode, useMemo } from 'react'
 
 const MyThreadWelcomeAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
@@ -55,80 +47,28 @@ const MyThreadWelcomeSuggestion: FC<{
 }> = ({ suggestion: { text, prompt } }) => {
   return (
     <ThreadPrimitive.Suggestion prompt={prompt} method="replace" autoSend>
-      <div className="px-3 py-2 rounded-full">{text ?? prompt}</div>
+      <div className="px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-primary/25 cursor-pointer">
+        {text ?? prompt}
+      </div>
     </ThreadPrimitive.Suggestion>
   )
 }
 
-const MyThreadWelcomeSuggestions: FC = () => {
+const MyThreadWelcomeSuggestions: FC<{ onAgentSelectorOpen?: () => void }> = ({
+  onAgentSelectorOpen,
+}) => {
   const { welcome } = useThreadConfig()
-  const [showAll, setShowAll] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
   const suggestions = useMemo(
     () => welcome?.suggestions ?? [],
     [welcome?.suggestions],
   )
-  const [visibleCount, setVisibleCount] = useState(suggestions.length)
-
-  const measureAndUpdate = useCallback(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    // Get the ThreadWelcome.Center parent
-    const welcomeCenter = container.closest('.aui-thread-welcome-center')
-    if (!welcomeCenter) return
-
-    const containerWidth = welcomeCenter.clientWidth - 86 // Account for button width
-    const items = Array.from(container.querySelectorAll('.suggestion-item'))
-
-    let totalWidth = 0
-    let count = items.length
-
-    for (let i = 0; i < items.length; i++) {
-      const itemWidth = items[i].getBoundingClientRect().width + 8 // Gap
-      if (totalWidth + itemWidth > containerWidth) {
-        count = Math.max(1, i)
-        break
-      }
-      totalWidth += itemWidth
-    }
-
-    setVisibleCount(count)
-  }, [])
-
-  useLayoutEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const welcomeCenter = container.closest('.aui-thread-welcome-center')
-    if (!welcomeCenter) return
-
-    const resizeObserver = new ResizeObserver(() => {
-      if (!showAll) {
-        measureAndUpdate()
-      }
-    })
-
-    resizeObserver.observe(welcomeCenter)
-    measureAndUpdate()
-
-    return () => resizeObserver.disconnect()
-  }, [showAll, suggestions.length, measureAndUpdate])
 
   return (
-    <div className="w-full relative" ref={containerRef}>
-      <div
-        className={`flex flex-row gap-2 transition-[height,opacity] duration-200 ${
-          !showAll ? 'overflow-hidden pr-[84px]' : 'flex-wrap'
-        }`}
-      >
+    <div className="w-full space-y-4">
+      <div className="flex flex-wrap gap-3 justify-center">
         {suggestions.map((suggestion, index) => (
           <div
-            className={`text-sm suggestion-item hover:bg-secondary/20 flex-shrink-0 border border-border rounded-full bg-popover/30 transition-opacity duration-200 ${
-              !showAll && index >= visibleCount
-                ? 'opacity-0 absolute pointer-events-none'
-                : 'opacity-100'
-            }`}
+            className="suggestion-item hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/4 flex-shrink-0 border border-border rounded-full bg-gradient-to-br from-card to-muted/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
             key={`${suggestion.prompt}-${index}`}
           >
             <MyThreadWelcomeSuggestion
@@ -137,30 +77,43 @@ const MyThreadWelcomeSuggestions: FC = () => {
           </div>
         ))}
       </div>
-      {suggestions.length > visibleCount && !showAll && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="absolute text-xs bg-muted/30 right-0 top-1/2 -translate-y-1/2 z-10 rounded-full"
-          onClick={() => setShowAll(true)}
-        >
-          <PlusIcon className="w-4 h-4 mr-1" />
-          More
-        </Button>
+
+      {/* Agent Selector Button */}
+      {onAgentSelectorOpen && (
+        <div className="flex justify-center pt-4">
+          <Button
+            variant="outline"
+            onClick={onAgentSelectorOpen}
+            className="group relative bg-gradient-to-r from-card to-muted/60 border-border hover:border-primary/40 hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/4 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/10"
+          >
+            <RotateCcwIcon className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:rotate-180" />
+            Chat with another agent
+          </Button>
+        </div>
       )}
     </div>
   )
 }
 
-const MyThreadWelcome: FC<{ children: ReactNode }> = ({ children }) => {
+const MyThreadWelcome: FC<{
+  children: ReactNode
+  onAgentSelectorOpen?: () => void
+}> = ({ children, onAgentSelectorOpen }) => {
   return (
     <ThreadWelcome.Root>
       <ThreadWelcome.Center className="relative">
-        <MyThreadWelcomeAvatar />
-        <ThreadWelcome.Message className="mb-8" />
+        <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-150">
+          <MyThreadWelcomeAvatar />
+        </div>
+
+        <div className="max-w-4xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-300 mb-8">
+          <ThreadWelcome.Message className="text-lg md:text-xl lg:text-2xl font-light leading-relaxed text-foreground/90 tracking-wide" />
+        </div>
         {children}
         <AuthClickGuard className="mt-6">
-          <MyThreadWelcomeSuggestions />
+          <MyThreadWelcomeSuggestions
+            onAgentSelectorOpen={onAgentSelectorOpen}
+          />
         </AuthClickGuard>
       </ThreadWelcome.Center>
     </ThreadWelcome.Root>

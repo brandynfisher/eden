@@ -3,10 +3,12 @@
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { SessionTopBar } from './components/session-top-bar'
+import SessionWelcome from './components/session-welcome'
 import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
+import { Skeleton } from '@/components/ui/skeleton'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { OtherMessage } from '@/features/sessions/components/other-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
@@ -15,6 +17,8 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
 import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
+import { cn } from '@/lib/utils'
+import { Message } from '@edenlabs/eden-sdk'
 import { useParams, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -37,9 +41,11 @@ const Session = ({
     userImage?: string
   } | null>(null)
   const streamingMessageIdRef = useRef<string | null>(null)
+  const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([])
 
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
+  const [cancelledNotice, setCancelledNotice] = useState(false)
 
   const {
     data: session,
@@ -171,6 +177,8 @@ const Session = ({
       setWaitingForWebSocket(false)
       setStreamingAgent(null)
       streamingMessageIdRef.current = null
+
+      setCancelledNotice(true)
     } catch (error) {
       console.error('Failed to cancel session:', error)
       addError({
@@ -200,6 +208,9 @@ const Session = ({
       setWaitingForWebSocket(true)
       streamingMessageIdRef.current = content
 
+      // Clear optimistic messages as real message is coming via websocket
+      setOptimisticMessages([])
+
       // Fallback timeout in case websocket doesn't deliver
       setTimeout(() => {
         if (streamingMessageIdRef.current === content) {
@@ -222,6 +233,9 @@ const Session = ({
       // Keep the streaming agent for continuity
       streamingMessageIdRef.current = null
 
+      // Clear optimistic messages, new real messages will follow
+      setOptimisticMessages([])
+
       // Fallback timeout in case no follow-up response comes
       setTimeout(() => {
         if (!hasReceivedTokens) {
@@ -241,6 +255,7 @@ const Session = ({
         setIsStreamingTokens(false)
         setHasReceivedTokens(false)
         // Don't clear streamingAgent here - let the websocket effect handle it
+        setOptimisticMessages([])
       }
     },
     onAgentInfo: agent => {
@@ -268,33 +283,38 @@ const Session = ({
     return user?._id === senderId
   }
 
-  const filteredMessages = useMemo(
-    () => session?.messages?.filter(m => m.role !== 'tool') ?? [],
-    [session?.messages],
-  )
+  const filteredMessages = useMemo(() => {
+    const existingMessages =
+      session?.messages?.filter(
+        m =>
+          (m.role === 'user' || m.role === 'assistant') &&
+          m.content &&
+          m.content.trim() !== '',
+      ) ?? []
+    if (sessionId === 'new' && isSessionLoading) {
+      return [...existingMessages, ...optimisticMessages]
+    }
+    return existingMessages
+  }, [session?.messages, sessionId, isSessionLoading, optimisticMessages])
   const messageGroups = useMemo(
     () => groupConsecutiveMessages(filteredMessages),
     [filteredMessages],
   )
 
-  // Only show loading if we have no data at all and are actively loading
+  const MessageSkeleton = () => (
+    <div className="mb-4 flex space-x-2">
+      <Skeleton className="h-8 w-8 rounded-full" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
+    </div>
+  )
+
   if (isSessionLoading && !session) {
     return (
       <div className="flex mx-auto py-16">
         <LoadingIndicator />
-      </div>
-    )
-  }
-
-  if (sessionError) {
-    return (
-      <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
-        <AlertDestructive>
-          <AlertDescription>
-            We couldn't load this session. Please try again later. If the
-            problem persists, please contact support.
-          </AlertDescription>
-        </AlertDestructive>
       </div>
     )
   }
@@ -310,29 +330,64 @@ const Session = ({
         />
       )}
 
-      <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
-        {messageGroups.map(group => (
-          <div key={group[0]._id}>
-            {group[0].role === 'eden'
-              ? group.map(message => (
-                  <EdenMessage key={message._id} message={message} />
-                ))
-              : isOwnMessage(group[0].sender?._id)
-              ? group.map(message => (
-                  <UserMessage key={message._id} message={message} />
-                ))
-              : group
-                  .filter(message => message.role !== 'tool')
-                  .map((message, index) => (
-                    <OtherMessage
-                      sessionId={sessionId as string}
-                      key={message._id}
-                      message={message}
-                      showAvatar={index === 0}
-                    />
-                  ))}
+      <div
+        className={cn(
+          'flex-1 p-4 max-w-[--aui-thread-max-width] mx-auto w-full',
+          messageGroups.length === 0 &&
+            'flex flex-col justify-center items-center',
+        )}
+      >
+        {/* Only show loading skeleton if we are on a new session */}
+        {sessionId === 'new' && isSessionLoading ? (
+          <div className="space-y-4">
+            <MessageSkeleton />
+            <MessageSkeleton />
           </div>
-        ))}
+        ) : sessionError ? (
+          <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
+            <AlertDestructive>
+              <AlertDescription>
+                We couldn't load this session. Please try again later. If the
+                problem persists, please contact support.
+              </AlertDescription>
+            </AlertDestructive>
+          </div>
+        ) : messageGroups.length === 0 ? (
+          session?.agents && session.agents.length > 0 ? (
+            <>
+              <SessionWelcome
+                variant="session"
+                agents={session.agents}
+                sessionTitle={session.title}
+              />
+            </>
+          ) : null
+        ) : (
+          <>
+            {messageGroups.map(group => (
+              <div key={group[0]._id}>
+                {group[0].role === 'eden'
+                  ? group.map(message => (
+                      <EdenMessage key={message._id} message={message} />
+                    ))
+                  : isOwnMessage(group[0].sender?._id)
+                  ? group.map(message => (
+                      <UserMessage key={message._id} message={message} />
+                    ))
+                  : group
+                      .filter(message => message.role !== 'tool')
+                      .map((message, index) => (
+                        <OtherMessage
+                          sessionId={sessionId as string}
+                          key={message._id}
+                          message={message}
+                          showAvatar={index === 0}
+                        />
+                      ))}
+              </div>
+            ))}
+          </>
+        )}
 
         {/* Show streaming message when actively streaming tokens or waiting for websocket */}
         {(isStreamingTokens ||
@@ -367,22 +422,64 @@ const Session = ({
           onDismiss={removeError}
           className="mb-4"
         />
+        {cancelledNotice && (
+          <div className="text-center text-sm text-muted-foreground py-2">
+            ⛔ Cancelled by user
+          </div>
+        )}
 
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
+      <div
+        className={`max-w-[--aui-thread-max-width] mx-auto w-full sticky ${
+          messageGroups.length === 0 ? 'bottom-36' : 'bottom-4'
+        }`}
+      >
         <MessageInput
           sessionId={sessionId as string}
           onStreamingMessage={(content, attachments) => {
             // Clear any existing errors when starting a new message
             clearErrors()
-
             setIsStreamingTokens(true)
             setHasReceivedTokens(false)
             setStreamingText('')
             setStreamingAgent(null)
             sendStreamingMessage(content, attachments)
+
+            // Add optimistic user message
+            setOptimisticMessages(prev => [
+              ...prev,
+              {
+                _id: `optimistic-user-${Date.now()}`,
+                content: content,
+                sender: {
+                  _id: user?._id || 'user',
+                  username: user?.username || 'User',
+                  name: user?.username || 'You',
+                  userImage: user?.userImage,
+                },
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                session: sessionId,
+                role: 'user',
+              } as Message,
+              {
+                _id: `optimistic-agent-${Date.now()}`,
+                content: '',
+                sender: streamingAgent ||
+                  session?.agents?.[0] || {
+                    _id: 'agent',
+                    username: 'Assistant',
+                  },
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                session: sessionId,
+                role: 'assistant',
+                __optimistic: true,
+              } as Message,
+            ])
+
             // Scroll to bottom when streaming starts
             setTimeout(scrollToBottom, 100)
           }}

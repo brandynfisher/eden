@@ -144,13 +144,15 @@ const SessionListItem: FC<SessionListItemProps> = ({
   return (
     <div
       className={cn(
-        'group flex justify-between hover:text-white font-normal hover:bg-muted/50 items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5',
-        isActive && 'bg-primary/30 text-white font-medium',
+        'group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5',
+        isActive
+          ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground font-medium'
+          : 'hover:text-white hover:bg-muted/50',
       )}
     >
       <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
         {isEditing ? (
-          <div className="flex items-center gap-1 flex-grow min-w-0">
+          <div className="flex items-center gap-1 flex-grow min-w-0 text-white">
             <Input
               id="session-title-input"
               name="title"
@@ -189,7 +191,10 @@ const SessionListItem: FC<SessionListItemProps> = ({
           </div>
         ) : (
           <button
-            className="flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center gap-2"
+            className={cn(
+              'flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center',
+              isActive ? 'text-primary-foreground' : 'text-white',
+            )}
             onClick={onItemClick}
             disabled={isEditing}
           >
@@ -244,15 +249,26 @@ const SessionListItem: FC<SessionListItemProps> = ({
   )
 }
 
+function isNewSessionRoute(
+  params: Record<string, string>,
+  isChat?: boolean,
+): boolean {
+  // For chat2: /chat2/[agentId] (no sessionId)
+  if (isChat) {
+    return !!params.agentId && !params.sessionId && !params.id
+  }
+  // For sessions: /sessions/new
+  return params.id === 'new' || (!params.sessionId && !params.id)
+}
+
 const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
   onItemClick,
   isChat,
 }) => {
   const router = useRouter()
   const params = useParams()
-  const isNewSession =
-    params.id === 'new' || (!params.sessionId && params.agentId)
   const agentId = params.agentId as string
+  const isNewSession = isNewSessionRoute(params, isChat)
 
   const handleClick = () => {
     onItemClick?.()
@@ -270,7 +286,7 @@ const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
       className={cn(
         'flex w-full justify-start gap-2 py-3 mb-2 rounded-md font-medium transition-colors',
         isNewSession
-          ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+          ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
           : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
       )}
     >
@@ -341,7 +357,7 @@ const MainLeft = ({
   }, [hasMore, isFetchingNextPage, fetchNextPage])
 
   return (
-    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto mr-2">
+    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto mr-1">
       <div className="mb-1 text-muted-foreground">Recent</div>
       {isLoading ? (
         <>
@@ -421,13 +437,29 @@ export const SessionsSidebar = React.memo(
   ({
     onItemClick,
     agentId,
+    isChat,
   }: {
     onItemClick?: () => void
     agentId?: string
+    isChat?: boolean
   }) => {
+    const [isSidebarCollapsed] = React.useState(false)
     return (
-      <div className="flex flex-col w-full">
-        <SessionsSidebarContent onItemClick={onItemClick} agentId={agentId} />
+      <div
+        className={cn(
+          'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+          'max-w-[320px]',
+          isSidebarCollapsed && 'p-0 border-none',
+        )}
+      >
+        {/* Render content only if not collapsed */}
+        {!isSidebarCollapsed && (
+          <SessionsSidebarContent
+            onItemClick={onItemClick}
+            agentId={agentId}
+            isChat={isChat}
+          />
+        )}
       </div>
     )
   },

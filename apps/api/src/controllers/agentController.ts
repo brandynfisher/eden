@@ -540,7 +540,7 @@ export const deployAgent = async (
 
   try {
     const modalRequest = {
-      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/create`,
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/create`,
       data: {
         agent: agentId,
         user: currentUserId,
@@ -620,7 +620,7 @@ export const updateAgentDeployment = async (
 
   try {
     const modalRequest = {
-      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/update`,
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/update`,
       data: {
         deployment_id: deployment._id,
         config,
@@ -666,12 +666,23 @@ export const deleteAgentDeployment = async (
     })
   }
 
+  // Find the deployment to get its ID for the v2 API
+  const deployment = await Deployment.findOne({
+    agent: agentId,
+    platform,
+  })
+
+  if (!deployment) {
+    return reply.status(404).send({
+      error: 'Deployment not found',
+    })
+  }
+
   try {
     const modalRequest = {
-      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/delete`,
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/delete`,
       data: {
-        agent: agentId,
-        platform,
+        deployment_id: deployment._id,
       },
     }
 

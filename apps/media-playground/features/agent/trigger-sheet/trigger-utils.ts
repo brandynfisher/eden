@@ -125,8 +125,10 @@ export function getChannelsForPlatform(
   platform: string,
   deployment: Deployment,
 ) {
-  if (platform === 'discord') return deployment.config.discord.channel_allowlist
-  if (platform === 'telegram') return deployment.config.telegram.topic_allowlist
+  if (platform === 'discord')
+    return deployment?.config?.discord?.channel_allowlist
+  if (platform === 'telegram')
+    return deployment?.config?.telegram?.topic_allowlist
 
   return []
 }
