@@ -2,10 +2,9 @@
 
 import { ToolCardMedia } from '@/components/card/tool-card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+//import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogClose,
+  Dialog, //DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
@@ -19,7 +18,7 @@ import { siteConfig } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { X } from 'lucide-react'
+//import { X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import * as React from 'react'
 
@@ -117,11 +116,11 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
             <TypographyH4>Select Tool</TypographyH4>
-            <DialogClose asChild>
+            {/* <DialogClose asChild>
               <Button variant="ghost" size="sm" className="p-2">
                 <X className="h-4 w-4" />
               </Button>
-            </DialogClose>
+            </DialogClose> */}
           </div>
 
           {/* Tabs */}
@@ -147,7 +146,7 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
                 <TabsContent
                   key={category.id}
                   value={category.id}
-                  className="m-0 p-4"
+                  className="m-0 p-4  max-h-[70vh] overflow-y-auto"
                 >
                   <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                     {category.tools.map(tool => (
