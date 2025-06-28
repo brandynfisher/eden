@@ -544,7 +544,9 @@ const CreateAgentView = () => {
                                               <FormItem className="flex-1">
                                                 <FormLabel className="text-sm text-muted-foreground">
                                                   When to use this model
-                                                  <span className="text-red-500 ml-1">*</span>
+                                                  <span className="text-red-500 ml-1">
+                                                    *
+                                                  </span>
                                                 </FormLabel>
                                                 <FormControl>
                                                   <Input
@@ -666,6 +668,7 @@ const CreateAgentView = () => {
                                               [tool.key]: checked,
                                             })
                                           }}
+                                          className="data-[state=unchecked]:bg-zinc-800"
                                         />
                                         <label className="text-sm font-medium">
                                           {tool.label}
