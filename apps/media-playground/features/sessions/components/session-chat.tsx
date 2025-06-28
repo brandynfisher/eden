@@ -77,6 +77,31 @@ const SessionChat: FC = () => {
     enabled: !!(sessionId || pendingRedirect?.sessionId),
   })
 
+  // Determine which agent should be responding based on session data
+  // This avoids waiting for the stream to tell us and uses data we already have
+  const getRespondingAgent = useCallback(() => {
+    // Use streamingAgent if available (from stream)
+    if (streamingAgent) {
+      return streamingAgent
+    }
+
+    // For new chats, prioritize the agent from query (always available from route)
+    if (agent) {
+      return agent
+    }
+
+    // For existing sessions, use the agent from session data
+    if (session?.agents && session.agents.length > 0) {
+      return session.agents[0]
+    }
+
+    // Final fallback
+    return {
+      _id: 'agent',
+      username: 'Assistant',
+    }
+  }, [streamingAgent, agent, session?.agents])
+
   // Mount effect
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -362,20 +387,11 @@ const SessionChat: FC = () => {
           .substr(2, 9)}`
         setOptimisticSessionId(tempSessionId)
         optimisticSessionIdRef.current = tempSessionId
-        // Include an optimistic user message so "Session" won't show the welcome screen
+        // Create optimistic session without user message - let streaming handle the display
         const optimisticSessionData = {
           _id: tempSessionId,
           agents: [agent],
-          messages: [
-            {
-              _id: `tempMessage-${Date.now()}`,
-              content,
-              sender: { _id: user._id, username: user.username },
-              role: 'user',
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          ],
+          messages: [],
           title: null,
           budget: null,
           createdAt: new Date(),
@@ -566,11 +582,7 @@ const SessionChat: FC = () => {
                     {
                       _id: 'streaming',
                       content: streamingText,
-                      sender: streamingAgent ||
-                        session?.agents?.[0] || {
-                          _id: 'agent',
-                          username: 'Assistant',
-                        },
+                      sender: getRespondingAgent(),
                       createdAt: new Date(),
                       updatedAt: new Date(),
                       session: sessionId,

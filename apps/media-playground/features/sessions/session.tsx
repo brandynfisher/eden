@@ -193,6 +193,26 @@ const Session = ({
     }
   }, [sessionId, addError, clearErrors])
 
+  // Determine which agent should be responding based on session data
+  // This avoids waiting for the stream to tell us and uses data we already have
+  const getRespondingAgent = useCallback(() => {
+    // Use streamingAgent if available (from stream)
+    if (streamingAgent) {
+      return streamingAgent
+    }
+
+    // Otherwise use the first agent from the session (which has complete data)
+    if (session?.agents && session.agents.length > 0) {
+      return session.agents[0]
+    }
+
+    // Final fallback
+    return {
+      _id: 'agent',
+      username: 'Assistant',
+    }
+  }, [streamingAgent, session?.agents])
+
   // Set up streaming with error handling
   const { sendMessage: sendStreamingMessage } = useSessionStream({
     sessionId,
@@ -303,7 +323,6 @@ const Session = ({
     () => groupConsecutiveMessages(filteredMessages),
     [filteredMessages],
   )
-
 
   const MessageSkeleton = () => (
     <div className="mb-4 flex space-x-2">
@@ -418,11 +437,7 @@ const Session = ({
                   {
                     _id: 'streaming',
                     content: streamingText,
-                    sender: streamingAgent ||
-                      session?.agents?.[0] || {
-                        _id: 'agent',
-                        username: 'Assistant',
-                      },
+                    sender: getRespondingAgent(),
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     session: sessionId,
@@ -484,11 +499,7 @@ const Session = ({
                 {
                   _id: `optimistic-agent-${Date.now()}`,
                   content: '',
-                  sender: streamingAgent ||
-                    session?.agents?.[0] || {
-                      _id: 'agent',
-                      username: 'Assistant',
-                    },
+                  sender: getRespondingAgent(),
                   createdAt: new Date(),
                   updatedAt: new Date(),
                   session: sessionId,
@@ -502,7 +513,9 @@ const Session = ({
             }}
             onCancel={cancelSession}
             isStreaming={
-              isStreamingTokens || waitingForWebSocket || streamingText.length > 0
+              isStreamingTokens ||
+              waitingForWebSocket ||
+              streamingText.length > 0
             }
           />
         </div>

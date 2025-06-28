@@ -17,8 +17,7 @@ import { MAX_AGENTS } from '@/features/sessions/session-config'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
-import { CheckIcon, Plus, XIcon } from 'lucide-react'
-import Link from 'next/link'
+import { CheckIcon,  XIcon } from 'lucide-react'
 import { PropsWithChildren, ReactNode, useRef, useState } from 'react'
 
 type Props = {
@@ -150,16 +149,6 @@ const AgentSelectorModal = ({
               </Tabs>
               <FeedSearchForm handleSearch={setSearchQuery} />
             </div>
-            {currentTab === 'user' && (
-              <div className="flex-shrink-0">
-                <Button asChild size="sm" className="gap-2">
-                  <Link href="/new/agent">
-                    <Plus className="h-4 w-4" />
-                    Create Agent
-                  </Link>
-                </Button>
-              </div>
-            )}
           </div>
 
           <AgentsFeed
