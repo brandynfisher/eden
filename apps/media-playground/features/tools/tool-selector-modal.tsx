@@ -146,7 +146,7 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
                 <TabsContent
                   key={category.id}
                   value={category.id}
-                  className="m-0 p-4"
+                  className="m-0 p-4  max-h-[70vh] overflow-y-auto"
                 >
                   <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                     {category.tools.map(tool => (
