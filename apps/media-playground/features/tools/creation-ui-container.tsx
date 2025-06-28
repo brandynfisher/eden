@@ -164,7 +164,19 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
       ) {
         group.groupParameters?.forEach(param => {
           const value = (formValues as Record<string, any>)[param.name]
-          if (!value || (Array.isArray(value) && value.length === 0)) {
+          const isMissing =
+            value === undefined ||
+            value === null ||
+            (typeof value === 'string' && value.trim() === '') ||
+            (Array.isArray(value) && value.length === 0)
+
+          // For booleans and numbers, allow 0 and false as valid values
+          if (
+            isMissing &&
+            param.schema.type !== 'boolean' &&
+            param.schema.type !== 'integer' &&
+            param.schema.type !== 'float'
+          ) {
             form.setError(param.name as `root.${string}`, {
               type: 'required',
               message: `${param.label || param.name} is required when enabled`,
