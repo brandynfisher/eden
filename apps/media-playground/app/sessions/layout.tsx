@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { SessionsSidebar } from '@/features/sessions/components/sessions-sidebar'
+import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
@@ -47,7 +47,7 @@ const LeftBarSheet: FC<{
         className="flex flex-col max-h-full pt-10 px-3 bg-accent border-r gap-0"
       >
         <SheetTitle className="sr-only">Session List</SheetTitle>
-        <SessionsSidebar onItemClick={handleCloseSheet} />
+        <SessionsSidebarContent onItemClick={handleCloseSheet} />
       </SheetContent>
     </Sheet>
   )
@@ -99,7 +99,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           )}
         >
           {/* Render content only if not collapsed */}
-          {!isSidebarCollapsed && <SessionsSidebar />}
+          {!isSidebarCollapsed && <SessionsSidebarContent />}
         </ResizablePanel>
 
         {/* Separator Handle - visible only on desktop */}

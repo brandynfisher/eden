@@ -30,6 +30,7 @@ export interface TriggerSchema {
     channel_id?: string | null
     custom_instructions?: string
   }
+  deleted?: boolean
 }
 
 export interface TriggerDocument extends TriggerSchema {}
@@ -80,6 +81,10 @@ const TriggerSchema = new Schema<TriggerDocument>(
     posting_instructions: {
       type: Object,
       required: false,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {
