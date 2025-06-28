@@ -293,6 +293,7 @@ export const getAgentTriggers = async (
 
   const triggers = await Trigger.find({
     agent: agentId,
+    deleted: { $ne: true },
   })
 
   return reply.status(200).send({
