@@ -61,28 +61,6 @@ const Session = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
-  // Clear streaming state when websocket delivers the real message
-  useEffect(() => {
-    if (
-      waitingForWebSocket &&
-      streamingMessageIdRef.current &&
-      session?.messages
-    ) {
-      const lastMessage = session.messages[session.messages.length - 1]
-      if (
-        lastMessage &&
-        lastMessage.content === streamingMessageIdRef.current
-      ) {
-        setStreamingText('')
-        setIsStreamingTokens(false)
-        setHasReceivedTokens(false)
-        setWaitingForWebSocket(false)
-        setStreamingAgent(null)
-        streamingMessageIdRef.current = null
-      }
-    }
-  }, [session?.messages, waitingForWebSocket])
-
   // Error handling function
   const handleStreamingError = useCallback(
     (error: string) => {
@@ -233,15 +211,17 @@ const Session = ({
 
       // Fallback timeout in case websocket doesn't deliver
       setTimeout(() => {
-        if (streamingMessageIdRef.current === content) {
-          //setStreamingText('')
-          //setIsStreamingTokens(false)
+        if (streamingMessageIdRef.current === content && waitingForWebSocket) {
+          // ***debug*** Fallback timeout triggered for streaming message
+          console.warn(
+            '***debug*** Streaming message fallback timeout triggered',
+          )
           setHasReceivedTokens(false)
           setWaitingForWebSocket(false)
-          //setStreamingAgent(null)
           streamingMessageIdRef.current = null
+          // Keep the streaming text visible as fallback
         }
-      }, 2000)
+      }, 3000) // Increase timeout slightly for network delays
     },
     onToolComplete: () => {
       // After tool calls complete, we expect more tokens from the LLM
@@ -323,6 +303,38 @@ const Session = ({
     () => groupConsecutiveMessages(filteredMessages),
     [filteredMessages],
   )
+
+  // Clear streaming state when the real message is actually being rendered
+  useEffect(() => {
+    if (
+      waitingForWebSocket &&
+      streamingMessageIdRef.current &&
+      filteredMessages.length > 0
+    ) {
+      // Check if the matching message is actually in the filtered messages being rendered
+      const matchingMessage = filteredMessages.find(
+        msg =>
+          msg.content === streamingMessageIdRef.current &&
+          msg.role === 'assistant' &&
+          // Ensure it's a recent message (within last 3 filtered messages)
+          filteredMessages.indexOf(msg) >=
+            Math.max(0, filteredMessages.length - 3),
+      )
+
+      if (matchingMessage) {
+        // ***debug*** Real message is now being rendered, clearing streaming state
+        console.log(
+          '***debug*** Real message is now being rendered, clearing streaming state',
+        )
+        setStreamingText('')
+        setIsStreamingTokens(false)
+        setHasReceivedTokens(false)
+        setWaitingForWebSocket(false)
+        setStreamingAgent(null)
+        streamingMessageIdRef.current = null
+      }
+    }
+  }, [filteredMessages, waitingForWebSocket, streamingText])
 
   const MessageSkeleton = () => (
     <div className="mb-4 flex space-x-2">
@@ -429,26 +441,36 @@ const Session = ({
           {/* Show streaming message when actively streaming tokens or waiting for websocket */}
           {(isStreamingTokens ||
             waitingForWebSocket ||
-            streamingText.length > 0) && (
-            <div className="mb-4">
-              <OtherMessage
-                sessionId={sessionId as string}
-                message={
-                  {
-                    _id: 'streaming',
-                    content: streamingText,
-                    sender: getRespondingAgent(),
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    session: sessionId,
-                    role: 'assistant',
-                  } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-                }
-                showAvatar={true}
-                isStreamingTokens={isStreamingTokens && !hasReceivedTokens}
-              />
-            </div>
-          )}
+            streamingText.length > 0) &&
+            // Don't show if the real message is already in filtered messages
+            !(
+              waitingForWebSocket &&
+              streamingMessageIdRef.current &&
+              filteredMessages.find(
+                msg =>
+                  msg.content === streamingMessageIdRef.current &&
+                  msg.role === 'assistant',
+              )
+            ) && (
+              <div className="mb-4">
+                <OtherMessage
+                  sessionId={sessionId as string}
+                  message={
+                    {
+                      _id: 'streaming',
+                      content: streamingText,
+                      sender: getRespondingAgent(),
+                      createdAt: new Date(),
+                      updatedAt: new Date(),
+                      session: sessionId,
+                      role: 'assistant',
+                    } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                  }
+                  showAvatar={true}
+                  isStreamingTokens={isStreamingTokens && !hasReceivedTokens}
+                />
+              </div>
+            )}
           {/* Error Display */}
           <ErrorDisplay
             errors={errors}
