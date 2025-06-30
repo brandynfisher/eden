@@ -155,6 +155,43 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
       return
     }
 
+    const formValues = form.getValues()
+    let foundError = false
+    groupedOptionalParameters.forEach(group => {
+      if (
+        group.toggle &&
+        (formValues as Record<string, any>)[group.toggle.name] === true
+      ) {
+        group.groupParameters?.forEach(param => {
+          const value = (formValues as Record<string, any>)[param.name]
+          const isMissing =
+            value === undefined ||
+            value === null ||
+            (typeof value === 'string' && value.trim() === '') ||
+            (Array.isArray(value) && value.length === 0)
+
+          // For booleans and numbers, allow 0 and false as valid values
+          if (
+            isMissing &&
+            param.schema.type !== 'boolean' &&
+            param.schema.type !== 'integer' &&
+            param.schema.type !== 'float'
+          ) {
+            form.setError(param.name as `root.${string}`, {
+              type: 'required',
+              message: `${param.label || param.name} is required when enabled`,
+            })
+            foundError = true
+          }
+        })
+      }
+    })
+
+    if (foundError) {
+      console.warn('Form has errors, not submitting', form.getValues())
+      return
+    }
+
     const { makePublic, ...args } = formData as FormData & {
       makePublic?: boolean
     }
@@ -241,6 +278,20 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
     () => (optionalParameters ? groupParameters(optionalParameters) : []),
     [optionalParameters],
   )
+
+  // remove errors if user toggles off a group
+  useEffect(() => {
+    const subscription = form.watch((values: Record<string, any>) => {
+      groupedOptionalParameters.forEach(group => {
+        if (group.toggle && !values[group.toggle.name]) {
+          group.groupParameters?.forEach(param => {
+            form.clearErrors(param.name as `root.${string}`)
+          })
+        }
+      })
+    })
+    return () => subscription.unsubscribe?.()
+  }, [groupedOptionalParameters, form])
 
   const isRunwayPoweredTool = RUNWAY_TOOL_KEYS.includes(tool.key)
 
