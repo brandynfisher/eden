@@ -15,9 +15,14 @@ const NavLinkList = ({ items, segments, inSheet }: Props) => {
           key={`${item.label}_${index}`}
           label={item.label}
           segments={item.segments}
+          href={item.href}
           active={
-            (segments && segments.length === 0 && item.segments.length === 0) ||
-            (segments && segments.length && item.segments[0] !== undefined)
+            item.active !== undefined
+              ? item.active
+              : (segments &&
+                  segments.length === 0 &&
+                  item.segments.length === 0) ||
+                (segments && segments.length && item.segments[0] !== undefined)
               ? item.segments.every((v, i) => v === segments[i])
               : false
           }

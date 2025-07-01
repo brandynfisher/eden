@@ -12,7 +12,6 @@ import {
   ClockArrowDown,
   HeartIcon,
   StarIcon,
-  TrendingUpIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -23,13 +22,7 @@ const sortOptions = [
 
 // Add new sort options specifically for agents
 const agentSortOptions = [
-  // { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
-  {
-    label: 'Trending',
-    value: 'stats.userMessageCount_7d;-1',
-    icon: <TrendingUpIcon />,
-  },
-  { label: 'Popular', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
+  { label: 'Top', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
 ]
 
@@ -45,7 +38,7 @@ const creationSortOptions = [
 ]
 
 const modelSortOptions = [
-  // { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
+  { label: 'Top', value: 'creationCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
 ]
 
@@ -76,13 +69,13 @@ export const SortMenu = ({
   const [baseSort, setBaseSort] = useState<string>(
     initialSort ||
       (variant === 'agent'
-        ? 'stats.userMessageCount_7d;-1'
+        ? 'stats.userMessageCount;-1'
         : variant === 'user'
         ? 'createdAt;-1'
         : variant === 'creation'
         ? 'likeCount;-1'
         : variant === 'model'
-        ? 'likeCount;-1'
+        ? 'creationCount;-1'
         : 'createdAt;-1'),
   )
 

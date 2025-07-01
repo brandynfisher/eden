@@ -3,6 +3,7 @@
 import ToggleButton from '@/components/button/toggle-button'
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import LoadingIndicator from '@/components/loading-indicator'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,8 @@ import { ToggleGroup } from '@/components/ui/toggle-group'
 import AgentsFeed from '@/features/feed/agents-feed'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent } from '@edenlabs/eden-sdk'
+import { Plus } from 'lucide-react'
+import Link from 'next/link'
 import { FC, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 
@@ -59,26 +62,38 @@ const SingleAgentSelectorModal: FC<{
           <DialogDescription>Choose an agent to chat with</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex flex-col items-center sm:flex-row gap-2 mb-6">
-            <ToggleGroup
-              type="single"
-              value={currentTab}
-              className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
-            >
-              <ToggleButton
-                className="w-full sm:w-32 h-8"
-                value={'user'}
-                label={'My Agents'}
-                onClick={() => setCurrentTab('user')}
-              />
-              <ToggleButton
-                className="w-full sm:w-32 h-8"
-                value={'public'}
-                label={'Explore Agents'}
-                onClick={() => setCurrentTab('public')}
-              />
-            </ToggleGroup>
-            <FeedSearchForm handleSearch={setSearchQuery} />
+          <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <ToggleGroup
+                type="single"
+                value={currentTab}
+                className="w-full border border-muted rounded-lg p-1 flex items-center sm:max-w-fit bg-popover"
+              >
+                <ToggleButton
+                  className="w-full sm:w-32 h-8"
+                  value={'user'}
+                  label={'My Agents'}
+                  onClick={() => setCurrentTab('user')}
+                />
+                <ToggleButton
+                  className="w-full sm:w-32 h-8"
+                  value={'public'}
+                  label={'Explore Agents'}
+                  onClick={() => setCurrentTab('public')}
+                />
+              </ToggleGroup>
+              <FeedSearchForm handleSearch={setSearchQuery} />
+            </div>
+            {currentTab === 'user' && (
+              <div className="flex-shrink-0">
+                <Button asChild size="sm" className="gap-2">
+                  <Link href="/new/agent">
+                    <Plus className="h-4 w-4" />
+                    Create Agent
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
           <div
             className="flex-1 overflow-auto [&_a]:pointer-events-none relative min-h-[400px]"

@@ -7,7 +7,7 @@ import { Dialog, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useShareModal } from '@/stores/dialogs/dialogs.selector'
 import { updateShareModal } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
-import { CopyIcon, MoreHorizontalIcon } from 'lucide-react'
+import { CopyIcon } from 'lucide-react'
 import React from 'react'
 import { toast } from 'sonner'
 
@@ -83,17 +83,6 @@ const ShareDialog = () => {
               toast.success('Link copied to clipboard', {
                 richColors: true,
                 dismissible: true,
-              })
-            }}
-          />
-          <ShareButton
-            icon={<MoreHorizontalIcon size={16} />}
-            label="Other"
-            onClick={() => {
-              navigator.share({
-                title: 'Share',
-                text: 'Check this on Eden',
-                url: shareModal.shareUrl,
               })
             }}
           />

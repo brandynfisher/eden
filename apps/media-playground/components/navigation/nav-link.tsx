@@ -9,10 +9,17 @@ export type NavLinkProps = {
   inSheet?: boolean
   description?: string
   mediaUrl?: string
+  href?: string // Custom href override
 }
 
-const NavLink = ({ label, segments, active, inSheet }: NavLinkProps) => {
-  const href = `/${segments.join('/')}`
+const NavLink = ({
+  label,
+  segments,
+  active,
+  inSheet,
+  href: customHref,
+}: NavLinkProps) => {
+  const href = customHref || `/${segments.join('/')}`
 
   if (inSheet) {
     return (

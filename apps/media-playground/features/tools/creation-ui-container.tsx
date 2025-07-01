@@ -16,10 +16,10 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import CostIndicatorV2 from '@/features/tools/cost-indicator-v2'
 import CreationUIMobile from '@/features/tools/creation-ui-mobile'
 import ParameterField from '@/features/tools/parameters/parameter-field'
 import ParameterGroupCollapse from '@/features/tools/parameters/parameter-group-collapse'
+import ToolSelectorModal from '@/features/tools/tool-selector-modal'
 import { groupParameters } from '@/features/tools/utils/parameters'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { GatedActions } from '@/hooks/use-subscription-gate'
@@ -32,7 +32,7 @@ import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Loader2, Settings2Icon } from 'lucide-react'
+import { CoinsIcon, Loader2, MenuIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
@@ -42,6 +42,7 @@ import { z } from 'zod'
 
 type Props = {
   tool: ToolV2
+  hideBurgerButton?: boolean
 }
 
 const RUNWAY_TOOL_KEYS = ['runway', 'reel']
@@ -49,7 +50,7 @@ const RUNWAY_TOOL_KEYS = ['runway', 'reel']
 const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
 const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
-const CreationUIContainer = ({ tool }: Props) => {
+const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
   const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
     GatedActions.MakePrivate,
@@ -81,14 +82,30 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const { presetValues } = useToolPreset()
 
-  const [showSettings, setShowSettings] = useState(false)
+  const [, setShowSettings] = useState(false)
 
   const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
+  const [toolSelectorOpen, setToolSelectorOpen] = useState(false)
 
   useEffect(() => {
-    const isMobile = window.innerWidth < 1024 // lg breakpoint
-    setMobileIsFormVisible(isMobile)
-  }, [])
+    const checkScreenSize = () => {
+      const width = window.innerWidth
+      const isMobile = width < 1024 // lg breakpoint - show modal on mobile/tablet
+
+      // Only close the mobile form modal if switching to desktop, never open it automatically
+      // Do NOT close the tool selector modal here
+      if (!isMobile && mobileIsFormVisible) {
+        setMobileIsFormVisible(false)
+      }
+    }
+
+    // Check on mount
+    checkScreenSize()
+
+    // Add resize listener
+    window.addEventListener('resize', checkScreenSize)
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [mobileIsFormVisible])
 
   const form = useForm<FormData>({
     resolver: zodResolver(parameterSchema), // use generated form schema for resolver
@@ -135,6 +152,43 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   async function onSubmit(formData: FormData) {
     if (!(await verifyAuth())) {
+      return
+    }
+
+    const formValues = form.getValues()
+    let foundError = false
+    groupedOptionalParameters.forEach(group => {
+      if (
+        group.toggle &&
+        (formValues as Record<string, any>)[group.toggle.name] === true
+      ) {
+        group.groupParameters?.forEach(param => {
+          const value = (formValues as Record<string, any>)[param.name]
+          const isMissing =
+            value === undefined ||
+            value === null ||
+            (typeof value === 'string' && value.trim() === '') ||
+            (Array.isArray(value) && value.length === 0)
+
+          // For booleans and numbers, allow 0 and false as valid values
+          if (
+            isMissing &&
+            param.schema.type !== 'boolean' &&
+            param.schema.type !== 'integer' &&
+            param.schema.type !== 'float'
+          ) {
+            form.setError(param.name as `root.${string}`, {
+              type: 'required',
+              message: `${param.label || param.name} is required when enabled`,
+            })
+            foundError = true
+          }
+        })
+      }
+    })
+
+    if (foundError) {
+      console.warn('Form has errors, not submitting', form.getValues())
       return
     }
 
@@ -225,6 +279,20 @@ const CreationUIContainer = ({ tool }: Props) => {
     [optionalParameters],
   )
 
+  // remove errors if user toggles off a group
+  useEffect(() => {
+    const subscription = form.watch((values: Record<string, any>) => {
+      groupedOptionalParameters.forEach(group => {
+        if (group.toggle && !values[group.toggle.name]) {
+          group.groupParameters?.forEach(param => {
+            form.clearErrors(param.name as `root.${string}`)
+          })
+        }
+      })
+    })
+    return () => subscription.unsubscribe?.()
+  }, [groupedOptionalParameters, form])
+
   const isRunwayPoweredTool = RUNWAY_TOOL_KEYS.includes(tool.key)
 
   const widthParameter = tool.parameters?.find(
@@ -236,24 +304,48 @@ const CreationUIContainer = ({ tool }: Props) => {
 
   const formContent = (
     <Form {...form}>
-      <form className="w-full">
-        <div className="flex items-center lg:justify-between p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-          <TypographyH4 className="text-sm md:text-base pl-8 md:pl-12 lg:pl-0">
-            {tool.name}
-          </TypographyH4>
-          {tool.base_model ? (
-            <div className="flex-shrink-0">
-              <Badge
-                variant="secondary"
-                className="ml-2 border-muted-foreground"
-              >
-                {tool.base_model}
-              </Badge>
+      <form className="w-full flex flex-col justify-start h-full min-w-full min-h-0">
+        <div className="flex items-start gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
+          {!hideBurgerButton && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setToolSelectorOpen(true)}
+              className="p-2 h-10 w-10 flex-shrink-0 mt-1"
+            >
+              <MenuIcon className="h-5 w-5" />
+            </Button>
+          )}
+          <div
+            className={`flex flex-col flex-1 min-w-0 ${
+              hideBurgerButton ? '' : ''
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <TypographyH4 className="text-sm lg:text-base">
+                {tool.name}
+              </TypographyH4>
+              {tool.base_model ? (
+                <div className="flex-shrink-0">
+                  <Badge
+                    variant="secondary"
+                    className="ml-2 border-muted-foreground"
+                  >
+                    {tool.base_model}
+                  </Badge>
+                </div>
+              ) : null}
             </div>
-          ) : null}
+            {tool.description && (
+              <div className="text-xs text-muted-foreground mt-1">
+                {tool.description}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="max-h-[calc(100dvh_-_264px)] overflow-y-auto p-2 py-4">
+        <div className="flex-1 overflow-y-auto p-2 py-4 flex flex-col justify-start min-h-0">
           <div
             data-test-id="tool-form-settings-required"
             className="flex flex-col gap-2"
@@ -332,18 +424,309 @@ const CreationUIContainer = ({ tool }: Props) => {
             ) : null}
           </div>
 
-          <div className="gap-2 mt-2">
-            <div className="flex gap-2 items-center">
+          {optionalParameters?.length ? (
+            <div data-test-id="tool-form-settings-optional" className="mt-2">
+              <div className="flex flex-col gap-2 w-full relative">
+                {groupedOptionalParameters?.map((element, index) => (
+                  <div key={index} className="bg-muted/50 rounded-lg">
+                    {element.type === 'standalone' && element.parameter ? (
+                      <ParameterField
+                        form={form}
+                        tool={tool}
+                        parameter={element.parameter}
+                      />
+                    ) : (
+                      <ParameterGroupCollapse
+                        tool={tool}
+                        group={element}
+                        form={form}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex justify-between items-center p-3 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
+          {isRunwayPoweredTool ? (
+            <div className="flex items-center">
+              <a
+                href={'https://runwayml.com'}
+                target={'_blank'}
+                rel="noreferrer noopener nofollow"
+                className="dark:invert"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="object-contain h-4"
+                  alt="powered by runway"
+                  src="https://runway-static-assets.s3.amazonaws.com/site/images/api-page/powered-by-runway-black.png"
+                ></img>
+              </a>
+            </div>
+          ) : null}
+
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="text-muted-foreground px-1"
+            onClick={!isSubmitting ? handleReset : undefined}
+            disabled={isSubmitting}
+          >
+            Reset
+          </Button>
+
+          <FormField
+            name="makePublic"
+            render={({ field, fieldState }) => (
+              <FormItem
+                data-test-id={'makePublic'}
+                className="flex items-center gap-2 space-y-0 relative"
+              >
+                <div className={'flex items-center gap-2'}>
+                  <SubscriptionCrownBadge
+                    type={tool.output_type === 'lora' ? 'model' : 'creation'}
+                    className="h-5 w-5"
+                  />
+                  <FormControl id={field.name} className="mt-0">
+                    <Switch
+                      checked={field.value === undefined ? true : field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={!isAllowedPrivacy}
+                    />
+                  </FormControl>
+                  <FormLabel
+                    htmlFor={field.name}
+                    className={'text-muted-foreground !mt-0'}
+                  >
+                    Public
+                  </FormLabel>
+                </div>
+                <FormMessage>{fieldState.error?.message}</FormMessage>
+              </FormItem>
+            )}
+          />
+
+          {isSignedIn && !hasEnoughBalance && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                router.push('/settings/subscription')
+              }}
+            >
+              Buy More Manna
+            </Button>
+          )}
+
+          <Button
+            type="button"
+            size="sm"
+            className="min-w-[100px] flex items-center justify-between gap-3"
+            onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
+            disabled={
+              isSubmitting ||
+              !hasEnoughBalance ||
+              Object.keys(form.formState.errors).length > 0
+            }
+          >
+            {isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <span>Create</span>
+                <div className="flex items-center text-xs opacity-80">
+                  <CoinsIcon className="mr-1 h-3 w-3" />
+                  <span className="font-mono">
+                    {cost.toLocaleString(undefined, {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  )
+
+  return (
+    <>
+      {/*  // Desktop: hidden on smaller screens */}
+      <div
+        data-test-id="tool-form"
+        className={cn([
+          'flex flex-col items-start justify-start bg-muted-darker rounded-md h-full w-full',
+          'hidden lg:flex',
+        ])}
+      >
+        {formContent}
+      </div>
+
+      {/* // Mobile: hidden on larger screens */}
+      <CreationUIMobile
+        open={mobileIsFormVisible}
+        onOpenChange={setMobileIsFormVisible}
+        tool={tool}
+        onToolSelectorOpen={() => setToolSelectorOpen(true)}
+      >
+        <Form {...form}>
+          <form className="w-full flex flex-col justify-start h-full min-w-full min-h-0">
+            <div className="flex items-start gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <TypographyH4 className="text-sm lg:text-base">
+                    {tool.name}
+                  </TypographyH4>
+                  {tool.base_model ? (
+                    <div className="flex-shrink-0">
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 border-muted-foreground"
+                      >
+                        {tool.base_model}
+                      </Badge>
+                    </div>
+                  ) : null}
+                </div>
+                {tool.description && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {tool.description}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-2 py-4 flex flex-col justify-start min-h-0">
+              <div
+                data-test-id="tool-form-settings-required"
+                className="flex flex-col gap-2"
+              >
+                {groupedRequiredParameters?.map((element, index) => (
+                  <div key={index} className="bg-muted rounded-lg">
+                    {element.type === 'standalone' && element.parameter ? (
+                      <ParameterField
+                        form={form}
+                        tool={tool}
+                        parameter={element.parameter}
+                      />
+                    ) : (
+                      <ParameterGroupCollapse
+                        tool={tool}
+                        group={element}
+                        form={form}
+                      />
+                    )}
+                  </div>
+                ))}
+
+                {maskingParameters && maskingParameters.length > 0 ? (
+                  <div className="bg-muted-darker border border-secondary rounded-lg space-y-2 mt-0 !p-2 md:!p-4 !pt-2">
+                    <div className="text-sm font-medium text-foreground">
+                      Masking
+                    </div>
+                    <Tabs
+                      defaultValue={'mask_image'}
+                      className="rounded-lg bg-secondary"
+                    >
+                      <TabsList className="w-full flex gap-1">
+                        <TabsTrigger value="mask_image" className="w-full">
+                          Use Image
+                        </TabsTrigger>
+                        <TabsTrigger value="masking_prompt" className="w-full">
+                          Use Prompt
+                        </TabsTrigger>
+                      </TabsList>
+
+                      {maskingParameters?.map(parameter => (
+                        <TabsContent
+                          key={parameter.name}
+                          value={parameter.name}
+                          className="mt-0"
+                        >
+                          <ParameterField
+                            form={form}
+                            tool={tool}
+                            parameter={{ ...parameter, required: false }}
+                          />
+                        </TabsContent>
+                      ))}
+                    </Tabs>
+                  </div>
+                ) : null}
+
+                {(presetResolutions && presetResolutions.length) ||
+                sampleCountParameter ? (
+                  <div className="flex flex-col gap-1">
+                    {sampleCountParameter ? (
+                      <SampleCountSelector parameter={sampleCountParameter} />
+                    ) : null}
+                    {presetResolutions && presetResolutions.length ? (
+                      <div className="w-full">
+                        <AspectRatioSelector
+                          presetResolutions={presetResolutions}
+                          form={form}
+                          tool={tool}
+                          widthParameter={widthParameter}
+                          heightParameter={heightParameter}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+
               {optionalParameters?.length ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="flex items-center gap-2"
-                  onClick={() => setShowSettings(!showSettings)}
+                <div
+                  data-test-id="tool-form-settings-optional"
+                  className="mt-2"
                 >
-                  <Settings2Icon className="h-4 w-4" />
-                  Settings
-                </Button>
+                  <div className="flex flex-col gap-2 w-full relative">
+                    {groupedOptionalParameters?.map((element, index) => (
+                      <div key={index} className="bg-muted/50 rounded-lg">
+                        {element.type === 'standalone' && element.parameter ? (
+                          <ParameterField
+                            form={form}
+                            tool={tool}
+                            parameter={element.parameter}
+                          />
+                        ) : (
+                          <ParameterGroupCollapse
+                            tool={tool}
+                            group={element}
+                            form={form}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
+              {isRunwayPoweredTool ? (
+                <div className="flex items-center">
+                  <a
+                    href={'https://runwayml.com'}
+                    target={'_blank'}
+                    rel="noreferrer noopener nofollow"
+                    className="dark:invert"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className="object-contain h-4"
+                      alt="powered by runway"
+                      src="https://runway-static-assets.s3.amazonaws.com/site/images/api-page/powered-by-runway-black.png"
+                    ></img>
+                  </a>
+                </div>
               ) : null}
 
               <Button
@@ -356,12 +739,13 @@ const CreationUIContainer = ({ tool }: Props) => {
               >
                 Reset
               </Button>
+
               <FormField
                 name="makePublic"
                 render={({ field, fieldState }) => (
                   <FormItem
                     data-test-id={'makePublic'}
-                    className="ml-auto flex items-center gap-2 space-y-0 relative"
+                    className="flex items-center gap-2 space-y-0 relative"
                   >
                     <div className={'flex items-center gap-2'}>
                       <SubscriptionCrownBadge
@@ -390,118 +774,61 @@ const CreationUIContainer = ({ tool }: Props) => {
                   </FormItem>
                 )}
               />
-            </div>
-          </div>
-          {optionalParameters?.length ? (
-            <div
-              data-test-id="tool-form-settings-optional"
-              className={cn([showSettings ? 'mt-2' : 'overflow-hidden'])}
-            >
-              <div
-                className={cn([
-                  'flex flex-col gap-2 w-full relative transition-all',
-                  showSettings ? '' : 'max-h-0 ',
-                ])}
+
+              {isSignedIn && !hasEnoughBalance && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    router.push('/settings/subscription')
+                  }}
+                >
+                  Buy More Manna
+                </Button>
+              )}
+
+              <Button
+                type="button"
+                size="sm"
+                className="min-w-[100px] flex items-center justify-between gap-3"
+                onClick={
+                  !isSubmitting ? form.handleSubmit(onSubmit) : undefined
+                }
+                disabled={
+                  isSubmitting ||
+                  !hasEnoughBalance ||
+                  Object.keys(form.formState.errors).length > 0
+                }
               >
-                {groupedOptionalParameters?.map((element, index) => (
-                  <div key={index} className="bg-muted/50 rounded-lg">
-                    {element.type === 'standalone' && element.parameter ? (
-                      <ParameterField
-                        form={form}
-                        tool={tool}
-                        parameter={element.parameter}
-                      />
-                    ) : (
-                      <ParameterGroupCollapse
-                        tool={tool}
-                        group={element}
-                        form={form}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <span>Create</span>
+                    <div className="flex items-center text-xs opacity-80">
+                      <CoinsIcon className="mr-1 h-3 w-3" />
+                      <span className="font-mono">
+                        {cost.toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </Button>
             </div>
-          ) : null}
-        </div>
-
-        <div className="flex gap-2 justify-end p-2 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
-          {isRunwayPoweredTool ? (
-            <div className="flex items-center mr-auto">
-              <a
-                href={'https://runwayml.com'}
-                target={'_blank'}
-                rel="noreferrer noopener nofollow"
-                className="dark:invert"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  className="object-contain h-4"
-                  alt="powered by runway"
-                  src="https://runway-static-assets.s3.amazonaws.com/site/images/api-page/powered-by-runway-black.png"
-                ></img>
-              </a>
-            </div>
-          ) : null}
-
-          <CostIndicatorV2 cost={cost} />
-
-          {isSignedIn && !hasEnoughBalance && (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                router.push('/settings/subscription')
-              }}
-            >
-              Buy More Manna
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            size="sm"
-            className="w-[72px]"
-            onClick={!isSubmitting ? form.handleSubmit(onSubmit) : undefined}
-            disabled={
-              isSubmitting ||
-              !hasEnoughBalance ||
-              Object.keys(form.formState.errors).length > 0
-            }
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>Create</>
-            )}
-          </Button>
-        </div>
-      </form>
-    </Form>
-  )
-
-  return (
-    <>
-      {/*  // Desktop: hidden on smaller screens */}
-      <div
-        data-test-id="tool-form"
-        className={cn([
-          'flex flex-col items-start overflow-y-auto bg-muted-darker rounded-md',
-          'hidden lg:flex',
-        ])}
-      >
-        {formContent}
-      </div>
-
-      {/* // Mobile: hidden on larger screens */}
-      <CreationUIMobile
-        open={mobileIsFormVisible}
-        onOpenChange={setMobileIsFormVisible}
-        tool={tool}
-      >
-        {formContent}
+          </form>
+        </Form>
       </CreationUIMobile>
+
+      {/* Tool Selector Modal */}
+      <ToolSelectorModal
+        currentTool={tool}
+        open={toolSelectorOpen}
+        onOpenChange={setToolSelectorOpen}
+      />
     </>
   )
 }

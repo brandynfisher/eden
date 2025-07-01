@@ -7,6 +7,13 @@ import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from '@/components/ui/command'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   Dialog,
@@ -44,7 +51,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { format } from 'date-fns'
-import { CalendarIcon, Loader2 } from 'lucide-react'
+import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { FC } from 'react'
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
@@ -255,6 +262,8 @@ const TaskFormModal: FC<{
         "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
     },
   })
+
+  const [showSessionSelect, setShowSessionSelect] = React.useState(false)
 
   // Reset form when editingTask changes
   React.useEffect(() => {
@@ -501,7 +510,7 @@ const TaskFormModal: FC<{
                         <SelectTrigger className="h-12">
                           <SelectValue placeholder="Choose session target" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-80">
                           <SelectItem value="new">
                             Create new Session
                           </SelectItem>
@@ -523,46 +532,75 @@ const TaskFormModal: FC<{
                   name="sessionId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="Select target session" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-80">
-                            {isLoadingSessions ? (
-                              <SelectItem value="loading" disabled>
-                                <div className="py-1">Loading sessions...</div>
-                              </SelectItem>
-                            ) : sessions.length === 0 ? (
-                              <SelectItem value="no-sessions" disabled>
-                                <div className="py-1">No sessions found</div>
-                              </SelectItem>
-                            ) : (
-                              sessions
-                                .filter(
-                                  (
-                                    session,
-                                  ): session is NonNullable<typeof session> =>
-                                    Boolean(session),
-                                )
-                                .map(session => (
-                                  <SelectItem
-                                    key={session._id}
-                                    value={session._id}
-                                  >
-                                    <div className="py-1">
+                      <Popover
+                        open={showSessionSelect}
+                        onOpenChange={setShowSessionSelect}
+                      >
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className="h-12 w-full justify-between font-normal"
+                            >
+                              {field.value
+                                ? sessions
+                                    .filter(
+                                      (
+                                        session,
+                                      ): session is NonNullable<typeof session> =>
+                                        Boolean(session),
+                                    )
+                                    .find(session => session._id === field.value)
+                                    ?.title ||
+                                  `Session ${field.value.slice(-6)}`
+                                : 'Select target session'}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search sessions..." />
+                            <CommandEmpty>
+                              {isLoadingSessions
+                                ? 'Loading sessions...'
+                                : 'No sessions found.'}
+                            </CommandEmpty>
+                            <CommandGroup className="overflow-auto max-h-72">
+                              {!isLoadingSessions &&
+                                sessions
+                                  .filter(
+                                    (
+                                      session,
+                                    ): session is NonNullable<typeof session> =>
+                                      Boolean(session),
+                                  )
+                                  .map(session => (
+                                    <CommandItem
+                                      key={session._id}
+                                      value={session._id}
+                                      onSelect={() => {
+                                        field.onChange(session._id)
+                                        setShowSessionSelect(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          'mr-2 h-4 w-4',
+                                          field.value === session._id
+                                            ? 'opacity-100'
+                                            : 'opacity-0',
+                                        )}
+                                      />
                                       {session.title ||
                                         `Session ${session._id.slice(-6)}`}
-                                    </div>
-                                  </SelectItem>
-                                ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
+                                    </CommandItem>
+                                  ))}
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -635,7 +673,7 @@ const TaskFormModal: FC<{
                               <SelectTrigger className="h-12">
                                 <SelectValue placeholder="Choose where to post" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="max-h-80">
                                 <SelectItem value="same">
                                   Same Session
                                 </SelectItem>
@@ -878,7 +916,7 @@ const TaskFormModal: FC<{
                           <SelectTrigger className="h-12">
                             <SelectValue placeholder="Choose schedule frequency" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-80">
                             {extendedTriggerRepeatOptions.map(option => (
                               <SelectItem
                                 key={option.value}
@@ -913,7 +951,7 @@ const TaskFormModal: FC<{
                             <SelectTrigger className="h-12">
                               <SelectValue placeholder="Select day of the week" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="max-h-80">
                               <SelectItem value="0">Sunday</SelectItem>
                               <SelectItem value="1">Monday</SelectItem>
                               <SelectItem value="2">Tuesday</SelectItem>
@@ -988,7 +1026,7 @@ const TaskFormModal: FC<{
                               <SelectTrigger className="h-12">
                                 <SelectValue placeholder="Month" />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="max-h-80">
                                 <SelectItem value="1">January</SelectItem>
                                 <SelectItem value="2">February</SelectItem>
                                 <SelectItem value="3">March</SelectItem>

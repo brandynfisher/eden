@@ -99,6 +99,7 @@ export const createAgent = async (
     knowledge,
     suggestions,
     voice,
+    tools,
   } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
@@ -132,6 +133,7 @@ export const createAgent = async (
     suggestions,
     voice,
     models: models || [],
+    tools,
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -175,6 +177,7 @@ export const updateAgent = async (
     models,
     public: isPublic,
     owner_pays,
+    tools,
   } = request.body as AgentsUpdateArguments
 
   if (models && models.length > 10) {
@@ -212,6 +215,7 @@ export const updateAgent = async (
     voice,
     public: isPublic,
     owner_pays,
+    tools,
   }
 
   // Handle models array
@@ -225,6 +229,10 @@ export const updateAgent = async (
     updateData.models = models
   }
 
+  if (!image || image === '') {
+    updateData.userImage = null
+    updateData.blurhash = null
+  }
   if (image) {
     const blurhash = await generateBlurhash(server, image)
     const imageFilename = image.split('/').pop()
@@ -289,6 +297,7 @@ export const getAgentTriggers = async (
 
   const triggers = await Trigger.find({
     agent: agentId,
+    $or: [{ deleted: { $exists: false } }, { deleted: false }],
   })
 
   return reply.status(200).send({
@@ -536,7 +545,7 @@ export const deployAgent = async (
 
   try {
     const modalRequest = {
-      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/create`,
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/create`,
       data: {
         agent: agentId,
         user: currentUserId,
@@ -616,7 +625,7 @@ export const updateAgentDeployment = async (
 
   try {
     const modalRequest = {
-      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/update`,
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/update`,
       data: {
         deployment_id: deployment._id,
         config,
@@ -662,12 +671,23 @@ export const deleteAgentDeployment = async (
     })
   }
 
+  // Find the deployment to get its ID for the v2 API
+  const deployment = await Deployment.findOne({
+    agent: agentId,
+    platform,
+  })
+
+  if (!deployment) {
+    return reply.status(404).send({
+      error: 'Deployment not found',
+    })
+  }
+
   try {
     const modalRequest = {
-      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/deployments/delete`,
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/delete`,
       data: {
-        agent: agentId,
-        platform,
+        deployment_id: deployment._id,
       },
     }
 

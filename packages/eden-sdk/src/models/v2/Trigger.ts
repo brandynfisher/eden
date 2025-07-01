@@ -32,6 +32,7 @@ export type Trigger = {
     channel_id?: string | null
     custom_instructions?: string
   }
+  deleted?: boolean
   createdAt: Date
   updatedAt: Date
 }

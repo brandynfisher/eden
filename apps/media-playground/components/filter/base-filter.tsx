@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 import { FilterIcon } from 'lucide-react'
-import { ReactNode, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 export interface FilterSection {
   id: keyof FeedCursorRouteQueryParams['filter']
@@ -41,6 +41,11 @@ export function BaseFilter({
   const [baseFilter, setBaseFilter] = useState<
     FeedCursorRouteQueryParams['filter']
   >(initialFilter || {})
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const numberOfFilters = useMemo(() => {
     return Object.values(baseFilter || {}).reduce((acc: number, val) => {
@@ -88,14 +93,14 @@ export function BaseFilter({
         <DropdownMenuTrigger
           className={cn(
             'flex items-center gap-2 min-w-40 w-full justify-end px-2 py-1.5 h-10 rounded-md border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
-            numberOfFilters > 0 && 'border-purple-600',
+            isClient && numberOfFilters > 0 && 'border-purple-600',
           )}
         >
           <FilterIcon className="h-4 w-4 text-muted-foreground shrink-0" />
           <Separator orientation="vertical" className="h-4 w-px bg-muted" />
           <div className="mr-auto text-sm flex items-center w-full">
             Filter{' '}
-            {numberOfFilters > 0 && (
+            {isClient && numberOfFilters > 0 && (
               <span className="ml-auto min-w-5 text-xs p-1 bg-secondary/50 rounded-md">
                 {numberOfFilters}
               </span>

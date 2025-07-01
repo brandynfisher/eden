@@ -17,6 +17,7 @@ import {
   ChevronDownIcon,
   ClockIcon,
   EditIcon,
+  ExternalLinkIcon,
   Loader2,
   PlusIcon,
   TrashIcon,
@@ -24,6 +25,7 @@ import {
 import { FC, useMemo, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const TaskItem: FC<{
   trigger: Trigger
@@ -32,6 +34,7 @@ const TaskItem: FC<{
   onDelete: (triggerId: string) => void
 }> = ({ trigger, agentId, onEdit, onDelete }) => {
   const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
 
   const formattedSchedule = formatCronSchedule(trigger.schedule)
 
@@ -61,6 +64,17 @@ const TaskItem: FC<{
         </div>
       </div>
       <div className="flex items-center gap-2">
+        {trigger.session && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push(`/sessions/${trigger.session}`)}
+            className="h-8 w-8 p-0"
+            title="View session where results are routed"
+          >
+            <ExternalLinkIcon className="h-4 w-4" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"

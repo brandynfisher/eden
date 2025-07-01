@@ -8,6 +8,7 @@ import { ErrorDisplay } from '@/features/sessions/components/error-display'
 import { MessageInput } from '@/features/sessions/components/message-input'
 import { OtherMessage } from '@/features/sessions/components/other-message'
 import { SessionTopBar } from '@/features/sessions/components/session-top-bar'
+import SessionWelcome from '@/features/sessions/components/session-welcome'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import Session from '@/features/sessions/session'
 import { groupConsecutiveMessages } from '@/features/sessions/utils/group-messages'
@@ -17,66 +18,10 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
 import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-
-// Session Welcome Component
-const SessionWelcome: FC<{
-  agent: Agent | null | undefined
-  onSendMessage: (content: string, attachments?: string[]) => void
-  isLoading: boolean
-}> = ({ agent, onSendMessage, isLoading }) => {
-  const suggestions = agent?.suggestions || []
-
-  return (
-    <div className="aui-thread-welcome">
-      <div className="aui-thread-welcome-center relative flex flex-col items-center justify-center min-h-full py-8">
-        {agent && (
-          <>
-            <div className="text-sm text-muted-foreground mb-2">
-              {agent.name}
-            </div>
-            <div className="w-16 h-16 md:w-24 md:h-24 mb-4">
-              <img
-                src={getCloudfrontOriginalUrl(agent.userImage)}
-                alt={agent.name}
-                className="w-full h-full rounded-full object-cover"
-              />
-            </div>
-          </>
-        )}
-
-        <div className="mb-8">
-          {agent && (
-            <p className="text-lg text-center">
-              {agent.greeting || 'What do you want to create today?'}
-            </p>
-          )}
-        </div>
-
-        {suggestions.length > 0 && (
-          <div className="mt-6 w-full">
-            <div className="flex flex-row gap-2 flex-wrap justify-center">
-              {suggestions.slice(0, 3).map((suggestion, index) => (
-                <button
-                  key={index}
-                  className="text-sm hover:bg-secondary/20 flex-shrink-0 border border-border rounded-full bg-popover/30 px-3 py-2"
-                  onClick={() => onSendMessage(suggestion.label)}
-                  disabled={isLoading}
-                >
-                  {suggestion.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
 
 const SessionChat: FC = () => {
   const { agentId } = useParams()
@@ -101,6 +46,12 @@ const SessionChat: FC = () => {
   const streamingMessageIdRef = useRef<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Add state to control when to redirect
+  const [pendingRedirect, setPendingRedirect] = useState<{
+    agentId: string
+    sessionId: string
+  } | null>(null)
+
   const { user } = useAuthState()
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
 
@@ -116,15 +67,40 @@ const SessionChat: FC = () => {
     isLoading: isSessionLoading,
     error: sessionError,
   } = useSessionQuery({
-    sessionId: sessionId as string,
-    enabled: !!sessionId,
+    sessionId: sessionId || pendingRedirect?.sessionId || '',
+    enabled: !!(sessionId || pendingRedirect?.sessionId),
   })
 
   // Only set up websockets if we have a sessionId
   useSessionWebSocket({
-    sessionId: sessionId as string,
-    enabled: !!sessionId,
+    sessionId: sessionId || pendingRedirect?.sessionId || '',
+    enabled: !!(sessionId || pendingRedirect?.sessionId),
   })
+
+  // Determine which agent should be responding based on session data
+  // This avoids waiting for the stream to tell us and uses data we already have
+  const getRespondingAgent = useCallback(() => {
+    // Use streamingAgent if available (from stream)
+    if (streamingAgent) {
+      return streamingAgent
+    }
+
+    // For new chats, prioritize the agent from query (always available from route)
+    if (agent) {
+      return agent
+    }
+
+    // For existing sessions, use the agent from session data
+    if (session?.agents && session.agents.length > 0) {
+      return session.agents[0]
+    }
+
+    // Final fallback
+    return {
+      _id: 'agent',
+      username: 'Assistant',
+    }
+  }, [streamingAgent, agent, session?.agents])
 
   // Mount effect
   useEffect(() => {
@@ -150,9 +126,90 @@ const SessionChat: FC = () => {
         setWaitingForWebSocket(false)
         setStreamingAgent(null)
         streamingMessageIdRef.current = null
+
+        // Check if we should redirect now that streaming is complete
+        if (pendingRedirect && session?.title) {
+          // Pre-populate the destination session cache with complete data
+          queryClient.setQueryData(['session', pendingRedirect.sessionId], {
+            ...session,
+            _id: pendingRedirect.sessionId,
+          })
+
+          // Use replace instead of push for smoother transition
+          router.replace(
+            `/chat2/${pendingRedirect.agentId}/${pendingRedirect.sessionId}`,
+          )
+          setPendingRedirect(null)
+        }
       }
     }
-  }, [session?.messages, waitingForWebSocket])
+  }, [
+    session?.messages,
+    waitingForWebSocket,
+    pendingRedirect,
+    router,
+    queryClient,
+  ])
+
+  // Add this effect to invalidate sessions list when the session title changes
+  useEffect(() => {
+    if (session?.title && sessionId) {
+      // Invalidate the sessions list so the sidebar updates with the new title
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list', agentId],
+      })
+
+      // Also invalidate the general sessions list
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list'],
+      })
+    }
+  }, [session?.title, sessionId, queryClient, agentId])
+
+  // Replace the multiple redirect effects with a single, more reliable one
+  useEffect(() => {
+    if (!pendingRedirect) return
+
+    const streamingComplete =
+      !isStreamingTokens && !waitingForWebSocket && streamingText.length === 0
+
+    if (session?.title && streamingComplete) {
+      // Pre-populate the destination session cache
+      queryClient.setQueryData(['session', pendingRedirect.sessionId], {
+        ...session,
+        _id: pendingRedirect.sessionId,
+      })
+
+      // Invalidate sessions list before redirect to ensure sidebar updates
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list', agentId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list'],
+      })
+
+      router.push(
+        `/chat2/${pendingRedirect.agentId}/${pendingRedirect.sessionId}`,
+      )
+      setPendingRedirect(null)
+    } else if (streamingComplete && pendingRedirect) {
+      queryClient.invalidateQueries({
+        queryKey: ['session', pendingRedirect.sessionId],
+      })
+    }
+  }, [
+    pendingRedirect,
+    session?.title,
+    session?._id,
+    session, // Add full session as dependency
+    isStreamingTokens,
+    waitingForWebSocket,
+    streamingText.length,
+    hasReceivedTokens,
+    router,
+    queryClient,
+    agentId, // Add agentId to dependencies
+  ])
 
   // Error handling function
   const handleStreamingError = useCallback(
@@ -198,14 +255,15 @@ const SessionChat: FC = () => {
       setWaitingForWebSocket(true)
       streamingMessageIdRef.current = content
 
-      // Fallback timeout in case websocket doesn't deliver
+      // Shorter timeout and more reliable cleanup
       setTimeout(() => {
         if (streamingMessageIdRef.current === content) {
+          setStreamingText('') // Clear streaming text
           setHasReceivedTokens(false)
           setWaitingForWebSocket(false)
           streamingMessageIdRef.current = null
         }
-      }, 2000)
+      }, 100) // Reduced from 2000ms to 100ms
     },
     onToolComplete: () => {
       // After tool calls complete, we expect more tokens from the LLM
@@ -238,28 +296,15 @@ const SessionChat: FC = () => {
       setStreamingAgent(agent)
     },
     onSessionCreated: newSessionId => {
-      console.log(
-        '***debug*** onSessionCreated called with:',
-        newSessionId,
-        'optimistic state:',
-        optimisticSessionId,
-        'optimistic ref:',
-        optimisticSessionIdRef.current,
-      )
       setSessionId(newSessionId)
 
-      // ***debug*** If we were in optimistic mode, replace temp session with real session
       const currentOptimisticId = optimisticSessionIdRef.current
       if (currentOptimisticId) {
-        console.log(
-          '***debug*** Handling optimistic to real session transition',
-        )
         // Copy any cached data from optimistic session to real session
         const optimisticData = queryClient.getQueryData([
           'session',
           currentOptimisticId,
         ])
-        console.log('***debug*** Optimistic data:', optimisticData)
         if (optimisticData) {
           queryClient.setQueryData(['session', newSessionId], {
             ...optimisticData,
@@ -274,14 +319,8 @@ const SessionChat: FC = () => {
         setOptimisticSessionId(null)
         optimisticSessionIdRef.current = null
 
-        // Navigate to real session URL
-        console.log(
-          '***debug*** Navigating to real session:',
-          `/chat2/${agentId}/${newSessionId}`,
-        )
         router.push(`/chat2/${agentId}/${newSessionId}`)
       } else {
-        // ***debug*** Cache initial session data to avoid loading state on navigation
         // Pre-populate the cache with basic session data so session.tsx loads instantly
         if (agent && user) {
           const initialSessionData = {
@@ -300,7 +339,23 @@ const SessionChat: FC = () => {
             initialSessionData,
           )
         }
+
+        // Set pending redirect for non-optimistic case too
+        setPendingRedirect({
+          agentId: agentId as string,
+          sessionId: newSessionId,
+        })
       }
+
+      // Fix: Use the correct query key structure to invalidate sessions list
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list', agentId],
+      })
+
+      // Also invalidate the general sessions list (without agent filter)
+      queryClient.invalidateQueries({
+        queryKey: ['sessions', 'list'],
+      })
     },
   })
 
@@ -321,51 +376,36 @@ const SessionChat: FC = () => {
 
   const handleSendMessage = useCallback(
     async (content: string, attachments?: string[]) => {
+      // start showing indicator as soon as message is sent
+      setIsStreamingTokens(true)
       if (!user || !agent) return
-
-      // Clear any existing errors when starting a new message
       clearErrors()
 
-      // ***debug*** IMMEDIATE optimistic transition - generate temp session ID and switch to session view
       if (!sessionId && !optimisticSessionId) {
         const tempSessionId = `temp-${Date.now()}-${Math.random()
           .toString(36)
           .substr(2, 9)}`
-        console.log('***debug*** Creating optimistic session:', tempSessionId)
         setOptimisticSessionId(tempSessionId)
         optimisticSessionIdRef.current = tempSessionId
-
-        // Cache optimistic session data IMMEDIATELY - don't include user message, backend will handle it
+        // Create optimistic session without user message - let streaming handle the display
         const optimisticSessionData = {
           _id: tempSessionId,
           agents: [agent],
-          messages: [], // Empty - backend will add user message, we'll stream agent response
+          messages: [],
           title: null,
           budget: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         }
-
-        console.log(
-          '***debug*** Caching optimistic session data:',
-          optimisticSessionData,
-        )
         queryClient.setQueryData(
           ['session', tempSessionId],
           optimisticSessionData,
         )
 
         // Start streaming to the optimistic session
-        console.log('***debug*** Starting streaming for optimistic session')
         setIsStreamingTokens(true)
-        setHasReceivedTokens(false)
-        setStreamingText('')
-        setStreamingAgent(null)
-        sendStreamingMessage(content, attachments, {
-          agent_ids: [agent._id],
-        })
-
-        return // Exit early - we're now in optimistic mode
+        sendStreamingMessage(content, attachments, { agent_ids: [agent._id] })
+        return
       }
 
       setIsStreamingTokens(true)
@@ -441,18 +481,7 @@ const SessionChat: FC = () => {
     )
   }
 
-  // Show session loading if we have a sessionId but session is still loading
-  if (sessionId && isSessionLoading) {
-    return (
-      <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex mx-auto py-16">
-          <LoadingIndicator />
-        </div>
-      </main>
-    )
-  }
-
-  // Show session error
+  // Show session error first to prevent infinite loading
   if (sessionError) {
     return (
       <main className="flex-1 overflow-hidden flex flex-col">
@@ -468,18 +497,24 @@ const SessionChat: FC = () => {
     )
   }
 
+  // Show session loading if we have a sessionId but session is still loading
+  if (sessionId && isSessionLoading) {
+    return (
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex mx-auto py-16">
+          <LoadingIndicator />
+        </div>
+      </main>
+    )
+  }
+
   // If we have a session ID and messages, show the full session interface
   const hasSessionContent =
     sessionId &&
     (session?.messages?.length || streamingText || isStreamingTokens)
 
-  // ***debug*** IMMEDIATE optimistic rendering - if we have optimistic session, render Session component
   // but keep streaming logic in this component
   if (optimisticSessionId) {
-    console.log(
-      '***debug*** Rendering optimistic session component:',
-      optimisticSessionId,
-    )
     return (
       <>
         <Session optimisticSessionId={optimisticSessionId} />
@@ -493,8 +528,7 @@ const SessionChat: FC = () => {
 
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
-      {/* Sticky top bar showing agents - only show if we have session content */}
-      {hasSessionContent && session?.agents && session.agents.length > 0 && (
+      {session?.agents && session.agents.length > 0 && (
         <SessionTopBar
           agents={session.agents}
           title={session.title}
@@ -506,7 +540,8 @@ const SessionChat: FC = () => {
         {!hasSessionContent ? (
           // Show welcome screen if no session content yet
           <SessionWelcome
-            agent={agent}
+            variant="chat"
+            agent={agent as Agent}
             onSendMessage={handleSendMessage}
             isLoading={isStreamingTokens}
           />
@@ -547,11 +582,7 @@ const SessionChat: FC = () => {
                     {
                       _id: 'streaming',
                       content: streamingText,
-                      sender: streamingAgent ||
-                        session?.agents?.[0] || {
-                          _id: 'agent',
-                          username: 'Assistant',
-                        },
+                      sender: getRespondingAgent(),
                       createdAt: new Date(),
                       updatedAt: new Date(),
                       session: sessionId,
@@ -577,12 +608,19 @@ const SessionChat: FC = () => {
       </div>
 
       {/* Message Input */}
-      <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-0">
-        <MessageInput
-          sessionId={sessionId || 'new'}
-          onStreamingMessage={handleSendMessage}
-        />
-      </div>
+      {hasSessionContent && (
+        <div className="max-w-[--aui-thread-max-width] mx-auto w-full sticky bottom-4">
+          <MessageInput
+            sessionId={sessionId || 'new'}
+            onStreamingMessage={handleSendMessage}
+            isStreaming={
+              isStreamingTokens ||
+              waitingForWebSocket ||
+              streamingText.length > 0
+            }
+          />
+        </div>
+      )}
     </main>
   )
 }

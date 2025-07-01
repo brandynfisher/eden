@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { ArrowLeftIcon, PlusIcon } from 'lucide-react'
+import { ArrowLeftIcon, MenuIcon, PlusIcon } from 'lucide-react'
 import * as React from 'react'
 import { PropsWithChildren } from 'react'
 
@@ -17,21 +17,30 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   tool: ToolV2
+  onToolSelectorOpen?: () => void
 } & PropsWithChildren
 
-const CreationUiMobile = ({ open, onOpenChange, tool, children }: Props) => {
+const CreationUiMobile = ({
+  open,
+  onOpenChange,
+  tool,
+  onToolSelectorOpen,
+  children,
+}: Props) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <div className="lg:hidden fixed left-0 bottom-0 flex z-10 bg-accent p-2 w-full justify-between items-center gap-2">
-          <div className="text-sm text-muted-foreground">{tool.name}</div>
-          <Button onClick={() => onOpenChange(true)}>
-            <PlusIcon className="h-4 w-4 mr-1" />
-            Create
+        <div className="lg:hidden fixed left-0 bottom-0 flex z-10 bg-accent p-3 w-full justify-center items-center">
+          <Button
+            onClick={() => onOpenChange(true)}
+            className="w-full max-w-md h-12 text-base"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Create with {tool.name}
           </Button>
         </div>
       </DialogTrigger>
-      <DialogContentOverlayBlur className="p-0 rounded-md overflow-hidden bg-muted-darker">
+      <DialogContentOverlayBlur className="p-0 rounded-md overflow-hidden bg-muted-darker max-h-[95vh] h-auto w-full max-w-none sm:max-w-lg flex flex-col !translate-y-[-47.5%]">
         <VisuallyHidden>
           <DialogTitle>{tool.name}</DialogTitle>
           <DialogDescription>Creation UI</DialogDescription>
@@ -39,13 +48,26 @@ const CreationUiMobile = ({ open, onOpenChange, tool, children }: Props) => {
 
         {children}
 
-        <DialogClose
-          autoFocus
-          className="absolute w-9 h-9 top-0 left-0 rounded-t-none rounded-l-none flex items-center justify-center lg:left-2 lg:right-auto lg:top-2 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none bg-accent data-[state=open]:text-muted-foreground"
-        >
-          <ArrowLeftIcon className="h-8 w-8" />
-          <span className="sr-only">Close</span>
-        </DialogClose>
+        {/* Show hamburger button if provided, otherwise show close button */}
+        {onToolSelectorOpen ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToolSelectorOpen}
+            className="absolute w-10 h-10 top-0 left-0 rounded-t-none rounded-l-none flex items-center justify-center lg:left-2 lg:right-auto lg:top-2 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none bg-accent z-20"
+          >
+            <MenuIcon className="h-5 w-5" />
+            <span className="sr-only">Open Tool Selector</span>
+          </Button>
+        ) : (
+          <DialogClose
+            autoFocus
+            className="absolute w-10 h-10 top-0 left-0 rounded-t-none rounded-l-none flex items-center justify-center lg:left-2 lg:right-auto lg:top-2 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none bg-accent data-[state=open]:text-muted-foreground"
+          >
+            <ArrowLeftIcon className="h-8 w-8" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+        )}
       </DialogContentOverlayBlur>
     </Dialog>
   )

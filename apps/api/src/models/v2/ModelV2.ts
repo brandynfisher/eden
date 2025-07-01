@@ -22,6 +22,7 @@ export interface ModelV2Schema {
   thumbnail_prompts?: string[]
   likeCount?: number
   isLiked?: boolean
+  creationCount?: number
 }
 
 export interface ModelV2Input {
@@ -82,6 +83,10 @@ export const modelSchema = new Schema<ModelV2Document>(
     isLiked: {
       type: Boolean,
     },
+    creationCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -104,6 +109,14 @@ modelSchema.index({
   public: 1,
   deleted: 1,
   likeCount: -1,
+  _id: -1,
+})
+
+// Add index for creationCount-based sorting
+modelSchema.index({
+  public: 1,
+  deleted: 1,
+  creationCount: -1,
   _id: -1,
 })
 

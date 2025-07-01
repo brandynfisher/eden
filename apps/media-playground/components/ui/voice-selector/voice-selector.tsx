@@ -95,12 +95,15 @@ export function VoiceSelector({
                         <div className="flex flex-col">
                           <span className="font-medium">{voice.name}</span>
                           <div className="text-xs text-muted-foreground">
-                            {voice.labels?.accent}, {voice.labels?.age},{' '}
-                            {voice.labels?.gender}
-                            {voice.description ? `, ${voice.description}` : ''}
-                            {voice.labels?.use_case
-                              ? `, ${voice.labels.use_case}`
-                              : ''}
+                            {[
+                              voice.labels?.accent,
+                              voice.labels?.age,
+                              voice.labels?.gender,
+                              voice.description,
+                              voice.labels?.use_case,
+                            ]
+                              .filter(Boolean)
+                              .join(', ')}
                           </div>
                         </div>
                       </div>
@@ -142,7 +145,7 @@ export function VoiceSelector({
           }}
         >
           <Play className="h-3 w-3" />
-          Test voice: <strong>{selectedVoice.name}</strong>
+          Preview voice
         </Button>
       )}
     </div>

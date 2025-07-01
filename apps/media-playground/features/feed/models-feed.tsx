@@ -23,6 +23,7 @@ type Props = {
   }
   scrollRef?: RefObject<HTMLDivElement>
   selectedIds?: string[]
+  variant?: 'default' | 'creation-page'
 }
 
 const ModelsFeed = ({
@@ -35,6 +36,7 @@ const ModelsFeed = ({
   showFooterItems,
   scrollRef,
   selectedIds = [],
+  variant = 'default',
 }: Props) => {
   const router = useRouter()
 
@@ -98,6 +100,7 @@ const ModelsFeed = ({
           linkHref={`/models/${item._id}`}
           showFooterItems={showFooterItems}
           isSelected={selectedIds.includes((item as ModelV2)._id)}
+          variant={variant}
         />
       )}
     />

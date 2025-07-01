@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { SessionsSidebar } from '@/features/sessions/components/sessions-sidebar'
+import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
@@ -44,10 +44,10 @@ const LeftBarSheet: FC<{
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
+        className="flex flex-col max-h-full pt-10 px-3 bg-accent border-r gap-0"
       >
         <SheetTitle className="sr-only">Session List</SheetTitle>
-        <SessionsSidebar onItemClick={handleCloseSheet} />
+        <SessionsSidebarContent onItemClick={handleCloseSheet} />
       </SheetContent>
     </Sheet>
   )
@@ -72,7 +72,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
   return (
     <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
       {/* MOBILE-ONLY HEADER */}
-      <div className="bg-[#0e1421] border-b px-2 py-2 md:hidden flex items-center justify-between">
+      <div className="bg-accent border-b px-2 py-2 md:hidden flex items-center justify-between">
         <LeftBarSheet onItemClick={() => {}} />
       </div>
 
@@ -83,6 +83,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
         autoSaveId="resizable-session-layout"
       >
         {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
+
         <ResizablePanel
           defaultSize={20}
           minSize={15}
@@ -92,13 +93,13 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           onCollapse={() => setIsSidebarCollapsed(true)}
           onExpand={() => setIsSidebarCollapsed(false)}
           className={cn(
-            'hidden md:flex md:flex-col bg-[#0e1421] border-r transition-all duration-300 ease-in-out',
+            'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
             'max-w-[320px]',
             isSidebarCollapsed && 'p-0 border-none',
           )}
         >
           {/* Render content only if not collapsed */}
-          {!isSidebarCollapsed && <SessionsSidebar />}
+          {!isSidebarCollapsed && <SessionsSidebarContent />}
         </ResizablePanel>
 
         {/* Separator Handle - visible only on desktop */}

@@ -133,4 +133,5 @@ export type ModelV2 = {
   thumbnail_prompts?: string[]
   likeCount?: number
   isLiked?: boolean
+  creationCount?: number
 }
