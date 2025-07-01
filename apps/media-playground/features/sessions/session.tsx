@@ -19,7 +19,7 @@ import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { cn } from '@/lib/utils'
 import { Message } from '@edenlabs/eden-sdk'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const Session = ({
@@ -27,9 +27,11 @@ const Session = ({
 }: { optimisticSessionId?: string } = {}) => {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const sessionId = optimisticSessionId || (params.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
+  const isChat2Route = pathname?.startsWith('/chat2')
   const [streamingText, setStreamingText] = useState('')
   const [isStreamingTokens, setIsStreamingTokens] = useState(false)
   const [hasReceivedTokens, setHasReceivedTokens] = useState(false)
@@ -212,10 +214,6 @@ const Session = ({
       // Fallback timeout in case websocket doesn't deliver
       setTimeout(() => {
         if (streamingMessageIdRef.current === content && waitingForWebSocket) {
-          // ***debug*** Fallback timeout triggered for streaming message
-          console.warn(
-            '***debug*** Streaming message fallback timeout triggered',
-          )
           setHasReceivedTokens(false)
           setWaitingForWebSocket(false)
           streamingMessageIdRef.current = null
@@ -322,10 +320,6 @@ const Session = ({
       )
 
       if (matchingMessage) {
-        // ***debug*** Real message is now being rendered, clearing streaming state
-        console.log(
-          '***debug*** Real message is now being rendered, clearing streaming state',
-        )
         setStreamingText('')
         setIsStreamingTokens(false)
         setHasReceivedTokens(false)
@@ -370,7 +364,7 @@ const Session = ({
   return (
     <>
       {/* Sticky top bar showing agents */}
-      {session?.agents && session.agents.length > 0 && (
+      {session?.agents && session.agents.length > 0 && !isChat2Route && (
         <SessionTopBar
           agents={session.agents}
           title={session.title}

@@ -229,6 +229,10 @@ export const updateAgent = async (
     updateData.models = models
   }
 
+  if (!image || image === '') {
+    updateData.userImage = null
+    updateData.blurhash = null
+  }
   if (image) {
     const blurhash = await generateBlurhash(server, image)
     const imageFilename = image.split('/').pop()

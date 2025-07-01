@@ -1,5 +1,6 @@
 'use client'
 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
@@ -61,13 +62,16 @@ export const AgentBar: FC<{
             onClick={onAgentSelect}
             className="flex items-center gap-3 hover:bg-muted/10 rounded-lg px-2 py-1 transition-all duration-200 hover:scale-[1.02] min-w-0"
           >
-            <img
-              src={
-                getCloudfrontOriginalUrl(agent.userImage) || '/placeholder.png'
-              }
-              alt={agent.name}
-              className="w-10 h-10 rounded-full object-cover border-2 border-primary/20 hover:border-primary/40 transition-colors"
-            />
+            <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors">
+              <AvatarImage
+                src={agent.userImage && agent.userImage.trim() ? getCloudfrontOriginalUrl(agent.userImage) : undefined}
+                alt={agent.name}
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-muted text-sm font-medium">
+                {agent.name?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             <span className="font-semibold text-base text-foreground truncate max-w-[200px]">
               {agent.name}
             </span>

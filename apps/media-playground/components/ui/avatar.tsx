@@ -34,7 +34,7 @@ AvatarImage.displayName = AvatarPrimitive.Image.displayName
 const AvatarFallback = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Fallback>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
@@ -42,7 +42,24 @@ const AvatarFallback = React.forwardRef<
       className,
     )}
     {...props}
-  />
+  >
+    {typeof children === 'string' ? (
+      <svg className="w-full h-full" viewBox="0 0 40 40">
+        <text
+          x="50%"
+          y="50%"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className="fill-current text-sm font-medium"
+          style={{ fontSize: '14px' }}
+        >
+          {children}
+        </text>
+      </svg>
+    ) : (
+      children
+    )}
+  </AvatarPrimitive.Fallback>
 ))
 AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
 

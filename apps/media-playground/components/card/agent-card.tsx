@@ -2,6 +2,7 @@ import AgentActionsMenu from '@/components/button/agent-actions-menu'
 // import LikeButton from '@/components/button/like-button'
 import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -11,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { formatCompactNumber } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -70,20 +72,16 @@ const AgentCard = ({
           <div className="flex items-center p-4 gap-3 h-full min-h-[140px] w-full overflow-hidden">
             {/* Avatar on the left - vertically centered */}
             <div className="flex-shrink-0 flex items-center w-20">
-              <div className="relative w-20 h-20 rounded-full overflow-hidden">
-                <CardImage
-                  media={{
-                    url: agent.userImage,
-                    thumbnail: agent.userImage,
-                    width: 512,
-                    height: 512,
-                    type: 'image',
-                    blurhash: agent.blurhash,
-                  }}
-                  unoptimized={true}
-                  className="object-cover w-full h-full"
+              <Avatar className="w-20 h-20">
+                <AvatarImage
+                  src={agent.userImage && agent.userImage.trim() ? getCloudfrontOriginalUrl(agent.userImage) : undefined}
+                  alt={agent.name}
+                  className="object-cover"
                 />
-              </div>
+                <AvatarFallback className="bg-muted text-lg font-medium">
+                  {agent.name?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </div>
 
             {/* Metadata on the right - strict width control */}
@@ -148,19 +146,17 @@ const AgentCard = ({
       <Link href={`/chat/${agent.username}`} prefetch={false} className="block">
         <div className="relative flex p-2">
           <div className="relative flex-grow shrink-0">
-            <div className="relative flex rounded-lg overflow-hidden aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0">
-              <CardImage
-                media={{
-                  url: agent.userImage,
-                  thumbnail: agent.userImage,
-                  width: 512,
-                  height: 512,
-                  type: 'image',
-                  blurhash: agent.blurhash,
-                }}
-                unoptimized={true}
-                className="object-cover"
-              />
+            <div className="relative flex rounded-lg overflow-hidden aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0 items-center justify-center">
+              <Avatar className="w-full h-full rounded-lg">
+                <AvatarImage
+                  src={agent.userImage && agent.userImage.trim() ? getCloudfrontOriginalUrl(agent.userImage) : undefined}
+                  alt={agent.name}
+                  className="object-cover w-full h-full"
+                />
+                <AvatarFallback className="bg-muted text-2xl font-medium w-full h-full rounded-lg flex items-center justify-center">
+                  {agent.name?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
 
