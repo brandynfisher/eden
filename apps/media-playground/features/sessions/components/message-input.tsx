@@ -132,7 +132,13 @@ export const MessageInput = ({
         if (uploadedFile) {
           setAttachments(prev =>
             prev.map(a =>
-              a.id === attachment.id ? { ...a, status: 'complete' } : a,
+              a.id === attachment.id
+                ? {
+                    ...a,
+                    status: 'complete',
+                    fileUrl: uploadedFile.fileUrl,
+                  }
+                : a,
             ),
           )
         }
@@ -222,8 +228,8 @@ export const MessageInput = ({
 
     // Get completed attachments
     const completedAttachments = attachments
-      .filter(a => a.status === 'complete')
-      .map(a => (a.file as File & { fileUrl: string }).fileUrl)
+      .filter(a => a.status === 'complete' && a.fileUrl)
+      .map(a => a.fileUrl!)
 
     // Add optimistic message immediately
     const optimisticId = addOptimisticMessage({

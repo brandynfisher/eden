@@ -24,6 +24,7 @@ export type FileUploadProgress = {
   progress: number
   source: CancelTokenSource | null
   status: 'uploading' | 'complete' | 'error'
+  fileUrl?: string // URL of the uploaded file
 }
 
 type AttachmentProps = {
@@ -40,7 +41,7 @@ export const Attachment: FC<AttachmentProps> = ({
   const { setSlides } = useLightbox()
 
   // Get the file URL and media type
-  const fileUrl = (attachment.file as File & { fileUrl?: string }).fileUrl || ''
+  const fileUrl = attachment.fileUrl || ''
   const mediaType = getSuspectedMediaType(fileUrl || attachment.file.name)
 
   // Clean up lightbox slides when attachment is removed
