@@ -52,9 +52,22 @@ const CreationsFeed = ({
   const pathname = usePathname()
 
   // Include pathname in feedId to differentiate between same queries in different routes
+  // ***debug*** Use stable path for feeds to prevent refetch during modal navigation
+  const stablePath = useMemo(() => {
+    // For modal routes, use the base path instead of the modal path
+    if (
+      pathname.startsWith('/creations/') ||
+      pathname.startsWith('/models/') ||
+      pathname.startsWith('/agents/')
+    ) {
+      return '/explore' // Treat modal routes as explore page for feed stability
+    }
+    return pathname
+  }, [pathname])
+
   const feedId = useMemo(
-    () => JSON.stringify({ queryKey, path: pathname }),
-    [queryKey, pathname],
+    () => JSON.stringify({ queryKey, path: stablePath }),
+    [queryKey, stablePath],
   )
 
   const { setItems, setActiveIndex, setFetchNextPage } = useFeedStore(feedId)
