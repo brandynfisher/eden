@@ -69,6 +69,11 @@ export const useSessionListQuery = (props?: Props) => {
     queryClient.setQueryData(
       queryKey,
       (old: InfiniteData<SessionsV2ListResponse>) => {
+        // Guard against undefined data
+        if (!old || !old.pages) {
+          return old
+        }
+
         const newPages = old.pages.map(page => {
           return {
             ...page,
@@ -90,6 +95,11 @@ export const useSessionListQuery = (props?: Props) => {
     queryClient.setQueryData(
       queryKey,
       (old: InfiniteData<SessionsV2ListResponse>) => {
+        // Guard against undefined data
+        if (!old || !old.pages) {
+          return old
+        }
+
         return {
           ...old,
           pages: old.pages.map(page => {
