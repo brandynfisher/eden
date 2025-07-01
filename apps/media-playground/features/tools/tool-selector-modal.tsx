@@ -9,6 +9,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
@@ -33,12 +34,28 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
     output_type: ['image', 'video', 'audio', 'lora'],
   })
   const router = useRouter()
+  const [searchQuery, setSearchQuery] = React.useState('')
+
+  const filteredTools = React.useMemo(() => {
+    if (!tools || !searchQuery.trim()) return tools
+
+    const query = searchQuery.toLowerCase().trim()
+    return tools.filter(
+      tool =>
+        tool.name.toLowerCase().includes(query) ||
+        (tool.description && tool.description.toLowerCase().includes(query)),
+    )
+  }, [tools, searchQuery])
 
   const categories = React.useMemo(() => {
-    if (!tools) return []
+    if (!filteredTools) return []
 
-    const eden2Tools = tools.filter(tool => !tool.key.includes('legacy'))
-    const legacyTools = tools.filter(tool => tool.key.includes('legacy'))
+    const eden2Tools = filteredTools.filter(
+      tool => !tool.key.includes('legacy'),
+    )
+    const legacyTools = filteredTools.filter(tool =>
+      tool.key.includes('legacy'),
+    )
 
     // Get featured tools
     const featuredTools = eden2Tools.filter(tool =>
@@ -78,7 +95,7 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
         tools: legacyTools,
       },
     ].filter(category => category.tools.length > 0)
-  }, [tools])
+  }, [filteredTools])
 
   const handleToolSelect = React.useCallback(
     (tool: ToolV2) => {
@@ -106,15 +123,15 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] p-0">
+      <DialogContent className="max-w-4xl h-[60vh] p-0 flex flex-col">
         <VisuallyHidden>
           <DialogTitle>Select Tool</DialogTitle>
           <DialogDescription>Choose a tool to work with</DialogDescription>
         </VisuallyHidden>
 
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
+        {/* Header */}
+        <div className="p-4 border-b flex-shrink-0 space-y-3">
+          <div className="flex items-center justify-between">
             <TypographyH4>Select Tool</TypographyH4>
             {/* <DialogClose asChild>
               <Button variant="ghost" size="sm" className="p-2">
@@ -122,47 +139,56 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
               </Button>
             </DialogClose> */}
           </div>
-
-          {/* Tabs */}
-          <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col">
-            <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
-              {categories.map(category => (
-                <TabsTrigger
-                  key={category.id}
-                  value={category.id}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-                >
-                  {category.title}
-                  <Badge variant="secondary" className="ml-2 text-xs">
-                    {category.tools.length}
-                  </Badge>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto">
-              {categories.map(category => (
-                <TabsContent
-                  key={category.id}
-                  value={category.id}
-                  className="m-0 p-4  max-h-[70vh] overflow-y-auto"
-                >
-                  <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-                    {category.tools.map(tool => (
-                      <ToolItem
-                        key={tool.key}
-                        tool={tool}
-                        isActive={tool.key === currentTool.key}
-                        onClick={() => handleToolSelect(tool)}
-                      />
-                    ))}
-                  </div>
-                </TabsContent>
-              ))}
-            </div>
-          </Tabs>
+          <Input
+            placeholder="Search tools..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
         </div>
+
+        {/* Tabs */}
+        <Tabs
+          defaultValue={defaultTab}
+          className="flex-1 flex flex-col min-h-0"
+        >
+          <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 flex-shrink-0">
+            {categories.map(category => (
+              <TabsTrigger
+                key={category.id}
+                value={category.id}
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                {category.title}
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  {category.tools.length}
+                </Badge>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {/* Tab Content */}
+          <div className="flex-1 min-h-0">
+            {categories.map(category => (
+              <TabsContent
+                key={category.id}
+                value={category.id}
+                className="m-0 p-4 h-full overflow-y-auto"
+              >
+                <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+                  {category.tools.map(tool => (
+                    <ToolItem
+                      key={tool.key}
+                      tool={tool}
+                      isActive={tool.key === currentTool.key}
+                      onClick={() => handleToolSelect(tool)}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+            ))}
+          </div>
+        </Tabs>
       </DialogContent>
     </Dialog>
   )
