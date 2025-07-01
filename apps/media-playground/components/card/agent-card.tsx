@@ -1,6 +1,5 @@
 import AgentActionsMenu from '@/components/button/agent-actions-menu'
 // import LikeButton from '@/components/button/like-button'
-import CardImage from '@/components/card/components/card-image'
 import PrivateIcon from '@/components/icons/private-icon'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
