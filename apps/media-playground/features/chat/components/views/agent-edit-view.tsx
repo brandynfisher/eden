@@ -116,7 +116,11 @@ export const agentSchema = z.object({
       message:
         'Key must only contain lowercase letters, numbers, underscores and dashes.',
     }),
-  image: z.string().min(1, 'Profile image is required'),
+  image: z
+    .string()
+    .transform(val => (val === '' ? null : val))
+    .optional()
+    .nullable(),
   description: z.string().min(1).max(5000),
   greeting: z.string().max(140).optional(),
   voice: z.string().optional(),
@@ -124,7 +128,7 @@ export const agentSchema = z.object({
     .array(
       z.object({
         lora: z.string(),
-        use_when: z.string().trim().max(500).min(1),
+        use_when: z.string().trim().max(500),
       }),
     )
     .optional(),

@@ -153,7 +153,14 @@ const ExplorePage = () => {
         return {
           title: 'Explore Creations',
           description: 'Discover what people are creating with Eden',
-          actionButton: null,
+          actionButton: (
+            <Button asChild size="lg" className="gap-2">
+              <Link href="/create/image/flux_dev">
+                <Plus className="h-4 w-4" />
+                Create an Image
+              </Link>
+            </Button>
+          ),
         }
     }
   }
