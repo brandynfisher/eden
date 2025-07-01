@@ -40,7 +40,7 @@ const ExplorePage = () => {
   })
   const [modelsFilter] = useState({})
   const [creationsSort, setCreationsSort] = useState('createdAt;-1')
-  const [modelsSort, setModelsSort] = useState('creationCount;-1')
+  const [modelsSort, setModelsSort] = useState('createdAt;-1')
   const [agentsSort, setAgentsSort] = useState('stats.userMessageCount;-1')
 
   // Sync state with URL parameters when they change
