@@ -51,7 +51,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   const [activeTab, setActiveTab] = useState(initialTab)
   const [search, setSearch] = useState('')
   const [isTabChanging, setIsTabChanging] = useState(false)
-  const tabChangeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const tabChangeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [tabCaches, setTabCaches] = useState<{
     [key: string]: {
