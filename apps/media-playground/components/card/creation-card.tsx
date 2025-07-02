@@ -52,7 +52,6 @@ const CreationCard = ({
   const handleCardClick = (event: React.MouseEvent) => {
     if (event.defaultPrevented) return // Allow other interactions like multiselect
     if (onClick) {
-      console.log('handleCardClick - onClick', creation._id)
       event.preventDefault()
       onClick()
       // router.push(`/creations/${creation._id}`)

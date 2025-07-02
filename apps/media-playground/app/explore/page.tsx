@@ -13,7 +13,7 @@ import { env } from '@/lib/config'
 import { Plus, Zap } from 'lucide-react'
 import Link from 'next/link'
 // Removed unused imports
-import { useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
 type ContentType = 'creations' | 'models' | 'agents'
@@ -23,6 +23,7 @@ const ExplorePage = () => {
   const { user } = useAuthState()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
 
   // Initialize state from URL parameters
   const initialContentType =
@@ -49,8 +50,15 @@ const ExplorePage = () => {
     const urlCreatorType =
       (searchParams.get('creator') as CreatorType) || 'public'
 
-    // If no type parameter, redirect to type=creations
-    if (!urlContentType) {
+    // ***debug*** Don't redirect if we're in a modal intercept state
+    // Check if current pathname suggests we're in a modal
+    const isModalState =
+      pathname.startsWith('/creations/') ||
+      pathname.startsWith('/models/') ||
+      pathname.startsWith('/agents/')
+
+    // If no type parameter, redirect to type=creations (but not during modal state)
+    if (!urlContentType && !isModalState) {
       const params = new URLSearchParams(searchParams.toString())
       params.set('type', 'creations')
       router.replace(`/explore?${params.toString()}`)
@@ -63,7 +71,7 @@ const ExplorePage = () => {
     if (urlCreatorType !== creatorType) {
       setCreatorType(urlCreatorType)
     }
-  }, [searchParams, contentType, creatorType, router])
+  }, [searchParams, contentType, creatorType, router, pathname])
 
   // Query builders for each content type
   const creationsQuery = useMemo(
