@@ -7,7 +7,7 @@ import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
 import ModelsFeed from '@/features/feed/models-feed'
-import { SortMenu } from '@/features/feed/sort-menu'
+//import { SortMenu } from '@/features/feed/sort-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
 import { Plus, Zap } from 'lucide-react'
@@ -235,32 +235,32 @@ const ExplorePage = () => {
                 onChange={filter => setCreationsFilter(filter)}
                 className="min-w-0 w-full sm:w-auto"
               />
-              <SortMenu
+              {/* <SortMenu
                 variant="creation"
                 initialSort={creationsSort}
                 onChange={setCreationsSort}
                 className="min-w-0 w-full sm:w-auto"
-              />
+              /> */}
             </>
           )}
 
-          {contentType === 'models' && (
+          {/* {contentType === 'models' && (
             <SortMenu
               variant="model"
               initialSort={modelsSort}
               onChange={setModelsSort}
               className="min-w-0 w-full sm:w-auto"
             />
-          )}
+          )} */}
 
-          {contentType === 'agents' && (
+          {/* {contentType === 'agents' && (
             <SortMenu
               variant="agent"
               initialSort={agentsSort}
               onChange={setAgentsSort}
               className="min-w-0 w-full sm:w-auto"
             />
-          )}
+          )} */}
 
           <FeedSearchForm
             handleSearch={setSearchQuery}
