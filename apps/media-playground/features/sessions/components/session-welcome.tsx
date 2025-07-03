@@ -111,7 +111,7 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="relative flex flex-col items-center p-2 mt-8">
+      <div className="relative flex flex-col items-center p-2 ">
         <div className="absolute inset-0 rounded-full blur-3xl scale-150 opacity-60 animate-pulse" />
         <div className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 tracking-wide">
           {agent.name}
@@ -140,11 +140,11 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
         <MessageInput sessionId={'new'} onStreamingMessage={onSendMessage} />
       </div>
 
-      <div className=" w-full flex flex-wrap gap-3 justify-center">
+      <div className=" w-full flex flex-wrap gap-3 justify-center mb-3">
         {suggestions.length > 0 && (
           <div className="w-full  mx-auto relative" ref={containerRef}>
             <div
-              className={`flex flex-row gap-2 flex-wrap justify-center transition-[height,opacity] duration-200`}
+              className={`gap-3 flex flex-row gap-2 flex-wrap justify-center transition-[height,opacity] duration-200`}
             >
               {suggestions.map((suggestion, index) => (
                 <div
