@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
-import { PlusIcon } from 'lucide-react'
+import { PlusIcon, RotateCcwIcon } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 type Variant = 'chat' | 'session'
@@ -17,6 +17,7 @@ interface ChatVariantProps extends BaseProps {
   agent: Agent
   isLoading: boolean
   onSendMessage: (content: string, attachments?: string[]) => void
+  onAgentSelectorOpen?: () => void
 }
 
 interface SessionVariantProps extends BaseProps {
@@ -28,6 +29,8 @@ interface SessionVariantProps extends BaseProps {
 type SessionWelcomeProps = ChatVariantProps | SessionVariantProps
 
 const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
+  const onAgentSelectorOpen =
+    'onAgentSelectorOpen' in props ? props.onAgentSelectorOpen : undefined
   if (props.variant === 'session') {
     const { agents, sessionTitle } = props
     return (
@@ -174,6 +177,18 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
                 <PlusIcon className="w-4 h-4 mr-1" />
                 More
               </Button>
+            )}
+            {onAgentSelectorOpen && (
+              <div className="flex justify-center pt-4">
+                <Button
+                  variant="outline"
+                  onClick={onAgentSelectorOpen}
+                  className="group relative bg-gradient-to-r from-card to-muted/60 border-border hover:border-primary/40 hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/4 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/10"
+                >
+                  <RotateCcwIcon className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:rotate-180" />
+                  Chat with another agent
+                </Button>
+              </div>
             )}
           </div>
         )}
