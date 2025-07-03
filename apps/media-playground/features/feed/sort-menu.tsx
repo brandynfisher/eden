@@ -22,8 +22,8 @@ const sortOptions = [
 
 // Add new sort options specifically for agents
 const agentSortOptions = [
-  { label: 'Top', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
+  //{ label: 'Top', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
 ]
 
 // Add new sort options for users
@@ -33,13 +33,13 @@ const userSortOptions = [
 
 // Add new sort options for creations
 const creationSortOptions = [
-  { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
+  //{ label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
 ]
 
 const modelSortOptions = [
-  { label: 'Top', value: 'creationCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
+  //{ label: 'Top', value: 'creationCount;-1', icon: <StarIcon /> },
 ]
 
 // Update the variant type to include 'user' and 'creation'
