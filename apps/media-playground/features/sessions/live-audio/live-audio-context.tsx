@@ -54,11 +54,11 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
   
   // Force reset recording state on mount to prevent stuck states
   useEffect(() => {
-    setState({
+    setState(prev => ({
+      ...prev,
       isRecording: false,
       isProcessing: false,
-      currentSettings: null,
-    })
+    }))
     isRecordingRef.current = false
   }, [])
   
@@ -110,7 +110,6 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
   const processAudioChunk = useCallback(async (audioBlob: Blob) => {
     try {
       setState(prev => ({ ...prev, isProcessing: true }))
-      
       
       // Skip if blob is too small (likely silence)
       if (audioBlob.size < 1000) {

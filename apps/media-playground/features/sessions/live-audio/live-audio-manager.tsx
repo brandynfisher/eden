@@ -36,15 +36,9 @@ export const LiveAudioManager = ({
       return
     }
     
-    const currentSessionId = currentSessionIdRef.current
-    if (!currentSessionId) {
-      console.error('🎤 [LIVE-AUDIO-MANAGER] No sessionId available')
-      return
-    }
-    
     const transcriptionMessage = `Live conversation segment transcription ${new Date(timestamp).toLocaleTimeString()}: ${content}\n\nReact to the ongoing conversation based on your instructions`
     
-    console.log('🎤 [LIVE-AUDIO-MANAGER] Sending transcription for session:', currentSessionId)
+    console.log('🎤 [LIVE-AUDIO-MANAGER] Sending transcription for session:', currentSessionIdRef.current)
     onStreamingMessage(transcriptionMessage)
   }, [onStreamingMessage])
 
@@ -222,7 +216,7 @@ Please await further instructions.`
         style={{ display: 'none' }}
         ref={(el) => {
           if (el) {
-            ;(el as any).__toggleRecording = handleToggleRecording
+            (el as any).__toggleRecording = handleToggleRecording
             ;(el as any).__isRecording = state.isRecording
             ;(el as any).__isProcessing = state.isProcessing
           }

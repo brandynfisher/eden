@@ -348,7 +348,7 @@ export const MessageInput = ({
 
   const [liveAudioState, setLiveAudioState] = useState({ isRecording: false, isProcessing: false })
 
-  // Poll for live audio state changes when enabled
+  // Poll for live audio state changes when enabled - reduced frequency
   useEffect(() => {
     if (!enableLiveAudio) return
     
@@ -360,7 +360,7 @@ export const MessageInput = ({
         }
         return prev
       })
-    }, 100)
+    }, 200) // Reduced from 100ms to 200ms
     
     return () => clearInterval(interval)
   }, [enableLiveAudio])
