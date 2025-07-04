@@ -15,6 +15,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if audio file is too small (likely silence)
+    if (audioFile.size < 1000) {
+      return NextResponse.json(
+        { success: false, error: 'Audio file too small' },
+        { status: 400 }
+      )
+    }
+
     const transcription = await openai.audio.transcriptions.create({
       file: audioFile, // Pass the File object directly
       model: 'gpt-4o-mini-transcribe',

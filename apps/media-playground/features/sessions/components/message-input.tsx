@@ -74,8 +74,6 @@ export const MessageInput = ({
   isStreaming,
   enableLiveAudio = false,
 }: MessageInputProps) => {
-  // Debug logging
-  console.log('🎤 [MESSAGE-INPUT] enableLiveAudio:', enableLiveAudio)
   
   const { user } = useAuthState()
   const {

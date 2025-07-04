@@ -17,35 +17,40 @@ export const LiveAudioManager = ({
   onStreamingMessage, 
   isSubmitting: _isSubmitting
 }: LiveAudioManagerProps) => {
-  // Send transcription as streaming message (triggers agent response)
-  const sendTranscriptionMessage = (content: string, timestamp: string) => {
-    if (!onStreamingMessage) {
-      console.error('🎤 [LIVE-AUDIO-MANAGER] No onStreamingMessage callback available')
-      return
-    }
-    
-    if (!sessionId || sessionId === 'new') {
-      console.error('🎤 [LIVE-AUDIO-MANAGER] Invalid sessionId:', sessionId)
-      return
-    }
-    
-    const transcriptionMessage = `Live conversation segment transcription ${new Date(timestamp).toLocaleTimeString()}: ${content}\n\nReact to the ongoing conversation based on your instructions`
-    
-    console.log('🎤 [LIVE-AUDIO-MANAGER] Sending transcription as streaming message:', transcriptionMessage)
-    console.log('🎤 [LIVE-AUDIO-MANAGER] SessionId being used:', sessionId)
-    onStreamingMessage(transcriptionMessage)
-  }
   const { state, startLiveAudio, stopLiveAudio } = useLiveAudio()
   const [showModal, setShowModal] = useState(false)
   const [pendingSettings, setPendingSettings] = useState<LiveAudioSettings | null>(null)
   const pendingSettingsRef = useRef<LiveAudioSettings | null>(null)
   const collectedTranscriptionsRef = useRef<string[]>([])
+  const currentSessionIdRef = useRef<string>(sessionId)
 
-  console.log('🎤 [LIVE-AUDIO-MANAGER] Rendered with sessionId:', sessionId, 'isRecording:', state.isRecording)
+  // Update session ID ref whenever sessionId prop changes
+  React.useEffect(() => {
+    currentSessionIdRef.current = sessionId
+  }, [sessionId])
+  
+  // Send transcription as streaming message (triggers agent response)
+  const sendTranscriptionMessage = useCallback((content: string, timestamp: string) => {
+    if (!onStreamingMessage) {
+      console.error('🎤 [LIVE-AUDIO-MANAGER] No onStreamingMessage callback available')
+      return
+    }
+    
+    const currentSessionId = currentSessionIdRef.current
+    if (!currentSessionId) {
+      console.error('🎤 [LIVE-AUDIO-MANAGER] No sessionId available')
+      return
+    }
+    
+    const transcriptionMessage = `Live conversation segment transcription ${new Date(timestamp).toLocaleTimeString()}: ${content}\n\nReact to the ongoing conversation based on your instructions`
+    
+    console.log('🎤 [LIVE-AUDIO-MANAGER] Sending transcription for session:', currentSessionId)
+    onStreamingMessage(transcriptionMessage)
+  }, [onStreamingMessage])
+
 
   const handleStartRecording = useCallback(async (settings: LiveAudioSettings) => {
-    console.log('🎤 [LIVE-AUDIO-MANAGER] handleStartRecording called with settings:', settings)
-    console.log('🎤 [LIVE-AUDIO-MANAGER] Current sessionId:', sessionId)
+    console.log('🎤 [LIVE-AUDIO-MANAGER] Starting recording with sessionId:', sessionId)
     
     if (!onStreamingMessage) {
       console.error('🎤 [LIVE-AUDIO-MANAGER] No onStreamingMessage callback provided')
@@ -60,12 +65,10 @@ ${settings.liveInstructions}
 
 Await the next conversation transcription segment before acting.`
     
-    console.log('🎤 [LIVE-AUDIO-MANAGER] Sending system message:', systemMessage)
     onStreamingMessage(systemMessage)
     
-    // If this is a new session, store settings to start after session creation
+    // If this is a new session, still start recording but store settings for later
     if (!sessionId || sessionId === 'new') {
-      console.log('🎤 [LIVE-AUDIO-MANAGER] New session - storing pending settings')
       setPendingSettings(settings)
       pendingSettingsRef.current = settings
       
@@ -77,6 +80,9 @@ Await the next conversation transcription segment before acting.`
           console.warn('🎤 [LIVE-AUDIO-MANAGER] Failed to store in sessionStorage:', error)
         }
       }
+      
+      // Start live audio even for new sessions
+      await startLiveAudioWithSession(settings)
       return
     }
 
@@ -85,7 +91,6 @@ Await the next conversation transcription segment before acting.`
   }, [sessionId, onStreamingMessage, startLiveAudio])
 
   const startLiveAudioWithSession = useCallback(async (settings: LiveAudioSettings) => {
-    console.log('🎤 [LIVE-AUDIO-MANAGER] Starting live audio with session')
     
     // Clear any previous transcriptions
     collectedTranscriptionsRef.current = []
@@ -94,16 +99,17 @@ Await the next conversation transcription segment before acting.`
       settings, 
       // On each transcription: send as streaming message (triggers agent response)
       (transcription: string, timestamp: string) => {
-        console.log('🎤 [LIVE-AUDIO-MANAGER] Transcription received:', { transcription, timestamp })
+        console.log('🎤 [LIVE-AUDIO-MANAGER] Transcription received:', transcription.slice(0, 50) + '...')
         
-        if (transcription.trim()) {
+        if (transcription.trim() && transcription.length > 3) {
           // Send transcription as streaming message (triggers agent response)
           sendTranscriptionMessage(transcription, timestamp)
+        } else {
+          // Skip short/empty transcriptions
         }
       },
       // On action interval: not needed since each transcription triggers response
       () => {
-        console.log('🎤 [LIVE-AUDIO-MANAGER] Action interval triggered (no action needed)')
       }
     )
 
@@ -121,10 +127,7 @@ Await the next conversation transcription segment before acting.`
   // Effect to start recording when session is created
   // This runs when sessionId changes from 'new' to an actual ID
   const handleSessionCreated = useCallback(() => {
-    console.log('🎤 [LIVE-AUDIO-MANAGER] Checking for pending settings on session creation')
-    console.log('🎤 [LIVE-AUDIO-MANAGER] sessionId:', sessionId)
-    console.log('🎤 [LIVE-AUDIO-MANAGER] pendingSettings:', pendingSettings)
-    console.log('🎤 [LIVE-AUDIO-MANAGER] pendingSettingsRef:', pendingSettingsRef.current)
+    console.log('🎤 [LIVE-AUDIO-MANAGER] Checking for pending settings, sessionId:', sessionId)
     
     let settingsToUse = pendingSettings || pendingSettingsRef.current
     
@@ -134,7 +137,6 @@ Await the next conversation transcription segment before acting.`
         const stored = sessionStorage.getItem('pendingLiveAudioSettings')
         if (stored) {
           settingsToUse = JSON.parse(stored)
-          console.log('🎤 [LIVE-AUDIO-MANAGER] Found settings in sessionStorage:', settingsToUse)
         }
       } catch (error) {
         console.warn('🎤 [LIVE-AUDIO-MANAGER] Error reading from sessionStorage:', error)
@@ -142,7 +144,7 @@ Await the next conversation transcription segment before acting.`
     }
     
     if (settingsToUse && sessionId && sessionId !== 'new' && !state.isRecording) {
-      console.log('🎤 [LIVE-AUDIO-MANAGER] Session created, starting live audio with settings:', settingsToUse)
+      console.log('🎤 [LIVE-AUDIO-MANAGER] Session created, starting live audio')
       startLiveAudioWithSession(settingsToUse)
       
       // Clear pending settings
@@ -162,7 +164,6 @@ Await the next conversation transcription segment before acting.`
   }, [sessionId, state.isRecording]) // Removed handleSessionCreated from deps to prevent infinite loop
 
   const handleStopRecording = useCallback(() => {
-    console.log('🎤 [LIVE-AUDIO-MANAGER] handleStopRecording called')
     
     stopLiveAudio()
     
@@ -175,7 +176,6 @@ Await the next conversation transcription segment before acting.`
     
     // Send final message
     if (state.currentSettings && onStreamingMessage) {
-      console.log('🎤 [LIVE-AUDIO-MANAGER] Sending final system message')
       const finalMessage = `Live conversation mode was terminated by the user.
 
 Please await further instructions.`
@@ -184,7 +184,6 @@ Please await further instructions.`
   }, [stopLiveAudio, state.currentSettings, onStreamingMessage])
 
   const handleToggleRecording = useCallback(() => {
-    console.log('🎤 [LIVE-AUDIO-MANAGER] handleToggleRecording called, isRecording:', state.isRecording)
     
     if (state.isRecording) {
       handleStopRecording()
