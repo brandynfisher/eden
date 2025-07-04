@@ -485,6 +485,7 @@ const Session = ({
         <div className="max-w-[--aui-thread-max-width] mx-auto w-full">
           <MessageInput
             sessionId={sessionId as string}
+            enableLiveAudio={true}
             onStreamingMessage={(content, attachments) => {
               // Clear any existing errors when starting a new message
               clearErrors()

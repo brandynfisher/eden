@@ -236,7 +236,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   }
 
   return (
-    <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
+    <LiveAudioProvider>
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
       {/* AGENT BAR - Always visible */}
       <AgentBar
         agent={agent}
@@ -357,7 +358,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
           </ResizablePanel>
         </ResizablePanelGroup>
       )}
-    </div>
+      </div>
+    </LiveAudioProvider>
   )
 }
 

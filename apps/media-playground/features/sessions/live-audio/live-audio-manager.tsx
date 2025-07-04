@@ -130,10 +130,12 @@ React to the ongoing conversation based on your instructions`
     }
   }, [sessionId, pendingSettings, state.isRecording, startLiveAudioWithSession])
 
-  // Call handleSessionCreated when sessionId changes
+  // Call handleSessionCreated when sessionId changes from 'new' to actual ID
   React.useEffect(() => {
-    handleSessionCreated()
-  }, [handleSessionCreated])
+    if (sessionId && sessionId !== 'new' && !state.isRecording) {
+      handleSessionCreated()
+    }
+  }, [sessionId, state.isRecording]) // Removed handleSessionCreated from deps to prevent infinite loop
 
   const handleStopRecording = useCallback(() => {
     console.log('🎤 [LIVE-AUDIO-MANAGER] handleStopRecording called')

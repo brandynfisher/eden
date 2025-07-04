@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useCallback, useRef, useState, ReactNode } from 'react'
+import { createContext, useContext, useCallback, useRef, useState, ReactNode, useEffect } from 'react'
 import { toast } from 'sonner'
 
 export type LiveAudioSettings = {
@@ -52,6 +52,17 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     isProcessing: false,
     currentSettings: null,
   })
+  
+  // Force reset recording state on mount to prevent stuck states
+  useEffect(() => {
+    console.log('🎤 [LIVE-AUDIO] Provider mounting, resetting state...')
+    setState({
+      isRecording: false,
+      isProcessing: false,
+      currentSettings: null,
+    })
+    isRecordingRef.current = false
+  }, [])
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
@@ -341,6 +352,33 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     onTranscriptionRef.current = null
     
     console.log('🎤 [LIVE-AUDIO] Live audio stopped')
+  }, [])
+
+  // Cleanup on unmount to prevent stuck recording state
+  useEffect(() => {
+    return () => {
+      console.log('🎤 [LIVE-AUDIO] Provider unmounting, cleaning up...')
+      
+      // Stop everything
+      isRecordingRef.current = false
+      
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+      
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop()
+      }
+      
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop())
+        mediaStreamRef.current = null
+      }
+      
+      mediaRecorderRef.current = null
+      onTranscriptionRef.current = null
+    }
   }, [])
 
   const value: LiveAudioContextType = {

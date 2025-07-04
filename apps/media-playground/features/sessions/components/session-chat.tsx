@@ -618,6 +618,7 @@ const SessionChat: FC = () => {
               waitingForWebSocket ||
               streamingText.length > 0
             }
+            enableLiveAudio={true}
           />
         </div>
       )}
