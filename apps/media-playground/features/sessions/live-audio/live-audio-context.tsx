@@ -19,7 +19,7 @@ type LiveAudioContextType = {
   state: LiveAudioState
   
   // Actions
-  startLiveAudio: (settings: LiveAudioSettings, onTranscription: (transcription: string, timestamp: string) => void) => Promise<boolean>
+  startLiveAudio: (settings: LiveAudioSettings, onTranscription: (transcription: string, timestamp: string) => void, onActionInterval?: () => void) => Promise<boolean>
   stopLiveAudio: () => void
   
   // Utils
@@ -70,6 +70,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const isRecordingRef = useRef<boolean>(false)
   const onTranscriptionRef = useRef<((transcription: string, timestamp: string) => void) | null>(null)
+  const onActionIntervalRef = useRef<(() => void) | null>(null)
 
   const requestMicrophoneAccess = useCallback(async (): Promise<boolean> => {
     console.log('🎤 [LIVE-AUDIO] Requesting microphone access...')
@@ -187,7 +188,8 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
 
   const startLiveAudio = useCallback(async (
     settings: LiveAudioSettings,
-    onTranscription: (transcription: string, timestamp: string) => void
+    onTranscription: (transcription: string, timestamp: string) => void,
+    onActionInterval?: () => void
   ): Promise<boolean> => {
     console.log('🎤 [LIVE-AUDIO] Starting live audio with settings:', settings)
     
@@ -209,6 +211,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
 
     try {
       onTranscriptionRef.current = onTranscription
+      onActionIntervalRef.current = onActionInterval
       chunksRef.current = []
 
       const recorder = createMediaRecorder(
@@ -259,6 +262,13 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording' && isRecordingRef.current) {
           // Stop current recording to process chunk
           mediaRecorderRef.current.stop()
+          
+          // Trigger action interval callback after a short delay to allow transcription to complete
+          setTimeout(() => {
+            if (onActionIntervalRef.current) {
+              onActionIntervalRef.current()
+            }
+          }, 500)
           
           // Start new recording session after a short delay
           setTimeout(() => {
@@ -350,6 +360,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     }))
     mediaRecorderRef.current = null
     onTranscriptionRef.current = null
+    onActionIntervalRef.current = null
     
     console.log('🎤 [LIVE-AUDIO] Live audio stopped')
   }, [])
@@ -378,6 +389,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
       
       mediaRecorderRef.current = null
       onTranscriptionRef.current = null
+      onActionIntervalRef.current = null
     }
   }, [])
 
