@@ -17,12 +17,13 @@ import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { PaperclipIcon, SendIcon, SquareIcon } from 'lucide-react'
+import { MicIcon, PaperclipIcon, SendIcon, SquareIcon } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 import * as z from 'zod'
+import { LiveAudioManager } from '../live-audio/live-audio-manager'
 
 const formSchema = z.object({
   content: z.string().trim().min(1),
@@ -30,9 +31,10 @@ const formSchema = z.object({
 
 type MessageInputProps = {
   sessionId: string
-  onStreamingMessage?: (content: string, attachments?: string[]) => void
+  onStreamingMessage?: (content: string, attachments?: string[], options?: { skipSessionCreation?: boolean }) => void
   onCancel?: () => void
   isStreaming?: boolean
+  enableLiveAudio?: boolean
 }
 
 type AttachmentDropzoneProps = {
@@ -70,7 +72,11 @@ export const MessageInput = ({
   onStreamingMessage,
   onCancel,
   isStreaming,
+  enableLiveAudio = false,
 }: MessageInputProps) => {
+  // Debug logging
+  console.log('🎤 [MESSAGE-INPUT] enableLiveAudio:', enableLiveAudio)
+  
   const { user } = useAuthState()
   const {
     addOptimisticMessage,
@@ -318,11 +324,66 @@ export const MessageInput = ({
     }
   }
 
+  const handleRecordToggle = () => {
+    if (!enableLiveAudio) return
+    
+    // This will only work when LiveAudioManager is rendered
+    const managerElement = document.querySelector('[data-live-audio-manager]')
+    if (managerElement && (managerElement as any).__toggleRecording) {
+      (managerElement as any).__toggleRecording()
+    }
+  }
+
+  // Get live audio state from DOM for conditional rendering
+  const getLiveAudioState = () => {
+    if (!enableLiveAudio) return { isRecording: false, isProcessing: false }
+    
+    const managerElement = document.querySelector('[data-live-audio-manager]')
+    if (managerElement) {
+      return {
+        isRecording: (managerElement as any).__isRecording || false,
+        isProcessing: (managerElement as any).__isProcessing || false,
+      }
+    }
+    return { isRecording: false, isProcessing: false }
+  }
+
+  const [liveAudioState, setLiveAudioState] = useState({ isRecording: false, isProcessing: false })
+
+  // Poll for live audio state changes when enabled
+  useEffect(() => {
+    if (!enableLiveAudio) return
+    
+    const interval = setInterval(() => {
+      const newState = getLiveAudioState()
+      setLiveAudioState(prev => {
+        if (prev.isRecording !== newState.isRecording || prev.isProcessing !== newState.isProcessing) {
+          return newState
+        }
+        return prev
+      })
+    }, 100)
+    
+    return () => clearInterval(interval)
+  }, [enableLiveAudio])
+
+  const { isRecording, isProcessing } = liveAudioState
+
   return (
     <>
       {isDragging && (
         <AttachmentDropzone isDragging={isDragging} accept={accept} />
       )}
+      
+      {/* Live Audio Manager handles recording indicator and modal - only when enabled */}
+      {enableLiveAudio && (
+        <LiveAudioManager
+          sessionId={sessionId}
+          onStreamingMessage={onStreamingMessage}
+          isSubmitting={isSubmitting}
+        />
+      )}
+      
       <div className="relative z-[51] bg-accent w-full">
         <Form {...form}>
           <form
@@ -363,6 +424,33 @@ export const MessageInput = ({
               >
                 <PaperclipIcon className="w-4 h-4" />
               </Button>
+              {enableLiveAudio && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className={cn(
+                    'h-8 w-8',
+                    isRecording && 'text-red-500 animate-pulse',
+                    isProcessing && 'text-blue-500'
+                  )}
+                  onClick={handleRecordToggle}
+                  disabled={isSubmitting || isProcessing}
+                  title={
+                    isRecording
+                      ? 'Stop live recording' 
+                      : isProcessing 
+                      ? 'Processing audio...' 
+                      : 'Start live recording'
+                  }
+                >
+                  {isRecording ? (
+                    <SquareIcon className="w-4 h-4 fill-current" />
+                  ) : (
+                    <MicIcon className={cn('w-4 h-4', isProcessing && 'animate-spin')} />
+                  )}
+                </Button>
+              )}
               <div className="flex-1 relative">
                 <FormField
                   control={form.control}

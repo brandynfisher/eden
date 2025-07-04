@@ -11,8 +11,13 @@
       "Bash(npm run typecheck:*)",
       "Bash(yarn run:*)",
       "Bash(yarn lint)",
-      "Bash(yarn dev)"
+      "Bash(yarn dev)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(npm run:*)"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": false
 }

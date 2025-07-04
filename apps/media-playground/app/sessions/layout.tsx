@@ -19,6 +19,7 @@ import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { FC, PropsWithChildren, useEffect, useState } from 'react'
+import { LiveAudioProvider } from '@/features/sessions/live-audio'
 
 const LeftBarSheet: FC<{
   onItemClick?: () => void
@@ -70,7 +71,8 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
   }, [isSignedIn, user, router])
 
   return (
-    <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
+    <LiveAudioProvider>
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
       {/* MOBILE-ONLY HEADER */}
       <div className="bg-accent border-b px-2 py-2 md:hidden flex items-center justify-between">
         <LeftBarSheet onItemClick={() => {}} />
@@ -120,6 +122,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
-    </div>
+      </div>
+    </LiveAudioProvider>
   )
 }

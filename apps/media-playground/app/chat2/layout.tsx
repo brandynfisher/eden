@@ -18,6 +18,7 @@ import AgentCreationsView from '@/features/chat/components/views/agent-creations
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
+import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
