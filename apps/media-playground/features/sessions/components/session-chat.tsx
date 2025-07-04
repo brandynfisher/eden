@@ -381,6 +381,13 @@ const SessionChat: FC = () => {
       if (!user || !agent) return
       clearErrors()
 
+      // If we have a sessionId (real or optimistic), use it directly
+      if (sessionId) {
+        sendStreamingMessage(content, attachments)
+        setTimeout(scrollToBottom, 100)
+        return
+      }
+
       if (!sessionId && !optimisticSessionId) {
         const tempSessionId = `temp-${Date.now()}-${Math.random()
           .toString(36)

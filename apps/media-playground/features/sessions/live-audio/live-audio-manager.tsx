@@ -7,7 +7,8 @@ import { LiveRecordingIndicator } from './live-recording-indicator'
 
 type LiveAudioManagerProps = {
   sessionId: string
-  onStreamingMessage?: (content: string, attachments?: string[], options?: { skipSessionCreation?: boolean }) => void
+  onStreamingMessage?: (content: string, attachments?: string[]) => void
+  onTranscriptionMessage?: (content: string) => void
   isSubmitting?: boolean
 }
 
@@ -16,6 +17,29 @@ export const LiveAudioManager = ({
   onStreamingMessage, 
   isSubmitting: _isSubmitting 
 }: LiveAudioManagerProps) => {
+  // Simple function to add transcription messages as regular user messages
+  const addTranscriptionMessage = async (content: string) => {
+    if (!sessionId || sessionId === 'new') return
+    
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          content: content,
+        }),
+      })
+      
+      if (!response.ok) {
+        console.error('🎤 [LIVE-AUDIO-MANAGER] Failed to add transcription message:', response.statusText)
+      }
+    } catch (error) {
+      console.error('🎤 [LIVE-AUDIO-MANAGER] Error adding transcription message:', error)
+    }
+  }
   const { state, startLiveAudio, stopLiveAudio } = useLiveAudio()
   const [showModal, setShowModal] = useState(false)
   const [pendingSettings, setPendingSettings] = useState<LiveAudioSettings | null>(null)
@@ -79,7 +103,7 @@ Await the next conversation transcription segment before acting.`
         const transcriptionMessage = `Live conversation segment transcription ${timestamp}: ${transcription}
 
 React to the ongoing conversation based on your instructions`
-        onStreamingMessage(transcriptionMessage, undefined, { skipSessionCreation: true })
+        addTranscriptionMessage(transcriptionMessage)
       }
     })
 
@@ -92,7 +116,7 @@ React to the ongoing conversation based on your instructions`
         sessionStorage.removeItem('pendingLiveAudioSettings')
       }
     }
-  }, [startLiveAudio, onStreamingMessage])
+  }, [startLiveAudio, addTranscriptionMessage])
 
   // Effect to start recording when session is created
   // This runs when sessionId changes from 'new' to an actual ID
@@ -150,14 +174,14 @@ React to the ongoing conversation based on your instructions`
     }
     
     // Send final message
-    if (onStreamingMessage && state.currentSettings) {
+    if (state.currentSettings) {
       console.log('🎤 [LIVE-AUDIO-MANAGER] Sending final system message')
       const finalMessage = `Live conversation mode was terminated by the user.
 
 Please await further instructions.`
-      onStreamingMessage(finalMessage)
+      addTranscriptionMessage(finalMessage)
     }
-  }, [stopLiveAudio, onStreamingMessage, state.currentSettings])
+  }, [stopLiveAudio, state.currentSettings, addTranscriptionMessage])
 
   const handleToggleRecording = useCallback(() => {
     console.log('🎤 [LIVE-AUDIO-MANAGER] handleToggleRecording called, isRecording:', state.isRecording)

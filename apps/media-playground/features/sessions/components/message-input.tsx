@@ -31,7 +31,7 @@ const formSchema = z.object({
 
 type MessageInputProps = {
   sessionId: string
-  onStreamingMessage?: (content: string, attachments?: string[], options?: { skipSessionCreation?: boolean }) => void
+  onStreamingMessage?: (content: string, attachments?: string[]) => void
   onCancel?: () => void
   isStreaming?: boolean
   enableLiveAudio?: boolean
