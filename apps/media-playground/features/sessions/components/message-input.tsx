@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/custom/autoresize-textarea'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
@@ -412,43 +413,54 @@ export const MessageInput = ({
                 className="hidden"
                 multiple
               />
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isSubmitting}
-              >
-                <PaperclipIcon className="w-4 h-4" />
-              </Button>
-              {enableLiveAudio && (
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className={cn(
-                    'h-8 w-8',
-                    isRecording && 'text-red-500 animate-pulse',
-                    isProcessing && 'text-blue-500'
+              <TooltipProvider>
+                <div className="flex flex-col gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isSubmitting}
+                      >
+                        <PaperclipIcon className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add attachments</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  {enableLiveAudio && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className={cn(
+                            'h-8 w-8',
+                            isRecording && 'text-red-500 animate-pulse',
+                            isProcessing && 'text-blue-500'
+                          )}
+                          onClick={handleRecordToggle}
+                          disabled={isSubmitting || isProcessing}
+                        >
+                          {isRecording ? (
+                            <SquareIcon className="w-4 h-4 fill-current" />
+                          ) : (
+                            <MicIcon className={cn('w-4 h-4', isProcessing && 'animate-spin')} />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Start audio session</p>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
-                  onClick={handleRecordToggle}
-                  disabled={isSubmitting || isProcessing}
-                  title={
-                    isRecording
-                      ? 'Stop live recording' 
-                      : isProcessing 
-                      ? 'Processing audio...' 
-                      : 'Start live recording'
-                  }
-                >
-                  {isRecording ? (
-                    <SquareIcon className="w-4 h-4 fill-current" />
-                  ) : (
-                    <MicIcon className={cn('w-4 h-4', isProcessing && 'animate-spin')} />
-                  )}
-                </Button>
-              )}
+                </div>
+              </TooltipProvider>
               <div className="flex-1 relative">
                 <FormField
                   control={form.control}

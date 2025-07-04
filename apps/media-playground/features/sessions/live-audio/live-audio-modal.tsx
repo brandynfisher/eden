@@ -68,10 +68,13 @@ export const LiveAudioModal = ({
   initialData,
 }: LiveAudioModalProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema),  
     defaultValues: {
-      liveInstructions: initialData?.liveInstructions || 'Tell me a joke based on the ongoing conversation.',
-      actionInterval: initialData?.actionInterval || 10,
+      liveInstructions: initialData?.liveInstructions || 
+        "Listen to the ongoing conversation and based on your persona, decide how to act. " +
+        "Remember that making images and videos can take a while and so typically, you just " +
+        "respond with ideas / suggestions / ...",
+      actionInterval: initialData?.actionInterval || 15,
     },
   })
 
@@ -86,10 +89,7 @@ export const LiveAudioModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[80vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Live Audio Settings</DialogTitle>
-          <DialogDescription>
-            Configure your live audio session settings. These will be saved for future sessions with this agent.
-          </DialogDescription>
+          <DialogTitle>Live Audio SessionSettings</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
