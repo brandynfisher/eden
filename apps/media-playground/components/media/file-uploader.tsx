@@ -336,6 +336,7 @@ const FileUploader = ({
             const heightRatio = MAX_IMAGE_HEIGHT / displayHeight
 
             scaleRatio = Math.min(pixelRatio, widthRatio, heightRatio)
+          }
 
           // Apply scaling to display dimensions
           if (needsResize) {
