@@ -5,7 +5,14 @@ import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertic
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ReactElement, cloneElement, useEffect, useMemo, useState } from 'react'
+import {
+  ReactElement,
+  cloneElement,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 export type FilterMenuProps = {
   initialFilter?: FeedCursorRouteQueryParams['filter']
@@ -43,6 +50,8 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   const initialTab = searchParams.get('tab') || defaultTabName
   const [activeTab, setActiveTab] = useState(initialTab)
   const [search, setSearch] = useState('')
+  const [isTabChanging, setIsTabChanging] = useState(false)
+  const tabChangeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [tabCaches, setTabCaches] = useState<{
     [key: string]: {
@@ -63,6 +72,14 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   })
 
   const handleTabChange = (value: string) => {
+    // Clear any existing timeout
+    if (tabChangeTimeoutRef.current) {
+      clearTimeout(tabChangeTimeoutRef.current)
+    }
+
+    // Show loading state during tab transition
+    setIsTabChanging(true)
+
     setActiveTab(value)
     if (search) {
       setSearch('')
@@ -79,6 +96,11 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
 
     // Update router URL for tab change without triggering content rerender yet
     router.push(`${pathname}${value === defaultTabName ? '' : `?tab=${value}`}`)
+
+    // Hide loading state after brief delay to prevent flicker
+    tabChangeTimeoutRef.current = setTimeout(() => {
+      setIsTabChanging(false)
+    }, 150)
   }
 
   const handleGlobalFilterChange = (
@@ -168,6 +190,15 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     setActiveTab(initialTab)
   }, [initialTab])
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tabChangeTimeoutRef.current) {
+        clearTimeout(tabChangeTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const activeRouterTab = useMemo(() => {
     return tabs.find(tab => tab.key === activeTab)
   }, [tabs, activeTab])
@@ -192,7 +223,8 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
           {activeRouterTab?.filterMenu ? (
             <activeRouterTab.filterMenu
               initialFilter={
-                activeRouterTab.initialFilter || tabCaches[activeTab]?.filterQuery
+                activeRouterTab.initialFilter ||
+                tabCaches[activeTab]?.filterQuery
               }
               onChange={handleTabFilterChange}
             />
@@ -228,12 +260,12 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
           value={tab.key}
           className="!ring-0 !ring-offset-0"
         >
-          {tabCaches[tab.key] ? (
-            // Render cached content if available
-            tabCaches[tab.key].content
-          ) : (
-            // Show loading indicator until the content is properly cached
+          {isTabChanging || !tabCaches[tab.key] ? (
+            // Show loading indicator during tab transitions or until content is cached
             <MasonrySkeleton />
+          ) : (
+            // Render cached content if available and not transitioning
+            tabCaches[tab.key].content
           )}
         </TabsContent>
       ))}

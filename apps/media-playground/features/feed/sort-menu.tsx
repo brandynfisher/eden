@@ -7,12 +7,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import {
-  ArrowDownUpIcon,
-  ClockArrowDown,
-  HeartIcon,
-  StarIcon,
-} from 'lucide-react'
+import { ArrowDownUpIcon, ClockArrowDown } from 'lucide-react'
 import { useState } from 'react'
 
 const sortOptions = [
@@ -22,8 +17,8 @@ const sortOptions = [
 
 // Add new sort options specifically for agents
 const agentSortOptions = [
-  { label: 'Top', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
+  //{ label: 'Top', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
 ]
 
 // Add new sort options for users
@@ -33,13 +28,13 @@ const userSortOptions = [
 
 // Add new sort options for creations
 const creationSortOptions = [
-  { label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
+  //{ label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
 ]
 
 const modelSortOptions = [
-  { label: 'Top', value: 'creationCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
+  //{ label: 'Top', value: 'creationCount;-1', icon: <StarIcon /> },
 ]
 
 // Update the variant type to include 'user' and 'creation'
@@ -75,7 +70,7 @@ export const SortMenu = ({
         : variant === 'creation'
         ? 'likeCount;-1'
         : variant === 'model'
-        ? 'creationCount;-1'
+        ? 'createdAt;-1'
         : 'createdAt;-1'),
   )
 

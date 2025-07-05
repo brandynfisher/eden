@@ -29,7 +29,6 @@ import {
   CreditCardIcon,
   ImageIcon,
   LogOutIcon,
-  MessageCircleWarningIcon,
   SettingsIcon,
   TicketIcon,
 } from 'lucide-react'
@@ -95,10 +94,6 @@ const AccountDropdown = () => {
       unsubscribe && unsubscribe()
     }
   }, [feedback])
-
-  const handleFeedbackClick = () => {
-    setDropdownOpen(false)
-  }
 
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -231,17 +226,6 @@ const AccountDropdown = () => {
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <div
-            ref={feedbackButtonRef}
-            className="flex items-center w-full"
-            onClick={handleFeedbackClick}
-            data-test-id="sentry-feedback-trigger-anchor"
-          >
-            <MessageCircleWarningIcon className="mr-2 h-4 w-4" />
-            <span>Feedback</span>
-          </div>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={logout}>
           <LogOutIcon className="mr-2 h-4 w-4" />

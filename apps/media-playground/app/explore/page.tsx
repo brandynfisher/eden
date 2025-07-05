@@ -40,9 +40,9 @@ const ExplorePage = () => {
     collection: env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
   })
   const [modelsFilter] = useState({})
-  const [creationsSort, setCreationsSort] = useState('likeCount;-1')
-  const [modelsSort, setModelsSort] = useState('creationCount;-1')
-  const [agentsSort, setAgentsSort] = useState('stats.userMessageCount;-1')
+  const [creationsSort, setCreationsSort] = useState('createdAt;-1')
+  const [modelsSort, setModelsSort] = useState('createdAt;-1')
+  const [agentsSort, setAgentsSort] = useState('createdAt;-1')
 
   // Sync state with URL parameters when they change
   useEffect(() => {
@@ -50,7 +50,6 @@ const ExplorePage = () => {
     const urlCreatorType =
       (searchParams.get('creator') as CreatorType) || 'public'
 
-    // ***debug*** Don't redirect if we're in a modal intercept state
     // Check if current pathname suggests we're in a modal
     const isModalState =
       pathname.startsWith('/creations/') ||
@@ -76,7 +75,8 @@ const ExplorePage = () => {
   // Query builders for each content type
   const creationsQuery = useMemo(
     () => ({
-      ...creationsFilter,
+      // Only apply collection filter for public creations, not for user's own creations
+      ...(creatorType === 'public' ? creationsFilter : {}),
       ...(creatorType === 'user' && user?._id ? { user: user._id } : {}),
       ...(searchQuery ? { search: searchQuery } : {}),
       sort: creationsSort,

@@ -371,21 +371,23 @@ const MainLeft = ({
             <>
               {sessions
                 .filter(
-                  (
-                    session,
-                  ): session is NonNullable<typeof session> & {
-                    title: string
-                  } =>
+                  (session): session is NonNullable<typeof session> =>
                     session != null &&
-                    session.title != null &&
-                    session.title !== '' &&
-                    session.title !== 'Untitled',
+                    // Include sessions with valid titles
+                    ((session.title != null &&
+                      session.title !== '' &&
+                      session.title !== 'Untitled') ||
+                      // Include trigger sessions even without titles
+                      !!session.trigger),
                 )
                 .map(session => (
                   <SessionListItem
                     key={session._id}
                     id={session._id}
-                    title={session.title}
+                    title={
+                      session.title ||
+                      (session.trigger ? 'Task Session' : 'Untitled')
+                    }
                     isActive={session._id === currentSessionId}
                     isFromTrigger={!!session.trigger}
                     onItemClick={() => {
@@ -428,7 +430,6 @@ export const SessionsSidebarContent = ({
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
-  
 }) => {
   return (
     <>
