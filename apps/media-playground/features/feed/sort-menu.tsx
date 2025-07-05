@@ -7,12 +7,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import {
-  ArrowDownUpIcon,
-  ClockArrowDown,
-  HeartIcon,
-  StarIcon,
-} from 'lucide-react'
+import { ArrowDownUpIcon, ClockArrowDown } from 'lucide-react'
 import { useState } from 'react'
 
 const sortOptions = [
