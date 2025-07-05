@@ -3,6 +3,7 @@
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
+import SingleAgentSelectorModal from '@/features/chat/components/single-agent-selector-modal'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { ErrorDisplay } from '@/features/sessions/components/error-display'
 import { MessageInput } from '@/features/sessions/components/message-input'
@@ -45,6 +46,8 @@ const SessionChat: FC = () => {
   } | null>(null)
   const streamingMessageIdRef = useRef<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
 
   // Add state to control when to redirect
   const [pendingRedirect, setPendingRedirect] = useState<{
@@ -453,6 +456,22 @@ const SessionChat: FC = () => {
     [filteredMessages],
   )
 
+  const handleAgentSelect = (selectedAgent: {
+    _id: string
+    username: string
+    name: string
+    userImage?: string
+  }) => {
+    // If selecting the same agent we're already on, just close the modal
+    if (session?.agents?.[0]?.username === selectedAgent.username) {
+      setIsAgentSelectorOpen(false)
+      return
+    }
+
+    router.push(`/chat2/${selectedAgent.username}`)
+    // Don't close modal immediately - it will close when navigation completes
+  }
+
   if (!isMounted) {
     return null
   }
@@ -544,6 +563,7 @@ const SessionChat: FC = () => {
             agent={agent as Agent}
             onSendMessage={handleSendMessage}
             isLoading={isStreamingTokens}
+            onAgentSelectorOpen={() => setIsAgentSelectorOpen(true)}
           />
         ) : (
           // Show messages once we have session content
@@ -621,6 +641,11 @@ const SessionChat: FC = () => {
           />
         </div>
       )}
+      <SingleAgentSelectorModal
+        open={isAgentSelectorOpen}
+        onOpenChange={setIsAgentSelectorOpen}
+        onSelect={handleAgentSelect}
+      />
     </main>
   )
 }
