@@ -309,7 +309,7 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
           <Button size="sm" variant="ghost" asChild>
             <Link
               key={`agent-details-${agent?.username}`}
-              href={`/agents/${agent?.username}`}
+              href={`/chat/${agent?.username}`}
               className="flex bg-muted-foreground/10 shrink-0 items-center text-xs text-accent-foreground hover:text-muted-foreground"
             >
               <ExternalLinkIcon className="w-4 h-4" />

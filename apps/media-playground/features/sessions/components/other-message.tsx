@@ -126,7 +126,7 @@ export const OtherMessage = ({
         <div className="text-muted-foreground text-sm md:hidden">
           {shouldMakeClickable ? (
             <Link
-              href={`/agents/${message.sender.username}`}
+              href={`/chat/${message.sender.username}`}
               className="hover:underline"
             >
               {message.sender?.username}
