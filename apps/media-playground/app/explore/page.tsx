@@ -50,7 +50,6 @@ const ExplorePage = () => {
     const urlCreatorType =
       (searchParams.get('creator') as CreatorType) || 'public'
 
-    // ***debug*** Don't redirect if we're in a modal intercept state
     // Check if current pathname suggests we're in a modal
     const isModalState =
       pathname.startsWith('/creations/') ||
