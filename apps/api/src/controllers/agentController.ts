@@ -970,3 +970,108 @@ export const unlikeAgent = async (
     })
   }
 }
+
+export const getAllUserTriggers = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+
+  try {
+    // Get all user's agents
+    const agents = await Agent.find({
+      owner: currentUserId,
+      deleted: false,
+    }).select('_id name username userImage')
+
+    const agentIds = agents.map(agent => agent._id)
+
+    if (agentIds.length === 0) {
+      return reply.status(200).send({
+        triggers: [],
+      })
+    }
+
+    // Get all triggers for user's agents
+    const triggers = await Trigger.find({
+      agent: { $in: agentIds },
+      $or: [{ deleted: { $exists: false } }, { deleted: false }],
+    }).populate({
+      path: 'agent',
+      select: '_id name username userImage',
+      model: Agent,
+    })
+
+    // Force cloudfront URLs for agent images
+    triggers.forEach(trigger => {
+      if (trigger.agent && trigger.agent.userImage) {
+        trigger.agent.userImage = forceCloudfrontUrl(
+          server,
+          trigger.agent.userImage,
+        )
+      }
+    })
+
+    return reply.status(200).send({
+      triggers,
+    })
+  } catch (error) {
+    console.error('Error getting user triggers:', error)
+    return reply.status(500).send({
+      error: 'Failed to get user triggers',
+    })
+  }
+}
+
+export const getAllUserDeployments = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+
+  try {
+    // Get all user's agents
+    const agents = await Agent.find({
+      owner: currentUserId,
+      deleted: false,
+    }).select('_id name username userImage')
+
+    const agentIds = agents.map(agent => agent._id)
+
+    if (agentIds.length === 0) {
+      return reply.status(200).send({
+        deployments: [],
+      })
+    }
+
+    // Get all deployments for user's agents
+    const deployments = await Deployment.find({
+      agent: { $in: agentIds },
+    }).populate({
+      path: 'agent',
+      select: '_id name username userImage',
+      model: Agent,
+    })
+
+    // Force cloudfront URLs for agent images
+    deployments.forEach(deployment => {
+      if (deployment.agent && deployment.agent.userImage) {
+        deployment.agent.userImage = forceCloudfrontUrl(
+          server,
+          deployment.agent.userImage,
+        )
+      }
+    })
+
+    return reply.status(200).send({
+      deployments,
+    })
+  } catch (error) {
+    console.error('Error getting user deployments:', error)
+    return reply.status(500).send({
+      error: 'Failed to get user deployments',
+    })
+  }
+}

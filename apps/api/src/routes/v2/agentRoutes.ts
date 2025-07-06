@@ -8,6 +8,8 @@ import {
   getAgent,
   getAgentDeployments,
   getAgentTriggers,
+  getAllUserDeployments,
+  getAllUserTriggers,
   likeAgent,
   unlikeAgent,
   updateAgent,
@@ -314,6 +316,44 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => unlikeAgent(server, request, reply),
+  })
+
+  server.get('/v2/agents/triggers', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get all triggers for user agents',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      response: {
+        200: {
+          triggers: Type.Array(Type.Any()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAllUserTriggers(server, request, reply),
+  })
+
+  server.get('/v2/agents/deployments', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get all deployments for user agents',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      response: {
+        200: {
+          deployments: Type.Array(Type.Any()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAllUserDeployments(server, request, reply),
   })
 }
 

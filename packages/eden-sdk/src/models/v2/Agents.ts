@@ -267,6 +267,10 @@ export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
   triggerId: string
 }
 
+export interface AgentsGetAllTriggersArguments extends WebAPICallOptions {}
+
+export interface AgentsGetAllDeploymentsArguments extends WebAPICallOptions {}
+
 export interface AgentsLikeArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -403,6 +407,26 @@ export const agentsDeleteTriggerRequestConfig = (
   }
 }
 
+export const agentsGetAllTriggersRequestConfig = (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _args: AgentsGetAllTriggersArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'v2/agents/triggers',
+  }
+}
+
+export const agentsGetAllDeploymentsRequestConfig = (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _args: AgentsGetAllDeploymentsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'v2/agents/deployments',
+  }
+}
+
 export const agentsLikeRequestConfig = (
   args: AgentsLikeArguments,
 ): AxiosRequestConfig => {
@@ -485,6 +509,24 @@ export type AgentsUpdateTriggerResponse = WebAPICallResult & {
 
 export type AgentsDeleteTriggerResponse = WebAPICallResult & {
   success: boolean
+  error?: string
+}
+
+export type AgentsGetAllTriggersResponse = WebAPICallResult & {
+  triggers: Array<
+    Trigger & {
+      agent: { _id: string; name: string; username: string; userImage?: string }
+    }
+  >
+  error?: string
+}
+
+export type AgentsGetAllDeploymentsResponse = WebAPICallResult & {
+  deployments: Array<
+    Deployment & {
+      agent: { _id: string; name: string; username: string; userImage?: string }
+    }
+  >
   error?: string
 }
 

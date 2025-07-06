@@ -17,6 +17,10 @@ import {
   AgentsCreateResponse,
   AgentsDeleteArguments,
   AgentsDeleteResponse,
+  AgentsGetAllDeploymentsArguments,
+  AgentsGetAllDeploymentsResponse,
+  AgentsGetAllTriggersArguments,
+  AgentsGetAllTriggersResponse,
   AgentsUpdateArguments,
   AgentsUpdateResponse,
   ApiKeysCreateArguments,
@@ -143,6 +147,8 @@ import {
   agentGetRequestConfig,
   agentsCreateRequestConfig,
   agentsDeleteRequestConfig,
+  agentsGetAllDeploymentsRequestConfig,
+  agentsGetAllTriggersRequestConfig,
   agentsUpdateRequestConfig,
   apiKeysCreateRequestConfig,
   apiKeysDeleteRequestConfig,
@@ -675,6 +681,10 @@ export abstract class Methods {
         AgentsGetTriggersArguments,
         AgentsGetTriggersResponse
       >(this, agentsGetTriggersRequestConfig),
+      getAllUser: bindApiCall<
+        AgentsGetAllTriggersArguments,
+        AgentsGetAllTriggersResponse
+      >(this, agentsGetAllTriggersRequestConfig),
       create: bindApiCall<
         AgentsCreateTriggerArguments,
         AgentsCreateTriggerResponse
@@ -687,6 +697,12 @@ export abstract class Methods {
         AgentsDeleteTriggerArguments,
         AgentsDeleteTriggerResponse
       >(this, agentsDeleteTriggerRequestConfig),
+    },
+    deployments: {
+      getAllUser: bindApiCall<
+        AgentsGetAllDeploymentsArguments,
+        AgentsGetAllDeploymentsResponse
+      >(this, agentsGetAllDeploymentsRequestConfig),
     },
   }
 
