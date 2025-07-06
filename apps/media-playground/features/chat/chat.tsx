@@ -57,7 +57,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -442,6 +442,7 @@ type Props = {
 const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
   //const dispatch = useAppDispatch()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isMounted, setIsMounted] = useState(false)
   const { user } = useAuthState()
 
@@ -490,14 +491,38 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
+
+  // Get initial view mode from URL tab parameter, defaultTab prop, or default to 'chat'
+  const getInitialViewMode = () => {
+    const tabFromUrl = searchParams.get('tab')
+    if (
+      tabFromUrl &&
+      ['chat', 'creations', 'tasks', 'settings'].includes(tabFromUrl)
+    ) {
+      return tabFromUrl as 'chat' | 'creations' | 'tasks' | 'settings'
+    }
+    return defaultTab || 'chat'
+  }
+
   const [viewMode, setViewMode] = useState<
     'chat' | 'creations' | 'tasks' | 'settings'
-  >(defaultTab || 'chat')
+  >(getInitialViewMode())
 
   const isOwner = useMemo(() => {
     const ownershipStatus = user?._id === agent?.owner._id
     return ownershipStatus
   }, [user, agent])
+
+  // Update view mode when URL tab parameter changes
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab')
+    if (
+      tabFromUrl &&
+      ['chat', 'creations', 'tasks', 'settings'].includes(tabFromUrl)
+    ) {
+      setViewMode(tabFromUrl as 'chat' | 'creations' | 'tasks' | 'settings')
+    }
+  }, [searchParams])
 
   // Redirect non-owners away from owner-only views
   useEffect(() => {

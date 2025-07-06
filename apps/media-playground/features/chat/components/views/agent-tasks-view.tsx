@@ -17,15 +17,15 @@ import {
   ChevronDownIcon,
   ClockIcon,
   EditIcon,
-  ExternalLinkIcon,
+  Eye,
   Loader2,
   PlusIcon,
   TrashIcon,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { FC, useMemo, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 
 const TaskItem: FC<{
   trigger: Trigger
@@ -72,7 +72,7 @@ const TaskItem: FC<{
             className="h-8 w-8 p-0"
             title="View session where results are routed"
           >
-            <ExternalLinkIcon className="h-4 w-4" />
+            <Eye className="h-4 w-4" />
           </Button>
         )}
         <Button

@@ -38,6 +38,7 @@ import {
   WrenchIcon,
   XIcon,
 } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
 import * as React from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -279,7 +280,21 @@ const AgentEditView: FC<{
   user: unknown
 }> = ({ agent }) => {
   const { user } = useAuthState()
-  const [activeTab, setActiveTab] = useState('profile')
+  const searchParams = useSearchParams()
+
+  // Get initial active tab from URL parameter or default to 'profile'
+  const getInitialActiveTab = () => {
+    const tabFromUrl = searchParams.get('tab')
+    if (
+      tabFromUrl &&
+      ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
+    ) {
+      return tabFromUrl
+    }
+    return 'profile'
+  }
+
+  const [activeTab, setActiveTab] = useState(getInitialActiveTab())
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   // Fetch deployments for the deployments tab
@@ -312,6 +327,17 @@ const AgentEditView: FC<{
     control: form.control,
     name: 'models',
   })
+
+  // Update active tab when URL search parameters change
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab')
+    if (
+      tabFromUrl &&
+      ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
+    ) {
+      setActiveTab(tabFromUrl)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (agent) {

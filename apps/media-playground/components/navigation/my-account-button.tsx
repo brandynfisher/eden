@@ -23,8 +23,10 @@ import { SubscriptionTier } from '@edenlabs/eden-sdk'
 import * as Sentry from '@sentry/nextjs'
 import { feedbackIntegration } from '@sentry/nextjs'
 import {
+  ActivityIcon,
   BookmarkIcon,
   BotIcon,
+  ClockIcon,
   ComponentIcon,
   CreditCardIcon,
   ImageIcon,
@@ -118,7 +120,7 @@ const AccountDropdown = () => {
         hidden={hasOpenDialog}
         onCloseAutoFocus={event => {
           if (focusRef.current) {
-            (focusRef.current as HTMLButtonElement).focus()
+            ;(focusRef.current as HTMLButtonElement).focus()
             focusRef.current = null
             event.preventDefault()
           }
@@ -198,6 +200,19 @@ const AccountDropdown = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/settings/tasks`}>
+            <ClockIcon className="mr-2 h-4 w-4" />
+            <span>Tasks</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href={`/settings/deployments`}>
+            <ActivityIcon className="mr-2 h-4 w-4" />
+            <span>Deployments</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/settings/subscription`}>
             <CreditCardIcon className="mr-2 h-4 w-4" />
             <span>Subscription</span>
@@ -225,7 +240,6 @@ const AccountDropdown = () => {
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={logout}>
           <LogOutIcon className="mr-2 h-4 w-4" />
