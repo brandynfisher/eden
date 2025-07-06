@@ -26,7 +26,7 @@ import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-qu
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn, isAgentOwner } from '@/lib/utils'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -281,6 +281,7 @@ const AgentEditView: FC<{
 }> = ({ agent }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   // Get initial active tab from URL parameter or default to 'profile'
   const getInitialActiveTab = () => {
@@ -440,7 +441,7 @@ const AgentEditView: FC<{
             <WrenchIcon className="w-4 h-4" />
             Tools
           </button>
-          {isAgentOwner(agent, user?._id) && (
+          {isAgentOwner(agent, user?._id) && isPreviewUser && (
             <button
               onClick={() => {
                 setActiveTab('deployments')
@@ -457,7 +458,7 @@ const AgentEditView: FC<{
               Deployments
             </button>
           )}
-          {isAgentOwner(agent, user?._id) && (
+          {isAgentOwner(agent, user?._id) && isPreviewUser && (
             <button
               onClick={() => {
                 setActiveTab('permissions')
@@ -936,7 +937,8 @@ const AgentEditView: FC<{
                     </div>
                   )}
                   {activeTab === 'deployments' &&
-                    isAgentOwner(agent, user?._id) && (
+                    isAgentOwner(agent, user?._id) &&
+                    isPreviewUser && (
                       <div className="space-y-6">
                         <div>
                           {deploymentsQuery.isPending && (
@@ -999,7 +1001,8 @@ const AgentEditView: FC<{
                       </div>
                     )}
                   {activeTab === 'permissions' &&
-                    isAgentOwner(agent, user?._id) && (
+                    isAgentOwner(agent, user?._id) &&
+                    isPreviewUser && (
                       <div className="space-y-6">
                         <div>
                           <h2 className="text-lg font-medium mb-4">

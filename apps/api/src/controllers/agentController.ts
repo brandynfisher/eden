@@ -993,15 +993,24 @@ export const getAllUserTriggers = async (
       })
     }
 
+    type TriggerWithAgent = typeof Trigger & {
+      agent: {
+        _id: string
+        name: string
+        username: string
+        userImage: string
+      }
+    }
+
     // Get all triggers for user's agents
-    const triggers = await Trigger.find({
+    const triggers = (await Trigger.find({
       agent: { $in: agentIds },
       $or: [{ deleted: { $exists: false } }, { deleted: false }],
     }).populate({
       path: 'agent',
       select: '_id name username userImage',
       model: Agent,
-    })
+    })) as TriggerWithAgent[]
 
     // Force cloudfront URLs for agent images
     triggers.forEach(trigger => {
@@ -1046,14 +1055,23 @@ export const getAllUserDeployments = async (
       })
     }
 
+    type DeploymentWithAgent = typeof Deployment & {
+      agent: {
+        _id: string
+        name: string
+        username: string
+        userImage: string
+      }
+    }
+
     // Get all deployments for user's agents
-    const deployments = await Deployment.find({
+    const deployments = (await Deployment.find({
       agent: { $in: agentIds },
     }).populate({
       path: 'agent',
       select: '_id name username userImage',
       model: Agent,
-    })
+    })) as DeploymentWithAgent[]
 
     // Force cloudfront URLs for agent images
     deployments.forEach(deployment => {

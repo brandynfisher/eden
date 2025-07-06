@@ -3,9 +3,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { canEditAgent, isAgentOwner } from '@/lib/utils'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
   ClockIcon,
@@ -35,6 +36,8 @@ export const AgentBar: FC<{
   onViewModeChange,
 }) => {
   const [isNarrow, setIsNarrow] = useState(false)
+  const { user } = useAuthState()
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   useEffect(() => {
     const checkWidth = () => {
@@ -124,7 +127,7 @@ export const AgentBar: FC<{
           <ImageIcon className="size-4" />
           {!isNarrow && <span>Creations</span>}
         </Button>
-        {isAgentOwner(agent, userId) && (
+        {isAgentOwner(agent, userId) && isPreviewUser && (
           <Button
             variant="outline"
             size="sm"
