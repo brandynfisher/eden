@@ -21,6 +21,7 @@ import AgentUsageStats from '@/features/agent/statistics/agent-usage-stats'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { canEditAgent } from '@/lib/utils'
 //import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -264,7 +265,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
               </div>
 
               <div className="flex flex-wrap gap-2 mt-auto">
-                {user?._id === agent?.owner._id && (
+                {canEditAgent(agent, user?._id) && (
                   <>
                     <Button className="gap-2" variant="outline" asChild>
                       <Link href={`/edit/${agent.username}`}>

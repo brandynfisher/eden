@@ -21,8 +21,6 @@ import { SessionsSidebarContent } from '@/features/sessions/components/sessions-
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
-import { useAppDispatch } from '@/stores/store'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
@@ -38,7 +36,6 @@ import React, {
 const SessionChatSidebarContent: FC<{
   agent: Agent | null | undefined
   isOwner: boolean
-  handleEditClick: () => void
   agentId: string
   currentSessionId?: string
   onItemClick?: () => void
@@ -61,7 +58,6 @@ const LeftBarSheet: FC<{
   onItemClick?: () => void
   agent: Agent | null | undefined
   isOwner: boolean
-  handleEditClick: () => void
   agentId: string
   currentSessionId?: string
   onSessionSelect: (sessionId: string) => void
@@ -70,7 +66,6 @@ const LeftBarSheet: FC<{
   onItemClick,
   agent,
   isOwner,
-  handleEditClick,
   agentId,
   currentSessionId,
   onSessionSelect,
@@ -103,7 +98,6 @@ const LeftBarSheet: FC<{
         <SessionChatSidebarContent
           agent={agent}
           isOwner={isOwner}
-          handleEditClick={handleEditClick}
           agentId={agentId}
           currentSessionId={currentSessionId}
           onSessionSelect={onSessionSelect}
@@ -128,7 +122,6 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
       router.push('/')
     }
   }, [isSignedIn, user, router])
-  const dispatch = useAppDispatch()
   const params = useParams()
   const agentId = params.agentId as string
   const sessionId = params.id as string
@@ -152,29 +145,9 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     }
   }, [])
 
-  const handleEditClick = () => {
-    dispatch(
-      updateAgentFormSheet({
-        isOpen: true,
-        mode: 'update',
-        agentId: agentId,
-        onAction: async () => {
-          await invalidateAgent()
-        },
-      }),
-    )
-  }
-
   const isOwner = useMemo(() => {
     return user?._id === agent?.owner._id
   }, [user, agent])
-
-  // Redirect non-owners away from owner-only views
-  useEffect(() => {
-    if (agent && user && !isOwner && viewMode === 'settings') {
-      setViewMode('chat')
-    }
-  }, [agent, user, isOwner, viewMode])
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
@@ -239,11 +212,13 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
       {/* AGENT BAR - Always visible */}
       <AgentBar
         agent={agent}
-        isOwner={isOwner}
+        userId={user?._id}
         onChatClick={handleChatClick}
         onAgentSelect={() => setIsAgentSelectorOpen(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        agentId={agentId}
+        onAgentInvalidate={invalidateAgent}
       />
 
       {/* AGENT SELECTOR MODAL */}
@@ -260,7 +235,6 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
             onItemClick={() => {}}
             agent={agent}
             isOwner={isOwner}
-            handleEditClick={handleEditClick}
             agentId={agentId}
             currentSessionId={sessionId}
             onSessionSelect={handleSessionSelect}
@@ -279,7 +253,6 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
           <SessionChatSidebarContent
             agent={agent}
             isOwner={isOwner}
-            handleEditClick={handleEditClick}
             agentId={agentId}
             currentSessionId={sessionId}
             onSessionSelect={handleSessionSelect}
@@ -325,7 +298,6 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
               <SessionChatSidebarContent
                 agent={agent}
                 isOwner={isOwner}
-                handleEditClick={handleEditClick}
                 agentId={agentId}
                 currentSessionId={sessionId}
                 onSessionSelect={handleSessionSelect}

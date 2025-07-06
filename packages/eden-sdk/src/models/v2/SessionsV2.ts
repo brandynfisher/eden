@@ -247,12 +247,25 @@ export type SessionStatus = 'active' | 'archived'
 export type SessionV2 = {
   _id: string
   owner: Creator
+  session_key?: string
+  channel?: string
+  parent_session?: string
   agents: Agent[]
   status: SessionStatus
-  title?: string
-  channel?: string
-  scenario?: string
   messages: Message[]
+  context?: {
+    memories?: string[]
+    memory_updated?: string
+  }
+  title?: string
+  scenario?: string
+  autonomy_settings?: {
+    auto_reply: boolean
+    reply_interval: number
+    actor_selection_method: 'random' | 'random_exclude_last'
+  }
+  last_actor_id?: string
+  last_memory_message_id?: string
   budget?: {
     token_budget?: number
     manna_budget?: number
@@ -261,13 +274,9 @@ export type SessionV2 = {
     manna_spent?: number
     turns_spent?: number
   }
-  autonomy_settings?: {
-    auto_reply: boolean
-    reply_interval: number
-    actor_selection_method: 'random' | 'random_exclude_last'
-  }
-  last_actor_id?: string
+  platform?: 'discord' | 'telegram' | 'twitter' | 'farcaster'
   trigger?: string
+  active_requests?: string[]
   createdAt: Date
   updatedAt: Date
 }
