@@ -50,7 +50,7 @@ export const OtherMessage = ({
       <div className="flex items-center md:items-start mr-1 gap-2">
         {shouldMakeClickable ? (
           <Link
-            href={`/agents/${message.sender.username}`}
+            href={`/chat/${message.sender.username}`}
             className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0 block relative"
             style={{ minWidth: '2rem', minHeight: '2rem' }}
           >
@@ -126,7 +126,7 @@ export const OtherMessage = ({
         <div className="text-muted-foreground text-sm md:hidden">
           {shouldMakeClickable ? (
             <Link
-              href={`/agents/${message.sender.username}`}
+              href={`/chat/${message.sender.username}`}
               className="hover:underline"
             >
               {message.sender?.username}

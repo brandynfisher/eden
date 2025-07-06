@@ -25,7 +25,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const SessionChat: FC = () => {
-  const { agentId } = useParams()
+  const agentId = useParams()?.agentId as string | undefined
   const router = useRouter()
   const queryClient = useQueryClient()
   const [isMounted, setIsMounted] = useState(false)

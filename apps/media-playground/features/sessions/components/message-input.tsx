@@ -318,6 +318,31 @@ export const MessageInput = ({
     }
   }
 
+  useEffect(() => {
+    const textarea = textareaRef.current?.textArea
+    if (!textarea) return
+
+    const handlePaste = async (e: ClipboardEvent) => {
+      if (!e.clipboardData) return
+      const items = Array.from(e.clipboardData.items)
+
+      const files = items
+        .filter(item => item.kind === 'file')
+        .map(item => item.getAsFile())
+        .filter((f): f is File => f !== null)
+
+      if (files.length > 0) {
+        e.preventDefault()
+        await handleFilesDropped(files)
+      }
+    }
+
+    textarea.addEventListener('paste', handlePaste)
+    return () => {
+      textarea.removeEventListener('paste', handlePaste)
+    }
+  }, [handleFilesDropped])
+
   return (
     <>
       {isDragging && (

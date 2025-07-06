@@ -81,7 +81,7 @@ const AgentActionsMenu = ({
       addToHistory(feedId)
     }
     setIsOpen(false)
-    router.push(`/agents/${agent.username}`)
+    router.push(`/chat/${agent.username}`)
   }
 
   //const onUpdate = async () => {
