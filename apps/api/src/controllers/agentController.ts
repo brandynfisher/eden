@@ -389,6 +389,12 @@ export const createAgentTrigger = async (
   } = request.body as AgentsCreateTriggerArguments
   const currentUserId = request.user.userId
 
+  if (!request.user.featureFlags.includes(FeatureFlag.Preview)) {
+    return reply.status(401).send({
+      error: 'You are not authorized to use this feature.',
+    })
+  }
+
   const agent = await Agent.findById(agentId)
 
   if (!agent) {
