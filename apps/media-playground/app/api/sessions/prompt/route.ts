@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
           budget: requestJson.budget,
           title: requestJson.title,
           autonomy_settings: requestJson.autonomy_settings,
-          // stream: true,
+          stream: true,
         }),
       },
     )
