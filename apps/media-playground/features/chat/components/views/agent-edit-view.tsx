@@ -20,7 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
-import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
+// import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -938,13 +938,13 @@ const AgentEditView: FC<{
                                     deployment.platform === 'discord',
                                 )}
                               />
-                              <TelegramDeploymentForm
+                              {/* <TelegramDeploymentForm
                                 agentId={agent._id}
                                 deployment={deploymentsQuery.deployments?.find(
                                   deployment =>
                                     deployment.platform === 'telegram',
                                 )}
-                              />
+                              /> */}
                               <TwitterDeploymentForm
                                 agentId={agent._id}
                                 deployment={deploymentsQuery.deployments?.find(
