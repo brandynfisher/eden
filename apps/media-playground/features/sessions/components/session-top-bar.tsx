@@ -42,7 +42,7 @@ export const SessionTopBar = ({
       {agents.map(agent => (
         <Link
           key={agent._id}
-          href={`/agents/${agent.username}`}
+          href={`/chat/${agent.username}`}
           className="flex items-center space-x-3 hover:bg-muted/50 rounded-lg p-2 transition-colors"
         >
           <Avatar className="h-10 w-10">

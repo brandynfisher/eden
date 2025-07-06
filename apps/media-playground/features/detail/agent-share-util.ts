@@ -10,7 +10,7 @@ export const handleShareClick = (
 ) => {
   evt.preventDefault()
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const shareUrl = `${baseUrl}/agents/${agent.username}`
+  const shareUrl = `${baseUrl}/chat/${agent.username}`
   dispatch(
     updateShareModal({
       isOpen: true,
