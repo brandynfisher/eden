@@ -26,7 +26,7 @@ import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-qu
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn, isAgentOwner } from '@/lib/utils'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -38,6 +38,7 @@ import {
   WrenchIcon,
   XIcon,
 } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
 import * as React from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -279,7 +280,22 @@ const AgentEditView: FC<{
   user: unknown
 }> = ({ agent }) => {
   const { user } = useAuthState()
-  const [activeTab, setActiveTab] = useState('profile')
+  const searchParams = useSearchParams()
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+
+  // Get initial active tab from URL parameter or default to 'profile'
+  const getInitialActiveTab = () => {
+    const tabFromUrl = searchParams.get('tab')
+    if (
+      tabFromUrl &&
+      ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
+    ) {
+      return tabFromUrl
+    }
+    return 'profile'
+  }
+
+  const [activeTab, setActiveTab] = useState(getInitialActiveTab())
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   // Fetch deployments for the deployments tab
@@ -312,6 +328,17 @@ const AgentEditView: FC<{
     control: form.control,
     name: 'models',
   })
+
+  // Update active tab when URL search parameters change
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab')
+    if (
+      tabFromUrl &&
+      ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
+    ) {
+      setActiveTab(tabFromUrl)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (agent) {
@@ -414,7 +441,7 @@ const AgentEditView: FC<{
             <WrenchIcon className="w-4 h-4" />
             Tools
           </button>
-          {isAgentOwner(agent, user?._id) && (
+          {isAgentOwner(agent, user?._id) && isPreviewUser && (
             <button
               onClick={() => {
                 setActiveTab('deployments')
@@ -431,7 +458,7 @@ const AgentEditView: FC<{
               Deployments
             </button>
           )}
-          {isAgentOwner(agent, user?._id) && (
+          {isAgentOwner(agent, user?._id) && isPreviewUser && (
             <button
               onClick={() => {
                 setActiveTab('permissions')
@@ -910,7 +937,8 @@ const AgentEditView: FC<{
                     </div>
                   )}
                   {activeTab === 'deployments' &&
-                    isAgentOwner(agent, user?._id) && (
+                    isAgentOwner(agent, user?._id) &&
+                    isPreviewUser && (
                       <div className="space-y-6">
                         <div>
                           {deploymentsQuery.isPending && (
@@ -973,7 +1001,8 @@ const AgentEditView: FC<{
                       </div>
                     )}
                   {activeTab === 'permissions' &&
-                    isAgentOwner(agent, user?._id) && (
+                    isAgentOwner(agent, user?._id) &&
+                    isPreviewUser && (
                       <div className="space-y-6">
                         <div>
                           <h2 className="text-lg font-medium mb-4">

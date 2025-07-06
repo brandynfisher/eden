@@ -19,12 +19,14 @@ import { siteConfig } from '@/lib/config'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
-import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import * as Sentry from '@sentry/nextjs'
 import { feedbackIntegration } from '@sentry/nextjs'
 import {
+  ActivityIcon,
   BookmarkIcon,
   BotIcon,
+  ClockIcon,
   ComponentIcon,
   CreditCardIcon,
   ImageIcon,
@@ -53,6 +55,8 @@ const AccountDropdown = () => {
     isAuthenticated: !!isSignedIn,
   })
   const { signOut } = useClerk()
+
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   const logout = async () => {
     if (isSignedIn) {
@@ -197,6 +201,23 @@ const AccountDropdown = () => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        {isPreviewUser && (
+          <>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link href={`/settings/tasks`}>
+                <ClockIcon className="mr-2 h-4 w-4" />
+                <span>Tasks</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link href={`/settings/deployments`}>
+                <ActivityIcon className="mr-2 h-4 w-4" />
+                <span>Deployments</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/settings/subscription`}>
             <CreditCardIcon className="mr-2 h-4 w-4" />
@@ -225,7 +246,6 @@ const AccountDropdown = () => {
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={logout}>
           <LogOutIcon className="mr-2 h-4 w-4" />
