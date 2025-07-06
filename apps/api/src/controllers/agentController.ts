@@ -442,7 +442,6 @@ export const createAgentTrigger = async (
 }
 
 export const updateAgentTrigger = async (
-  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
