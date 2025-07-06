@@ -1,12 +1,13 @@
 import { Agent, AgentDocument } from '../models/Agent'
 import { Deployment } from '../models/Deployment'
 import { Trigger } from '../models/Trigger'
+import { User } from '../models/User'
 import { LikeV2 } from '../models/v2/LikeV2'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
-import { createIdOrSlugQuery } from '../utils/mongoUtils'
+import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
 import {
   AgentGetArguments,
   AgentsCreateArguments,
@@ -57,6 +58,12 @@ export const getAgent = async (
           path: 'deployments',
           select: '_id platform',
           model: Deployment,
+        })
+      : Promise.resolve(),
+    isOwnAgent && agent.agent_extras?.permissions?.editors
+      ? agentRepository.model.populate(agent, {
+          path: 'agent_extras.permissions.editors',
+          select: '_id userId username userImage',
         })
       : Promise.resolve(),
   ])
@@ -178,6 +185,7 @@ export const updateAgent = async (
     public: isPublic,
     owner_pays,
     tools,
+    agent_extras,
   } = request.body as AgentsUpdateArguments
 
   if (models && models.length > 10) {
@@ -227,6 +235,44 @@ export const updateAgent = async (
       await verifyModelAccess(reply, model.lora, currentUserId.toString())
     }
     updateData.models = models
+  }
+
+  // Handle agent_extras (only owner can modify permissions)
+  if (agent_extras) {
+    if (agent_extras.permissions) {
+      // First check that the agent exists and user is the owner
+      const agentToUpdate = await Agent.findById(agentId)
+      if (!agentToUpdate) {
+        return reply.status(404).send({
+          error: 'Agent not found',
+        })
+      }
+
+      if (agentToUpdate.owner.toString() !== currentUserId.toString()) {
+        return reply.status(401).send({
+          error: 'Only the agent owner can modify permissions',
+        })
+      }
+
+      if (agent_extras.permissions.editors) {
+        // Validate and convert usernames to user IDs
+        const editorIds = []
+        for (const usernameOrId of agent_extras.permissions.editors) {
+          const query = createMultiFieldQuery(usernameOrId, [
+            'userId',
+            'username',
+          ])
+          const user = await User.findOne(query)
+          if (!user) {
+            return reply.status(404).send({
+              error: `User not found: ${usernameOrId}`,
+            })
+          }
+          editorIds.push(user._id)
+        }
+        updateData['agent_extras.permissions.editors'] = editorIds
+      }
+    }
   }
 
   if (!image || image === '') {
