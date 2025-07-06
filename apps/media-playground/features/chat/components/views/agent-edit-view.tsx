@@ -23,7 +23,9 @@ import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farca
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
-import { cn } from '@/lib/utils'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { cn, isAgentOwner } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -276,6 +278,7 @@ const AgentEditView: FC<{
   agent: Agent
   user: unknown
 }> = ({ agent }) => {
+  const { user } = useAuthState()
   const [activeTab, setActiveTab] = useState('profile')
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
@@ -290,7 +293,10 @@ const AgentEditView: FC<{
     defaultValues: {
       name: agent?.name || '',
       key: agent?.username || '',
-      image: agent?.userImage || '',
+      image:
+        agent?.userImage && agent.userImage.trim()
+          ? getCloudfrontOriginalUrl(agent.userImage)
+          : '',
       description: agent?.description || '',
       persona: agent?.persona || '',
       isPersonaPublic: agent?.isPersonaPublic || false,
@@ -298,7 +304,7 @@ const AgentEditView: FC<{
       greeting: agent?.greeting || '',
       voice: agent?.voice || '',
       models: agent?.models || [],
-      tools: agent?.tools || {},
+      tools: agent.tools || {},
     },
   })
 
@@ -312,7 +318,10 @@ const AgentEditView: FC<{
       form.reset({
         name: agent.name,
         key: agent.username,
-        image: agent.userImage,
+        image:
+          agent.userImage && agent.userImage.trim()
+            ? getCloudfrontOriginalUrl(agent.userImage)
+            : '',
         description: agent.description,
         persona: agent.persona,
         isPersonaPublic: agent.isPersonaPublic,
@@ -327,7 +336,22 @@ const AgentEditView: FC<{
 
   const handleSubmit = async (data: AgentFormDto) => {
     try {
-      await axios.patch(`/api/agents/${agent._id}`, data)
+      // Handle image field - convert back to filename if it's an existing image
+      let imageToSend = data.image
+      if (data.image && agent.userImage) {
+        // Check if the current image is the same as the original (existing image)
+        const originalImageUrl = getCloudfrontOriginalUrl(agent.userImage)
+        if (data.image === originalImageUrl) {
+          // This is the existing image, send just the filename
+          imageToSend = agent.userImage
+        }
+        // If it's a new URL (from upload), send the full URL
+      }
+
+      await axios.patch(`/api/agents/${agent._id}`, {
+        ...data,
+        image: imageToSend,
+      })
       toast.success('Agent updated successfully', {
         description: `"${data.name}" has been updated successfully`,
         richColors: true,
@@ -390,36 +414,40 @@ const AgentEditView: FC<{
             <WrenchIcon className="w-4 h-4" />
             Tools
           </button>
-          <button
-            onClick={() => {
-              setActiveTab('deployments')
-              setIsMobileSidebarOpen(false)
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              activeTab === 'deployments'
-                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-            )}
-          >
-            <SettingsIcon className="w-4 h-4" />
-            Deployments
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('permissions')
-              setIsMobileSidebarOpen(false)
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              activeTab === 'permissions'
-                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-            )}
-          >
-            <UserIcon className="w-4 h-4" />
-            Permissions
-          </button>
+          {isAgentOwner(agent, user?._id) && (
+            <button
+              onClick={() => {
+                setActiveTab('deployments')
+                setIsMobileSidebarOpen(false)
+              }}
+              className={cn(
+                'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                activeTab === 'deployments'
+                  ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+              )}
+            >
+              <SettingsIcon className="w-4 h-4" />
+              Deployments
+            </button>
+          )}
+          {isAgentOwner(agent, user?._id) && (
+            <button
+              onClick={() => {
+                setActiveTab('permissions')
+                setIsMobileSidebarOpen(false)
+              }}
+              className={cn(
+                'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                activeTab === 'permissions'
+                  ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+              )}
+            >
+              <UserIcon className="w-4 h-4" />
+              Permissions
+            </button>
+          )}
         </div>
       </div>
     </>
@@ -881,89 +909,93 @@ const AgentEditView: FC<{
                       </div>
                     </div>
                   )}
-                  {activeTab === 'deployments' && (
-                    <div className="space-y-6">
-                      <div>
-                        {deploymentsQuery.isPending && (
-                          <div className="flex items-center justify-center mt-10">
-                            <Loader2 className="size-4 animate-spin" />
-                          </div>
-                        )}
+                  {activeTab === 'deployments' &&
+                    isAgentOwner(agent, user?._id) && (
+                      <div className="space-y-6">
+                        <div>
+                          {deploymentsQuery.isPending && (
+                            <div className="flex items-center justify-center mt-10">
+                              <Loader2 className="size-4 animate-spin" />
+                            </div>
+                          )}
 
-                        {deploymentsQuery.isError && (
-                          <div className="flex items-center justify-center gap-2 mt-10">
-                            <AlertCircle className="size-4 text-destructive" />
-                            <p className="text-destructive">
-                              We were unable to fetch your deployments. Please
-                              try again later.
-                            </p>
-                          </div>
-                        )}
+                          {deploymentsQuery.isError && (
+                            <div className="flex items-center justify-center gap-2 mt-10">
+                              <AlertCircle className="size-4 text-destructive" />
+                              <p className="text-destructive">
+                                We were unable to fetch your deployments. Please
+                                try again later.
+                              </p>
+                            </div>
+                          )}
 
-                        {deploymentsQuery.isSuccess && (
-                          <div className="space-y-4">
-                            <DiscordDeploymentForm
-                              agentId={agent._id}
-                              deployment={deploymentsQuery.deployments?.find(
-                                deployment => deployment.platform === 'discord',
-                              )}
-                            />
-                            <TelegramDeploymentForm
-                              agentId={agent._id}
-                              deployment={deploymentsQuery.deployments?.find(
-                                deployment =>
-                                  deployment.platform === 'telegram',
-                              )}
-                            />
-                            <TwitterDeploymentForm
-                              agentId={agent._id}
-                              deployment={deploymentsQuery.deployments?.find(
-                                deployment => deployment.platform === 'twitter',
-                              )}
-                            />
-                            <FarcasterDeploymentForm
-                              agentId={agent._id}
-                              deployment={deploymentsQuery.deployments?.find(
-                                deployment =>
-                                  deployment.platform === 'farcaster',
-                              )}
-                            />
-                          </div>
-                        )}
+                          {deploymentsQuery.isSuccess && (
+                            <div className="space-y-4">
+                              <DiscordDeploymentForm
+                                agentId={agent._id}
+                                deployment={deploymentsQuery.deployments?.find(
+                                  deployment =>
+                                    deployment.platform === 'discord',
+                                )}
+                              />
+                              <TelegramDeploymentForm
+                                agentId={agent._id}
+                                deployment={deploymentsQuery.deployments?.find(
+                                  deployment =>
+                                    deployment.platform === 'telegram',
+                                )}
+                              />
+                              <TwitterDeploymentForm
+                                agentId={agent._id}
+                                deployment={deploymentsQuery.deployments?.find(
+                                  deployment =>
+                                    deployment.platform === 'twitter',
+                                )}
+                              />
+                              <FarcasterDeploymentForm
+                                agentId={agent._id}
+                                deployment={deploymentsQuery.deployments?.find(
+                                  deployment =>
+                                    deployment.platform === 'farcaster',
+                                )}
+                              />
+                            </div>
+                          )}
 
-                        {/* Deployment Settings - Inline version to avoid form nesting */}
-                        <div className="mt-8 space-y-4 rounded-lg">
-                          <h2 className="text-lg font-medium">
-                            Deployment Settings
-                          </h2>
-                          <DeploymentSettingsInline agent={agent} />
+                          {/* Deployment Settings - Inline version to avoid form nesting */}
+                          <div className="mt-8 space-y-4 rounded-lg">
+                            <h2 className="text-lg font-medium">
+                              Deployment Settings
+                            </h2>
+                            <DeploymentSettingsInline agent={agent} />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                  {activeTab === 'permissions' && (
-                    <div className="space-y-6">
-                      <div>
-                        <h2 className="text-lg font-medium mb-4">
-                          Agent Permissions
-                        </h2>
-                        <div className="p-6 bg-card rounded-xl border border-border">
-                          <div className="space-y-4">
-                            <div>
-                              <label className="text-sm font-medium block mb-2">
-                                Editors
-                              </label>
-                              <p className="text-sm text-muted-foreground mb-4">
-                                Users who can edit this agent (in addition to
-                                the owner)
-                              </p>
-                              <EditorsList agent={agent} />
+                    )}
+                  {activeTab === 'permissions' &&
+                    isAgentOwner(agent, user?._id) && (
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-lg font-medium mb-4">
+                            Agent Permissions
+                          </h2>
+                          <div className="p-6 bg-card rounded-xl border border-border">
+                            <div className="space-y-4">
+                              <div>
+                                <label className="text-sm font-medium block mb-2">
+                                  Editors
+                                </label>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                  Users who can edit this agent (in addition to
+                                  the owner)
+                                </p>
+                                <EditorsList agent={agent} />
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </form>
               </Form>
             </div>

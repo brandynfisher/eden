@@ -73,7 +73,11 @@ const AgentCard = ({
             <div className="flex-shrink-0 flex items-center w-20">
               <Avatar className="w-20 h-20">
                 <AvatarImage
-                  src={agent.userImage && agent.userImage.trim() ? getCloudfrontOriginalUrl(agent.userImage) : undefined}
+                  src={
+                    agent.userImage && agent.userImage.trim()
+                      ? getCloudfrontOriginalUrl(agent.userImage)
+                      : undefined
+                  }
                   alt={agent.name}
                   className="object-cover"
                 />
@@ -148,7 +152,11 @@ const AgentCard = ({
             <div className="relative flex rounded-lg overflow-hidden aspect-[2/3] lg:aspect-square h-[140px] flex-shrink-0 flex-grow-0 items-center justify-center">
               <Avatar className="w-full h-full rounded-lg">
                 <AvatarImage
-                  src={agent.userImage && agent.userImage.trim() ? getCloudfrontOriginalUrl(agent.userImage) : undefined}
+                  src={
+                    agent.userImage && agent.userImage.trim()
+                      ? getCloudfrontOriginalUrl(agent.userImage)
+                      : undefined
+                  }
                   alt={agent.name}
                   className="object-cover w-full h-full"
                 />

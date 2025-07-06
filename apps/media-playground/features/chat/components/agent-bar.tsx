@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { canEditAgent, isAgentOwner } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
@@ -18,14 +19,16 @@ import * as React from 'react'
 // New Agent Bar component
 export const AgentBar: FC<{
   agent: Agent | null | undefined
-  isOwner: boolean
+  userId?: string | null
   onChatClick?: () => void
   onAgentSelect?: () => void
   viewMode: 'chat' | 'creations' | 'tasks' | 'settings'
   onViewModeChange: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  agentId?: string
+  onAgentInvalidate?: () => Promise<void>
 }> = ({
   agent,
-  isOwner,
+  userId,
   onChatClick,
   onAgentSelect,
   viewMode,
@@ -54,6 +57,13 @@ export const AgentBar: FC<{
     }
   }
 
+  const handleSettingsClick = () => {
+    if (viewMode !== 'settings') {
+      // If we're not in settings mode, switch to settings mode
+      onViewModeChange('settings')
+    }
+  }
+
   return (
     <div className="bg-accent border-b px-4 py-2 flex items-center justify-between">
       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -64,7 +74,11 @@ export const AgentBar: FC<{
           >
             <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors">
               <AvatarImage
-                src={agent.userImage && agent.userImage.trim() ? getCloudfrontOriginalUrl(agent.userImage) : undefined}
+                src={
+                  agent.userImage && agent.userImage.trim()
+                    ? getCloudfrontOriginalUrl(agent.userImage)
+                    : undefined
+                }
                 alt={agent.name}
                 className="object-cover"
               />
@@ -110,33 +124,33 @@ export const AgentBar: FC<{
           <ImageIcon className="size-4" />
           {!isNarrow && <span>Creations</span>}
         </Button>
-        {isOwner && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onViewModeChange('tasks')}
-              className={`shrink-0 gap-1 text-sm ${
-                viewMode === 'tasks' &&
-                'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-              }`}
-            >
-              <ClockIcon className="size-4" />
-              {!isNarrow && <span>Tasks</span>}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onViewModeChange('settings')}
-              className={`shrink-0 gap-1 text-sm ${
-                viewMode === 'settings' &&
-                'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-              }`}
-            >
-              <SettingsIcon className="size-4" />
-              {!isNarrow && <span>Settings</span>}
-            </Button>
-          </>
+        {isAgentOwner(agent, userId) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewModeChange('tasks')}
+            className={`shrink-0 gap-1 text-sm ${
+              viewMode === 'tasks' &&
+              'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+            }`}
+          >
+            <ClockIcon className="size-4" />
+            {!isNarrow && <span>Tasks</span>}
+          </Button>
+        )}
+        {canEditAgent(agent, userId) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSettingsClick}
+            className={`shrink-0 gap-1 text-sm ${
+              viewMode === 'settings' &&
+              'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+            }`}
+          >
+            <SettingsIcon className="size-4" />
+            {!isNarrow && <span>Settings</span>}
+          </Button>
         )}
       </div>
     </div>

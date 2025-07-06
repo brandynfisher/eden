@@ -278,21 +278,44 @@ export const updateAgent = async (
   if (!image || image === '') {
     updateData.userImage = null
     updateData.blurhash = null
-  }
-  if (image) {
+  } else if (image.startsWith('http')) {
+    // This is a new uploaded image URL - process it
     const blurhash = await generateBlurhash(server, image)
     const imageFilename = image.split('/').pop()
 
     updateData.userImage = imageFilename
     updateData.blurhash = blurhash
   }
+  // If image is just a filename (existing image), don't update image fields
 
   let result: UpdateResult
+  // Check if user is owner or editor
+  const agentToCheck = await Agent.findOne({
+    ...query,
+    deleted: false,
+  })
+
+  if (!agentToCheck) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  const isOwner = agentToCheck.owner.toString() === currentUserId.toString()
+  const isEditor = agentToCheck.agent_extras?.permissions?.editors?.some(
+    editor => editor.toString() === currentUserId.toString(),
+  )
+
+  if (!isOwner && !isEditor) {
+    return reply.status(401).send({
+      error: 'You are not authorized to update this agent',
+    })
+  }
+
   try {
     result = await Agent.updateOne(
       {
         ...query,
-        owner: currentUserId,
         deleted: false,
       },
       updateData,

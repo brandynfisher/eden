@@ -556,7 +556,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
         {/* AGENT BAR - Always visible */}
         <AgentBar
           agent={agent}
-          isOwner={isOwner}
+          userId={user?._id}
           onChatClick={handleChatClick}
           onAgentSelect={() => setIsAgentSelectorOpen(true)}
           viewMode={viewMode}
