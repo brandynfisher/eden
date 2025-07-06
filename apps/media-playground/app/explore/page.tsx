@@ -7,7 +7,7 @@ import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
 import ModelsFeed from '@/features/feed/models-feed'
-//import { SortMenu } from '@/features/feed/sort-menu'
+import { SortMenu } from '@/features/feed/sort-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
 import { Plus, Zap } from 'lucide-react'
@@ -27,9 +27,9 @@ const ExplorePage = () => {
 
   // Initialize state from URL parameters
   const initialContentType =
-    (searchParams.get('type') as ContentType) || 'creations'
+    (searchParams?.get('type') as ContentType) || 'creations'
   const initialCreatorType =
-    (searchParams.get('creator') as CreatorType) || 'public'
+    (searchParams?.get('creator') as CreatorType) || 'public'
 
   const [contentType, setContentType] =
     useState<ContentType>(initialContentType)
@@ -42,24 +42,24 @@ const ExplorePage = () => {
   const [modelsFilter] = useState({})
   const [creationsSort, setCreationsSort] = useState('createdAt;-1')
   const [modelsSort, setModelsSort] = useState('createdAt;-1')
-  const [agentsSort, setAgentsSort] = useState('createdAt;-1')
+  const [agentsSort, setAgentsSort] = useState('stats.userMessageCount;-1')
 
   // Sync state with URL parameters when they change
   useEffect(() => {
-    const urlContentType = searchParams.get('type') as ContentType
+    const urlContentType = searchParams?.get('type') as ContentType
     const urlCreatorType =
-      (searchParams.get('creator') as CreatorType) || 'public'
+      (searchParams?.get('creator') as CreatorType) || 'public'
 
     // ***debug*** Don't redirect if we're in a modal intercept state
     // Check if current pathname suggests we're in a modal
     const isModalState =
-      pathname.startsWith('/creations/') ||
-      pathname.startsWith('/models/') ||
-      pathname.startsWith('/agents/')
+      pathname?.startsWith('/creations/') ||
+      pathname?.startsWith('/models/') ||
+      pathname?.startsWith('/agents/')
 
     // If no type parameter, redirect to type=creations (but not during modal state)
     if (!urlContentType && !isModalState) {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams?.toString() || '')
       params.set('type', 'creations')
       router.replace(`/explore?${params.toString()}`)
       return
@@ -109,7 +109,7 @@ const ExplorePage = () => {
   const handleContentTypeChange = (value: string) => {
     const newContentType = value as ContentType
     setContentType(newContentType)
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
     params.set('type', newContentType)
     router.push(`/explore${params.toString() ? `?${params.toString()}` : ''}`)
   }
@@ -117,7 +117,7 @@ const ExplorePage = () => {
   const handleCreatorTypeChange = (value: string) => {
     const newCreatorType = value as CreatorType
     setCreatorType(newCreatorType)
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
     if (newCreatorType !== 'public') {
       params.set('creator', newCreatorType)
     } else {
@@ -244,23 +244,23 @@ const ExplorePage = () => {
             </>
           )}
 
-          {/* {contentType === 'models' && (
+          {contentType === 'models' && (
             <SortMenu
               variant="model"
               initialSort={modelsSort}
               onChange={setModelsSort}
               className="min-w-0 w-full sm:w-auto"
             />
-          )} */}
+          )}
 
-          {/* {contentType === 'agents' && (
+          {contentType === 'agents' && (
             <SortMenu
               variant="agent"
               initialSort={agentsSort}
               onChange={setAgentsSort}
               className="min-w-0 w-full sm:w-auto"
             />
-          )} */}
+          )}
 
           <FeedSearchForm
             handleSearch={setSearchQuery}

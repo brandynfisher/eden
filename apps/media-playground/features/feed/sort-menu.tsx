@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import {
   ArrowDownUpIcon,
   ClockArrowDown, //HeartIcon,
-  //StarIcon,
+  StarIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -21,8 +21,8 @@ const sortOptions = [
 
 // Add new sort options specifically for agents
 const agentSortOptions = [
+  { label: 'Top', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
-  //{ label: 'Top', value: 'stats.userMessageCount;-1', icon: <StarIcon /> },
 ]
 
 // Add new sort options for users
@@ -38,7 +38,7 @@ const creationSortOptions = [
 
 const modelSortOptions = [
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
-  //{ label: 'Top', value: 'creationCount;-1', icon: <StarIcon /> },
+  { label: 'Top', value: 'creationCount;-1', icon: <StarIcon /> },
 ]
 
 // Update the variant type to include 'user' and 'creation'
