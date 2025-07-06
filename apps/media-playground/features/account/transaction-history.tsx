@@ -37,7 +37,7 @@ interface Task {
 // Helper components to reduce duplication
 const AgentLink: React.FC<{ agent: Creator }> = ({ agent }) => (
   <Link
-    href={`/agents/${agent.username}`}
+    href={`/chat/${agent.username}`}
     className="flex items-center gap-1 hover:underline text-primary"
     onClick={e => e.stopPropagation()}
     target="_blank"

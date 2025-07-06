@@ -419,12 +419,12 @@ const Session = ({
                       ))
                     : group
                         .filter(message => message.role !== 'tool')
-                        .map((message, index) => (
+                        .map(message => (
                           <OtherMessage
                             sessionId={sessionId as string}
                             key={message._id}
                             message={message}
-                            showAvatar={index === 0}
+                            showAvatar={true}
                           />
                         ))}
                 </div>

@@ -3,7 +3,6 @@ import {
   cancelSession,
   createSession,
   createSessionMessage,
-  createSessionMessageStream,
   deleteSession,
   getSession,
   listSessions,
@@ -98,50 +97,26 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   })
 
   server.post<{
-    Body: SessionsV2MessageArguments
+    Body: SessionsV2MessageArguments & {
+      stream?: boolean
+      agent_ids?: string[]
+      scenario?: string
+      budget?: {
+        manna_budget?: number
+        token_budget?: number
+        turn_budget?: number
+      }
+      title?: string
+      autonomy_settings?: {
+        auto_reply: boolean
+        reply_interval: number
+        actor_selection_method: 'random' | 'random_exclude_last'
+      }
+    }
   }>('/v2/sessions', {
     schema: {
       tags: ['Sessions'],
       description: 'Interact with a session',
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      body: {
-        session_id: Type.Optional(Type.String()),
-        content: Type.Optional(Type.String()),
-        attachments: Type.Optional(Type.Array(Type.String())),
-      },
-      response: {
-        200: Type.Object({
-          session_id: Type.String(),
-        }),
-        400: {
-          message: Type.Optional(Type.String()),
-        },
-        401: {
-          message: Type.Optional(Type.String()),
-        },
-        404: {
-          message: Type.Optional(Type.String()),
-        },
-        500: {
-          error: Type.Optional(Type.Any()),
-          message: Type.Optional(Type.String()),
-        },
-      },
-    },
-    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
-    handler: (request, reply) => createSessionMessage(server, request, reply),
-  })
-
-  server.post<{
-    Body: SessionsV2MessageArguments & { stream?: boolean }
-  }>('/v2/sessions/stream', {
-    schema: {
-      tags: ['Sessions'],
-      description: 'Interact with a session (streaming)',
       security: [
         {
           apiKey: [],
@@ -179,10 +154,27 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           }),
         ),
       },
+      response: {
+        200: Type.Object({
+          session_id: Type.String(),
+        }),
+        400: {
+          message: Type.Optional(Type.String()),
+        },
+        401: {
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.Any()),
+          message: Type.Optional(Type.String()),
+        },
+      },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
-    handler: (request, reply) =>
-      createSessionMessageStream(server, request, reply),
+    handler: (request, reply) => createSessionMessage(server, request, reply),
   })
 
   server.post<{

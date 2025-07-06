@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const response = await fetch(
-      `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions/stream`,
+      `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions`,
       {
         method: 'POST',
         headers: {
@@ -56,7 +56,6 @@ export async function POST(request: NextRequest) {
           session_id: requestJson.session_id,
           content: requestJson.content,
           attachments: requestJson.attachments,
-          // Creation args (used when session_id is not provided)
           agent_ids: requestJson.agent_ids,
           scenario: requestJson.scenario,
           budget: requestJson.budget,

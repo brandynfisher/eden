@@ -1,3 +1,4 @@
+import { Agent } from '@edenlabs/eden-sdk'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
@@ -31,4 +32,32 @@ export function formatTransactionDate(date: string | Date) {
     })
     .replace(/,?\s+/g, ' ')
     .trim() // remove commas and normalize spaces
+}
+
+// Agent permission helpers
+export const isAgentOwner = (
+  agent: Agent | null | undefined,
+  userId: string | null | undefined,
+): boolean => {
+  if (!agent || !userId) return false
+  return agent.owner._id === userId || agent.owner.userId === userId
+}
+
+export const isAgentEditor = (
+  agent: Agent | null | undefined,
+  userId: string | null | undefined,
+): boolean => {
+  if (!agent || !userId || !agent.agent_extras?.permissions?.editors)
+    return false
+
+  return agent.agent_extras.permissions.editors.some(
+    editor => editor.toString() === userId,
+  )
+}
+
+export const canEditAgent = (
+  agent: Agent | null | undefined,
+  userId: string | null | undefined,
+): boolean => {
+  return isAgentOwner(agent, userId) || isAgentEditor(agent, userId)
 }

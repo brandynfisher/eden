@@ -82,6 +82,7 @@ export async function PATCH(
     voice,
     models,
     owner_pays,
+    agent_extras,
   } = requestJson as AgentsUpdateArguments
 
   try {
@@ -107,6 +108,7 @@ export async function PATCH(
       knowledge,
       voice,
       owner_pays,
+      agent_extras,
     })
 
     if (!res) {

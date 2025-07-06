@@ -35,6 +35,10 @@ import { useDropzone } from 'react-dropzone'
 import Truncate from 'react-truncate-inside/es'
 import { toast } from 'sonner'
 
+const MAX_IMAGE_PIXELS = 6000000 // 6MP
+const MAX_IMAGE_WIDTH = 2560
+const MAX_IMAGE_HEIGHT = 2560
+
 interface FileUploadProgress {
   progress: number
   File: File
@@ -288,12 +292,7 @@ const FileUploader = ({
       const exifData = await exifr.parse(file)
       const orientation = exifData?.Orientation || 1
 
-      // If orientation is 1 (normal), no rotation needed
-      if (orientation === 1) {
-        return file
-      }
-
-      // Create canvas to rotate image
+      // Create canvas to rotate and resize image
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
       if (!ctx) {
@@ -308,68 +307,102 @@ const FileUploader = ({
         img.onload = () => {
           let { width, height } = img
 
-          // Calculate new dimensions based on orientation
+          // Calculate new dimensions based on orientation first
+          let displayWidth = width
+          let displayHeight = height
+
           if (orientation >= 5 && orientation <= 8) {
-            // For orientations 5-8, swap width and height
-            [width, height] = [height, width]
+            // For orientations 5-8, swap width and height for display
+            displayWidth = height
+            displayHeight = width
           }
 
-          canvas.width = width
-          canvas.height = height
+          // Check if image needs resizing (6MP = 6,000,000 pixels or width/height > 2560)
+          const currentPixels = displayWidth * displayHeight
+
+          let needsResize = false
+          let scaleRatio = 1
+
+          if (
+            currentPixels > MAX_IMAGE_PIXELS ||
+            displayWidth > MAX_IMAGE_WIDTH ||
+            displayHeight > MAX_IMAGE_HEIGHT
+          ) {
+            needsResize = true
+
+            // Calculate scale ratio based on whichever constraint is more restrictive
+            const pixelRatio = Math.sqrt(MAX_IMAGE_PIXELS / currentPixels)
+            const widthRatio = MAX_IMAGE_WIDTH / displayWidth
+            const heightRatio = MAX_IMAGE_HEIGHT / displayHeight
+
+            scaleRatio = Math.min(pixelRatio, widthRatio, heightRatio)
+          }
+
+          // Apply scaling to display dimensions
+          if (needsResize) {
+            displayWidth = Math.round(displayWidth * scaleRatio)
+            displayHeight = Math.round(displayHeight * scaleRatio)
+          }
+
+          // Set canvas size based on final display dimensions
+          canvas.width = displayWidth
+          canvas.height = displayHeight
 
           // Apply rotation based on EXIF orientation
-          switch (orientation) {
-            case 2:
-              // Flip horizontal
-              ctx.scale(-1, 1)
-              ctx.translate(-width, 0)
-              break
-            case 3:
-              // Rotate 180°
-              ctx.translate(width, height)
-              ctx.rotate(Math.PI)
-              break
-            case 4:
-              // Flip vertical
-              ctx.scale(1, -1)
-              ctx.translate(0, -height)
-              break
-            case 5:
-              // Flip horizontal + rotate 90° CCW
-              ctx.rotate(-Math.PI / 2)
-              ctx.scale(-1, 1)
-              ctx.translate(-width, -height)
-              break
-            case 6:
-              // Rotate 90° CW
-              ctx.rotate(Math.PI / 2)
-              ctx.translate(0, -height)
-              break
-            case 7:
-              // Flip horizontal + rotate 90° CW
-              ctx.rotate(Math.PI / 2)
-              ctx.scale(-1, 1)
-              ctx.translate(-width, 0)
-              break
-            case 8:
-              // Rotate 90° CCW
-              ctx.rotate(-Math.PI / 2)
-              ctx.translate(-width, 0)
-              break
+          if (orientation !== 1) {
+            switch (orientation) {
+              case 2:
+                // Flip horizontal
+                ctx.scale(-1, 1)
+                ctx.translate(-displayWidth, 0)
+                break
+              case 3:
+                // Rotate 180°
+                ctx.translate(displayWidth, displayHeight)
+                ctx.rotate(Math.PI)
+                break
+              case 4:
+                // Flip vertical
+                ctx.scale(1, -1)
+                ctx.translate(0, -displayHeight)
+                break
+              case 5:
+                // Flip horizontal + rotate 90° CCW
+                ctx.rotate(-Math.PI / 2)
+                ctx.scale(-1, 1)
+                ctx.translate(-displayWidth, -displayHeight)
+                break
+              case 6:
+                // Rotate 90° CW
+                ctx.rotate(Math.PI / 2)
+                ctx.translate(0, -displayHeight)
+                break
+              case 7:
+                // Flip horizontal + rotate 90° CW
+                ctx.rotate(Math.PI / 2)
+                ctx.scale(-1, 1)
+                ctx.translate(-displayWidth, 0)
+                break
+              case 8:
+                // Rotate 90° CCW
+                ctx.rotate(-Math.PI / 2)
+                ctx.translate(-displayWidth, 0)
+                break
+            }
           }
 
-          // Draw the rotated image
-          ctx.drawImage(img, 0, 0)
+          // Draw the image (resized and/or rotated)
+          ctx.drawImage(img, 0, 0, displayWidth, displayHeight)
 
           // Convert canvas to blob and create new file
           canvas.toBlob(
             blob => {
               if (blob) {
-                const rotatedFile = new File([blob], file.name, {
+                const processedFile = new File([blob], file.name, {
                   type: file.type,
                   lastModified: file.lastModified,
                 })
-                resolve(rotatedFile)
+                resolve(processedFile)
               } else {
                 resolve(file)
               }
@@ -389,7 +422,7 @@ const FileUploader = ({
         img.src = imageUrl
       })
     } catch (error) {
-      console.warn('Failed to process EXIF data:', error)
+      console.warn('Failed to process image:', error)
       return file // Return original file on error
     }
   }

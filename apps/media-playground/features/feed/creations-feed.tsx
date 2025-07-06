@@ -48,7 +48,6 @@ const CreationsFeed = ({
 
   const queryKey = useMemo(() => ['feed', 'creations', query], [query])
 
-  // ***debug*** Remove pathname dependency to prevent refetch during modal navigation
   // Use query-based feedId like profile page does, not route-based
   const feedId = useMemo(() => JSON.stringify({ queryKey }), [queryKey])
 
