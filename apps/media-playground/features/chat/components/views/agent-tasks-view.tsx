@@ -172,7 +172,6 @@ const AgentTasksView: FC<{
 
   const handleSave = () => {
     setEditingTask(null)
-    // Modal will close automatically on successful save
   }
 
   const handleModalClose = (open: boolean) => {

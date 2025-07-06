@@ -481,35 +481,42 @@ export const updateAgentTrigger = async (
     })
   }
 
-  const updateData = {
-    id: triggerId,
-    instruction,
-    session_type,
-    session,
-    schedule,
-    status,
-    posting_instructions,
+  // Find the trigger to update
+  const trigger = await Trigger.findById(triggerId)
+
+  if (!trigger) {
+    return reply.status(404).send({
+      error: 'Trigger not found',
+    })
   }
 
-  const edenComputeRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/update`,
-    data: updateData,
+  // Verify the trigger belongs to the agent
+  if (trigger.agent.toString() !== agentId) {
+    return reply.status(401).send({
+      error: 'Trigger does not belong to this agent',
+    })
   }
 
-  const edenComputeResponse = await axios.post(
-    edenComputeRequest.endpoint,
-    edenComputeRequest.data,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-      },
-    },
+  // Build update data - only include fields that are provided
+  const updateData: any = {}
+
+  if (instruction !== undefined) updateData.instruction = instruction
+  if (session_type !== undefined) updateData.session_type = session_type
+  if (session !== undefined) updateData.session = session
+  if (schedule !== undefined) updateData.schedule = schedule
+  if (status !== undefined) updateData.status = status
+  if (posting_instructions !== undefined)
+    updateData.posting_instructions = posting_instructions
+
+  // Update the trigger
+  const updatedTrigger = await Trigger.findByIdAndUpdate(
+    triggerId,
+    updateData,
+    { new: true },
   )
 
-  const response = edenComputeResponse.data
-
   return reply.status(200).send({
-    trigger: response.trigger || response,
+    trigger: updatedTrigger,
   })
 }
 
