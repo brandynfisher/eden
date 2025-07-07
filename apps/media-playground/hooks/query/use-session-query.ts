@@ -1,3 +1,4 @@
+import { getCloudfrontUrl } from '@/lib/media'
 import {
   Message,
   SessionV2,
@@ -140,9 +141,88 @@ export function useSessionQuery({
       queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
         if (!oldData) return oldData
 
+        // Enrich assistant messages with complete agent data if sender info is incomplete
+        let enrichedMessage = newMessage
+        if (
+          newMessage.role === 'assistant' &&
+          newMessage.sender &&
+          oldData.agents
+        ) {
+          console.log(
+            '***debug*** Processing assistant message, sender:',
+            newMessage.sender,
+          ) // ***debug***
+
+          const matchingAgent = oldData.agents.find(
+            agent =>
+              agent._id === newMessage.sender?._id ||
+              agent.username === newMessage.sender?.username,
+          )
+
+          // Check if sender data is incomplete (missing userImage or has empty/default values)
+          const hasIncompleteUserImage =
+            !newMessage.sender.userImage ||
+            newMessage.sender.userImage === '' ||
+            newMessage.sender.userImage === null ||
+            newMessage.sender.userImage === undefined
+
+          const hasIncompleteName =
+            !newMessage.sender.name ||
+            newMessage.sender.name === '' ||
+            newMessage.sender.name === null ||
+            newMessage.sender.name === undefined
+
+          if (matchingAgent && (hasIncompleteUserImage || hasIncompleteName)) {
+            console.log(
+              '***debug*** Enriching message with cached agent data:',
+              {
+                originalSender: newMessage.sender,
+                matchingAgent: {
+                  name: matchingAgent.name,
+                  userImage: matchingAgent.userImage,
+                },
+              },
+            ) // ***debug***
+
+            enrichedMessage = {
+              ...newMessage,
+              sender: {
+                ...newMessage.sender,
+                name: hasIncompleteName
+                  ? matchingAgent.name
+                  : newMessage.sender.name,
+                // Convert filename to URL using same function as message components
+                userImage: hasIncompleteUserImage
+                  ? getCloudfrontUrl(matchingAgent.userImage)
+                  : newMessage.sender.userImage,
+                // Keep other fields from the original sender
+                username: newMessage.sender.username || matchingAgent.username,
+                _id: newMessage.sender._id || matchingAgent._id,
+              },
+            }
+
+            console.log('***debug*** URL conversion during enrichment:', {
+              originalFilename: matchingAgent.userImage,
+              convertedURL: hasIncompleteUserImage
+                ? getCloudfrontUrl(matchingAgent.userImage)
+                : newMessage.sender.userImage,
+              hasIncompleteUserImage,
+            }) // ***debug***
+          } else {
+            console.log(
+              '***debug*** No enrichment needed or no matching agent found:',
+              {
+                hasMatchingAgent: !!matchingAgent,
+                hasIncompleteUserImage,
+                hasIncompleteName,
+              },
+            ) // ***debug***
+          }
+        }
+
         const existingMessages = oldData.messages || []
         const existingMessageIndex = existingMessages.findIndex(
-          (m: Message) => m._id === newMessage._id,
+          (m: Message) => m._id === enrichedMessage._id,
         )
 
         let updatedMessages = [...existingMessages]
@@ -151,21 +231,21 @@ export function useSessionQuery({
           // New message - add it to the end (but check if it's not replacing an optimistic one)
           const optimisticIndex = existingMessages.findIndex(
             (m: Message & { __optimistic?: boolean }) =>
-              m.__optimistic && m.content === newMessage.content,
+              m.__optimistic && m.content === enrichedMessage.content,
           )
 
           if (optimisticIndex !== -1) {
             // Replace the optimistic message
-            updatedMessages[optimisticIndex] = newMessage
+            updatedMessages[optimisticIndex] = enrichedMessage
           } else {
             // Add new message
-            updatedMessages.push(newMessage)
+            updatedMessages.push(enrichedMessage)
           }
         } else {
           // Existing message - update it
           updatedMessages[existingMessageIndex] = {
             ...updatedMessages[existingMessageIndex],
-            ...newMessage,
+            ...enrichedMessage,
           }
         }
 

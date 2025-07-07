@@ -41,6 +41,26 @@ export const OtherMessage = ({
   // Make ANY sender with a username clickable - fuck the type checking
   const shouldMakeClickable = hasUsername
 
+  // ***debug*** Debug the userImage processing
+  console.log('***debug*** OtherMessage received:', {
+    messageId: message._id,
+    senderUsername: message.sender?.username,
+    senderUserImage: message.sender?.userImage,
+    isAssistantMessage: message.role === 'assistant',
+  }) // ***debug***
+
+  const finalImageUrl = message.sender?.userImage
+    ? message.sender.userImage.startsWith('https://')
+      ? message.sender.userImage // Already a full URL, don't process again
+      : getCloudfrontUrl(message.sender.userImage) // Convert filename to URL
+    : undefined
+
+  console.log('***debug*** Final image URL after processing:', {
+    originalUserImage: message.sender?.userImage,
+    isAlreadyURL: message.sender?.userImage?.startsWith('https://'),
+    finalURL: finalImageUrl,
+  }) // ***debug***
+
   return (
     <div
       className={cn([
@@ -56,13 +76,7 @@ export const OtherMessage = ({
           >
             {showAvatar ? (
               <Avatar className="w-full h-full cursor-pointer hover:opacity-80 transition-opacity">
-                <AvatarImage
-                  src={
-                    message.sender?.userImage
-                      ? getCloudfrontUrl(message.sender.userImage)
-                      : undefined
-                  }
-                />
+                <AvatarImage src={finalImageUrl} />
                 <AvatarFallback>
                   {message.sender?.username ? (
                     <svg className="w-full h-full" viewBox="0 0 40 40">
@@ -92,13 +106,7 @@ export const OtherMessage = ({
           <div className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0">
             {showAvatar ? (
               <Avatar className="w-full h-full">
-                <AvatarImage
-                  src={
-                    message.sender?.userImage
-                      ? getCloudfrontUrl(message.sender.userImage)
-                      : undefined
-                  }
-                />
+                <AvatarImage src={finalImageUrl} />
                 <AvatarFallback>
                   {message.sender?.username ? (
                     <svg className="w-full h-full" viewBox="0 0 40 40">

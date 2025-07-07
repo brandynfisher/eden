@@ -1,5 +1,5 @@
 import { getAuthToken } from '@/lib/auth'
-import { env } from '@/lib/config'
+import { env, sessionConfig } from '@/lib/config'
 import { NextRequest } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
           budget: requestJson.budget,
           title: requestJson.title,
           autonomy_settings: requestJson.autonomy_settings,
-          stream: true,
+          stream: sessionConfig.useStreaming,
         }),
       },
     )
