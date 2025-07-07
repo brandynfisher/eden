@@ -16,8 +16,10 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
+import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 // import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
@@ -240,38 +242,6 @@ export const EditorsList: FC<{ agent: Agent }> = ({ agent }) => {
     </div>
   )
 }
-
-export const agentSchema = z.object({
-  name: z.string().min(1).max(42),
-  key: z
-    .string()
-    .min(1)
-    .max(42)
-    .regex(/^[a-z0-9_]+(?:-[a-z0-9_]+)*$/, {
-      message:
-        'Key must only contain lowercase letters, numbers, underscores and dashes.',
-    }),
-  image: z
-    .string()
-    .transform(val => (val === '' ? null : val))
-    .optional()
-    .nullable(),
-  description: z.string().min(1).max(5000),
-  greeting: z.string().max(140).optional(),
-  voice: z.string().optional(),
-  models: z
-    .array(
-      z.object({
-        lora: z.string(),
-        use_when: z.string().trim().max(500),
-      }),
-    )
-    .optional(),
-  persona: z.string().max(30000).optional(),
-  isPersonaPublic: z.boolean().optional(),
-  knowledge: z.string().max(100000).optional(),
-  tools: z.object({}).passthrough().optional(),
-})
 
 type AgentFormDto = z.infer<typeof agentSchema>
 
@@ -575,15 +545,12 @@ const AgentEditView: FC<{
                                       </span>
                                     </FormLabel>
                                     <FormControl>
-                                      <Input
-                                        type="text"
-                                        placeholder="Username on Eden"
-                                        {...field}
-                                        onChange={e => {
-                                          field.onChange(
-                                            e.target.value.slice(0, 42),
-                                          )
-                                        }}
+                                      <SlickUsernamePicker
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        displayName={form.watch('name')}
+                                        onBlur={field.onBlur}
+                                        disabled={form.formState.isSubmitting}
                                       />
                                     </FormControl>
                                     <FormMessage />
