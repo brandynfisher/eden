@@ -303,15 +303,6 @@ export const createSessionMessage = async (
     autonomy_settings,
   } = request.body
 
-  console.log('***debug*** createSessionMessage called with:', {
-    content,
-    attachments,
-    sender: userId,
-    session: session_id,
-    stream,
-    agent_ids,
-  })
-
   let session: any = null
   let sessionId = session_id
 

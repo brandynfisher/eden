@@ -101,7 +101,9 @@ const SessionChat: FC = () => {
         if (enrichedAgent && enrichedAgent.userImage) {
           return {
             ...streamingAgent,
-            userImage: getCloudfrontUrl(enrichedAgent.userImage), // Convert filename to URL
+            userImage: enrichedAgent.userImage.startsWith('https://')
+              ? enrichedAgent.userImage // Already a URL, don't process
+              : getCloudfrontUrl(enrichedAgent.userImage), // Convert filename to URL
             name: streamingAgent.name || enrichedAgent.name,
           }
         }
@@ -115,7 +117,9 @@ const SessionChat: FC = () => {
         _id: agent._id,
         username: agent.username,
         name: agent.name,
-        userImage: getCloudfrontUrl(agent.userImage), // Convert filename to URL
+        userImage: agent.userImage?.startsWith('https://')
+          ? agent.userImage // Already a URL, don't process
+          : getCloudfrontUrl(agent.userImage), // Convert filename to URL
       }
     }
 
@@ -126,7 +130,9 @@ const SessionChat: FC = () => {
         _id: sessionAgent._id,
         username: sessionAgent.username,
         name: sessionAgent.name,
-        userImage: getCloudfrontUrl(sessionAgent.userImage), // Convert filename to URL
+        userImage: sessionAgent.userImage?.startsWith('https://')
+          ? sessionAgent.userImage // Already a URL, don't process
+          : getCloudfrontUrl(sessionAgent.userImage), // Convert filename to URL
       }
     }
 
@@ -462,7 +468,6 @@ const SessionChat: FC = () => {
             createdAt: new Date(),
             updatedAt: new Date(),
           }
-
           // Cache the initial session data so session.tsx can load instantly
           queryClient.setQueryData(
             ['session', newSessionId],

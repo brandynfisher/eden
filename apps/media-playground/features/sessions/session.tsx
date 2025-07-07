@@ -200,7 +200,9 @@ const Session = ({
         if (enrichedAgent && enrichedAgent.userImage) {
           return {
             ...streamingAgent,
-            userImage: getCloudfrontUrl(enrichedAgent.userImage), // Convert filename to URL
+            userImage: enrichedAgent.userImage.startsWith('https://')
+              ? enrichedAgent.userImage // Already a URL, don't process
+              : getCloudfrontUrl(enrichedAgent.userImage), // Convert filename to URL
             name: streamingAgent.name || enrichedAgent.name,
           }
         }
@@ -215,7 +217,9 @@ const Session = ({
         _id: sessionAgent._id,
         username: sessionAgent.username,
         name: sessionAgent.name,
-        userImage: getCloudfrontUrl(sessionAgent.userImage), // Convert filename to URL
+        userImage: sessionAgent.userImage?.startsWith('https://')
+          ? sessionAgent.userImage // Already a URL, don't process
+          : getCloudfrontUrl(sessionAgent.userImage), // Convert filename to URL
       }
     }
 

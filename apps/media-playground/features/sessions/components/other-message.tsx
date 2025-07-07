@@ -41,25 +41,11 @@ export const OtherMessage = ({
   // Make ANY sender with a username clickable - fuck the type checking
   const shouldMakeClickable = hasUsername
 
-  // ***debug*** Debug the userImage processing
-  console.log('***debug*** OtherMessage received:', {
-    messageId: message._id,
-    senderUsername: message.sender?.username,
-    senderUserImage: message.sender?.userImage,
-    isAssistantMessage: message.role === 'assistant',
-  }) // ***debug***
-
   const finalImageUrl = message.sender?.userImage
     ? message.sender.userImage.startsWith('https://')
       ? message.sender.userImage // Already a full URL, don't process again
       : getCloudfrontUrl(message.sender.userImage) // Convert filename to URL
     : undefined
-
-  console.log('***debug*** Final image URL after processing:', {
-    originalUserImage: message.sender?.userImage,
-    isAlreadyURL: message.sender?.userImage?.startsWith('https://'),
-    finalURL: finalImageUrl,
-  }) // ***debug***
 
   return (
     <div

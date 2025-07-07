@@ -143,28 +143,24 @@ export function useSessionQuery({
 
         // Enrich assistant messages with complete agent data if sender info is incomplete
         let enrichedMessage = newMessage
-        if (
-          newMessage.role === 'assistant' &&
-          newMessage.sender &&
-          oldData.agents
-        ) {
-          console.log(
-            '***debug*** Processing assistant message, sender:',
-            newMessage.sender,
-          ) // ***debug***
+        if (newMessage.role === 'assistant' && newMessage.sender) {
+          let matchingAgent = null
 
-          const matchingAgent = oldData.agents.find(
-            agent =>
-              agent._id === newMessage.sender?._id ||
-              agent.username === newMessage.sender?.username,
-          )
+          if (oldData.agents) {
+            matchingAgent = oldData.agents.find(
+              agent =>
+                agent._id === newMessage.sender?._id ||
+                agent.username === newMessage.sender?.username,
+            )
+          }
 
           // Check if sender data is incomplete (missing userImage or has empty/default values)
           const hasIncompleteUserImage =
             !newMessage.sender.userImage ||
             newMessage.sender.userImage === '' ||
             newMessage.sender.userImage === null ||
-            newMessage.sender.userImage === undefined
+            newMessage.sender.userImage === undefined ||
+            !newMessage.sender.userImage.startsWith('https://') // Also check if it's a filename instead of URL
 
           const hasIncompleteName =
             !newMessage.sender.name ||
@@ -173,17 +169,6 @@ export function useSessionQuery({
             newMessage.sender.name === undefined
 
           if (matchingAgent && (hasIncompleteUserImage || hasIncompleteName)) {
-            console.log(
-              '***debug*** Enriching message with cached agent data:',
-              {
-                originalSender: newMessage.sender,
-                matchingAgent: {
-                  name: matchingAgent.name,
-                  userImage: matchingAgent.userImage,
-                },
-              },
-            ) // ***debug***
-
             enrichedMessage = {
               ...newMessage,
               sender: {
@@ -200,23 +185,6 @@ export function useSessionQuery({
                 _id: newMessage.sender._id || matchingAgent._id,
               },
             }
-
-            console.log('***debug*** URL conversion during enrichment:', {
-              originalFilename: matchingAgent.userImage,
-              convertedURL: hasIncompleteUserImage
-                ? getCloudfrontUrl(matchingAgent.userImage)
-                : newMessage.sender.userImage,
-              hasIncompleteUserImage,
-            }) // ***debug***
-          } else {
-            console.log(
-              '***debug*** No enrichment needed or no matching agent found:',
-              {
-                hasMatchingAgent: !!matchingAgent,
-                hasIncompleteUserImage,
-                hasIncompleteName,
-              },
-            ) // ***debug***
           }
         }
 
