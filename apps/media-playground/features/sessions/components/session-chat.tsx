@@ -558,28 +558,6 @@ const SessionChat: FC = () => {
       if (!user || !agent) return
       clearErrors()
 
-<<<<<<< HEAD
-      // If we have a sessionId (real or optimistic), use it directly
-      if (sessionId) {
-        sendStreamingMessage(content, attachments)
-        setTimeout(scrollToBottom, 100)
-        return
-      }
-
-      if (!sessionId && !optimisticSessionId) {
-        const tempSessionId = `temp-${Date.now()}-${Math.random()
-          .toString(36)
-          .substr(2, 9)}`
-        setOptimisticSessionId(tempSessionId)
-        optimisticSessionIdRef.current = tempSessionId
-        // Create optimistic session without user message - let streaming handle the display
-        const optimisticSessionData = {
-          _id: tempSessionId,
-          agents: [agent],
-          messages: [],
-          title: null,
-          budget: null,
-=======
       if (sessionConfig.useStreaming) {
         // Streaming mode - existing logic
         setIsStreamingTokens(true)
@@ -641,7 +619,6 @@ const SessionChat: FC = () => {
             name: user?.username || 'You',
             userImage: user?.userImage,
           },
->>>>>>> origin/staging
           createdAt: new Date(),
           updatedAt: new Date(),
           session: sessionId || 'new',
