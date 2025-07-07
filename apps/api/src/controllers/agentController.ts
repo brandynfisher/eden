@@ -1,12 +1,13 @@
 import { Agent, AgentDocument } from '../models/Agent'
 import { Deployment } from '../models/Deployment'
 import { Trigger } from '../models/Trigger'
+import { User } from '../models/User'
 import { LikeV2 } from '../models/v2/LikeV2'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
-import { createIdOrSlugQuery } from '../utils/mongoUtils'
+import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
 import {
   AgentGetArguments,
   AgentsCreateArguments,
@@ -57,6 +58,12 @@ export const getAgent = async (
           path: 'deployments',
           select: '_id platform',
           model: Deployment,
+        })
+      : Promise.resolve(),
+    isOwnAgent && agent.agent_extras?.permissions?.editors
+      ? agentRepository.model.populate(agent, {
+          path: 'agent_extras.permissions.editors',
+          select: '_id userId username userImage',
         })
       : Promise.resolve(),
   ])
@@ -178,6 +185,7 @@ export const updateAgent = async (
     public: isPublic,
     owner_pays,
     tools,
+    agent_extras,
   } = request.body as AgentsUpdateArguments
 
   if (models && models.length > 10) {
@@ -229,24 +237,85 @@ export const updateAgent = async (
     updateData.models = models
   }
 
+  // Handle agent_extras (only owner can modify permissions)
+  if (agent_extras) {
+    if (agent_extras.permissions) {
+      // First check that the agent exists and user is the owner
+      const agentToUpdate = await Agent.findById(agentId)
+      if (!agentToUpdate) {
+        return reply.status(404).send({
+          error: 'Agent not found',
+        })
+      }
+
+      if (agentToUpdate.owner.toString() !== currentUserId.toString()) {
+        return reply.status(401).send({
+          error: 'Only the agent owner can modify permissions',
+        })
+      }
+
+      if (agent_extras.permissions.editors) {
+        // Validate and convert usernames to user IDs
+        const editorIds = []
+        for (const usernameOrId of agent_extras.permissions.editors) {
+          const query = createMultiFieldQuery(usernameOrId, [
+            'userId',
+            'username',
+          ])
+          const user = await User.findOne(query)
+          if (!user) {
+            return reply.status(404).send({
+              error: `User not found: ${usernameOrId}`,
+            })
+          }
+          editorIds.push(user._id)
+        }
+        updateData['agent_extras.permissions.editors'] = editorIds
+      }
+    }
+  }
+
   if (!image || image === '') {
     updateData.userImage = null
     updateData.blurhash = null
-  }
-  if (image) {
+  } else if (image.startsWith('http')) {
+    // This is a new uploaded image URL - process it
     const blurhash = await generateBlurhash(server, image)
     const imageFilename = image.split('/').pop()
 
     updateData.userImage = imageFilename
     updateData.blurhash = blurhash
   }
+  // If image is just a filename (existing image), don't update image fields
 
   let result: UpdateResult
+  // Check if user is owner or editor
+  const agentToCheck = await Agent.findOne({
+    ...query,
+    deleted: false,
+  })
+
+  if (!agentToCheck) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  const isOwner = agentToCheck.owner.toString() === currentUserId.toString()
+  const isEditor = agentToCheck.agent_extras?.permissions?.editors?.some(
+    editor => editor.toString() === currentUserId.toString(),
+  )
+
+  if (!isOwner && !isEditor) {
+    return reply.status(401).send({
+      error: 'You are not authorized to update this agent',
+    })
+  }
+
   try {
     result = await Agent.updateOne(
       {
         ...query,
-        owner: currentUserId,
         deleted: false,
       },
       updateData,
@@ -320,6 +389,12 @@ export const createAgentTrigger = async (
   } = request.body as AgentsCreateTriggerArguments
   const currentUserId = request.user.userId
 
+  if (!request.user.featureFlags.includes(FeatureFlag.Preview)) {
+    return reply.status(401).send({
+      error: 'You are not authorized to use this feature.',
+    })
+  }
+
   const agent = await Agent.findById(agentId)
 
   if (!agent) {
@@ -367,7 +442,6 @@ export const createAgentTrigger = async (
 }
 
 export const updateAgentTrigger = async (
-  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -406,35 +480,42 @@ export const updateAgentTrigger = async (
     })
   }
 
-  const updateData = {
-    id: triggerId,
-    instruction,
-    session_type,
-    session,
-    schedule,
-    status,
-    posting_instructions,
+  // Find the trigger to update
+  const trigger = await Trigger.findById(triggerId)
+
+  if (!trigger) {
+    return reply.status(404).send({
+      error: 'Trigger not found',
+    })
   }
 
-  const edenComputeRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/update`,
-    data: updateData,
+  // Verify the trigger belongs to the agent
+  if (trigger.agent.toString() !== agentId) {
+    return reply.status(401).send({
+      error: 'Trigger does not belong to this agent',
+    })
   }
 
-  const edenComputeResponse = await axios.post(
-    edenComputeRequest.endpoint,
-    edenComputeRequest.data,
-    {
-      headers: {
-        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-      },
-    },
+  // Build update data - only include fields that are provided
+  const updateData: any = {}
+
+  if (instruction !== undefined) updateData.instruction = instruction
+  if (session_type !== undefined) updateData.session_type = session_type
+  if (session !== undefined) updateData.session = session
+  if (schedule !== undefined) updateData.schedule = schedule
+  if (status !== undefined) updateData.status = status
+  if (posting_instructions !== undefined)
+    updateData.posting_instructions = posting_instructions
+
+  // Update the trigger
+  const updatedTrigger = await Trigger.findByIdAndUpdate(
+    triggerId,
+    updateData,
+    { new: true },
   )
 
-  const response = edenComputeResponse.data
-
   return reply.status(200).send({
-    trigger: response.trigger || response,
+    trigger: updatedTrigger,
   })
 }
 
@@ -898,6 +979,129 @@ export const unlikeAgent = async (
     console.error('Error unliking agent:', error)
     return reply.status(500).send({
       message: 'Error unliking agent',
+    })
+  }
+}
+
+export const getAllUserTriggers = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+
+  try {
+    // Get all user's agents
+    const agents = await Agent.find({
+      owner: currentUserId,
+      deleted: false,
+    }).select('_id name username userImage')
+
+    const agentIds = agents.map(agent => agent._id)
+
+    if (agentIds.length === 0) {
+      return reply.status(200).send({
+        triggers: [],
+      })
+    }
+
+    type TriggerWithAgent = typeof Trigger & {
+      agent: {
+        _id: string
+        name: string
+        username: string
+        userImage: string
+      }
+    }
+
+    // Get all triggers for user's agents
+    const triggers = (await Trigger.find({
+      agent: { $in: agentIds },
+      $or: [{ deleted: { $exists: false } }, { deleted: false }],
+    }).populate({
+      path: 'agent',
+      select: '_id name username userImage',
+      model: Agent,
+    })) as TriggerWithAgent[]
+
+    // Force cloudfront URLs for agent images
+    triggers.forEach(trigger => {
+      if (trigger.agent && trigger.agent.userImage) {
+        trigger.agent.userImage = forceCloudfrontUrl(
+          server,
+          trigger.agent.userImage,
+        )
+      }
+    })
+
+    return reply.status(200).send({
+      triggers,
+    })
+  } catch (error) {
+    console.error('Error getting user triggers:', error)
+    return reply.status(500).send({
+      error: 'Failed to get user triggers',
+    })
+  }
+}
+
+export const getAllUserDeployments = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+
+  try {
+    // Get all user's agents
+    const agents = await Agent.find({
+      owner: currentUserId,
+      deleted: false,
+    }).select('_id name username userImage')
+
+    const agentIds = agents.map(agent => agent._id)
+
+    if (agentIds.length === 0) {
+      return reply.status(200).send({
+        deployments: [],
+      })
+    }
+
+    type DeploymentWithAgent = typeof Deployment & {
+      agent: {
+        _id: string
+        name: string
+        username: string
+        userImage: string
+      }
+    }
+
+    // Get all deployments for user's agents
+    const deployments = (await Deployment.find({
+      agent: { $in: agentIds },
+    }).populate({
+      path: 'agent',
+      select: '_id name username userImage',
+      model: Agent,
+    })) as DeploymentWithAgent[]
+
+    // Force cloudfront URLs for agent images
+    deployments.forEach(deployment => {
+      if (deployment.agent && deployment.agent.userImage) {
+        deployment.agent.userImage = forceCloudfrontUrl(
+          server,
+          deployment.agent.userImage,
+        )
+      }
+    })
+
+    return reply.status(200).send({
+      deployments,
+    })
+  } catch (error) {
+    console.error('Error getting user deployments:', error)
+    return reply.status(500).send({
+      error: 'Failed to get user deployments',
     })
   }
 }

@@ -8,6 +8,8 @@ import {
   getAgent,
   getAgentDeployments,
   getAgentTriggers,
+  getAllUserDeployments,
+  getAllUserTriggers,
   likeAgent,
   unlikeAgent,
   updateAgent,
@@ -129,6 +131,15 @@ const agentRoutes: FastifyPluginAsync = async server => {
         ),
         owner_pays: Type.Optional(Type.Boolean()),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+        agent_extras: Type.Optional(
+          Type.Object({
+            permissions: Type.Optional(
+              Type.Object({
+                editors: Type.Optional(Type.Array(Type.String())),
+              }),
+            ),
+          }),
+        ),
       }),
       response: {
         200: Type.Object({
@@ -164,7 +175,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       description: 'Update an agent trigger',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => updateAgentTrigger(server, request, reply),
+    handler: (request, reply) => updateAgentTrigger(request, reply),
   })
 
   server.delete('/v2/agents/:agentId/triggers/:triggerId', {
@@ -305,6 +316,44 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => unlikeAgent(server, request, reply),
+  })
+
+  server.get('/v2/agents/triggers', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get all triggers for user agents',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      response: {
+        200: {
+          triggers: Type.Array(Type.Any()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAllUserTriggers(server, request, reply),
+  })
+
+  server.get('/v2/agents/deployments', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get all deployments for user agents',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      response: {
+        200: {
+          deployments: Type.Array(Type.Any()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAllUserDeployments(server, request, reply),
   })
 }
 

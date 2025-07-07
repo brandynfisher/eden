@@ -3,7 +3,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
-import { PlusIcon } from 'lucide-react'
+import {
+  /*PlusIcon,*/
+  RotateCcwIcon,
+} from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 type Variant = 'chat' | 'session'
@@ -17,6 +20,7 @@ interface ChatVariantProps extends BaseProps {
   agent: Agent
   isLoading: boolean
   onSendMessage: (content: string, attachments?: string[]) => void
+  onAgentSelectorOpen?: () => void
 }
 
 interface SessionVariantProps extends BaseProps {
@@ -28,6 +32,8 @@ interface SessionVariantProps extends BaseProps {
 type SessionWelcomeProps = ChatVariantProps | SessionVariantProps
 
 const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
+  const onAgentSelectorOpen =
+    'onAgentSelectorOpen' in props ? props.onAgentSelectorOpen : undefined
   if (props.variant === 'session') {
     const { agents, sessionTitle } = props
     return (
@@ -59,9 +65,9 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
 
   const { agent, isLoading, onSendMessage } = props
   const suggestions = agent?.suggestions || []
-  const [showAll, setShowAll] = useState(false)
+  const [showAll /*setShowAll*/] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const [visibleCount, setVisibleCount] = useState(suggestions.length)
+  const [, /*visibleCount*/ setVisibleCount] = useState(suggestions.length)
 
   const measureAndUpdate = useCallback(() => {
     const container = containerRef.current
@@ -104,10 +110,10 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
   }, [showAll, suggestions.length, measureAndUpdate])
 
   return (
-    <div className="aui-thread-welcome">
-      <div className="aui-thread-welcome-center relative flex flex-col items-center justify-center min-h-full py-8 px-4 sm:px-6 lg:px-8">
-        <div className="relative flex flex-col items-center p-2 mt-8">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent rounded-full blur-3xl scale-150 opacity-60 animate-pulse" />
+    <div className="aui-thread-welcome min-h-full flex items-center justify-center">
+      <div className="aui-thread-welcome-center flex flex-col items-center justify-center min-h-full">
+        <div className="relative flex flex-col items-center p-2 ">
+          <div className="absolute inset-0 rounded-full blur-3xl scale-150 opacity-60 animate-pulse" />
           <div className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 tracking-wide">
             {agent.name}
           </div>
@@ -126,7 +132,7 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
         </div>
 
         <div className="mb-8">
-          <p className=" text-center">
+          <p className="text-2xl font-light">
             {agent.greeting || 'What do you want to create today?'}
           </p>
         </div>
@@ -139,46 +145,40 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
           />
         </div>
 
-        {suggestions.length > 0 && (
-          <div
-            className="w-full max-w-[--aui-thread-max-width] mx-auto relative"
-            ref={containerRef}
-          >
-            <div
-              className={`flex flex-row gap-2 flex-wrap justify-center transition-[height,opacity] duration-200 ${
-                !showAll ? 'overflow-hidden pr-[84px]' : 'flex-wrap'
-              }`}
-            >
-              {suggestions.map((suggestion, index) => (
-                <div
-                  key={`${suggestion.label}-${index}`}
-                  className={`text-sm suggestion-item hover:bg-secondary/20 flex-shrink-0 border border-border rounded-full bg-popover/30 transition-opacity duration-200 ${
-                    !showAll && index >= visibleCount
-                      ? 'opacity-0 absolute pointer-events-none'
-                      : 'opacity-100'
-                  }`}
-                >
-                  <button
-                    className="px-3 py-2 rounded-full"
-                    onClick={() => onSendMessage(suggestion.label)}
-                    disabled={isLoading}
-                  >
-                    {suggestion.label}
-                  </button>
-                </div>
-              ))}
-            </div>
-            {suggestions.length > visibleCount && !showAll && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="absolute text-xs bg-muted/30 right-0 top-1/2 -translate-y-1/2 z-10 rounded-full"
-                onClick={() => setShowAll(true)}
+        <div className=" w-full flex flex-wrap gap-3 justify-center mb-3">
+          {suggestions.length > 0 && (
+            <div className="w-full  mx-auto relative" ref={containerRef}>
+              <div
+                className={`gap-3 flex flex-row gap-2 flex-wrap justify-center transition-[height,opacity] duration-200`}
               >
-                <PlusIcon className="w-4 h-4 mr-1" />
-                More
-              </Button>
-            )}
+                {suggestions.map((suggestion, index) => (
+                  <div
+                    className="suggestion-item hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/4 flex-shrink-0 border border-border rounded-full bg-gradient-to-br from-card to-muted/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
+                    key={`${suggestion.prompt}-${index}`}
+                  >
+                    <button
+                      className="px-4 py-2.5 rounded-full text-sm"
+                      onClick={() => onSendMessage(suggestion.label)}
+                      disabled={isLoading}
+                    >
+                      {suggestion.label}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        {onAgentSelectorOpen && (
+          <div className="flex justify-center pt-4">
+            <Button
+              variant="outline"
+              onClick={onAgentSelectorOpen}
+              className="group relative bg-gradient-to-r from-card to-muted/60 border-border hover:border-primary/40 hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/4 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/10"
+            >
+              <RotateCcwIcon className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:rotate-180" />
+              Chat with another agent
+            </Button>
           </div>
         )}
       </div>

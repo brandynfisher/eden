@@ -19,17 +19,18 @@ import { siteConfig } from '@/lib/config'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
-import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import * as Sentry from '@sentry/nextjs'
 import { feedbackIntegration } from '@sentry/nextjs'
 import {
+  ActivityIcon,
   BookmarkIcon,
   BotIcon,
+  ClockIcon,
   ComponentIcon,
   CreditCardIcon,
   ImageIcon,
   LogOutIcon,
-  MessageCircleWarningIcon,
   SettingsIcon,
   TicketIcon,
 } from 'lucide-react'
@@ -54,6 +55,8 @@ const AccountDropdown = () => {
     isAuthenticated: !!isSignedIn,
   })
   const { signOut } = useClerk()
+
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   const logout = async () => {
     if (isSignedIn) {
@@ -95,10 +98,6 @@ const AccountDropdown = () => {
       unsubscribe && unsubscribe()
     }
   }, [feedback])
-
-  const handleFeedbackClick = () => {
-    setDropdownOpen(false)
-  }
 
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -202,6 +201,23 @@ const AccountDropdown = () => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        {isPreviewUser && (
+          <>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link href={`/settings/tasks`}>
+                <ClockIcon className="mr-2 h-4 w-4" />
+                <span>Tasks</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link href={`/settings/deployments`}>
+                <ActivityIcon className="mr-2 h-4 w-4" />
+                <span>Deployments</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem className="cursor-pointer" asChild>
           <Link href={`/settings/subscription`}>
             <CreditCardIcon className="mr-2 h-4 w-4" />
@@ -229,18 +245,6 @@ const AccountDropdown = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <div
-            ref={feedbackButtonRef}
-            className="flex items-center w-full"
-            onClick={handleFeedbackClick}
-            data-test-id="sentry-feedback-trigger-anchor"
-          >
-            <MessageCircleWarningIcon className="mr-2 h-4 w-4" />
-            <span>Feedback</span>
-          </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={logout}>

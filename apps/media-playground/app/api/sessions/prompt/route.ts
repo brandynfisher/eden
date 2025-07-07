@@ -1,5 +1,5 @@
 import { getAuthToken } from '@/lib/auth'
-import { env } from '@/lib/config'
+import { env, sessionConfig } from '@/lib/config'
 import { NextRequest } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const response = await fetch(
-      `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions/stream`,
+      `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions`,
       {
         method: 'POST',
         headers: {
@@ -56,13 +56,12 @@ export async function POST(request: NextRequest) {
           session_id: requestJson.session_id,
           content: requestJson.content,
           attachments: requestJson.attachments,
-          // Creation args (used when session_id is not provided)
           agent_ids: requestJson.agent_ids,
           scenario: requestJson.scenario,
           budget: requestJson.budget,
           title: requestJson.title,
           autonomy_settings: requestJson.autonomy_settings,
-          stream: true,
+          stream: sessionConfig.useStreaming,
         }),
       },
     )

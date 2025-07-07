@@ -240,8 +240,31 @@ const TaskFormModal: FC<{
   const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const currentTime = format(new Date(), 'HH:mm')
 
+  // Create a simplified schema for editing (only instruction validation)
+  const editingTaskSchema = z.object({
+    instructions: z.string().min(1, 'Instructions are required'),
+    // Other fields are optional/ignored when editing
+    sessionType: z.enum(['new', 'another']).optional(),
+    sessionId: z.string().optional(),
+    startDate: z.date().optional(),
+    repeat: z.nativeEnum(ExtendedTriggerRepeatOptions).optional(),
+    time: z.string().optional(),
+    dayOfWeek: z.string().optional(),
+    dayOfMonth: z.string().optional(),
+    month: z.string().optional(),
+    endDate: z.date().optional(),
+    timezone: z.string().optional(),
+    enablePosting: z.boolean().optional(),
+    postTo: z
+      .enum(['same', 'another', 'discord', 'telegram', 'x', 'farcaster'])
+      .optional(),
+    postToSessionId: z.string().optional(),
+    channelId: z.string().optional(),
+    customInstructions: z.string().optional(),
+  })
+
   const form = useForm<TaskFormDto>({
-    resolver: zodResolver(taskSchema),
+    resolver: zodResolver(editingTask ? editingTaskSchema : taskSchema),
     defaultValues: {
       instructions: '',
       sessionType: 'new',
@@ -418,15 +441,11 @@ const TaskFormModal: FC<{
       }
 
       if (editingTask) {
-        // Update existing task
+        // Update existing task - only allow instruction changes
         await axios.patch(
           `/api/agents/${agent._id}/triggers/${editingTask._id}`,
           {
             instruction: values.instructions,
-            session_type: values.sessionType,
-            session: values.sessionType === 'another' ? values.sessionId : null,
-            schedule,
-            posting_instructions,
           },
         )
         toast.success('Task updated successfully')
@@ -493,261 +512,87 @@ const TaskFormModal: FC<{
                 )}
               />
 
-              {/* Session Targeting */}
-              <FormField
-                control={form.control}
-                name="sessionType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      Session
-                    </FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder="Choose session target" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-80">
-                          <SelectItem value="new">
-                            Create new Session
-                          </SelectItem>
-                          <SelectItem value="another">
-                            Target another Session
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Session Dropdown - only shown if "Target another Session" is selected */}
-              {form.watch('sessionType') === 'another' && (
-                <FormField
-                  control={form.control}
-                  name="sessionId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Popover
-                        open={showSessionSelect}
-                        onOpenChange={setShowSessionSelect}
-                      >
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              className="h-12 w-full justify-between font-normal"
-                            >
-                              {field.value
-                                ? sessions
-                                    .filter(
-                                      (
-                                        session,
-                                      ): session is NonNullable<typeof session> =>
-                                        Boolean(session),
-                                    )
-                                    .find(session => session._id === field.value)
-                                    ?.title ||
-                                  `Session ${field.value.slice(-6)}`
-                                : 'Select target session'}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                          <Command>
-                            <CommandInput placeholder="Search sessions..." />
-                            <CommandEmpty>
-                              {isLoadingSessions
-                                ? 'Loading sessions...'
-                                : 'No sessions found.'}
-                            </CommandEmpty>
-                            <CommandGroup className="overflow-auto max-h-72">
-                              {!isLoadingSessions &&
-                                sessions
-                                  .filter(
-                                    (
-                                      session,
-                                    ): session is NonNullable<typeof session> =>
-                                      Boolean(session),
-                                  )
-                                  .map(session => (
-                                    <CommandItem
-                                      key={session._id}
-                                      value={session._id}
-                                      onSelect={() => {
-                                        field.onChange(session._id)
-                                        setShowSessionSelect(false)
-                                      }}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          'mr-2 h-4 w-4',
-                                          field.value === session._id
-                                            ? 'opacity-100'
-                                            : 'opacity-0',
-                                        )}
-                                      />
-                                      {session.title ||
-                                        `Session ${session._id.slice(-6)}`}
-                                    </CommandItem>
-                                  ))}
-                            </CommandGroup>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-            </div>
-
-            {/* Posting Instructions Section */}
-            <div className="space-y-6 border-t pt-6">
-              <div className="space-y-4">
-                {/* Toggle for posting summary */}
-                <FormField
-                  control={form.control}
-                  name="enablePosting"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-lg font-semibold cursor-pointer">
-                          Post a summary of the results
+              {/* Session Targeting - only show when creating new task */}
+              {!editingTask && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="sessionType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium">
+                          Session
                         </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger className="h-12">
+                              <SelectValue placeholder="Choose session target" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-80">
+                              <SelectItem value="new">
+                                Create new Session
+                              </SelectItem>
+                              <SelectItem value="another">
+                                Target another Session
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Conditional posting options - only shown if enablePosting is true */}
-                {form.watch('enablePosting') && (
-                  <div className="space-y-4 ml-6 border-l-2 border-muted pl-4">
-                    {/* Custom posting instructions */}
+                  {/* Session Dropdown - only shown if "Target another Session" is selected */}
+                  {form.watch('sessionType') === 'another' && (
                     <FormField
                       control={form.control}
-                      name="customInstructions"
+                      name="sessionId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base font-medium">
-                            Posting instructions
-                          </FormLabel>
-                          <FormControl>
-                            <AutosizeTextarea
-                              placeholder="Describe what should be included in the results summary..."
-                              className="resize-none min-h-[80px] text-base"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Post To */}
-                    <FormField
-                      control={form.control}
-                      name="postTo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-base font-medium">
-                            Post to
-                          </FormLabel>
-                          <FormControl>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <SelectTrigger className="h-12">
-                                <SelectValue placeholder="Choose where to post" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-80">
-                                <SelectItem value="same">
-                                  Same Session
-                                </SelectItem>
-                                <SelectItem value="another">
-                                  Another Session
-                                </SelectItem>
-                                {availablePlatforms.includes('discord') && (
-                                  <SelectItem value="discord">
-                                    <div className="flex items-center gap-2">
-                                      <DiscordIcon size={16} />
-                                      Discord
-                                    </div>
-                                  </SelectItem>
-                                )}
-                                {availablePlatforms.includes('telegram') && (
-                                  <SelectItem value="telegram">
-                                    <div className="flex items-center gap-2">
-                                      <TelegramIcon size={16} />
-                                      Telegram
-                                    </div>
-                                  </SelectItem>
-                                )}
-                                {availablePlatforms.includes('x') && (
-                                  <SelectItem value="x">
-                                    <div className="flex items-center gap-2">
-                                      <TwitterIcon size={16} />X
-                                    </div>
-                                  </SelectItem>
-                                )}
-                                {availablePlatforms.includes('farcaster') && (
-                                  <SelectItem value="farcaster">
-                                    <div className="flex items-center gap-2">
-                                      <FarcasterIcon size={16} />
-                                      Farcaster
-                                    </div>
-                                  </SelectItem>
-                                )}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Session Dropdown for posting - only shown if "Another Session" is selected */}
-                    {form.watch('postTo') === 'another' && (
-                      <FormField
-                        control={form.control}
-                        name="postToSessionId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <SelectTrigger className="h-12">
-                                  <SelectValue placeholder="Select session to post to" />
-                                </SelectTrigger>
-                                <SelectContent className="max-h-80">
-                                  {isLoadingSessions ? (
-                                    <SelectItem value="loading" disabled>
-                                      <div className="py-1">
-                                        Loading sessions...
-                                      </div>
-                                    </SelectItem>
-                                  ) : sessions.length === 0 ? (
-                                    <SelectItem value="no-sessions" disabled>
-                                      <div className="py-1">
-                                        No sessions found
-                                      </div>
-                                    </SelectItem>
-                                  ) : (
+                          <Popover
+                            open={showSessionSelect}
+                            onOpenChange={setShowSessionSelect}
+                          >
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className="h-12 w-full justify-between font-normal"
+                                >
+                                  {field.value
+                                    ? sessions
+                                        .filter(
+                                          (
+                                            session,
+                                          ): session is NonNullable<
+                                            typeof session
+                                          > => Boolean(session),
+                                        )
+                                        .find(
+                                          session =>
+                                            session._id === field.value,
+                                        )?.title ||
+                                      `Session ${field.value.slice(-6)}`
+                                    : 'Select target session'}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                              <Command>
+                                <CommandInput placeholder="Search sessions..." />
+                                <CommandEmpty>
+                                  {isLoadingSessions
+                                    ? 'Loading sessions...'
+                                    : 'No sessions found.'}
+                                </CommandEmpty>
+                                <CommandGroup className="overflow-auto max-h-72">
+                                  {!isLoadingSessions &&
                                     sessions
                                       .filter(
                                         (
@@ -757,18 +602,142 @@ const TaskFormModal: FC<{
                                         > => Boolean(session),
                                       )
                                       .map(session => (
-                                        <SelectItem
+                                        <CommandItem
                                           key={session._id}
                                           value={session._id}
+                                          onSelect={() => {
+                                            field.onChange(session._id)
+                                            setShowSessionSelect(false)
+                                          }}
                                         >
-                                          <div className="py-1">
-                                            {session.title ||
-                                              `Session ${session._id.slice(
-                                                -6,
-                                              )}`}
-                                          </div>
-                                        </SelectItem>
-                                      ))
+                                          <Check
+                                            className={cn(
+                                              'mr-2 h-4 w-4',
+                                              field.value === session._id
+                                                ? 'opacity-100'
+                                                : 'opacity-0',
+                                            )}
+                                          />
+                                          {session.title ||
+                                            `Session ${session._id.slice(-6)}`}
+                                        </CommandItem>
+                                      ))}
+                                </CommandGroup>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Posting Instructions Section - only show when creating new task */}
+            {!editingTask && (
+              <div className="space-y-6 border-t pt-6">
+                <div className="space-y-4">
+                  {/* Toggle for posting summary */}
+                  <FormField
+                    control={form.control}
+                    name="enablePosting"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-lg font-semibold cursor-pointer">
+                            Post a summary of the results
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Conditional posting options - only shown if enablePosting is true */}
+                  {form.watch('enablePosting') && (
+                    <div className="space-y-4 ml-6 border-l-2 border-muted pl-4">
+                      {/* Custom posting instructions */}
+                      <FormField
+                        control={form.control}
+                        name="customInstructions"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium">
+                              Posting instructions
+                            </FormLabel>
+                            <FormControl>
+                              <AutosizeTextarea
+                                placeholder="Describe what should be included in the results summary..."
+                                className="resize-none min-h-[80px] text-base"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Post To */}
+                      <FormField
+                        control={form.control}
+                        name="postTo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium">
+                              Post to
+                            </FormLabel>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger className="h-12">
+                                  <SelectValue placeholder="Choose where to post" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-80">
+                                  <SelectItem value="same">
+                                    Same Session
+                                  </SelectItem>
+                                  <SelectItem value="another">
+                                    Another Session
+                                  </SelectItem>
+                                  {availablePlatforms.includes('discord') && (
+                                    <SelectItem value="discord">
+                                      <div className="flex items-center gap-2">
+                                        <DiscordIcon size={16} />
+                                        Discord
+                                      </div>
+                                    </SelectItem>
+                                  )}
+                                  {availablePlatforms.includes('telegram') && (
+                                    <SelectItem value="telegram">
+                                      <div className="flex items-center gap-2">
+                                        <TelegramIcon size={16} />
+                                        Telegram
+                                      </div>
+                                    </SelectItem>
+                                  )}
+                                  {availablePlatforms.includes('x') && (
+                                    <SelectItem value="x">
+                                      <div className="flex items-center gap-2">
+                                        <TwitterIcon size={16} />X
+                                      </div>
+                                    </SelectItem>
+                                  )}
+                                  {availablePlatforms.includes('farcaster') && (
+                                    <SelectItem value="farcaster">
+                                      <div className="flex items-center gap-2">
+                                        <FarcasterIcon size={16} />
+                                        Farcaster
+                                      </div>
+                                    </SelectItem>
                                   )}
                                 </SelectContent>
                               </Select>
@@ -777,39 +746,57 @@ const TaskFormModal: FC<{
                           </FormItem>
                         )}
                       />
-                    )}
 
-                    {/* Discord Channel Dropdown */}
-                    {form.watch('postTo') === 'discord' &&
-                      getChannelOptions.discordChannels.length > 0 && (
+                      {/* Session Dropdown for posting - only shown if "Another Session" is selected */}
+                      {form.watch('postTo') === 'another' && (
                         <FormField
                           control={form.control}
-                          name="channelId"
+                          name="postToSessionId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-base font-medium">
-                                Discord Channel
-                              </FormLabel>
                               <FormControl>
                                 <Select
                                   onValueChange={field.onChange}
                                   value={field.value}
                                 >
                                   <SelectTrigger className="h-12">
-                                    <SelectValue placeholder="Select Discord channel" />
+                                    <SelectValue placeholder="Select session to post to" />
                                   </SelectTrigger>
                                   <SelectContent className="max-h-80">
-                                    {getChannelOptions.discordChannels.map(
-                                      channel => (
-                                        <SelectItem
-                                          key={channel.id}
-                                          value={channel.id}
-                                        >
-                                          <div className="py-1">
-                                            {channel.note || channel.id}
-                                          </div>
-                                        </SelectItem>
-                                      ),
+                                    {isLoadingSessions ? (
+                                      <SelectItem value="loading" disabled>
+                                        <div className="py-1">
+                                          Loading sessions...
+                                        </div>
+                                      </SelectItem>
+                                    ) : sessions.length === 0 ? (
+                                      <SelectItem value="no-sessions" disabled>
+                                        <div className="py-1">
+                                          No sessions found
+                                        </div>
+                                      </SelectItem>
+                                    ) : (
+                                      sessions
+                                        .filter(
+                                          (
+                                            session,
+                                          ): session is NonNullable<
+                                            typeof session
+                                          > => Boolean(session),
+                                        )
+                                        .map(session => (
+                                          <SelectItem
+                                            key={session._id}
+                                            value={session._id}
+                                          >
+                                            <div className="py-1">
+                                              {session.title ||
+                                                `Session ${session._id.slice(
+                                                  -6,
+                                                )}`}
+                                            </div>
+                                          </SelectItem>
+                                        ))
                                     )}
                                   </SelectContent>
                                 </Select>
@@ -820,127 +807,135 @@ const TaskFormModal: FC<{
                         />
                       )}
 
-                    {/* Telegram Channel Dropdown */}
-                    {form.watch('postTo') === 'telegram' &&
-                      getChannelOptions.telegramChannels.length > 0 && (
-                        <FormField
-                          control={form.control}
-                          name="channelId"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-base font-medium">
-                                Telegram Channel
-                              </FormLabel>
-                              <FormControl>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger className="h-12">
-                                    <SelectValue placeholder="Select Telegram channel" />
-                                  </SelectTrigger>
-                                  <SelectContent className="max-h-80">
-                                    {getChannelOptions.telegramChannels.map(
-                                      channel => (
-                                        <SelectItem
-                                          key={channel.id}
-                                          value={channel.id}
-                                        >
-                                          <div className="py-1">
-                                            {channel.note || channel.id}
-                                          </div>
-                                        </SelectItem>
-                                      ),
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
-
-                    {/* Fallback input for Discord/Telegram when no channels configured */}
-                    {((form.watch('postTo') === 'discord' &&
-                      getChannelOptions.discordChannels.length === 0) ||
-                      (form.watch('postTo') === 'telegram' &&
-                        getChannelOptions.telegramChannels.length === 0)) && (
-                      <FormField
-                        control={form.control}
-                        name="channelId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-medium">
-                              {form.watch('postTo') === 'discord'
-                                ? 'Discord Channel ID'
-                                : 'Telegram Channel ID'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={`Enter ${form.watch(
-                                  'postTo',
-                                )} channel ID`}
-                                className="h-12"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                      {/* Discord Channel Dropdown */}
+                      {form.watch('postTo') === 'discord' &&
+                        getChannelOptions.discordChannels.length > 0 && (
+                          <FormField
+                            control={form.control}
+                            name="channelId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">
+                                  Discord Channel
+                                </FormLabel>
+                                <FormControl>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
+                                    <SelectTrigger className="h-12">
+                                      <SelectValue placeholder="Select Discord channel" />
+                                    </SelectTrigger>
+                                    <SelectContent className="max-h-80">
+                                      {getChannelOptions.discordChannels.map(
+                                        channel => (
+                                          <SelectItem
+                                            key={channel.id}
+                                            value={channel.id}
+                                          >
+                                            <div className="py-1">
+                                              {channel.note || channel.id}
+                                            </div>
+                                          </SelectItem>
+                                        ),
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         )}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
 
-            {/* Schedule Section */}
-            <div className="space-y-6 border-t pt-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Schedule</h3>
-              </div>
+                      {/* Telegram Channel Dropdown */}
+                      {form.watch('postTo') === 'telegram' &&
+                        getChannelOptions.telegramChannels.length > 0 && (
+                          <FormField
+                            control={form.control}
+                            name="channelId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">
+                                  Telegram Channel
+                                </FormLabel>
+                                <FormControl>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
+                                    <SelectTrigger className="h-12">
+                                      <SelectValue placeholder="Select Telegram channel" />
+                                    </SelectTrigger>
+                                    <SelectContent className="max-h-80">
+                                      {getChannelOptions.telegramChannels.map(
+                                        channel => (
+                                          <SelectItem
+                                            key={channel.id}
+                                            value={channel.id}
+                                          >
+                                            <div className="py-1">
+                                              {channel.note || channel.id}
+                                            </div>
+                                          </SelectItem>
+                                        ),
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
 
-              <div className="space-y-4">
-                {/* Repeat Selection */}
-                <FormField
-                  control={form.control}
-                  name="repeat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="Choose schedule frequency" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-80">
-                            {extendedTriggerRepeatOptions.map(option => (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}
-                              >
-                                <div className="py-1 font-medium">
-                                  {option.name}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                      {/* Fallback input for Discord/Telegram when no channels configured */}
+                      {((form.watch('postTo') === 'discord' &&
+                        getChannelOptions.discordChannels.length === 0) ||
+                        (form.watch('postTo') === 'telegram' &&
+                          getChannelOptions.telegramChannels.length === 0)) && (
+                        <FormField
+                          control={form.control}
+                          name="channelId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">
+                                {form.watch('postTo') === 'discord'
+                                  ? 'Discord Channel ID'
+                                  : 'Telegram Channel ID'}
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder={`Enter ${form.watch(
+                                    'postTo',
+                                  )} channel ID`}
+                                  className="h-12"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+                    </div>
                   )}
-                />
+                </div>
+              </div>
+            )}
 
-                {/* Conditional fields based on repeat selection */}
-                {form.watch('repeat') ===
-                  ExtendedTriggerRepeatOptions.WEEKLY && (
+            {/* Schedule Section - only show when creating new task */}
+            {!editingTask && (
+              <div className="space-y-6 border-t pt-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Schedule</h3>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Repeat Selection */}
                   <FormField
                     control={form.control}
-                    name="dayOfWeek"
+                    name="repeat"
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -949,55 +944,16 @@ const TaskFormModal: FC<{
                             value={field.value}
                           >
                             <SelectTrigger className="h-12">
-                              <SelectValue placeholder="Select day of the week" />
+                              <SelectValue placeholder="Choose schedule frequency" />
                             </SelectTrigger>
                             <SelectContent className="max-h-80">
-                              <SelectItem value="0">Sunday</SelectItem>
-                              <SelectItem value="1">Monday</SelectItem>
-                              <SelectItem value="2">Tuesday</SelectItem>
-                              <SelectItem value="3">Wednesday</SelectItem>
-                              <SelectItem value="4">Thursday</SelectItem>
-                              <SelectItem value="5">Friday</SelectItem>
-                              <SelectItem value="6">Saturday</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                {form.watch('repeat') ===
-                  ExtendedTriggerRepeatOptions.MONTHLY && (
-                  <FormField
-                    control={form.control}
-                    name="dayOfMonth"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <SelectTrigger className="h-12">
-                              <SelectValue placeholder="Select day of the month" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-80">
-                              {Array.from({ length: 31 }, (_, i) => (
+                              {extendedTriggerRepeatOptions.map(option => (
                                 <SelectItem
-                                  key={i + 1}
-                                  value={(i + 1).toString()}
+                                  key={option.value}
+                                  value={option.value}
                                 >
-                                  <div className="py-1">
-                                    {i + 1}
-                                    {i + 1 === 1
-                                      ? 'st'
-                                      : i + 1 === 2
-                                      ? 'nd'
-                                      : i + 1 === 3
-                                      ? 'rd'
-                                      : 'th'}
+                                  <div className="py-1 font-medium">
+                                    {option.name}
                                   </div>
                                 </SelectItem>
                               ))}
@@ -1008,14 +964,13 @@ const TaskFormModal: FC<{
                       </FormItem>
                     )}
                   />
-                )}
 
-                {form.watch('repeat') ===
-                  ExtendedTriggerRepeatOptions.ANNUALLY && (
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Conditional fields based on repeat selection */}
+                  {form.watch('repeat') ===
+                    ExtendedTriggerRepeatOptions.WEEKLY && (
                     <FormField
                       control={form.control}
-                      name="month"
+                      name="dayOfWeek"
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
@@ -1024,21 +979,16 @@ const TaskFormModal: FC<{
                               value={field.value}
                             >
                               <SelectTrigger className="h-12">
-                                <SelectValue placeholder="Month" />
+                                <SelectValue placeholder="Select day of the week" />
                               </SelectTrigger>
                               <SelectContent className="max-h-80">
-                                <SelectItem value="1">January</SelectItem>
-                                <SelectItem value="2">February</SelectItem>
-                                <SelectItem value="3">March</SelectItem>
-                                <SelectItem value="4">April</SelectItem>
-                                <SelectItem value="5">May</SelectItem>
-                                <SelectItem value="6">June</SelectItem>
-                                <SelectItem value="7">July</SelectItem>
-                                <SelectItem value="8">August</SelectItem>
-                                <SelectItem value="9">September</SelectItem>
-                                <SelectItem value="10">October</SelectItem>
-                                <SelectItem value="11">November</SelectItem>
-                                <SelectItem value="12">December</SelectItem>
+                                <SelectItem value="0">Sunday</SelectItem>
+                                <SelectItem value="1">Monday</SelectItem>
+                                <SelectItem value="2">Tuesday</SelectItem>
+                                <SelectItem value="3">Wednesday</SelectItem>
+                                <SelectItem value="4">Thursday</SelectItem>
+                                <SelectItem value="5">Friday</SelectItem>
+                                <SelectItem value="6">Saturday</SelectItem>
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -1046,6 +996,10 @@ const TaskFormModal: FC<{
                         </FormItem>
                       )}
                     />
+                  )}
+
+                  {form.watch('repeat') ===
+                    ExtendedTriggerRepeatOptions.MONTHLY && (
                     <FormField
                       control={form.control}
                       name="dayOfMonth"
@@ -1057,7 +1011,7 @@ const TaskFormModal: FC<{
                               value={field.value}
                             >
                               <SelectTrigger className="h-12">
-                                <SelectValue placeholder="Day" />
+                                <SelectValue placeholder="Select day of the month" />
                               </SelectTrigger>
                               <SelectContent className="max-h-80">
                                 {Array.from({ length: 31 }, (_, i) => (
@@ -1084,73 +1038,88 @@ const TaskFormModal: FC<{
                         </FormItem>
                       )}
                     />
-                  </div>
-                )}
+                  )}
 
-                {/* Time picker for all except "doesn't repeat" */}
-                {form.watch('repeat') !==
-                  ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT && (
-                  <FormField
-                    control={form.control}
-                    name="time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            type="time"
-                            value={field.value || ''}
-                            onChange={field.onChange}
-                            className="h-12"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                  {form.watch('repeat') ===
+                    ExtendedTriggerRepeatOptions.ANNUALLY && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="month"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger className="h-12">
+                                  <SelectValue placeholder="Month" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-80">
+                                  <SelectItem value="1">January</SelectItem>
+                                  <SelectItem value="2">February</SelectItem>
+                                  <SelectItem value="3">March</SelectItem>
+                                  <SelectItem value="4">April</SelectItem>
+                                  <SelectItem value="5">May</SelectItem>
+                                  <SelectItem value="6">June</SelectItem>
+                                  <SelectItem value="7">July</SelectItem>
+                                  <SelectItem value="8">August</SelectItem>
+                                  <SelectItem value="9">September</SelectItem>
+                                  <SelectItem value="10">October</SelectItem>
+                                  <SelectItem value="11">November</SelectItem>
+                                  <SelectItem value="12">December</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="dayOfMonth"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger className="h-12">
+                                  <SelectValue placeholder="Day" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-80">
+                                  {Array.from({ length: 31 }, (_, i) => (
+                                    <SelectItem
+                                      key={i + 1}
+                                      value={(i + 1).toString()}
+                                    >
+                                      <div className="py-1">
+                                        {i + 1}
+                                        {i + 1 === 1
+                                          ? 'st'
+                                          : i + 1 === 2
+                                          ? 'nd'
+                                          : i + 1 === 3
+                                          ? 'rd'
+                                          : 'th'}
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
 
-                {/* Start date/time for "doesn't repeat" */}
-                {form.watch('repeat') ===
-                  ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Popover modal={true}>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  type="button"
-                                  variant={'outline'}
-                                  className={cn(
-                                    'w-full h-12 justify-start text-left font-normal',
-                                    !field.value && 'text-muted-foreground',
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-3 h-4 w-4" />
-                                  {field.value ? (
-                                    format(field.value, 'MMMM d, yyyy')
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  {/* Time picker for all except "doesn't repeat" */}
+                  {form.watch('repeat') !==
+                    ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT && (
                     <FormField
                       control={form.control}
                       name="time"
@@ -1168,10 +1137,72 @@ const TaskFormModal: FC<{
                         </FormItem>
                       )}
                     />
-                  </div>
-                )}
+                  )}
+
+                  {/* Start date/time for "doesn't repeat" */}
+                  {form.watch('repeat') ===
+                    ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="startDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Popover modal={true}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    type="button"
+                                    variant={'outline'}
+                                    className={cn(
+                                      'w-full h-12 justify-start text-left font-normal',
+                                      !field.value && 'text-muted-foreground',
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-3 h-4 w-4" />
+                                    {field.value ? (
+                                      format(field.value, 'MMMM d, yyyy')
+                                    ) : (
+                                      <span>Pick a date</span>
+                                    )}
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="time"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                type="time"
+                                value={field.value || ''}
+                                onChange={field.onChange}
+                                className="h-12"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 pt-6 border-t">

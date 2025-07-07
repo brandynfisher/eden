@@ -41,6 +41,12 @@ export const OtherMessage = ({
   // Make ANY sender with a username clickable - fuck the type checking
   const shouldMakeClickable = hasUsername
 
+  const finalImageUrl = message.sender?.userImage
+    ? message.sender.userImage.startsWith('https://')
+      ? message.sender.userImage // Already a full URL, don't process again
+      : getCloudfrontUrl(message.sender.userImage) // Convert filename to URL
+    : undefined
+
   return (
     <div
       className={cn([
@@ -50,19 +56,13 @@ export const OtherMessage = ({
       <div className="flex items-center md:items-start mr-1 gap-2">
         {shouldMakeClickable ? (
           <Link
-            href={`/agents/${message.sender.username}`}
+            href={`/chat/${message.sender.username}`}
             className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0 block relative"
             style={{ minWidth: '2rem', minHeight: '2rem' }}
           >
             {showAvatar ? (
               <Avatar className="w-full h-full cursor-pointer hover:opacity-80 transition-opacity">
-                <AvatarImage
-                  src={
-                    message.sender?.userImage
-                      ? getCloudfrontUrl(message.sender.userImage)
-                      : undefined
-                  }
-                />
+                <AvatarImage src={finalImageUrl} />
                 <AvatarFallback>
                   {message.sender?.username ? (
                     <svg className="w-full h-full" viewBox="0 0 40 40">
@@ -92,13 +92,7 @@ export const OtherMessage = ({
           <div className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0">
             {showAvatar ? (
               <Avatar className="w-full h-full">
-                <AvatarImage
-                  src={
-                    message.sender?.userImage
-                      ? getCloudfrontUrl(message.sender.userImage)
-                      : undefined
-                  }
-                />
+                <AvatarImage src={finalImageUrl} />
                 <AvatarFallback>
                   {message.sender?.username ? (
                     <svg className="w-full h-full" viewBox="0 0 40 40">
@@ -126,7 +120,7 @@ export const OtherMessage = ({
         <div className="text-muted-foreground text-sm md:hidden">
           {shouldMakeClickable ? (
             <Link
-              href={`/agents/${message.sender.username}`}
+              href={`/chat/${message.sender.username}`}
               className="hover:underline"
             >
               {message.sender?.username}

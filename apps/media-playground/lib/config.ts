@@ -28,6 +28,12 @@ export const env = {
   EDEN_MAINTENANCE_MODE: process.env.EDEN_MAINTENANCE_MODE || false,
 }
 
+// Session configuration
+export const sessionConfig = {
+  // Whether to use streaming for session responses (true) or websocket-only updates (false)
+  useStreaming: false,
+}
+
 export const siteConfig: SiteConfig = {
   name: 'Eden',
   author: 'edenlabs',

@@ -21,6 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { ProfileImageUploader } from '@/features/chat/components/profile-image-uploader'
@@ -337,15 +338,12 @@ const CreateAgentView = () => {
                                       </span>
                                     </FormLabel>
                                     <FormControl>
-                                      <Input
-                                        type="text"
-                                        placeholder="Username on Eden"
-                                        {...field}
-                                        onChange={e => {
-                                          field.onChange(
-                                            e.target.value.slice(0, 42),
-                                          )
-                                        }}
+                                      <SlickUsernamePicker
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        displayName={form.watch('name')}
+                                        onBlur={field.onBlur}
+                                        disabled={form.formState.isSubmitting}
                                       />
                                     </FormControl>
                                     <FormMessage />

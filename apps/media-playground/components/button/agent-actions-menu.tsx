@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { handleShareClick } from '@/features/detail/agent-share-util'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { canEditAgent, isAgentOwner } from '@/lib/utils'
 //import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
@@ -80,7 +81,7 @@ const AgentActionsMenu = ({
       addToHistory(feedId)
     }
     setIsOpen(false)
-    router.push(`/agents/${agent.username}`)
+    router.push(`/chat/${agent.username}`)
   }
 
   //const onUpdate = async () => {
@@ -179,7 +180,7 @@ const AgentActionsMenu = ({
               </DropdownMenuItem>
             </DropdownMenuGroup>
           )} */}
-          {agent.owner._id === user?._id && (
+          {isAgentOwner(agent, user?._id) && (
             <>
               {/*isFeatureDeploymentsEnabled &&
                 !hiddenItems?.includes('deployments') && (
@@ -213,16 +214,6 @@ const AgentActionsMenu = ({
                     <DropdownMenuSeparator />
                   </>
                 )*/}
-              {!hiddenItems?.includes('edit') && (
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <button type="button" className="w-full">
-                    <Link href={`/edit/${agent.username}`} className="flex">
-                      <SettingsIcon className="mr-2 h-4 w-4" />
-                      <span>Edit</span>
-                    </Link>
-                  </button>
-                </DropdownMenuItem>
-              )}
               {!hiddenItems?.includes('privacy') && (
                 <DropdownMenuGroup>
                   <PrivacyActionItem
@@ -243,6 +234,20 @@ const AgentActionsMenu = ({
                     />
                   </DropdownMenuGroup>
                 </>
+              )}
+            </>
+          )}
+          {canEditAgent(agent, user?._id) && (
+            <>
+              {!hiddenItems?.includes('edit') && (
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <button type="button" className="w-full">
+                    <Link href={`/edit/${agent.username}`} className="flex">
+                      <SettingsIcon className="mr-2 h-4 w-4" />
+                      <span>Edit</span>
+                    </Link>
+                  </button>
+                </DropdownMenuItem>
               )}
             </>
           )}
