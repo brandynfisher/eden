@@ -252,6 +252,7 @@ const AgentEditView: FC<{
   const { user } = useAuthState()
   const searchParams = useSearchParams()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   // Get initial active tab from URL parameter or default to 'profile'
   const getInitialActiveTab = () => {
@@ -266,7 +267,6 @@ const AgentEditView: FC<{
   }
 
   const [activeTab, setActiveTab] = useState(getInitialActiveTab())
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   // Fetch deployments for the deployments tab
   const deploymentsQuery = useAgentDeploymentsQuery({
@@ -551,6 +551,7 @@ const AgentEditView: FC<{
                                         displayName={form.watch('name')}
                                         onBlur={field.onBlur}
                                         disabled={form.formState.isSubmitting}
+                                        originalValue={agent.username}
                                       />
                                     </FormControl>
                                     <FormMessage />
@@ -1015,8 +1016,6 @@ const AgentEditView: FC<{
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Updating Agent...
                       </>
-                    ) : !form.formState.isValid ? (
-                      'Complete Required Fields'
                     ) : (
                       'Save'
                     )}

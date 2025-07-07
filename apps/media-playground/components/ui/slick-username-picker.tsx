@@ -14,6 +14,10 @@ interface SlickUsernamePickerProps {
   displayName: string
   onBlur?: () => void
   disabled?: boolean
+  originalValue?: string // NEW
+  onStatusChange?: (
+    status: 'available' | 'taken' | 'invalid' | 'checking' | null,
+  ) => void // NEW
 }
 
 export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
@@ -22,12 +26,28 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
   displayName,
   onBlur,
   disabled,
+  originalValue,
+  onStatusChange,
 }) => {
   const [isChecking, setIsChecking] = useState(false)
   const [availability, setAvailability] = useState<
     'available' | 'taken' | 'invalid' | null
   >(null)
   const [lastCheckedValue, setLastCheckedValue] = useState('')
+
+  // Call onStatusChange whenever status changes
+  useEffect(() => {
+    if (onStatusChange) {
+      if (originalValue && value === originalValue) {
+        onStatusChange('available')
+      } else if (isChecking) {
+        onStatusChange('checking')
+      } else {
+        onStatusChange(availability)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availability, isChecking, value, originalValue])
 
   // Debounced availability check
   useEffect(() => {
@@ -36,29 +56,29 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
       return
     }
 
+    // If value matches originalValue, always available
+    if (originalValue && value === originalValue) {
+      setAvailability('available')
+      setIsChecking(false)
+      return
+    }
+
     const timeoutId = setTimeout(async () => {
       if (value === lastCheckedValue) return
-
       setIsChecking(true)
       setLastCheckedValue(value)
-
       try {
-        // Check if username matches the required pattern
         const isValidPattern = /^[a-z0-9_]+(?:-[a-z0-9_]+)*$/.test(value)
         if (!isValidPattern) {
           setAvailability('invalid')
           setIsChecking(false)
           return
         }
-
-        // Check availability by trying to patch with the new username
-        // We'll use a dry-run approach or create a dedicated endpoint
         const response = await axios.get(
           `/api/agents/check-username?username=${encodeURIComponent(value)}`,
         )
         setAvailability(response.data.available ? 'available' : 'taken')
       } catch (error) {
-        // If it's a 409 or validation error, username is likely taken
         if ((error as AxiosError)?.response?.status === 409) {
           setAvailability('taken')
         } else {
@@ -68,10 +88,9 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
       } finally {
         setIsChecking(false)
       }
-    }, 800) // 800ms debounce
-
+    }, 800)
     return () => clearTimeout(timeoutId)
-  }, [value, lastCheckedValue])
+  }, [value, lastCheckedValue, originalValue])
 
   // Slugify function
   const slugify = (text: string): string => {
@@ -130,6 +149,7 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
   }
 
   const getStatusIcon = () => {
+    if (originalValue && value === originalValue) return null
     if (isChecking) {
       return <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
     }
@@ -147,8 +167,8 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
   }
 
   const getStatusText = () => {
+    if (originalValue && value === originalValue) return null
     if (isChecking) return 'Checking availability...'
-
     switch (availability) {
       case 'available':
         return 'Username is available'
@@ -179,11 +199,18 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
             disabled={disabled}
             className={cn(
               'pr-8',
-              availability === 'available' &&
-                'border-green-500 focus:border-green-500',
-              availability === 'taken' && 'border-red-500 focus:border-red-500',
-              availability === 'invalid' &&
-                'border-orange-500 focus:border-orange-500',
+              originalValue && value === originalValue
+                ? ''
+                : availability === 'available' &&
+                    'border-green-500 focus:border-green-500',
+              originalValue && value === originalValue
+                ? ''
+                : availability === 'taken' &&
+                    'border-red-500 focus:border-red-500',
+              originalValue && value === originalValue
+                ? ''
+                : availability === 'invalid' &&
+                    'border-orange-500 focus:border-orange-500',
             )}
           />
           {(isChecking || availability) && (
