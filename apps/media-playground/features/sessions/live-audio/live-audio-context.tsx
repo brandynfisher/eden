@@ -1,6 +1,14 @@
 'use client'
 
-import { createContext, useContext, useCallback, useRef, useState, ReactNode, useEffect } from 'react'
+import {
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { toast } from 'sonner'
 
 export type LiveAudioSettings = {
@@ -17,11 +25,15 @@ type LiveAudioState = {
 type LiveAudioContextType = {
   // State
   state: LiveAudioState
-  
+
   // Actions
-  startLiveAudio: (settings: LiveAudioSettings, onTranscription: (transcription: string, timestamp: string) => void, onActionInterval?: () => void) => Promise<boolean>
+  startLiveAudio: (
+    settings: LiveAudioSettings,
+    onTranscription: (transcription: string, timestamp: string) => void,
+    onActionInterval?: () => void,
+  ) => Promise<boolean>
   stopLiveAudio: () => void
-  
+
   // Utils
   isLiveAudioActive: boolean
 }
@@ -51,7 +63,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     isProcessing: false,
     currentSettings: null,
   })
-  
+
   // Force reset recording state on mount to prevent stuck states
   useEffect(() => {
     setState(prev => ({
@@ -61,13 +73,15 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     }))
     isRecordingRef.current = false
   }, [])
-  
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const isRecordingRef = useRef<boolean>(false)
-  const onTranscriptionRef = useRef<((transcription: string, timestamp: string) => void) | null>(null)
+  const onTranscriptionRef = useRef<
+    ((transcription: string, timestamp: string) => void) | null
+  >(null)
   const onActionIntervalRef = useRef<(() => void) | null>(null)
 
   const requestMicrophoneAccess = useCallback(async (): Promise<boolean> => {
@@ -84,25 +98,27 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
       return true
     } catch (error) {
       console.error('🎤 [LIVE-AUDIO] Error accessing microphone:', error)
-      
+
       let errorMessage = 'Microphone access denied'
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
-          errorMessage = 'Microphone access denied. Please allow microphone access in your browser settings.'
+          errorMessage =
+            'Microphone access denied. Please allow microphone access in your browser settings.'
         } else if (error.name === 'NotFoundError') {
-          errorMessage = 'No microphone found. Please connect a microphone and try again.'
+          errorMessage =
+            'No microphone found. Please connect a microphone and try again.'
         } else if (error.name === 'NotReadableError') {
           errorMessage = 'Microphone is already in use by another application.'
         } else {
           errorMessage = `Microphone error: ${error.message}`
         }
       }
-      
+
       toast.error('Live Audio Error', {
         description: errorMessage,
         duration: 5000,
       })
-      
+
       return false
     }
   }, [])
@@ -110,13 +126,13 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
   const processAudioChunk = useCallback(async (audioBlob: Blob) => {
     try {
       setState(prev => ({ ...prev, isProcessing: true }))
-      
+
       // Skip if blob is too small (likely silence)
       if (audioBlob.size < 1000) {
         setState(prev => ({ ...prev, isProcessing: false }))
         return
       }
-      
+
       const formData = new FormData()
       const audioFile = new File([audioBlob], 'audio.webm', {
         type: audioBlob.type || 'audio/webm',
@@ -131,7 +147,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
       if (!response.ok) {
         const errorText = await response.text()
         console.error('🎤 [LIVE-AUDIO] Transcription API error:', errorText)
-        
+
         // Only show error toast for non-temporary errors
         if (response.status !== 429 && response.status !== 503) {
           toast.error('Transcription Error', {
@@ -143,19 +159,24 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
       }
 
       const result = await response.json()
-      
+
       if (result.success && result.transcription) {
-        console.log('🎤 [LIVE-AUDIO] Transcription:', result.transcription.slice(0, 50) + '...')
+        console.log(
+          '🎤 [LIVE-AUDIO] Transcription:',
+          result.transcription.slice(0, 50) + '...',
+        )
         onTranscriptionRef.current?.(result.transcription, result.timestamp)
       } else {
+        console.error('🎤 [LIVE-AUDIO] Transcription failed:', result)
       }
     } catch (error) {
       console.error('🎤 [LIVE-AUDIO] Error processing audio chunk:', error)
-      
+
       // Only show error toast for network errors, not for every small issue
       if (error instanceof TypeError && error.message.includes('fetch')) {
         toast.error('Network Error', {
-          description: 'Failed to connect to transcription service. Please check your internet connection.',
+          description:
+            'Failed to connect to transcription service. Please check your internet connection.',
           duration: 3000,
         })
       }
@@ -164,160 +185,171 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     }
   }, [])
 
-  const createMediaRecorder = useCallback((onDataAvailable: (event: BlobEvent) => void, onStop: () => void) => {
-    if (!mediaStreamRef.current) return null
-    
-    const recorder = new MediaRecorder(mediaStreamRef.current, {
-      mimeType: 'audio/webm;codecs=opus',
-      audioBitsPerSecond: 16000,
-    })
-    
-    recorder.ondataavailable = onDataAvailable
-    recorder.onstop = onStop
-    
-    return recorder
-  }, [])
+  const createMediaRecorder = useCallback(
+    (onDataAvailable: (event: BlobEvent) => void, onStop: () => void) => {
+      if (!mediaStreamRef.current) return null
 
-  const startLiveAudio = useCallback(async (
-    settings: LiveAudioSettings,
-    onTranscription: (transcription: string, timestamp: string) => void,
-    onActionInterval?: () => void
-  ): Promise<boolean> => {
-    
-    // Request microphone access
-    const hasAccess = await requestMicrophoneAccess()
-    if (!hasAccess) {
-        return false
-    }
-
-    if (!mediaStreamRef.current) {
-        toast.error('Live Audio Error', {
-        description: 'Failed to access microphone stream. Please try again.',
-        duration: 3000,
+      const recorder = new MediaRecorder(mediaStreamRef.current, {
+        mimeType: 'audio/webm;codecs=opus',
+        audioBitsPerSecond: 16000,
       })
-      return false
-    }
 
-    try {
-      onTranscriptionRef.current = onTranscription
-      onActionIntervalRef.current = onActionInterval
-      chunksRef.current = []
+      recorder.ondataavailable = onDataAvailable
+      recorder.onstop = onStop
 
-      const recorder = createMediaRecorder(
-        (event) => {
-            if (event.data.size > 0) {
-            chunksRef.current.push(event.data)
-          }
-        },
-        () => {
-            if (chunksRef.current.length > 0) {
-            const audioBlob = new Blob(chunksRef.current, {
-              type: 'audio/webm;codecs=opus',
-            })
-            processAudioChunk(audioBlob)
-            chunksRef.current = []
-          }
-        }
-      )
+      return recorder
+    },
+    [],
+  )
 
-      if (!recorder) {
-            toast.error('Live Audio Error', {
-          description: 'Failed to create audio recorder. Your browser may not support this feature.',
+  const startLiveAudio = useCallback(
+    async (
+      settings: LiveAudioSettings,
+      onTranscription: (transcription: string, timestamp: string) => void,
+      onActionInterval?: () => void,
+    ): Promise<boolean> => {
+      // Request microphone access
+      const hasAccess = await requestMicrophoneAccess()
+      if (!hasAccess) {
+        return false
+      }
+
+      if (!mediaStreamRef.current) {
+        toast.error('Live Audio Error', {
+          description: 'Failed to access microphone stream. Please try again.',
           duration: 3000,
         })
         return false
       }
 
-      mediaRecorderRef.current = recorder
-      
-      // Start initial recording
-      recorder.start()
-      setState(prev => ({ 
-        ...prev, 
-        isRecording: true, 
-        currentSettings: settings 
-      }))
-      isRecordingRef.current = true
-      
-      console.log('🎤 [LIVE-AUDIO] Recording started')
+      try {
+        onTranscriptionRef.current = onTranscription
+        onActionIntervalRef.current = onActionInterval || null
+        chunksRef.current = []
 
-      // Set up interval for processing chunks
-      intervalRef.current = setInterval(() => {
-        
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording' && isRecordingRef.current) {
-          // Stop current recording to process chunk
-          mediaRecorderRef.current.stop()
-          
-          // Trigger action interval callback after a short delay to allow transcription to complete
-          setTimeout(() => {
-            if (onActionIntervalRef.current) {
-              onActionIntervalRef.current()
+        const recorder = createMediaRecorder(
+          event => {
+            if (event.data.size > 0) {
+              chunksRef.current.push(event.data)
             }
-          }, 500)
-          
-          // Start new recording session after a short delay
-          setTimeout(() => {
-            if (mediaStreamRef.current && isRecordingRef.current) {
-              const newRecorder = createMediaRecorder(
-                (event) => {
-                  if (event.data.size > 0) {
-                    chunksRef.current.push(event.data)
-                  }
-                },
-                () => {
-                  if (chunksRef.current.length > 0) {
-                    const audioBlob = new Blob(chunksRef.current, {
-                      type: 'audio/webm;codecs=opus',
-                    })
-                    processAudioChunk(audioBlob)
-                    chunksRef.current = []
-                  }
-                }
-              )
-              
-              if (newRecorder) {
-                mediaRecorderRef.current = newRecorder
-                newRecorder.start()
-              }
+          },
+          () => {
+            if (chunksRef.current.length > 0) {
+              const audioBlob = new Blob(chunksRef.current, {
+                type: 'audio/webm;codecs=opus',
+              })
+              processAudioChunk(audioBlob)
+              chunksRef.current = []
             }
-          }, 100)
+          },
+        )
+
+        if (!recorder) {
+          toast.error('Live Audio Error', {
+            description:
+              'Failed to create audio recorder. Your browser may not support this feature.',
+            duration: 3000,
+          })
+          return false
         }
-      }, settings.actionInterval * 1000)
 
-      return true
-    } catch (error) {
-      console.error('🎤 [LIVE-AUDIO] Error starting recording:', error)
-      
-      // Clean up on error
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
+        mediaRecorderRef.current = recorder
+
+        // Start initial recording
+        recorder.start()
+        setState(prev => ({
+          ...prev,
+          isRecording: true,
+          currentSettings: settings,
+        }))
+        isRecordingRef.current = true
+
+        console.log('🎤 [LIVE-AUDIO] Recording started')
+
+        // Set up interval for processing chunks
+        intervalRef.current = setInterval(() => {
+          if (
+            mediaRecorderRef.current &&
+            mediaRecorderRef.current.state === 'recording' &&
+            isRecordingRef.current
+          ) {
+            // Stop current recording to process chunk
+            mediaRecorderRef.current.stop()
+
+            // Trigger action interval callback after a short delay to allow transcription to complete
+            setTimeout(() => {
+              if (onActionIntervalRef.current) {
+                onActionIntervalRef.current()
+              }
+            }, 500)
+
+            // Start new recording session after a short delay
+            setTimeout(() => {
+              if (mediaStreamRef.current && isRecordingRef.current) {
+                const newRecorder = createMediaRecorder(
+                  event => {
+                    if (event.data.size > 0) {
+                      chunksRef.current.push(event.data)
+                    }
+                  },
+                  () => {
+                    if (chunksRef.current.length > 0) {
+                      const audioBlob = new Blob(chunksRef.current, {
+                        type: 'audio/webm;codecs=opus',
+                      })
+                      processAudioChunk(audioBlob)
+                      chunksRef.current = []
+                    }
+                  },
+                )
+
+                if (newRecorder) {
+                  mediaRecorderRef.current = newRecorder
+                  newRecorder.start()
+                }
+              }
+            }, 100)
+          }
+        }, settings.actionInterval * 1000)
+
+        return true
+      } catch (error) {
+        console.error('🎤 [LIVE-AUDIO] Error starting recording:', error)
+
+        // Clean up on error
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getTracks().forEach(track => track.stop())
+          mediaStreamRef.current = null
+        }
+
+        setState(prev => ({
+          ...prev,
+          isRecording: false,
+          isProcessing: false,
+          currentSettings: null,
+        }))
+
+        toast.error('Live Audio Error', {
+          description:
+            error instanceof Error
+              ? error.message
+              : 'Failed to start live audio recording',
+          duration: 3000,
+        })
+
+        return false
       }
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => track.stop())
-        mediaStreamRef.current = null
-      }
-      
-      setState(prev => ({ 
-        ...prev, 
-        isRecording: false, 
-        isProcessing: false,
-        currentSettings: null 
-      }))
-      
-      toast.error('Live Audio Error', {
-        description: error instanceof Error ? error.message : 'Failed to start live audio recording',
-        duration: 3000,
-      })
-      
-      return false
-    }
-  }, [requestMicrophoneAccess, processAudioChunk, createMediaRecorder])
+    },
+    [requestMicrophoneAccess, processAudioChunk, createMediaRecorder],
+  )
 
   const stopLiveAudio = useCallback(() => {
-    
     isRecordingRef.current = false
-    
+
     // Clear interval
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
@@ -325,49 +357,53 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     }
 
     // Stop recording
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === 'recording'
+    ) {
       mediaRecorderRef.current.stop()
     }
 
     // Stop media stream
     if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop())
+      mediaStreamRef.current.getTracks().forEach(track => track.stop())
       mediaStreamRef.current = null
     }
 
-    setState(prev => ({ 
-      ...prev, 
-      isRecording: false, 
+    setState(prev => ({
+      ...prev,
+      isRecording: false,
       isProcessing: false,
-      currentSettings: null 
+      currentSettings: null,
     }))
     mediaRecorderRef.current = null
     onTranscriptionRef.current = null
     onActionIntervalRef.current = null
-    
   }, [])
 
   // Cleanup on unmount to prevent stuck recording state
   useEffect(() => {
     return () => {
-      
       // Stop everything
       isRecordingRef.current = false
-      
+
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
       }
-      
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state === 'recording'
+      ) {
         mediaRecorderRef.current.stop()
       }
-      
+
       if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => track.stop())
+        mediaStreamRef.current.getTracks().forEach(track => track.stop())
         mediaStreamRef.current = null
       }
-      
+
       mediaRecorderRef.current = null
       onTranscriptionRef.current = null
       onActionIntervalRef.current = null
