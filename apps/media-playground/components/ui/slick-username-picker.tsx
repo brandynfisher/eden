@@ -82,7 +82,6 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
         if ((error as AxiosError)?.response?.status === 409) {
           setAvailability('taken')
         } else {
-          console.error('***debug*** Username check failed:', error)
           setAvailability(null)
         }
       } finally {
@@ -139,7 +138,6 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
         candidate = `${baseUsername}-${counter}`
         counter += 1
       } catch (error) {
-        console.error('***debug*** Username generation failed:', error)
         break
       }
     }

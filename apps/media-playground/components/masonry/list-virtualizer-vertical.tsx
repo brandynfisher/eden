@@ -14,13 +14,12 @@ import {
   transformArgsIntoURLParams,
 } from '@edenlabs/eden-sdk'
 import { QueryKey, useInfiniteQuery } from '@tanstack/react-query'
-import { VirtualItem, useWindowVirtualizer } from '@tanstack/react-virtual'
+import { VirtualItem, useVirtualizer } from '@tanstack/react-virtual'
 import { LogIn } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const MASONRY_GUTTER = 32
-const QUERY_LIMIT = 35
 
 type Props = {
   apiEndpoint: string
@@ -41,6 +40,26 @@ const ListVirtualizerVertical = ({
 
   const { ref: masonryWrapRef, width: masonryWrapWidth } =
     useElementSize<HTMLDivElement>()
+  const scrollContainerRef = useRef<HTMLElement | null>(null)
+  const [scrollContainer, setScrollContainer] = useState<HTMLElement | null>(
+    null,
+  )
+
+  // Find the scrollable parent container
+  useEffect(() => {
+    if (masonryWrapRef.current) {
+      let parent: HTMLElement | null = masonryWrapRef.current.parentElement
+      while (parent) {
+        const style = window.getComputedStyle(parent)
+        if (style.overflowY === 'auto' || style.overflowY === 'scroll') {
+          scrollContainerRef.current = parent
+          setScrollContainer(parent)
+          break
+        }
+        parent = parent.parentElement
+      }
+    }
+  }, [])
   const MASONRY_COLUMN_COUNT = 1
 
   const columnWidth = useMemo(() => {
@@ -82,10 +101,11 @@ const ListVirtualizerVertical = ({
     return data?.pages?.flatMap(d => d.docs) || []
   }, [data])
 
-  const rowVirtualizer = useWindowVirtualizer({
+  const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? allRows.length + 1 : allRows.length,
-    estimateSize: () => 600,
-    overscan: 8,
+    estimateSize: () => 300,
+    overscan: 5,
+    getScrollElement: () => scrollContainer,
     lanes: MASONRY_COLUMN_COUNT,
     gap: MASONRY_GUTTER,
   })
@@ -102,7 +122,7 @@ const ListVirtualizerVertical = ({
     }
 
     if (
-      lastItem.index >= allRows.length - QUERY_LIMIT &&
+      lastItem.index >= allRows.length - 3 &&
       hasNextPage &&
       !isFetchingNextPage
     ) {
@@ -155,7 +175,15 @@ const ListVirtualizerVertical = ({
         </div>
       )
     },
-    [render, allRows, hasNextPage, rowVirtualizer, columnWidth],
+    [
+      render,
+      allRows,
+      hasNextPage,
+      rowVirtualizer,
+      columnWidth,
+      apiEndpoint,
+      queryKey,
+    ],
   )
 
   return (
@@ -172,7 +200,11 @@ const ListVirtualizerVertical = ({
           position: 'relative',
         }}
       >
-        {!user ? (
+        {status === 'pending' && !allRows.length ? (
+          <div className="w-full flex flex-col gap-y-8">
+            <ListSkeleton />
+          </div>
+        ) : !user && !allRows.length ? (
           <div className="col-span-full flex flex-col items-center justify-center p-6 text-center bg-muted/20 border border-dashed border-gray-700 rounded-md">
             <p className="text-muted-foreground mb-3">
               Please sign in to view your tasks.
@@ -192,14 +224,8 @@ const ListVirtualizerVertical = ({
             </Button>
           </div>
         ) : !allRows.length ? (
-          <div className="w-full flex flex-col gap-y-8">
-            {status === 'pending' ? (
-              <ListSkeleton />
-            ) : (
-              <div className="p-4 text-center bg-accent rounded-md">
-                No recent tasks found.
-              </div>
-            )}
+          <div className="p-4 text-center bg-accent rounded-md">
+            No recent tasks found.
           </div>
         ) : null}
 
