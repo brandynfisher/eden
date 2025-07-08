@@ -18,6 +18,7 @@ import AgentCreationsView from '@/features/chat/components/views/agent-creations
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
+import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
@@ -208,7 +209,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   }
 
   return (
-    <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
+    <LiveAudioProvider>
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
       {/* AGENT BAR - Always visible */}
       <AgentBar
         agent={agent}
@@ -328,7 +330,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
           </ResizablePanel>
         </ResizablePanelGroup>
       )}
-    </div>
+      </div>
+    </LiveAudioProvider>
   )
 }
 

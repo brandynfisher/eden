@@ -898,6 +898,7 @@ const SessionChat: FC = () => {
                   streamingText.length > 0
                 : waitingForResponse
             }
+            enableLiveAudio={true}
           />
         </div>
       )}

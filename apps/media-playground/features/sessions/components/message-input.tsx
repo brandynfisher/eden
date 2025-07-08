@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/custom/autoresize-textarea'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
@@ -17,12 +18,13 @@ import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { PaperclipIcon, SendIcon, SquareIcon } from 'lucide-react'
+import { MicIcon, PaperclipIcon, SendIcon, SquareIcon } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 import * as z from 'zod'
+import { LiveAudioManager } from '../live-audio/live-audio-manager'
 
 const formSchema = z.object({
   content: z.string().trim().min(1),
@@ -33,6 +35,7 @@ type MessageInputProps = {
   onStreamingMessage?: (content: string, attachments?: string[]) => void
   onCancel?: () => void
   isStreaming?: boolean
+  enableLiveAudio?: boolean
 }
 
 type AttachmentDropzoneProps = {
@@ -70,7 +73,9 @@ export const MessageInput = ({
   onStreamingMessage,
   onCancel,
   isStreaming,
+  enableLiveAudio = false,
 }: MessageInputProps) => {
+  
   const { user } = useAuthState()
   const {
     addOptimisticMessage,
@@ -318,6 +323,51 @@ export const MessageInput = ({
     }
   }
 
+  const handleRecordToggle = () => {
+    if (!enableLiveAudio) return
+    
+    // This will only work when LiveAudioManager is rendered
+    const managerElement = document.querySelector('[data-live-audio-manager]')
+    if (managerElement && (managerElement as any).__toggleRecording) {
+      (managerElement as any).__toggleRecording()
+    }
+  }
+
+  // Get live audio state from DOM for conditional rendering
+  const getLiveAudioState = () => {
+    if (!enableLiveAudio) return { isRecording: false, isProcessing: false }
+    
+    const managerElement = document.querySelector('[data-live-audio-manager]')
+    if (managerElement) {
+      return {
+        isRecording: (managerElement as any).__isRecording || false,
+        isProcessing: (managerElement as any).__isProcessing || false,
+      }
+    }
+    return { isRecording: false, isProcessing: false }
+  }
+
+  const [liveAudioState, setLiveAudioState] = useState({ isRecording: false, isProcessing: false })
+
+  // Poll for live audio state changes when enabled - reduced frequency
+  useEffect(() => {
+    if (!enableLiveAudio) return
+    
+    const interval = setInterval(() => {
+      const newState = getLiveAudioState()
+      setLiveAudioState(prev => {
+        if (prev.isRecording !== newState.isRecording || prev.isProcessing !== newState.isProcessing) {
+          return newState
+        }
+        return prev
+      })
+    }, 200) // Reduced from 100ms to 200ms
+    
+    return () => clearInterval(interval)
+  }, [enableLiveAudio])
+
+  const { isRecording, isProcessing } = liveAudioState
+
   useEffect(() => {
     const textarea = textareaRef.current?.textArea
     if (!textarea) return
@@ -348,6 +398,16 @@ export const MessageInput = ({
       {isDragging && (
         <AttachmentDropzone isDragging={isDragging} accept={accept} />
       )}
+      
+      {/* Live Audio Manager handles recording indicator and modal - only when enabled */}
+      {enableLiveAudio && (
+        <LiveAudioManager
+          sessionId={sessionId}
+          onStreamingMessage={onStreamingMessage}
+          isSubmitting={isSubmitting}
+        />
+      )}
+      
       <div className="relative z-[51] bg-accent w-full">
         <Form {...form}>
           <form
@@ -378,16 +438,54 @@ export const MessageInput = ({
                 className="hidden"
                 multiple
               />
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="h-8 w-8"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isSubmitting}
-              >
-                <PaperclipIcon className="w-4 h-4" />
-              </Button>
+              <TooltipProvider>
+                <div className="flex flex-col gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isSubmitting}
+                      >
+                        <PaperclipIcon className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add attachments</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  {enableLiveAudio && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className={cn(
+                            'h-8 w-8',
+                            isRecording && 'text-red-500 animate-pulse',
+                            isProcessing && 'text-blue-500'
+                          )}
+                          onClick={handleRecordToggle}
+                          disabled={isSubmitting || isProcessing}
+                        >
+                          {isRecording ? (
+                            <SquareIcon className="w-4 h-4 fill-current" />
+                          ) : (
+                            <MicIcon className={cn('w-4 h-4', isProcessing && 'animate-spin')} />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Start audio session</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+              </TooltipProvider>
               <div className="flex-1 relative">
                 <FormField
                   control={form.control}

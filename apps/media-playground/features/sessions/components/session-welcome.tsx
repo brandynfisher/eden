@@ -137,8 +137,12 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
           </p>
         </div>
 
-        <div className="max-w-[--aui-thread-max-width] mx-auto w-full mb-6">
-          <MessageInput sessionId={'new'} onStreamingMessage={onSendMessage} />
+        <div className="w-full max-w-[--aui-thread-max-width] mx-auto mb-6">
+          <MessageInput 
+            sessionId={'new'} 
+            onStreamingMessage={onSendMessage} 
+            enableLiveAudio={true}
+          />
         </div>
 
         <div className=" w-full flex flex-wrap gap-3 justify-center mb-3">
