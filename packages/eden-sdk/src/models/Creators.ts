@@ -258,4 +258,5 @@ export enum FeatureFlag {
   FeatureDeployments = 'feature_Deployments',
   TestAgentRateLimit = 'test_agent_rate_limit',
   SessionsV2 = 'sessions_v2',
+  ToolAccessVeo3 = 'tool_access_veo3',
 }

@@ -1,4 +1,4 @@
-import { taskRateLimitCheck } from '../../lib/ratelimit'
+import { taskRateLimitCheck, toolAccessCheck } from '../../lib/ratelimit'
 import { User } from '../../models/User'
 import { ModelV2 } from '../../models/v2/ModelV2'
 import { SessionDocument } from '../../models/v2/SessionV2'
@@ -99,13 +99,15 @@ export const createTask = async (
       })
     }
 
+    const toolAccessCheckResult = await toolAccessCheck(request, toolDocument)
+    if (!toolAccessCheckResult || toolAccessCheckResult.status !== 'ok') {
+      return reply.status(403).send({
+        message: toolAccessCheckResult.message,
+      })
+    }
+
     const rateLimitCheckResult = await taskRateLimitCheck(request, toolDocument)
     if (!rateLimitCheckResult || rateLimitCheckResult.status !== 'ok') {
-      if (server.Sentry) {
-        server.Sentry.captureMessage(
-          `taskRateLimitCheck failed for user:${userId} | message:${rateLimitCheckResult.message}`,
-        )
-      }
       return reply.status(429).send({
         message: rateLimitCheckResult.message,
       })

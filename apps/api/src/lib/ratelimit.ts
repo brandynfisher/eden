@@ -216,6 +216,25 @@ const handleSpecialUserRateLimits = async (
   return { status: 'ok' }
 }
 
+type ToolAccessCheckResult = {
+  status: 'ok' | 'error' | 'n/a'
+  message?: string
+}
+
+export const toolAccessCheck = async (
+  request: FastifyRequest,
+  tool: ToolV2Document,
+): Promise<ToolAccessCheckResult> => {
+  const { featureFlags } = request.user
+  const { key } = tool
+
+  if (key === 'veo3' && !featureFlags.includes(FeatureFlag.ToolAccessVeo3)) {
+    return { status: 'error', message: 'Tool not available' }
+  }
+
+  return { status: 'ok' }
+}
+
 export const taskRateLimitCheck = async (
   request: FastifyRequest,
   tool: ToolV2Document,
