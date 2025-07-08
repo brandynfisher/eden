@@ -4,6 +4,7 @@ import React, { useCallback, useRef, useState } from 'react'
 import { useLiveAudio, LiveAudioSettings } from './live-audio-context'
 import { LiveAudioModal } from './live-audio-modal'
 import { LiveRecordingIndicator } from './live-recording-indicator'
+import { LIVE_AUDIO_DEFAULTS } from './live-audio-constants'
 
 type LiveAudioManagerProps = {
   sessionId: string
@@ -204,10 +205,7 @@ Please await further instructions.`
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onStart={handleStartRecording}
-        initialData={{
-          liveInstructions: 'Tell me a joke based on the ongoing conversation.',
-          actionInterval: 10,
-        }}
+        initialData={LIVE_AUDIO_DEFAULTS}
       />
 
       {/* Expose toggle function for external use */}
