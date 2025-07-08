@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
+import { LIVE_AUDIO_DEFAULTS } from './live-audio-constants'
 
 const formSchema = z.object({
   liveInstructions: z.string().min(1, 'Live instructions are required'),
@@ -69,11 +70,8 @@ export const LiveAudioModal = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),  
     defaultValues: {
-      liveInstructions: initialData?.liveInstructions || 
-        "Listen to the ongoing conversation and based on your persona, decide how to act. " +
-        "Remember that making images and videos can take a while and so typically, you just " +
-        "respond with ideas / suggestions / ...",
-      actionInterval: initialData?.actionInterval || 15,
+      liveInstructions: initialData?.liveInstructions || LIVE_AUDIO_DEFAULTS.liveInstructions,
+      actionInterval: initialData?.actionInterval || LIVE_AUDIO_DEFAULTS.actionInterval,
     },
   })
 
@@ -88,7 +86,7 @@ export const LiveAudioModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[80vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Live Audio SessionSettings</DialogTitle>
+          <DialogTitle>Live Audio Settings</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
