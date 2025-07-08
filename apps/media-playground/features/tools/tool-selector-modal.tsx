@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { getMediaUrl } from '@/features/tools/tools-grid-section'
-import { useToolsListQuery } from '@/hooks/query/use-tools-list-query'
+import { useFilteredToolsQuery } from '@/hooks/use-filtered-tools-query'
 import { siteConfig } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { ToolV2 } from '@edenlabs/eden-sdk'
@@ -30,7 +30,7 @@ type Props = {
 }
 
 const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
-  const { tools } = useToolsListQuery({
+  const { tools } = useFilteredToolsQuery({
     output_type: ['image', 'video', 'audio', 'lora'],
   })
   const router = useRouter()

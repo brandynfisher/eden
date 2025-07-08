@@ -2,7 +2,7 @@
 
 import { ToolsAccordionItem } from './tools-accordion-item'
 import { Accordion } from '@/components/ui/accordion'
-import { useToolsListQuery } from '@/hooks/query/use-tools-list-query'
+import { useFilteredToolsQuery } from '@/hooks/use-filtered-tools-query'
 import useLocalStorage from '@/hooks/use-local-storage'
 import { siteConfig } from '@/lib/config'
 import { ToolOutputTypeV2 } from '@edenlabs/eden-sdk'
@@ -15,7 +15,7 @@ type ToolsGridProps = {
 }
 
 const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
-  const { tools } = useToolsListQuery({ output_type })
+  const { tools } = useFilteredToolsQuery({ output_type })
 
   // Generate all possible accordion values including classic tools
   const allAccordionValues = [
