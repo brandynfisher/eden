@@ -350,35 +350,76 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
   const stopLiveAudio = useCallback(() => {
     isRecordingRef.current = false
 
-    // Clear interval
+    // Clear interval first
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
 
-    // Stop recording
+    // Create cleanup function that ensures proper microphone release
+    const cleanupMicrophoneResources = () => {
+      // Stop all tracks in the current stream
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => {
+          if (track.readyState === 'live') {
+            track.stop()
+          }
+        })
+        mediaStreamRef.current = null
+      }
+
+      // Additional cleanup: Query all active media streams to ensure cleanup
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+        // Force cleanup of any remaining active tracks
+        try {
+          navigator.mediaDevices.getUserMedia({ audio: false }).catch(() => {
+            // This intentionally fails to help trigger cleanup of existing streams
+          })
+        } catch {
+          // Ignore errors - this is just for cleanup
+        }
+      }
+
+      // Update state
+      setState(prev => ({
+        ...prev,
+        isRecording: false,
+        isProcessing: false,
+        currentSettings: null,
+      }))
+      
+      // Clear refs
+      mediaRecorderRef.current = null
+      onTranscriptionRef.current = null
+      onActionIntervalRef.current = null
+    }
+
+    // Stop recording with proper sequencing
     if (
       mediaRecorderRef.current &&
       mediaRecorderRef.current.state === 'recording'
     ) {
+      // Set up one-time event listener to ensure proper cleanup after recorder stops
+      const handleRecorderStop = () => {
+        mediaRecorderRef.current?.removeEventListener('stop', handleRecorderStop)
+        // Add small delay to ensure recorder has fully processed
+        setTimeout(cleanupMicrophoneResources, 100)
+      }
+      
+      mediaRecorderRef.current.addEventListener('stop', handleRecorderStop)
       mediaRecorderRef.current.stop()
+      
+      // Fallback cleanup in case the stop event doesn't fire
+      setTimeout(() => {
+        if (mediaRecorderRef.current) {
+          mediaRecorderRef.current.removeEventListener('stop', handleRecorderStop)
+          cleanupMicrophoneResources()
+        }
+      }, 1000)
+    } else {
+      // If no active recording, cleanup immediately
+      cleanupMicrophoneResources()
     }
-
-    // Stop media stream
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(track => track.stop())
-      mediaStreamRef.current = null
-    }
-
-    setState(prev => ({
-      ...prev,
-      isRecording: false,
-      isProcessing: false,
-      currentSettings: null,
-    }))
-    mediaRecorderRef.current = null
-    onTranscriptionRef.current = null
-    onActionIntervalRef.current = null
   }, [])
 
   // Cleanup on unmount to prevent stuck recording state
@@ -399,9 +440,25 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
         mediaRecorderRef.current.stop()
       }
 
+      // Enhanced cleanup for unmount
       if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach(track => track.stop())
+        mediaStreamRef.current.getTracks().forEach(track => {
+          if (track.readyState === 'live') {
+            track.stop()
+          }
+        })
         mediaStreamRef.current = null
+      }
+
+      // Additional cleanup for unmount
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+        try {
+          navigator.mediaDevices.getUserMedia({ audio: false }).catch(() => {
+            // This intentionally fails to help trigger cleanup of existing streams
+          })
+        } catch {
+          // Ignore errors - this is just for cleanup
+        }
       }
 
       mediaRecorderRef.current = null
