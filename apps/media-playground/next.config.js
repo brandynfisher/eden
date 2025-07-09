@@ -89,6 +89,12 @@ const defaultImageRemotePatterns = [
     port: '',
     pathname: '**',
   },
+  {
+    protocol: 'https',
+    hostname: 'warpcast.com',
+    port: '',
+    pathname: '**',
+  },
 ]
 
 const devImageRemotePatterns = [
