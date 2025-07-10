@@ -30,6 +30,7 @@ build
 .lh/
 .vscode
 .cursor/
+.claude/*
 .history/
 scripts/xander_cmds.txt 
 

@@ -264,99 +264,23 @@ export const createSession = async (
 
 export const createSessionMessage = async (
   server: FastifyInstance,
-  request: FastifyRequest<{ Body: SessionsV2MessageArguments }>,
-  reply: FastifyReply,
-) => {
-  const { userId } = request.user || {}
-  if (!userId) {
-    return reply.status(400).send({
-      message: 'User missing from request',
-    })
-  }
-
-  const { session_id, content, attachments } = request.body
-
-  console.log({
-    content,
-    attachments,
-    sender: userId,
-    session: session_id,
-  })
-
-  if (!session_id) {
-    return reply.status(400).send({
-      message: 'session_id not provided',
-    })
-  }
-
-  const query = createIdOrSlugQuery(session_id)
-  const session = await Session.findOne(query)
-
-  if (!session) {
-    return reply.status(404).send({
-      message: 'session not found',
-    })
-  }
-
-  const userDocument = await User.findById(userId)
-  if (!userDocument) {
-    return reply.status(404).send({
-      message: `User not found`,
-    })
-  }
-
-  const modalRequest = {
-    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/prompt`,
-    data: {
-      session_id,
-      message: {
-        content,
-        attachments,
-      },
-      user_id: userId,
-    },
-    headers: {
-      'X-Client-Platform': 'web',
-      'X-Client-Deployment-Id': session.id,
-    },
-  }
-
-  try {
-    const modalResponse = await axios.post(
-      modalRequest.endpoint,
-      modalRequest.data,
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-      },
-    )
-
-    if (!modalResponse?.data?.session_id) {
-      return reply.status(500).send({
-        message: `Missing session_id`,
-      })
-    }
-
-    const message_id =
-      modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
-
-    return reply.status(200).send({
-      session_id: modalResponse.data.session_id,
-      message_id,
-    })
-  } catch (e) {
-    const error = e as { response?: { data?: string } }
-    const errorMessage = error?.response?.data || 'Unknown Error'
-    console.log(e)
-    return reply.status(500).send({ error: errorMessage })
-  }
-}
-
-export const createSessionMessageStream = async (
-  server: FastifyInstance,
   request: FastifyRequest<{
-    Body: SessionsV2MessageArguments & { stream?: boolean }
+    Body: SessionsV2MessageArguments & {
+      stream?: boolean
+      agent_ids?: string[]
+      scenario?: string
+      budget?: {
+        manna_budget?: number
+        token_budget?: number
+        turn_budget?: number
+      }
+      title?: string
+      autonomy_settings?: {
+        auto_reply: boolean
+        reply_interval: number
+        actor_selection_method: 'random' | 'random_exclude_last'
+      }
+    }
   }>,
   reply: FastifyReply,
 ) => {
@@ -371,6 +295,7 @@ export const createSessionMessageStream = async (
     session_id,
     content,
     attachments,
+    stream,
     agent_ids,
     scenario,
     budget,
@@ -464,75 +389,106 @@ export const createSessionMessageStream = async (
     })
   }
 
+  const modalRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/prompt`,
+    data: {
+      session_id: sessionId,
+      message: {
+        content,
+        attachments,
+      },
+      user_id: userId,
+      stream: stream || false,
+    },
+    headers: {
+      'X-Client-Platform': 'web',
+      'X-Client-Deployment-Id': session.id,
+    },
+  }
+
   try {
-    // Set up SSE headers
-    reply.raw.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Cache-Control',
-    })
+    if (stream) {
+      // Set up SSE headers for streaming
+      reply.raw.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Cache-Control',
+      })
 
-    const modalRequest = {
-      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/prompt`,
-      data: {
-        session_id: sessionId,
-        message: {
-          content,
-          attachments,
+      const response = await axios.post(
+        modalRequest.endpoint,
+        modalRequest.data,
+        {
+          headers: {
+            Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+          },
+          responseType: 'stream',
         },
-        user_id: userId,
-        stream: true,
-      },
-      headers: {
-        'X-Client-Platform': 'web',
-        'X-Client-Deployment-Id': session.id,
-      },
-    }
-
-    const response = await axios.post(
-      modalRequest.endpoint,
-      modalRequest.data,
-      {
-        headers: {
-          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
-        },
-        responseType: 'stream',
-      },
-    )
-
-    // Pipe the stream from the compute API to the client
-    response.data.on('data', (chunk: Buffer) => {
-      reply.raw.write(chunk)
-    })
-
-    response.data.on('end', () => {
-      reply.raw.end()
-    })
-
-    response.data.on('error', (error: Error) => {
-      console.error('Stream error:', error)
-      reply.raw.write(
-        `data: ${JSON.stringify({
-          event: 'error',
-          data: { error: error.message },
-        })}\n\n`,
       )
-      reply.raw.end()
-    })
+
+      // Pipe the stream from the compute API to the client
+      response.data.on('data', (chunk: Buffer) => {
+        reply.raw.write(chunk)
+      })
+
+      response.data.on('end', () => {
+        reply.raw.end()
+      })
+
+      response.data.on('error', (error: Error) => {
+        console.error('Stream error:', error)
+        reply.raw.write(
+          `data: ${JSON.stringify({
+            event: 'error',
+            data: { error: error.message },
+          })}\n\n`,
+        )
+        reply.raw.end()
+      })
+    } else {
+      // Non-streaming response
+      const modalResponse = await axios.post(
+        modalRequest.endpoint,
+        modalRequest.data,
+        {
+          headers: {
+            Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+          },
+        },
+      )
+
+      if (!modalResponse?.data?.session_id) {
+        return reply.status(500).send({
+          message: `Missing session_id`,
+        })
+      }
+
+      const message_id =
+        modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
+
+      return reply.status(200).send({
+        session_id: modalResponse.data.session_id,
+        message_id,
+      })
+    }
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Unknown Error'
     console.log(e)
 
-    reply.raw.write(
-      `data: ${JSON.stringify({
-        event: 'error',
-        data: { error: errorMessage },
-      })}\n\n`,
-    )
-    reply.raw.end()
+    if (stream) {
+      reply.raw.write(
+        `data: ${JSON.stringify({
+          event: 'error',
+          data: { error: errorMessage },
+        })}\n\n`,
+      )
+      reply.raw.end()
+    } else {
+      return reply.status(500).send({ error: errorMessage })
+    }
   }
 }
 

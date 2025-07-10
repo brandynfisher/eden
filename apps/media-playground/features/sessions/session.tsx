@@ -2,8 +2,12 @@
 
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
+import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
 import { SessionTopBar } from './components/session-top-bar'
 import SessionWelcome from './components/session-welcome'
+import { StreamingMessageDisplay } from './components/streaming-message-display'
+import { useNonStreamingState } from './hooks/use-non-streaming-state'
+import { useStreamingState } from './hooks/use-streaming-state'
 import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
@@ -15,8 +19,9 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
-import { useSessionStream } from '@/hooks/use-session-stream'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
+import { sessionConfig } from '@/lib/config'
+import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Message } from '@edenlabs/eden-sdk'
 import { useParams, usePathname, useRouter } from 'next/navigation'
@@ -32,22 +37,10 @@ const Session = ({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
   const isChat2Route = pathname?.startsWith('/chat2')
-  const [streamingText, setStreamingText] = useState('')
-  const [isStreamingTokens, setIsStreamingTokens] = useState(false)
-  const [hasReceivedTokens, setHasReceivedTokens] = useState(false)
-  const [waitingForWebSocket, setWaitingForWebSocket] = useState(false)
-  const [streamingAgent, setStreamingAgent] = useState<{
-    _id: string
-    username: string
-    name: string
-    userImage?: string
-  } | null>(null)
-  const streamingMessageIdRef = useRef<string | null>(null)
-  const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([])
+  const [cancelledNotice, setCancelledNotice] = useState(false)
 
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
-  const [cancelledNotice, setCancelledNotice] = useState(false)
 
   const {
     data: session,
@@ -63,18 +56,46 @@ const Session = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
-  // Error handling function
-  const handleStreamingError = useCallback(
-    (error: string) => {
-      console.error('Streaming error:', error)
+  // State management for streaming and non-streaming modes
+  const streamingState = useStreamingState({
+    sessionId,
+    enabled: sessionConfig.useStreaming,
+    onError: (error: string) => handleError(error),
+    setOptimisticMessages: setter => {
+      if (sessionConfig.useStreaming) {
+        streamingOptimisticMessages.current =
+          typeof setter === 'function'
+            ? setter(streamingOptimisticMessages.current)
+            : setter
+      }
+    },
+  })
 
-      // Clear streaming state
-      setStreamingText('')
-      setIsStreamingTokens(false)
-      setHasReceivedTokens(false)
-      setWaitingForWebSocket(false)
-      setStreamingAgent(null)
-      streamingMessageIdRef.current = null
+  const nonStreamingState = useNonStreamingState({
+    sessionId,
+    session,
+    enabled: !sessionConfig.useStreaming,
+    onError: (error: string) => handleError(error),
+    user,
+  })
+
+  // Unified optimistic messages state
+  const streamingOptimisticMessages = useRef<Message[]>([])
+  const optimisticMessages = sessionConfig.useStreaming
+    ? streamingOptimisticMessages.current
+    : nonStreamingState.optimisticMessages
+
+  // Error handling function
+  const handleError = useCallback(
+    (error: string) => {
+      console.error('Error:', error)
+
+      // Clear appropriate state based on mode
+      if (sessionConfig.useStreaming) {
+        streamingState.clearStreamingState()
+      } else {
+        nonStreamingState.clearNonStreamingState()
+      }
 
       // Determine error type and add appropriate error
       if (
@@ -137,7 +158,7 @@ const Session = ({
         })
       }
     },
-    [addError, clearErrors, router],
+    [addError, clearErrors, router, streamingState, nonStreamingState],
   )
 
   // Cancel session function
@@ -150,13 +171,12 @@ const Session = ({
         },
       })
 
-      // Clear streaming state immediately
-      setStreamingText('')
-      setIsStreamingTokens(false)
-      setHasReceivedTokens(false)
-      setWaitingForWebSocket(false)
-      setStreamingAgent(null)
-      streamingMessageIdRef.current = null
+      // Clear appropriate state based on mode
+      if (sessionConfig.useStreaming) {
+        streamingState.clearStreamingState()
+      } else {
+        nonStreamingState.clearNonStreamingState()
+      }
 
       setCancelledNotice(true)
     } catch (error) {
@@ -171,95 +191,55 @@ const Session = ({
         dismissible: true,
       })
     }
-  }, [sessionId, addError, clearErrors])
+  }, [sessionId, addError, clearErrors, streamingState, nonStreamingState])
 
   // Determine which agent should be responding based on session data
-  // This avoids waiting for the stream to tell us and uses data we already have
   const getRespondingAgent = useCallback(() => {
-    // Use streamingAgent if available (from stream)
-    if (streamingAgent) {
-      return streamingAgent
+    const currentStreamingAgent = sessionConfig.useStreaming
+      ? streamingState.streamingAgent
+      : null
+
+    // Use streamingAgent if available (from stream) - but enrich it if incomplete
+    if (currentStreamingAgent) {
+      // If streaming agent is missing userImage, try to enrich from session data
+      if (!currentStreamingAgent.userImage) {
+        const enrichedAgent =
+          session?.agents && session.agents.length > 0
+            ? session.agents[0]
+            : null
+        if (enrichedAgent && enrichedAgent.userImage) {
+          return {
+            ...currentStreamingAgent,
+            userImage: enrichedAgent.userImage.startsWith('https://')
+              ? enrichedAgent.userImage
+              : getCloudfrontUrl(enrichedAgent.userImage),
+            name: currentStreamingAgent.name || enrichedAgent.name,
+          }
+        }
+      }
+      return currentStreamingAgent
     }
 
     // Otherwise use the first agent from the session (which has complete data)
     if (session?.agents && session.agents.length > 0) {
-      return session.agents[0]
+      const sessionAgent = session.agents[0]
+      return {
+        _id: sessionAgent._id,
+        username: sessionAgent.username,
+        name: sessionAgent.name,
+        userImage: sessionAgent.userImage?.startsWith('https://')
+          ? sessionAgent.userImage
+          : getCloudfrontUrl(sessionAgent.userImage),
+      }
     }
 
     // Final fallback
     return {
       _id: 'agent',
       username: 'Assistant',
+      name: 'Assistant',
     }
-  }, [streamingAgent, session?.agents])
-
-  // Set up streaming with error handling
-  const { sendMessage: sendStreamingMessage } = useSessionStream({
-    sessionId,
-    onToken: text => {
-      setStreamingText(prev => prev + text)
-      setIsStreamingTokens(true)
-      setHasReceivedTokens(true)
-    },
-    onMessage: content => {
-      // Message is complete - set final content and wait for websocket confirmation
-      setStreamingText(content)
-      setIsStreamingTokens(false) // Stop showing typing indicator
-      setWaitingForWebSocket(true)
-      streamingMessageIdRef.current = content
-
-      // Clear optimistic messages as real message is coming via websocket
-      setOptimisticMessages([])
-
-      // Fallback timeout in case websocket doesn't deliver
-      setTimeout(() => {
-        if (streamingMessageIdRef.current === content && waitingForWebSocket) {
-          setHasReceivedTokens(false)
-          setWaitingForWebSocket(false)
-          streamingMessageIdRef.current = null
-          // Keep the streaming text visible as fallback
-        }
-      }, 3000) // Increase timeout slightly for network delays
-    },
-    onToolComplete: () => {
-      // After tool calls complete, we expect more tokens from the LLM
-      // So set up streaming state for the follow-up response
-      setStreamingText('')
-      setIsStreamingTokens(true)
-      setHasReceivedTokens(false)
-      setWaitingForWebSocket(false)
-      // Keep the streaming agent for continuity
-      streamingMessageIdRef.current = null
-
-      // Clear optimistic messages, new real messages will follow
-      setOptimisticMessages([])
-
-      // Fallback timeout in case no follow-up response comes
-      setTimeout(() => {
-        if (!hasReceivedTokens) {
-          setStreamingText('')
-          setIsStreamingTokens(false)
-          setHasReceivedTokens(false)
-          setWaitingForWebSocket(false)
-          setStreamingAgent(null)
-          streamingMessageIdRef.current = null
-        }
-      }, 3000)
-    },
-    onError: handleStreamingError,
-    onDone: () => {
-      // Only clear if we're not waiting for websocket
-      if (!waitingForWebSocket) {
-        setIsStreamingTokens(false)
-        setHasReceivedTokens(false)
-        // Don't clear streamingAgent here - let the websocket effect handle it
-        setOptimisticMessages([])
-      }
-    },
-    onAgentInfo: agent => {
-      setStreamingAgent(agent)
-    },
-  })
+  }, [streamingState.streamingAgent, session?.agents])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -271,10 +251,18 @@ const Session = ({
 
   // Separate effect for streaming text to avoid double scroll
   useEffect(() => {
-    if (streamingText && isStreamingTokens) {
+    if (
+      sessionConfig.useStreaming &&
+      streamingState.streamingText &&
+      streamingState.isStreamingTokens
+    ) {
       scrollToBottom()
     }
-  }, [streamingText, isStreamingTokens, scrollToBottom])
+  }, [
+    streamingState.streamingText,
+    streamingState.isStreamingTokens,
+    scrollToBottom,
+  ])
 
   const isOwnMessage = (senderId?: string) => {
     if (!senderId) return false
@@ -292,43 +280,36 @@ const Session = ({
               m.tool_calls.length > 0) ||
             (m.role === 'eden' && m.eden_message_data)),
       ) ?? []
+
     if (sessionId === 'new' && isSessionLoading) {
       return [...existingMessages, ...optimisticMessages]
     }
+
+    // In non-streaming mode, include optimistic messages but avoid duplicates
+    if (!sessionConfig.useStreaming) {
+      // Filter out optimistic messages that have real counterparts
+      const uniqueOptimisticMessages = optimisticMessages.filter(
+        opt =>
+          !existingMessages.some(
+            real =>
+              real.role === opt.role &&
+              real.content === opt.content &&
+              Math.abs(
+                new Date(real.createdAt).getTime() -
+                  new Date(opt.createdAt).getTime(),
+              ) < 10000,
+          ),
+      )
+      return [...existingMessages, ...uniqueOptimisticMessages]
+    }
+
     return existingMessages
   }, [session?.messages, sessionId, isSessionLoading, optimisticMessages])
+
   const messageGroups = useMemo(
     () => groupConsecutiveMessages(filteredMessages),
     [filteredMessages],
   )
-
-  // Clear streaming state when the real message is actually being rendered
-  useEffect(() => {
-    if (
-      waitingForWebSocket &&
-      streamingMessageIdRef.current &&
-      filteredMessages.length > 0
-    ) {
-      // Check if the matching message is actually in the filtered messages being rendered
-      const matchingMessage = filteredMessages.find(
-        msg =>
-          msg.content === streamingMessageIdRef.current &&
-          msg.role === 'assistant' &&
-          // Ensure it's a recent message (within last 3 filtered messages)
-          filteredMessages.indexOf(msg) >=
-            Math.max(0, filteredMessages.length - 3),
-      )
-
-      if (matchingMessage) {
-        setStreamingText('')
-        setIsStreamingTokens(false)
-        setHasReceivedTokens(false)
-        setWaitingForWebSocket(false)
-        setStreamingAgent(null)
-        streamingMessageIdRef.current = null
-      }
-    }
-  }, [filteredMessages, waitingForWebSocket, streamingText])
 
   const MessageSkeleton = () => (
     <div className="mb-4 flex space-x-2">
@@ -353,7 +334,9 @@ const Session = ({
     )
   }
 
-  if (isSessionLoading && !session) {
+  // Only show the main loading indicator if we're not coming from a direct navigation
+  // (i.e., when sessionId is 'new' or when explicitly loading a session from scratch)
+  if (isSessionLoading && !session && sessionId === 'new') {
     return (
       <div className="flex mx-auto py-16">
         <LoadingIndicator />
@@ -395,76 +378,203 @@ const Session = ({
                 </AlertDescription>
               </AlertDestructive>
             </div>
-          ) : messageGroups.length === 0 ? (
-            session?.agents && session.agents.length > 0 ? (
-              <>
-                <SessionWelcome
-                  variant="session"
-                  agents={session.agents}
-                  sessionTitle={session.title}
-                />
-              </>
-            ) : null
           ) : (
-            <>
-              {messageGroups.map(group => (
-                <div key={group[0]._id}>
-                  {group[0].role === 'eden'
-                    ? group.map(message => (
-                        <EdenMessage key={message._id} message={message} />
-                      ))
-                    : isOwnMessage(group[0].sender?._id)
-                    ? group.map(message => (
-                        <UserMessage key={message._id} message={message} />
-                      ))
-                    : group
-                        .filter(message => message.role !== 'tool')
-                        .map((message, index) => (
-                          <OtherMessage
-                            sessionId={sessionId as string}
-                            key={message._id}
-                            message={message}
-                            showAvatar={index === 0}
-                          />
-                        ))}
-                </div>
-              ))}
-            </>
+            (() => {
+              // Check if this is a newly created session waiting for first response
+              const isNewSession =
+                session &&
+                new Date().getTime() - new Date(session.createdAt).getTime() <
+                  30000 // Created within 30 seconds
+              // Check if we have only user messages (no assistant responses yet)
+              // Ignore system/eden messages when checking
+              const userMessages = session?.messages?.filter(m => m.role === 'user') || []
+              const assistantMessages = session?.messages?.filter(m => m.role === 'assistant') || []
+              const hasOnlyUserMessage = userMessages.length > 0 && assistantMessages.length === 0
+              const isWaitingForFirstResponse =
+                isNewSession && hasOnlyUserMessage
+
+              if (isWaitingForFirstResponse) {
+                return (
+                  <>
+                    {/* Show existing messages */}
+                    {messageGroups.map(group => (
+                      <div key={group[0]._id}>
+                        {group[0].role === 'eden'
+                          ? group.map(message => (
+                              <EdenMessage
+                                key={message._id}
+                                message={message}
+                              />
+                            ))
+                          : isOwnMessage(group[0].sender?._id)
+                          ? group.map(message => (
+                              <UserMessage
+                                key={message._id}
+                                message={message}
+                              />
+                            ))
+                          : group
+                              .filter(message => message.role !== 'tool')
+                              .map(message => (
+                                <OtherMessage
+                                  sessionId={sessionId as string}
+                                  key={message._id}
+                                  message={message}
+                                  showAvatar={true}
+                                />
+                              ))}
+                      </div>
+                    ))}
+
+                    {/* Show agent typing indicator */}
+                    <div className="mb-4">
+                      <OtherMessage
+                        sessionId={sessionId as string}
+                        message={
+                          {
+                            _id: 'loading-first-response',
+                            content: '',
+                            sender: getRespondingAgent(),
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                            session: sessionId,
+                            role: 'assistant',
+                          } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                        }
+                        showAvatar={true}
+                        isStreamingTokens={true} // This will show the typing indicator
+                      />
+                    </div>
+                  </>
+                )
+              }
+
+              // If messageGroups is empty, handle empty state
+              if (messageGroups.length === 0) {
+                // If we have explicit waiting states, show loading
+                if (
+                  !sessionConfig.useStreaming &&
+                  nonStreamingState.waitingForResponse
+                ) {
+                  return (
+                    <div className="mb-4">
+                      <OtherMessage
+                        sessionId={sessionId as string}
+                        message={
+                          {
+                            _id: 'loading-non-streaming',
+                            content: '',
+                            sender: getRespondingAgent(),
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                            session: sessionId,
+                            role: 'assistant',
+                          } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                        }
+                        showAvatar={true}
+                        isStreamingTokens={true} // This will show the typing indicator
+                      />
+                    </div>
+                  )
+                }
+
+                if (
+                  sessionConfig.useStreaming &&
+                  (streamingState.isStreamingTokens ||
+                    streamingState.waitingForWebSocket)
+                ) {
+                  return (
+                    <div className="mb-4">
+                      <OtherMessage
+                        sessionId={sessionId as string}
+                        message={
+                          {
+                            _id: 'loading-streaming',
+                            content: streamingState.streamingText || '',
+                            sender: getRespondingAgent(),
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                            session: sessionId,
+                            role: 'assistant',
+                          } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                        }
+                        showAvatar={true}
+                        isStreamingTokens={
+                          streamingState.isStreamingTokens &&
+                          !streamingState.hasReceivedTokens
+                        }
+                      />
+                    </div>
+                  )
+                }
+
+                // Otherwise show welcome screen
+                return session?.agents && session.agents.length > 0 ? (
+                  <>
+                    <SessionWelcome
+                      variant="session"
+                      agents={session.agents}
+                      sessionTitle={session.title}
+                    />
+                  </>
+                ) : null
+              }
+
+              // Normal case - show messages
+              return (
+                <>
+                  {messageGroups.map(group => (
+                    <div key={group[0]._id}>
+                      {group[0].role === 'eden'
+                        ? group.map(message => (
+                            <EdenMessage key={message._id} message={message} />
+                          ))
+                        : isOwnMessage(group[0].sender?._id)
+                        ? group.map(message => (
+                            <UserMessage key={message._id} message={message} />
+                          ))
+                        : group
+                            .filter(message => message.role !== 'tool')
+                            .map(message => (
+                              <OtherMessage
+                                sessionId={sessionId as string}
+                                key={message._id}
+                                message={message}
+                                showAvatar={true}
+                              />
+                            ))}
+                    </div>
+                  ))}
+                </>
+              )
+            })()
           )}
 
-          {/* Show streaming message when actively streaming tokens or waiting for websocket */}
-          {(isStreamingTokens ||
-            waitingForWebSocket ||
-            streamingText.length > 0) &&
-            // Don't show if the real message is already in filtered messages
-            !(
-              waitingForWebSocket &&
-              streamingMessageIdRef.current &&
-              filteredMessages.find(
-                msg =>
-                  msg.content === streamingMessageIdRef.current &&
-                  msg.role === 'assistant',
-              )
-            ) && (
-              <div className="mb-4">
-                <OtherMessage
-                  sessionId={sessionId as string}
-                  message={
-                    {
-                      _id: 'streaming',
-                      content: streamingText,
-                      sender: getRespondingAgent(),
-                      createdAt: new Date(),
-                      updatedAt: new Date(),
-                      session: sessionId,
-                      role: 'assistant',
-                    } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-                  }
-                  showAvatar={true}
-                  isStreamingTokens={isStreamingTokens && !hasReceivedTokens}
-                />
-              </div>
-            )}
+          {/* Streaming message display */}
+          {sessionConfig.useStreaming && (
+            <StreamingMessageDisplay
+              sessionId={sessionId as string}
+              isStreamingTokens={streamingState.isStreamingTokens}
+              waitingForWebSocket={streamingState.waitingForWebSocket}
+              streamingText={streamingState.streamingText}
+              hasReceivedTokens={streamingState.hasReceivedTokens}
+              streamingAgent={streamingState.streamingAgent}
+              getRespondingAgent={getRespondingAgent}
+              filteredMessages={filteredMessages}
+              streamingMessageIdRef={streamingState.streamingMessageIdRef}
+              onStreamingComplete={streamingState.clearStreamingState}
+            />
+          )}
+
+          {/* Non-streaming loading indicator */}
+          {!sessionConfig.useStreaming && (
+            <NonStreamingMessageDisplay
+              sessionId={sessionId as string}
+              waitingForResponse={nonStreamingState.waitingForResponse}
+              getRespondingAgent={getRespondingAgent}
+            />
+          )}
+
           {/* Error Display */}
           <ErrorDisplay
             errors={errors}
@@ -485,20 +595,49 @@ const Session = ({
         <div className="max-w-[--aui-thread-max-width] mx-auto w-full">
           <MessageInput
             sessionId={sessionId as string}
+            enableLiveAudio={true}
             onStreamingMessage={(content, attachments) => {
-              // Clear any existing errors when starting a new message
               clearErrors()
               setCancelledNotice(false)
-              setIsStreamingTokens(true)
-              setHasReceivedTokens(false)
-              setStreamingText('')
-              setStreamingAgent(null)
-              sendStreamingMessage(content, attachments)
 
-              // Add optimistic user message
-              setOptimisticMessages(prev => [
-                ...prev,
-                {
+              if (sessionConfig.useStreaming) {
+                streamingState.initializeStreaming()
+                streamingState.sendMessage(content, attachments)
+
+                // Add optimistic messages
+                streamingOptimisticMessages.current = [
+                  ...streamingOptimisticMessages.current,
+                  {
+                    _id: `optimistic-user-${Date.now()}`,
+                    content: content,
+                    sender: {
+                      _id: user?._id || 'user',
+                      username: user?.username || 'User',
+                      name: user?.username || 'You',
+                      userImage: user?.userImage,
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    session: sessionId,
+                    role: 'user',
+                  } as Message,
+                  {
+                    _id: `optimistic-agent-${Date.now()}`,
+                    content: '',
+                    sender: getRespondingAgent(),
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    session: sessionId,
+                    role: 'assistant',
+                    __optimistic: true,
+                  } as Message,
+                ]
+
+                setTimeout(scrollToBottom, 100)
+              } else {
+                nonStreamingState.setWaitingForResponse(true)
+
+                const userMessage: Message = {
                   _id: `optimistic-user-${Date.now()}`,
                   content: content,
                   sender: {
@@ -511,27 +650,24 @@ const Session = ({
                   updatedAt: new Date(),
                   session: sessionId,
                   role: 'user',
-                } as Message,
-                {
-                  _id: `optimistic-agent-${Date.now()}`,
-                  content: '',
-                  sender: getRespondingAgent(),
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  session: sessionId,
-                  role: 'assistant',
-                  __optimistic: true,
-                } as Message,
-              ])
+                  attachments: attachments || [],
+                } as Message
 
-              // Scroll to bottom when streaming starts
-              setTimeout(scrollToBottom, 100)
+                nonStreamingState.setOptimisticMessages(prev => [
+                  ...prev,
+                  userMessage,
+                ])
+                nonStreamingState.sendMessage(content, attachments)
+                setTimeout(scrollToBottom, 100)
+              }
             }}
             onCancel={cancelSession}
             isStreaming={
-              isStreamingTokens ||
-              waitingForWebSocket ||
-              streamingText.length > 0
+              sessionConfig.useStreaming
+                ? streamingState.isStreamingTokens ||
+                  streamingState.waitingForWebSocket ||
+                  streamingState.streamingText.length > 0
+                : nonStreamingState.waitingForResponse
             }
           />
         </div>

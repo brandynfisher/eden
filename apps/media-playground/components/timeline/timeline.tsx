@@ -39,7 +39,7 @@ const Timeline = ({ tool }: Props) => {
   // Define the query arguments based on the component's state and props
   const query: TasksV2ListArguments = useMemo(
     () => ({
-      limit: 35,
+      limit: 10,
       sort: ['createdAt;-1'],
       tool: tool.output_type === 'lora' ? tool.key : undefined,
     }),

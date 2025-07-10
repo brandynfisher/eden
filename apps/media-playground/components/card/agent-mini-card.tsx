@@ -35,7 +35,7 @@ export const AgentMiniCard = ({
       )}
     >
       <Link
-        href={`/agents/${agent.username}`}
+        href={`/chat/${agent.username}`}
         prefetch={false}
         className="flex h-16 relative w-full"
       >
