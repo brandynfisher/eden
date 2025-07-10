@@ -2,7 +2,7 @@
 
 import { OtherMessage } from '@/features/sessions/components/other-message'
 import { Message } from '@edenlabs/eden-sdk'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
 interface StreamingMessageDisplayProps {
   sessionId: string
@@ -33,7 +33,6 @@ export const StreamingMessageDisplay: React.FC<StreamingMessageDisplayProps> = (
   waitingForWebSocket,
   streamingText,
   hasReceivedTokens,
-  streamingAgent,
   getRespondingAgent,
   filteredMessages,
   streamingMessageIdRef,
