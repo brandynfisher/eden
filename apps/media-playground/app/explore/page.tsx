@@ -8,6 +8,8 @@ import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
 import ModelsFeed from '@/features/feed/models-feed'
 import { SortMenu } from '@/features/feed/sort-menu'
+import ToolsFeed from '@/features/feed/tools-feed'
+import { ToolsFilter } from '@/features/feed/tools-filter'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
 import { Plus, Zap } from 'lucide-react'
@@ -16,7 +18,7 @@ import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
-type ContentType = 'creations' | 'models' | 'agents'
+type ContentType = 'creations' | 'models' | 'agents' | 'tools'
 type CreatorType = 'public' | 'user'
 
 const ExplorePage = () => {
@@ -43,6 +45,7 @@ const ExplorePage = () => {
   const [creationsSort, setCreationsSort] = useState('likeCount;-1')
   const [modelsSort, setModelsSort] = useState('creationCount;-1')
   const [agentsSort, setAgentsSort] = useState('stats.userMessageCount;-1')
+  const [toolsCategory, setToolsCategory] = useState('featured')
 
   // Sync state with URL parameters when they change
   useEffect(() => {
@@ -156,6 +159,12 @@ const ExplorePage = () => {
             </Button>
           ),
         }
+      case 'tools':
+        return {
+          title: 'Explore Tools',
+          description: 'Create multimedia with AI tools',
+          actionButton: null,
+        }
       case 'creations':
       default:
         return {
@@ -177,69 +186,65 @@ const ExplorePage = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
+      {/* Main Title with Action Button */}
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">{pageInfo.title}</h1>
+        {pageInfo.actionButton && (
+          <div className="flex-shrink-0">{pageInfo.actionButton}</div>
+        )}
+      </div>
+
+      {/* Subtitle */}
+      <div className="mb-6">
+        <p className="text-lg text-muted-foreground">{pageInfo.description}</p>
+      </div>
+
       {/* Content Type Tabs */}
       <Tabs
         value={contentType}
         onValueChange={handleContentTypeChange}
         className="w-full"
       >
-        <div className="flex flex-wrap gap-2 lg:gap-3 w-full mb-6 items-center justify-between">
-          {/* Left side: Filter controls */}
+        <div className="flex flex-wrap gap-2 lg:gap-3 w-full mb-6 items-center">
+          {/* Filter controls */}
           <div className="flex flex-wrap gap-2 lg:gap-3 items-center">
-            {/* Content Type Tabs - moved to filter bar */}
-            <Tabs
-              value={contentType}
-              onValueChange={handleContentTypeChange}
-              className="min-w-0 w-full sm:w-auto"
-            >
-              <TabsList className="flex justify-stretch min-w-0 w-full sm:w-auto sm:min-w-[220px] lg:min-w-[280px]">
-                <TabsTrigger
-                  value="agents"
-                  className="w-full text-sm px-2 lg:px-3"
-                >
-                  Agents
-                </TabsTrigger>
-                <TabsTrigger
-                  value="creations"
-                  className="w-full text-sm px-2 lg:px-3"
-                >
-                  Creations
-                </TabsTrigger>
-                <TabsTrigger
-                  value="models"
-                  className="w-full text-sm px-2 lg:px-3"
-                >
-                  Models
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {/* Ownership Type Tabs - only show for non-tools content types */}
+            {contentType !== 'tools' && (
+              <Tabs
+                value={creatorType}
+                onValueChange={handleCreatorTypeChange}
+                className="min-w-0 w-full sm:w-auto"
+              >
+                <TabsList className="flex justify-stretch min-w-0 w-full sm:w-auto sm:min-w-[180px] lg:min-w-[220px]">
+                  <TabsTrigger
+                    value="public"
+                    className="w-full text-sm px-2 lg:px-3"
+                  >
+                    Public
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="user"
+                    className="w-full text-sm px-2 lg:px-3"
+                  >
+                    My{' '}
+                    {contentType === 'creations'
+                      ? 'Creations'
+                      : contentType === 'models'
+                      ? 'Models'
+                      : 'Agents'}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
 
-            {/* Ownership Type Tabs */}
-            <Tabs
-              value={creatorType}
-              onValueChange={handleCreatorTypeChange}
-              className="min-w-0 w-full sm:w-auto"
-            >
-              <TabsList className="flex justify-stretch min-w-0 w-full sm:w-auto sm:min-w-[180px] lg:min-w-[220px]">
-                <TabsTrigger
-                  value="public"
-                  className="w-full text-sm px-2 lg:px-3"
-                >
-                  Public
-                </TabsTrigger>
-                <TabsTrigger
-                  value="user"
-                  className="w-full text-sm px-2 lg:px-3"
-                >
-                  My{' '}
-                  {contentType === 'creations'
-                    ? 'Creations'
-                    : contentType === 'models'
-                    ? 'Models'
-                    : 'Agents'}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {/* Tools Category Filter - only show for tools */}
+            {contentType === 'tools' && (
+              <ToolsFilter
+                initialCategory={toolsCategory}
+                onChange={setToolsCategory}
+                className="min-w-0 w-full sm:w-auto"
+              />
+            )}
 
             {/* Filters and Sort for each content type */}
             {contentType === 'creations' && (
@@ -282,18 +287,6 @@ const ExplorePage = () => {
               className="min-w-0 w-full sm:w-auto sm:min-w-[120px] lg:min-w-[160px]"
             />
           </div>
-
-          {/* Right side: Action button */}
-          {pageInfo.actionButton && (
-            <div className="flex-shrink-0">{pageInfo.actionButton}</div>
-          )}
-        </div>
-
-        {/* Description below filter bar */}
-        <div className="mb-6">
-          <p className="text-lg text-muted-foreground">
-            {pageInfo.description}
-          </p>
         </div>
 
         {/* Content */}
@@ -328,6 +321,10 @@ const ExplorePage = () => {
             maxCols={5}
             variant="creation-page"
           />
+        </TabsContent>
+
+        <TabsContent value="tools" className="!ring-0 !ring-offset-0 mt-6">
+          <ToolsFeed category={toolsCategory} searchQuery={searchQuery} />
         </TabsContent>
       </Tabs>
     </div>

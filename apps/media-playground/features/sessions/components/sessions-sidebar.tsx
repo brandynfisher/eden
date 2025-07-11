@@ -385,7 +385,7 @@ const ExploreToolsSection: FC<{
 
   const handleToolsClick = () => {
     onItemClick?.()
-    router.push('/create')
+    router.push('/explore?type=tools')
   }
 
   return (
