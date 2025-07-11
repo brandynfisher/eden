@@ -1,6 +1,5 @@
 'use client'
 
-import { SubscriptionCrownBadge } from '@/components/badge/subscription-crown-badge'
 import AspectRatioSelector from '@/components/form/input/aspect-ratio-selector'
 import SampleCountSelector from '@/components/form/input/sample-count-selector'
 import { Badge } from '@/components/ui/badge'
@@ -534,12 +533,6 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
                     render={({ field, fieldState }) => (
                       <FormItem className="flex items-center gap-2 space-y-0">
                         <div className="flex items-center gap-2">
-                          <SubscriptionCrownBadge
-                            type={
-                              tool.output_type === 'lora' ? 'model' : 'creation'
-                            }
-                            className="h-4 w-4"
-                          />
                           <FormControl id={field.name} className="mt-0">
                             <Switch
                               checked={
@@ -633,12 +626,6 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
                         className="flex items-center gap-2 space-y-0 relative"
                       >
                         <div className={'flex items-center gap-2'}>
-                          <SubscriptionCrownBadge
-                            type={
-                              tool.output_type === 'lora' ? 'model' : 'creation'
-                            }
-                            className="h-5 w-5"
-                          />
                           <FormControl id={field.name} className="mt-0">
                             <Switch
                               checked={
