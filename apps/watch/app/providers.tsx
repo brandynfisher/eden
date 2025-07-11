@@ -1,4 +1,5 @@
 import { env } from '@/lib/config'
+import { NotificationProvider } from '@/providers/notification-provider'
 import { ReactQueryProvider } from '@/providers/react-query-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { ClerkProvider } from '@clerk/nextjs'
@@ -27,7 +28,9 @@ export default function Providers({ children }: PropsWithChildren) {
           },
         }}
       >
-        <ReactQueryProvider>{children}</ReactQueryProvider>
+        <ReactQueryProvider>
+          <NotificationProvider>{children}</NotificationProvider>
+        </ReactQueryProvider>
       </ClerkProvider>
     </ThemeProvider>
   )

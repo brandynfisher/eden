@@ -274,6 +274,16 @@ import {
   ModelsV2PatchResponse,
   ModelsV2UnlikeArguments,
   ModelsV2UnlikeResponse,
+  NotificationsArchiveArguments,
+  NotificationsArchiveResponse,
+  NotificationsCountArguments,
+  NotificationsCountResponse,
+  NotificationsCreateArguments,
+  NotificationsCreateResponse,
+  NotificationsListArguments,
+  NotificationsListResponse,
+  NotificationsMarkReadArguments,
+  NotificationsMarkReadResponse,
   SessionsV2CancelArguments,
   SessionsV2CancelResponse,
   SessionsV2CreateArguments,
@@ -350,6 +360,11 @@ import {
   modelsV2ListRequestConfig,
   modelsV2PatchRequestConfig,
   modelsV2UnlikeRequestConfig,
+  notificationsArchiveRequestConfig,
+  notificationsCountRequestConfig,
+  notificationsCreateRequestConfig,
+  notificationsListRequestConfig,
+  notificationsMarkReadRequestConfig,
   sessionsCancelRequestConfigV2,
   sessionsCreateRequestConfigV2,
   sessionsDeleteRequestConfigV2,
@@ -629,6 +644,29 @@ export abstract class Methods {
     //   this,
     //   conceptsUnreactRequestConfig,
     // ),
+  }
+
+  public readonly notifications = {
+    create: bindApiCall<
+      NotificationsCreateArguments,
+      NotificationsCreateResponse
+    >(this, notificationsCreateRequestConfig),
+    list: bindApiCall<NotificationsListArguments, NotificationsListResponse>(
+      this,
+      notificationsListRequestConfig,
+    ),
+    markRead: bindApiCall<
+      NotificationsMarkReadArguments,
+      NotificationsMarkReadResponse
+    >(this, notificationsMarkReadRequestConfig),
+    count: bindApiCall<NotificationsCountArguments, NotificationsCountResponse>(
+      this,
+      notificationsCountRequestConfig,
+    ),
+    archive: bindApiCall<
+      NotificationsArchiveArguments,
+      NotificationsArchiveResponse
+    >(this, notificationsArchiveRequestConfig),
   }
 
   public readonly agents = {
