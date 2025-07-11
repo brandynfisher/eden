@@ -200,61 +200,125 @@ const TaskStatusIndicator = () => {
                     className="px-2 py-2 hover:bg-muted rounded cursor-pointer"
                     asChild
                   >
-                    <div className="w-full">
-                      <div className="flex flex-col w-full">
-                        <div className="flex items-center gap-2 mb-1">
-                          {getNotificationIcon(
-                            notification.type,
-                            notification.priority,
-                          )}
-                          <div className="text-xs text-accent-foreground">
-                            {notification.title}
-                          </div>
-                          <div
-                            className="text-xs text-muted-foreground/50 ml-auto"
-                            title={new Date(
-                              notification.createdAt,
-                            ).toLocaleString()}
-                          >
-                            <TimeAgo
-                              date={notification.createdAt}
-                              locale="en-short"
-                            />
-                          </div>
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            {!notification.read && (
+                    {notification.action_url ? (
+                      <Link
+                        href={`${process.env.NEXT_PUBLIC_HOST || ''}${
+                          notification.action_url
+                        }`}
+                        prefetch={false}
+                        className="w-full"
+                      >
+                        <div className="flex flex-col w-full">
+                          <div className="flex items-center gap-2 mb-1">
+                            {getNotificationIcon(
+                              notification.type,
+                              notification.priority,
+                            )}
+                            <div className="text-xs text-accent-foreground">
+                              {notification.title}
+                            </div>
+                            <div
+                              className="text-xs text-muted-foreground/50 ml-auto"
+                              title={new Date(
+                                notification.createdAt,
+                              ).toLocaleString()}
+                            >
+                              <TimeAgo
+                                date={notification.createdAt}
+                                locale="en-short"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              {!notification.read && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    handleMarkAsRead([notification._id])
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                  title="Mark as read"
+                                >
+                                  <CheckIcon className="h-3 w-3" />
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={e => {
                                   e.stopPropagation()
-                                  handleMarkAsRead([notification._id])
+                                  handleArchive([notification._id])
                                 }}
                                 className="h-6 w-6 p-0"
-                                title="Mark as read"
+                                title="Dismiss"
                               >
-                                <CheckIcon className="h-3 w-3" />
+                                <XIcon className="h-3 w-3" />
                               </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={e => {
-                                e.stopPropagation()
-                                handleArchive([notification._id])
-                              }}
-                              className="h-6 w-6 p-0"
-                              title="Dismiss"
-                            >
-                              <XIcon className="h-3 w-3" />
-                            </Button>
+                            </div>
+                          </div>
+                          <div className="text-xs line-clamp-2 text-muted-foreground">
+                            {notification.message}
                           </div>
                         </div>
-                        <div className="text-xs line-clamp-2 text-muted-foreground">
-                          {notification.message}
+                      </Link>
+                    ) : (
+                      <div className="w-full">
+                        <div className="flex flex-col w-full">
+                          <div className="flex items-center gap-2 mb-1">
+                            {getNotificationIcon(
+                              notification.type,
+                              notification.priority,
+                            )}
+                            <div className="text-xs text-accent-foreground">
+                              {notification.title}
+                            </div>
+                            <div
+                              className="text-xs text-muted-foreground/50 ml-auto"
+                              title={new Date(
+                                notification.createdAt,
+                              ).toLocaleString()}
+                            >
+                              <TimeAgo
+                                date={notification.createdAt}
+                                locale="en-short"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              {!notification.read && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    handleMarkAsRead([notification._id])
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                  title="Mark as read"
+                                >
+                                  <CheckIcon className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  handleArchive([notification._id])
+                                }}
+                                className="h-6 w-6 p-0"
+                                title="Dismiss"
+                              >
+                                <XIcon className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="text-xs line-clamp-2 text-muted-foreground">
+                            {notification.message}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </div>
