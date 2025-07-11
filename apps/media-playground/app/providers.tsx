@@ -1,5 +1,6 @@
 import { env } from '@/lib/config'
 import { DailyLoginProvider } from '@/providers/daily-login-provider'
+import { NotificationProvider } from '@/providers/notification-provider'
 import { ReactQueryProvider } from '@/providers/react-query-provider'
 import ReduxProvider from '@/providers/redux-provider'
 import { TaskStatusProvider } from '@/providers/task-status-provider'
@@ -37,7 +38,9 @@ export default function Providers({ children }: PropsWithChildren) {
           >
             <ReduxProvider>
               <TaskStatusProvider>
-                <DailyLoginProvider>{children}</DailyLoginProvider>
+                <NotificationProvider>
+                  <DailyLoginProvider>{children}</DailyLoginProvider>
+                </NotificationProvider>
               </TaskStatusProvider>
             </ReduxProvider>
           </WebSocketProvider>

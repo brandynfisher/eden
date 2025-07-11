@@ -12,14 +12,24 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import customImageLoader from '@/image-loader'
+import { useNotificationContext } from '@/providers/notification-provider'
 import { useTaskStatus } from '@/providers/task-status-provider'
-import { TaskV2Status } from '@edenlabs/eden-sdk'
 import {
+  NotificationPriority,
+  NotificationType,
+  TaskV2Status,
+} from '@edenlabs/eden-sdk'
+import {
+  AlertCircleIcon,
   BanIcon,
+  BellIcon,
+  CheckIcon,
   CircleCheckIcon,
   ExternalLinkIcon,
   InboxIcon,
+  InfoIcon,
   TriangleAlertIcon,
+  XIcon,
 } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Image from 'next/image'
@@ -35,8 +45,48 @@ const TaskStatusIndicator = () => {
     completedTasks,
     cancelledTasks,
   } = useTaskStatus()
+  const { notifications, unreadCount, markAsRead, archiveNotifications } =
+    useNotificationContext()
   const [open, setOpen] = useState(false)
   const { TimeAgo } = useTimeAgo()
+
+  const getNotificationIcon = (
+    type: NotificationType,
+    priority: NotificationPriority,
+  ) => {
+    const iconClass = 'mr-1.5 h-4 w-4'
+
+    switch (type) {
+      case 'trigger_complete':
+        return <CircleCheckIcon className={`${iconClass} text-green-500`} />
+      case 'trigger_failed':
+        return <TriangleAlertIcon className={`${iconClass} text-red-500`} />
+      case 'session_complete':
+        return <CircleCheckIcon className={`${iconClass} text-blue-500`} />
+      case 'session_failed':
+        return <AlertCircleIcon className={`${iconClass} text-red-500`} />
+      case 'system_alert':
+        return priority === 'high' || priority === 'urgent' ? (
+          <TriangleAlertIcon className={`${iconClass} text-orange-500`} />
+        ) : (
+          <InfoIcon className={`${iconClass} text-blue-500`} />
+        )
+      default:
+        return <BellIcon className={`${iconClass} text-gray-500`} />
+    }
+  }
+
+  const handleMarkAsRead = async (notificationIds: string[]) => {
+    await markAsRead(notificationIds)
+  }
+
+  const handleArchive = async (notificationIds: string[]) => {
+    await archiveNotifications(notificationIds)
+  }
+
+  const handleMarkAllAsRead = async () => {
+    await markAsRead()
+  }
 
   if (!isSignedIn) {
     return null
@@ -44,10 +94,14 @@ const TaskStatusIndicator = () => {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger title="View recent tasks" asChild>
-        <Button variant="ghost" className="flex px-2 gap-2 focus:!ring-0">
+      <DropdownMenuTrigger title="View recent tasks and notifications" asChild>
+        <Button
+          variant="ghost"
+          className="flex px-2 gap-2 focus:!ring-0 relative"
+        >
           {(!pendingRunningTasks || !pendingRunningTasks.length) &&
-          (!completedTasks || !completedTasks.length) ? (
+          (!completedTasks || !completedTasks.length) &&
+          (!notifications || !notifications.length) ? (
             <div className="flex items-center">
               <InboxIcon className="mr-1 h-4 w-4" />0
             </div>
@@ -63,6 +117,12 @@ const TaskStatusIndicator = () => {
                 <div className="flex items-center text-green-500">
                   <CircleCheckIcon className="mr-1 h-4 w-4" />
                   <span className="text-sm">{completedTasks.length}</span>
+                </div>
+              ) : null}
+              {notifications && notifications.length ? (
+                <div className="flex items-center text-purple-500">
+                  <BellIcon className="mr-1 h-4 w-4" />
+                  <span className="text-sm">{notifications.length}</span>
                 </div>
               ) : null}
             </>
@@ -117,9 +177,165 @@ const TaskStatusIndicator = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh_-_240px)] md:max-h-[calc(100dvh_-_120px)]">
-          {allTasks.length === 0 ? (
+          {/* Notifications Section */}
+          {notifications && notifications.length > 0 && (
+            <>
+              <div className="px-3 py-2 text-xs font-medium text-muted-foreground flex items-center justify-between">
+                <span>Notifications</span>
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleMarkAllAsRead}
+                    className="text-xs px-2 py-1 h-6"
+                  >
+                    Mark all read
+                  </Button>
+                )}
+              </div>
+              {notifications.map(notification => (
+                <div key={notification._id}>
+                  <DropdownMenuItem
+                    className="px-2 py-2 hover:bg-muted rounded cursor-pointer"
+                    asChild
+                  >
+                    {notification.action_url ? (
+                      <Link
+                        href={`${process.env.NEXT_PUBLIC_HOST || ''}${
+                          notification.action_url
+                        }`}
+                        prefetch={false}
+                        className="w-full"
+                      >
+                        <div className="flex flex-col w-full">
+                          <div className="flex items-center gap-2 mb-1">
+                            {getNotificationIcon(
+                              notification.type,
+                              notification.priority,
+                            )}
+                            <div className="text-xs text-accent-foreground">
+                              {notification.title}
+                            </div>
+                            <div
+                              className="text-xs text-muted-foreground/50 ml-auto"
+                              title={new Date(
+                                notification.createdAt,
+                              ).toLocaleString()}
+                            >
+                              <TimeAgo
+                                date={notification.createdAt}
+                                locale="en-short"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              {!notification.read && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    handleMarkAsRead([notification._id])
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                  title="Mark as read"
+                                >
+                                  <CheckIcon className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  handleArchive([notification._id])
+                                }}
+                                className="h-6 w-6 p-0"
+                                title="Dismiss"
+                              >
+                                <XIcon className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="text-xs line-clamp-2 text-muted-foreground">
+                            {notification.message}
+                          </div>
+                        </div>
+                      </Link>
+                    ) : (
+                      <div className="w-full">
+                        <div className="flex flex-col w-full">
+                          <div className="flex items-center gap-2 mb-1">
+                            {getNotificationIcon(
+                              notification.type,
+                              notification.priority,
+                            )}
+                            <div className="text-xs text-accent-foreground">
+                              {notification.title}
+                            </div>
+                            <div
+                              className="text-xs text-muted-foreground/50 ml-auto"
+                              title={new Date(
+                                notification.createdAt,
+                              ).toLocaleString()}
+                            >
+                              <TimeAgo
+                                date={notification.createdAt}
+                                locale="en-short"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              {!notification.read && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={e => {
+                                    e.stopPropagation()
+                                    handleMarkAsRead([notification._id])
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                  title="Mark as read"
+                                >
+                                  <CheckIcon className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  handleArchive([notification._id])
+                                }}
+                                className="h-6 w-6 p-0"
+                                title="Dismiss"
+                              >
+                                <XIcon className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="text-xs line-clamp-2 text-muted-foreground">
+                            {notification.message}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Tasks Section */}
+          {allTasks.length > 0 && (
+            <div className="px-3 py-2 text-xs font-medium text-muted-foreground">
+              Tasks
+            </div>
+          )}
+
+          {allTasks.length === 0 &&
+          (!notifications || notifications.length === 0) ? (
             <DropdownMenuItem className="px-2 py-3 bg-muted/20 text-muted-foreground/50 hover:bg-muted rounded cursor-pointer">
-              No recent tasks
+              No recent activity
             </DropdownMenuItem>
           ) : (
             allTasks.map(task => (
