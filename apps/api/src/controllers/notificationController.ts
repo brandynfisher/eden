@@ -1,19 +1,14 @@
 import { Agent } from '../models/Agent'
-import { Notification, NotificationDocument } from '../models/Notification'
+import { Notification } from '../models/Notification'
 import { Trigger } from '../models/Trigger'
 import { User } from '../models/User'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import {
   NotificationsArchiveArguments,
-  NotificationsArchiveResponse,
   NotificationsCountArguments,
-  NotificationsCountResponse,
   NotificationsCreateArguments,
-  NotificationsCreateResponse,
   NotificationsListArguments,
-  NotificationsListResponse,
   NotificationsMarkReadArguments,
-  NotificationsMarkReadResponse,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
@@ -88,12 +83,10 @@ export const createNotification = async (
       await notification.save()
     }
 
-    const response: NotificationsCreateResponse = {
+    return reply.status(200).send({
       id: notification._id.toString(),
       message: 'Notification created successfully',
-    }
-
-    return reply.status(200).send(response)
+    })
   } catch (error) {
     console.error('Error creating notification:', error)
     return reply.status(500).send({
@@ -156,7 +149,7 @@ export const getNotifications = async (
 
     // Get notifications with pagination
     const notifications = await Notification.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ created_at: -1 })
       .skip(offset)
       .limit(limit)
       .populate({
@@ -173,39 +166,78 @@ export const getNotifications = async (
       })
       .lean()
 
-    // Process notifications for response
-    const processedNotifications = notifications.map(notification => {
-      // Force cloudfront URLs for images
-      if (notification.user?.userImage) {
-        notification.user.userImage = forceCloudfrontUrl(
-          server,
-          notification.user.userImage,
-        )
+    // Process notifications for response - transform to match SDK types
+    const processedNotifications = notifications.map((notification: any) => {
+      // Handle populated user
+      let userResponse = notification.user
+      if (notification.user && typeof notification.user === 'object') {
+        if (notification.user.userImage) {
+          notification.user.userImage = forceCloudfrontUrl(
+            server,
+            notification.user.userImage,
+          )
+        }
+        userResponse = notification.user
+      } else {
+        userResponse = notification.user.toString()
       }
-      if (notification.agent?.userImage) {
-        notification.agent.userImage = forceCloudfrontUrl(
-          server,
-          notification.agent.userImage,
-        )
+
+      // Handle populated agent
+      let agentResponse = null
+      if (notification.agent) {
+        if (typeof notification.agent === 'object') {
+          if (notification.agent.userImage) {
+            notification.agent.userImage = forceCloudfrontUrl(
+              server,
+              notification.agent.userImage,
+            )
+          }
+          agentResponse = notification.agent
+        } else {
+          agentResponse = notification.agent.toString()
+        }
+      }
+
+      // Handle populated trigger
+      let triggerResponse = null
+      if (notification.trigger) {
+        triggerResponse =
+          typeof notification.trigger === 'object'
+            ? notification.trigger._id.toString()
+            : notification.trigger.toString()
       }
 
       return {
-        ...notification,
         _id: notification._id.toString(),
-        user: notification.user?._id?.toString(),
-        trigger: notification.trigger?._id?.toString() || null,
-        session: notification.session?.toString() || null,
-        agent: notification.agent?._id?.toString() || null,
+        user: userResponse,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        read: notification.read,
+        read_at: notification.read_at,
+        priority: notification.priority,
+        trigger: triggerResponse,
+        session: notification.session ? notification.session.toString() : null,
+        agent: agentResponse,
+        channels: notification.channels,
+        delivered_channels: notification.delivered_channels,
+        delivery_attempted_at: notification.delivery_attempted_at,
+        delivery_failed_channels: notification.delivery_failed_channels,
+        metadata: notification.metadata,
+        action_url: notification.action_url,
+        expires_at: notification.expires_at,
+        archived: notification.archived,
+        archived_at: notification.archived_at,
+        createdAt: notification.createdAt,
+        updatedAt: notification.updatedAt,
       }
     })
 
-    const response: NotificationsListResponse = {
-      notifications: processedNotifications as any,
+    return reply.status(200).send({
+      notifications: processedNotifications,
       total_count,
       unread_count,
-    }
-
-    return reply.status(200).send(response)
+    })
   } catch (error) {
     console.error('Error getting notifications:', error)
     return reply.status(500).send({
@@ -236,17 +268,16 @@ export const markNotificationsRead = async (
       $set: {
         read: true,
         read_at: new Date(),
+        updated_at: new Date(),
       },
     })
 
-    const response: NotificationsMarkReadResponse = {
+    return reply.status(200).send({
       marked_read_count: updateResult.modifiedCount || 0,
       message: `Marked ${
         updateResult.modifiedCount || 0
       } notifications as read`,
-    }
-
-    return reply.status(200).send(response)
+    })
   } catch (error) {
     console.error('Error marking notifications as read:', error)
     return reply.status(500).send({
@@ -273,11 +304,9 @@ export const getNotificationCount = async (
 
     const count = await Notification.countDocuments(query)
 
-    const response: NotificationsCountResponse = {
+    return reply.status(200).send({
       count,
-    }
-
-    return reply.status(200).send(response)
+    })
   } catch (error) {
     console.error('Error getting notification count:', error)
     return reply.status(500).send({
@@ -311,16 +340,15 @@ export const archiveNotifications = async (
         $set: {
           archived: true,
           archived_at: new Date(),
+          updated_at: new Date(),
         },
       },
     )
 
-    const response: NotificationsArchiveResponse = {
+    return reply.status(200).send({
       archived_count: updateResult.modifiedCount || 0,
       message: `Archived ${updateResult.modifiedCount || 0} notifications`,
-    }
-
-    return reply.status(200).send(response)
+    })
   } catch (error) {
     console.error('Error archiving notifications:', error)
     return reply.status(500).send({

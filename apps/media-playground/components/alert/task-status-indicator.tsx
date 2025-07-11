@@ -47,6 +47,7 @@ const TaskStatusIndicator = () => {
   } = useTaskStatus()
   const { notifications, unreadCount, markAsRead, archiveNotifications } =
     useNotificationContext()
+  console.log('notifications', notifications)
   const [open, setOpen] = useState(false)
   const { TimeAgo } = useTimeAgo()
 
@@ -73,21 +74,6 @@ const TaskStatusIndicator = () => {
         )
       default:
         return <BellIcon className={`${iconClass} text-gray-500`} />
-    }
-  }
-
-  const getPriorityColor = (priority: NotificationPriority) => {
-    switch (priority) {
-      case 'urgent':
-        return 'border-l-4 border-red-500'
-      case 'high':
-        return 'border-l-4 border-orange-500'
-      case 'normal':
-        return 'border-l-4 border-blue-500'
-      case 'low':
-        return 'border-l-4 border-gray-300'
-      default:
-        return ''
     }
   }
 
@@ -141,11 +127,6 @@ const TaskStatusIndicator = () => {
                 </div>
               ) : null}
             </>
-          )}
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -216,25 +197,29 @@ const TaskStatusIndicator = () => {
               {notifications.map(notification => (
                 <div key={notification._id}>
                   <DropdownMenuItem
-                    className={`px-3 py-3 hover:bg-muted rounded cursor-pointer ${
-                      !notification.read ? 'bg-blue-50/50' : ''
-                    } ${getPriorityColor(notification.priority)}`}
+                    className="px-2 py-2 hover:bg-muted rounded cursor-pointer"
                     asChild
                   >
                     <div className="w-full">
-                      <div className="flex flex-col w-full gap-2">
-                        <div className="flex items-start gap-2">
+                      <div className="flex flex-col w-full">
+                        <div className="flex items-center gap-2 mb-1">
                           {getNotificationIcon(
                             notification.type,
                             notification.priority,
                           )}
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm line-clamp-1">
-                              {notification.title}
-                            </div>
-                            <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                              {notification.message}
-                            </div>
+                          <div className="text-xs text-accent-foreground">
+                            {notification.title}
+                          </div>
+                          <div
+                            className="text-xs text-muted-foreground/50 ml-auto"
+                            title={new Date(
+                              notification.createdAt,
+                            ).toLocaleString()}
+                          >
+                            <TimeAgo
+                              date={notification.createdAt}
+                              locale="en-short"
+                            />
                           </div>
                           <div className="flex items-center gap-1 flex-shrink-0">
                             {!notification.read && (
@@ -265,16 +250,8 @@ const TaskStatusIndicator = () => {
                             </Button>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground/50">
-                          <TimeAgo
-                            date={notification.createdAt}
-                            locale="en-short"
-                          />
-                          {notification.trigger && (
-                            <span className="text-xs bg-gray-100 px-1 rounded">
-                              Trigger
-                            </span>
-                          )}
+                        <div className="text-xs line-clamp-2 text-muted-foreground">
+                          {notification.message}
                         </div>
                       </div>
                     </div>

@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs'
+import { getAuth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 const EDEN_API_BASE_URL =
@@ -10,7 +10,7 @@ async function proxyRequest(
   method: string = 'GET',
 ) {
   try {
-    const { getToken } = auth()
+    const { getToken } = getAuth(request)
     const token = await getToken()
 
     if (!token) {

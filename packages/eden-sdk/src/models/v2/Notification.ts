@@ -1,3 +1,7 @@
+// Request/Response types for API calls
+import { WebAPICallOptions, WebAPICallResult } from '../../types'
+// Request config functions
+import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models'
 import { Agent } from 'src/models/v2'
 
@@ -38,9 +42,6 @@ export type Notification = {
   createdAt: Date
   updatedAt: Date
 }
-
-// Request/Response types for API calls
-import { WebAPICallOptions, WebAPICallResult } from '../../types'
 
 export interface NotificationsCreateArguments extends WebAPICallOptions {
   user_id: string
@@ -104,9 +105,6 @@ export type NotificationsArchiveResponse = WebAPICallResult & {
   archived_count: number
   message: string
 }
-
-// Request config functions
-import { AxiosRequestConfig } from 'axios'
 
 export const notificationsCreateRequestConfig = (
   args: NotificationsCreateArguments,
