@@ -7,7 +7,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-
 import {
   ArrowDownUpIcon,
   ClockArrowDown, //HeartIcon,
@@ -33,8 +32,8 @@ const userSortOptions = [
 
 // Add new sort options for creations
 const creationSortOptions = [
+  { label: 'Top', value: 'likeCount;-1', icon: <StarIcon /> },
   { label: 'Latest', value: 'createdAt;-1', icon: <ClockArrowDown /> },
-  //{ label: 'Top', value: 'likeCount;-1', icon: <HeartIcon /> },
 ]
 
 const modelSortOptions = [
@@ -75,7 +74,7 @@ export const SortMenu = ({
         : variant === 'creation'
         ? 'likeCount;-1'
         : variant === 'model'
-        ? 'createdAt;-1'
+        ? 'creationCount;-1'
         : 'createdAt;-1'),
   )
 

@@ -1,7 +1,7 @@
 'use client'
 
-import { AgentBar } from './components/agent-bar'
 import AlertDestructive from '@/components/alert/alert-destructive'
+import ChatThreadHeader from '@/components/header/chat-thread-header'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { MarkdownText } from '@/components/ui/assistant-ui/markdown-text'
@@ -569,153 +569,147 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
 
   return (
     <MyRuntimeProvider agentId={agentId} threadId={threadId}>
-      <div
-        className="
-         flex flex-col
-         fixed
-         inset-x-0
-         bottom-0
-         top-16
-       "
-      >
-        {/* AGENT BAR - Always visible */}
-        <AgentBar
+      <>
+        {/* Chat-specific header */}
+        <ChatThreadHeader
           agent={agent}
-          userId={user?._id}
           onChatClick={handleChatClick}
           onAgentSelect={() => setIsAgentSelectorOpen(true)}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
+          isSidebarCollapsed={isSidebarCollapsed}
+          threadId={threadId}
         />
 
-        {/* AGENT SELECTOR MODAL */}
-        <SingleAgentSelectorModal
-          open={isAgentSelectorOpen}
-          onOpenChange={setIsAgentSelectorOpen}
-          onSelect={handleAgentSelect}
-        />
+        <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
+          {/* AGENT SELECTOR MODAL */}
+          <SingleAgentSelectorModal
+            open={isAgentSelectorOpen}
+            onOpenChange={setIsAgentSelectorOpen}
+            onSelect={handleAgentSelect}
+          />
 
-        {/* MOBILE-ONLY HEADER */}
+          {/* MOBILE-ONLY HEADER */}
 
-        <LeftBarSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
+          <LeftBarSheet open={isSheetOpen} onOpenChange={setIsSheetOpen} />
 
-        {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
+          {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
 
-        {/* CONDITIONAL MAIN CONTENT BASED ON VIEW MODE */}
-        {viewMode === 'creations' ? (
-          /* CREATIONS VIEW - Full width */
-          agent && <AgentCreationsView agent={agent} user={user} />
-        ) : viewMode === 'tasks' ? (
-          /* CREATIONS VIEW - Full width */
-          agent && <AgentTasksView agent={agent} />
-        ) : viewMode === 'settings' ? (
-          /* SETTINGS VIEW - Full width */
-          agent && <AgentEditView agent={agent} user={user} />
-        ) : (
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="flex-1 !overflow-y-hidden"
-            autoSaveId={`resizable-chat-layout-${agentId}`}
-          >
-            {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
-            <ResizablePanel
-              defaultSize={20}
-              minSize={15}
-              maxSize={30}
-              collapsible
-              collapsedSize={0}
-              onCollapse={() => setIsSidebarCollapsed(true)}
-              onExpand={() => setIsSidebarCollapsed(false)}
-              className={cn(
-                'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
-                'max-w-[320px]',
-                isSidebarCollapsed && 'p-0 border-none',
-              )}
+          {/* CONDITIONAL MAIN CONTENT BASED ON VIEW MODE */}
+          {viewMode === 'creations' ? (
+            /* CREATIONS VIEW - Full width */
+            agent && <AgentCreationsView agent={agent} user={user} />
+          ) : viewMode === 'tasks' ? (
+            /* CREATIONS VIEW - Full width */
+            agent && <AgentTasksView agent={agent} />
+          ) : viewMode === 'settings' ? (
+            /* SETTINGS VIEW - Full width */
+            agent && <AgentEditView agent={agent} user={user} />
+          ) : (
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="flex-1 !overflow-y-hidden"
+              autoSaveId={`resizable-chat-layout-${agentId}`}
             >
-              {/* Render content only if not collapsed */}
-              {!isSidebarCollapsed && <ChatSidebarContent />}
-            </ResizablePanel>
-
-            {/* Separator Handle - visible only on desktop */}
-            <ResizableHandle
-              withHandle
-              className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
-            />
-
-            {/* MAIN CONTENT PANEL */}
-            <ResizablePanel defaultSize={80} className="flex flex-col">
-              {/* Ensure main takes full height within the panel */}
-              <main className="bg-accent flex-1 overflow-auto flex flex-col">
-                {!agent ? (
-                  <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
-                    <LoadingIndicator className="w-10 h-10 text-primary" />
-                  </div>
-                ) : (
-                  <Thread
-                    components={{
-                      //@ts-expect-error We're extending thread welcome hackishly with children
-                      ThreadWelcome: MyThreadWelcome,
-                      // @ts-expect-error We're extending composer hackishly with drag and drop
-                      Composer: MyComposer,
-                    }}
-                    onAgentSelectorOpen={() => setIsAgentSelectorOpen(true)}
-                    welcome={{
-                      suggestions:
-                        agent?.suggestions && agent?.suggestions.length > 0
-                          ? agent?.suggestions.map(suggestion => ({
-                              text: suggestion.label,
-                              prompt: suggestion.prompt,
-                            }))
-                          : undefined,
-                      message:
-                        agent?.greeting ?? 'What do you want to create today?',
-                    }}
-                    assistantAvatar={{
-                      src: getCloudfrontOriginalUrl(agent?.userImage),
-                      fallback: agent?.name,
-                      alt: agent?.name,
-                    }}
-                    assistantMessage={{
-                      allowReload: false,
-                      allowSpeak: false,
-                      components: {
-                        Empty: () => (
-                          <div className="col-start-3 row-start-2">
-                            <TypingIndicator />
-                          </div>
-                        ),
-                        Text: MarkdownText,
-                        ToolFallback,
-                      },
-                    }}
-                    userMessage={{
-                      allowEdit: false,
-                    }}
-                    branchPicker={{
-                      allowBranchPicker: false,
-                    }}
-                    composer={{
-                      allowAttachments: true,
-                    }}
-                    tools={[TaskResultTool]}
-                    config={{
-                      threadId,
-                      defaultMessages: [],
-                    }}
-                  />
+              {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
+              <ResizablePanel
+                defaultSize={20}
+                minSize={15}
+                maxSize={30}
+                collapsible
+                collapsedSize={0}
+                onCollapse={() => setIsSidebarCollapsed(true)}
+                onExpand={() => setIsSidebarCollapsed(false)}
+                className={cn(
+                  'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+                  'max-w-[320px]',
+                  isSidebarCollapsed && 'p-0 border-none',
                 )}
-                {isError ? (
-                  <div className="p-4">
-                    <AlertDestructive title={'Error loading agent'}>
-                      <AlertDescription>{error?.message}</AlertDescription>
-                    </AlertDestructive>
-                  </div>
-                ) : null}
-              </main>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        )}
-      </div>
+              >
+                {/* Render content only if not collapsed */}
+                {!isSidebarCollapsed && <ChatSidebarContent />}
+              </ResizablePanel>
+
+              {/* Separator Handle - visible only on desktop */}
+              <ResizableHandle
+                withHandle
+                className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
+              />
+
+              {/* MAIN CONTENT PANEL */}
+              <ResizablePanel defaultSize={80} className="flex flex-col">
+                {/* Ensure main takes full height within the panel */}
+                <main className="bg-accent flex-1 overflow-auto flex flex-col">
+                  {!agent ? (
+                    <div className="p-4 flex justify-center items-center gap-2 h-full w-full">
+                      <LoadingIndicator className="w-10 h-10 text-primary" />
+                    </div>
+                  ) : (
+                    <Thread
+                      components={{
+                        //@ts-expect-error We're extending thread welcome hackishly with children
+                        ThreadWelcome: MyThreadWelcome,
+                        // @ts-expect-error We're extending composer hackishly with drag and drop
+                        Composer: MyComposer,
+                      }}
+                      onAgentSelectorOpen={() => setIsAgentSelectorOpen(true)}
+                      welcome={{
+                        suggestions:
+                          agent?.suggestions && agent?.suggestions.length > 0
+                            ? agent?.suggestions.map(suggestion => ({
+                                text: suggestion.label,
+                                prompt: suggestion.prompt,
+                              }))
+                            : undefined,
+                        message:
+                          agent?.greeting ??
+                          'What do you want to create today?',
+                      }}
+                      assistantAvatar={{
+                        src: getCloudfrontOriginalUrl(agent?.userImage),
+                        fallback: agent?.name,
+                        alt: agent?.name,
+                      }}
+                      assistantMessage={{
+                        allowReload: false,
+                        allowSpeak: false,
+                        components: {
+                          Empty: () => (
+                            <div className="col-start-3 row-start-2">
+                              <TypingIndicator />
+                            </div>
+                          ),
+                          Text: MarkdownText,
+                          ToolFallback,
+                        },
+                      }}
+                      userMessage={{
+                        allowEdit: false,
+                      }}
+                      branchPicker={{
+                        allowBranchPicker: false,
+                      }}
+                      composer={{
+                        allowAttachments: true,
+                      }}
+                      tools={[TaskResultTool]}
+                      config={{
+                        threadId,
+                        defaultMessages: [],
+                      }}
+                    />
+                  )}
+                  {isError ? (
+                    <div className="p-4">
+                      <AlertDestructive title={'Error loading agent'}>
+                        <AlertDescription>{error?.message}</AlertDescription>
+                      </AlertDestructive>
+                    </div>
+                  ) : null}
+                </main>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          )}
+        </div>
+      </>
     </MyRuntimeProvider>
   )
 }

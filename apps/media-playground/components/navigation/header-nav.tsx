@@ -1,4 +1,3 @@
-import AttachToFeedbackButton from '@/components/attach-to-feedback-button'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import DesktopHeaderNav from '@/components/navigation/desktop-header-nav'
 import HeaderNavLinks from '@/components/navigation/header-nav-links'
@@ -18,7 +17,6 @@ const HeaderNav = () => {
     <div className="w-full">
       <DesktopHeaderNav>
         <HeaderNavLinks />
-        <AttachToFeedbackButton className="ml-auto" />
       </DesktopHeaderNav>
       <Sheet>
         <SheetTrigger asChild>
@@ -41,7 +39,6 @@ const HeaderNav = () => {
           </VisuallyHidden>
           <MobileHeaderNav>
             <HeaderNavLinks inSheet={true} />
-            <AttachToFeedbackButton className="ml-auto" />
           </MobileHeaderNav>
         </SheetContent>
       </Sheet>

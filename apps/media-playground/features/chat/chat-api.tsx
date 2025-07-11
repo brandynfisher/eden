@@ -23,7 +23,7 @@ export const getThread = async (threadId: string) => {
     `/api/threads/${threadId}`,
   )
 
-  // console.log(response)
+  console.log('getThread response:', response.data)
 
   if (!response || !response.data.thread) {
     throw new Error('Thread not found')
