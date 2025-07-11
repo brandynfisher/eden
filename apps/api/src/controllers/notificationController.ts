@@ -13,7 +13,6 @@ import {
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const createNotification = async (
-  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -149,7 +148,7 @@ export const getNotifications = async (
 
     // Get notifications with pagination
     const notifications = await Notification.find(query)
-      .sort({ created_at: -1 })
+      .sort({ createdAt: -1 })
       .skip(offset)
       .limit(limit)
       .populate({
@@ -247,7 +246,6 @@ export const getNotifications = async (
 }
 
 export const markNotificationsRead = async (
-  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -268,7 +266,6 @@ export const markNotificationsRead = async (
       $set: {
         read: true,
         read_at: new Date(),
-        updated_at: new Date(),
       },
     })
 
@@ -287,7 +284,6 @@ export const markNotificationsRead = async (
 }
 
 export const getNotificationCount = async (
-  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -316,7 +312,6 @@ export const getNotificationCount = async (
 }
 
 export const archiveNotifications = async (
-  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -340,7 +335,6 @@ export const archiveNotifications = async (
         $set: {
           archived: true,
           archived_at: new Date(),
-          updated_at: new Date(),
         },
       },
     )

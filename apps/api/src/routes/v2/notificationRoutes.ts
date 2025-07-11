@@ -66,7 +66,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
-    handler: (request, reply) => createNotification(server, request, reply),
+    handler: (request, reply) => createNotification(request, reply),
   })
 
   // Get notifications for current user
@@ -139,7 +139,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => markNotificationsRead(server, request, reply),
+    handler: (request, reply) => markNotificationsRead(request, reply),
   })
 
   // Get notification count
@@ -162,7 +162,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => getNotificationCount(server, request, reply),
+    handler: (request, reply) => getNotificationCount(request, reply),
   })
 
   // Archive notifications
@@ -186,7 +186,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => archiveNotifications(server, request, reply),
+    handler: (request, reply) => archiveNotifications(request, reply),
   })
 }
 
