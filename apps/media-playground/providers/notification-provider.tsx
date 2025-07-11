@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
+import { useAuthState } from '@/hooks/use-auth-state'
 import {
   UseNotificationsReturn,
   useNotifications,
@@ -26,9 +26,9 @@ type Props = {
 }
 
 export const NotificationProvider = ({ children }: Props) => {
-  const { isAuthenticated } = useAuth()
+  const { isSignedIn } = useAuthState()
 
-  const notificationState = useNotifications(isAuthenticated)
+  const notificationState = useNotifications(isSignedIn)
 
   return (
     <NotificationContext.Provider value={notificationState}>

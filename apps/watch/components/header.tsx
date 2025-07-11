@@ -1,6 +1,5 @@
 'use client'
 
-import NotificationStatusIndicator from '@/components/notification-status-indicator'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -32,8 +31,6 @@ export function Header() {
         </div>
 
         <div className="flex-1" />
-
-        <NotificationStatusIndicator />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

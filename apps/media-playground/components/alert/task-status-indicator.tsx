@@ -12,14 +12,24 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import customImageLoader from '@/image-loader'
+import { useNotificationContext } from '@/providers/notification-provider'
 import { useTaskStatus } from '@/providers/task-status-provider'
-import { TaskV2Status } from '@edenlabs/eden-sdk'
 import {
+  NotificationPriority,
+  NotificationType,
+  TaskV2Status,
+} from '@edenlabs/eden-sdk'
+import {
+  AlertCircleIcon,
   BanIcon,
+  BellIcon,
+  CheckIcon,
   CircleCheckIcon,
   ExternalLinkIcon,
   InboxIcon,
+  InfoIcon,
   TriangleAlertIcon,
+  XIcon,
 } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Image from 'next/image'
@@ -35,8 +45,63 @@ const TaskStatusIndicator = () => {
     completedTasks,
     cancelledTasks,
   } = useTaskStatus()
+  const { notifications, unreadCount, markAsRead, archiveNotifications } =
+    useNotificationContext()
   const [open, setOpen] = useState(false)
   const { TimeAgo } = useTimeAgo()
+
+  const getNotificationIcon = (
+    type: NotificationType,
+    priority: NotificationPriority,
+  ) => {
+    const iconClass = 'mr-1.5 h-4 w-4'
+
+    switch (type) {
+      case 'trigger_complete':
+        return <CircleCheckIcon className={`${iconClass} text-green-500`} />
+      case 'trigger_failed':
+        return <TriangleAlertIcon className={`${iconClass} text-red-500`} />
+      case 'session_complete':
+        return <CircleCheckIcon className={`${iconClass} text-blue-500`} />
+      case 'session_failed':
+        return <AlertCircleIcon className={`${iconClass} text-red-500`} />
+      case 'system_alert':
+        return priority === 'high' || priority === 'urgent' ? (
+          <TriangleAlertIcon className={`${iconClass} text-orange-500`} />
+        ) : (
+          <InfoIcon className={`${iconClass} text-blue-500`} />
+        )
+      default:
+        return <BellIcon className={`${iconClass} text-gray-500`} />
+    }
+  }
+
+  const getPriorityColor = (priority: NotificationPriority) => {
+    switch (priority) {
+      case 'urgent':
+        return 'border-l-4 border-red-500'
+      case 'high':
+        return 'border-l-4 border-orange-500'
+      case 'normal':
+        return 'border-l-4 border-blue-500'
+      case 'low':
+        return 'border-l-4 border-gray-300'
+      default:
+        return ''
+    }
+  }
+
+  const handleMarkAsRead = async (notificationIds: string[]) => {
+    await markAsRead(notificationIds)
+  }
+
+  const handleArchive = async (notificationIds: string[]) => {
+    await archiveNotifications(notificationIds)
+  }
+
+  const handleMarkAllAsRead = async () => {
+    await markAsRead()
+  }
 
   if (!isSignedIn) {
     return null
@@ -44,10 +109,14 @@ const TaskStatusIndicator = () => {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger title="View recent tasks" asChild>
-        <Button variant="ghost" className="flex px-2 gap-2 focus:!ring-0">
+      <DropdownMenuTrigger title="View recent tasks and notifications" asChild>
+        <Button
+          variant="ghost"
+          className="flex px-2 gap-2 focus:!ring-0 relative"
+        >
           {(!pendingRunningTasks || !pendingRunningTasks.length) &&
-          (!completedTasks || !completedTasks.length) ? (
+          (!completedTasks || !completedTasks.length) &&
+          (!notifications || !notifications.length) ? (
             <div className="flex items-center">
               <InboxIcon className="mr-1 h-4 w-4" />0
             </div>
@@ -65,7 +134,18 @@ const TaskStatusIndicator = () => {
                   <span className="text-sm">{completedTasks.length}</span>
                 </div>
               ) : null}
+              {notifications && notifications.length ? (
+                <div className="flex items-center text-purple-500">
+                  <BellIcon className="mr-1 h-4 w-4" />
+                  <span className="text-sm">{notifications.length}</span>
+                </div>
+              ) : null}
             </>
+          )}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -117,9 +197,105 @@ const TaskStatusIndicator = () => {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh_-_240px)] md:max-h-[calc(100dvh_-_120px)]">
-          {allTasks.length === 0 ? (
+          {/* Notifications Section */}
+          {notifications && notifications.length > 0 && (
+            <>
+              <div className="px-3 py-2 text-xs font-medium text-muted-foreground flex items-center justify-between">
+                <span>Notifications</span>
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleMarkAllAsRead}
+                    className="text-xs px-2 py-1 h-6"
+                  >
+                    Mark all read
+                  </Button>
+                )}
+              </div>
+              {notifications.map(notification => (
+                <div key={notification._id}>
+                  <DropdownMenuItem
+                    className={`px-3 py-3 hover:bg-muted rounded cursor-pointer ${
+                      !notification.read ? 'bg-blue-50/50' : ''
+                    } ${getPriorityColor(notification.priority)}`}
+                    asChild
+                  >
+                    <div className="w-full">
+                      <div className="flex flex-col w-full gap-2">
+                        <div className="flex items-start gap-2">
+                          {getNotificationIcon(
+                            notification.type,
+                            notification.priority,
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm line-clamp-1">
+                              {notification.title}
+                            </div>
+                            <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                              {notification.message}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {!notification.read && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={e => {
+                                  e.stopPropagation()
+                                  handleMarkAsRead([notification._id])
+                                }}
+                                className="h-6 w-6 p-0"
+                                title="Mark as read"
+                              >
+                                <CheckIcon className="h-3 w-3" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={e => {
+                                e.stopPropagation()
+                                handleArchive([notification._id])
+                              }}
+                              className="h-6 w-6 p-0"
+                              title="Dismiss"
+                            >
+                              <XIcon className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground/50">
+                          <TimeAgo
+                            date={notification.createdAt}
+                            locale="en-short"
+                          />
+                          {notification.trigger && (
+                            <span className="text-xs bg-gray-100 px-1 rounded">
+                              Trigger
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Tasks Section */}
+          {allTasks.length > 0 && (
+            <div className="px-3 py-2 text-xs font-medium text-muted-foreground">
+              Tasks
+            </div>
+          )}
+
+          {allTasks.length === 0 &&
+          (!notifications || notifications.length === 0) ? (
             <DropdownMenuItem className="px-2 py-3 bg-muted/20 text-muted-foreground/50 hover:bg-muted rounded cursor-pointer">
-              No recent tasks
+              No recent activity
             </DropdownMenuItem>
           ) : (
             allTasks.map(task => (

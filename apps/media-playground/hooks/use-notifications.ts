@@ -1,7 +1,7 @@
 'use client'
 
-import { Notification, NotificationsListResponse } from '@edenlabs/eden-sdk'
 import { fetcher } from '@/lib/fetcher'
+import { Notification, NotificationsListResponse } from '@edenlabs/eden-sdk'
 import { useCallback, useEffect, useState } from 'react'
 
 export interface UseNotificationsReturn {
@@ -30,7 +30,7 @@ export const useNotifications = (
 
     try {
       // Fetch recent notifications (unarchived, limit 50)
-      const url = new URL('/api/notifications', window.location.origin)
+      const url = new URL('/api/v2/notifications', window.location.origin)
       url.searchParams.set('include_archived', 'false')
       url.searchParams.set('limit', '50')
       url.searchParams.set('offset', '0')
@@ -50,7 +50,7 @@ export const useNotifications = (
   const markAsRead = useCallback(
     async (notificationIds?: string[]) => {
       try {
-        await fetcher('/api/notifications/read', {
+        await fetcher('/api/v2/notifications/read', {
           method: 'PATCH',
           body: JSON.stringify({
             notification_ids: notificationIds,
@@ -94,7 +94,7 @@ export const useNotifications = (
       if (notificationIds.length === 0) return
 
       try {
-        await fetcher('/api/notifications/archive', {
+        await fetcher('/api/v2/notifications/archive', {
           method: 'PATCH',
           body: JSON.stringify({
             notification_ids: notificationIds,
