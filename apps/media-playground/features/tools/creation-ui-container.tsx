@@ -314,7 +314,7 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
             className="w-full max-w-md h-12 text-base"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
-            Create with {tool.name}
+            Creation Settings
           </Button>
         </div>
       )}
@@ -333,7 +333,8 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
         <Form {...form}>
           <form className="w-full flex flex-col justify-start h-full min-w-full min-h-0">
             <div className="flex items-start gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-              {!hideBurgerButton && (
+              {/* Mobile: Hamburger menu */}
+              {isMobile && mobileIsFormVisible ? (
                 <Button
                   type="button"
                   variant="ghost"
@@ -343,20 +344,17 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
                 >
                   <MenuIcon className="h-5 w-5" />
                 </Button>
-              )}
-
-              {/* Mobile close button */}
-              {mobileIsFormVisible && (
+              ) : !hideBurgerButton ? (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setMobileIsFormVisible(false)}
-                  className="lg:hidden p-2 h-10 w-10 flex-shrink-0 mt-1"
+                  onClick={() => setToolSelectorOpen(true)}
+                  className="p-2 h-10 w-10 flex-shrink-0 mt-1"
                 >
-                  ←
+                  <MenuIcon className="h-5 w-5" />
                 </Button>
-              )}
+              ) : null}
 
               <div
                 className={`flex flex-col flex-1 min-w-0 ${
@@ -384,6 +382,19 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
                   </div>
                 )}
               </div>
+
+              {/* Mobile: Close button in header */}
+              {isMobile && mobileIsFormVisible && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMobileIsFormVisible(false)}
+                  className="p-2 h-10 w-10 flex-shrink-0 mt-1"
+                >
+                  ✕
+                </Button>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 py-4 flex flex-col justify-start min-h-0">
@@ -493,114 +504,207 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
               ) : null}
             </div>
 
-            <div className="flex justify-between items-center p-3 bg-secondary border border-t-gray-300 dark:border-t-gray-700">
-              {isRunwayPoweredTool ? (
-                <div className="flex items-center">
-                  <a
-                    href={'https://runwayml.com'}
-                    target={'_blank'}
-                    rel="noreferrer noopener nofollow"
-                    className="dark:invert"
+            {/* Footer - Clean mobile layout */}
+            <div
+              className={cn([
+                'flex items-center p-3 bg-secondary border border-t-gray-300 dark:border-t-gray-700',
+                isMobile && mobileIsFormVisible
+                  ? 'justify-between'
+                  : 'justify-between',
+              ])}
+            >
+              {/* Mobile layout: Cancel + Toggle + Create */}
+              {isMobile && mobileIsFormVisible ? (
+                <>
+                  {/* Reset button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={!isSubmitting ? handleReset : undefined}
+                    disabled={isSubmitting}
+                    className="px-4"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      className="object-contain h-4"
-                      alt="powered by runway"
-                      src="https://runway-static-assets.s3.amazonaws.com/site/images/api-page/powered-by-runway-black.png"
-                    ></img>
-                  </a>
-                </div>
-              ) : null}
+                    Reset
+                  </Button>
 
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground px-1"
-                onClick={!isSubmitting ? handleReset : undefined}
-                disabled={isSubmitting}
-              >
-                Reset
-              </Button>
+                  {/* Public/Private toggle */}
+                  <FormField
+                    name="makePublic"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex items-center gap-2 space-y-0">
+                        <div className="flex items-center gap-2">
+                          <SubscriptionCrownBadge
+                            type={
+                              tool.output_type === 'lora' ? 'model' : 'creation'
+                            }
+                            className="h-4 w-4"
+                          />
+                          <FormControl id={field.name} className="mt-0">
+                            <Switch
+                              checked={
+                                field.value === undefined ? true : field.value
+                              }
+                              onCheckedChange={field.onChange}
+                              disabled={!isAllowedPrivacy}
+                            />
+                          </FormControl>
+                          <FormLabel
+                            htmlFor={field.name}
+                            className="text-xs text-muted-foreground !mt-0"
+                          >
+                            Public
+                          </FormLabel>
+                        </div>
+                        <FormMessage>{fieldState.error?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                name="makePublic"
-                render={({ field, fieldState }) => (
-                  <FormItem
-                    data-test-id={'makePublic'}
-                    className="flex items-center gap-2 space-y-0 relative"
+                  {/* Create button */}
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="px-4 flex items-center gap-2"
+                    onClick={
+                      !isSubmitting ? form.handleSubmit(onSubmit) : undefined
+                    }
+                    disabled={
+                      isSubmitting ||
+                      !hasEnoughBalance ||
+                      Object.keys(form.formState.errors).length > 0
+                    }
                   >
-                    <div className={'flex items-center gap-2'}>
-                      <SubscriptionCrownBadge
-                        type={
-                          tool.output_type === 'lora' ? 'model' : 'creation'
-                        }
-                        className="h-5 w-5"
-                      />
-                      <FormControl id={field.name} className="mt-0">
-                        <Switch
-                          checked={
-                            field.value === undefined ? true : field.value
-                          }
-                          onCheckedChange={field.onChange}
-                          disabled={!isAllowedPrivacy}
-                        />
-                      </FormControl>
-                      <FormLabel
-                        htmlFor={field.name}
-                        className={'text-muted-foreground !mt-0'}
+                    {isSubmitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span>Create</span>
+                        <div className="flex items-center text-xs opacity-80">
+                          <CoinsIcon className="mr-1 h-3 w-3" />
+                          <span className="font-mono text-xs">
+                            {cost.toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {/* Desktop layout: Keep existing layout */}
+                  {isRunwayPoweredTool ? (
+                    <div className="flex items-center">
+                      <a
+                        href={'https://runwayml.com'}
+                        target={'_blank'}
+                        rel="noreferrer noopener nofollow"
+                        className="dark:invert"
                       >
-                        Public
-                      </FormLabel>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          className="object-contain h-4"
+                          alt="powered by runway"
+                          src="https://runway-static-assets.s3.amazonaws.com/site/images/api-page/powered-by-runway-black.png"
+                        ></img>
+                      </a>
                     </div>
-                    <FormMessage>{fieldState.error?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
+                  ) : null}
 
-              {isSignedIn && !hasEnoughBalance && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    router.push('/settings/subscription')
-                  }}
-                >
-                  Buy More Manna
-                </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="text-muted-foreground px-1"
+                    onClick={!isSubmitting ? handleReset : undefined}
+                    disabled={isSubmitting}
+                  >
+                    Reset
+                  </Button>
+
+                  <FormField
+                    name="makePublic"
+                    render={({ field, fieldState }) => (
+                      <FormItem
+                        data-test-id={'makePublic'}
+                        className="flex items-center gap-2 space-y-0 relative"
+                      >
+                        <div className={'flex items-center gap-2'}>
+                          <SubscriptionCrownBadge
+                            type={
+                              tool.output_type === 'lora' ? 'model' : 'creation'
+                            }
+                            className="h-5 w-5"
+                          />
+                          <FormControl id={field.name} className="mt-0">
+                            <Switch
+                              checked={
+                                field.value === undefined ? true : field.value
+                              }
+                              onCheckedChange={field.onChange}
+                              disabled={!isAllowedPrivacy}
+                            />
+                          </FormControl>
+                          <FormLabel
+                            htmlFor={field.name}
+                            className={'text-muted-foreground !mt-0'}
+                          >
+                            Public
+                          </FormLabel>
+                        </div>
+                        <FormMessage>{fieldState.error?.message}</FormMessage>
+                      </FormItem>
+                    )}
+                  />
+
+                  {isSignedIn && !hasEnoughBalance && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        router.push('/settings/subscription')
+                      }}
+                    >
+                      Buy More Manna
+                    </Button>
+                  )}
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="min-w-[100px] flex items-center justify-between gap-3"
+                    onClick={
+                      !isSubmitting ? form.handleSubmit(onSubmit) : undefined
+                    }
+                    disabled={
+                      isSubmitting ||
+                      !hasEnoughBalance ||
+                      Object.keys(form.formState.errors).length > 0
+                    }
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span>Create</span>
+                        <div className="flex items-center text-xs opacity-80">
+                          <CoinsIcon className="mr-1 h-3 w-3" />
+                          <span className="font-mono">
+                            {cost.toLocaleString(undefined, {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </Button>
+                </>
               )}
-
-              <Button
-                type="button"
-                size="sm"
-                className="min-w-[100px] flex items-center justify-between gap-3"
-                onClick={
-                  !isSubmitting ? form.handleSubmit(onSubmit) : undefined
-                }
-                disabled={
-                  isSubmitting ||
-                  !hasEnoughBalance ||
-                  Object.keys(form.formState.errors).length > 0
-                }
-              >
-                {isSubmitting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <span>Create</span>
-                    <div className="flex items-center text-xs opacity-80">
-                      <CoinsIcon className="mr-1 h-3 w-3" />
-                      <span className="font-mono">
-                        {cost.toLocaleString(undefined, {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </Button>
             </div>
           </form>
         </Form>
