@@ -47,7 +47,6 @@ const TaskStatusIndicator = () => {
   } = useTaskStatus()
   const { notifications, unreadCount, markAsRead, archiveNotifications } =
     useNotificationContext()
-  console.log('notifications', notifications)
   const [open, setOpen] = useState(false)
   const { TimeAgo } = useTimeAgo()
 
