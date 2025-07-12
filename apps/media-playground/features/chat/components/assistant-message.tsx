@@ -62,13 +62,13 @@ const MyAssistantActionBar: FC = () => {
         toolCall.status === 'completed' &&
         toolCall.result &&
         toolCall.result.length > 0 &&
-        toolCall.result.some(
-          result =>
-            result &&
-            (Array.isArray(result?.output) ||
-              (typeof result?.output === 'string' &&
-                result?.output.length > 0)),
-        ),
+        toolCall.result.some(result => {
+          if (!result?.output) return false
+          return (
+            Array.isArray(result.output) ||
+            (typeof result.output === 'string' && result.output.length > 0)
+          )
+        }),
     ) || []
 
   return (
