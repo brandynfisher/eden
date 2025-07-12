@@ -3,6 +3,7 @@
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
+import { SocialContentEmbed } from '@/features/chat/components/tools/social-content-embed'
 import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getFileTypeByMimeType } from '@/lib/files'
@@ -16,6 +17,53 @@ export type TaskResultToolProps = {
   toolCall: ToolCall
 }
 
+// Social tools mapping
+const SOCIAL_TOOLS = {
+  // Post tools - use SocialPostEmbed
+  POST_TOOLS: {
+    discord_post: { platform: 'discord' as const },
+    telegram_post: { platform: 'telegram' as const },
+    tweet: { platform: 'twitter' as const },
+    farcaster_cast: { platform: 'farcaster' as const },
+  },
+
+  // Content tools - use SocialContentEmbed
+  CONTENT_TOOLS: {
+    discord_search: {
+      platform: 'discord' as const,
+      contentType: 'search' as const,
+    },
+    twitter_search: {
+      platform: 'twitter' as const,
+      contentType: 'search' as const,
+    },
+    'Twitter Search': {
+      platform: 'twitter' as const,
+      contentType: 'search' as const,
+    },
+    farcaster_search: {
+      platform: 'farcaster' as const,
+      contentType: 'search' as const,
+    },
+    twitter_mentions: {
+      platform: 'twitter' as const,
+      contentType: 'mentions' as const,
+    },
+    'Twitter Mentions': {
+      platform: 'twitter' as const,
+      contentType: 'mentions' as const,
+    },
+    farcaster_mentions: {
+      platform: 'farcaster' as const,
+      contentType: 'mentions' as const,
+    },
+    twitter_trends: {
+      platform: 'twitter' as const,
+      contentType: 'trends' as const,
+    },
+  },
+} as const
+
 export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
   const { tool, result: toolResults } = toolCall
 
@@ -24,10 +72,27 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
     return null
   }
 
-  // Check if this is a Discord or Telegram post tool
-  const isDiscordPost = tool === 'discord_post'
-  const isTelegramPost = tool === 'telegram_post'
-  const isSocialPost = isDiscordPost || isTelegramPost
+  // Check tool type using mapping
+  const postToolConfig =
+    SOCIAL_TOOLS.POST_TOOLS[tool as keyof typeof SOCIAL_TOOLS.POST_TOOLS]
+  const contentToolConfig =
+    SOCIAL_TOOLS.CONTENT_TOOLS[tool as keyof typeof SOCIAL_TOOLS.CONTENT_TOOLS]
+
+  const isSocialPost = !!postToolConfig
+  const isSocialContent = !!contentToolConfig
+
+  console.log(
+    '***debug*** Sessions TaskResultTool - tool:',
+    tool,
+    'isSocialPost:',
+    isSocialPost,
+    'isSocialContent:',
+    isSocialContent,
+    'postToolConfig:',
+    postToolConfig,
+    'contentToolConfig:',
+    contentToolConfig,
+  )
 
   // Check if tool is completed with displayable results
   const hasDisplayableResults =
@@ -47,11 +112,20 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
     <div className="mb-2 max-w-full">
       <ErrorBoundary>
         {isSocialPost ? (
-          // Handle Discord and Telegram post results
+          // Handle social post results (Discord, Telegram, Tweet, Farcaster)
           <div className="mb-2 relative group">
             <SocialPostEmbed
               results={toolResults || []}
-              platform={isDiscordPost ? 'discord' : 'telegram'}
+              platform={postToolConfig?.platform || 'discord'}
+            />
+          </div>
+        ) : isSocialContent ? (
+          // Handle social content results (Search, Mentions, Trends)
+          <div className="mb-2 relative group">
+            <SocialContentEmbed
+              results={toolResults || []}
+              platform={contentToolConfig?.platform || 'discord'}
+              contentType={contentToolConfig?.contentType || 'search'}
             />
           </div>
         ) : (
