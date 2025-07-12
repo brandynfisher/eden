@@ -87,9 +87,6 @@ const CreateAgentView = () => {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('profile')
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false)
-  const [usernameStatus, setUsernameStatus] = useState<
-    'available' | 'taken' | 'invalid' | 'checking' | null
-  >(null)
 
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
@@ -347,7 +344,6 @@ const CreateAgentView = () => {
                                         displayName={form.watch('name')}
                                         onBlur={field.onBlur}
                                         disabled={form.formState.isSubmitting}
-                                        onStatusChange={setUsernameStatus}
                                       />
                                     </FormControl>
                                     <FormMessage />
@@ -648,11 +644,6 @@ const CreateAgentView = () => {
                                         key: 'news',
                                         label: 'Read the news',
                                       },
-                                      {
-                                        key: 'social_media_tools',
-                                        label:
-                                          'Social media tools (read and post)',
-                                      },
                                     ].map(tool => (
                                       <div
                                         key={tool.key}
@@ -696,11 +687,7 @@ const CreateAgentView = () => {
               <div className="mx-auto max-w-3xl lg:max-w-3xl">
                 <Button
                   type="submit"
-                  disabled={
-                    form.formState.isSubmitting ||
-                    usernameStatus !== 'available' ||
-                    !form.formState.isValid
-                  }
+                  disabled={form.formState.isSubmitting}
                   className="w-full"
                   onClick={form.handleSubmit(handleSubmit)}
                 >
@@ -709,14 +696,6 @@ const CreateAgentView = () => {
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Creating Agent...
                     </>
-                  ) : !form.formState.isValid ? (
-                    'Complete Required Fields'
-                  ) : usernameStatus === 'checking' ? (
-                    'Checking Username...'
-                  ) : usernameStatus === 'taken' ? (
-                    'Username Unavailable'
-                  ) : usernameStatus === 'invalid' ? (
-                    'Invalid Username'
                   ) : (
                     'Create Agent'
                   )}
