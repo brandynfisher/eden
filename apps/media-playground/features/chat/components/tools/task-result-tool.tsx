@@ -50,7 +50,8 @@ export const TaskResultTool = makeAssistantToolUI({
         result =>
           result &&
           (Array.isArray(result?.output) ||
-            (typeof result?.output === 'string' && result?.output.length > 0)),
+            (typeof (result as TaskV2Result)?.output === 'string' &&
+              (result as TaskV2Result)?.output.length > 0)),
       )
     const isCompletedWithResults =
       toolStatus === 'completed' && hasDisplayableResults

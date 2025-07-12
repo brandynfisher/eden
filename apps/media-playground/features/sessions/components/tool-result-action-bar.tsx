@@ -11,7 +11,7 @@ import {
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { generateFilename } from '@/utils/slug.util'
-import { Message } from '@edenlabs/eden-sdk'
+import { Message, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import {
   BookmarkPlusIcon,
   DownloadIcon,
@@ -157,21 +157,23 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
         toolCall.result &&
         toolCall.result.length > 0 &&
         toolCall.result.some(
-          result =>
+          (result: TaskV2Result) =>
             result &&
             Array.isArray(result?.output) &&
-            result.output.some(output => output.creation),
+            result.output.some(
+              (output: TasksV2ResultOutput) => output.creation,
+            ),
         ),
     ) || []
 
   // Get all creation IDs from completed tool calls
   const creationIds = completedToolCallsWithCreations.flatMap(
     toolCall =>
-      toolCall.result?.flatMap(result =>
+      toolCall.result?.flatMap((result: TaskV2Result) =>
         Array.isArray(result?.output)
           ? result.output
-              .filter(output => output.creation)
-              .map(output => output.creation.$oid || output.creation)
+              .filter((output: TasksV2ResultOutput) => output.creation)
+              .map((output: TasksV2ResultOutput) => output.creation)
           : [],
       ) || [],
   )

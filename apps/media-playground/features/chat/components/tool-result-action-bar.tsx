@@ -13,7 +13,10 @@ import { useAppDispatch } from '@/stores/store'
 import { generateFilename } from '@/utils/slug.util'
 import { getExternalStoreMessages, useMessage } from '@assistant-ui/react'
 import { AssistantActionBar } from '@assistant-ui/react-ui'
-import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
+import {
+  type ThreadMessage as EdenThreadMessage,
+  TasksV2ResultOutput,
+} from '@edenlabs/eden-sdk'
 import {
   BookmarkPlusIcon,
   DownloadIcon,
@@ -173,7 +176,11 @@ export const ToolResultActionBar = () => {
         Array.isArray(result?.output)
           ? result.output
               .filter(output => output.creation)
-              .map(output => output.creation.$oid || output.creation)
+              .map((output: TasksV2ResultOutput) =>
+                typeof output.creation === 'string'
+                  ? output.creation
+                  : output.creation?._id,
+              )
           : [],
       ) || [],
   )

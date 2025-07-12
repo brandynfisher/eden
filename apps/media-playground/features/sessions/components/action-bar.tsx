@@ -2,7 +2,7 @@ import { ToolHoverMenu } from './tool-hover-menu'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { Message } from '@edenlabs/eden-sdk'
+import { Message, TaskV2Result } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
@@ -34,13 +34,13 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
       toolCall =>
         toolCall.status === 'completed' &&
         toolCall.result &&
-        toolCall.result.length > 0 &&
+        (toolCall.result as TaskV2Result[]).length > 0 &&
         toolCall.result.some(
-          result =>
+          (result: TaskV2Result) =>
             result &&
             (Array.isArray(result?.output) ||
               (typeof result?.output === 'string' &&
-                result?.output.length > 0)),
+                (result?.output as string).length > 0)),
         ),
     ) || []
 

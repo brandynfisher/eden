@@ -6,7 +6,7 @@ import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { Message } from '@edenlabs/eden-sdk'
+import { Message, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 import Link from 'next/link'
 
@@ -155,13 +155,13 @@ export const OtherMessage = ({
                 toolCall =>
                   toolCall.status === 'completed' &&
                   toolCall.result &&
-                  toolCall.result.length > 0 &&
+                  (toolCall.result as TaskV2Result[]).length > 0 &&
                   toolCall.result.some(
-                    result =>
+                    (result: TaskV2Result) =>
                       result &&
                       (Array.isArray(result?.output) ||
                         (typeof result?.output === 'string' &&
-                          result?.output.length > 0)),
+                          (result?.output as string).length > 0)),
                   ),
               )
                 ? 'opacity-100'
@@ -174,10 +174,12 @@ export const OtherMessage = ({
                 toolCall.result &&
                 toolCall.result.length > 0 &&
                 toolCall.result.some(
-                  result =>
+                  (result: TaskV2Result) =>
                     result &&
                     Array.isArray(result?.output) &&
-                    result.output.some(output => output.creation),
+                    result.output.some(
+                      (output: TasksV2ResultOutput) => output.creation,
+                    ),
                 ),
             ) ? (
               <ToolResultActionBar message={message} />

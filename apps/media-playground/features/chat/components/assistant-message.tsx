@@ -17,7 +17,10 @@ import {
   BranchPicker,
   useThreadConfig,
 } from '@assistant-ui/react-ui'
-import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
+import {
+  type ThreadMessage as EdenThreadMessage,
+  TaskV2Result,
+} from '@edenlabs/eden-sdk'
 import { useTimeAgo } from 'next-timeago'
 import React, { type FC } from 'react'
 
@@ -62,11 +65,12 @@ const MyAssistantActionBar: FC = () => {
         toolCall.status === 'completed' &&
         toolCall.result &&
         toolCall.result.length > 0 &&
-        toolCall.result.some(result => {
+        toolCall.result.some((result: TaskV2Result) => {
           if (!result?.output) return false
           return (
             Array.isArray(result.output) ||
-            (typeof result.output === 'string' && result.output.length > 0)
+            (typeof result.output === 'string' &&
+              (result.output as string).length > 0)
           )
         }),
     ) || []

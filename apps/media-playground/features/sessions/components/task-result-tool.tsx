@@ -8,7 +8,7 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
+import { TaskV2Result, TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 
@@ -37,7 +37,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
       result =>
         result &&
         (Array.isArray(result?.output) ||
-          (typeof result?.output === 'string' && result?.output.length > 0)),
+          (typeof (result as TaskV2Result)?.output === 'string' &&
+            (result as TaskV2Result)?.output.length > 0)),
     )
   const isCompletedWithResults =
     toolCall.status === 'completed' && hasDisplayableResults
