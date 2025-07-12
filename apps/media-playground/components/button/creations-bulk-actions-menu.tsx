@@ -50,8 +50,8 @@ const CreationsBulkActionsMenu = ({
   const pathname = usePathname()
   const params = useParams()
   const collectionId =
-    pathname.startsWith('/collections') && params && params.id
-      ? params.id
+    pathname?.startsWith('/collections') && params && params?.id
+      ? params?.id
       : undefined
 
   const handleRemoveFromCollection = async (collectionId: string) => {

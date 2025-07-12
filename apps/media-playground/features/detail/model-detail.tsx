@@ -38,7 +38,7 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [filterMode, setFilterMode] = useState<FilterMode>(() => {
-    const initialTab = searchParams.get('tab')
+    const initialTab = searchParams?.get('tab')
     return initialTab === 'mine' ? 'mine' : 'all'
   })
   const [initialScrollIndex, setInitialScrollIndex] = useState<number | null>(
@@ -87,14 +87,14 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
   }, [searchParams, router, id])
 
   useEffect(() => {
-    const currentTab = searchParams.get('tab')
+    const currentTab = searchParams?.get('tab')
     const newTabValue = filterMode === 'mine' ? 'mine' : null
 
     if (currentTab === newTabValue || (!currentTab && !newTabValue)) {
       return
     }
 
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
     if (newTabValue) {
       params.set('tab', newTabValue)
     } else {

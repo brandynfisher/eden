@@ -10,16 +10,21 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ViewMode } from '@/features/chat/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { canEditAgent, isAgentOwner } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   CheckIcon,
   ClockIcon,
   EditIcon,
+  ImageIcon,
   MoreHorizontal,
   PencilIcon,
+  SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
@@ -261,18 +266,21 @@ function isNewSessionRoute(
   return params.id === 'new' || (!params.sessionId && !params.id)
 }
 
-const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
-  onItemClick,
-  isChat,
-}) => {
+const TopLeft: FC<{
+  onItemClick?: () => void
+  isChat?: boolean
+  onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+}> = ({ onItemClick, isChat, onViewModeChange }) => {
   const router = useRouter()
   const params = useParams()
-  const agentId = params.agentId as string
-  const isNewSession = isNewSessionRoute(params, isChat)
+  const agentId = params?.agentId as string
+  const isNewSession = isNewSessionRoute(params || {}, isChat)
 
   const handleClick = () => {
     onItemClick?.()
     if (isChat && agentId) {
+      // Switch to chat mode first, then navigate
+      onViewModeChange?.('chat')
       router.push(`/chat2/${agentId}`, { scroll: false })
     } else {
       router.push('/sessions/new', { scroll: false })
@@ -296,19 +304,134 @@ const TopLeft: FC<{ onItemClick?: () => void; isChat?: boolean }> = ({
   )
 }
 
+// Navigation buttons component for Creations, Tasks, and Settings
+const NavigationButtons: FC<{
+  onItemClick?: () => void
+  agent: Agent | null | undefined
+  userId?: string | null
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
+}> = ({ onItemClick, agent, userId, viewMode, onViewModeChange }) => {
+  const { user } = useAuthState()
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+
+  const handleNavClick = (mode: ViewMode) => {
+    onViewModeChange(mode)
+    onItemClick?.()
+  }
+
+  return (
+    <div className="flex flex-col gap-1 mb-2 mr-2">
+      <Button
+        variant={viewMode === 'creations' ? 'outline' : 'default'}
+        onClick={() => handleNavClick('creations')}
+        className={cn(
+          'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
+          viewMode === 'creations'
+            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
+            : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+        )}
+      >
+        <ImageIcon className="size-4" />
+        <span>Creations</span>
+      </Button>
+
+      {isAgentOwner(agent, userId) && isPreviewUser && (
+        <Button
+          variant={viewMode === 'tasks' ? 'outline' : 'default'}
+          onClick={() => handleNavClick('tasks')}
+          className={cn(
+            'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
+            viewMode === 'tasks'
+              ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
+              : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+          )}
+        >
+          <ClockIcon className="size-4" />
+          <span>Tasks</span>
+        </Button>
+      )}
+
+      {canEditAgent(agent, userId) && (
+        <Button
+          variant={viewMode === 'settings' ? 'outline' : 'default'}
+          onClick={() => handleNavClick('settings')}
+          className={cn(
+            'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
+            viewMode === 'settings'
+              ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
+              : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+          )}
+        >
+          <SettingsIcon className="size-4" />
+          <span>Settings</span>
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// Explore and Tools section component
+const ExploreToolsSection: FC<{
+  onItemClick?: () => void
+}> = ({ onItemClick }) => {
+  const router = useRouter()
+
+  const handleExploreClick = () => {
+    onItemClick?.()
+    router.push('/explore?type=agents')
+  }
+
+  const handleToolsClick = () => {
+    onItemClick?.()
+    router.push('/explore?type=tools')
+  }
+
+  return (
+    <div className="flex flex-col gap-1 mb-2 mr-2">
+      <Button
+        variant="default"
+        onClick={handleExploreClick}
+        className={cn(
+          'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
+          'bg-blue-900/60 hover:bg-blue-800/60 border-blue-700/60 hover:border-blue-600',
+        )}
+      >
+        <span>🔍</span>
+        <span>Explore</span>
+      </Button>
+
+      <Button
+        variant="default"
+        onClick={handleToolsClick}
+        className={cn(
+          'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
+          'bg-blue-900/60 hover:bg-blue-800/60 border-blue-700/60 hover:border-blue-600',
+        )}
+      >
+        <span>🛠️</span>
+        <span>Use Tools</span>
+      </Button>
+    </div>
+  )
+}
+
 const MainLeft = ({
   onItemClick,
   agentId,
   isChat,
+  onViewModeChange,
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
+  onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
 }) => {
   const { isSignedIn, verifyAuth } = useAuthState()
   const router = useRouter()
   const params = useParams()
-  const currentSessionId = (params.id as string) || (params.sessionId as string)
+  const currentSessionId =
+    (params?.id as string) || (params?.sessionId as string)
   const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
     useSessionListQuery({
       enabled: !!isSignedIn,
@@ -357,68 +480,78 @@ const MainLeft = ({
   }, [hasMore, isFetchingNextPage, fetchNextPage])
 
   return (
-    <nav className="flex flex-col items-stretch gap-1 text-sm font-medium overflow-y-auto mr-1">
-      <div className="mb-1 text-muted-foreground">Recent</div>
-      {isLoading ? (
-        <>
-          <Skeleton className="w-full h-9" />
-          <Skeleton className="w-full h-9" />
-          <Skeleton className="w-full h-9" />
-        </>
-      ) : (
-        <>
-          {isSignedIn ? (
-            <>
-              {sessions
-                .filter(
-                  (session): session is NonNullable<typeof session> =>
-                    session != null &&
-                    // Include sessions with valid titles
-                    ((session.title != null &&
-                      session.title !== '' &&
-                      session.title !== 'Untitled') ||
-                      // Include trigger sessions even without titles
-                      !!session.trigger),
-                )
-                .map(session => (
-                  <SessionListItem
-                    key={session._id}
-                    id={session._id}
-                    title={
-                      session.title ||
-                      (session.trigger ? 'Task Session' : 'Untitled')
-                    }
-                    isActive={session._id === currentSessionId}
-                    isFromTrigger={!!session.trigger}
-                    onItemClick={() => {
-                      onItemClick?.()
-                      if (isChat && agentId) {
-                        // For chat2 routes, go to /chat2/[agentId]/[sessionId]
-                        router.push(`/chat2/${agentId}/${session._id}`, {
-                          scroll: false,
-                        })
-                      } else {
-                        // For regular sessions, go to /sessions/[sessionId]
-                        router.push(`/sessions/${session._id}`, {
-                          scroll: false,
-                        })
+    <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-1">
+      {/* Sticky Recent header */}
+      <div className="sticky top-0 bg-accent z-10 pb-1 mb-1">
+        <div className="text-muted-foreground">Recent</div>
+      </div>
+
+      {/* Scrollable session list */}
+      <nav className="flex flex-col items-stretch gap-1 overflow-y-auto flex-1">
+        {isLoading ? (
+          <>
+            <Skeleton className="w-full h-9" />
+            <Skeleton className="w-full h-9" />
+            <Skeleton className="w-full h-9" />
+          </>
+        ) : (
+          <>
+            {isSignedIn ? (
+              <>
+                {sessions
+                  .filter(
+                    (session): session is NonNullable<typeof session> =>
+                      session != null &&
+                      // Include sessions with valid titles
+                      ((session.title != null &&
+                        session.title !== '' &&
+                        session.title !== 'Untitled') ||
+                        // Include trigger sessions even without titles
+                        !!session.trigger),
+                  )
+                  .map(session => (
+                    <SessionListItem
+                      key={session._id}
+                      id={session._id}
+                      title={
+                        session.title ||
+                        (session.trigger ? 'Task Session' : 'Untitled')
                       }
-                    }}
-                  />
-                ))}
-            </>
-          ) : (
-            <Button
-              className="text-muted-foreground text-center"
-              variant="link"
-              onClick={verifyAuth}
-            >
-              Not signed in
-            </Button>
-          )}
-        </>
-      )}
-    </nav>
+                      isActive={session._id === currentSessionId}
+                      isFromTrigger={!!session.trigger}
+                      onItemClick={() => {
+                        onItemClick?.()
+                        if (isChat && agentId) {
+                          // Switch to chat mode first, then navigate to session
+                          onViewModeChange?.('chat')
+                          router.push(`/chat2/${agentId}/${session._id}`, {
+                            scroll: false,
+                          })
+                        } else {
+                          // For regular sessions, go to /sessions/[sessionId]
+                          router.push(`/sessions/${session._id}`, {
+                            scroll: false,
+                          })
+                        }
+                      }}
+                    />
+                  ))}
+                {/* Observer target for infinite scrolling */}
+                <div id="session-list-observer-target" className="h-1"></div>
+              </>
+            ) : (
+              <Button
+                className="text-muted-foreground text-center"
+                variant="link"
+                onClick={verifyAuth}
+              >
+                Not signed in
+              </Button>
+            )}
+          </>
+        )}
+      </nav>
+    </div>
   )
 }
 
@@ -426,20 +559,49 @@ export const SessionsSidebarContent = ({
   onItemClick,
   agentId,
   isChat,
+  agent,
+  userId,
+  viewMode,
+  onViewModeChange,
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
+  agent?: Agent | null | undefined
+  userId?: string | null
+  viewMode?: ViewMode
+  onViewModeChange?: (mode: ViewMode) => void
 }) => {
   return (
     <>
       <div className="mb-2 mr-2">
-        <TopLeft onItemClick={onItemClick} isChat={isChat} />
-
-        {/* Disable this for now */}
-        {/* <CreationsButton onItemClick={onItemClick} /> */}
+        <TopLeft
+          onItemClick={onItemClick}
+          isChat={isChat}
+          onViewModeChange={onViewModeChange}
+        />
       </div>
-      <MainLeft onItemClick={onItemClick} agentId={agentId} isChat={isChat} />
+
+      {/* Navigation buttons for Creations, Tasks, Settings */}
+      {agent && viewMode && onViewModeChange && (
+        <NavigationButtons
+          onItemClick={onItemClick}
+          agent={agent}
+          userId={userId}
+          viewMode={viewMode}
+          onViewModeChange={onViewModeChange}
+        />
+      )}
+
+      {/* Explore and Tools section */}
+      <ExploreToolsSection onItemClick={onItemClick} />
+
+      <MainLeft
+        onItemClick={onItemClick}
+        agentId={agentId}
+        isChat={isChat}
+        onViewModeChange={onViewModeChange}
+      />
     </>
   )
 }

@@ -8,7 +8,7 @@ const AgentsPage = () => {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
     params.set('type', 'agents')
     router.replace(`/explore?${params.toString()}`)
   }, [router, searchParams])

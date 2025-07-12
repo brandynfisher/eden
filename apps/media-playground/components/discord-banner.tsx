@@ -17,7 +17,7 @@ const DiscordBanner: React.FC = () => {
 
   //hide banner on /chat/... - quick and dirty fix to not screw with full height chat layout
   const shouldShowDiscordBanner =
-    !pathname.startsWith('/chat') && pathname !== '/'
+    !pathname?.startsWith('/chat') && pathname !== '/'
 
   const [isDismissed, setIsDismissed] = useLocalStorage(BANNER_KEY, false)
   const [legacyDismissed] = useLocalStorage(LEGACY_BANNER_KEY, '')

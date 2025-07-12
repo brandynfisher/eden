@@ -1,29 +1,23 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import ChatHeader from '@/components/header/chat-header'
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
-import { AgentBar } from '@/features/chat/components/agent-bar'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import SingleAgentSelectorModal from '@/features/chat/components/single-agent-selector-modal'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
+import { ViewMode } from '@/features/chat/types'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
-import { ChevronRightIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import React, {
   FC,
@@ -42,7 +36,10 @@ const SessionChatSidebarContent: FC<{
   onItemClick?: () => void
   onSessionSelect: (sessionId: string) => void
   onNewSession: () => void
-}> = ({ onItemClick, agentId }) => {
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
+  userId?: string | null
+}> = ({ onItemClick, agentId, agent, viewMode, onViewModeChange, userId }) => {
   return (
     <>
       {/* Use existing sessions sidebar content for the rest */}
@@ -50,63 +47,12 @@ const SessionChatSidebarContent: FC<{
         onItemClick={onItemClick}
         agentId={agentId}
         isChat
+        agent={agent}
+        userId={userId}
+        viewMode={viewMode}
+        onViewModeChange={onViewModeChange}
       />
     </>
-  )
-}
-
-const LeftBarSheet: FC<{
-  onItemClick?: () => void
-  agent: Agent | null | undefined
-  isOwner: boolean
-  agentId: string
-  currentSessionId?: string
-  onSessionSelect: (sessionId: string) => void
-  onNewSession: () => void
-}> = ({
-  onItemClick,
-  agent,
-  isOwner,
-  agentId,
-  currentSessionId,
-  onSessionSelect,
-  onNewSession,
-}) => {
-  const [open, setOpen] = useState(false)
-  const handleCloseSheet = () => {
-    setOpen(false)
-    onItemClick?.()
-  }
-
-  return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="shrink-0 md:hidden gap-1"
-        >
-          <ChevronRightIcon className={'size-4'} />
-          View Sessions
-          <span className="sr-only">Toggle session list menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent
-        side="left"
-        className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
-      >
-        <SheetTitle className="sr-only">Session List</SheetTitle>
-        <SessionChatSidebarContent
-          agent={agent}
-          isOwner={isOwner}
-          agentId={agentId}
-          currentSessionId={currentSessionId}
-          onSessionSelect={onSessionSelect}
-          onNewSession={onNewSession}
-          onItemClick={handleCloseSheet}
-        />
-      </SheetContent>
-    </Sheet>
   )
 }
 
@@ -124,17 +70,15 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     }
   }, [isSignedIn, user, router])
   const params = useParams()
-  const agentId = params.agentId as string
-  const sessionId = params.id as string
+  const agentId = params?.agentId as string
+  const sessionId = params?.id as string
   const [isMounted, setIsMounted] = useState(false)
   const [resetKey, setResetKey] = useState<number>(0)
-  const [viewMode, setViewMode] = useState<
-    'chat' | 'creations' | 'tasks' | 'settings'
-  >('chat')
+  const [viewMode, setViewMode] = useState<ViewMode>('chat')
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
-  const { agent, invalidate: invalidateAgent } = useAgentQuery({ key: agentId })
+  const { agent } = useAgentQuery({ key: agentId })
 
   // Mount effect
   useEffect(() => {
@@ -210,72 +154,45 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
 
   return (
     <LiveAudioProvider>
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
-      {/* AGENT BAR - Always visible */}
-      <AgentBar
+      {/* Chat-specific header that replaces the main header */}
+      <ChatHeader
         agent={agent}
-        userId={user?._id}
         onChatClick={handleChatClick}
         onAgentSelect={() => setIsAgentSelectorOpen(true)}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        agentId={agentId}
-        onAgentInvalidate={invalidateAgent}
+        isSidebarCollapsed={isSidebarCollapsed}
       />
 
-      {/* AGENT SELECTOR MODAL */}
-      <SingleAgentSelectorModal
-        open={isAgentSelectorOpen}
-        onOpenChange={setIsAgentSelectorOpen}
-        onSelect={handleAgentSelect}
-      />
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
+        {/* AGENT SELECTOR MODAL */}
+        <SingleAgentSelectorModal
+          open={isAgentSelectorOpen}
+          onOpenChange={setIsAgentSelectorOpen}
+          onSelect={handleAgentSelect}
+        />
 
-      {/* MOBILE-ONLY HEADER - only show for chat view */}
-      {viewMode === 'chat' && (
-        <div className="bg-[#0e1421] border-b px-2 py-2 md:hidden flex items-center justify-between">
-          <LeftBarSheet
-            onItemClick={() => {}}
-            agent={agent}
-            isOwner={isOwner}
-            agentId={agentId}
-            currentSessionId={sessionId}
-            onSessionSelect={handleSessionSelect}
-            onNewSession={handleNewSession}
-          />
-        </div>
-      )}
+        {/* MOBILE LEFT BAR SHEET FOR CHAT */}
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetContent
+            side="left"
+            className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
+          >
+            <SheetTitle className="sr-only">Session List</SheetTitle>
+            <SessionChatSidebarContent
+              agent={agent}
+              isOwner={isOwner}
+              agentId={agentId}
+              currentSessionId={sessionId}
+              onSessionSelect={handleSessionSelect}
+              onNewSession={handleNewSession}
+              onItemClick={() => setIsSheetOpen(false)}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              userId={user?._id}
+            />
+          </SheetContent>
+        </Sheet>
 
-      {/* MOBILE LEFT BAR SHEET FOR CHAT */}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent
-          side="left"
-          className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
-        >
-          <SheetTitle className="sr-only">Session List</SheetTitle>
-          <SessionChatSidebarContent
-            agent={agent}
-            isOwner={isOwner}
-            agentId={agentId}
-            currentSessionId={sessionId}
-            onSessionSelect={handleSessionSelect}
-            onNewSession={handleNewSession}
-            onItemClick={() => setIsSheetOpen(false)}
-          />
-        </SheetContent>
-      </Sheet>
-
-      {/* CONDITIONAL MAIN CONTENT BASED ON VIEW MODE */}
-      {viewMode === 'creations' ? (
-        /* CREATIONS VIEW - Full width */
-        agent && <AgentCreationsView agent={agent} user={user} />
-      ) : viewMode === 'tasks' ? (
-        /* TASKS VIEW - Full width */
-        agent && <AgentTasksView agent={agent} />
-      ) : viewMode === 'settings' ? (
-        /* SETTINGS VIEW - Full width */
-        agent && <AgentEditView agent={agent} user={user} />
-      ) : (
-        /* CHAT VIEW - Resizable layout */
+        {/* RESIZABLE LAYOUT FOR ALL VIEWS */}
         <ResizablePanelGroup
           direction="horizontal"
           className="flex-1 !overflow-y-hidden"
@@ -305,6 +222,9 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                 onSessionSelect={handleSessionSelect}
                 onNewSession={handleNewSession}
                 onItemClick={() => {}}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                userId={user?._id}
               />
             )}
           </ResizablePanel>
@@ -324,12 +244,18 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                 className="mx-auto flex flex-col flex-1 w-full"
                 key={resetKey}
               >
-                {children}
+                {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}
+                {viewMode === 'creations'
+                  ? agent && <AgentCreationsView agent={agent} user={user} />
+                  : viewMode === 'tasks'
+                  ? agent && <AgentTasksView agent={agent} />
+                  : viewMode === 'settings'
+                  ? agent && <AgentEditView agent={agent} user={user} />
+                  : children}
               </div>
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
-      )}
       </div>
     </LiveAudioProvider>
   )

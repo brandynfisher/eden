@@ -22,7 +22,7 @@ const ModelSelector = ({ base_model, onChange, value }: Props) => {
 
   const handleRemoveModelSelection = () => {
     if (queryParams && queryParams.get('lora')) {
-      router.push(pathname, { scroll: false })
+      router.push(pathname || '/', { scroll: false })
     }
 
     onChange('')
