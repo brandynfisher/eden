@@ -2,17 +2,21 @@ import { ToolHoverMenu } from './tools/tool-hover-menu'
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useToggleLikeQuery } from '@/hooks/query/use-toggle-like-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { downloadFile } from '@/lib/files'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import {
   updateAddToCollectionModal,
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
+import { generateFilename } from '@/utils/slug.util'
 import { getExternalStoreMessages, useMessage } from '@assistant-ui/react'
 import { AssistantActionBar } from '@assistant-ui/react-ui'
 import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
 import {
   BookmarkPlusIcon,
+  DownloadIcon,
   ExternalLinkIcon,
   HeartIcon,
   Share2Icon,
@@ -20,6 +24,7 @@ import {
 import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
 import React from 'react'
+import { toast } from 'sonner'
 
 // Individual action button for tool results
 const ToolActionButton = ({ creationId }: { creationId: string }) => {
@@ -64,6 +69,28 @@ const ToolActionButton = ({ creationId }: { creationId: string }) => {
     }
   }
 
+  const handleDownloadClick = async () => {
+    if (creation?.filename) {
+      const saveAsFileName = generateFilename(
+        creation.user?.username || '',
+        creation.task?.args?.prompt?.substring(0, 64).trim() || '',
+        creation._id || '',
+      )
+
+      await downloadFile(
+        getCloudfrontOriginalUrl(creation.filename),
+        `Eden_creation_${saveAsFileName}`,
+      )
+
+      toast.info(`Downloading...`, {
+        description: `creation: ${saveAsFileName}`,
+        dismissible: true,
+        richColors: true,
+        duration: 500,
+      })
+    }
+  }
+
   // Show loading state or fallback if creation not loaded
   if (isLoading || !creation) {
     return null
@@ -105,6 +132,13 @@ const ToolActionButton = ({ creationId }: { creationId: string }) => {
         disabled={!isSignedIn}
       >
         <BookmarkPlusIcon className="w-4 h-4" />
+      </button>
+
+      <button
+        className="aui-button aui-button-ghost aui-button-icon"
+        onClick={handleDownloadClick}
+      >
+        <DownloadIcon className="w-4 h-4" />
       </button>
     </>
   )
