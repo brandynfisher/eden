@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import SingleAgentSelectorModal from '@/features/chat/components/single-agent-selector-modal'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
+import AgentMemoryView from '@/features/chat/components/views/agent-memory-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import { ViewMode } from '@/features/chat/types'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
@@ -18,7 +19,7 @@ import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   FC,
   PropsWithChildren,
@@ -59,6 +60,7 @@ const SessionChatSidebarContent: FC<{
 const SessionChatLayout = ({ children }: PropsWithChildren) => {
   const { user, isSignedIn } = useAuthState()
   const router = useRouter()
+  const searchParams = useSearchParams()
   // Check if user has sessions_v2 feature flag
   useEffect(() => {
     if (
@@ -93,6 +95,35 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   const isOwner = useMemo(() => {
     return user?._id === agent?.owner._id
   }, [user, agent])
+
+  // Handle query parameters for view mode
+  useEffect(() => {
+    if (!searchParams) return
+
+    const page = searchParams.get('page')
+    const tab = searchParams.get('tab')
+
+    if (page === 'tasks') {
+      setViewMode('tasks')
+    } else if (page === 'settings' || tab === 'deployments') {
+      setViewMode('settings')
+    } else if (page === 'memory') {
+      setViewMode('memory')
+    } else {
+      setViewMode('chat')
+    }
+  }, [searchParams])
+
+  // Redirect if not owner and trying to access restricted views
+  useEffect(() => {
+    if (agent && user && !isOwner && viewMode === 'settings') {
+      console.log(
+        '***debug*** Redirecting non-owner from restricted view:',
+        viewMode,
+      )
+      router.push(`/chat2/${agentId}`)
+    }
+  }, [agent, user, isOwner, viewMode, agentId, router])
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
@@ -251,6 +282,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                   ? agent && <AgentTasksView agent={agent} />
                   : viewMode === 'settings'
                   ? agent && <AgentEditView agent={agent} user={user} />
+                  : viewMode === 'memory'
+                  ? agent && <AgentMemoryView agent={agent} user={user} />
                   : children}
               </div>
             </div>

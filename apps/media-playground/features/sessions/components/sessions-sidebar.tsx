@@ -174,7 +174,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
                 }
               }}
               onBlur={handleRenameCancel}
-              className="h-8 flex-grow px-1 py-0 text-sm min-w-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border"
+              className="h-8 flex-grow px-1 py-0 text-base min-w-0 bg-transparent focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 border-border [@supports(font-size:16px)]:text-sm"
               onClick={e => e.stopPropagation()}
               onPointerDown={e => e.stopPropagation()}
             />

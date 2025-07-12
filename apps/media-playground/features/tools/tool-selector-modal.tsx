@@ -35,6 +35,7 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
   })
   const router = useRouter()
   const [searchQuery, setSearchQuery] = React.useState('')
+  const inputRef = React.useRef<HTMLInputElement>(null)
 
   const filteredTools = React.useMemo(() => {
     if (!tools || !searchQuery.trim()) return tools
@@ -117,6 +118,16 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
     return currentCategory?.id || categories[0]?.id || 'featured'
   }, [categories, currentTool.key])
 
+  // Prevent autofocus on mobile by blurring the input after a brief delay
+  React.useEffect(() => {
+    if (open && inputRef.current) {
+      const timer = setTimeout(() => {
+        inputRef.current?.blur()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [open])
+
   if (!tools) {
     return null
   }
@@ -140,10 +151,13 @@ const ToolSelectorModal = ({ currentTool, open, onOpenChange }: Props) => {
             </DialogClose> */}
           </div>
           <Input
+            ref={inputRef}
             placeholder="Search tools..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full"
+            autoFocus={false}
+            tabIndex={-1}
           />
         </div>
 
