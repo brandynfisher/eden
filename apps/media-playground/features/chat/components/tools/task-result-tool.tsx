@@ -28,18 +28,39 @@ export const TaskResultTool = makeAssistantToolUI({
   render: ({ args, argsText, status, result }) => {
     const { tool, result: toolResults } = result as TaskResultToolArgs
     // console.log('args', args)
+    console.log(
+      '***debug*** TaskResultTool - tool:',
+      tool,
+      'typeof tool:',
+      typeof tool,
+      'toolResults:',
+      toolResults,
+    )
+    console.log('***debug*** TaskResultTool - args:', args)
+    console.log('***debug*** TaskResultTool - result:', result)
 
     // Check if this is a Twitter tool and handle it specially
     const isTwitterTool =
       tool === 'twitter_mentions' ||
       tool === 'twitter_search' ||
-      tool === 'tweet' ||
       tool?.includes('twitter')
 
-    // Check if this is a Discord or Telegram post tool
+    // Check if this is a social post tool (Discord, Telegram, Tweet, Farcaster)
     const isDiscordPost = tool === 'discord_post'
     const isTelegramPost = tool === 'telegram_post'
-    const isSocialPost = isDiscordPost || isTelegramPost
+    const isTweetPost = tool === 'tweet'
+    const isFarcasterPost = tool === 'farcaster_cast'
+    const isSocialPost =
+      isDiscordPost || isTelegramPost || isTweetPost || isFarcasterPost
+
+    console.log('***debug*** Social post check:', {
+      tool,
+      isDiscordPost,
+      isTelegramPost,
+      isTweetPost,
+      isFarcasterPost,
+      isSocialPost,
+    })
 
     // Check if tool is completed with displayable results
     const { status: toolStatus } = result as TaskResultToolArgs
@@ -84,11 +105,21 @@ export const TaskResultTool = makeAssistantToolUI({
                 : null}
             </div>
           ) : isSocialPost ? (
-            // Handle Discord and Telegram post results
+            // Handle social post results (Discord, Telegram, Tweet, Farcaster)
             <div className="mb-2 relative group">
               <SocialPostEmbed
                 results={toolResults || []}
-                platform={isDiscordPost ? 'discord' : 'telegram'}
+                platform={
+                  isDiscordPost
+                    ? 'discord'
+                    : isTelegramPost
+                    ? 'telegram'
+                    : isTweetPost
+                    ? 'twitter'
+                    : isFarcasterPost
+                    ? 'farcaster'
+                    : 'discord' // fallback
+                }
               />
             </div>
           ) : (
