@@ -1,5 +1,6 @@
 'use client'
 
+import { ViewMode } from '../types'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
@@ -16,8 +17,8 @@ export const AgentBar: FC<{
   agent: Agent | null | undefined
   onChatClick?: () => void
   onAgentSelect?: () => void
-  viewMode: 'chat' | 'creations' | 'tasks' | 'settings'
-  onViewModeChange: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
   agentId?: string
   onAgentInvalidate?: () => Promise<void>
   isSidebarCollapsed?: boolean

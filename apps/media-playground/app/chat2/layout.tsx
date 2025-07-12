@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import SingleAgentSelectorModal from '@/features/chat/components/single-agent-selector-modal'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
+import AgentMemoryView from '@/features/chat/components/views/agent-memory-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
@@ -73,9 +74,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   const sessionId = params.id as string
   const [isMounted, setIsMounted] = useState(false)
   const [resetKey, setResetKey] = useState<number>(0)
-  const [viewMode, setViewMode] = useState<
-    'chat' | 'creations' | 'tasks' | 'settings'
-  >('chat')
+  const [viewMode, setViewMode] = useState<ViewMode>('chat')
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 

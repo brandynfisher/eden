@@ -7,10 +7,12 @@ import {
   deployAgent,
   getAgent,
   getAgentDeployments,
+  getAgentMemory,
   getAgentTriggers,
   getAllUserDeployments,
   getAllUserTriggers,
   likeAgent,
+  saveAgentMemory,
   unlikeAgent,
   updateAgent,
   updateAgentDeployment,
@@ -354,6 +356,31 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getAllUserDeployments(server, request, reply),
+  })
+
+  server.get('/v2/agents/:agentId/memory', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get user memory for an agent',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      response: { 200: { content: Type.String() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAgentMemory(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/memory', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Save user memory for an agent',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Object({ content: Type.String() }),
+      response: { 200: { success: Type.Boolean() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => saveAgentMemory(server, request, reply),
   })
 }
 
