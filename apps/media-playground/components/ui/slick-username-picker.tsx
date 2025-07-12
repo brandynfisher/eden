@@ -46,13 +46,14 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
         onStatusChange(availability)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availability, isChecking, value, originalValue])
+  }, [availability, isChecking, value, originalValue, onStatusChange])
 
   // Debounced availability check
   useEffect(() => {
-    if (!value || value === lastCheckedValue || value.length < 2) {
+    // Don't check if empty or too short
+    if (!value || value.length < 2) {
       setAvailability(null)
+      setIsChecking(false)
       return
     }
 
@@ -63,17 +64,25 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
       return
     }
 
+    // Don't check if already checked this value
+    if (value === lastCheckedValue) {
+      return
+    }
+
     const timeoutId = setTimeout(async () => {
+      // Double-check the value hasn't changed
       if (value === lastCheckedValue) return
+
       setIsChecking(true)
       setLastCheckedValue(value)
+
       try {
         const isValidPattern = /^[a-z0-9_]+(?:-[a-z0-9_]+)*$/.test(value)
         if (!isValidPattern) {
           setAvailability('invalid')
-          setIsChecking(false)
           return
         }
+
         const response = await axios.get(
           `/api/agents/check-username?username=${encodeURIComponent(value)}`,
         )
@@ -87,7 +96,8 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
       } finally {
         setIsChecking(false)
       }
-    }, 800)
+    }, 500) // Reduced debounce time for better UX
+
     return () => clearTimeout(timeoutId)
   }, [value, lastCheckedValue, originalValue])
 
@@ -148,6 +158,7 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
 
   const getStatusIcon = () => {
     if (originalValue && value === originalValue) return null
+    if (!value || value.length < 2) return null
     if (isChecking) {
       return <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
     }
@@ -166,6 +177,7 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
 
   const getStatusText = () => {
     if (originalValue && value === originalValue) return null
+    if (!value || value.length < 2) return null
     if (isChecking) return 'Checking availability...'
     switch (availability) {
       case 'available':
@@ -197,18 +209,19 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
             disabled={disabled}
             className={cn(
               'pr-8',
+              // Don't show status colors for original values
               originalValue && value === originalValue
                 ? ''
                 : availability === 'available' &&
-                    'border-green-500 focus:border-green-500',
+                    'border-green-500 focus:border-green-500 focus:ring-green-500',
               originalValue && value === originalValue
                 ? ''
                 : availability === 'taken' &&
-                    'border-red-500 focus:border-red-500',
+                    'border-red-500 focus:border-red-500 focus:ring-red-500',
               originalValue && value === originalValue
                 ? ''
                 : availability === 'invalid' &&
-                    'border-orange-500 focus:border-orange-500',
+                    'border-orange-500 focus:border-orange-500 focus:ring-orange-500',
             )}
           />
           {(isChecking || availability) && (

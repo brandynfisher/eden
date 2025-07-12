@@ -67,8 +67,13 @@ export const SessionInfoRow = ({
   )
 
   return (
-    <div className={cn('px-4 py-3', className)}>
-      <div className="flex items-center justify-between">
+    <div
+      className={cn(
+        'sticky top-0 z-20 flex-shrink-0 bg-background/95 backdrop-blur-sm border-b shadow-sm',
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between px-4 py-3">
         {/* Left side - Session title only */}
         <div className="flex-1 min-w-0">
           {title ? (

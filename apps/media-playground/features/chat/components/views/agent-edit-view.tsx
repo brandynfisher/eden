@@ -280,10 +280,10 @@ const AgentEditView: FC<{
 
   const [activeTab, setActiveTab] = useState(getInitialActiveTab())
 
-  // Fetch deployments for the deployments tab
+  // Fetch deployments (needed for both deployments tab and tools conditional logic)
   const deploymentsQuery = useAgentDeploymentsQuery({
     key: agent._id,
-    enabled: activeTab === 'deployments',
+    enabled: true,
   })
 
   const form = useForm<AgentFormDto>({
@@ -849,10 +849,16 @@ const AgentEditView: FC<{
                                     key: 'news',
                                     label: 'Read the news',
                                   },
-                                  {
-                                    key: 'social_media_tools',
-                                    label: 'Social media tools (read and post)',
-                                  },
+                                  ...(deploymentsQuery.deployments &&
+                                  deploymentsQuery.deployments.length > 0
+                                    ? [
+                                        {
+                                          key: 'social_media_tools',
+                                          label:
+                                            'Social media tools (read and post)',
+                                        },
+                                      ]
+                                    : []),
                                   {
                                     key: 'legacy_tools',
                                     label: 'Legacy tools',
@@ -1004,9 +1010,7 @@ const AgentEditView: FC<{
                   <div className="mx-auto max-w-4xl">
                     <Button
                       onClick={form.handleSubmit(handleSubmit)}
-                      disabled={
-                        form.formState.isSubmitting || !form.formState.isValid
-                      }
+                      disabled={form.formState.isSubmitting}
                       className="w-full"
                     >
                       {form.formState.isSubmitting ? (

@@ -348,20 +348,20 @@ const Session = ({
     <>
       <div
         className={cn(
-          'flex-1 pb-4 overflow-y-auto',
+          'flex-1 pb-4',
           messageGroups.length === 0 &&
             'flex flex-col justify-center items-center',
         )}
       >
+        {/* Session info row - sticky at the top */}
+        {session?.agents && session.agents.length > 0 && !isChat2Route && (
+          <SessionInfoRow
+            agents={session.agents}
+            title={session.title}
+            sessionBudget={session.budget}
+          />
+        )}
         <div className="p-4 pb-8 max-w-[--aui-thread-max-width] mx-auto w-full">
-          {/* Session info row - moved from sticky top bar to inside messages area */}
-          {session?.agents && session.agents.length > 0 && !isChat2Route && (
-            <SessionInfoRow
-              agents={session.agents}
-              title={session.title}
-              sessionBudget={session.budget}
-            />
-          )}
           {/* Only show loading skeleton if we are on a new session */}
           {sessionId === 'new' && isSessionLoading ? (
             <div className="space-y-4">
