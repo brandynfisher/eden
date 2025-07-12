@@ -61,7 +61,7 @@ const AccountDropdown = () => {
 
   const logout = async () => {
     if (isSignedIn) {
-      await signOut({ redirectUrl: pathname })
+      await signOut({ redirectUrl: pathname || '/' })
     }
   }
 

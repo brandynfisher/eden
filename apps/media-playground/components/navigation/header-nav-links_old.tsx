@@ -72,14 +72,18 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
   return (
     <>
       <HomeNavLink href="/" inSheet={inSheet} />
-      <NavLinkList items={navItemsMake} segments={segments} inSheet={inSheet} />
+      <NavLinkList
+        items={navItemsMake}
+        segments={segments || []}
+        inSheet={inSheet}
+      />
       <div className="md:self-stretch md:flex md:items-center">
         <Separator orientation="vertical" className="hidden md:block" />
         <Separator orientation="horizontal" className="md:hidden" />
       </div>
       <NavLinkList
         items={navItemsTrain}
-        segments={segments}
+        segments={segments || []}
         inSheet={inSheet}
       />
       <div className="md:self-stretch md:flex md:items-center">
@@ -88,14 +92,18 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
       </div>
       <NavLinkList
         items={navItemsExplore}
-        segments={segments}
+        segments={segments || []}
         inSheet={inSheet}
       />
       <div className="md:self-stretch md:flex md:items-center">
         <Separator orientation="vertical" className="hidden md:block" />
         <Separator orientation="horizontal" className="md:hidden" />
       </div>
-      <NavLinkList items={navItemsEve} segments={segments} inSheet={inSheet} />
+      <NavLinkList
+        items={navItemsEve}
+        segments={segments || []}
+        inSheet={inSheet}
+      />
     </>
   )
 }

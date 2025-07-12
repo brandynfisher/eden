@@ -18,9 +18,9 @@ export const useToolPreset = () => {
   const queryParams = useSearchParams()
 
   // Extract query parameters
-  const loraParam = queryParams.get('lora')
-  const creationParam = queryParams.get('creation')
-  const taskParam = queryParams.get('task')
+  const loraParam = queryParams?.get('lora')
+  const creationParam = queryParams?.get('creation')
+  const taskParam = queryParams?.get('task')
 
   // Use react-query to fetch creation data if creationParam is present
   const {

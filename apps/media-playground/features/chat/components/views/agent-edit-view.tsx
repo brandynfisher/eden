@@ -260,7 +260,7 @@ const AgentEditView: FC<{
 
   // Get initial active tab from URL parameter or default to 'profile'
   const getInitialActiveTab = () => {
-    const tabFromUrl = searchParams.get('tab')
+    const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
       ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
@@ -305,7 +305,7 @@ const AgentEditView: FC<{
 
   // Update active tab when URL search parameters change
   useEffect(() => {
-    const tabFromUrl = searchParams.get('tab')
+    const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
       ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)

@@ -36,8 +36,8 @@ const SessionChatSidebarContent: FC<{
   onItemClick?: () => void
   onSessionSelect: (sessionId: string) => void
   onNewSession: () => void
-  viewMode: 'chat' | 'creations' | 'tasks' | 'settings'
-  onViewModeChange: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
   userId?: string | null
 }> = ({ onItemClick, agentId, agent, viewMode, onViewModeChange, userId }) => {
   return (
@@ -70,8 +70,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     }
   }, [isSignedIn, user, router])
   const params = useParams()
-  const agentId = params.agentId as string
-  const sessionId = params.id as string
+  const agentId = params?.agentId as string
+  const sessionId = params?.id as string
   const [isMounted, setIsMounted] = useState(false)
   const [resetKey, setResetKey] = useState<number>(0)
   const [viewMode, setViewMode] = useState<ViewMode>('chat')

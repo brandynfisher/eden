@@ -39,9 +39,9 @@ type Props = {
 }
 
 const HeaderNavLinks = ({ inSheet }: Props) => {
-  const segments = useSelectedLayoutSegments()
+  const segments = useSelectedLayoutSegments() || []
   const searchParams = useSearchParams()
-  const contentType = searchParams.get('type')
+  const contentType = searchParams?.get('type')
 
   return (
     <>
@@ -52,7 +52,7 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
             label: 'Agents',
             segments: [`explore`],
             href: '/explore?type=agents',
-            active: segments[0] === 'explore' && contentType === 'agents',
+            active: segments?.[0] === 'explore' && contentType === 'agents',
           },
         ]}
         segments={segments}

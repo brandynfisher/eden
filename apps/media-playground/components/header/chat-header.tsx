@@ -27,7 +27,7 @@ const ChatHeader = ({
   isSidebarCollapsed,
 }: ChatHeaderProps) => {
   const params = useParams()
-  const sessionId = params.id as string
+  const sessionId = params?.id as string
 
   // Get current session data
   const { data: session } = useSessionQuery({

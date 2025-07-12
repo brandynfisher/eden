@@ -29,32 +29,12 @@ const ChatThreadHeader = ({
   threadId: propThreadId,
 }: ChatThreadHeaderProps) => {
   const params = useParams()
-  const threadId = propThreadId || (params.threadId as string)
-
-  // Additional debugging for URL params
-  console.log('URL params:', params)
-  console.log('Extracted threadId:', threadId)
-  console.log('propThreadId:', propThreadId)
+  const threadId = propThreadId || (params?.threadId as string)
 
   // Get current thread data
-  const {
-    data: thread,
-    isLoading,
-    error,
-  } = useThreadQuery({
+  const { data: thread } = useThreadQuery({
     threadId: threadId,
     enabled: !!threadId,
-  })
-
-  // Debug logging
-  console.log('ChatThreadHeader DEBUG:', {
-    threadId,
-    thread,
-    threadTitle: thread?.title,
-    threadDataTitle: thread?.data?.title,
-    isLoading,
-    error,
-    fullThreadObject: JSON.stringify(thread, null, 2),
   })
 
   const handleThreadTitleClick = () => {

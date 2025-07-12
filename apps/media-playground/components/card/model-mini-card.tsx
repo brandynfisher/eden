@@ -69,7 +69,7 @@ const ModelMiniCard = ({
           </div>
           <p className="text-xs font-semibold">Model is private</p>
         </div>
-        {pathname.startsWith('/create') && (
+        {pathname?.startsWith('/create') && (
           <div className="text-warning text-sm flex items-center gap-x-2 mt-2">
             <CircleAlertIcon size={16} className="flex-shrink-0" />
             <p>

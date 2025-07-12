@@ -30,12 +30,12 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
-import AgentMemoryView from '@/features/chat/components/views/agent-memory-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import {
   MyRuntimeProvider,
   useEdenRuntimeExtras,
 } from '@/features/chat/providers/my-runtime-provider'
+import { ViewMode } from '@/features/chat/types'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useThreadListQuery } from '@/hooks/query/use-thread-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -495,7 +495,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
 
   // Get initial view mode from URL tab parameter, defaultTab prop, or default to 'chat'
   const getInitialViewMode = () => {
-    const tabFromUrl = searchParams.get('tab')
+    const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
       ['chat', 'creations', 'tasks', 'settings', 'memory'].includes(tabFromUrl)
@@ -514,7 +514,7 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
 
   // Update view mode when URL tab parameter changes
   useEffect(() => {
-    const tabFromUrl = searchParams.get('tab')
+    const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
       ['chat', 'creations', 'tasks', 'settings', 'memory'].includes(tabFromUrl)

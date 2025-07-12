@@ -49,7 +49,7 @@ const ArrowNavigation = ({ basePath, onIdChange }: ArrowNavigationProps) => {
   }, [activeIndex, goPrevious, items, onIdChange, basePath])
 
   useEffect(() => {
-    const id = pathname.split('/').pop()
+    const id = pathname?.split('/').pop()
     if (id) {
       onIdChange(id)
     }

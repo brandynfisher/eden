@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ViewMode } from '@/features/chat/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { canEditAgent, isAgentOwner } from '@/lib/utils'
@@ -272,8 +273,8 @@ const TopLeft: FC<{
 }> = ({ onItemClick, isChat, onViewModeChange }) => {
   const router = useRouter()
   const params = useParams()
-  const agentId = params.agentId as string
-  const isNewSession = isNewSessionRoute(params, isChat)
+  const agentId = params?.agentId as string
+  const isNewSession = isNewSessionRoute(params || {}, isChat)
 
   const handleClick = () => {
     onItemClick?.()
@@ -308,15 +309,13 @@ const NavigationButtons: FC<{
   onItemClick?: () => void
   agent: Agent | null | undefined
   userId?: string | null
-  viewMode: 'chat' | 'creations' | 'tasks' | 'settings'
-  onViewModeChange: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
 }> = ({ onItemClick, agent, userId, viewMode, onViewModeChange }) => {
   const { user } = useAuthState()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
-  const handleNavClick = (
-    mode: 'chat' | 'creations' | 'tasks' | 'settings',
-  ) => {
+  const handleNavClick = (mode: ViewMode) => {
     onViewModeChange(mode)
     onItemClick?.()
   }
@@ -431,7 +430,8 @@ const MainLeft = ({
   const { isSignedIn, verifyAuth } = useAuthState()
   const router = useRouter()
   const params = useParams()
-  const currentSessionId = (params.id as string) || (params.sessionId as string)
+  const currentSessionId =
+    (params?.id as string) || (params?.sessionId as string)
   const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
     useSessionListQuery({
       enabled: !!isSignedIn,
@@ -569,8 +569,8 @@ export const SessionsSidebarContent = ({
   isChat?: boolean
   agent?: Agent | null | undefined
   userId?: string | null
-  viewMode?: 'chat' | 'creations' | 'tasks' | 'settings'
-  onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  viewMode?: ViewMode
+  onViewModeChange?: (mode: ViewMode) => void
 }) => {
   return (
     <>

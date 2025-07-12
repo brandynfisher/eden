@@ -60,7 +60,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   // Use standard useState again
   const [filterMode, setFilterMode] = useState<FilterMode>(() => {
     // Initialize state from URL search param on mount
-    const initialTab = searchParams.get('tab')
+    const initialTab = searchParams?.get('tab')
     return initialTab === 'mine' ? 'mine' : 'all' // Default to 'all'
   })
 
@@ -126,7 +126,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
 
   // Effect to update URL when filterMode changes
   useEffect(() => {
-    const currentTab = searchParams.get('tab')
+    const currentTab = searchParams?.get('tab')
     const newTabValue = filterMode === 'mine' ? 'mine' : null // null removes the param
 
     // Avoid pushing the same state
@@ -135,7 +135,7 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
     }
 
     // Create new URLSearchParams but preserve other params
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
     if (newTabValue) {
       params.set('tab', newTabValue)
     } else {

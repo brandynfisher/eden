@@ -47,7 +47,7 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
-  const initialTab = searchParams.get('tab') || defaultTabName
+  const initialTab = searchParams?.get('tab') || defaultTabName
   const [activeTab, setActiveTab] = useState(initialTab)
   const [search, setSearch] = useState('')
   const [isTabChanging, setIsTabChanging] = useState(false)

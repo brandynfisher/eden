@@ -67,7 +67,7 @@ const ToolsFeed = ({ category, searchQuery }: ToolsFeedProps) => {
       return tools.filter(
         tool =>
           tool.name.toLowerCase().includes(searchTerms) ||
-          tool.description.toLowerCase().includes(searchTerms) ||
+          tool.description?.toLowerCase().includes(searchTerms) ||
           tool.key.toLowerCase().includes(searchTerms),
       )
     }
