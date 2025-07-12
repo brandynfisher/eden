@@ -290,7 +290,7 @@ const TasksPage = () => {
                             size="sm"
                             onClick={() =>
                               router.push(
-                                `/chat/${trigger.agent.username}?tab=tasks`,
+                                `/chat2/${trigger.agent.username}?page=tasks`,
                               )
                             }
                             className="h-8 w-8 p-0"
