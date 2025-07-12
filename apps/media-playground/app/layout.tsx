@@ -7,7 +7,7 @@ import DeleteConfirmationDialog from '@/components/dialog/delete-confirmation-di
 import QuickAnimateDialog from '@/components/dialog/quick-animate-dialog'
 import QuickUpscaleDialog from '@/components/dialog/quick-upscale-dialog'
 import ShareDialog from '@/components/dialog/share-dialog'
-import Header from '@/components/header/header'
+import ConditionalHeader from '@/components/header/conditional-header'
 import { SubscriptionGateModal } from '@/components/modals/SubscriptionGateModal'
 import { PreloadResources } from '@/components/preload-resources'
 import ScrollTopButton from '@/components/scroll-top-button'
@@ -107,7 +107,7 @@ export default function RootLayout({
           <HolyLoader color="#9333ea" height="1px" />
           <Providers>
             <div className="flex min-h-screen w-full flex-col ">
-              <Header />
+              <ConditionalHeader />
               {modal}
               {children}
               <ScrollTopButton />

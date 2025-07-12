@@ -100,8 +100,9 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
         items={[
           {
             label: 'Tools',
-            // segments: [`create`, `image`, `flux_schnell`],
-            segments: [`create`],
+            segments: [`explore`],
+            href: '/explore?type=tools',
+            active: segments[0] === 'explore' && contentType === 'tools',
           },
         ]}
         segments={segments}

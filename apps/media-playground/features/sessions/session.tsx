@@ -3,7 +3,7 @@
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
-import { SessionTopBar } from './components/session-top-bar'
+import { SessionInfoRow } from './components/session-info-row'
 import SessionWelcome from './components/session-welcome'
 import { StreamingMessageDisplay } from './components/streaming-message-display'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
@@ -346,15 +346,6 @@ const Session = ({
 
   return (
     <>
-      {/* Sticky top bar showing agents */}
-      {session?.agents && session.agents.length > 0 && !isChat2Route && (
-        <SessionTopBar
-          agents={session.agents}
-          title={session.title}
-          sessionBudget={session.budget}
-        />
-      )}
-
       <div
         className={cn(
           'flex-1 pb-4 overflow-y-auto',
@@ -363,6 +354,14 @@ const Session = ({
         )}
       >
         <div className="p-4 pb-8 max-w-[--aui-thread-max-width] mx-auto w-full">
+          {/* Session info row - moved from sticky top bar to inside messages area */}
+          {session?.agents && session.agents.length > 0 && !isChat2Route && (
+            <SessionInfoRow
+              agents={session.agents}
+              title={session.title}
+              sessionBudget={session.budget}
+            />
+          )}
           {/* Only show loading skeleton if we are on a new session */}
           {sessionId === 'new' && isSessionLoading ? (
             <div className="space-y-4">
@@ -387,9 +386,12 @@ const Session = ({
                   30000 // Created within 30 seconds
               // Check if we have only user messages (no assistant responses yet)
               // Ignore system/eden messages when checking
-              const userMessages = session?.messages?.filter(m => m.role === 'user') || []
-              const assistantMessages = session?.messages?.filter(m => m.role === 'assistant') || []
-              const hasOnlyUserMessage = userMessages.length > 0 && assistantMessages.length === 0
+              const userMessages =
+                session?.messages?.filter(m => m.role === 'user') || []
+              const assistantMessages =
+                session?.messages?.filter(m => m.role === 'assistant') || []
+              const hasOnlyUserMessage =
+                userMessages.length > 0 && assistantMessages.length === 0
               const isWaitingForFirstResponse =
                 isNewSession && hasOnlyUserMessage
 
