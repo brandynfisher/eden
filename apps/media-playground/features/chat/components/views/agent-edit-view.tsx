@@ -1,6 +1,7 @@
 'use client'
 
 import { ProfileImageUploader } from '../profile-image-uploader'
+import AgentMemoryView from './agent-memory-view'
 import ModelMiniCard from '@/components/card/model-mini-card'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
@@ -38,6 +39,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
   AlertCircle,
+  BrainIcon,
   ChevronDownIcon,
   Loader2,
   SettingsIcon,
@@ -263,7 +265,13 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
+      [
+        'profile',
+        'concepts',
+        'deployments',
+        'permissions',
+        'memories',
+      ].includes(tabFromUrl)
     ) {
       return tabFromUrl
     }
@@ -308,7 +316,13 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
+      [
+        'profile',
+        'concepts',
+        'deployments',
+        'permissions',
+        'memories',
+      ].includes(tabFromUrl)
     ) {
       setActiveTab(tabFromUrl)
     }
@@ -387,6 +401,8 @@ const AgentEditView: FC<{
         return 'Deployments'
       case 'permissions':
         return 'Permissions'
+      case 'memories':
+        return 'Memories'
       default:
         return 'Profile'
     }
@@ -403,6 +419,7 @@ const AgentEditView: FC<{
       tabs.push(
         { key: 'deployments', label: 'Deployments', icon: SettingsIcon },
         { key: 'permissions', label: 'Permissions', icon: UserIcon },
+        { key: 'memories', label: 'Memories', icon: BrainIcon },
       )
     }
 
@@ -970,13 +987,19 @@ const AgentEditView: FC<{
                       </div>
                     </div>
                   )}
+                {activeTab === 'memories' &&
+                  isAgentOwner(agent, user?._id) &&
+                  isPreviewUser && (
+                    <AgentMemoryView agent={agent} user={user} />
+                  )}
               </form>
             </Form>
 
             {/* Global Update Button */}
             {activeTab !== 'deployments' &&
               activeTab !== 'tasks' &&
-              activeTab !== 'permissions' && (
+              activeTab !== 'permissions' &&
+              activeTab !== 'memories' && (
                 <div className="border-t border-border p-6">
                   <div className="mx-auto max-w-4xl">
                     <Button
