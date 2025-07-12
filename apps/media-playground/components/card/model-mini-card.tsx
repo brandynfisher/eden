@@ -82,7 +82,7 @@ const ModelMiniCard = ({
     )
   }
 
-  if (!model) {
+  if (!model || !model._id) {
     return null
   }
 
@@ -97,12 +97,12 @@ const ModelMiniCard = ({
         <Image
           className="max-w-16 rounded-lg"
           loader={customImageLoader}
-          src={model?.thumbnail || siteConfig.mediaErrorUrl}
-          alt={model?.name}
+          src={model.thumbnail || siteConfig.mediaErrorUrl}
+          alt={model.name || 'Model thumbnail'}
           width={64}
           height={64}
         />
-        {model.deleted && (
+        {model.deleted === true && (
           <div className="absolute inset-0 z-10 bg-accent/70 drop-shadow size-16 mt-2 ml-2 flex items-center justify-center">
             <div className="p-1 bg-destructive/50 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">
               deleted
@@ -112,24 +112,24 @@ const ModelMiniCard = ({
       </Link>
       <div className="text-xs flex flex-col h-full w-full py-1">
         <Link href={`/models/${model._id}`} prefetch={false}>
-          {model.name}
+          {model.name || 'Unnamed Model'}
 
           <div className="flex gap-2 mt-1">
             <Badge variant="secondary" className="text-xs bg-opacity-80">
-              {model.base_model}
+              {model.base_model || 'Unknown'}
             </Badge>
-            {(model.task.args?.concept_mode ||
-              model.task.args?.lora_mode ||
-              model.task.args?.mode) && (
+            {(model.task?.args?.concept_mode ||
+              model.task?.args?.lora_mode ||
+              model.task?.args?.mode) && (
               <Badge className="text-xs" variant="outline">
-                {model.task.args?.concept_mode ??
-                  model.task.args?.lora_mode ??
-                  model.task.args?.mode}
+                {model.task?.args?.concept_mode ??
+                  model.task?.args?.lora_mode ??
+                  model.task?.args?.mode}
               </Badge>
             )}
           </div>
         </Link>
-        {showCreator && (
+        {showCreator && model.user?.username && (
           <div className="text-muted-foreground flex gap-2">
             <div>
               by
@@ -144,7 +144,7 @@ const ModelMiniCard = ({
           </div>
         )}
       </div>
-      {!model.deleted && children}
+      {model.deleted !== true && children}
     </div>
   )
 }

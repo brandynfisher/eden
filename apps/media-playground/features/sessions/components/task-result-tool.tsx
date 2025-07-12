@@ -1,55 +1,19 @@
 'use client'
 
-import ActionsDropdown from '@/components/button/actions-dropdown'
-import CreationActionsMenu from '@/components/button/creations-actions-menu'
-import DownloadActionItem from '@/components/button/download-action-item'
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
-import { DropdownMenuGroup } from '@/components/ui/dropdown-menu'
 import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { generateFilename } from '@/utils/slug.util'
 import { TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
-import React, { useState } from 'react'
+import React from 'react'
 import ReactMarkdown from 'react-markdown'
 
 export type TaskResultToolProps = {
   toolCall: ToolCall
-}
-
-// Simple download menu for media outputs without a creation
-const MediaDownloadMenu = ({
-  filename,
-  mediaType = 'media',
-  className,
-}: {
-  filename: string
-  mediaType?: string
-  className?: string
-}) => {
-  const [isOpen, setIsOpen] = useState(false)
-
-  return (
-    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
-      {isOpen && (
-        <DropdownMenuGroup>
-          <DownloadActionItem
-            type="creation"
-            originalFileUrl={filename}
-            saveAsFileName={generateFilename(
-              'Eden',
-              mediaType,
-              Date.now().toString(),
-            )}
-          />
-        </DropdownMenuGroup>
-      )}
-    </ActionsDropdown>
-  )
 }
 
 export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
@@ -65,40 +29,25 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
   const isTelegramPost = tool === 'telegram_post'
   const isSocialPost = isDiscordPost || isTelegramPost
 
+  // Check if tool is completed with displayable results
+  const hasDisplayableResults =
+    toolResults &&
+    toolResults.length > 0 &&
+    toolResults.some(
+      result =>
+        result &&
+        (Array.isArray(result?.output) ||
+          (typeof result?.output === 'string' && result?.output.length > 0)),
+    )
+  const isCompletedWithResults =
+    toolCall.status === 'completed' && hasDisplayableResults
+
   return (
     <div className="mb-2 max-w-full">
-      <ToolFallback
-        type="tool-call"
-        result={{
-          tool: tool!,
-          result: toolResults || [],
-          status:
-            toolCall.status === 'completed'
-              ? TaskV2Status.Completed
-              : toolCall.status === 'failed'
-              ? TaskV2Status.Failed
-              : toolCall.status === 'running'
-              ? TaskV2Status.Running
-              : TaskV2Status.Pending,
-          error: toolCall.error,
-        }}
-        toolCallId={tool!}
-        toolName={tool!}
-        args={toolCall.args}
-        argsText={JSON.stringify(toolCall.args)}
-        status={
-          toolCall.status === 'completed'
-            ? { type: 'complete' }
-            : toolCall.status === 'failed'
-            ? { type: 'incomplete', reason: 'error' }
-            : { type: 'running' }
-        }
-        addResult={() => true}
-      />
       <ErrorBoundary>
         {isSocialPost ? (
           // Handle Discord and Telegram post results
-          <div className="mt-4 mb-4">
+          <div className="mb-2 relative group">
             <SocialPostEmbed
               results={toolResults || []}
               platform={isDiscordPost ? 'discord' : 'telegram'}
@@ -111,7 +60,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
             <div
               className={cn([
                 toolResults && toolResults.length > 1 && 'grid',
-                'grid-cols-2 gap-2 md:gap-4 mt-4 mb-4',
+                'grid-cols-2 gap-2 md:gap-4 mb-2',
               ])}
             >
               {toolResults
@@ -204,27 +153,6 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
                                 />
                               </div>
                             )}
-                            {output.creation ? (
-                              <CreationActionsMenu
-                                creation={{
-                                  ...output.creation,
-                                  // @ts-expect-error faked taskv2
-                                  task: { args: toolCall.args },
-                                }}
-                                className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
-                                queryKey={['creations', output.creation?._id]}
-                              />
-                            ) : (
-                              output.filename && (
-                                <MediaDownloadMenu
-                                  filename={output.filename}
-                                  mediaType={getFileTypeByMimeType(
-                                    output.mediaAttributes?.mimeType,
-                                  )}
-                                  className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
-                                />
-                              )
-                            )}
                           </div>
                         ))
                       ) : (
@@ -246,6 +174,36 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
           </LightboxGallery>
         )}
       </ErrorBoundary>
+      {!isCompletedWithResults && (
+        <ToolFallback
+          type="tool-call"
+          result={{
+            tool: tool!,
+            result: toolResults || [],
+            status:
+              toolCall.status === 'completed'
+                ? TaskV2Status.Completed
+                : toolCall.status === 'failed'
+                ? TaskV2Status.Failed
+                : toolCall.status === 'running'
+                ? TaskV2Status.Running
+                : TaskV2Status.Pending,
+            error: toolCall.error,
+          }}
+          toolCallId={tool!}
+          toolName={tool!}
+          args={toolCall.args}
+          argsText={JSON.stringify(toolCall.args)}
+          status={
+            toolCall.status === 'completed'
+              ? { type: 'complete' }
+              : toolCall.status === 'failed'
+              ? { type: 'incomplete', reason: 'error' }
+              : { type: 'running' }
+          }
+          addResult={() => true}
+        />
+      )}
     </div>
   )
 }
