@@ -13,9 +13,11 @@ import {
   ImageIcon,
   MessageSquareIcon,
   SettingsIcon,
+  BrainIcon,
 } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
 import * as React from 'react'
+import { ViewMode } from '../types'
 
 // New Agent Bar component
 export const AgentBar: FC<{
@@ -23,8 +25,8 @@ export const AgentBar: FC<{
   userId?: string | null
   onChatClick?: () => void
   onAgentSelect?: () => void
-  viewMode: 'chat' | 'creations' | 'tasks' | 'settings'
-  onViewModeChange: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
   agentId?: string
   onAgentInvalidate?: () => Promise<void>
 }> = ({
@@ -126,6 +128,18 @@ export const AgentBar: FC<{
         >
           <ImageIcon className="size-4" />
           {!isNarrow && <span>Creations</span>}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onViewModeChange('memory')}
+          className={`shrink-0 gap-1 text-sm ${
+            viewMode === 'memory' &&
+            'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
+          }`}
+        >
+          <BrainIcon className="size-4" />
+          {!isNarrow && <span>Memory</span>}
         </Button>
         {isAgentOwner(agent, userId) && isPreviewUser && (
           <Button

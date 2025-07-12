@@ -1,6 +1,7 @@
 'use client'
 
 import { AgentBar } from './components/agent-bar'
+import { ViewMode } from './types'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
@@ -30,6 +31,7 @@ import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import AgentCreationsView from '@/features/chat/components/views/agent-creations-view'
 import AgentEditView from '@/features/chat/components/views/agent-edit-view'
+import AgentMemoryView from '@/features/chat/components/views/agent-memory-view'
 import AgentTasksView from '@/features/chat/components/views/agent-tasks-view'
 import {
   MyRuntimeProvider,
@@ -497,16 +499,14 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
     const tabFromUrl = searchParams.get('tab')
     if (
       tabFromUrl &&
-      ['chat', 'creations', 'tasks', 'settings'].includes(tabFromUrl)
+      ['chat', 'creations', 'tasks', 'settings', 'memory'].includes(tabFromUrl)
     ) {
-      return tabFromUrl as 'chat' | 'creations' | 'tasks' | 'settings'
+      return tabFromUrl as ViewMode
     }
     return defaultTab || 'chat'
   }
 
-  const [viewMode, setViewMode] = useState<
-    'chat' | 'creations' | 'tasks' | 'settings'
-  >(getInitialViewMode())
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode())
 
   const isOwner = useMemo(() => {
     const ownershipStatus = user?._id === agent?.owner._id
@@ -518,9 +518,9 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
     const tabFromUrl = searchParams.get('tab')
     if (
       tabFromUrl &&
-      ['chat', 'creations', 'tasks', 'settings'].includes(tabFromUrl)
+      ['chat', 'creations', 'tasks', 'settings', 'memory'].includes(tabFromUrl)
     ) {
-      setViewMode(tabFromUrl as 'chat' | 'creations' | 'tasks' | 'settings')
+      setViewMode(tabFromUrl as ViewMode)
     }
   }, [searchParams])
 
@@ -606,11 +606,14 @@ const Chat: FC<Props> = ({ agentId, threadId, agentSSRData, defaultTab }) => {
           /* CREATIONS VIEW - Full width */
           agent && <AgentCreationsView agent={agent} user={user} />
         ) : viewMode === 'tasks' ? (
-          /* CREATIONS VIEW - Full width */
+          /* TASKS VIEW - Full width */
           agent && <AgentTasksView agent={agent} />
         ) : viewMode === 'settings' ? (
           /* SETTINGS VIEW - Full width */
           agent && <AgentEditView agent={agent} user={user} />
+        ) : viewMode === 'memory' ? (
+          /* MEMORY VIEW - Full width */
+          agent && <AgentMemoryView agent={agent} user={user} />
         ) : (
           <ResizablePanelGroup
             direction="horizontal"
