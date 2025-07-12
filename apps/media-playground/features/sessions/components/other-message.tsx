@@ -1,5 +1,6 @@
 import ActionBar from './action-bar'
 import { MarkdownText } from './markdown-text'
+import ToolResultActionBar from './tool-result-action-bar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
@@ -148,8 +149,41 @@ export const OtherMessage = ({
         )}
 
         {!isStreamingTokens && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <ActionBar sessionId={sessionId} message={message} />
+          <div
+            className={`transition-opacity ${
+              message.tool_calls?.some(
+                toolCall =>
+                  toolCall.status === 'completed' &&
+                  toolCall.result &&
+                  toolCall.result.length > 0 &&
+                  toolCall.result.some(
+                    result =>
+                      result &&
+                      (Array.isArray(result?.output) ||
+                        (typeof result?.output === 'string' &&
+                          result?.output.length > 0)),
+                  ),
+              )
+                ? 'opacity-100'
+                : 'opacity-0 group-hover:opacity-100'
+            }`}
+          >
+            {message.tool_calls?.some(
+              toolCall =>
+                toolCall.status === 'completed' &&
+                toolCall.result &&
+                toolCall.result.length > 0 &&
+                toolCall.result.some(
+                  result =>
+                    result &&
+                    Array.isArray(result?.output) &&
+                    result.output.some(output => output.creation),
+                ),
+            ) ? (
+              <ToolResultActionBar message={message} />
+            ) : (
+              <ActionBar sessionId={sessionId} message={message} />
+            )}
           </div>
         )}
       </div>
