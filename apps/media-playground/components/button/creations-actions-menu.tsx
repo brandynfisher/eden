@@ -9,45 +9,32 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { getFileTypeByMimeType } from '@/lib/files'
 import {
   updateAddToCollectionModal,
-  updateQuickAnimateModal,
-  updateQuickUpscaleModal,
   updateShareModal,
 } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
 import { generateFilename } from '@/utils/slug.util'
 import { CreationV2 } from '@edenlabs/eden-sdk'
-import { SizeIcon } from '@radix-ui/react-icons'
 import { QueryKey } from '@tanstack/react-query'
 import {
   BookmarkPlusIcon,
   ExternalLinkIcon,
-  FileSlidersIcon,
-  FilmIcon,
   PictureInPicture2Icon,
   PictureInPictureIcon,
   Share2Icon,
 } from 'lucide-react'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React from 'react'
 
 type Props = {
   creation: CreationV2
   queryKey: QueryKey
   className?: string
-  hiddenItems?: ('view-details' | 'like')[]
 }
 
-const CreationActionsMenu = ({
-  creation,
-  queryKey,
-  className,
-  hiddenItems,
-}: Props) => {
+const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
   const { user, isSignedIn } = useAuthState()
-  const [isOpen, setIsOpen] = useState(false)
   const dispatch = useAppDispatch()
 
   const creationData = creation
@@ -65,14 +52,6 @@ const CreationActionsMenu = ({
     )
   }
 
-  const handleQuickAnimateClick = () => {
-    dispatch(updateQuickAnimateModal({ isOpen: true, creation: creationData }))
-  }
-
-  const handleQuickUpscaleClick = () => {
-    dispatch(updateQuickUpscaleModal({ isOpen: true, creation: creationData }))
-  }
-
   const handleShareClick = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
     const shareUrl = `${baseUrl}/creations/${creationData._id}`
@@ -84,137 +63,90 @@ const CreationActionsMenu = ({
     )
   }
 
-  const fileType =
-    getFileTypeByMimeType(creationData.mediaAttributes?.mimeType) || 'image'
-
   return (
     <>
-      <ActionsDropdown className={className} onOpenChange={setIsOpen}>
-        {isOpen && (
-          <>
-            <DropdownMenuGroup>
-              {!hiddenItems?.includes('view-details') && (
-                <DropdownMenuItem asChild>
-                  <Link
-                    className="cursor-pointer"
-                    href={`/creations/${creationData._id}`}
-                  >
-                    <ExternalLinkIcon className="mr-2 h-4 w-4" />
-                    View Details
-                    {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
-                  </Link>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <button
-                  type="button"
-                  className="w-full"
-                  onClick={handleShareClick}
-                >
-                  <Share2Icon className="mr-2 h-4 w-4" />
-                  Share
-                </button>
-              </DropdownMenuItem>
-              {!hiddenItems?.includes('like') && (
-                <DropdownMenuItem asChild className="cursor-pointer">
-                  <LikeButton
-                    type="creation"
-                    id={creationData._id}
-                    isLiked={creationData.isLiked}
-                    likeCount={creationData.likeCount}
-                    isDropdownItem={true}
-                    disabled={!isSignedIn}
-                  />
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem
-                className="cursor-pointer w-full group"
-                onClick={handleAddToCollectionClick}
-                disabled={!isSignedIn}
+      <ActionsDropdown className={className}>
+        <>
+          <DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <Link
+                className="cursor-pointer"
+                href={`/creations/${creationData._id}`}
               >
-                <BookmarkPlusIcon className="mr-2 h-4 w-4" />
-                Add to collection
-                <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-                <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-              </DropdownMenuItem>
+                <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                View Details
+                {/*<DropdownMenuShortcut>⇧⌘O</DropdownMenuShortcut>*/}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <button
+                type="button"
+                className="w-full"
+                onClick={handleShareClick}
+              >
+                <Share2Icon className="mr-2 h-4 w-4" />
+                Share
+              </button>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <LikeButton
+                type="creation"
+                id={creationData._id}
+                isLiked={creationData.isLiked || false}
+                likeCount={creationData.likeCount || 0}
+                isDropdownItem={true}
+                disabled={!isSignedIn}
+              />
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer w-full group"
+              onClick={handleAddToCollectionClick}
+              disabled={!isSignedIn}
+            >
+              <BookmarkPlusIcon className="mr-2 h-4 w-4" />
+              Add to collection
+              <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+              <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          {creationData && creationData.user?._id === user?._id && (
+            <>
               <DropdownMenuSeparator />
-              {fileType === 'image' ? (
-                <>
-                  <DropdownMenuItem
-                    disabled={!isSignedIn}
-                    className="cursor-pointer group"
-                    onClick={handleQuickAnimateClick}
-                  >
-                    <FilmIcon className="mr-2 h-4 w-4" />
-                    Animate
-                    <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-                    <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    disabled={!isSignedIn}
-                    className="cursor-pointer group"
-                    onClick={handleQuickUpscaleClick}
-                  >
-                    <SizeIcon className="mr-2 h-4 w-4" />
-                    Upscale
-                    <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-                    <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
-                  </DropdownMenuItem>
-                </>
-              ) : null}
-              <DropdownMenuItem asChild disabled={!isSignedIn}>
-                <Link
-                  className="cursor-pointer flex items-center"
-                  href={`/create/${fileType}/${creationData.tool}?creation=${creationData._id}`}
-                  scroll={false}
-                  shallow={true}
-                  prefetch={false}
-                >
-                  <FileSlidersIcon className="mr-2 h-4 w-4" />
-                  Use as Preset
-                  {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
-                </Link>
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            {creationData && creationData.user._id === user?._id && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <PrivacyActionItem
-                    type="creation"
-                    item={creationData}
-                    queryKey={queryKey}
-                  />
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DeleteActionItem
-                    type="creation"
-                    item={creationData}
-                    queryKey={queryKey}
-                  />
-                </DropdownMenuGroup>
-              </>
-            )}
-            {isSignedIn && creationData ? (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DownloadActionItem
-                    type="creation"
-                    originalFileUrl={creationData.filename || ''}
-                    saveAsFileName={generateFilename(
-                      creationData.user.username || '',
-                      creationData.task.args?.prompt?.substring(0, 64).trim() ||
-                        '',
-                      creationData._id || '',
-                    )}
-                  />
-                </DropdownMenuGroup>
-              </>
-            ) : null}
-          </>
-        )}
+              <DropdownMenuGroup>
+                <PrivacyActionItem
+                  type="creation"
+                  item={creationData}
+                  queryKey={queryKey}
+                />
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DeleteActionItem
+                  type="creation"
+                  item={creationData}
+                  queryKey={queryKey}
+                />
+              </DropdownMenuGroup>
+            </>
+          )}
+          {isSignedIn && creationData ? (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DownloadActionItem
+                  type="creation"
+                  originalFileUrl={creationData.filename || ''}
+                  saveAsFileName={generateFilename(
+                    creationData.user?.username || '',
+                    creationData.task?.args?.prompt?.substring(0, 64).trim() ||
+                      '',
+                    creationData._id || '',
+                  )}
+                />
+              </DropdownMenuGroup>
+            </>
+          ) : null}
+        </>
       </ActionsDropdown>
     </>
   )
