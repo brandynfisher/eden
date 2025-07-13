@@ -192,6 +192,15 @@ export type TasksV2ResultOutput = MediaOutput & {
   mediaAttributes?: MediaAttributes & { type: ToolOutputTypeV2 }
   model?: ModelV2
   creation?: CreationV2
+  // Social media content properties
+  text?: string
+  author?: string
+  author_name?: string
+  channel_name?: string
+  timestamp?: string
+  likes?: number
+  retweets?: number
+  replies?: number
 }
 
 export type TaskV2Result = {
