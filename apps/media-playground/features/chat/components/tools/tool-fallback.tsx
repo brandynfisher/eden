@@ -8,6 +8,7 @@ import ParameterTable from '@/components/timeline/parameter-table'
 import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
 import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { TaskResultToolArgs } from '@/features/chat/components/tools/task-result-tool'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
@@ -28,8 +29,27 @@ export const ToolFallback: ToolCallContentPartComponent = ({
   args,
   result,
 }) => {
-  const { status: toolStatus, error: toolError } = result as TaskResultToolArgs
+  const {
+    status: toolStatus,
+    error: toolError,
+    result: toolResults,
+  } = result as TaskResultToolArgs
   const [isCollapsed, setIsCollapsed] = useState(true)
+  const [selectedArgsIndex, setSelectedArgsIndex] = useState<number>(0) // 0 = main args, 1+ = subtool indices
+
+  // Extract subtool_calls from the first result if they exist
+  const subtoolCalls = toolResults?.[0]?.subtool_calls || []
+  const hasSubtools = subtoolCalls.length > 0
+
+  // Determine current args and tool name to display
+  const currentArgs =
+    selectedArgsIndex === 0
+      ? args
+      : subtoolCalls[selectedArgsIndex - 1]?.args || {}
+  const currentToolName =
+    selectedArgsIndex === 0
+      ? toolName
+      : subtoolCalls[selectedArgsIndex - 1]?.tool || toolName
 
   // Don't render cancelled tool calls
   if (toolStatus === 'cancelled') {
@@ -71,14 +91,41 @@ export const ToolFallback: ToolCallContentPartComponent = ({
           {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
         </TooltipIconButton>
       </div>
+
       {!isCollapsed && (
         <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none bg-popover/30">
-          {args.lora ? (
+          {hasSubtools && (
+            <div className="px-4 py-2 border-b border-border/20">
+              <ToggleGroup
+                type="single"
+                value={selectedArgsIndex.toString()}
+                onValueChange={value => {
+                  if (value) setSelectedArgsIndex(parseInt(value))
+                }}
+                className="flex flex-row gap-2 justify-start"
+              >
+                <ToggleGroupItem value="0" variant="outline" size="sm">
+                  {toolName}
+                </ToggleGroupItem>
+                {subtoolCalls.map((subtool, index) => (
+                  <ToggleGroupItem
+                    key={index}
+                    value={(index + 1).toString()}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {subtool.tool}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          )}
+          {currentArgs.lora ? (
             <Suspense fallback={<LoadingIndicator />}>
-              <ModelMiniCard modelId={args.lora} className="bg-popover">
+              <ModelMiniCard modelId={currentArgs.lora} className="bg-popover">
                 <Button size="sm" variant="outline" asChild>
                   <Link
-                    href={`/create/image/${toolName}?lora=${args.lora}`}
+                    href={`/create/image/${currentToolName}?lora=${currentArgs.lora}`}
                     className="ml-auto mr-2"
                     scroll={false}
                     shallow={true}
@@ -90,12 +137,12 @@ export const ToolFallback: ToolCallContentPartComponent = ({
               </ModelMiniCard>
             </Suspense>
           ) : null}
-          {args.lora2 ? (
+          {currentArgs.lora2 ? (
             <Suspense fallback={<LoadingIndicator />}>
-              <ModelMiniCard modelId={args.lora2} className="bg-popover">
+              <ModelMiniCard modelId={currentArgs.lora2} className="bg-popover">
                 <Button size="sm" variant="outline" asChild>
                   <Link
-                    href={`/create/image/${toolName}?lora2=${args.lora2}`}
+                    href={`/create/image/${currentToolName}?lora2=${currentArgs.lora2}`}
                     className="ml-auto mr-2"
                     scroll={false}
                     shallow={true}
@@ -108,8 +155,8 @@ export const ToolFallback: ToolCallContentPartComponent = ({
             </Suspense>
           ) : null}
           <ParameterTable
-            // cost={args.cost}
-            args={args}
+            // cost={currentArgs.cost}
+            args={currentArgs}
             hideHeader={true}
             className="w-auto"
           />
