@@ -157,15 +157,9 @@ const DiscordBanner: React.FC = () => {
                   <h2 className="text-lg font-bold text-white tracking-tight">
                     Join the Eden community!
                   </h2>
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-yellow-400/25 rounded-full border border-yellow-400/40">
-                    <Zap size={10} className="text-yellow-200" />
-                    <span className="text-yellow-100 text-xs font-medium">
-                      active
-                    </span>
-                  </div>
                 </div>
                 <p className="text-white/85 text-xs font-medium leading-tight">
-                  Connect with fellow AI artists on our Discord server!
+                  Connect with fellow AI artists on our server!
                 </p>
               </div>
             </div>
