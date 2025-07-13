@@ -1,4 +1,5 @@
 // import SearchForm from '@/components/form/search-form'
+import DiscordBanner from '../discord-banner'
 import TaskStatusIndicator from '@/components/alert/task-status-indicator'
 import ErrorBoundary from '@/components/error-boundary'
 import MannaBalance from '@/components/header/manna-balance'
@@ -26,6 +27,7 @@ const Header = () => {
           <MyAccountButton />
         </div>
       </header>
+      <DiscordBanner />
     </>
   )
 }
