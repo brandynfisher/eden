@@ -4,7 +4,7 @@ import DiscordAltIcon from '@/components/icons/discord-alt'
 import { Button } from '@/components/ui/button'
 import { useAuthState } from '@/hooks/use-auth-state'
 import useLocalStorage from '@/hooks/use-local-storage'
-import { ArrowRight, X, Zap } from 'lucide-react'
+import { ArrowRight, X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
@@ -93,12 +93,6 @@ const DiscordBanner: React.FC = () => {
                   <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight drop-shadow-sm">
                     Join the Eden community!
                   </h2>
-                  <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-400/25 rounded-full border border-yellow-400/40 shadow-sm">
-                    <Zap size={12} className="text-yellow-200" />
-                    <span className="text-yellow-100 text-xs font-medium">
-                      active
-                    </span>
-                  </div>
                 </div>
                 <p className="text-white/85 text-xs font-medium max-w-sm leading-tight">
                   Connect with fellow AI artists on our Discord server. Share
