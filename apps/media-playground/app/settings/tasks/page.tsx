@@ -62,8 +62,31 @@ const TasksPage = () => {
     return unique
   }, [triggers])
 
+  const formatLastRunTime = (lastRunTime?: Date) => {
+    if (!lastRunTime) return 'Never'
+
+    const date = new Date(lastRunTime)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffDays > 0) {
+      return `${diffDays}d ago`
+    } else if (diffHours > 0) {
+      return `${diffHours}h ago`
+    } else {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60))
+      if (diffMinutes > 0) {
+        return `${diffMinutes}m ago`
+      } else {
+        return 'Just now'
+      }
+    }
+  }
+
   const filteredTriggers = useMemo(() => {
-    return triggers.filter(trigger => {
+    const filtered = triggers.filter(trigger => {
       const matchesSearch =
         trigger.instruction.toLowerCase().includes(searchTerm.toLowerCase()) ||
         trigger.agent.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -77,6 +100,21 @@ const TasksPage = () => {
         trigger.agent._id === agentFilter
 
       return matchesSearch && matchesStatus && matchesAgent
+    })
+
+    // Sort by last_run_time first (most recent first), then by createdAt
+    return filtered.sort((a, b) => {
+      const aLastRun = a.last_run_time ? new Date(a.last_run_time).getTime() : 0
+      const bLastRun = b.last_run_time ? new Date(b.last_run_time).getTime() : 0
+
+      if (aLastRun !== bLastRun) {
+        return bLastRun - aLastRun // Most recent last_run_time first
+      }
+
+      // If last_run_time is the same (or both null), fall back to createdAt
+      const aDate = new Date(a.createdAt)
+      const bDate = new Date(b.createdAt)
+      return bDate.getTime() - aDate.getTime()
     })
   }, [triggers, searchTerm, statusFilter, agentFilter])
 
@@ -222,6 +260,7 @@ const TasksPage = () => {
                   <TableHead className="min-w-[120px]">Agent</TableHead>
                   <TableHead className="min-w-[80px]">Status</TableHead>
                   <TableHead className="min-w-[120px]">Schedule</TableHead>
+                  <TableHead className="min-w-[100px]">Last Run</TableHead>
                   <TableHead className="min-w-[80px]">Created</TableHead>
                   <TableHead className="min-w-[80px]">Actions</TableHead>
                 </TableRow>
@@ -229,7 +268,7 @@ const TasksPage = () => {
               <TableBody>
                 {filteredTriggers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No tasks found.
                     </TableCell>
                   </TableRow>
@@ -276,6 +315,11 @@ const TasksPage = () => {
                           <span className="truncate">
                             {formatCronSchedule(trigger.schedule)}
                           </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="text-sm text-muted-foreground whitespace-nowrap">
+                          {formatLastRunTime(trigger.last_run_time)}
                         </div>
                       </TableCell>
                       <TableCell className="p-4">

@@ -107,8 +107,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
       setViewMode('tasks')
     } else if (page === 'settings' || tab === 'deployments') {
       setViewMode('settings')
-    } else if (page === 'memory') {
-      setViewMode('memory')
+    } else if (page === 'memories') {
+      setViewMode('memories')
     } else {
       setViewMode('chat')
     }
@@ -282,7 +282,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                   ? agent && <AgentTasksView agent={agent} />
                   : viewMode === 'settings'
                   ? agent && <AgentEditView agent={agent} user={user} />
-                  : viewMode === 'memory'
+                  : viewMode === 'memories'
                   ? agent && <AgentMemoryView agent={agent} user={user} />
                   : children}
               </div>

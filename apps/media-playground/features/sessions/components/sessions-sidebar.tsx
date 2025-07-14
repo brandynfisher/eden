@@ -1,5 +1,6 @@
 'use client'
 
+import { AgentAvatars } from './agent-avatars'
 import LoadingIndicator from '@/components/loading-indicator'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
+  BrainIcon,
   CheckIcon,
   ClockIcon,
   EditIcon,
@@ -38,6 +40,12 @@ interface SessionListItemProps {
   isActive: boolean
   onItemClick?: () => void
   isFromTrigger?: boolean
+  agents?: Array<{
+    _id: string
+    username: string
+    userImage: string
+    name?: string
+  }>
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -46,6 +54,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   isActive,
   onItemClick,
   isFromTrigger = false,
+  agents = [],
 }) => {
   const {
     renameSession: renameSessionQuery,
@@ -197,17 +206,40 @@ const SessionListItem: FC<SessionListItemProps> = ({
         ) : (
           <button
             className={cn(
-              'flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center',
+              'flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center gap-2',
               isActive ? 'text-primary-foreground' : 'text-white',
             )}
             onClick={onItemClick}
             disabled={isEditing}
           >
-            {isFromTrigger && (
-              <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0 mr-1" />
+            {agents.length > 0 && (
+              <AgentAvatars agents={agents} className="shrink-0" />
             )}
-            <div className="overflow-hidden whitespace-nowrap text-ellipsis">
-              {title || 'Untitled'}
+            {isFromTrigger && !agents.length && (
+              <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="overflow-hidden whitespace-nowrap text-ellipsis">
+                {title || 'Untitled'}
+              </div>
+              {(agents.length > 2 || isFromTrigger) && (
+                <div className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-1">
+                  {isFromTrigger && <ClockIcon className="h-3 w-3 shrink-0" />}
+                  {isFromTrigger && agents.length > 2 && <span>•</span>}
+                  {agents.length > 2 && (
+                    <span>
+                      {agents.length > 3
+                        ? `${agents.length} members`
+                        : agents
+                            .map(agent => agent.name || agent.username)
+                            .join(', ')}
+                    </span>
+                  )}
+                  {isFromTrigger && agents.length <= 2 && (
+                    <span>Task Session</span>
+                  )}
+                </div>
+              )}
             </div>
           </button>
         )}
@@ -349,6 +381,22 @@ const NavigationButtons: FC<{
         >
           <ClockIcon className="size-4" />
           <span>Tasks</span>
+        </Button>
+      )}
+
+      {isPreviewUser && (
+        <Button
+          variant={viewMode === 'memories' ? 'outline' : 'default'}
+          onClick={() => handleNavClick('memories')}
+          className={cn(
+            'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
+            viewMode === 'memories'
+              ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
+              : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+          )}
+        >
+          <BrainIcon className="size-4" />
+          <span>Memories</span>
         </Button>
       )}
 
@@ -515,10 +563,11 @@ const MainLeft = ({
                       id={session._id}
                       title={
                         session.title ||
-                        (session.trigger ? 'Task Session' : 'Untitled')
+                        (session.trigger ? 'Scheduled Task' : 'Untitled')
                       }
                       isActive={session._id === currentSessionId}
                       isFromTrigger={!!session.trigger}
+                      agents={session.agents}
                       onItemClick={() => {
                         onItemClick?.()
                         if (isChat && agentId) {

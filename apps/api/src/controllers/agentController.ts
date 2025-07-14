@@ -1109,16 +1109,16 @@ export const getAllUserDeployments = async (
 const validateAgentAccess = async (agentId: string) => {
   const query = createIdOrSlugQuery(agentId)
   const agent = await Agent.findOne(query)
-  
+
   if (!agent || agent.deleted) {
     return { agent: null, error: 'Agent not found' }
   }
-  
+
   return { agent, error: null }
 }
 
 const createAgentObjectId = (agentId: string, agentDoc: any, mongoose: any) => {
-  return mongoose.Types.ObjectId.isValid(agentId) 
+  return mongoose.Types.ObjectId.isValid(agentId)
     ? new mongoose.Types.ObjectId(agentId)
     : new mongoose.Types.ObjectId(agentDoc._id)
 }
@@ -1141,14 +1141,40 @@ export const getAgentMemory = async (
       return reply.status(404).send({ error })
     }
 
-    const memoryCollection = server.mongoose.connection.db.collection('memory_user')
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_user')
     const memoryRecord = await memoryCollection.findOne({
       agent_id: createAgentObjectId(agentId, agent, server.mongoose),
       user_id: new server.mongoose.Types.ObjectId(userId),
     })
 
+    let unabsorbedDirectives: string[] = []
+
+    // Get unabsorbed directives if they exist
+    if (memoryRecord?.unabsorbed_directive_ids?.length > 0) {
+      const sessionMemoryCollection =
+        server.mongoose.connection.db.collection('memory_sessions')
+      const directiveIds = memoryRecord.unabsorbed_directive_ids.map(
+        (id: any) => new server.mongoose.Types.ObjectId(id),
+      )
+
+      const query = {
+        agent_id: createAgentObjectId(agentId, agent, server.mongoose),
+        memory_type: 'directive',
+        related_users: new server.mongoose.Types.ObjectId(userId),
+        _id: { $in: directiveIds },
+      }
+
+      const directives = await sessionMemoryCollection.find(query).toArray()
+
+      unabsorbedDirectives = directives
+        .map(directive => directive.content || '')
+        .filter(content => content.trim() !== '')
+    }
+
     return reply.status(200).send({
       content: memoryRecord?.content || '',
+      unabsorbedDirectives,
     })
   } catch (error) {
     server.log.error('Error fetching user memory:', error)
@@ -1175,9 +1201,10 @@ export const saveAgentMemory = async (
       return reply.status(404).send({ error })
     }
 
-    const memoryCollection = server.mongoose.connection.db.collection('memory_user')
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_user')
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
-    
+
     await memoryCollection.replaceOne(
       {
         agent_id: agentObjectId,
@@ -1190,7 +1217,7 @@ export const saveAgentMemory = async (
         agent_owner: null,
         unabsorbed_directive_ids: [],
       },
-      { upsert: true }
+      { upsert: true },
     )
 
     return reply.status(200).send({ success: true })

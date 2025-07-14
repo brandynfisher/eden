@@ -515,13 +515,17 @@ export const listSessions = async (
 
   try {
     const queryOptions: QueryOptions = {
-      select: '_id title name createdAt updatedAt trigger',
+      select: '_id title name createdAt updatedAt trigger agents',
       limit,
       page,
       sort: {
         ...sort,
         updatedAt: -1,
         createdAt: -1,
+      },
+      populate: {
+        path: 'agents',
+        select: '_id username userImage name',
       },
     }
 

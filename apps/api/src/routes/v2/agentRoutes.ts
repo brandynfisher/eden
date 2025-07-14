@@ -364,7 +364,12 @@ const agentRoutes: FastifyPluginAsync = async server => {
       description: 'Get user memory for an agent',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
-      response: { 200: { content: Type.String() } },
+      response: {
+        200: {
+          content: Type.String(),
+          unabsorbedDirectives: Type.Array(Type.String()),
+        },
+      },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getAgentMemory(server, request, reply),

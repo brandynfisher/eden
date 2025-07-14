@@ -33,6 +33,7 @@ export type Trigger = {
     custom_instructions?: string
   }
   deleted?: boolean
+  last_run_time?: Date
   createdAt: Date
   updatedAt: Date
 }
