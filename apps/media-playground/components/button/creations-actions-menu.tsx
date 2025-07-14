@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { getFileTypeByMimeType } from '@/lib/files'
 import {
   updateAddToCollectionModal,
   updateShareModal,
@@ -20,6 +21,7 @@ import { QueryKey } from '@tanstack/react-query'
 import {
   BookmarkPlusIcon,
   ExternalLinkIcon,
+  FileSlidersIcon,
   PictureInPicture2Icon,
   PictureInPictureIcon,
   Share2Icon,
@@ -62,6 +64,9 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
       }),
     )
   }
+
+  const fileType =
+    getFileTypeByMimeType(creationData.mediaAttributes?.mimeType) || 'image'
 
   return (
     <>
@@ -107,6 +112,18 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
               Add to collection
               <PictureInPicture2Icon className="group-hover:hidden h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
               <PictureInPictureIcon className="hidden group-hover:block h-4 w-4 ml-auto text-muted-foreground group-hover:text-popover-foreground" />
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild disabled={!isSignedIn}>
+              <Link
+                className="cursor-pointer flex items-center"
+                href={`/create/${fileType}/${creationData.tool}?creation=${creationData._id}`}
+                scroll={false}
+                shallow={true}
+                prefetch={false}
+              >
+                <FileSlidersIcon className="mr-2 h-4 w-4" />
+                Use as Preset
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           {creationData && creationData.user?._id === user?._id && (
