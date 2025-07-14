@@ -177,7 +177,7 @@ const MyAssistantMessage: FC = () => {
       ) : null} */}
 
       <ThreadPrimitive.If running={false} empty={false}>
-        {myMessages[0].tool_calls?.some(
+        {myMessages[0]?.tool_calls?.some(
           toolCall =>
             toolCall.status === 'completed' &&
             toolCall.result &&
