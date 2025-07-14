@@ -1147,8 +1147,28 @@ export const getAgentMemory = async (
       user_id: new server.mongoose.Types.ObjectId(userId),
     })
 
+    let unabsorbedDirectives: string[] = []
+    
+    // Get unabsorbed directives if they exist
+    if (memoryRecord?.unabsorbed_directive_ids?.length > 0) {
+      const sessionMemoryCollection = server.mongoose.connection.db.collection('memory_session')
+      const directiveIds = memoryRecord.unabsorbed_directive_ids.map((id: any) => 
+        new server.mongoose.Types.ObjectId(id)
+      )
+      
+      const directives = await sessionMemoryCollection.find({
+        agent_id: createAgentObjectId(agentId, agent, server.mongoose),
+        memory_type: 'directive',
+        related_users: new server.mongoose.Types.ObjectId(userId),
+        _id: { $in: directiveIds }
+      }).toArray()
+      
+      unabsorbedDirectives = directives.map(directive => directive.content || '').filter(content => content.trim() !== '')
+    }
+
     return reply.status(200).send({
       content: memoryRecord?.content || '',
+      unabsorbedDirectives,
     })
   } catch (error) {
     server.log.error('Error fetching user memory:', error)
