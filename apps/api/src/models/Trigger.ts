@@ -31,6 +31,7 @@ export interface TriggerSchema {
     custom_instructions?: string
   }
   deleted?: boolean
+  last_run_time?: Date
 }
 
 export interface TriggerDocument extends TriggerSchema {}
@@ -85,6 +86,10 @@ const TriggerSchema = new Schema<TriggerDocument>(
     deleted: {
       type: Boolean,
       default: false,
+    },
+    last_run_time: {
+      type: Date,
+      required: false,
     },
   },
   {
