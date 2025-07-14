@@ -48,6 +48,7 @@ const AgentMemoryView: FC<{
       if (agent && authUser) {
         try {
           const response = await axios.get(`/api/agents/${agent._id}/memory`)
+          
           form.setValue('content', response.data.content || '')
           setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
         } catch (error) {

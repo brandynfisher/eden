@@ -1151,17 +1151,19 @@ export const getAgentMemory = async (
     
     // Get unabsorbed directives if they exist
     if (memoryRecord?.unabsorbed_directive_ids?.length > 0) {
-      const sessionMemoryCollection = server.mongoose.connection.db.collection('memory_session')
+      const sessionMemoryCollection = server.mongoose.connection.db.collection('memory_sessions')
       const directiveIds = memoryRecord.unabsorbed_directive_ids.map((id: any) => 
         new server.mongoose.Types.ObjectId(id)
       )
       
-      const directives = await sessionMemoryCollection.find({
+      const query = {
         agent_id: createAgentObjectId(agentId, agent, server.mongoose),
         memory_type: 'directive',
         related_users: new server.mongoose.Types.ObjectId(userId),
         _id: { $in: directiveIds }
-      }).toArray()
+      }
+      
+      const directives = await sessionMemoryCollection.find(query).toArray()
       
       unabsorbedDirectives = directives.map(directive => directive.content || '').filter(content => content.trim() !== '')
     }
