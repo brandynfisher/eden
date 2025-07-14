@@ -7,7 +7,7 @@ import CreationUiContainer from '@/features/tools/creation-ui-container'
 import { useToolQuery } from '@/hooks/query/use-tool-query'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 type Props = {
   toolKey: ToolV2['key']
@@ -17,15 +17,28 @@ type Props = {
 const Workspace = ({ toolKey, toolSSRData }: Props) => {
   // 🔑 Every time ?creation= or ?task= changes, we want a fresh form
   const searchParams = useSearchParams()
-  const [presetKey] = useState(() => {
-    if (!searchParams) return 'default'
+  const [presetKey, setPresetKey] = useState<string>(() => {
     return (
-      searchParams.get('creation') ??
-      searchParams.get('task') ??
-      searchParams.get('lora') ??
+      searchParams?.get('creation') ??
+      searchParams?.get('task') ??
+      searchParams?.get('lora') ??
       'default'
     )
   })
+
+  // Lock in the preset key on first mount only — don’t update reactively
+  const hasLockedKey = useRef(false)
+  useEffect(() => {
+    if (!hasLockedKey.current) {
+      const newKey =
+        searchParams?.get('creation') ??
+        searchParams?.get('task') ??
+        searchParams?.get('lora') ??
+        'default'
+      setPresetKey(newKey)
+      hasLockedKey.current = true
+    }
+  }, [searchParams])
 
   const { tool: toolClientData } = useToolQuery({
     key: toolKey,

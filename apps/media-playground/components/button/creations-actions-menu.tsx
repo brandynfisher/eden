@@ -123,7 +123,6 @@ const CreationActionsMenu = ({ creation, queryKey, className }: Props) => {
               >
                 <FileSlidersIcon className="mr-2 h-4 w-4" />
                 Use as Preset
-                {/*<DropdownMenuShortcut>⇧⌘U</DropdownMenuShortcut>*/}
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
