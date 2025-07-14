@@ -1,1 +1,1 @@
-export type ViewMode = 'chat' | 'creations' | 'tasks' | 'settings' | 'memory'
+export type ViewMode = 'chat' | 'creations' | 'tasks' | 'settings' | 'memories'

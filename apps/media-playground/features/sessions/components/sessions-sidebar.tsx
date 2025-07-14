@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
+  BrainIcon,
   CheckIcon,
   ClockIcon,
   EditIcon,
@@ -380,6 +381,22 @@ const NavigationButtons: FC<{
         >
           <ClockIcon className="size-4" />
           <span>Tasks</span>
+        </Button>
+      )}
+
+      {isPreviewUser && (
+        <Button
+          variant={viewMode === 'memories' ? 'outline' : 'default'}
+          onClick={() => handleNavClick('memories')}
+          className={cn(
+            'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
+            viewMode === 'memories'
+              ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
+              : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+          )}
+        >
+          <BrainIcon className="size-4" />
+          <span>Memories</span>
         </Button>
       )}
 
