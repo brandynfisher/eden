@@ -13,12 +13,6 @@ export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
   results,
   platform,
 }) => {
-  console.log(
-    '***debug*** SocialPostEmbed - platform:',
-    platform,
-    'results:',
-    results,
-  )
 
   const platformName =
     platform === 'discord'
