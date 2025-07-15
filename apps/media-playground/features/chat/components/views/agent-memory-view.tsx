@@ -48,7 +48,7 @@ const AgentMemoryView: FC<{
       if (agent && authUser) {
         try {
           const response = await axios.get(`/api/agents/${agent._id}/memory`)
-          
+
           form.setValue('content', response.data.content || '')
           setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
         } catch (error) {
@@ -58,7 +58,7 @@ const AgentMemoryView: FC<{
         }
       }
     }
-    
+
     loadMemoryData()
   }, [agent?._id, authUser, form])
 
@@ -73,7 +73,7 @@ const AgentMemoryView: FC<{
       toast.success('Memory saved successfully')
     } catch (error) {
       console.error('Error saving memory for agent:', agent._id, error)
-      
+
       const getErrorMessage = (error: unknown): string => {
         if (axios.isAxiosError(error)) {
           const status = error.response?.status
@@ -90,88 +90,89 @@ const AgentMemoryView: FC<{
         }
         return 'An unexpected error occurred. Please try again.'
       }
-      
+
       toast.error(getErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
   }
 
-
   return (
     <div className="flex-1 overflow-auto bg-accent p-6">
       <div className="mx-auto max-w-3xl">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold">Manage this agent's memories</h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              Store and manage memories for your conversations with {agent.name}
-            </p>
-          </div>
-
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-6"
-            >
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Persistent Agent/User Memory</FormLabel>
-                    <FormControl>
-                      <AutosizeTextarea
-                        placeholder="Enter memories, context, or notes about your conversations with this agent..."
-                        className="min-h-[300px] resize-y"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Unabsorbed Directives Display */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Recent Directives (will be automatically integrated into persistent memory soon)
-                </label>
-                <div 
-                  className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm resize-none"
-                  style={{ 
-                    minHeight: unabsorbedDirectives.length > 0 ? 'auto' : '3rem',
-                    height: unabsorbedDirectives.length > 0 ? 'auto' : '3rem'
-                  }}
-                >
-                  {unabsorbedDirectives.length > 0 ? (
-                    unabsorbedDirectives.map((directive, index) => (
-                      <div key={index} className="mb-2 last:mb-0">
-                        <span className="text-muted-foreground">•</span> {directive}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-muted-foreground"> </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="min-w-[100px]"
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    'Save'
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold">Manage this agent's memories</h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            Store and manage memories for your conversations with {agent.name}
+          </p>
         </div>
+
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Persistent Agent/User Memory</FormLabel>
+                  <FormControl>
+                    <AutosizeTextarea
+                      placeholder="Enter memories, context, or notes about your conversations with this agent..."
+                      className="min-h-[300px] resize-y"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Unabsorbed Directives Display */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Recent Directives (will be automatically integrated into
+                persistent memory soon)
+              </label>
+              <div
+                className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm resize-none"
+                style={{
+                  minHeight: unabsorbedDirectives.length > 0 ? 'auto' : '3rem',
+                  height: unabsorbedDirectives.length > 0 ? 'auto' : '3rem',
+                }}
+              >
+                {unabsorbedDirectives.length > 0 ? (
+                  unabsorbedDirectives.map((directive, index) => (
+                    <div key={index} className="mb-2 last:mb-0">
+                      <span className="text-muted-foreground">•</span>{' '}
+                      {directive}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-muted-foreground"> </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="min-w-[100px]"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Save'
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
+    </div>
   )
 }
 

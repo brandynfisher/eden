@@ -7,7 +7,7 @@ import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
-import { Button } from '@/components/ui/button'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { TaskResultToolArgs } from '@/features/chat/components/tools/task-result-tool'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
@@ -16,11 +16,9 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   CircleCheckIcon,
-  ComponentIcon,
   TriangleAlertIcon,
   WrenchIcon, // HourglassIcon,
 } from 'lucide-react'
-import Link from 'next/link'
 import React, { Suspense, useState } from 'react'
 
 export const ToolFallback: ToolCallContentPartComponent = ({
@@ -28,8 +26,28 @@ export const ToolFallback: ToolCallContentPartComponent = ({
   args,
   result,
 }) => {
-  const { status: toolStatus, error: toolError } = result as TaskResultToolArgs
+  const {
+    status: toolStatus,
+    error: toolError,
+    result: toolResults,
+  } = result as TaskResultToolArgs
   const [isCollapsed, setIsCollapsed] = useState(true)
+  const [selectedArgsIndex, setSelectedArgsIndex] = useState<number>(0) // 0 = main args, 1+ = subtool indices
+
+  // Extract subtool_calls from the first result if they exist
+  const subtoolCalls = toolResults?.[0]?.subtool_calls || []
+  const hasSubtools = subtoolCalls.length > 0
+
+  // Determine current args and tool name to display
+  const currentArgs =
+    selectedArgsIndex === 0
+      ? args
+      : subtoolCalls[selectedArgsIndex - 1]?.args || {}
+
+  // Filter out lora/lora2 from args if they exist (since we show them as ModelMiniCards)
+  const filteredArgs = { ...currentArgs }
+  if (currentArgs.lora) delete filteredArgs.lora
+  if (currentArgs.lora2) delete filteredArgs.lora2
 
   // Don't render cancelled tool calls
   if (toolStatus === 'cancelled') {
@@ -71,48 +89,74 @@ export const ToolFallback: ToolCallContentPartComponent = ({
           {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
         </TooltipIconButton>
       </div>
+
       {!isCollapsed && (
         <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none bg-popover/30">
-          {args.lora ? (
-            <Suspense fallback={<LoadingIndicator />}>
-              <ModelMiniCard modelId={args.lora} className="bg-popover">
-                <Button size="sm" variant="outline" asChild>
-                  <Link
-                    href={`/create/image/${toolName}?lora=${args.lora}`}
-                    className="ml-auto mr-2"
-                    scroll={false}
-                    shallow={true}
+          {hasSubtools && (
+            <div className="px-4 py-2 border-b border-border/20">
+              <ToggleGroup
+                type="single"
+                value={selectedArgsIndex.toString()}
+                onValueChange={value => {
+                  if (value) setSelectedArgsIndex(parseInt(value))
+                }}
+                className="flex flex-row items-center gap-2 justify-start"
+              >
+                <ToggleGroupItem
+                  value="0"
+                  variant="outline"
+                  size="sm"
+                  className="bg-white text-black border-gray-300 data-[state=on]:bg-gray-100 data-[state=on]:text-black hover:bg-gray-50 hover:text-black"
+                >
+                  {toolName}
+                </ToggleGroupItem>
+                {subtoolCalls.length > 0 && (
+                  <span className="text-muted-foreground text-xs px-1">→</span>
+                )}
+                {subtoolCalls.map((subtool, index) => (
+                  <ToggleGroupItem
+                    key={index}
+                    value={(index + 1).toString()}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white text-black border-gray-300 data-[state=on]:bg-gray-100 data-[state=on]:text-black hover:bg-gray-50 hover:text-black"
                   >
-                    <ComponentIcon className="mr-2 h-4 w-4" />
-                    Use
-                  </Link>
-                </Button>
-              </ModelMiniCard>
-            </Suspense>
-          ) : null}
-          {args.lora2 ? (
-            <Suspense fallback={<LoadingIndicator />}>
-              <ModelMiniCard modelId={args.lora2} className="bg-popover">
-                <Button size="sm" variant="outline" asChild>
-                  <Link
-                    href={`/create/image/${toolName}?lora2=${args.lora2}`}
-                    className="ml-auto mr-2"
-                    scroll={false}
-                    shallow={true}
-                  >
-                    <ComponentIcon className="mr-2 h-4 w-4" />
-                    Use
-                  </Link>
-                </Button>
-              </ModelMiniCard>
-            </Suspense>
-          ) : null}
+                    {subtool.tool}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          )}
           <ParameterTable
-            // cost={args.cost}
-            args={args}
+            // cost={filteredArgs.cost}
+            args={filteredArgs}
             hideHeader={true}
             className="w-auto"
           />
+
+          {(currentArgs.lora || currentArgs.lora2) && (
+            <div className="mt-4">
+              <div className="text-sm font-medium text-muted-foreground mb-2 px-1">
+                {currentArgs.lora && currentArgs.lora2 ? 'Loras' : 'Lora'}
+              </div>
+              {currentArgs.lora ? (
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ModelMiniCard
+                    modelId={currentArgs.lora}
+                    className="bg-popover mb-2"
+                  />
+                </Suspense>
+              ) : null}
+              {currentArgs.lora2 ? (
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ModelMiniCard
+                    modelId={currentArgs.lora2}
+                    className="bg-popover"
+                  />
+                </Suspense>
+              ) : null}
+            </div>
+          )}
         </div>
       )}
       {toolStatus === TaskV2Status.Failed ? (

@@ -263,12 +263,7 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      [
-        'profile',
-        'concepts',
-        'deployments',
-        'permissions',
-      ].includes(tabFromUrl)
+      ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
     ) {
       return tabFromUrl
     }
@@ -313,12 +308,7 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      [
-        'profile',
-        'concepts',
-        'deployments',
-        'permissions',
-      ].includes(tabFromUrl)
+      ['profile', 'concepts', 'deployments', 'permissions'].includes(tabFromUrl)
     ) {
       setActiveTab(tabFromUrl)
     }

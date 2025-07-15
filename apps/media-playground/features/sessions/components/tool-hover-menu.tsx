@@ -1,5 +1,6 @@
 'use client'
 
+import ModelMiniCard from '@/components/card/model-mini-card'
 import LoadingIndicator from '@/components/loading-indicator'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { Button } from '@/components/ui/button'
@@ -8,7 +9,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { cn } from '@/lib/utils'
+import { TaskV2Result } from '@edenlabs/eden-sdk'
 import { ChevronDownIcon, WrenchIcon } from 'lucide-react'
 import { Suspense, useState } from 'react'
 
@@ -16,10 +19,27 @@ type Props = {
   toolName: string
   args: Record<string, unknown>
   className?: string
+  result?: TaskV2Result[]
 }
 
-export const ToolHoverMenu = ({ toolName, args, className }: Props) => {
+export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [selectedArgsIndex, setSelectedArgsIndex] = useState<number>(0) // 0 = main args, 1+ = subtool indices
+
+  // Extract subtool_calls from the first result if they exist
+  const subtoolCalls = result?.[0]?.subtool_calls || []
+  const hasSubtools = subtoolCalls.length > 0
+
+  // Determine current args to display
+  const currentArgs =
+    selectedArgsIndex === 0
+      ? args
+      : subtoolCalls[selectedArgsIndex - 1]?.args || {}
+
+  // Filter out lora/lora2 from args if they exist (since we show them as ModelMiniCards)
+  const filteredArgs = { ...currentArgs }
+  if (currentArgs.lora) delete filteredArgs.lora
+  if (currentArgs.lora2) delete filteredArgs.lora2
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -39,9 +59,74 @@ export const ToolHoverMenu = ({ toolName, args, className }: Props) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80 max-w-[90vw]" align="end">
         <div className="p-2">
+          {/* SUBTOOL NAVIGATION */}
+          {hasSubtools && (
+            <div className="mb-3 p-2 border-b border-border/20">
+              <ToggleGroup
+                type="single"
+                value={selectedArgsIndex.toString()}
+                onValueChange={value => {
+                  if (value) setSelectedArgsIndex(parseInt(value))
+                }}
+                className="flex flex-row items-center gap-2 justify-start"
+              >
+                <ToggleGroupItem
+                  value="0"
+                  variant="outline"
+                  size="sm"
+                  className="bg-white text-black border-gray-300 data-[state=on]:bg-gray-100 data-[state=on]:text-black hover:bg-gray-50 hover:text-black"
+                >
+                  {toolName}
+                </ToggleGroupItem>
+                {subtoolCalls.length > 0 && (
+                  <span className="text-muted-foreground text-xs px-1">→</span>
+                )}
+                {subtoolCalls.map((subtool, index) => (
+                  <ToggleGroupItem
+                    key={index}
+                    value={(index + 1).toString()}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white text-black border-gray-300 data-[state=on]:bg-gray-100 data-[state=on]:text-black hover:bg-gray-50 hover:text-black"
+                  >
+                    {subtool.tool}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
+          )}
+
           <Suspense fallback={<LoadingIndicator />}>
-            <ParameterTable args={args} hideHeader={true} className="w-auto" />
+            <ParameterTable
+              args={filteredArgs}
+              hideHeader={true}
+              className="w-auto"
+            />
           </Suspense>
+
+          {(currentArgs.lora || currentArgs.lora2) && (
+            <div className="mt-4">
+              <div className="text-sm font-medium text-muted-foreground mb-2 px-1">
+                {currentArgs.lora && currentArgs.lora2 ? 'Loras' : 'Lora'}
+              </div>
+              {currentArgs.lora ? (
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ModelMiniCard
+                    modelId={currentArgs.lora}
+                    className="bg-popover mb-2"
+                  />
+                </Suspense>
+              ) : null}
+              {currentArgs.lora2 ? (
+                <Suspense fallback={<LoadingIndicator />}>
+                  <ModelMiniCard
+                    modelId={currentArgs.lora2}
+                    className="bg-popover"
+                  />
+                </Suspense>
+              ) : null}
+            </div>
+          )}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
