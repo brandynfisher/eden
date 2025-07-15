@@ -22,10 +22,7 @@ import {
 } from '@/components/ui/table'
 import UserAvatar from '@/components/user/user-avatar'
 import { useUserTriggersQuery } from '@/hooks/query/use-user-triggers-query'
-import { useMe } from '@/hooks/use-me'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
-import { useAuth } from '@clerk/nextjs'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import {
   AlertCircle,
   Calendar,
@@ -44,12 +41,6 @@ const TasksPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [agentFilter, setAgentFilter] = useState<string>('')
   const router = useRouter()
-  const { isSignedIn } = useAuth()
-  const { user } = useMe({
-    isAuthenticated: !!isSignedIn,
-  })
-
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   const { triggers, isPending, isError, error } = useUserTriggersQuery()
 
@@ -117,28 +108,6 @@ const TasksPage = () => {
       return bDate.getTime() - aDate.getTime()
     })
   }, [triggers, searchTerm, statusFilter, agentFilter])
-
-  // If user doesn't have preview flag, show access denied
-  if (!isPreviewUser) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold">Tasks</h2>
-          <p className="text-muted-foreground">
-            Manage all your scheduled tasks across agents
-          </p>
-        </div>
-        <Card>
-          <CardContent className="flex items-center justify-center h-64">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <AlertCircle className="h-5 w-5" />
-              <p>This feature is not available for your account.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
 
   if (isPending) {
     return (

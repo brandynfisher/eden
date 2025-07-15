@@ -14,7 +14,14 @@ import { useMe } from '@/hooks/use-me'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@clerk/nextjs'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
-import { ChevronDownIcon, CircleUserIcon, CreditCardIcon, KeyIcon, ListIcon, RadioIcon } from 'lucide-react'
+import {
+  ChevronDownIcon,
+  CircleUserIcon,
+  CreditCardIcon,
+  KeyIcon,
+  ListIcon,
+  RadioIcon,
+} from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 
 const SettingsNav = () => {
@@ -50,14 +57,16 @@ const SettingsNav = () => {
       section: 'General',
       items: [
         { href: '/settings/account', label: 'Account', icon: CircleUserIcon },
-        { href: '/settings/subscription', label: 'Subscription', icon: CreditCardIcon },
+        {
+          href: '/settings/subscription',
+          label: 'Subscription',
+          icon: CreditCardIcon,
+        },
       ],
     },
     {
       section: 'Developers',
-      items: [
-        { href: '/settings/api', label: 'API Keys', icon: KeyIcon },
-      ],
+      items: [{ href: '/settings/api', label: 'API Keys', icon: KeyIcon }],
     },
     ...(isPreviewUser
       ? [
@@ -65,11 +74,22 @@ const SettingsNav = () => {
             section: 'Agents',
             items: [
               { href: '/settings/tasks', label: 'Tasks', icon: ListIcon },
-              { href: '/settings/deployments', label: 'Deployments', icon: RadioIcon },
+              {
+                href: '/settings/deployments',
+                label: 'Deployments',
+                icon: RadioIcon,
+              },
             ],
           },
         ]
-      : []),
+      : [
+          {
+            section: 'Agents',
+            items: [
+              { href: '/settings/tasks', label: 'Tasks', icon: ListIcon },
+            ],
+          },
+        ]),
   ]
 
   return (
@@ -99,7 +119,7 @@ const SettingsNav = () => {
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
                   {section.section}
                 </div>
-                {section.items.map((item) => {
+                {section.items.map(item => {
                   const Icon = item.icon
                   return (
                     <DropdownMenuItem

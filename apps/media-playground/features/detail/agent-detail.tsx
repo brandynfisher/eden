@@ -162,10 +162,6 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
   }, [filterMode, searchParams])
 
   const feedSectionRef = useRef<HTMLDivElement>(null)
-  //const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
-  //  FeatureFlag.FeatureDeployments,
-  //)
-
   const { agent: agentClientData } = useAgentQuery({
     key: id,
     initialData: agentSSRData

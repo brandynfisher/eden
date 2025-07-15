@@ -56,9 +56,6 @@ const AgentActionsMenu = ({
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  //const isFeatureDeploymentsEnabled = user?.featureFlags?.includes(
-  //  FeatureFlag.FeatureDeployments,
-  //)
 
   // Include pathname in feedId to differentiate between same queries in different routes
   const feedId = useMemo(
