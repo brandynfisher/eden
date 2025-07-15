@@ -18,7 +18,7 @@ import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent } from '@edenlabs/eden-sdk'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   FC,

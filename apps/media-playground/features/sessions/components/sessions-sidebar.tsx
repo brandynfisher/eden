@@ -557,7 +557,9 @@ const MainLeft = ({
                         session.title !== '' &&
                         session.title !== 'Untitled') ||
                         // Include trigger sessions even without titles
-                        !!session.trigger),
+                        !!session.trigger) &&
+                      // For chat mode, only show sessions with one agent or less
+                      (!isChat || !session.agents || session.agents.length <= 1),
                   )
                   .map(session => (
                     <SessionListItem
