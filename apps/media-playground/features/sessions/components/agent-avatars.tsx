@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { cn } from '@/lib/utils'
 import { FC } from 'react'
 
 interface AgentAvatarsProps {
@@ -12,17 +12,14 @@ interface AgentAvatarsProps {
   className?: string
 }
 
-export const AgentAvatars: FC<AgentAvatarsProps> = ({
-  agents,
-  className,
-}) => {
+export const AgentAvatars: FC<AgentAvatarsProps> = ({ agents, className }) => {
   const totalAgents = agents.length
-  
+
   // Discord-style logic
   if (totalAgents === 0) {
     return null
   }
-  
+
   if (totalAgents === 1) {
     // Single large avatar
     const agent = agents[0]
@@ -46,7 +43,7 @@ export const AgentAvatars: FC<AgentAvatarsProps> = ({
       </div>
     )
   }
-  
+
   if (totalAgents >= 4) {
     // Show "x Members" text for many agents
     return (
@@ -65,7 +62,9 @@ export const AgentAvatars: FC<AgentAvatarsProps> = ({
             ) : (
               <div className="h-full w-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
                 <span className="font-medium text-white text-[8px]">
-                  {(agents[0].name || agents[0].username || '?')[0].toUpperCase()}
+                  {(agents[0].name ||
+                    agents[0].username ||
+                    '?')[0].toUpperCase()}
                 </span>
               </div>
             )}
@@ -77,10 +76,10 @@ export const AgentAvatars: FC<AgentAvatarsProps> = ({
       </div>
     )
   }
-  
+
   // 2-3 agents: diagonal overlapping circles
   const displayAgents = agents.slice(0, 3)
-  
+
   return (
     <div className={cn('flex items-center', className)}>
       <div className="relative w-8 h-8 flex-shrink-0">
@@ -90,9 +89,9 @@ export const AgentAvatars: FC<AgentAvatarsProps> = ({
             { top: '12px', left: '12px', size: 'h-5 w-5' }, // Bottom-right
             { top: '6px', left: '6px', size: 'h-4 w-4' }, // Center (for 3rd agent)
           ]
-          
+
           const position = positions[index]
-          
+
           return (
             <div
               key={agent._id}
@@ -100,10 +99,10 @@ export const AgentAvatars: FC<AgentAvatarsProps> = ({
                 'absolute rounded-full bg-muted border border-background overflow-hidden',
                 position.size,
               )}
-              style={{ 
-                top: position.top, 
-                left: position.left, 
-                zIndex: 10 - index 
+              style={{
+                top: position.top,
+                left: position.left,
+                zIndex: 10 - index,
               }}
             >
               {agent.userImage ? (

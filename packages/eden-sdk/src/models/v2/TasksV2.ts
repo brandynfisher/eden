@@ -215,6 +215,11 @@ export type TaskV2Result = {
     isolated_vocals?: MediaOutput[]
   }
   metadata?: string | null
+  subtool_calls?: Array<{
+    tool: string
+    args: any
+    output?: any
+  }>
 }
 
 export type TaskV2 = {

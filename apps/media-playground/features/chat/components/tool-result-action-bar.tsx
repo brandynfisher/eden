@@ -204,6 +204,7 @@ export const ToolResultActionBar = () => {
             key={`${toolCall.id}-${index}`}
             toolName={toolCall.tool!}
             args={toolCall.args}
+            result={toolCall.result}
           />
         ))}
         <div
