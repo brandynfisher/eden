@@ -376,7 +376,7 @@ const DeploymentsPage = () => {
                             size="sm"
                             onClick={() =>
                               router.push(
-                                `/chat2/${deployment.agent.username}?page=settings&tab=deployments`,
+                                `/chat/${deployment.agent.username}?page=settings&tab=deployments`,
                               )
                             }
                             className="h-8 w-8 p-0"

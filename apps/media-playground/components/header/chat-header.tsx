@@ -1,4 +1,4 @@
-// Chat-specific header for /chat2 route that combines main navbar with agent bar
+// Chat-specific header for /chat route that combines main navbar with agent bar
 import TaskStatusIndicator from '@/components/alert/task-status-indicator'
 import ErrorBoundary from '@/components/error-boundary'
 import MannaBalance from '@/components/header/manna-balance'

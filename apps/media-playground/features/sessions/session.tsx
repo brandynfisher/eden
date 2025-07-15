@@ -36,7 +36,7 @@ const Session = ({
   const sessionId = optimisticSessionId || (params?.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
-  const isChat2Route = pathname?.startsWith('/chat2')
+  const ischatRoute = pathname?.startsWith('/chat')
   const [cancelledNotice, setCancelledNotice] = useState(false)
 
   // Error handling
@@ -354,7 +354,7 @@ const Session = ({
         )}
       >
         {/* Session info row - sticky at the top */}
-        {session?.agents && session.agents.length > 0 && !isChat2Route && (
+        {session?.agents && session.agents.length > 0 && !ischatRoute && (
           <SessionInfoRow
             agents={session.agents}
             title={session.title}

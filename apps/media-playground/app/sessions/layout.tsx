@@ -9,28 +9,12 @@ import {
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
-import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
-import { useRouter } from 'next/navigation'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const { user, isSignedIn } = useAuthState()
-  const router = useRouter()
-
-  // Check if user has sessions_v2 feature flag
-  useEffect(() => {
-    if (
-      isSignedIn &&
-      user &&
-      !user.featureFlags?.includes(FeatureFlag.SessionsV2)
-    ) {
-      router.push('/')
-    }
-  }, [isSignedIn, user, router])
 
   const handleChatClick = () => {
     // Check if we're on mobile (window width < 768px for md breakpoint)
