@@ -130,31 +130,23 @@ const AgentMemoryView: FC<{
               )}
             />
 
-            {/* Unabsorbed Directives Display */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Recent Directives (will be automatically integrated into
-                persistent memory soon)
-              </label>
-              <div
-                className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm resize-none"
-                style={{
-                  minHeight: unabsorbedDirectives.length > 0 ? 'auto' : '3rem',
-                  height: unabsorbedDirectives.length > 0 ? 'auto' : '3rem',
-                }}
-              >
-                {unabsorbedDirectives.length > 0 ? (
-                  unabsorbedDirectives.map((directive, index) => (
+            {/* Unabsorbed Directives Display - Only show if there are directives */}
+            {unabsorbedDirectives.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Recent Directives (will be automatically integrated into
+                  persistent memory soon)
+                </label>
+                <div className="w-full rounded-md border border-input bg-muted px-3 py-2 text-sm resize-none">
+                  {unabsorbedDirectives.map((directive, index) => (
                     <div key={index} className="mb-2 last:mb-0">
                       <span className="text-muted-foreground">•</span>{' '}
                       {directive}
                     </div>
-                  ))
-                ) : (
-                  <div className="text-muted-foreground"> </div>
-                )}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex justify-end">
               <Button
