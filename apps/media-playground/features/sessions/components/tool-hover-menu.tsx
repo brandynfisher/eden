@@ -57,8 +57,13 @@ export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
           <ChevronDownIcon className="size-3" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 max-w-[90vw]" align="end">
-        <div className="p-2">
+      <DropdownMenuContent 
+        className="w-80 max-w-[90vw] max-h-[60vh] md:max-h-[80vh]" 
+        align="end"
+        sideOffset={5}
+        forceMount
+      >
+        <div className="p-2 overflow-y-auto overscroll-contain max-h-[calc(60vh-1rem)] md:max-h-[calc(80vh-1rem)] -webkit-overflow-scrolling-touch">
           {/* SUBTOOL NAVIGATION */}
           {hasSubtools && (
             <div className="mb-3 p-2 border-b border-border/20">
@@ -68,7 +73,7 @@ export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
                 onValueChange={value => {
                   if (value) setSelectedArgsIndex(parseInt(value))
                 }}
-                className="flex flex-row items-center gap-2 justify-start"
+                className="flex flex-wrap items-center gap-2 justify-start"
               >
                 <ToggleGroupItem
                   value="0"
