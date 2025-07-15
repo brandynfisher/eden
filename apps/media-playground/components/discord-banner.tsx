@@ -127,7 +127,7 @@ const DiscordBanner: React.FC = () => {
                 size="sm"
                 variant="ghost"
                 className="text-white/70 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-200"
-                // onClick={handleDismiss}
+                onClick={handleDismiss}
               >
                 <X size={20} />
               </Button>

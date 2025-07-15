@@ -238,7 +238,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
                     </span>
                   )}
                   {isFromTrigger && agents.length <= 2 && (
-                    <span>Task Session</span>
+                    <span>Scheduled Task</span>
                   )}
                 </div>
               )}
