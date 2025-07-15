@@ -388,13 +388,6 @@ export const createAgentTrigger = async (
     posting_instructions,
   } = request.body as AgentsCreateTriggerArguments
   const currentUserId = request.user.userId
-
-  if (!request.user.featureFlags.includes(FeatureFlag.Preview)) {
-    return reply.status(401).send({
-      error: 'You are not authorized to use this feature.',
-    })
-  }
-
   const agent = await Agent.findById(agentId)
 
   if (!agent) {
@@ -1154,7 +1147,7 @@ export const getAgentMemory = async (
     if (memoryRecord?.unabsorbed_directive_ids?.length > 0) {
       const sessionMemoryCollection =
         server.mongoose.connection.db.collection('memory_sessions')
-      const directiveIds = memoryRecord.unabsorbed_directive_ids.map(
+      const directiveIds = memoryRecord?.unabsorbed_directive_ids.map(
         (id: any) => new server.mongoose.Types.ObjectId(id),
       )
 

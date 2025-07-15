@@ -370,7 +370,7 @@ const NavigationButtons: FC<{
         <span>Creations</span>
       </Button>
 
-      {isAgentOwner(agent, userId) && isPreviewUser && (
+      {isAgentOwner(agent, userId) && (
         <Button
           variant={viewMode === 'tasks' ? 'outline' : 'default'}
           onClick={() => handleNavClick('tasks')}
@@ -559,7 +559,9 @@ const MainLeft = ({
                         // Include trigger sessions even without titles
                         !!session.trigger) &&
                       // For chat mode, only show sessions with one agent or less
-                      (!isChat || !session.agents || session.agents.length <= 1),
+                      (!isChat ||
+                        !session.agents ||
+                        session.agents.length <= 1),
                   )
                   .map(session => (
                     <SessionListItem
