@@ -85,11 +85,11 @@ const ChatHeader = ({
                   className="object-cover"
                 />
                 <AvatarFallback className="bg-muted text-sm font-medium">
-                  {agent.name?.slice(0, 2).toUpperCase()}
+                  {agent.username?.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <span className="font-semibold text-base text-foreground truncate max-w-[200px]">
-                {agent.name}
+                {agent.username}
               </span>
               <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             </button>

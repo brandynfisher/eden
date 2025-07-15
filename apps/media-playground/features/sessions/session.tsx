@@ -278,7 +278,11 @@ const Session = ({
             (m.role === 'assistant' &&
               m.tool_calls &&
               m.tool_calls.length > 0) ||
-            (m.role === 'eden' && m.eden_message_data)),
+            (m.role === 'eden' && m.eden_message_data)) &&
+          // Filter out eden messages with agent_add and agent_remove types in chat routes
+          !(ischatRoute && m.role === 'eden' && m.eden_message_data && 
+            (m.eden_message_data.message_type === 'agent_add' || 
+             m.eden_message_data.message_type === 'agent_remove')),
       ) ?? []
 
     if (sessionId === 'new' && isSessionLoading) {
@@ -304,7 +308,7 @@ const Session = ({
     }
 
     return existingMessages
-  }, [session?.messages, sessionId, isSessionLoading, optimisticMessages])
+  }, [session?.messages, sessionId, isSessionLoading, optimisticMessages, ischatRoute])
 
   const messageGroups = useMemo(
     () => groupConsecutiveMessages(filteredMessages),
