@@ -8,10 +8,9 @@ import {
   listSessions,
   renameSession,
 } from '../../controllers/v2/sessionControllerV2'
-import { hasFeatureFlag, isAuth } from '../../middleware/authMiddleware'
+import { isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import {
-  FeatureFlag,
   SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
   SessionsV2GetArguments,
@@ -30,7 +29,6 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     reply: FastifyReply,
   ) => {
     await isAuth(server, request, reply)
-    await hasFeatureFlag(request, reply, FeatureFlag.SessionsV2)
   }
 
   server.post<{

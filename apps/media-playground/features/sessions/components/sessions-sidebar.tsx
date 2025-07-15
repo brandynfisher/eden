@@ -40,6 +40,7 @@ interface SessionListItemProps {
   isActive: boolean
   onItemClick?: () => void
   isFromTrigger?: boolean
+  isChat?: boolean
   agents?: Array<{
     _id: string
     username: string
@@ -54,6 +55,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   isActive,
   onItemClick,
   isFromTrigger = false,
+  isChat = false,
   agents = [],
 }) => {
   const {
@@ -212,7 +214,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
             onClick={onItemClick}
             disabled={isEditing}
           >
-            {agents.length > 0 && (
+            {!isChat && agents.length > 0 && (
               <AgentAvatars agents={agents} className="shrink-0" />
             )}
             {isFromTrigger && !agents.length && (
@@ -290,7 +292,7 @@ function isNewSessionRoute(
   params: Record<string, string | string[]>,
   isChat?: boolean,
 ): boolean {
-  // For chat2: /chat2/[agentId] (no sessionId)
+  // For chat: /chat/[agentId] (no sessionId)
   if (isChat) {
     return !!params.agentId && !params.sessionId && !params.id
   }
@@ -313,7 +315,7 @@ const TopLeft: FC<{
     if (isChat && agentId) {
       // Switch to chat mode first, then navigate
       onViewModeChange?.('chat')
-      router.push(`/chat2/${agentId}`, { scroll: false })
+      router.push(`/chat/${agentId}`, { scroll: false })
     } else {
       router.push('/sessions/new', { scroll: false })
     }
@@ -567,13 +569,14 @@ const MainLeft = ({
                       }
                       isActive={session._id === currentSessionId}
                       isFromTrigger={!!session.trigger}
+                      isChat={isChat}
                       agents={session.agents}
                       onItemClick={() => {
                         onItemClick?.()
                         if (isChat && agentId) {
                           // Switch to chat mode first, then navigate to session
                           onViewModeChange?.('chat')
-                          router.push(`/chat2/${agentId}/${session._id}`, {
+                          router.push(`/chat/${agentId}/${session._id}`, {
                             scroll: false,
                           })
                         } else {

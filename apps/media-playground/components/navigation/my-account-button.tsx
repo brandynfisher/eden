@@ -201,6 +201,12 @@ const AccountDropdown = () => {
             <span>Agents</span>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <Link href="/sessions">
+            <MessageSquareIcon className="mr-2 h-4 w-4" />
+            <span>Sessions</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {isPreviewUser && (
           <>
