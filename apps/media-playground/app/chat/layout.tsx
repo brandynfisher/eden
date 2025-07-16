@@ -107,10 +107,6 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   // Redirect if not owner and trying to access restricted views
   useEffect(() => {
     if (agent && user && !isOwner && viewMode === 'settings') {
-      console.log(
-        '***debug*** Redirecting non-owner from restricted view:',
-        viewMode,
-      )
       router.push(`/chat/${agentId}`)
     }
   }, [agent, user, isOwner, viewMode, agentId, router])

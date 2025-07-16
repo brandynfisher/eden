@@ -41,6 +41,7 @@ interface SessionListItemProps {
   onItemClick?: () => void
   isFromTrigger?: boolean
   isChat?: boolean
+  agentId?: string
   agents?: Array<{
     _id: string
     username: string
@@ -56,32 +57,60 @@ const SessionListItem: FC<SessionListItemProps> = ({
   onItemClick,
   isFromTrigger = false,
   isChat = false,
+  agentId,
   agents = [],
 }) => {
+  const router = useRouter()
+  const params = useParams()
   const {
     renameSession: renameSessionQuery,
     deleteSession: deleteSessionQuery,
   } = useSessionListQuery({
     enabled: false,
+    agent_id: agentId,
   })
 
   const [isEditing, setIsEditing] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [isRenaming, setIsRenaming] = useState(false)
+  const [optimisticTitle, setOptimisticTitle] = useState(title)
+  const [isDeleting, setIsDeleting] = useState(false)
   const isSubmittingRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Update optimistic title when title prop changes
+  useEffect(() => {
+    setOptimisticTitle(title)
+  }, [title])
+
   const deleteSession = async (sessionId: string) => {
+    const currentSessionId = (params?.id as string) || (params?.sessionId as string)
+    const isCurrentSession = sessionId === currentSessionId
+    
     try {
-      await axios.delete(`/api/sessions/${sessionId}`)
-
+      setIsDeleting(true)
+      
+      // Optimistically remove from cache and redirect immediately
       await deleteSessionQuery(sessionId)
+      
+      // If deleting current session, redirect to new session
+      if (isCurrentSession) {
+        if (isChat && params?.agentId) {
+          router.push(`/chat/${params.agentId}`, { scroll: false })
+        } else {
+          router.push('/sessions/new', { scroll: false })
+        }
+      }
 
+      // Show immediate feedback
       toast.success('Session deleted', {
         description: 'Your session has been deleted.',
         dismissible: true,
         richColors: true,
       })
+
+      // Make API call in the background
+      await axios.delete(`/api/sessions/${sessionId}`)
     } catch (error) {
       console.error(error)
       toast.error('Failed to delete session', {
@@ -89,30 +118,44 @@ const SessionListItem: FC<SessionListItemProps> = ({
         dismissible: true,
         richColors: true,
       })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
   const renameSession = useCallback(
-    async (sessionId: string, title: string) => {
-      if (!title) {
+    async (sessionId: string, newTitle: string) => {
+      if (!newTitle) {
         setIsEditing(false)
         return
       }
+      
+      const originalTitle = optimisticTitle
+      
       try {
         setIsRenaming(true)
-        await axios.patch(`/api/sessions/${sessionId}`, {
-          title,
-        })
+        
+        // Optimistically update the title immediately
+        setOptimisticTitle(newTitle)
+        await renameSessionQuery(sessionId, newTitle)
 
-        await renameSessionQuery(sessionId, title)
-
+        // Show immediate feedback
         toast.success('Session renamed', {
           description: 'Your session has been renamed.',
           dismissible: true,
           richColors: true,
         })
+
+        // Make API call in the background
+        await axios.patch(`/api/sessions/${sessionId}`, {
+          title: newTitle,
+        })
       } catch (error) {
         console.error(error)
+        
+        // Rollback optimistic update on error
+        setOptimisticTitle(originalTitle)
+        
         toast.error('Failed to rename session', {
           description: 'Please try again later.',
           dismissible: true,
@@ -123,7 +166,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
         setIsEditing(false)
       }
     },
-    [],
+    [optimisticTitle, renameSessionQuery],
   )
 
   const handleRenameSubmit = useCallback(
@@ -222,7 +265,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
             )}
             <div className="min-w-0 flex-1">
               <div className="overflow-hidden whitespace-nowrap text-ellipsis">
-                {title || 'Untitled'}
+                {optimisticTitle || 'Untitled'}
               </div>
               {(agents.length > 2 || isFromTrigger) && (
                 <div className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-1">
@@ -238,7 +281,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
                     </span>
                   )}
                   {isFromTrigger && agents.length <= 2 && (
-                    <span>Task Session</span>
+                    <span>Scheduled Task</span>
                   )}
                 </div>
               )}
@@ -255,8 +298,13 @@ const SessionListItem: FC<SessionListItemProps> = ({
               size="icon"
               className="shrink-0 h-7 w-7 mr-1 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-opacity"
               onClick={e => e.stopPropagation()}
+              disabled={isDeleting}
             >
-              <MoreHorizontal className="h-4 w-4" />
+              {isDeleting ? (
+                <LoadingIndicator className="h-4 w-4 animate-spin" />
+              ) : (
+                <MoreHorizontal className="h-4 w-4" />
+              )}
               <span className="sr-only">Session Actions</span>
             </Button>
           </DropdownMenuTrigger>
@@ -265,8 +313,9 @@ const SessionListItem: FC<SessionListItemProps> = ({
               className="flex items-center gap-2"
               onSelect={() => {
                 setIsEditing(true)
-                setNewTitle(title || '')
+                setNewTitle(optimisticTitle || '')
               }}
+              disabled={isDeleting}
             >
               <PencilIcon className="size-4" />
               Rename
@@ -277,6 +326,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
                 e.preventDefault()
                 deleteSession(id)
               }}
+              disabled={isDeleting}
             >
               <TrashIcon className="size-4" />
               Delete
@@ -574,6 +624,7 @@ const MainLeft = ({
                       isActive={session._id === currentSessionId}
                       isFromTrigger={!!session.trigger}
                       isChat={isChat}
+                      agentId={agentId}
                       agents={session.agents}
                       onItemClick={() => {
                         onItemClick?.()

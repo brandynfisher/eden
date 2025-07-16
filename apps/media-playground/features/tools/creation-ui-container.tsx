@@ -129,8 +129,6 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
     return cost <= balance
   }, [cost, balance])
 
-  // console.log("***debug***", { cost, hasEnoughBalance })
-
   // Add scroll to error effect
   useEffect(() => {
     const errors = form.formState.errors
@@ -194,19 +192,15 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
     const { makePublic, ...args } = formData as FormData & {
       makePublic?: boolean
     }
-    // console.log("***debug***", 'onSubmit', formData)
-    // return
 
     setIsSubmitting(true)
 
     try {
-      const response = await axios.post('/api/tasks/create', {
+      await axios.post('/api/tasks/create', {
         tool: tool.key,
         args: args,
         makePublic: makePublic,
       })
-
-      console.log('***debug***', { response })
 
       toast.success(`Task submitted`, {
         description: (

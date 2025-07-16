@@ -81,19 +81,6 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
   const isSocialPost = !!postToolConfig
   const isSocialContent = !!contentToolConfig
 
-  console.log(
-    '***debug*** Sessions TaskResultTool - tool:',
-    tool,
-    'isSocialPost:',
-    isSocialPost,
-    'isSocialContent:',
-    isSocialContent,
-    'postToolConfig:',
-    postToolConfig,
-    'contentToolConfig:',
-    contentToolConfig,
-  )
-
   // Check if tool is completed with displayable results
   const hasDisplayableResults =
     toolResults &&

@@ -31,36 +31,20 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Check if username matches the required pattern
-  const isValidPattern = /^[a-z0-9_]+(?:-[a-z0-9_]+)*$/.test(username)
-  if (!isValidPattern) {
-    return new NextResponse(
-      JSON.stringify({
-        message:
-          'Username must contain only lowercase letters, numbers, underscores and dashes',
-        available: false,
-      }),
-      {
-        status: 400,
-      },
-    )
-  }
-
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken || undefined,
     })
 
-    // Try to get an agent with this username
-    // If it exists, username is taken. If it doesn't exist (404), it's available
+    // Check if username exists in users table
     try {
-      const res = await eden.agents.get({
-        agentId: username,
+      const res = await eden.creators.get({
+        userId: username,
       })
 
       // If we get a response, the username is taken
-      if (res?.agent) {
+      if (res?.user) {
         return NextResponse.json({
           available: false,
           message: 'Username is already taken',

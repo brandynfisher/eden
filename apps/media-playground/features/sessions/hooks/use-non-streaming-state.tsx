@@ -1,12 +1,12 @@
-import { Message } from '@edenlabs/eden-sdk'
+import { Creator, Message, SessionV2 } from '@edenlabs/eden-sdk'
 import { useCallback, useEffect, useState } from 'react'
 
 interface UseNonStreamingStateProps {
   sessionId: string
-  session: any // Replace with proper session type
+  session?: SessionV2 // Made optional
   enabled: boolean
   onError: (error: string) => void
-  user: any // Replace with proper user type
+  user?: Creator // Made optional
   onSessionCreated?: (sessionId: string) => void
 }
 
@@ -71,11 +71,43 @@ export function useNonStreamingState({
     }
   }, [session?.messages, optimisticMessages, enabled])
 
+  // Handle focus/visibility changes to clear stale waiting states on mobile
+  useEffect(() => {
+    if (!enabled) return
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && waitingForResponse) {
+        if (session?.messages) {
+          const lastMessage = session.messages[session.messages.length - 1]
+          if (lastMessage && lastMessage.role === 'assistant') {
+            setWaitingForResponse(false)
+            setOptimisticMessages([])
+          }
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [enabled, waitingForResponse, session?.messages])
+
   const sendMessage = useCallback(
-    async (content: string, attachments?: string[], options?: { agent_ids?: string[] }) => {
-      if (!user) return
+    async (
+      content: string,
+      attachments?: string[],
+      options?: { agent_ids?: string[] },
+    ) => {
+      if (!user) {
+        console.log('***debug*** Non-streaming: no user, cannot send message')
+        return
+      }
 
       try {
+        console.log(
+          '***debug*** Non-streaming: sending message to /api/sessions/prompt',
+        )
         const response = await fetch('/api/sessions/prompt', {
           method: 'POST',
           headers: {
@@ -97,6 +129,9 @@ export function useNonStreamingState({
         if (!sessionId || sessionId.startsWith('temp-')) {
           const result = await response.json()
           if (result.session_id && onSessionCreated) {
+            console.log(
+              '***debug*** Non-streaming: session created, calling onSessionCreated',
+            )
             onSessionCreated(result.session_id)
           }
         }
@@ -107,10 +142,11 @@ export function useNonStreamingState({
         setOptimisticMessages([])
       }
     },
-    [user, sessionId, onError],
+    [user, sessionId, onError, onSessionCreated],
   )
 
   const clearNonStreamingState = useCallback(() => {
+    console.log('***debug*** Non-streaming: clearing all state')
     setWaitingForResponse(false)
     setOptimisticMessages([])
   }, [])

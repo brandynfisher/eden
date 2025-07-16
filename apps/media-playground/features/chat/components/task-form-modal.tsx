@@ -50,7 +50,7 @@ import { CronSchedule, Trigger } from '@edenlabs/eden-sdk'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { format } from 'date-fns'
+import { format, addMinutes } from 'date-fns'
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { FC } from 'react'
 import * as React from 'react'
@@ -158,6 +158,28 @@ export const taskSchema = z
         message: 'Please select a session to post to',
         path: ['postToSessionId'],
       })
+    }
+    
+    // Validate that tasks are scheduled at least 3 minutes in the future
+    if (data.repeat === ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT && data.startDate && data.time) {
+      const [hour, minute] = data.time.split(':').map(Number)
+      const scheduledDateTime = new Date(data.startDate)
+      scheduledDateTime.setHours(hour, minute, 0, 0)
+      
+      const minimumTime = addMinutes(new Date(), 3)
+      
+      if (scheduledDateTime < minimumTime) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Tasks must be scheduled at least 3 minutes in the future',
+          path: ['startDate'],
+        })
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Tasks must be scheduled at least 3 minutes in the future',
+          path: ['time'],
+        })
+      }
     }
   })
 
@@ -269,9 +291,9 @@ const TaskFormModal: FC<{
       instructions: '',
       sessionType: 'new',
       sessionId: undefined,
-      startDate: new Date(),
+      startDate: addMinutes(new Date(), 3),
       repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
-      time: currentTime,
+      time: format(addMinutes(new Date(), 3), 'HH:mm'),
       dayOfWeek: undefined,
       dayOfMonth: undefined,
       month: undefined,
@@ -332,13 +354,14 @@ const TaskFormModal: FC<{
   // Reset form when modal is closed
   React.useEffect(() => {
     if (!open) {
+      const minimumDateTime = addMinutes(new Date(), 3)
       form.reset({
         instructions: '',
         sessionType: 'new',
         sessionId: undefined,
-        startDate: new Date(),
+        startDate: minimumDateTime,
         repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
-        time: currentTime,
+        time: format(minimumDateTime, 'HH:mm'),
         dayOfWeek: undefined,
         dayOfMonth: undefined,
         month: undefined,
@@ -351,7 +374,7 @@ const TaskFormModal: FC<{
         enablePosting: false,
       })
     }
-  }, [open, form, currentTime, defaultTimezone])
+  }, [open, form, defaultTimezone])
 
   const onSubmit = async (values: TaskFormDto) => {
     try {
@@ -1173,6 +1196,7 @@ const TaskFormModal: FC<{
                                   mode="single"
                                   selected={field.value}
                                   onSelect={field.onChange}
+                                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                                   initialFocus
                                 />
                               </PopoverContent>

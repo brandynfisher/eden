@@ -15,15 +15,6 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
   platform,
   contentType,
 }) => {
-  console.log(
-    '***debug*** SocialContentEmbed - platform:',
-    platform,
-    'contentType:',
-    contentType,
-    'results:',
-    results,
-  )
-
   const platformName =
     platform === 'discord'
       ? 'Discord'

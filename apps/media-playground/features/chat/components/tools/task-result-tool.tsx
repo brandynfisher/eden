@@ -27,17 +27,6 @@ export const TaskResultTool = makeAssistantToolUI({
   toolName: 'task_result',
   render: ({ args, argsText, status, result }) => {
     const { tool, result: toolResults } = result as TaskResultToolArgs
-    // console.log('args', args)
-    console.log(
-      '***debug*** TaskResultTool - tool:',
-      tool,
-      'typeof tool:',
-      typeof tool,
-      'toolResults:',
-      toolResults,
-    )
-    console.log('***debug*** TaskResultTool - args:', args)
-    console.log('***debug*** TaskResultTool - result:', result)
 
     // Check if this is a Twitter tool and handle it specially
     const isTwitterTool =
@@ -52,15 +41,6 @@ export const TaskResultTool = makeAssistantToolUI({
     const isFarcasterPost = tool === 'farcaster_cast'
     const isSocialPost =
       isDiscordPost || isTelegramPost || isTweetPost || isFarcasterPost
-
-    console.log('***debug*** Social post check:', {
-      tool,
-      isDiscordPost,
-      isTelegramPost,
-      isTweetPost,
-      isFarcasterPost,
-      isSocialPost,
-    })
 
     // Check if tool is completed with displayable results
     const { status: toolStatus } = result as TaskResultToolArgs

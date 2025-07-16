@@ -77,8 +77,7 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
       setLastCheckedValue(value)
 
       try {
-        const isValidPattern = /^[a-z0-9_]+(?:-[a-z0-9_]+)*$/.test(value)
-        if (!isValidPattern) {
+        if (value.length > 42) {
           setAvailability('invalid')
           return
         }
@@ -86,9 +85,14 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
         const response = await axios.get(
           `/api/agents/check-username?username=${encodeURIComponent(value)}`,
         )
+        console.log('Username check response:', response.data)
         setAvailability(response.data.available ? 'available' : 'taken')
       } catch (error) {
-        if ((error as AxiosError)?.response?.status === 409) {
+        const axiosError = error as AxiosError
+        console.log('Username check error:', axiosError?.response?.status, axiosError?.response?.data)
+        if (axiosError?.response?.status === 400) {
+          setAvailability('invalid')
+        } else if (axiosError?.response?.status === 409) {
           setAvailability('taken')
         } else {
           setAvailability(null)
@@ -185,7 +189,7 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
       case 'taken':
         return 'Username is already taken'
       case 'invalid':
-        return 'Username must contain only lowercase letters, numbers, underscores and dashes'
+        return 'Username must be 42 characters or less'
       default:
         return null
     }
