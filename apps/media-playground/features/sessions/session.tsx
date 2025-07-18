@@ -7,6 +7,7 @@ import SessionWelcome from './components/session-welcome'
 import { StreamingMessageDisplay } from './components/streaming-message-display'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useStreamingState } from './hooks/use-streaming-state'
+import NewSession from './new-session'
 import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
@@ -333,6 +334,11 @@ const Session = ({
       </div>
     </div>
   )
+
+  // If sessionId is 'new', render the NewSession component
+  if (sessionId === 'new') {
+    return <NewSession />
+  }
 
   if (sessionError) {
     return (
