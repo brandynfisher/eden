@@ -459,6 +459,31 @@ const AgentFormSheet = () => {
                         </div>
                       </div>
 
+                      {/* Public/Private Toggle Section */}
+                      <FormField
+                        control={form.control}
+                        name="isPersonaPublic"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base font-medium">
+                                Make Agent Public
+                              </FormLabel>
+                              <FormDescription>
+                                When public, other users can discover and
+                                interact with your agent
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
                       {/* Description Field */}
                       <FormField
                         control={form.control}
@@ -488,35 +513,33 @@ const AgentFormSheet = () => {
                       />
 
                       {/* Persona Field */}
-                      <div className="p-4 bg-card rounded-xl border border-border flex flex-col gap-4">
-                        <FormField
-                          control={form.control}
-                          name="persona"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-base font-medium">
-                                Instructions
-                                <span className="text-red-500 ml-1">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <AutosizeTextarea
-                                  placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
-                                  {...field}
-                                  className="min-h-[240px]"
-                                  variant="xl"
-                                />
-                              </FormControl>
-                              <div className="flex justify-end mt-2">
-                                <CharacterCount
-                                  current={field.value?.length || 0}
-                                  max={30000}
-                                />
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <FormField
+                        control={form.control}
+                        name="persona"
+                        render={({ field }) => (
+                          <FormItem className="p-4 bg-card rounded-xl border border-border">
+                            <FormLabel className="text-base font-medium">
+                              Instructions
+                              <span className="text-red-500 ml-1">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <AutosizeTextarea
+                                placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
+                                {...field}
+                                className="min-h-[240px]"
+                                variant="xl"
+                              />
+                            </FormControl>
+                            <div className="flex justify-end mt-2">
+                              <CharacterCount
+                                current={field.value?.length || 0}
+                                max={30000}
+                              />
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
                       {/* Greeting Field */}
                       <FormField

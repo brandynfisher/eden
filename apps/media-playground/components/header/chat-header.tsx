@@ -1,23 +1,17 @@
 // Chat-specific header for /chat route that combines main navbar with agent bar
-import TaskStatusIndicator from '@/components/alert/task-status-indicator'
-import ErrorBoundary from '@/components/error-boundary'
-import MannaBalance from '@/components/header/manna-balance'
-import LoadingIndicator from '@/components/loading-indicator'
-import EdenLogoBw from '@/components/logo/eden-logo-bw'
-import MyAccountButton from '@/components/navigation/my-account-button'
+import HeaderActions from '@/components/header/header-actions'
+import HeaderLogo from '@/components/header/header-logo'
+import HeaderNavLinks from '@/components/header/header-nav-links'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { useLastAgent } from '@/hooks/use-last-agent'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { isAgentOwner } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { ChevronRightIcon, MenuIcon, SettingsIcon } from 'lucide-react'
-import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Suspense } from 'react'
 
 type ChatHeaderProps = {
   agent: Agent | null | undefined
@@ -36,7 +30,6 @@ const ChatHeader = ({
 }: ChatHeaderProps) => {
   const params = useParams()
   const { user } = useAuthState()
-  const { getChatUrl, isHydrated } = useLastAgent()
   const sessionId = params?.id as string
 
   // Get current session data
@@ -129,20 +122,7 @@ const ChatHeader = ({
         </div>
 
         {/* Right section - original header items (no settings icon on mobile) */}
-        <div className="ml-auto flex items-center gap-2 h-10">
-          <Suspense fallback={<LoadingIndicator />}>
-            <ErrorBoundary>
-              <TaskStatusIndicator />
-            </ErrorBoundary>
-          </Suspense>
-          <Suspense fallback={<LoadingIndicator />}>
-            <div className="hidden sm:block">
-              <MannaBalance />
-            </div>
-          </Suspense>
-          <Separator orientation="vertical" className="ml-1 mr-2" />
-          <MyAccountButton />
-        </div>
+        <HeaderActions hideMannaMobile />
       </header>
 
       {/* Desktop: Two navbar design */}
@@ -151,51 +131,12 @@ const ChatHeader = ({
         <header className="sticky z-50 top-0 flex h-14 items-center gap-4 border-b bg-background px-4">
           {/* Left section - Logo and navigation */}
           <div className="flex items-center gap-6">
-            {/* Eden logo linking to home */}
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-lg font-semibold"
-            >
-              <EdenLogoBw className="w-[32px]" />
-              <span className="sr-only">Eden</span>
-            </Link>
-
-            {/* Navigation links */}
-            <nav className="flex items-center gap-4">
-              <Link
-                href={isHydrated ? getChatUrl() : '/chat/eve'}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Chat
-              </Link>
-              <Link
-                href="/explore?type=agents"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Explore
-              </Link>
-              <Link
-                href="/explore?type=tools"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Tools
-              </Link>
-            </nav>
+            <HeaderLogo />
+            <HeaderNavLinks />
           </div>
 
           {/* Right section - Profile, manna, notifications */}
-          <div className="ml-auto flex items-center gap-2 h-10">
-            <Suspense fallback={<LoadingIndicator />}>
-              <ErrorBoundary>
-                <TaskStatusIndicator />
-              </ErrorBoundary>
-            </Suspense>
-            <Suspense fallback={<LoadingIndicator />}>
-              <MannaBalance />
-            </Suspense>
-            <Separator orientation="vertical" className="ml-1 mr-2" />
-            <MyAccountButton />
-          </div>
+          <HeaderActions />
         </header>
 
         {/* Bottom navbar - Agent selector + session title */}

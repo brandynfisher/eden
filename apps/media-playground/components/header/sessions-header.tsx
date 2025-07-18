@@ -1,11 +1,8 @@
 // Sessions header for /sessions route with double navbar structure
-import TaskStatusIndicator from '@/components/alert/task-status-indicator'
-import ErrorBoundary from '@/components/error-boundary'
-import MannaBalance from '@/components/header/manna-balance'
-import LoadingIndicator from '@/components/loading-indicator'
-import EdenLogoBw from '@/components/logo/eden-logo-bw'
-import MyAccountButton from '@/components/navigation/my-account-button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import AgentPopoverContent from '@/components/header/agent-popover'
+import HeaderActions from '@/components/header/header-actions'
+import HeaderLogo from '@/components/header/header-logo'
+import HeaderNavLinks from '@/components/header/header-nav-links'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -16,12 +13,8 @@ import { Separator } from '@/components/ui/separator'
 import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
 import { SessionBudget } from '@/features/sessions/components/session-budget'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
-import { useLastAgent } from '@/hooks/use-last-agent'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { EditIcon, MenuIcon } from 'lucide-react'
-import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { Suspense } from 'react'
 
 type SessionsHeaderProps = {
   onChatClick?: () => void
@@ -34,7 +27,6 @@ const SessionsHeader = ({
 }: SessionsHeaderProps) => {
   const params = useParams()
   const router = useRouter()
-  const { getChatUrl, isHydrated } = useLastAgent()
   const sessionId = params?.id as string
 
   // Get current session data
@@ -64,43 +56,6 @@ const SessionsHeader = ({
     onChatClick?.()
   }
 
-  // Agents popover content component
-  const AgentsPopoverContent = ({
-    agents,
-  }: {
-    agents: Array<{ _id: string; username: string; userImage?: string }>
-  }) => (
-    <div className="grid grid-cols-1 gap-2 min-w-48">
-      <div className="text-sm font-medium mb-2">
-        Agents in Session ({agents.length})
-      </div>
-      {agents.map(agent => (
-        <Link
-          key={agent._id}
-          href={`/chat/${agent.username}`}
-          className="flex items-center space-x-3 hover:bg-muted/50 rounded-lg p-2 transition-colors"
-        >
-          <Avatar className="h-10 w-10">
-            <AvatarImage
-              src={getCloudfrontOriginalUrl(agent.userImage)}
-              alt={agent.name}
-              className="object-cover"
-            />
-            <AvatarFallback className="text-sm">
-              {agent.name?.[0]?.toUpperCase() || 'A'}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium truncate">{agent.name}</div>
-            <div className="text-xs text-muted-foreground truncate">
-              @{agent.username}
-            </div>
-          </div>
-        </Link>
-      ))}
-    </div>
-  )
-
   return (
     <>
       {/* Mobile: Single navbar */}
@@ -129,7 +84,7 @@ const SessionsHeader = ({
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-3" align="start">
-                  <AgentsPopoverContent agents={session.agents} />
+                  <AgentPopoverContent agents={session.agents} />
                 </PopoverContent>
               </Popover>
               {session.title && (
@@ -165,18 +120,7 @@ const SessionsHeader = ({
               <SessionBudget budget={session.budget} />
             </div>
           )}
-          <Suspense fallback={<LoadingIndicator />}>
-            <ErrorBoundary>
-              <TaskStatusIndicator />
-            </ErrorBoundary>
-          </Suspense>
-          <Suspense fallback={<LoadingIndicator />}>
-            <div className="hidden sm:block">
-              <MannaBalance />
-            </div>
-          </Suspense>
-          <Separator orientation="vertical" className="ml-1 mr-2" />
-          <MyAccountButton />
+          <HeaderActions hideMannaMobile className="flex items-center gap-2" />
         </div>
       </header>
 
@@ -186,51 +130,12 @@ const SessionsHeader = ({
         <header className="sticky z-50 top-0 flex h-14 items-center gap-4 border-b bg-background px-4">
           {/* Left section - Logo and navigation */}
           <div className="flex items-center gap-6">
-            {/* Eden logo linking to home */}
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-lg font-semibold"
-            >
-              <EdenLogoBw className="w-[32px]" />
-              <span className="sr-only">Eden</span>
-            </Link>
-
-            {/* Navigation links */}
-            <nav className="flex items-center gap-4">
-              <Link
-                href={isHydrated ? getChatUrl() : '/chat/eve'}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Chat
-              </Link>
-              <Link
-                href="/explore?type=agents"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Explore
-              </Link>
-              <Link
-                href="/explore?type=tools"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Tools
-              </Link>
-            </nav>
+            <HeaderLogo />
+            <HeaderNavLinks />
           </div>
 
           {/* Right section - Profile, manna, notifications */}
-          <div className="ml-auto flex items-center gap-2 h-10">
-            <Suspense fallback={<LoadingIndicator />}>
-              <ErrorBoundary>
-                <TaskStatusIndicator />
-              </ErrorBoundary>
-            </Suspense>
-            <Suspense fallback={<LoadingIndicator />}>
-              <MannaBalance />
-            </Suspense>
-            <Separator orientation="vertical" className="ml-1 mr-2" />
-            <MyAccountButton />
-          </div>
+          <HeaderActions />
         </header>
 
         {/* Bottom navbar - Agent avatars + session title + budget + agents dropdown */}
@@ -263,7 +168,7 @@ const SessionsHeader = ({
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-3" align="start">
-                      <AgentsPopoverContent agents={session.agents} />
+                      <AgentPopoverContent agents={session.agents} />
                     </PopoverContent>
                   </Popover>
 

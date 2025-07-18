@@ -9,8 +9,7 @@ import {
 import TaskFormModal from '@/features/chat/components/task-form-modal'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
-import { Trigger } from '@edenlabs/eden-sdk'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   AlertCircle,
@@ -27,10 +26,14 @@ import { FC, useMemo, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
+interface TriggerWithLastRun extends Trigger {
+  last_run_time?: Date
+}
+
 const TaskItem: FC<{
-  trigger: Trigger
+  trigger: TriggerWithLastRun
   agentId: string
-  onEdit: (trigger: Trigger) => void
+  onEdit: (trigger: TriggerWithLastRun) => void
   onDelete: (triggerId: string) => void
 }> = ({ trigger, agentId, onEdit, onDelete }) => {
   const [isDeleting, setIsDeleting] = useState(false)
@@ -130,7 +133,9 @@ const AgentTasksView: FC<{
   agent: Agent
 }> = ({ agent }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<Trigger | null>(null)
+  const [editingTask, setEditingTask] = useState<TriggerWithLastRun | null>(
+    null,
+  )
   const [showFinished, setShowFinished] = useState(false)
 
   const triggersQuery = useAgentTriggersQuery({
@@ -174,7 +179,7 @@ const AgentTasksView: FC<{
     })
 
     // Sort both arrays by updatedAt in descending order (most recent first)
-    const sortByUpdatedAt = (a: Trigger, b: Trigger) => {
+    const sortByUpdatedAt = (a: TriggerWithLastRun, b: TriggerWithLastRun) => {
       // Sort by last_run_time first (most recent first), then by updatedAt/createdAt
       const aLastRun = a.last_run_time ? new Date(a.last_run_time).getTime() : 0
       const bLastRun = b.last_run_time ? new Date(b.last_run_time).getTime() : 0

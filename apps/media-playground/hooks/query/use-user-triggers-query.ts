@@ -9,6 +9,7 @@ interface TriggerWithAgent extends Trigger {
     username: string
     userImage?: string
   }
+  last_run_time?: Date
 }
 
 type Props = {
