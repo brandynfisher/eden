@@ -2,7 +2,7 @@
 
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
@@ -163,7 +163,14 @@ const ExplorePage = () => {
         return {
           title: 'Explore Tools',
           description: 'Create multimedia with AI tools',
-          actionButton: null,
+          actionButton: (
+            <Button asChild size="lg" className="gap-2">
+              <Link href="/create/image/flux_dev">
+                <Zap className="h-4 w-4" />
+                Use Tools
+              </Link>
+            </Button>
+          ),
         }
       case 'creations':
       default:
@@ -199,13 +206,29 @@ const ExplorePage = () => {
         <p className="text-lg text-muted-foreground">{pageInfo.description}</p>
       </div>
 
-      {/* Content Type Tabs */}
-      <Tabs
-        value={contentType}
-        onValueChange={handleContentTypeChange}
-        className="w-full"
-      >
+      {/* Content with filters bar */}
+      <div className="w-full">
         <div className="flex flex-wrap gap-2 lg:gap-3 w-full mb-6 items-center">
+          {/* Content Type Selector - controls content display */}
+          <div className="flex rounded-md border bg-background">
+            {['agents', 'models', 'creations', 'tools'].map(type => (
+              <button
+                key={type}
+                onClick={() => handleContentTypeChange(type)}
+                className={`px-3 py-2 text-sm font-medium transition-colors first:rounded-l-md last:rounded-r-md border-r last:border-r-0 ${
+                  contentType === type
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Separator */}
+          <div className="h-6 w-px bg-border mx-2" />
+
           {/* Filter controls */}
           <div className="flex flex-wrap gap-2 lg:gap-3 items-center">
             {/* Ownership Type Tabs - only show for non-tools content types */}
@@ -289,44 +312,46 @@ const ExplorePage = () => {
           </div>
         </div>
 
-        {/* Content */}
-        <TabsContent value="agents" className="!ring-0 !ring-offset-0 mt-6">
-          <AgentsFeed
-            query={agentsQuery}
-            minCols={1}
-            maxCols={6}
-            hideCreateButton={true}
-            improvedLayout={true}
-            hideContextMenu={true}
-            breakpoints={[
-              { minWidth: 1920, columns: 6 },
-              { minWidth: 1536, columns: 5 },
-              { minWidth: 1280, columns: 4 },
-              { minWidth: 1024, columns: 3 },
-              { minWidth: 768, columns: 2 },
-              { minWidth: 640, columns: 2 },
-              { minWidth: 0, columns: 1 },
-            ]}
-          />
-        </TabsContent>
+        {/* Content - Show based on selected type with stable rendering */}
+        <div className="mt-6 min-h-[400px]">
+          <div className={contentType === 'agents' ? 'block' : 'hidden'}>
+            <AgentsFeed
+              query={agentsQuery}
+              minCols={1}
+              maxCols={6}
+              hideCreateButton={true}
+              improvedLayout={true}
+              hideContextMenu={true}
+              breakpoints={[
+                { minWidth: 1920, columns: 6 },
+                { minWidth: 1536, columns: 5 },
+                { minWidth: 1280, columns: 4 },
+                { minWidth: 1024, columns: 3 },
+                { minWidth: 768, columns: 2 },
+                { minWidth: 640, columns: 2 },
+                { minWidth: 0, columns: 1 },
+              ]}
+            />
+          </div>
 
-        <TabsContent value="creations" className="!ring-0 !ring-offset-0 mt-6">
-          <CreationsFeed query={creationsQuery} minCols={2} maxCols={8} />
-        </TabsContent>
+          <div className={contentType === 'creations' ? 'block' : 'hidden'}>
+            <CreationsFeed query={creationsQuery} minCols={2} maxCols={8} />
+          </div>
 
-        <TabsContent value="models" className="!ring-0 !ring-offset-0 mt-6">
-          <ModelsFeed
-            query={modelsQuery}
-            minCols={1}
-            maxCols={5}
-            variant="creation-page"
-          />
-        </TabsContent>
+          <div className={contentType === 'models' ? 'block' : 'hidden'}>
+            <ModelsFeed
+              query={modelsQuery}
+              minCols={1}
+              maxCols={5}
+              variant="creation-page"
+            />
+          </div>
 
-        <TabsContent value="tools" className="!ring-0 !ring-offset-0 mt-6">
-          <ToolsFeed category={toolsCategory} searchQuery={searchQuery} />
-        </TabsContent>
-      </Tabs>
+          <div className={contentType === 'tools' ? 'block' : 'hidden'}>
+            <ToolsFeed category={toolsCategory} searchQuery={searchQuery} />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

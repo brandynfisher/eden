@@ -40,7 +40,18 @@ const SessionChatSidebarContent: FC<{
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
   userId?: string | null
-}> = ({ onItemClick, agentId, agent, viewMode, onViewModeChange, userId }) => {
+  onAgentSelect?: () => void
+  onSettingsClick?: () => void
+}> = ({
+  onItemClick,
+  agentId,
+  agent,
+  viewMode,
+  onViewModeChange,
+  userId,
+  onAgentSelect,
+  onSettingsClick,
+}) => {
   return (
     <>
       {/* Use existing sessions sidebar content for the rest */}
@@ -52,6 +63,8 @@ const SessionChatSidebarContent: FC<{
         userId={userId}
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
+        onAgentSelect={onAgentSelect}
+        onSettingsClick={onSettingsClick}
       />
     </>
   )
@@ -176,10 +189,11 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         agent={agent}
         onChatClick={handleChatClick}
         onAgentSelect={() => setIsAgentSelectorOpen(true)}
+        onSettingsClick={() => setViewMode('settings')}
         isSidebarCollapsed={isSidebarCollapsed}
       />
 
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-24">
         {/* AGENT SELECTOR MODAL */}
         <SingleAgentSelectorModal
           open={isAgentSelectorOpen}
@@ -191,7 +205,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetContent
             side="left"
-            className="flex flex-col max-h-full pt-10 px-3 bg-[#0e1421] border-r gap-0"
+            className="flex flex-col max-h-full pt-3 px-3 bg-[#0e1421] border-r gap-0 [&>button]:hidden"
           >
             <SheetTitle className="sr-only">Session List</SheetTitle>
             <SessionChatSidebarContent
@@ -205,6 +219,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
               viewMode={viewMode}
               onViewModeChange={setViewMode}
               userId={user?._id}
+              onAgentSelect={() => setIsAgentSelectorOpen(true)}
+              onSettingsClick={() => setViewMode('settings')}
             />
           </SheetContent>
         </Sheet>
@@ -242,6 +258,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
                 userId={user?._id}
+                onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                onSettingsClick={() => setViewMode('settings')}
               />
             )}
           </ResizablePanel>

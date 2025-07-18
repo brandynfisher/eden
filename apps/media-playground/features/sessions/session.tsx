@@ -3,7 +3,6 @@
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
-import { SessionInfoRow } from './components/session-info-row'
 import SessionWelcome from './components/session-welcome'
 import { StreamingMessageDisplay } from './components/streaming-message-display'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
@@ -367,14 +366,6 @@ const Session = ({
             'flex flex-col justify-center items-center',
         )}
       >
-        {/* Session info row - sticky at the top */}
-        {session?.agents && session.agents.length > 0 && !ischatRoute && (
-          <SessionInfoRow
-            agents={session.agents}
-            title={session.title}
-            sessionBudget={session.budget}
-          />
-        )}
         <div className="p-4 pb-8 max-w-[--aui-thread-max-width] mx-auto w-full">
           {/* Only show loading skeleton if we are on a new session */}
           {sessionId === 'new' && isSessionLoading ? (

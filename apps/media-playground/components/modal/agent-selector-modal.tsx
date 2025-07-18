@@ -17,7 +17,7 @@ import { MAX_AGENTS } from '@/features/sessions/session-config'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
-import { CheckIcon,  XIcon } from 'lucide-react'
+import { CheckIcon, XIcon } from 'lucide-react'
 import { PropsWithChildren, ReactNode, useRef, useState } from 'react'
 
 type Props = {
@@ -107,7 +107,10 @@ const AgentSelectorModal = ({
       </DialogTrigger>
       <DialogContentScrollable
         ref={scrollRef}
-        className={cn([`overflow-x-hidden flex flex-col max-w-7xl`, className])}
+        className={cn([
+          `w-[90vw] max-w-[90vw] h-[85vh] overflow-x-hidden flex flex-col`,
+          className,
+        ])}
       >
         <DialogHeader className="mt-4">
           <div className="flex gap-4 items-center">
@@ -135,7 +138,9 @@ const AgentSelectorModal = ({
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Tabs
                 value={currentTab}
-                onValueChange={value => setCurrentTab(value as 'user' | 'public')}
+                onValueChange={value =>
+                  setCurrentTab(value as 'user' | 'public')
+                }
                 className="w-full sm:max-w-fit"
               >
                 <TabsList className="w-full border border-muted rounded-lg p-1 bg-popover">
@@ -154,12 +159,22 @@ const AgentSelectorModal = ({
           <AgentsFeed
             query={currentQuery}
             minCols={1}
-            maxCols={3}
+            maxCols={5}
+            breakpoints={[
+              { minWidth: 1536, columns: 5 }, // Very wide screens - 5 columns max
+              { minWidth: 1280, columns: 4 }, // Wide screens - 4 columns
+              { minWidth: 1024, columns: 3 }, // Large desktop - 3 columns
+              { minWidth: 768, columns: 2 }, // Tablet - 2 columns
+              { minWidth: 640, columns: 2 }, // Large mobile - 2 columns
+              { minWidth: 0, columns: 1 }, // Small mobile - 1 column
+            ]}
             onClick={handleAgentToggle}
             isSelectable={true}
             selectedIds={selectedAgentIds}
             scrollRef={scrollRef}
             hideCreateButton={true}
+            hideContextMenu={true}
+            improvedLayout={true}
           />
         </div>
 

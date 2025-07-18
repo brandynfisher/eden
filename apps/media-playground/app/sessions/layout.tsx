@@ -10,9 +10,12 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { cn } from '@/lib/utils'
+import { useParams } from 'next/navigation'
 import { PropsWithChildren, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
+  const params = useParams()
+  const sessionId = params?.id as string
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
@@ -35,12 +38,19 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
         isSidebarCollapsed={isSidebarCollapsed}
       />
 
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16">
+      <div
+        className={`flex flex-col fixed inset-x-0 bottom-0 ${
+          // Different top margins based on session ID and screen size
+          sessionId === 'new' || !sessionId
+            ? 'top-16 md:top-14' // Single navbar on new session page (desktop)
+            : 'top-16 md:top-24' // Double navbar on existing session pages
+        }`}
+      >
         {/* MOBILE LEFT BAR SHEET FOR SESSIONS */}
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetContent
             side="left"
-            className="flex flex-col max-h-full pt-10 px-3 bg-accent border-r gap-0"
+            className="flex flex-col max-h-full pt-3 px-3 bg-accent border-r gap-0 [&>button]:hidden"
           >
             <SheetTitle className="sr-only">Session List</SheetTitle>
             <SessionsSidebarContent onItemClick={() => setIsSheetOpen(false)} />
