@@ -1,6 +1,8 @@
 import ActionBar from './action-bar'
 import { MarkdownText } from './markdown-text'
+import { MessageAttachment } from './message-attachment'
 import ToolResultActionBar from './tool-result-action-bar'
+import { LightboxGallery } from '@/components/media/lightbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
@@ -28,9 +30,13 @@ export const OtherMessage = ({
     toolCall => toolCall.status !== 'cancelled',
   )
 
+  // Check if message has attachments
+  const hasAttachments = message.attachments && message.attachments.length > 0
+
   if (
     !message.content &&
     !isStreamingTokens &&
+    !hasAttachments &&
     (!message.tool_calls ||
       message.tool_calls.length === 0 ||
       !hasActiveToolCalls)
@@ -132,6 +138,19 @@ export const OtherMessage = ({
         </div>
       </div>
       <div className="aui-assistant-message-content mt-3 md:mt-1.5 md:pl-3 pr-2 max-w-full">
+        {hasAttachments && (
+          <LightboxGallery galleryKey={message._id}>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {message.attachments?.map((attachment, index) => (
+                <MessageAttachment
+                  key={attachment}
+                  url={attachment}
+                  index={index}
+                />
+              ))}
+            </div>
+          </LightboxGallery>
+        )}
         {!isEmpty && <MarkdownText>{message.content}</MarkdownText>}
         {message.tool_calls &&
           message.tool_calls.length > 0 &&
