@@ -74,6 +74,8 @@ export interface SessionsV2RenameArguments extends WebAPICallOptions {
 
 export interface SessionsV2CancelArguments extends WebAPICallOptions {
   session_id: string
+  tool_call_id?: string
+  tool_call_index?: number
 }
 
 // Requests
@@ -163,7 +165,10 @@ export const sessionsCancelRequestConfigV2 = (
     headers: {
       'Content-Type': 'application/json',
     },
-    data: {},
+    data: {
+      ...(args.tool_call_id && { tool_call_id: args.tool_call_id }),
+      ...(args.tool_call_index !== undefined && { tool_call_index: args.tool_call_index }),
+    },
   }
 }
 

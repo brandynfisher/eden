@@ -15,6 +15,7 @@ import ReactMarkdown from 'react-markdown'
 
 export type TaskResultToolProps = {
   toolCall: ToolCall
+  onCancel?: () => void
 }
 
 // Social tools mapping
@@ -64,13 +65,11 @@ const SOCIAL_TOOLS = {
   },
 } as const
 
-export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
+export const TaskResultTool: React.FC<TaskResultToolProps> = ({
+  toolCall,
+  onCancel,
+}) => {
   const { tool, result: toolResults } = toolCall
-
-  // Don't render cancelled tool calls
-  if (toolCall.status === 'cancelled') {
-    return null
-  }
 
   // Check tool type using mapping
   const postToolConfig =
@@ -249,6 +248,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
                 ? TaskV2Status.Failed
                 : toolCall.status === 'running'
                 ? TaskV2Status.Running
+                : toolCall.status === 'cancelled'
+                ? 'cancelled'
                 : TaskV2Status.Pending,
             error: toolCall.error,
           }}
@@ -261,9 +262,12 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
               ? { type: 'complete' }
               : toolCall.status === 'failed'
               ? { type: 'incomplete', reason: 'error' }
+              : toolCall.status === 'cancelled'
+              ? { type: 'incomplete', reason: 'cancelled' }
               : { type: 'running' }
           }
           addResult={() => true}
+          onCancel={onCancel}
         />
       )}
     </div>
