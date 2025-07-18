@@ -133,7 +133,8 @@ const AgentSelectorModal = ({
             )}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col flex-1">
+        {/* Scrollable content area */}
+        <div className="flex-1 min-h-0 overflow-hidden">
           <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:justify-between sm:items-center">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Tabs
@@ -156,7 +157,7 @@ const AgentSelectorModal = ({
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 mb-4">
+          <div className="h-full overflow-auto pb-4">
             <AgentsFeed
               query={currentQuery}
               minCols={1}
@@ -178,27 +179,27 @@ const AgentSelectorModal = ({
               improvedLayout={true}
             />
           </div>
+        </div>
 
-          {/* Footer - positioned at bottom of modal */}
-          <div className="rounded-lg bg-background border border-border p-4 flex items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground">
-              {tempSelectedAgents.length}/{MAX_AGENTS} agent
-              {tempSelectedAgents.length !== 1 ? 's' : ''} selected
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleCancel} size="sm">
-                <XIcon className="w-4 h-4 mr-1" />
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirm}
-                size="sm"
-                disabled={tempSelectedAgents.length === 0}
-              >
-                <CheckIcon className="w-4 h-4 mr-1" />
-                Confirm Selection
-              </Button>
-            </div>
+        {/* Sticky Footer - always visible at bottom */}
+        <div className="border-t bg-background p-4 flex items-center justify-between gap-4 mt-auto">
+          <div className="text-sm text-muted-foreground">
+            {tempSelectedAgents.length}/{MAX_AGENTS} agent
+            {tempSelectedAgents.length !== 1 ? 's' : ''} selected
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleCancel} size="sm">
+              <XIcon className="w-4 h-4 mr-1" />
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              size="sm"
+              disabled={tempSelectedAgents.length === 0}
+            >
+              <CheckIcon className="w-4 h-4 mr-1" />
+              Confirm Selection
+            </Button>
           </div>
         </div>
       </DialogContentScrollable>
