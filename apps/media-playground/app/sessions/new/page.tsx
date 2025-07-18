@@ -1,5 +1,5 @@
-import NewSession from '@/features/sessions/new-session'
+import Session from '@/features/sessions/session'
 
 export default function NewSessionPage() {
-  return <NewSession />
+  return <Session optimisticSessionId="new" />
 }

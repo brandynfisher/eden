@@ -19,16 +19,18 @@ export async function POST(
   try {
     // Parse the request body
     const body = await request.json().catch(() => ({}))
-    
+
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.sessions.v2.cancel({ 
+    const res = await eden.sessions.v2.cancel({
       session_id: id,
       ...(body.tool_call_id && { tool_call_id: body.tool_call_id }),
-      ...(body.tool_call_index !== undefined && { tool_call_index: body.tool_call_index }),
+      ...(body.tool_call_index !== undefined && {
+        tool_call_index: body.tool_call_index,
+      }),
     })
 
     return NextResponse.json(res)

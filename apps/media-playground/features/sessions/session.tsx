@@ -3,11 +3,11 @@
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
-import { SessionInfoRow } from './components/session-info-row'
 import SessionWelcome from './components/session-welcome'
 import { StreamingMessageDisplay } from './components/streaming-message-display'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useStreamingState } from './hooks/use-streaming-state'
+import NewSession from './new-session'
 import { groupConsecutiveMessages } from './utils/group-messages'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
@@ -335,6 +335,11 @@ const Session = ({
     </div>
   )
 
+  // If sessionId is 'new', render the NewSession component
+  if (sessionId === 'new') {
+    return <NewSession />
+  }
+
   if (sessionError) {
     return (
       <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
@@ -367,14 +372,6 @@ const Session = ({
             'flex flex-col justify-center items-center',
         )}
       >
-        {/* Session info row - sticky at the top */}
-        {session?.agents && session.agents.length > 0 && !ischatRoute && (
-          <SessionInfoRow
-            agents={session.agents}
-            title={session.title}
-            sessionBudget={session.budget}
-          />
-        )}
         <div className="p-4 pb-8 max-w-[--aui-thread-max-width] mx-auto w-full">
           {/* Only show loading skeleton if we are on a new session */}
           {sessionId === 'new' && isSessionLoading ? (

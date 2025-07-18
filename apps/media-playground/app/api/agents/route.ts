@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
     description,
     image,
     persona,
-    isPersonaPublic,
     greeting,
     suggestions,
     discordId,
@@ -33,6 +32,8 @@ export async function POST(request: NextRequest) {
     models,
     tools,
   } = requestJson as AgentsCreateArguments
+
+  const isPublic = requestJson.public
 
   try {
     const eden = new EdenClient({
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
       description,
       image,
       persona,
-      isPersonaPublic,
+      isPersonaPublic: isPublic,
       greeting,
       suggestions,
       knowledge,

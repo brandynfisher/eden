@@ -3,6 +3,7 @@
 import { MAX_AGENTS } from './session-config'
 import SliderInput from '@/components/form/input/slider-input'
 import AgentSelectorModal from '@/components/modal/agent-selector-modal'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -29,12 +30,14 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/components/ui/use-toast'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   ChevronDown,
   Loader2,
   MessageCircleIcon,
+  Plus,
   UsersIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -256,12 +259,12 @@ const NewSession = () => {
               name="agents"
               render={() => (
                 <FormItem>
-                  <FormLabel>Selected Agents</FormLabel>
                   <FormControl>
-                    <div className="space-y-4">
+                    {selectedAgents.length === 0 ? (
+                      /* Empty state - Large Select Agents button */
                       <AgentSelectorModal
                         className="p-4 md:p-8 w-full"
-                        title="Select Agents for Session"
+                        title="Select Agents for New Session"
                         description="Choose one or more agents to include in your new session."
                         selectedAgents={selectedAgents}
                         onChange={handleAgentSelection}
@@ -269,37 +272,69 @@ const NewSession = () => {
                           <Button
                             type="button"
                             variant="outline"
-                            className="w-full"
+                            className="w-full h-20 text-lg border-dashed border-2 hover:border-primary/50 transition-colors"
                           >
-                            <UsersIcon className="w-4 h-4 mr-2" />
-                            {selectedAgents.length > 0
-                              ? `${selectedAgents.length} Agent${
-                                  selectedAgents.length > 1 ? 's' : ''
-                                } Selected`
-                              : 'Select Agents'}
+                            <UsersIcon className="w-6 h-6 mr-3" />
+                            Select Agents
                           </Button>
                         }
                       />
-
-                      {selectedAgents.length > 0 && (
-                        <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                          <p className="font-medium text-sm">
-                            Selected Agents:
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedAgents.map(agent => (
-                              <div
-                                key={agent._id}
-                                className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
-                              >
-                                <UsersIcon className="w-3 h-3" />
-                                {agent.name}
+                    ) : (
+                      /* Selected agents preview */
+                      <div className="space-y-4">
+                        <div className="max-h-80 overflow-y-auto space-y-2">
+                          {selectedAgents.map(agent => (
+                            <div
+                              key={agent._id}
+                              className="flex items-center gap-4 p-3 bg-muted/30 rounded-lg border"
+                            >
+                              <Avatar className="h-12 w-12 border-2 border-primary/20">
+                                <AvatarImage
+                                  src={
+                                    agent.userImage && agent.userImage.trim()
+                                      ? getCloudfrontOriginalUrl(
+                                          agent.userImage,
+                                        )
+                                      : undefined
+                                  }
+                                  alt={agent.name}
+                                  className="object-cover"
+                                />
+                                <AvatarFallback className="bg-muted text-sm font-medium">
+                                  {agent.name?.slice(0, 2).toUpperCase() || 'A'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-base text-foreground truncate">
+                                  {agent.name}
+                                </div>
+                                <div className="text-sm text-muted-foreground truncate">
+                                  by @{agent.username}
+                                </div>
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
+
+                        <AgentSelectorModal
+                          className="p-4 md:p-8 w-full"
+                          title="Select Agents for New Session"
+                          description="Choose one or more agents to include in your new session."
+                          selectedAgents={selectedAgents}
+                          onChange={handleAgentSelection}
+                          trigger={
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Add Agents
+                            </Button>
+                          }
+                        />
+                      </div>
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>

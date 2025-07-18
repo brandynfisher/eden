@@ -2,6 +2,8 @@
 
 import { AgentAvatars } from './agent-avatars'
 import LoadingIndicator from '@/components/loading-indicator'
+import EdenLogoBw from '@/components/logo/eden-logo-bw'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,7 +16,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ViewMode } from '@/features/chat/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { canEditAgent, isAgentOwner } from '@/lib/utils'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { isAgentOwner } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -84,15 +87,16 @@ const SessionListItem: FC<SessionListItemProps> = ({
   }, [title])
 
   const deleteSession = async (sessionId: string) => {
-    const currentSessionId = (params?.id as string) || (params?.sessionId as string)
+    const currentSessionId =
+      (params?.id as string) || (params?.sessionId as string)
     const isCurrentSession = sessionId === currentSessionId
-    
+
     try {
       setIsDeleting(true)
-      
+
       // Optimistically remove from cache and redirect immediately
       await deleteSessionQuery(sessionId)
-      
+
       // If deleting current session, redirect to new session
       if (isCurrentSession) {
         if (isChat && params?.agentId) {
@@ -129,12 +133,12 @@ const SessionListItem: FC<SessionListItemProps> = ({
         setIsEditing(false)
         return
       }
-      
+
       const originalTitle = optimisticTitle
-      
+
       try {
         setIsRenaming(true)
-        
+
         // Optimistically update the title immediately
         setOptimisticTitle(newTitle)
         await renameSessionQuery(sessionId, newTitle)
@@ -152,10 +156,10 @@ const SessionListItem: FC<SessionListItemProps> = ({
         })
       } catch (error) {
         console.error(error)
-        
+
         // Rollback optimistic update on error
         setOptimisticTitle(originalTitle)
-        
+
         toast.error('Failed to rename session', {
           description: 'Please try again later.',
           dismissible: true,
@@ -358,7 +362,11 @@ const TopLeft: FC<{
   const router = useRouter()
   const params = useParams()
   const agentId = params?.agentId as string
+  const sessionId = params?.id as string
   const isNewSession = isNewSessionRoute(params || {}, isChat)
+
+  // Hide button on /sessions/new in desktop view
+  const shouldHideButton = !isChat && (sessionId === 'new' || !sessionId)
 
   const handleClick = () => {
     onItemClick?.()
@@ -369,6 +377,11 @@ const TopLeft: FC<{
     } else {
       router.push('/sessions/new', { scroll: false })
     }
+  }
+
+  // Don't render the button if we're on /sessions/new
+  if (shouldHideButton) {
+    return null
   }
 
   return (
@@ -385,6 +398,109 @@ const TopLeft: FC<{
       <EditIcon className="size-4" />
       <span>{isChat ? 'New Chat' : 'New Session'}</span>
     </Button>
+  )
+}
+
+// Agent selector and New Chat two-column layout
+const AgentSelectorAndNewChat: FC<{
+  onItemClick?: () => void
+  isChat?: boolean
+  onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  agent?: Agent | null | undefined
+  onAgentSelect?: () => void
+  onSettingsClick?: () => void
+  userId?: string | null
+}> = ({
+  onItemClick,
+  isChat,
+  onViewModeChange,
+  agent,
+  onAgentSelect,
+  onSettingsClick,
+  userId,
+}) => {
+  const router = useRouter()
+  const params = useParams()
+  const agentId = params?.agentId as string
+  const isNewSession = isNewSessionRoute(params || {}, isChat)
+
+  const handleNewChatClick = () => {
+    onItemClick?.()
+    if (isChat && agentId) {
+      // Switch to chat mode first, then navigate
+      onViewModeChange?.('chat')
+      router.push(`/chat/${agentId}`, { scroll: false })
+    } else {
+      router.push('/sessions/new', { scroll: false })
+    }
+  }
+
+  const handleAgentClick = () => {
+    onItemClick?.()
+    onAgentSelect?.()
+  }
+
+  const handleSettingsClick = () => {
+    onItemClick?.()
+    onSettingsClick?.()
+  }
+
+  // Check if user can access settings
+  const showSettingsButton = agent && isAgentOwner(agent, userId)
+
+  return (
+    <div className="flex gap-2 mb-2 items-center">
+      {/* Agent selector - left column */}
+      {agent && (
+        <button
+          onClick={handleAgentClick}
+          className="flex items-center justify-center hover:bg-muted/10 rounded-lg p-1 transition-all duration-200 hover:scale-[1.02] flex-shrink-0"
+        >
+          <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors">
+            <AvatarImage
+              src={
+                agent.userImage && agent.userImage.trim()
+                  ? getCloudfrontOriginalUrl(agent.userImage)
+                  : undefined
+              }
+              alt={agent.name}
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-muted text-sm font-medium">
+              {agent.username?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </button>
+      )}
+
+      {/* New Chat button - middle column */}
+      <Button
+        variant={isNewSession ? 'outline' : 'default'}
+        onClick={handleNewChatClick}
+        className={cn(
+          'flex flex-1 justify-start gap-2 py-3 rounded-md font-medium transition-colors h-12',
+          isNewSession
+            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
+            : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+        )}
+      >
+        <EditIcon className="size-4" />
+        <span>{isChat ? 'New Chat' : 'New Session'}</span>
+      </Button>
+
+      {/* Settings button - right column (mobile only) */}
+      {showSettingsButton && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleSettingsClick}
+          className="md:hidden h-12 w-12 hover:bg-muted/20 transition-colors flex-shrink-0"
+        >
+          <SettingsIcon className="size-7" />
+          <span className="sr-only">Agent Settings</span>
+        </Button>
+      )}
+    </div>
   )
 }
 
@@ -451,67 +567,55 @@ const NavigationButtons: FC<{
           <span>Memories</span>
         </Button>
       )}
-
-      {canEditAgent(agent, userId) && (
-        <Button
-          variant={viewMode === 'settings' ? 'outline' : 'default'}
-          onClick={() => handleNavClick('settings')}
-          className={cn(
-            'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
-            viewMode === 'settings'
-              ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
-              : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
-          )}
-        >
-          <SettingsIcon className="size-4" />
-          <span>Settings</span>
-        </Button>
-      )}
     </div>
   )
 }
 
-// Explore and Tools section component
-const ExploreToolsSection: FC<{
+// Mobile sidebar header with navigation links
+const MobileSidebarHeader: FC<{
   onItemClick?: () => void
 }> = ({ onItemClick }) => {
   const router = useRouter()
 
-  const handleExploreClick = () => {
+  const handleNavClick = (href: string) => {
     onItemClick?.()
-    router.push('/explore?type=agents')
-  }
-
-  const handleToolsClick = () => {
-    onItemClick?.()
-    router.push('/explore?type=tools')
+    router.push(href)
   }
 
   return (
-    <div className="flex flex-col gap-1 mb-2 mr-2">
-      <Button
-        variant="default"
-        onClick={handleExploreClick}
-        className={cn(
-          'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
-          'bg-blue-900/60 hover:bg-blue-800/60 border-blue-700/60 hover:border-blue-600',
-        )}
-      >
-        <span>🔍</span>
-        <span>Explore</span>
-      </Button>
+    <div className="mb-3 pb-3 border-b border-border">
+      {/* Eden logo + Navigation links in one row */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => handleNavClick('/')}
+          className="flex items-center gap-2 text-lg font-semibold"
+        >
+          <EdenLogoBw className="w-[28px]" />
+          <span className="sr-only">Eden</span>
+        </button>
 
-      <Button
-        variant="default"
-        onClick={handleToolsClick}
-        className={cn(
-          'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
-          'bg-blue-900/60 hover:bg-blue-800/60 border-blue-700/60 hover:border-blue-600',
-        )}
-      >
-        <span>🛠️</span>
-        <span>Use Tools</span>
-      </Button>
+        {/* Navigation links */}
+        <nav className="flex items-center gap-4">
+          <button
+            onClick={() => handleNavClick('/chat')}
+            className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Chat
+          </button>
+          <button
+            onClick={() => handleNavClick('/explore?type=agents')}
+            className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Explore
+          </button>
+          <button
+            onClick={() => handleNavClick('/explore?type=tools')}
+            className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Tools
+          </button>
+        </nav>
+      </div>
     </div>
   )
 }
@@ -670,6 +774,8 @@ export const SessionsSidebarContent = ({
   userId,
   viewMode,
   onViewModeChange,
+  onAgentSelect,
+  onSettingsClick,
 }: {
   onItemClick?: () => void
   agentId?: string
@@ -678,10 +784,31 @@ export const SessionsSidebarContent = ({
   userId?: string | null
   viewMode?: ViewMode
   onViewModeChange?: (mode: ViewMode) => void
+  onAgentSelect?: () => void
+  onSettingsClick?: () => void
 }) => {
   return (
     <>
-      <div className="mb-2 mr-2">
+      {/* Mobile sidebar header with navigation - only show in mobile sidebar */}
+      <div className="md:hidden">
+        <MobileSidebarHeader onItemClick={onItemClick} />
+      </div>
+
+      {/* Agent selector + New Chat two-column layout - mobile only */}
+      <div className="mb-2 mr-2 md:hidden">
+        <AgentSelectorAndNewChat
+          onItemClick={onItemClick}
+          isChat={isChat}
+          onViewModeChange={onViewModeChange}
+          agent={agent}
+          onAgentSelect={onAgentSelect}
+          onSettingsClick={onSettingsClick}
+          userId={userId}
+        />
+      </div>
+
+      {/* Desktop: Keep original TopLeft component */}
+      <div className="mb-2 mr-2 hidden md:block">
         <TopLeft
           onItemClick={onItemClick}
           isChat={isChat}
@@ -699,9 +826,6 @@ export const SessionsSidebarContent = ({
           onViewModeChange={onViewModeChange}
         />
       )}
-
-      {/* Explore and Tools section */}
-      <ExploreToolsSection onItemClick={onItemClick} />
 
       <MainLeft
         onItemClick={onItemClick}

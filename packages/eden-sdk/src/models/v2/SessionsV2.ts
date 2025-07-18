@@ -167,7 +167,9 @@ export const sessionsCancelRequestConfigV2 = (
     },
     data: {
       ...(args.tool_call_id && { tool_call_id: args.tool_call_id }),
-      ...(args.tool_call_index !== undefined && { tool_call_index: args.tool_call_index }),
+      ...(args.tool_call_index !== undefined && {
+        tool_call_index: args.tool_call_index,
+      }),
     },
   }
 }
