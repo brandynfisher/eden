@@ -7,6 +7,7 @@ import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
+import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { TaskResultToolArgs } from '@/features/chat/components/tools/task-result-tool'
 import { cn } from '@/lib/utils'
@@ -17,14 +18,21 @@ import {
   ChevronUpIcon,
   CircleCheckIcon,
   TriangleAlertIcon,
-  WrenchIcon, // HourglassIcon,
+  WrenchIcon,
+  XIcon, // HourglassIcon,
 } from 'lucide-react'
 import React, { Suspense, useState } from 'react'
 
-export const ToolFallback: ToolCallContentPartComponent = ({
+interface ToolFallbackProps
+  extends React.ComponentProps<ToolCallContentPartComponent> {
+  onCancel?: () => void
+}
+
+export const ToolFallback: React.FC<ToolFallbackProps> = ({
   toolName,
   args,
   result,
+  onCancel,
 }) => {
   const {
     status: toolStatus,
@@ -49,10 +57,6 @@ export const ToolFallback: ToolCallContentPartComponent = ({
   if (currentArgs.lora) delete filteredArgs.lora
   if (currentArgs.lora2) delete filteredArgs.lora2
 
-  // Don't render cancelled tool calls
-  if (toolStatus === 'cancelled') {
-    return null
-  }
   return (
     <div className="mt-2 mb-2 flex w-full flex-col">
       <div
@@ -66,13 +70,17 @@ export const ToolFallback: ToolCallContentPartComponent = ({
         <div className="flex items-center gap-2">
           <div>
             <span className="font-bold">{toolName}</span>
+            {toolStatus === 'cancelled' && (
+              <span className="ml-2 text-orange-500 text-sm">(Cancelled)</span>
+            )}
           </div>
           {/* {toolStatus === null || toolStatus === TaskV2Status.Pending ? (
             <HourglassIcon className="text-gray-500 h-4 w-4 animate-pulse" />
           ) : null} */}
-          {toolStatus === null ||
-          toolStatus === TaskV2Status.Pending ||
-          toolStatus === TaskV2Status.Running ? (
+          {(toolStatus === null ||
+            toolStatus === TaskV2Status.Pending ||
+            toolStatus === TaskV2Status.Running) &&
+          (toolStatus as string) !== 'cancelled' ? (
             <span
               className={'text-blue-500 mr-1 h-5 w-5 loading loading-ring'}
             />
@@ -83,8 +91,28 @@ export const ToolFallback: ToolCallContentPartComponent = ({
           {toolStatus === TaskV2Status.Completed ? (
             <CircleCheckIcon className="text-green-500 h-5 w-5" />
           ) : null}
+          {toolStatus === 'cancelled' ? (
+            <XIcon className="text-orange-500 h-5 w-5" />
+          ) : null}
         </div>
         <div className="flex-grow" />
+        {(toolStatus === TaskV2Status.Running ||
+          toolStatus === TaskV2Status.Pending) &&
+          (toolStatus as string) !== 'cancelled' &&
+          onCancel && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={e => {
+                e.stopPropagation()
+                onCancel()
+              }}
+              className="mr-2 h-7 px-2 hover:bg-destructive/10 hover:text-destructive"
+            >
+              <XIcon className="h-4 w-4 mr-1" />
+              Cancel
+            </Button>
+          )}
         <TooltipIconButton tooltip={isCollapsed ? 'Expand' : 'Collapse'}>
           {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
         </TooltipIconButton>

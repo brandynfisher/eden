@@ -343,6 +343,10 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
 
   server.post<{
     Params: { session_id: string }
+    Body: {
+      tool_call_id?: string
+      tool_call_index?: number
+    }
   }>('/v2/sessions/:session_id/cancel', {
     schema: {
       tags: ['Sessions'],
@@ -355,6 +359,10 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       params: {
         session_id: Type.String(),
       },
+      body: Type.Object({
+        tool_call_id: Type.Optional(Type.String()),
+        tool_call_index: Type.Optional(Type.Number()),
+      }),
       response: {
         200: Type.Object({
           status: Type.String(),
