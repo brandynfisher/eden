@@ -1,7 +1,15 @@
 'use client'
 
 import FeedSearchForm from '@/components/filter/feed-search-form'
+import MyAccountButton from '@/components/navigation/my-account-button'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
@@ -14,7 +22,6 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
 import { Plus, Zap } from 'lucide-react'
 import Link from 'next/link'
-// Removed unused imports
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -46,6 +53,7 @@ const ExplorePage = () => {
   const [modelsSort, setModelsSort] = useState('creationCount;-1')
   const [agentsSort, setAgentsSort] = useState('stats.userMessageCount;-1')
   const [toolsCategory, setToolsCategory] = useState('featured')
+  const [showLoginModal, setShowLoginModal] = useState(false)
 
   // Sync state with URL parameters when they change
   useEffect(() => {
@@ -118,6 +126,11 @@ const ExplorePage = () => {
 
   const handleCreatorTypeChange = (value: string) => {
     const newCreatorType = value as CreatorType
+    // If user is not logged in and tries to access "user" tab, show modal
+    if (newCreatorType === 'user' && !user?._id) {
+      setShowLoginModal(true)
+      return
+    }
     setCreatorType(newCreatorType)
     const params = new URLSearchParams(searchParams?.toString())
     if (newCreatorType !== 'public') {
@@ -327,6 +340,21 @@ const ExplorePage = () => {
           <ToolsFeed category={toolsCategory} searchQuery={searchQuery} />
         </TabsContent>
       </Tabs>
+
+      {/* Login Modal */}
+      <Dialog open={showLoginModal} onOpenChange={setShowLoginModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Login Required</DialogTitle>
+          </DialogHeader>
+          <div className="mb-4">
+            You need to log in to view your agents, models, or creations.
+          </div>
+          <DialogFooter>
+            <MyAccountButton />
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
