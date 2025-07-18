@@ -96,7 +96,7 @@ const CreateAgentView = () => {
       image: '',
       description: '',
       persona: '',
-      isPersonaPublic: false,
+      public: false,
       knowledge: '',
       greeting: '',
       voice: '',
@@ -386,7 +386,7 @@ const CreateAgentView = () => {
                         {/* Public/Private Toggle Section */}
                         <FormField
                           control={form.control}
-                          name="isPersonaPublic"
+                          name="public"
                           render={({ field }) => (
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card mb-6">
                               <div className="space-y-0.5">

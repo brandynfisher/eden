@@ -133,7 +133,7 @@ const AgentSelectorModal = ({
             )}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-1">
+        <div className="flex flex-col flex-1">
           <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:justify-between sm:items-center">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Tabs
@@ -156,47 +156,49 @@ const AgentSelectorModal = ({
             </div>
           </div>
 
-          <AgentsFeed
-            query={currentQuery}
-            minCols={1}
-            maxCols={5}
-            breakpoints={[
-              { minWidth: 1536, columns: 5 }, // Very wide screens - 5 columns max
-              { minWidth: 1280, columns: 4 }, // Wide screens - 4 columns
-              { minWidth: 1024, columns: 3 }, // Large desktop - 3 columns
-              { minWidth: 768, columns: 2 }, // Tablet - 2 columns
-              { minWidth: 640, columns: 2 }, // Large mobile - 2 columns
-              { minWidth: 0, columns: 1 }, // Small mobile - 1 column
-            ]}
-            onClick={handleAgentToggle}
-            isSelectable={true}
-            selectedIds={selectedAgentIds}
-            scrollRef={scrollRef}
-            hideCreateButton={true}
-            hideContextMenu={true}
-            improvedLayout={true}
-          />
-        </div>
-
-        {/* Sticky Footer */}
-        <div className="sticky bottom-0 rounded-lg bg-background border border-border p-4 mt-4 flex items-center justify-between gap-4">
-          <div className="text-sm text-muted-foreground">
-            {tempSelectedAgents.length}/{MAX_AGENTS} agent
-            {tempSelectedAgents.length !== 1 ? 's' : ''} selected
+          <div className="flex-1 min-h-0 mb-4">
+            <AgentsFeed
+              query={currentQuery}
+              minCols={1}
+              maxCols={5}
+              breakpoints={[
+                { minWidth: 1536, columns: 5 }, // Very wide screens - 5 columns max
+                { minWidth: 1280, columns: 4 }, // Wide screens - 4 columns
+                { minWidth: 1024, columns: 3 }, // Large desktop - 3 columns
+                { minWidth: 768, columns: 2 }, // Tablet - 2 columns
+                { minWidth: 640, columns: 2 }, // Large mobile - 2 columns
+                { minWidth: 0, columns: 1 }, // Small mobile - 1 column
+              ]}
+              onClick={handleAgentToggle}
+              isSelectable={true}
+              selectedIds={selectedAgentIds}
+              scrollRef={scrollRef}
+              hideCreateButton={true}
+              hideContextMenu={true}
+              improvedLayout={true}
+            />
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleCancel} size="sm">
-              <XIcon className="w-4 h-4 mr-1" />
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirm}
-              size="sm"
-              disabled={tempSelectedAgents.length === 0}
-            >
-              <CheckIcon className="w-4 h-4 mr-1" />
-              Confirm Selection
-            </Button>
+
+          {/* Footer - positioned at bottom of modal */}
+          <div className="rounded-lg bg-background border border-border p-4 flex items-center justify-between gap-4">
+            <div className="text-sm text-muted-foreground">
+              {tempSelectedAgents.length}/{MAX_AGENTS} agent
+              {tempSelectedAgents.length !== 1 ? 's' : ''} selected
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCancel} size="sm">
+                <XIcon className="w-4 h-4 mr-1" />
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                size="sm"
+                disabled={tempSelectedAgents.length === 0}
+              >
+                <CheckIcon className="w-4 h-4 mr-1" />
+                Confirm Selection
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContentScrollable>

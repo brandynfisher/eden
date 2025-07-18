@@ -289,7 +289,7 @@ const AgentEditView: FC<{
           : '',
       description: agent?.description || '',
       persona: agent?.persona || '',
-      isPersonaPublic: agent?.isPersonaPublic || false,
+      public: agent?.public || false,
       knowledge: agent?.knowledge ?? '',
       greeting: agent?.greeting || '',
       voice: agent?.voice || '',
@@ -325,7 +325,7 @@ const AgentEditView: FC<{
             : '',
         description: agent.description,
         persona: agent.persona,
-        isPersonaPublic: agent.isPersonaPublic,
+        public: agent.public,
         knowledge: agent.knowledge ?? '',
         greeting: agent.greeting || '',
         voice: agent.voice || '',
@@ -578,7 +578,7 @@ const AgentEditView: FC<{
                       {/* Public/Private Toggle Section */}
                       <FormField
                         control={form.control}
-                        name="isPersonaPublic"
+                        name="public"
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card mb-6">
                             <div className="space-y-0.5">

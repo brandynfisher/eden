@@ -76,7 +76,7 @@ export const agentSchema = z.object({
     )
     .optional(),
   persona: z.string().max(30000).optional(),
-  isPersonaPublic: z.boolean().optional(),
+  public: z.boolean().optional(),
   knowledge: z.string().max(100000).optional(),
   suggestions: z
     .array(
@@ -131,7 +131,7 @@ const AgentFormSheet = () => {
       image: agentQuery.agent?.userImage || '',
       description: agentQuery.agent?.description || '',
       persona: agentQuery.agent?.persona || '',
-      isPersonaPublic: agentQuery.agent?.isPersonaPublic || false,
+      public: agentQuery.agent?.public || false,
       knowledge: agentQuery.agent?.knowledge ?? '',
       greeting: agentQuery.agent?.greeting || '',
       voice: agentQuery.agent?.voice || '',
@@ -154,7 +154,7 @@ const AgentFormSheet = () => {
         image: agentQuery.agent.userImage,
         description: agentQuery.agent.description,
         persona: agentQuery.agent.persona,
-        isPersonaPublic: agentQuery.agent.isPersonaPublic,
+        public: agentQuery.agent.public,
         knowledge: agentQuery.agent.knowledge ?? '',
         greeting: agentQuery.agent.greeting || '',
         voice: agentQuery.agent.voice || '',
@@ -169,7 +169,7 @@ const AgentFormSheet = () => {
         image: '',
         description: '',
         persona: '',
-        isPersonaPublic: false,
+        public: false,
         knowledge: '',
         greeting: '',
         voice: '',
@@ -243,7 +243,7 @@ const AgentFormSheet = () => {
         image: '',
         description: '',
         persona: '',
-        isPersonaPublic: false,
+        public: false,
         knowledge: '',
         greeting: '',
         voice: '',
@@ -462,7 +462,7 @@ const AgentFormSheet = () => {
                       {/* Public/Private Toggle Section */}
                       <FormField
                         control={form.control}
-                        name="isPersonaPublic"
+                        name="public"
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card">
                             <div className="space-y-0.5">
