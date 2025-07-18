@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { Message, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 type OtherMessageProps = {
   sessionId: string
@@ -25,9 +26,29 @@ export const OtherMessage = ({
   showAvatar = true,
   isStreamingTokens = false,
 }: OtherMessageProps) => {
+  // Track optimistically cancelled tool calls
+  const [optimisticallyCancelled, setOptimisticallyCancelled] = useState<Set<string>>(new Set())
+  
+  // Clean up optimistic state when backend confirms cancellation
+  useEffect(() => {
+    if (message.tool_calls) {
+      const cancelledIds = message.tool_calls
+        .filter(toolCall => toolCall.status === 'cancelled')
+        .map(toolCall => toolCall.id)
+      
+      if (cancelledIds.length > 0) {
+        setOptimisticallyCancelled(prev => {
+          const newSet = new Set(prev)
+          cancelledIds.forEach(id => newSet.delete(id))
+          return newSet
+        })
+      }
+    }
+  }, [message.tool_calls])
+  
   // Check if all tool calls are cancelled
   const hasActiveToolCalls = message.tool_calls?.some(
-    toolCall => toolCall.status !== 'cancelled',
+    toolCall => toolCall.status !== 'cancelled' && !optimisticallyCancelled.has(toolCall.id),
   )
 
   // Check if message has attachments
@@ -154,10 +175,50 @@ export const OtherMessage = ({
         {!isEmpty && <MarkdownText>{message.content}</MarkdownText>}
         {message.tool_calls &&
           message.tool_calls.length > 0 &&
-          message.tool_calls
-            .filter(toolCall => toolCall.status !== 'cancelled')
-            .map(toolCall => {
-              return <TaskResultTool key={toolCall.id} toolCall={toolCall} />
+          message.tool_calls.map((toolCall) => {
+              // Create optimistic tool call with cancelled status if optimistically cancelled
+              const optimisticToolCall = optimisticallyCancelled.has(toolCall.id) 
+                ? { ...toolCall, status: 'cancelled' as const }
+                : toolCall
+
+              return (
+                <TaskResultTool 
+                  key={toolCall.id} 
+                  toolCall={optimisticToolCall}
+                  onCancel={async () => {
+                    // Optimistically mark as cancelled
+                    setOptimisticallyCancelled(prev => new Set(prev).add(toolCall.id))
+                    
+                    try {
+                      const response = await fetch(`/api/sessions/${sessionId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          tool_call_id: toolCall.id,
+                          tool_call_index: message.tool_calls?.indexOf(toolCall),
+                        }),
+                      })
+                      if (!response.ok) {
+                        // Revert optimistic update on failure
+                        setOptimisticallyCancelled(prev => {
+                          const newSet = new Set(prev)
+                          newSet.delete(toolCall.id)
+                          return newSet
+                        })
+                      }
+                    } catch (error) {
+                      // Revert optimistic update on failure
+                      setOptimisticallyCancelled(prev => {
+                        const newSet = new Set(prev)
+                        newSet.delete(toolCall.id)
+                        return newSet
+                      })
+                    }
+                  }}
+                />
+              )
             })}
 
         {/* Show typing indicator when streaming tokens and no content yet */}

@@ -100,14 +100,10 @@ export function useNonStreamingState({
       options?: { agent_ids?: string[] },
     ) => {
       if (!user) {
-        console.log('***debug*** Non-streaming: no user, cannot send message')
         return
       }
 
       try {
-        console.log(
-          '***debug*** Non-streaming: sending message to /api/sessions/prompt',
-        )
         const response = await fetch('/api/sessions/prompt', {
           method: 'POST',
           headers: {
@@ -129,9 +125,6 @@ export function useNonStreamingState({
         if (!sessionId || sessionId.startsWith('temp-')) {
           const result = await response.json()
           if (result.session_id && onSessionCreated) {
-            console.log(
-              '***debug*** Non-streaming: session created, calling onSessionCreated',
-            )
             onSessionCreated(result.session_id)
           }
         }
@@ -146,7 +139,6 @@ export function useNonStreamingState({
   )
 
   const clearNonStreamingState = useCallback(() => {
-    console.log('***debug*** Non-streaming: clearing all state')
     setWaitingForResponse(false)
     setOptimisticMessages([])
   }, [])

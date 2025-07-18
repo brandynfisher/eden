@@ -1,5 +1,4 @@
 import { getAuthToken } from '@/lib/auth'
-import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { AxiosError } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
@@ -70,8 +69,6 @@ export async function GET(request: NextRequest) {
       message: 'Unable to determine availability',
     })
   } catch (error) {
-    const errorMessage = handleAxiosServerError(error)
-    console.error('***debug*** Username check error:', errorMessage)
     return new NextResponse(
       JSON.stringify({
         message: 'Internal server error while checking username',
