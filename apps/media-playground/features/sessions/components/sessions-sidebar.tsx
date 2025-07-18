@@ -496,7 +496,7 @@ const AgentSelectorAndNewChat: FC<{
           onClick={handleSettingsClick}
           className="md:hidden h-12 w-12 hover:bg-muted/20 transition-colors flex-shrink-0"
         >
-          <SettingsIcon className="size-4" />
+          <SettingsIcon className="size-7" />
           <span className="sr-only">Agent Settings</span>
         </Button>
       )}
