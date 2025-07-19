@@ -486,6 +486,12 @@ const Session = ({
                 isNewSession && hasOnlyUserMessage
 
               if (isWaitingForFirstResponse) {
+                // Parse mentions from the last user message to determine if we should show loader
+                const lastUserMessage = userMessages[userMessages.length - 1]
+                const mentions = lastUserMessage?.content ? parseMentions(lastUserMessage.content) : []
+                const mentionedAgentIds = getAgentIdsFromMentions(mentions)
+                const shouldShowLoader = session?.agents && session.agents.length === 1 || mentionedAgentIds.length > 0
+
                 return (
                   <>
                     {/* Show existing messages */}
@@ -503,6 +509,7 @@ const Session = ({
                               <UserMessage
                                 key={message._id}
                                 message={message}
+                                session={session}
                               />
                             ))
                           : group
@@ -518,25 +525,27 @@ const Session = ({
                       </div>
                     ))}
 
-                    {/* Show agent typing indicator */}
-                    <div className="mb-4">
-                      <OtherMessage
-                        sessionId={sessionId as string}
-                        message={
-                          {
-                            _id: 'loading-first-response',
-                            content: '',
-                            sender: getRespondingAgent(),
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            session: sessionId,
-                            role: 'assistant',
-                          } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-                        }
-                        showAvatar={true}
-                        isStreamingTokens={true} // This will show the typing indicator
-                      />
-                    </div>
+                    {/* Show agent typing indicator only if appropriate */}
+                    {shouldShowLoader && (
+                      <div className="mb-4">
+                        <OtherMessage
+                          sessionId={sessionId as string}
+                          message={
+                            {
+                              _id: 'loading-first-response',
+                              content: '',
+                              sender: getRespondingAgent(),
+                              createdAt: new Date(),
+                              updatedAt: new Date(),
+                              session: sessionId,
+                              role: 'assistant',
+                            } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                          }
+                          showAvatar={true}
+                          isStreamingTokens={true} // This will show the typing indicator
+                        />
+                      </div>
+                    )}
                   </>
                 )
               }
@@ -625,7 +634,7 @@ const Session = ({
                           ))
                         : isOwnMessage(group[0].sender?._id)
                         ? group.map(message => (
-                            <UserMessage key={message._id} message={message} />
+                            <UserMessage key={message._id} message={message} session={session} />
                           ))
                         : group
                             .filter(message => message.role !== 'tool')

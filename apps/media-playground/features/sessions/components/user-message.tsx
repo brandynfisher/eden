@@ -1,13 +1,24 @@
 import { MessageAttachment } from './message-attachment'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { MarkdownText } from '@/features/sessions/components/markdown-text'
-import { Message } from '@edenlabs/eden-sdk'
+import { Message, SessionV2 } from '@edenlabs/eden-sdk'
 
-export const UserMessage = ({ message }: { message: Message }) => {
+export const UserMessage = ({ 
+  message, 
+  session 
+}: { 
+  message: Message
+  session?: SessionV2 
+}) => {
   const hasAttachments = message.attachments && message.attachments.length > 0
   const hasContent = message.content && message.content.trim().length > 0
 
   if (!hasContent && !hasAttachments) return null
+
+  // Check if this is a multi-agent session and if the message has no mentions
+  const isMultiAgentSession = session?.agents && session.agents.length > 1
+  const hasMentions = message.content && /@\S+/.test(message.content)
+  const shouldShowTip = isMultiAgentSession && !hasMentions
 
   return (
     <div className="flex justify-end py-2">
@@ -28,6 +39,11 @@ export const UserMessage = ({ message }: { message: Message }) => {
         {hasContent && (
           <div className="aui-user-message-content">
             <MarkdownText>{message.content!}</MarkdownText>
+          </div>
+        )}
+        {shouldShowTip && (
+          <div className="text-xs text-muted-foreground mt-1 max-w-xs text-right italic">
+            💡 Tip: @mention an agent to have them respond
           </div>
         )}
       </div>
