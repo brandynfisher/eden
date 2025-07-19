@@ -31,14 +31,30 @@ export const MentionInput = forwardRef<MentionInputRef, MentionInputProps>(({
 
   const containerRef = useRef<HTMLDivElement>(null)
 
+  // Create virtual @agent option for all agents
+  const allAgentsOption = {
+    _id: 'all-agents',
+    username: 'agent',
+    name: 'All Agents',
+    userImage: undefined,
+  } as Agent
+
   const filteredAgents = searchFilter.trim()
-    ? agents.filter(
-        agent =>
-          agent.username.toLowerCase().includes(searchFilter.toLowerCase()) ||
-          (agent.name &&
-            agent.name.toLowerCase().includes(searchFilter.toLowerCase())),
-      )
-    : agents
+    ? [
+        // Always include @agent option if it matches the search
+        ...(allAgentsOption.username.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        allAgentsOption.name.toLowerCase().includes(searchFilter.toLowerCase())
+          ? [allAgentsOption]
+          : []),
+        // Include regular agents that match
+        ...agents.filter(
+          agent =>
+            agent.username.toLowerCase().includes(searchFilter.toLowerCase()) ||
+            (agent.name &&
+              agent.name.toLowerCase().includes(searchFilter.toLowerCase())),
+        ),
+      ]
+    : [allAgentsOption, ...agents]
 
   // Reset active index when search filter changes
   useEffect(() => {
@@ -132,7 +148,7 @@ export const MentionInput = forwardRef<MentionInputRef, MentionInputProps>(({
                     alt={agent.username} 
                   />
                   <AvatarFallback>
-                    {agent.username.slice(0, 2).toUpperCase()}
+                    {agent._id === 'all-agents' ? '👥' : agent.username.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">

@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
+
   // If no session_id, we need agent_ids for creation
   if (!requestJson.session_id && !requestJson.agent_ids) {
     return new Response(
@@ -54,14 +55,18 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           session_id: requestJson.session_id,
-          content: requestJson.content,
-          attachments: requestJson.attachments,
-          agent_ids: requestJson.agent_ids,
-          scenario: requestJson.scenario,
-          budget: requestJson.budget,
-          title: requestJson.title,
-          autonomy_settings: requestJson.autonomy_settings,
+          content: requestJson.content || '',
+          attachments: requestJson.attachments || [],
           stream: sessionConfig.useStreaming,
+          // Always include agent_ids for multi-agent targeting
+          agent_ids: requestJson.agent_ids,
+          // For new sessions, include creation parameters
+          ...(requestJson.session_id ? {} : {
+            scenario: requestJson.scenario,
+            budget: requestJson.budget,
+            title: requestJson.title,
+            autonomy_settings: requestJson.autonomy_settings,
+          }),
         }),
       },
     )

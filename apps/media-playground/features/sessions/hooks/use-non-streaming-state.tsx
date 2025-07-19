@@ -20,6 +20,7 @@ export function useNonStreamingState({
 }: UseNonStreamingStateProps) {
   const [waitingForResponse, setWaitingForResponse] = useState(false)
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([])
+  const [respondingAgentIds, setRespondingAgentIds] = useState<string[]>([])
 
   // Clear waiting state when websocket delivers response
   useEffect(() => {
@@ -28,6 +29,7 @@ export function useNonStreamingState({
       if (lastMessage && lastMessage.role === 'assistant') {
         setWaitingForResponse(false)
         setOptimisticMessages([])
+        setRespondingAgentIds([])
       }
     }
   }, [session?.messages, waitingForResponse, enabled])
@@ -99,6 +101,10 @@ export function useNonStreamingState({
       attachments?: string[],
       options?: { agent_ids?: string[] },
     ) => {
+      // Store the agent IDs for the loading indicators
+      if (options?.agent_ids) {
+        setRespondingAgentIds(options.agent_ids)
+      }
       if (!user) {
         return
       }
@@ -141,11 +147,13 @@ export function useNonStreamingState({
   const clearNonStreamingState = useCallback(() => {
     setWaitingForResponse(false)
     setOptimisticMessages([])
+    setRespondingAgentIds([])
   }, [])
 
   return {
     waitingForResponse,
     optimisticMessages,
+    respondingAgentIds,
     setWaitingForResponse,
     setOptimisticMessages,
     sendMessage,

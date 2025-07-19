@@ -399,6 +399,8 @@ export const createSessionMessage = async (
       },
       user_id: userId,
       stream: stream || false,
+      // Include agent_ids from request body if provided (for multi-agent targeting)
+      ...(agent_ids && { actor_agent_ids: agent_ids }),
     },
     headers: {
       'X-Client-Platform': 'web',

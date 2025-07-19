@@ -269,6 +269,84 @@ const Session = ({
     return user?._id === senderId
   }
 
+  // Parse mentions from message content
+  const parseMentions = useCallback((content: string): string[] => {
+    const mentionRegex = /@(\S+)/g
+    const mentions: string[] = []
+    let match
+    
+    while ((match = mentionRegex.exec(content)) !== null) {
+      mentions.push(match[1])
+    }
+    
+    return mentions
+  }, [])
+
+  // Get agent IDs from mentions
+  const getAgentIdsFromMentions = useCallback((mentions: string[]): string[] => {
+    if (!session?.agents) return []
+    
+    const agentIds: string[] = []
+    
+    for (const mention of mentions) {
+      if (mention === 'agent') {
+        // @agent means all agents
+        return session.agents.map(agent => agent._id)
+      } else {
+        // Find specific agent by username
+        const agent = session.agents.find(a => a.username === mention)
+        if (agent) {
+          agentIds.push(agent._id)
+        }
+      }
+    }
+    
+    return agentIds
+  }, [session?.agents])
+
+  // Get responding agents based on mentions
+  const getRespondingAgents = useCallback((agentIds: string[]): Array<{
+    _id: string
+    username: string
+    name: string
+    userImage?: string
+  }> => {
+    if (!session?.agents || agentIds.length === 0) {
+      // Fallback to first agent if no mentions
+      if (session?.agents && session.agents.length > 0) {
+        const agent = session.agents[0]
+        return [{
+          _id: agent._id,
+          username: agent.username,
+          name: agent.name,
+          userImage: agent.userImage?.startsWith('https://')
+            ? agent.userImage
+            : getCloudfrontUrl(agent.userImage),
+        }]
+      }
+      return []
+    }
+
+    return agentIds.map(agentId => {
+      const agent = session!.agents.find(a => a._id === agentId)
+      if (agent) {
+        return {
+          _id: agent._id,
+          username: agent.username,
+          name: agent.name,
+          userImage: agent.userImage?.startsWith('https://')
+            ? agent.userImage
+            : getCloudfrontUrl(agent.userImage),
+        }
+      }
+      return {
+        _id: agentId,
+        username: 'Unknown',
+        name: 'Unknown Agent',
+      }
+    })
+  }, [session?.agents])
+
   const filteredMessages = useMemo(() => {
     const existingMessages =
       session?.messages?.filter(
@@ -584,7 +662,10 @@ const Session = ({
             <NonStreamingMessageDisplay
               sessionId={sessionId as string}
               waitingForResponse={nonStreamingState.waitingForResponse}
-              getRespondingAgent={getRespondingAgent}
+              getRespondingAgents={() => {
+                // Get agents from stored agent IDs
+                return getRespondingAgents(nonStreamingState.respondingAgentIds)
+              }}
             />
           )}
 
@@ -612,6 +693,15 @@ const Session = ({
             onStreamingMessage={(content, attachments) => {
               clearErrors()
               setCancelledNotice(false)
+
+              // Parse mentions to get agent IDs
+              const mentions = parseMentions(content)
+              const agentIds = getAgentIdsFromMentions(mentions)
+              
+              // Don't send request if no mentions (unless it's a single agent session)
+              if (agentIds.length === 0 && session?.agents && session.agents.length > 1) {
+                return
+              }
 
               if (sessionConfig.useStreaming) {
                 streamingState.initializeStreaming()
@@ -670,7 +760,9 @@ const Session = ({
                   ...prev,
                   userMessage,
                 ])
-                nonStreamingState.sendMessage(content, attachments)
+                
+                // Pass agent_ids in options
+                nonStreamingState.sendMessage(content, attachments, { agent_ids: agentIds })
                 setTimeout(scrollToBottom, 100)
               }
             }}
