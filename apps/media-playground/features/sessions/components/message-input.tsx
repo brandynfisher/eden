@@ -1,7 +1,7 @@
 'use client'
 
 import { Attachment, FileUploadProgress } from './attachment'
-import { MentionInput } from './mention-input'
+import { MentionInput, MentionInputRef } from './mention-input'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { Button } from '@/components/ui/button'
 import {
@@ -95,6 +95,7 @@ export const MessageInput = ({
   const [mentionTrigger, setMentionTrigger] = useState('')
   const [mentionPosition, setMentionPosition] = useState(0)
   const textareaRef = useRef<AutosizeTextAreaRef>(null)
+  const mentionInputRef = useRef<MentionInputRef>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -290,36 +291,64 @@ export const MessageInput = ({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === '@') {
-      const textarea = e.currentTarget
-      const cursorPosition = textarea.selectionStart
-      setMentionPosition(cursorPosition)
-      setMentionTrigger('')
-      setShowMention(true)
+    // If mention dropdown is open, delegate navigation to it
+    if (showMention && mentionInputRef.current) {
+      const handled = mentionInputRef.current.handleKeyDown(e)
+      if (handled) {
+        e.preventDefault()
+        e.stopPropagation()
+        return true
+      }
     }
+    return false
   }
 
   const handleMentionSelect = (agent: Agent) => {
     const currentValue = form.getValues('content')
     const beforeMention = currentValue.slice(0, mentionPosition)
-    const afterMention = currentValue.slice(
-      mentionPosition + mentionTrigger.length + 1,
-    )
+    const afterMention = currentValue.slice(mentionPosition + mentionTrigger.length + 1)
     const newValue = `${beforeMention}@${agent.username} ${afterMention}`
+    
     form.setValue('content', newValue)
     setShowMention(false)
-    // Focus the textarea after a short delay to ensure the value is updated
+    
+    // Move cursor to after the mention
+    const newCursorPosition = mentionPosition + agent.username.length + 2 // +2 for @ and space
     setTimeout(() => {
-      textareaRef.current?.textArea?.focus()
+      const textarea = textareaRef.current?.textArea
+      if (textarea) {
+        textarea.focus()
+        textarea.setSelectionRange(newCursorPosition, newCursorPosition)
+      }
     }, 0)
   }
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
-    if (showMention) {
-      const cursorPosition = e.target.selectionStart
-      const textAfterTrigger = value.slice(mentionPosition + 1, cursorPosition)
-      setMentionTrigger(textAfterTrigger)
+    const cursorPosition = e.target.selectionStart
+    
+    // Check if we just typed an @ symbol
+    if (!showMention && value[cursorPosition - 1] === '@') {
+      // Check if it's at the start or preceded by a space/newline
+      const charBefore = value[cursorPosition - 2]
+      if (!charBefore || charBefore === ' ' || charBefore === '\n') {
+        setMentionPosition(cursorPosition - 1)
+        setMentionTrigger('')
+        setShowMention(true)
+      }
+    } else if (showMention) {
+      // Update the mention trigger text
+      const textAfterAt = value.slice(mentionPosition + 1, cursorPosition)
+      
+      // If the cursor moved before the @, or @ was deleted, hide mention
+      if (cursorPosition <= mentionPosition || value[mentionPosition] !== '@') {
+        setShowMention(false)
+      } else if (textAfterAt.includes(' ') || textAfterAt.includes('\n')) {
+        // If user typed space or newline, hide mention
+        setShowMention(false)
+      } else {
+        setMentionTrigger(textAfterAt)
+      }
     }
   }
 
@@ -500,8 +529,9 @@ export const MessageInput = ({
                           className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-1"
                           disabled={isSubmitting}
                           onKeyDown={e => {
-                            handleKeyDown(e)
-                            if (e.key === 'Enter' && !e.shiftKey) {
+                            const mentionHandled = handleKeyDown(e)
+                            // Only submit on Enter if mention dropdown didn't handle it
+                            if (!mentionHandled && e.key === 'Enter' && !e.shiftKey) {
                               e.preventDefault()
                               form.handleSubmit(onSubmit)()
                             }
@@ -518,9 +548,11 @@ export const MessageInput = ({
                 {showMention && session?.agents && (
                   <div className="absolute bottom-full mb-2">
                     <MentionInput
+                      ref={mentionInputRef}
                       agents={session.agents}
                       onSelect={handleMentionSelect}
                       onClose={() => setShowMention(false)}
+                      searchFilter={mentionTrigger}
                     />
                   </div>
                 )}

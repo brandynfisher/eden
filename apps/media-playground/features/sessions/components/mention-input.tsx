@@ -1,54 +1,81 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
 } from '@/components/ui/command'
+import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
-import { Check } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 interface MentionInputProps {
   agents: Agent[]
   onSelect: (agent: Agent) => void
   onClose: () => void
+  searchFilter?: string
 }
 
-export const MentionInput = ({
+export interface MentionInputRef {
+  handleKeyDown: (event: React.KeyboardEvent) => boolean
+}
+
+export const MentionInput = forwardRef<MentionInputRef, MentionInputProps>(({
   agents,
   onSelect,
   onClose,
-}: MentionInputProps) => {
-  const [value, setValue] = useState('')
-  const [search, setSearch] = useState('')
+  searchFilter = '',
+}, ref) => {
   const [activeIndex, setActiveIndex] = useState(0)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
-  const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const filteredAgents =
-    search.trim() && search.trim() !== '@'
-      ? agents.filter(
-          agent =>
-            agent.username.toLowerCase().includes(search.toLowerCase()) ||
-            (agent.name &&
-              agent.name.toLowerCase().includes(search.toLowerCase())),
-        )
-      : agents
+  const filteredAgents = searchFilter.trim()
+    ? agents.filter(
+        agent =>
+          agent.username.toLowerCase().includes(searchFilter.toLowerCase()) ||
+          (agent.name &&
+            agent.name.toLowerCase().includes(searchFilter.toLowerCase())),
+      )
+    : agents
 
+  // Reset active index when search filter changes
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus()
+    setActiveIndex(0)
+    setHoveredIndex(null)
+  }, [searchFilter])
+
+  const handleKeyDownInternal = useCallback((event: React.KeyboardEvent): boolean => {
+    if (!filteredAgents.length) return false
+
+    if (event.key === 'ArrowDown') {
+      setHoveredIndex(null)
+      setActiveIndex(prev => (prev + 1) % filteredAgents.length)
+      return true
+    } else if (event.key === 'ArrowUp') {
+      setHoveredIndex(null)
+      setActiveIndex(prev =>
+        prev === 0 ? filteredAgents.length - 1 : prev - 1,
+      )
+      return true
+    } else if (event.key === 'Enter') {
+      const agent = filteredAgents[activeIndex]
+      if (agent) {
+        onSelect(agent)
+      }
+      return true
+    } else if (event.key === 'Escape') {
+      onClose()
+      return true
     }
-  }, [])
+    
+    return false
+  }, [filteredAgents, activeIndex, onSelect, onClose])
 
-  useEffect(() => {
-    setSearch('')
-  }, [])
+  useImperativeHandle(ref, () => ({
+    handleKeyDown: handleKeyDownInternal,
+  }), [handleKeyDownInternal])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -60,45 +87,12 @@ export const MentionInput = ({
       }
     }
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose()
-      }
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!filteredAgents.length) return
-
-      if (event.key === 'ArrowDown') {
-        event.preventDefault()
-        setHoveredIndex(null) // clear mouse highlight when navigating
-        setActiveIndex(prev => (prev + 1) % filteredAgents.length)
-      } else if (event.key === 'ArrowUp') {
-        event.preventDefault()
-        setHoveredIndex(null)
-        setActiveIndex(prev =>
-          prev === 0 ? filteredAgents.length - 1 : prev - 1,
-        )
-      } else if (event.key === 'Enter') {
-        event.preventDefault()
-        const agent = filteredAgents[activeIndex]
-        if (agent) {
-          setValue(agent.username)
-          onSelect(agent)
-        }
-      }
-    }
-
     document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleEscape)
-    document.addEventListener('keydown', handleKeyDown)
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-      document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [filteredAgents, activeIndex, onSelect, onClose])
+  }, [onClose])
 
   return (
     <div
@@ -106,17 +100,11 @@ export const MentionInput = ({
       className="w-[300px] p-0 bg-popover rounded-md border"
     >
       <Command>
-        <CommandInput
-          ref={inputRef}
-          placeholder="Search agents..."
-          value={search}
-          onValueChange={val => {
-            setSearch(val.replace(/^@+/, ''))
-            setActiveIndex(0)
-            setHoveredIndex(null)
-          }}
-        />
-        <CommandEmpty>No agent found.</CommandEmpty>
+        {filteredAgents.length === 0 && (
+          <div className="py-6 text-center text-sm text-muted-foreground">
+            No agent found.
+          </div>
+        )}
         <CommandGroup
           onMouseLeave={() => setHoveredIndex(null)} // clears mouse highlight
         >
@@ -131,7 +119,6 @@ export const MentionInput = ({
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
                 onSelect={() => {
-                  setValue(agent.username)
                   onSelect(agent)
                 }}
                 className={cn(
@@ -140,7 +127,10 @@ export const MentionInput = ({
                 )}
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={agent.avatar_url} alt={agent.username} />
+                  <AvatarImage 
+                    src={agent.userImage ? getCloudfrontUrl(agent.userImage) : undefined} 
+                    alt={agent.username} 
+                  />
                   <AvatarFallback>
                     {agent.username.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
@@ -153,12 +143,6 @@ export const MentionInput = ({
                     </span>
                   )}
                 </div>
-                <Check
-                  className={cn(
-                    'ml-auto h-4 w-4',
-                    value === agent.username ? 'opacity-100' : 'opacity-0',
-                  )}
-                />
               </CommandItem>
             )
           })}
@@ -166,4 +150,6 @@ export const MentionInput = ({
       </Command>
     </div>
   )
-}
+})
+
+MentionInput.displayName = 'MentionInput'
