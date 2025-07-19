@@ -312,8 +312,9 @@ const Session = ({
     userImage?: string
   }> => {
     if (!session?.agents || agentIds.length === 0) {
-      // Fallback to first agent if no mentions
-      if (session?.agents && session.agents.length > 0) {
+      // Only fallback to first agent in single-agent sessions
+      // In multi-agent sessions, no mentions = no loaders
+      if (session?.agents && session.agents.length === 1) {
         const agent = session.agents[0]
         return [{
           _id: agent._id,
@@ -345,7 +346,7 @@ const Session = ({
         name: 'Unknown Agent',
       }
     })
-  }, [session?.agents])
+  }, [session])
 
   const filteredMessages = useMemo(() => {
     const existingMessages =
