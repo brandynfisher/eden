@@ -378,6 +378,17 @@ export const MessageInput = ({
 
   const [liveAudioState, setLiveAudioState] = useState({ isRecording: false, isProcessing: false })
 
+  // Auto-focus the textarea when component mounts (when session loads)
+  useEffect(() => {
+    const textarea = textareaRef.current?.textArea
+    if (textarea) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        textarea.focus()
+      }, 100)
+    }
+  }, [])
+
   // Poll for live audio state changes when enabled - reduced frequency
   useEffect(() => {
     if (!enableLiveAudio) return
