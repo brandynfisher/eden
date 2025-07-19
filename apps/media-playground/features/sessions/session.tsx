@@ -545,7 +545,8 @@ const Session = ({
                 // If we have explicit waiting states, show loading
                 if (
                   !sessionConfig.useStreaming &&
-                  nonStreamingState.waitingForResponse
+                  nonStreamingState.waitingForResponse &&
+                  ((session?.messages && session.messages.length > 0) || session?.title)
                 ) {
                   return (
                     <div className="mb-4">
@@ -572,7 +573,8 @@ const Session = ({
                 if (
                   sessionConfig.useStreaming &&
                   (streamingState.isStreamingTokens ||
-                    streamingState.waitingForWebSocket)
+                    streamingState.waitingForWebSocket) &&
+                  ((session?.messages && session.messages.length > 0) || session?.title)
                 ) {
                   return (
                     <div className="mb-4">
@@ -664,7 +666,7 @@ const Session = ({
               waitingForResponse={nonStreamingState.waitingForResponse}
               getRespondingAgents={() => {
                 // Get agents from stored agent IDs
-                return getRespondingAgents(nonStreamingState.respondingAgentIds)
+                return getRespondingAgents(nonStreamingState.respondingAgentIds || [])
               }}
             />
           )}
@@ -696,11 +698,16 @@ const Session = ({
 
               // Parse mentions to get agent IDs
               const mentions = parseMentions(content)
-              const agentIds = getAgentIdsFromMentions(mentions)
+              let agentIds = getAgentIdsFromMentions(mentions)
               
-              // Don't send request if no mentions (unless it's a single agent session)
+              // If no mentions but it's a multi-agent session, don't proceed unless user @mentions an agent
               if (agentIds.length === 0 && session?.agents && session.agents.length > 1) {
                 return
+              }
+              
+              // If no agent IDs and it's a single agent session, use the single agent
+              if (agentIds.length === 0 && session?.agents && session.agents.length === 1) {
+                agentIds = [session.agents[0]._id]
               }
 
               if (sessionConfig.useStreaming) {

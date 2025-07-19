@@ -1,5 +1,5 @@
 import { Creator, Message, SessionV2 } from '@edenlabs/eden-sdk'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, Dispatch, SetStateAction } from 'react'
 
 interface UseNonStreamingStateProps {
   sessionId: string
@@ -17,7 +17,15 @@ export function useNonStreamingState({
   onError,
   user,
   onSessionCreated,
-}: UseNonStreamingStateProps) {
+}: UseNonStreamingStateProps): {
+  waitingForResponse: boolean
+  optimisticMessages: Message[]
+  respondingAgentIds: string[]
+  setWaitingForResponse: Dispatch<SetStateAction<boolean>>
+  setOptimisticMessages: Dispatch<SetStateAction<Message[]>>
+  sendMessage: (content: string, attachments?: string[], options?: { agent_ids?: string[] }) => Promise<void>
+  clearNonStreamingState: () => void
+} {
   const [waitingForResponse, setWaitingForResponse] = useState(false)
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([])
   const [respondingAgentIds, setRespondingAgentIds] = useState<string[]>([])
