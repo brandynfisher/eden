@@ -168,6 +168,19 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     }
   }
 
+  const handleBackToChat = () => {
+    // Reset view mode to chat first
+    setViewMode('chat')
+
+    if (sessionId) {
+      // If we have a sessionId, go back to that specific chat session
+      router.push(`/chat/${agentId}/${sessionId}`)
+    } else {
+      // Otherwise, go back to the agent's homepage
+      router.push(`/chat/${agentId}`)
+    }
+  }
+
   const handleAgentSelect = (selectedAgent: Agent) => {
     // If selecting the same agent we're already on, just close the modal
     if (selectedAgent.username === agentId) {
@@ -205,6 +218,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         onSettingsClick={() => setViewMode('settings')}
         isSidebarCollapsed={isSidebarCollapsed}
         onSidebarToggle={handleSidebarToggle}
+        viewMode={viewMode}
+        onBackToChat={handleBackToChat}
       />
 
       <div className="flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[104px]">
