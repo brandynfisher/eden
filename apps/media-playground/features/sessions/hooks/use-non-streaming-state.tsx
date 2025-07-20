@@ -1,5 +1,5 @@
 import { Creator, Message, SessionV2 } from '@edenlabs/eden-sdk'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, Dispatch, SetStateAction } from 'react'
 
 interface UseNonStreamingStateProps {
   sessionId: string
@@ -17,9 +17,18 @@ export function useNonStreamingState({
   onError,
   user,
   onSessionCreated,
-}: UseNonStreamingStateProps) {
+}: UseNonStreamingStateProps): {
+  waitingForResponse: boolean
+  optimisticMessages: Message[]
+  respondingAgentIds: string[]
+  setWaitingForResponse: Dispatch<SetStateAction<boolean>>
+  setOptimisticMessages: Dispatch<SetStateAction<Message[]>>
+  sendMessage: (content: string, attachments?: string[], options?: { agent_ids?: string[] }) => Promise<void>
+  clearNonStreamingState: () => void
+} {
   const [waitingForResponse, setWaitingForResponse] = useState(false)
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([])
+  const [respondingAgentIds, setRespondingAgentIds] = useState<string[]>([])
 
   // Clear waiting state when websocket delivers response
   useEffect(() => {
@@ -28,6 +37,7 @@ export function useNonStreamingState({
       if (lastMessage && lastMessage.role === 'assistant') {
         setWaitingForResponse(false)
         setOptimisticMessages([])
+        setRespondingAgentIds([])
       }
     }
   }, [session?.messages, waitingForResponse, enabled])
@@ -99,6 +109,10 @@ export function useNonStreamingState({
       attachments?: string[],
       options?: { agent_ids?: string[] },
     ) => {
+      // Store the agent IDs for the loading indicators
+      if (options?.agent_ids) {
+        setRespondingAgentIds(options.agent_ids)
+      }
       if (!user) {
         return
       }
@@ -141,11 +155,13 @@ export function useNonStreamingState({
   const clearNonStreamingState = useCallback(() => {
     setWaitingForResponse(false)
     setOptimisticMessages([])
+    setRespondingAgentIds([])
   }, [])
 
   return {
     waitingForResponse,
     optimisticMessages,
+    respondingAgentIds,
     setWaitingForResponse,
     setOptimisticMessages,
     sendMessage,

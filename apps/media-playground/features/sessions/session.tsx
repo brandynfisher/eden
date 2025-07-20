@@ -269,6 +269,85 @@ const Session = ({
     return user?._id === senderId
   }
 
+  // Parse mentions from message content
+  const parseMentions = useCallback((content: string): string[] => {
+    const mentionRegex = /@(\S+)/g
+    const mentions: string[] = []
+    let match
+    
+    while ((match = mentionRegex.exec(content)) !== null) {
+      mentions.push(match[1])
+    }
+    
+    return mentions
+  }, [])
+
+  // Get agent IDs from mentions
+  const getAgentIdsFromMentions = useCallback((mentions: string[]): string[] => {
+    if (!session?.agents) return []
+    
+    const agentIds: string[] = []
+    
+    for (const mention of mentions) {
+      if (mention === 'agent') {
+        // @agent means all agents
+        return session.agents.map(agent => agent._id)
+      } else {
+        // Find specific agent by username
+        const agent = session.agents.find(a => a.username === mention)
+        if (agent) {
+          agentIds.push(agent._id)
+        }
+      }
+    }
+    
+    return agentIds
+  }, [session?.agents])
+
+  // Get responding agents based on mentions
+  const getRespondingAgents = useCallback((agentIds: string[]): Array<{
+    _id: string
+    username: string
+    name: string
+    userImage?: string
+  }> => {
+    if (!session?.agents || agentIds.length === 0) {
+      // Only fallback to first agent in single-agent sessions
+      // In multi-agent sessions, no mentions = no loaders
+      if (session?.agents && session.agents.length === 1) {
+        const agent = session.agents[0]
+        return [{
+          _id: agent._id,
+          username: agent.username,
+          name: agent.name,
+          userImage: agent.userImage?.startsWith('https://')
+            ? agent.userImage
+            : getCloudfrontUrl(agent.userImage),
+        }]
+      }
+      return []
+    }
+
+    return agentIds.map(agentId => {
+      const agent = session!.agents.find(a => a._id === agentId)
+      if (agent) {
+        return {
+          _id: agent._id,
+          username: agent.username,
+          name: agent.name,
+          userImage: agent.userImage?.startsWith('https://')
+            ? agent.userImage
+            : getCloudfrontUrl(agent.userImage),
+        }
+      }
+      return {
+        _id: agentId,
+        username: 'Unknown',
+        name: 'Unknown Agent',
+      }
+    })
+  }, [session])
+
   const filteredMessages = useMemo(() => {
     const existingMessages =
       session?.messages?.filter(
@@ -407,6 +486,12 @@ const Session = ({
                 isNewSession && hasOnlyUserMessage
 
               if (isWaitingForFirstResponse) {
+                // Parse mentions from the last user message to determine if we should show loader
+                const lastUserMessage = userMessages[userMessages.length - 1]
+                const mentions = lastUserMessage?.content ? parseMentions(lastUserMessage.content) : []
+                const mentionedAgentIds = getAgentIdsFromMentions(mentions)
+                const shouldShowLoader = session?.agents && session.agents.length === 1 || mentionedAgentIds.length > 0
+
                 return (
                   <>
                     {/* Show existing messages */}
@@ -424,6 +509,7 @@ const Session = ({
                               <UserMessage
                                 key={message._id}
                                 message={message}
+                                session={session}
                               />
                             ))
                           : group
@@ -439,25 +525,29 @@ const Session = ({
                       </div>
                     ))}
 
-                    {/* Show agent typing indicator */}
-                    <div className="mb-4">
-                      <OtherMessage
-                        sessionId={sessionId as string}
-                        message={
-                          {
-                            _id: 'loading-first-response',
-                            content: '',
-                            sender: getRespondingAgent(),
-                            createdAt: new Date(),
-                            updatedAt: new Date(),
-                            session: sessionId,
-                            role: 'assistant',
-                          } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-                        }
-                        showAvatar={true}
-                        isStreamingTokens={true} // This will show the typing indicator
-                      />
-                    </div>
+                    {/* Show agent typing indicator only if appropriate */}
+                    {shouldShowLoader && (
+                      <div className="mb-4">
+                        <OtherMessage
+                          sessionId={sessionId as string}
+                          message={
+                            {
+                              _id: 'loading-first-response',
+                              content: '',
+                              sender: mentionedAgentIds.length > 0 
+                                ? getRespondingAgents(mentionedAgentIds)[0] || getRespondingAgent()
+                                : getRespondingAgent(),
+                              createdAt: new Date(),
+                              updatedAt: new Date(),
+                              session: sessionId,
+                              role: 'assistant',
+                            } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                          }
+                          showAvatar={true}
+                          isStreamingTokens={true} // This will show the typing indicator
+                        />
+                      </div>
+                    )}
                   </>
                 )
               }
@@ -467,7 +557,8 @@ const Session = ({
                 // If we have explicit waiting states, show loading
                 if (
                   !sessionConfig.useStreaming &&
-                  nonStreamingState.waitingForResponse
+                  nonStreamingState.waitingForResponse &&
+                  ((session?.messages && session.messages.length > 0) || session?.title)
                 ) {
                   return (
                     <div className="mb-4">
@@ -494,7 +585,8 @@ const Session = ({
                 if (
                   sessionConfig.useStreaming &&
                   (streamingState.isStreamingTokens ||
-                    streamingState.waitingForWebSocket)
+                    streamingState.waitingForWebSocket) &&
+                  ((session?.messages && session.messages.length > 0) || session?.title)
                 ) {
                   return (
                     <div className="mb-4">
@@ -544,7 +636,7 @@ const Session = ({
                           ))
                         : isOwnMessage(group[0].sender?._id)
                         ? group.map(message => (
-                            <UserMessage key={message._id} message={message} />
+                            <UserMessage key={message._id} message={message} session={session} />
                           ))
                         : group
                             .filter(message => message.role !== 'tool')
@@ -584,7 +676,10 @@ const Session = ({
             <NonStreamingMessageDisplay
               sessionId={sessionId as string}
               waitingForResponse={nonStreamingState.waitingForResponse}
-              getRespondingAgent={getRespondingAgent}
+              getRespondingAgents={() => {
+                // Get agents from stored agent IDs
+                return getRespondingAgents(nonStreamingState.respondingAgentIds || [])
+              }}
             />
           )}
 
@@ -612,6 +707,18 @@ const Session = ({
             onStreamingMessage={(content, attachments) => {
               clearErrors()
               setCancelledNotice(false)
+
+              // Parse mentions to get agent IDs
+              const mentions = parseMentions(content)
+              let agentIds = getAgentIdsFromMentions(mentions)
+              
+              // If no agent IDs and it's a single agent session, use the single agent
+              if (agentIds.length === 0 && session?.agents && session.agents.length === 1) {
+                agentIds = [session.agents[0]._id]
+              }
+              
+              // For multi-agent sessions with no mentions, agentIds will remain empty array
+              // This will still create the user message but won't trigger any agent responses
 
               if (sessionConfig.useStreaming) {
                 streamingState.initializeStreaming()
@@ -670,7 +777,9 @@ const Session = ({
                   ...prev,
                   userMessage,
                 ])
-                nonStreamingState.sendMessage(content, attachments)
+                
+                // Pass agent_ids in options
+                nonStreamingState.sendMessage(content, attachments, { agent_ids: agentIds })
                 setTimeout(scrollToBottom, 100)
               }
             }}

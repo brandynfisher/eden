@@ -125,7 +125,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         content: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),
         stream: Type.Optional(Type.Boolean()),
-        agent_ids: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
+        agent_ids: Type.Optional(Type.Array(Type.String())),
         scenario: Type.Optional(Type.String({ maxLength: 1000 })),
         budget: Type.Optional(
           Type.Object({
