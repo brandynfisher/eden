@@ -196,6 +196,7 @@ Please await further instructions.`
             isRecording={state.isRecording}
             isProcessing={state.isProcessing}
             onStop={handleStopRecording}
+            actionIntervalProgress={state.actionIntervalProgress}
           />
         </div>
       )}
