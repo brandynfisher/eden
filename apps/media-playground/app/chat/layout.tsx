@@ -25,8 +25,10 @@ import React, {
   PropsWithChildren,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
+import { ImperativePanelHandle } from 'react-resizable-panels'
 
 // Custom sidebar content for agent chat
 const SessionChatSidebarContent: FC<{
@@ -125,6 +127,17 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   }, [agent, user, isOwner, viewMode, agentId, router])
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
+
+  const handleSidebarToggle = () => {
+    if (sidebarPanelRef.current) {
+      if (isSidebarCollapsed) {
+        sidebarPanelRef.current.expand()
+      } else {
+        sidebarPanelRef.current.collapse()
+      }
+    }
+  }
 
   const handleSessionSelect = (sessionId: string) => {
     // Navigate to the session URL
@@ -191,9 +204,10 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         onAgentSelect={() => setIsAgentSelectorOpen(true)}
         onSettingsClick={() => setViewMode('settings')}
         isSidebarCollapsed={isSidebarCollapsed}
+        onSidebarToggle={handleSidebarToggle}
       />
 
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-24">
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[104px]">
         {/* AGENT SELECTOR MODAL */}
         <SingleAgentSelectorModal
           open={isAgentSelectorOpen}
@@ -233,6 +247,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         >
           {/* Desktop Sidebar */}
           <ResizablePanel
+            ref={sidebarPanelRef}
             defaultSize={20}
             minSize={15}
             maxSize={30}

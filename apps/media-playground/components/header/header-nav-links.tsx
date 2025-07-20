@@ -16,11 +16,11 @@ const HeaderNavLinks = ({
   const { getChatUrl, isHydrated } = useLastAgent()
 
   const linkClassName =
-    'text-sm font-medium text-muted-foreground hover:text-foreground transition-colors'
+    'text-lg font-semibold text-muted-foreground hover:text-foreground transition-colors'
 
   const baseClassName =
     orientation === 'horizontal'
-      ? 'flex items-center gap-4'
+      ? 'flex items-center gap-6'
       : 'flex flex-col gap-2'
 
   const handleLinkClick = () => {
@@ -36,6 +36,9 @@ const HeaderNavLinks = ({
       >
         Chat
       </Link>
+      {orientation === 'horizontal' && (
+        <span className="text-muted-foreground/60 text-sm">|</span>
+      )}
       <Link
         href="/explore?type=agents"
         className={linkClassName}
@@ -43,6 +46,9 @@ const HeaderNavLinks = ({
       >
         Explore
       </Link>
+      {orientation === 'horizontal' && (
+        <span className="text-muted-foreground/60 text-sm">|</span>
+      )}
       <Link
         href="/explore?type=tools"
         className={linkClassName}
