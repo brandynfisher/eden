@@ -47,7 +47,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           // Different top margins based on session ID and screen size
           sessionId === 'new' || !sessionId
             ? 'top-16 md:top-14' // Single navbar on new session page (desktop)
-            : 'top-16 md:top-24' // Double navbar on existing session pages
+            : 'top-16 md:top-[104px]' // Double navbar on existing session pages (56px + 48px)
         }`}
       >
         {/* MOBILE LEFT BAR SHEET FOR SESSIONS - only show when sidebar is enabled */}

@@ -6,12 +6,6 @@ import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
   Form,
   FormControl,
   FormDescription,
@@ -38,8 +32,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
   AlertCircle,
-  ChevronDownIcon,
   Loader2,
+  PencilIcon,
   SettingsIcon,
   UserIcon,
   WrenchIcon,
@@ -253,7 +247,10 @@ type AgentFormDto = z.infer<typeof agentSchema>
 const AgentEditView: FC<{
   agent: Agent
   user: unknown
-}> = ({ agent }) => {
+  sessionId?: string
+  onBackToChat?: () => void
+  onNewChat?: () => void
+}> = ({ agent, onNewChat }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
@@ -376,22 +373,6 @@ const AgentEditView: FC<{
     }
   }
 
-  // Get tab display name
-  const getTabDisplayName = (tab: string) => {
-    switch (tab) {
-      case 'profile':
-        return 'Profile'
-      case 'concepts':
-        return 'Tools'
-      case 'deployments':
-        return 'Deployments'
-      case 'permissions':
-        return 'Permissions'
-      default:
-        return 'Profile'
-    }
-  }
-
   // Get available tabs
   const getAvailableTabs = () => {
     const tabs = [
@@ -416,56 +397,76 @@ const AgentEditView: FC<{
     return (
       <div className="sticky top-0 z-10 border-b border-border bg-background">
         <div className="px-6">
-          {/* Desktop tabs */}
+          {/* Desktop and mobile horizontal tabs */}
           <div className="hidden sm:flex space-x-8 overflow-x-auto">
-            {availableTabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-                  activeTab === tab.key
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground',
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+            <div className="flex space-x-8 overflow-x-auto flex-1">
+              {availableTabs.map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={cn(
+                    'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                    activeTab === tab.key
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground',
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-          {/* Mobile dropdown */}
-          <div className="sm:hidden py-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {/* New Chat icon - always show when in settings */}
+            {onNewChat && (
+              <div className="flex items-center py-4">
                 <Button
                   variant="outline"
-                  className="w-full justify-between"
                   size="sm"
+                  onClick={onNewChat}
+                  className="px-3"
+                  aria-label="New Chat"
                 >
-                  {getTabDisplayName(activeTab)}
-                  <ChevronDownIcon className="w-4 h-4" />
+                  <PencilIcon className="w-4 h-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-full" align="start">
-                {availableTabs.map(tab => {
-                  const Icon = tab.icon
-                  return (
-                    <DropdownMenuItem
-                      key={tab.key}
-                      onClick={() => setActiveTab(tab.key)}
-                      className={cn(
-                        'flex items-center gap-2',
-                        activeTab === tab.key && 'bg-accent',
-                      )}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {tab.label}
-                    </DropdownMenuItem>
-                  )
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile horizontal tabs */}
+          <div className="sm:hidden">
+            <div className="flex items-center justify-between py-4">
+              <div className="flex space-x-6 overflow-x-auto flex-1">
+                {availableTabs.map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={cn(
+                      'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors',
+                      activeTab === tab.key
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground',
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* New Chat icon - always show when in settings */}
+              {onNewChat && (
+                <div className="flex items-center pl-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onNewChat}
+                    className="px-3"
+                    aria-label="New Chat"
+                  >
+                    <PencilIcon className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -24,6 +24,7 @@ import axios from 'axios'
 import {
   BrainIcon,
   CheckIcon,
+  ChevronRightIcon,
   ClockIcon,
   EditIcon,
   ImageIcon,
@@ -401,7 +402,7 @@ const TopLeft: FC<{
   )
 }
 
-// Agent selector and New Chat two-column layout
+// Agent selector and New Chat - two separate rows for mobile
 const AgentSelectorAndNewChat: FC<{
   onItemClick?: () => void
   isChat?: boolean
@@ -449,36 +450,56 @@ const AgentSelectorAndNewChat: FC<{
   const showSettingsButton = agent && isAgentOwner(agent, userId)
 
   return (
-    <div className="flex gap-2 mb-2 items-center">
-      {/* Agent selector - left column */}
-      {agent && (
-        <button
-          onClick={handleAgentClick}
-          className="flex items-center justify-center hover:bg-muted/10 rounded-lg p-1 transition-all duration-200 hover:scale-[1.02] flex-shrink-0"
-        >
-          <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors">
-            <AvatarImage
-              src={
-                agent.userImage && agent.userImage.trim()
-                  ? getCloudfrontOriginalUrl(agent.userImage)
-                  : undefined
-              }
-              alt={agent.name}
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-muted text-sm font-medium">
-              {agent.username?.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </button>
-      )}
+    <div className="mb-2 space-y-2">
+      {/* Row 1: Agent selector with settings button */}
+      <div className="flex gap-2 items-center">
+        {/* Agent selector */}
+        {agent && (
+          <button
+            onClick={handleAgentClick}
+            className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] flex-1 min-w-0"
+          >
+            <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
+              <AvatarImage
+                src={
+                  agent.userImage && agent.userImage.trim()
+                    ? getCloudfrontOriginalUrl(agent.userImage)
+                    : undefined
+                }
+                alt={agent.name}
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-muted text-sm font-medium">
+                {agent.username?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-semibold text-base text-foreground truncate">
+              {agent.username}
+            </span>
+            <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          </button>
+        )}
 
-      {/* New Chat button - middle column */}
+        {/* Settings button */}
+        {showSettingsButton && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSettingsClick}
+            className="h-12 w-12 hover:bg-muted/20 transition-colors flex-shrink-0"
+          >
+            <SettingsIcon className="size-5" />
+            <span className="sr-only">Agent Settings</span>
+          </Button>
+        )}
+      </div>
+
+      {/* Row 2: New Chat button - full width */}
       <Button
         variant={isNewSession ? 'outline' : 'default'}
         onClick={handleNewChatClick}
         className={cn(
-          'flex flex-1 justify-start gap-2 py-3 rounded-md font-medium transition-colors h-12',
+          'flex w-full justify-start gap-2 py-3 rounded-md font-medium transition-colors h-12',
           isNewSession
             ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
             : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
@@ -487,19 +508,6 @@ const AgentSelectorAndNewChat: FC<{
         <EditIcon className="size-4" />
         <span>{isChat ? 'New Chat' : 'New Session'}</span>
       </Button>
-
-      {/* Settings button - right column (mobile only) */}
-      {showSettingsButton && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleSettingsClick}
-          className="md:hidden h-12 w-12 hover:bg-muted/20 transition-colors flex-shrink-0"
-        >
-          <SettingsIcon className="size-7" />
-          <span className="sr-only">Agent Settings</span>
-        </Button>
-      )}
     </div>
   )
 }
@@ -686,7 +694,7 @@ const MainLeft = ({
   return (
     <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-1">
       {/* Sticky Recent header */}
-      <div className="sticky top-0 bg-accent z-10 pb-1 mb-1">
+      <div className="sticky top-0 z-10 pb-1 mb-1">
         <div className="text-muted-foreground">Recent</div>
       </div>
 

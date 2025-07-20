@@ -141,7 +141,7 @@ const SessionsHeader = ({
         {/* Bottom navbar - Agent avatars + session title + budget + agents dropdown */}
         {/* Hide secondary navbar on desktop when on /sessions/new */}
         {!(sessionId === 'new' || !sessionId) && (
-          <header className="sticky z-40 top-14 flex h-10 items-center gap-4 border-b bg-muted/30 px-4">
+          <header className="sticky z-40 top-14 flex h-12 items-center gap-4 border-b bg-muted/30 px-4 py-2">
             {/* Left section - Agent avatars and session title */}
             <div className="flex items-center gap-2 min-w-0 flex-1">
               {session?.agents && session.agents.length > 0 ? (
@@ -175,10 +175,10 @@ const SessionsHeader = ({
                   {/* Session title */}
                   {session.title && (
                     <>
-                      <Separator orientation="vertical" className="h-6" />
+                      <Separator orientation="vertical" className="h-7" />
                       <button
                         onClick={handleSessionTitleClick}
-                        className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
+                        className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
                         title={session.title}
                       >
                         {session.title}
@@ -221,8 +221,8 @@ const SessionsHeader = ({
                     </button>
                   )}
                   {/* Loading state for existing sessions */}
-                  <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
-                  <div className="w-32 h-4 bg-muted animate-pulse rounded" />
+                  <div className="w-9 h-9 rounded-full bg-muted animate-pulse" />
+                  <div className="w-32 h-5 bg-muted animate-pulse rounded" />
                 </div>
               )}
             </div>

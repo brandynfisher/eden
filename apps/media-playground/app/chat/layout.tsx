@@ -25,8 +25,10 @@ import React, {
   PropsWithChildren,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
+import { ImperativePanelHandle } from 'react-resizable-panels'
 
 // Custom sidebar content for agent chat
 const SessionChatSidebarContent: FC<{
@@ -125,6 +127,17 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   }, [agent, user, isOwner, viewMode, agentId, router])
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
+
+  const handleSidebarToggle = () => {
+    if (sidebarPanelRef.current) {
+      if (isSidebarCollapsed) {
+        sidebarPanelRef.current.expand()
+      } else {
+        sidebarPanelRef.current.collapse()
+      }
+    }
+  }
 
   const handleSessionSelect = (sessionId: string) => {
     // Navigate to the session URL
@@ -153,6 +166,17 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
       // This mimics the behavior of clicking "New Session" in the sidebar
       router.push(`/chat/${agentId}`)
     }
+  }
+
+  const handleBackToChat = () => {
+    // Just reset view mode to chat - no navigation needed since we're already on the right URL
+    setViewMode('chat')
+  }
+
+  const handleNewChat = () => {
+    // Always go to new chat screen regardless of current session
+    setViewMode('chat')
+    router.push(`/chat/${agentId}`)
   }
 
   const handleAgentSelect = (selectedAgent: Agent) => {
@@ -191,9 +215,12 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         onAgentSelect={() => setIsAgentSelectorOpen(true)}
         onSettingsClick={() => setViewMode('settings')}
         isSidebarCollapsed={isSidebarCollapsed}
+        onSidebarToggle={handleSidebarToggle}
+        viewMode={viewMode}
+        onBackToChat={handleBackToChat}
       />
 
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-24">
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[104px]">
         {/* AGENT SELECTOR MODAL */}
         <SingleAgentSelectorModal
           open={isAgentSelectorOpen}
@@ -233,6 +260,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         >
           {/* Desktop Sidebar */}
           <ResizablePanel
+            ref={sidebarPanelRef}
             defaultSize={20}
             minSize={15}
             maxSize={30}
@@ -285,7 +313,15 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                   : viewMode === 'tasks'
                   ? agent && <AgentTasksView agent={agent} />
                   : viewMode === 'settings'
-                  ? agent && <AgentEditView agent={agent} user={user} />
+                  ? agent && (
+                      <AgentEditView
+                        agent={agent}
+                        user={user}
+                        sessionId={sessionId}
+                        onBackToChat={handleBackToChat}
+                        onNewChat={handleNewChat}
+                      />
+                    )
                   : viewMode === 'memories'
                   ? agent && <AgentMemoryView agent={agent} user={user} />
                   : children}
