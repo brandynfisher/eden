@@ -25,6 +25,7 @@ import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 import * as z from 'zod'
 import { LiveAudioManager } from '../live-audio/live-audio-manager'
+import { useLiveAudio } from '../live-audio/live-audio-context'
 
 const formSchema = z.object({
   content: z.string().trim().min(1),
@@ -323,50 +324,25 @@ export const MessageInput = ({
     }
   }
 
+  // Use proper live audio hook instead of DOM polling
+  const liveAudioHook = enableLiveAudio ? useLiveAudio() : null
+  const liveAudioState = liveAudioHook?.state ?? { isRecording: false, isProcessing: false, actionIntervalProgress: 0 }
+  const { isRecording, isProcessing, actionIntervalProgress } = liveAudioState
+
   const handleRecordToggle = () => {
-    if (!enableLiveAudio) return
+    if (!enableLiveAudio || !liveAudioHook) return
     
-    // This will only work when LiveAudioManager is rendered
+    // This will trigger the modal to open via the LiveAudioManager
     const managerElement = document.querySelector('[data-live-audio-manager]')
     if (managerElement && (managerElement as any).__toggleRecording) {
       (managerElement as any).__toggleRecording()
     }
   }
 
-  // Get live audio state from DOM for conditional rendering
-  const getLiveAudioState = () => {
-    if (!enableLiveAudio) return { isRecording: false, isProcessing: false }
-    
-    const managerElement = document.querySelector('[data-live-audio-manager]')
-    if (managerElement) {
-      return {
-        isRecording: (managerElement as any).__isRecording || false,
-        isProcessing: (managerElement as any).__isProcessing || false,
-      }
-    }
-    return { isRecording: false, isProcessing: false }
+  const handleStopRecording = () => {
+    if (!enableLiveAudio || !liveAudioHook) return
+    liveAudioHook.stopLiveAudio()
   }
-
-  const [liveAudioState, setLiveAudioState] = useState({ isRecording: false, isProcessing: false })
-
-  // Poll for live audio state changes when enabled - reduced frequency
-  useEffect(() => {
-    if (!enableLiveAudio) return
-    
-    const interval = setInterval(() => {
-      const newState = getLiveAudioState()
-      setLiveAudioState(prev => {
-        if (prev.isRecording !== newState.isRecording || prev.isProcessing !== newState.isProcessing) {
-          return newState
-        }
-        return prev
-      })
-    }, 200) // Reduced from 100ms to 200ms
-    
-    return () => clearInterval(interval)
-  }, [enableLiveAudio])
-
-  const { isRecording, isProcessing } = liveAudioState
 
   useEffect(() => {
     const textarea = textareaRef.current?.textArea
@@ -412,24 +388,32 @@ export const MessageInput = ({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="relative z-[51] border border-aui-border bg-accent-foreground/5 rounded-lg items-start p-2.5 focus-within:border-aui-ring/20 transition-all duration-300"
-          >
-            {attachments.length > 0 && (
-              <LightboxGallery>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {attachments.map((attachment, index) => (
-                    <Attachment
-                      key={attachment.id}
-                      attachment={attachment}
-                      index={index}
-                      onRemove={() => handleRemoveAttachment(attachment.id)}
-                    />
-                  ))}
-                </div>
-              </LightboxGallery>
+            className={cn(
+              "relative z-[51] border border-aui-border bg-accent-foreground/5 rounded-lg focus-within:border-aui-ring/20 transition-all duration-300",
+              isRecording ? "flex flex-col" : "items-start p-2.5"
             )}
+          >
+            {/* Top half - regular input area */}
+            <div className={cn(
+              "flex-1",
+              isRecording ? "p-2.5 pb-0" : ""
+            )}>
+              {attachments.length > 0 && (
+                <LightboxGallery>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {attachments.map((attachment, index) => (
+                      <Attachment
+                        key={attachment.id}
+                        attachment={attachment}
+                        index={index}
+                        onRemove={() => handleRemoveAttachment(attachment.id)}
+                      />
+                    ))}
+                  </div>
+                </LightboxGallery>
+              )}
 
-            <div className="flex gap-1 items-start">
+              <div className="flex gap-1 items-start">
               <Input
                 ref={fileInputRef}
                 type="file"
@@ -457,7 +441,7 @@ export const MessageInput = ({
                       <p>Add attachments</p>
                     </TooltipContent>
                   </Tooltip>
-                  {enableLiveAudio && (
+                  {enableLiveAudio && !isRecording && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -466,17 +450,12 @@ export const MessageInput = ({
                           variant="ghost"
                           className={cn(
                             'h-8 w-8',
-                            isRecording && 'text-red-500 animate-pulse',
                             isProcessing && 'text-blue-500'
                           )}
                           onClick={handleRecordToggle}
                           disabled={isSubmitting || isProcessing}
                         >
-                          {isRecording ? (
-                            <SquareIcon className="w-4 h-4 fill-current" />
-                          ) : (
-                            <MicIcon className={cn('w-4 h-4', isProcessing && 'animate-spin')} />
-                          )}
+                          <MicIcon className={cn('w-4 h-4', isProcessing && 'animate-spin')} />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -552,7 +531,43 @@ export const MessageInput = ({
                   />
                 </Button>
               )}
+              </div>
             </div>
+
+            {/* Bottom half - recording indicator when recording is active */}
+            {isRecording && (
+              <div className="relative bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 px-4 py-2 overflow-hidden">
+                {/* Progress bar background */}
+                <div 
+                  className="absolute inset-0 bg-gradient-to-r from-red-400/50 to-red-200/30 dark:from-red-500/30 dark:to-red-700/15 transition-all duration-100 ease-linear border-r border-red-300/50 dark:border-red-600/30"
+                  style={{ width: `${actionIntervalProgress}%` }}
+                />
+                
+                {/* Recording indicator content */}
+                <div className="relative flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <MicIcon className="w-5 h-5 text-red-600" />
+                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    </div>
+                    <span className="text-sm font-medium text-red-700 dark:text-red-300">
+                      {isProcessing ? 'Processing audio...' : 'Agent is listening...'}
+                    </span>
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleStopRecording}
+                    className="h-7 px-3 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                  >
+                    <SquareIcon className="w-3 h-3 mr-1 fill-current" />
+                    Stop
+                  </Button>
+                </div>
+              </div>
+            )}
           </form>
         </Form>
       </div>

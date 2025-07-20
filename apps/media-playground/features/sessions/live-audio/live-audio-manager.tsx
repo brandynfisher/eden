@@ -3,7 +3,6 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { useLiveAudio, LiveAudioSettings } from './live-audio-context'
 import { LiveAudioModal } from './live-audio-modal'
-import { LiveRecordingIndicator } from './live-recording-indicator'
 import { LIVE_AUDIO_DEFAULTS } from './live-audio-constants'
 
 type LiveAudioManagerProps = {
@@ -189,18 +188,6 @@ Please await further instructions.`
 
   return (
     <>
-      {/* Recording indicator - always show when recording */}
-      {state.isRecording && (
-        <div className="mb-2">
-          <LiveRecordingIndicator
-            isRecording={state.isRecording}
-            isProcessing={state.isProcessing}
-            onStop={handleStopRecording}
-            actionIntervalProgress={state.actionIntervalProgress}
-          />
-        </div>
-      )}
-
       {/* Modal for live audio settings */}
       <LiveAudioModal
         isOpen={showModal}
