@@ -74,7 +74,7 @@ export const SortMenu = ({
         : variant === 'creation'
         ? 'createdAt;-1'
         : variant === 'model'
-        ? 'createdAt;-1'
+        ? 'creationCount;-1'
         : 'createdAt;-1'),
   )
 
