@@ -38,6 +38,14 @@ const Session = ({
   const { user } = useAuthState()
   const ischatRoute = pathname?.startsWith('/chat')
   const [cancelledNotice, setCancelledNotice] = useState(false)
+  
+  // Track the current session ID for live audio (handles session creation)
+  const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId)
+  
+  // Update currentSessionId when sessionId prop changes
+  useEffect(() => {
+    setCurrentSessionId(sessionId)
+  }, [sessionId])
 
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
@@ -58,7 +66,7 @@ const Session = ({
 
   // State management for streaming and non-streaming modes
   const streamingState = useStreamingState({
-    sessionId,
+    sessionId: currentSessionId,
     enabled: sessionConfig.useStreaming,
     onError: (error: string) => handleError(error),
     setOptimisticMessages: setter => {
@@ -67,6 +75,16 @@ const Session = ({
           typeof setter === 'function'
             ? setter(streamingOptimisticMessages.current)
             : setter
+      }
+    },
+    onSessionCreated: (newSessionId: string) => {
+      console.log('🎤 [SESSION] Session created, updating currentSessionId:', newSessionId)
+      setCurrentSessionId(newSessionId)
+      // Also navigate to the new session URL to keep URL in sync
+      if (ischatRoute && params?.agentId) {
+        router.replace(`/chat/${params.agentId}/${newSessionId}`)
+      } else {
+        router.replace(`/sessions/${newSessionId}`)
       }
     },
   })
@@ -702,7 +720,7 @@ const Session = ({
       <div className="sticky bottom-0 bg-aui-background p-4 z-10">
         <div className="max-w-[--aui-thread-max-width] mx-auto w-full">
           <MessageInput
-            sessionId={sessionId as string}
+            sessionId={currentSessionId as string}
             enableLiveAudio={true}
             onStreamingMessage={(content, attachments) => {
               clearErrors()
