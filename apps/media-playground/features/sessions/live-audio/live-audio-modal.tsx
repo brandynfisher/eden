@@ -113,7 +113,7 @@ export const LiveAudioModal = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Action Interval: {formatDuration(currentInterval)}
+                    Agent Action Interval: {formatDuration(currentInterval)}
                   </FormLabel>
                   <FormControl>
                     <div className="px-3">
