@@ -23,6 +23,11 @@ export const NonStreamingMessageDisplay: React.FC<NonStreamingMessageDisplayProp
   }
 
   const respondingAgents = getRespondingAgents()
+  
+  // Don't show anything if no agents should respond
+  if (respondingAgents.length === 0) {
+    return null
+  }
 
   return (
     <div className="mb-4">

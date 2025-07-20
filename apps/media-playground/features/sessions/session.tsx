@@ -534,7 +534,9 @@ const Session = ({
                             {
                               _id: 'loading-first-response',
                               content: '',
-                              sender: getRespondingAgent(),
+                              sender: mentionedAgentIds.length > 0 
+                                ? getRespondingAgents(mentionedAgentIds)[0] || getRespondingAgent()
+                                : getRespondingAgent(),
                               createdAt: new Date(),
                               updatedAt: new Date(),
                               session: sessionId,
@@ -710,15 +712,13 @@ const Session = ({
               const mentions = parseMentions(content)
               let agentIds = getAgentIdsFromMentions(mentions)
               
-              // If no mentions but it's a multi-agent session, don't proceed unless user @mentions an agent
-              if (agentIds.length === 0 && session?.agents && session.agents.length > 1) {
-                return
-              }
-              
               // If no agent IDs and it's a single agent session, use the single agent
               if (agentIds.length === 0 && session?.agents && session.agents.length === 1) {
                 agentIds = [session.agents[0]._id]
               }
+              
+              // For multi-agent sessions with no mentions, agentIds will remain empty array
+              // This will still create the user message but won't trigger any agent responses
 
               if (sessionConfig.useStreaming) {
                 streamingState.initializeStreaming()

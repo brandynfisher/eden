@@ -10,10 +10,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { cn } from '@/lib/utils'
-import { Creator } from '@edenlabs/eden-sdk'
 import { Settings } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -22,7 +19,6 @@ export function UserPreferences() {
   const { user, refetchMe } = useAuthState()
 
   const [agentSpendThreshold, setAgentSpendThreshold] = useState<string>('50')
-  const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   // Set initial value from user data
@@ -83,30 +79,6 @@ export function UserPreferences() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAgentSpendThreshold(e.target.value)
-  }
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            <CardTitle>Preferences</CardTitle>
-          </div>
-          <CardDescription>
-            Manage your account preferences and settings
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-[200px]" />
-            <Skeleton className="h-10 w-full max-w-xs" />
-            <Skeleton className="h-4 w-[300px]" />
-          </div>
-          <Skeleton className="h-10 w-[100px]" />
-        </CardContent>
-      </Card>
-    )
   }
 
   return (

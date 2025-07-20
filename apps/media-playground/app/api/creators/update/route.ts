@@ -1,6 +1,6 @@
 import { getAuthToken } from '@/lib/auth'
 import { handleAxiosServerError } from '@/lib/fetcher'
-import { EdenClient } from '@edenlabs/eden-sdk'
+import { CreatorsUpdateArguments, EdenClient } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       token: authToken,
     })
 
-    const updateData: any = {}
+    const updateData: CreatorsUpdateArguments = {}
 
     if (preferences) {
       updateData.preferences = preferences
