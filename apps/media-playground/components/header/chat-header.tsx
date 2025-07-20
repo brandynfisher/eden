@@ -116,27 +116,29 @@ const ChatHeader = ({
             )}
 
             {/* Session title or back navigation */}
-            {viewMode !== 'chat' ? (
-              // When in settings/other views, show navigation back to chat
-              <button
-                onClick={onBackToChat}
-                className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
-              >
-                {sessionId && session?.title ? session.title : 'New Chat'}
-              </button>
-            ) : (
-              // When in chat mode, show session title if available
-              sessionId &&
-              session?.title && (
-                <button
-                  onClick={handleSessionTitleClick}
-                  className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
-                  title={session.title}
-                >
-                  {session.title}
-                </button>
-              )
-            )}
+            {viewMode !== 'chat'
+              ? // When in settings/other views, show navigation back to chat
+                // Only show if we have an active session, otherwise hide text (New Chat icon will be in settings tabs)
+                sessionId &&
+                session?.title && (
+                  <button
+                    onClick={onBackToChat}
+                    className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
+                  >
+                    {session.title}
+                  </button>
+                )
+              : // When in chat mode, show session title if available
+                sessionId &&
+                session?.title && (
+                  <button
+                    onClick={handleSessionTitleClick}
+                    className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
+                    title={session.title}
+                  >
+                    {session.title}
+                  </button>
+                )}
           </div>
 
           {/* Right section - HeaderActions only (settings gear hidden on mobile) */}
@@ -201,33 +203,34 @@ const ChatHeader = ({
                 </button>
 
                 {/* Session title or back navigation */}
-                {viewMode !== 'chat' ? (
-                  // When in settings/other views, show navigation back to chat
-                  <>
-                    <Separator orientation="vertical" className="h-7" />
-                    <button
-                      onClick={onBackToChat}
-                      className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
-                    >
-                      {sessionId && session?.title ? session.title : 'New Chat'}
-                    </button>
-                  </>
-                ) : (
-                  // When in chat mode, show session title if available
-                  sessionId &&
-                  session?.title && (
-                    <>
-                      <Separator orientation="vertical" className="h-7" />
-                      <button
-                        onClick={handleSessionTitleClick}
-                        className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
-                        title={session.title}
-                      >
-                        {session.title}
-                      </button>
-                    </>
-                  )
-                )}
+                {viewMode !== 'chat'
+                  ? // When in settings/other views, show navigation back to chat
+                    sessionId &&
+                    session?.title && (
+                      <>
+                        <Separator orientation="vertical" className="h-7" />
+                        <button
+                          onClick={onBackToChat}
+                          className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
+                        >
+                          {session.title}
+                        </button>
+                      </>
+                    )
+                  : // When in chat mode, show session title if available
+                    sessionId &&
+                    session?.title && (
+                      <>
+                        <Separator orientation="vertical" className="h-7" />
+                        <button
+                          onClick={handleSessionTitleClick}
+                          className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
+                          title={session.title}
+                        >
+                          {session.title}
+                        </button>
+                      </>
+                    )}
               </>
             ) : (
               <div className="flex items-center gap-3">

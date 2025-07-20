@@ -169,16 +169,8 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   }
 
   const handleBackToChat = () => {
-    // Reset view mode to chat first
+    // Just reset view mode to chat - no navigation needed since we're already on the right URL
     setViewMode('chat')
-
-    if (sessionId) {
-      // If we have a sessionId, go back to that specific chat session
-      router.push(`/chat/${agentId}/${sessionId}`)
-    } else {
-      // Otherwise, go back to the agent's homepage
-      router.push(`/chat/${agentId}`)
-    }
   }
 
   const handleAgentSelect = (selectedAgent: Agent) => {
@@ -315,7 +307,14 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                   : viewMode === 'tasks'
                   ? agent && <AgentTasksView agent={agent} />
                   : viewMode === 'settings'
-                  ? agent && <AgentEditView agent={agent} user={user} />
+                  ? agent && (
+                      <AgentEditView
+                        agent={agent}
+                        user={user}
+                        sessionId={sessionId}
+                        onBackToChat={handleBackToChat}
+                      />
+                    )
                   : viewMode === 'memories'
                   ? agent && <AgentMemoryView agent={agent} user={user} />
                   : children}
