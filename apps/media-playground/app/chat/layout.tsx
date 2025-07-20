@@ -173,6 +173,12 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     setViewMode('chat')
   }
 
+  const handleNewChat = () => {
+    // Always go to new chat screen regardless of current session
+    setViewMode('chat')
+    router.push(`/chat/${agentId}`)
+  }
+
   const handleAgentSelect = (selectedAgent: Agent) => {
     // If selecting the same agent we're already on, just close the modal
     if (selectedAgent.username === agentId) {
@@ -313,6 +319,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                         user={user}
                         sessionId={sessionId}
                         onBackToChat={handleBackToChat}
+                        onNewChat={handleNewChat}
                       />
                     )
                   : viewMode === 'memories'

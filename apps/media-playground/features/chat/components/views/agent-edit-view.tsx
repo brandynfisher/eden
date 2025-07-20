@@ -249,7 +249,8 @@ const AgentEditView: FC<{
   user: unknown
   sessionId?: string
   onBackToChat?: () => void
-}> = ({ agent, onBackToChat }) => {
+  onNewChat?: () => void
+}> = ({ agent, onNewChat }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
@@ -416,12 +417,12 @@ const AgentEditView: FC<{
             </div>
 
             {/* New Chat icon - always show when in settings */}
-            {onBackToChat && (
+            {onNewChat && (
               <div className="flex items-center py-4">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onBackToChat}
+                  onClick={onNewChat}
                   className="px-3"
                   aria-label="New Chat"
                 >
@@ -452,12 +453,12 @@ const AgentEditView: FC<{
               </div>
 
               {/* New Chat icon - always show when in settings */}
-              {onBackToChat && (
+              {onNewChat && (
                 <div className="flex items-center pl-4">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={onBackToChat}
+                    onClick={onNewChat}
                     className="px-3"
                     aria-label="New Chat"
                   >
