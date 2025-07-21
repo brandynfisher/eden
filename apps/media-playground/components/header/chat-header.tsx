@@ -13,7 +13,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
   MenuIcon,
-  PencilIcon,
+  MessageCircleIcon,
   SettingsIcon,
 } from 'lucide-react'
 import { useParams } from 'next/navigation'
@@ -253,7 +253,7 @@ const ChatHeader = ({
                 }}
                 className="h-9 w-9 hover:bg-muted/20 transition-colors"
               >
-                <PencilIcon className="size-4" />
+                <MessageCircleIcon className="size-4" />
                 <span className="sr-only">New Chat</span>
               </Button>
             )}

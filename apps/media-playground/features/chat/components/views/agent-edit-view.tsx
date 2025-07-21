@@ -33,7 +33,7 @@ import axios, { AxiosError } from 'axios'
 import {
   AlertCircle,
   Loader2,
-  PencilIcon,
+  MessageCircleIcon,
   SettingsIcon,
   UserIcon,
   WrenchIcon,
@@ -426,7 +426,7 @@ const AgentEditView: FC<{
                   className="px-3"
                   aria-label="New Chat"
                 >
-                  <PencilIcon className="w-4 h-4" />
+                  <MessageCircleIcon className="w-4 h-4" />
                 </Button>
               </div>
             )}
@@ -462,7 +462,7 @@ const AgentEditView: FC<{
                     className="px-3"
                     aria-label="New Chat"
                   >
-                    <PencilIcon className="w-4 h-4" />
+                    <MessageCircleIcon className="w-4 h-4" />
                   </Button>
                 </div>
               )}
