@@ -9,7 +9,7 @@ const ModelsPage = () => {
 
   useEffect(() => {
     // Preserve any existing search parameters and add type=models
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
     params.set('type', 'models')
     router.replace(`/explore?${params.toString()}`)
   }, [router, searchParams])

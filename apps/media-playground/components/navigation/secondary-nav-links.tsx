@@ -23,8 +23,8 @@ export type SecondaryNavProps = {
 const SecondaryNavLinks = ({ items, baseSegment }: SecondaryNavProps) => {
   const partialSegments = useSelectedLayoutSegments()
   const segments = baseSegment
-    ? [baseSegment, ...partialSegments]
-    : partialSegments
+    ? [baseSegment, ...(partialSegments || [])]
+    : partialSegments || []
 
   return (
     <div className="flex flex-col gap-4 w-full">

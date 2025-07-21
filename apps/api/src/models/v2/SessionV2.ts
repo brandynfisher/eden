@@ -98,19 +98,22 @@ export const sessionSchema = new Schema<SessionDocument>(
       },
     },
     autonomy_settings: {
-      auto_reply: {
-        type: Schema.Types.Boolean,
-        default: false,
+      type: {
+        auto_reply: {
+          type: Schema.Types.Boolean,
+          default: false,
+        },
+        reply_interval: {
+          type: Schema.Types.Number,
+          default: 0,
+        },
+        actor_selection_method: {
+          type: Schema.Types.String,
+          enum: ['random', 'random_exclude_last'],
+          default: 'random',
+        },
       },
-      reply_interval: {
-        type: Schema.Types.Number,
-        default: 0,
-      },
-      actor_selection_method: {
-        type: Schema.Types.String,
-        enum: ['random', 'random_exclude_last'],
-        default: 'random',
-      },
+      default: null,
     },
     last_actor_id: {
       type: Schema.Types.ObjectId,

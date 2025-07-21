@@ -336,7 +336,7 @@ export const updateCreator = async (
   reply: FastifyReply,
 ) => {
   const { userId } = request.user
-  const { username, userImage, instagramHandle } =
+  const { username, userImage, instagramHandle, preferences } =
     request.body as CreatorsUpdateArguments
 
   const creator = await User.findById(userId)
@@ -396,6 +396,23 @@ export const updateCreator = async (
       creator.instagramHandle = instagramHandle
     }
   }
+
+  if (preferences !== undefined && preferences !== null) {
+    if (!creator.preferences) {
+      creator.preferences = {}
+    }
+
+    if (preferences.agent_spend_threshold !== undefined) {
+      if (preferences.agent_spend_threshold < 0) {
+        return reply.status(400).send({
+          message: 'Agent spend threshold must be a positive number',
+        })
+      }
+      creator.preferences.agent_spend_threshold =
+        preferences.agent_spend_threshold
+    }
+  }
+
   try {
     await creator.save()
   } catch (e) {

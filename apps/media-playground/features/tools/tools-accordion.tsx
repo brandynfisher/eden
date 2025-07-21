@@ -35,22 +35,21 @@ const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
     setAccordionState(value)
   }
 
-  if (accordionStateQuery.isLoading) {
-    return null
-  }
-
   // Separate Eden v2 Tools from Legacy Tools
   const eden2Tools = tools?.filter(tool => !tool.key.includes('legacy'))
   const legacyTools = tools?.filter(tool => tool.key.includes('legacy'))
+
+  // Use a consistent default value for SSR
+  const defaultAccordionValue =
+    output_type.length === 1 ? allAccordionValues : allAccordionValues
 
   return (
     <div>
       <Accordion
         type="multiple"
-        defaultValue={
-          output_type.length === 1
-            ? allAccordionValues
-            : accordionStateQuery.data
+        defaultValue={defaultAccordionValue}
+        value={
+          accordionStateQuery.isLoading ? undefined : accordionStateQuery.data
         }
         onValueChange={handleAccordionChange}
         className="rounded-md overflow-hidden"

@@ -86,6 +86,9 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
   const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
   const [toolSelectorOpen, setToolSelectorOpen] = useState(false)
 
+  const router = useRouter()
+  const pathname = usePathname()
+
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth
@@ -128,8 +131,6 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
   const hasEnoughBalance = useMemo(() => {
     return cost <= balance
   }, [cost, balance])
-
-  // console.log("***debug***", { cost, hasEnoughBalance })
 
   // Add scroll to error effect
   useEffect(() => {
@@ -194,19 +195,15 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
     const { makePublic, ...args } = formData as FormData & {
       makePublic?: boolean
     }
-    // console.log("***debug***", 'onSubmit', formData)
-    // return
 
     setIsSubmitting(true)
 
     try {
-      const response = await axios.post('/api/tasks/create', {
+      await axios.post('/api/tasks/create', {
         tool: tool.key,
         args: args,
         makePublic: makePublic,
       })
-
-      console.log('***debug***', { response })
 
       toast.success(`Task submitted`, {
         description: (
@@ -236,9 +233,6 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
       setIsSubmitting(false)
     }
   }
-
-  const router = useRouter()
-  const pathname = usePathname()
 
   const handleReset = useCallback(() => {
     if (pathname) {

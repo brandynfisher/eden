@@ -15,8 +15,8 @@ import React from 'react'
 
 export const OrderStateCard = () => {
   const query = useSearchParams()
-  const isCancelled = query.get('state') === 'cancelled'
-  const isSuccess = query.get('state') === 'success'
+  const isCancelled = query?.get('state') === 'cancelled'
+  const isSuccess = query?.get('state') === 'success'
 
   const [isOpen, setIsOpen] = React.useState(isCancelled || isSuccess)
 

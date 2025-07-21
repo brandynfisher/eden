@@ -11,6 +11,9 @@ export interface UserSchema extends BaseUserSchema {
   provider?: string
   subscriptionTier?: SubscriptionTier
   highestMonthlySubscriptionTier?: SubscriptionTier
+  preferences?: {
+    agent_spend_threshold?: number
+  }
   stripeCustomerId?: string
   stripeSubscriptionId?: string
   lastDailyLoginBonus?: Date
@@ -69,6 +72,15 @@ const UserSchema = new Schema<UserDocument>(
     highestMonthlySubscriptionTier: {
       type: Number,
       default: SubscriptionTier.Free,
+    },
+    preferences: {
+      type: {
+        agent_spend_threshold: {
+          type: Number,
+          default: 50,
+        },
+      },
+      default: () => ({ agent_spend_threshold: 50 }),
     },
     stripeCustomerId: {
       type: String,

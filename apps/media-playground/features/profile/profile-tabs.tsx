@@ -21,7 +21,7 @@ import { useParams } from 'next/navigation'
 const ProfileTabs = () => {
   const params = useParams<{ name: string }>()
   const { user, isSignedIn } = useAuthState()
-  const { creator } = useCreatorQuery({ key: params.name })
+  const { creator } = useCreatorQuery({ key: params?.name })
 
   if (!creator || (isSignedIn && !user)) {
     return null

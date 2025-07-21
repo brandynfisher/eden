@@ -31,6 +31,7 @@ import {
   CreditCardIcon,
   ImageIcon,
   LogOutIcon,
+  MessageSquareIcon,
   SettingsIcon,
   TicketIcon,
 } from 'lucide-react'
@@ -60,7 +61,7 @@ const AccountDropdown = () => {
 
   const logout = async () => {
     if (isSignedIn) {
-      await signOut({ redirectUrl: pathname })
+      await signOut({ redirectUrl: pathname || '/' })
     }
   }
 
@@ -201,8 +202,15 @@ const AccountDropdown = () => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+
         {isPreviewUser && (
           <>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link href="/sessions">
+                <MessageSquareIcon className="mr-2 h-4 w-4" />
+                <span>Sessions</span>
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link href={`/settings/tasks`}>
                 <ClockIcon className="mr-2 h-4 w-4" />
@@ -245,6 +253,13 @@ const AccountDropdown = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" asChild>
           <ThemeToggleForwardWrap />
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="cursor-pointer">
+          <div ref={feedbackButtonRef} className="flex items-center w-full">
+            <MessageSquareIcon className="mr-2 h-4 w-4" />
+            <span>Feedback</span>
+          </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={logout}>

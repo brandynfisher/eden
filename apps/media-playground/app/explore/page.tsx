@@ -2,12 +2,14 @@
 
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import CreationsFeed from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
 import ModelsFeed from '@/features/feed/models-feed'
 import { SortMenu } from '@/features/feed/sort-menu'
+import ToolsFeed from '@/features/feed/tools-feed'
+import { ToolsFilter } from '@/features/feed/tools-filter'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
 import { Plus, Zap } from 'lucide-react'
@@ -16,7 +18,7 @@ import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
-type ContentType = 'creations' | 'models' | 'agents'
+type ContentType = 'creations' | 'models' | 'agents' | 'tools'
 type CreatorType = 'public' | 'user'
 
 const ExplorePage = () => {
@@ -27,7 +29,7 @@ const ExplorePage = () => {
 
   // Initialize state from URL parameters
   const initialContentType =
-    (searchParams?.get('type') as ContentType) || 'creations'
+    (searchParams?.get('type') as ContentType) || 'agents'
   const initialCreatorType =
     (searchParams?.get('creator') as CreatorType) || 'public'
 
@@ -40,9 +42,10 @@ const ExplorePage = () => {
     collection: env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
   })
   const [modelsFilter] = useState({})
-  const [creationsSort] = useState('createdAt;-1')
-  const [modelsSort, setModelsSort] = useState('createdAt;-1')
+  const [creationsSort, setCreationsSort] = useState('createdAt;-1')
+  const [modelsSort, setModelsSort] = useState('creationCount;-1')
   const [agentsSort, setAgentsSort] = useState('stats.userMessageCount;-1')
+  const [toolsCategory, setToolsCategory] = useState('featured')
 
   // Sync state with URL parameters when they change
   useEffect(() => {
@@ -56,10 +59,10 @@ const ExplorePage = () => {
       pathname?.startsWith('/models/') ||
       pathname?.startsWith('/agents/')
 
-    // If no type parameter, redirect to type=creations (but not during modal state)
+    // If no type parameter, redirect to type=agents (but not during modal state)
     if (!urlContentType && !isModalState) {
       const params = new URLSearchParams(searchParams?.toString() || '')
-      params.set('type', 'creations')
+      params.set('type', 'agents')
       router.replace(`/explore?${params.toString()}`)
       return
     }
@@ -156,6 +159,19 @@ const ExplorePage = () => {
             </Button>
           ),
         }
+      case 'tools':
+        return {
+          title: 'Explore Tools',
+          description: 'Create multimedia with AI tools',
+          actionButton: (
+            <Button asChild size="lg" className="gap-2">
+              <Link href="/create/image/flux_dev">
+                <Zap className="h-4 w-4" />
+                Use Tools
+              </Link>
+            </Button>
+          ),
+        }
       case 'creations':
       default:
         return {
@@ -177,130 +193,165 @@ const ExplorePage = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
-              {pageInfo.title}
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              {pageInfo.description}
-            </p>
-          </div>
-          {pageInfo.actionButton && (
-            <div className="flex-shrink-0">{pageInfo.actionButton}</div>
-          )}
-        </div>
+      {/* Main Title with Action Button */}
+      <div className="mb-4 flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">{pageInfo.title}</h1>
+        {pageInfo.actionButton && (
+          <div className="flex-shrink-0">{pageInfo.actionButton}</div>
+        )}
       </div>
 
-      {/* Content Type Tabs */}
-      <Tabs
-        value={contentType}
-        onValueChange={handleContentTypeChange}
-        className="w-full"
-      >
-        <div className="flex flex-wrap gap-2 lg:gap-3 w-full mb-6">
-          {/* Ownership Type Tabs */}
-          <Tabs
-            value={creatorType}
-            onValueChange={handleCreatorTypeChange}
-            className="min-w-0 w-full sm:w-auto"
-          >
-            <TabsList className="flex justify-stretch min-w-0 w-full sm:w-auto sm:min-w-[180px] lg:min-w-[220px]">
-              <TabsTrigger
-                value="public"
-                className="w-full text-sm px-2 lg:px-3"
-              >
-                Public
-              </TabsTrigger>
-              <TabsTrigger value="user" className="w-full text-sm px-2 lg:px-3">
-                My{' '}
-                {contentType === 'creations'
-                  ? 'Creations'
-                  : contentType === 'models'
-                  ? 'Models'
-                  : 'Agents'}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+      {/* Subtitle */}
+      <div className="mb-6">
+        <p className="text-lg text-muted-foreground">{pageInfo.description}</p>
+      </div>
 
-          {/* Filters and Sort for each content type */}
-          {contentType === 'creations' && (
-            <>
-              <CreationsFilter
-                initialFilter={creationsFilter}
-                // @ts-ignore
-                onChange={filter => setCreationsFilter(filter)}
+      {/* Content with filters bar */}
+      <div className="w-full">
+        <div className="flex flex-wrap gap-2 lg:gap-3 w-full mb-6 items-center">
+          {/* Content Type Selector - controls content display */}
+          <div className="flex rounded-md border bg-background">
+            {['agents', 'models', 'creations', 'tools'].map(type => (
+              <button
+                key={type}
+                onClick={() => handleContentTypeChange(type)}
+                className={`px-3 py-2 text-sm font-medium transition-colors first:rounded-l-md last:rounded-r-md border-r last:border-r-0 ${
+                  contentType === type
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {/* Separator */}
+          <div className="h-6 w-px bg-border mx-2" />
+
+          {/* Filter controls */}
+          <div className="flex flex-wrap gap-2 lg:gap-3 items-center">
+            {/* Ownership Type Tabs - only show for non-tools content types */}
+            {contentType !== 'tools' && (
+              <Tabs
+                value={creatorType}
+                onValueChange={handleCreatorTypeChange}
+                className="min-w-0 w-full sm:w-auto"
+              >
+                <TabsList className="flex justify-stretch min-w-0 w-full sm:w-auto sm:min-w-[180px] lg:min-w-[220px]">
+                  <TabsTrigger
+                    value="public"
+                    className="w-full text-sm px-2 lg:px-3"
+                  >
+                    Public
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="user"
+                    className="w-full text-sm px-2 lg:px-3"
+                  >
+                    My{' '}
+                    {contentType === 'creations'
+                      ? 'Creations'
+                      : contentType === 'models'
+                      ? 'Models'
+                      : 'Agents'}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+
+            {/* Tools Category Filter - only show for tools */}
+            {contentType === 'tools' && (
+              <ToolsFilter
+                initialCategory={toolsCategory}
+                onChange={setToolsCategory}
                 className="min-w-0 w-full sm:w-auto"
               />
-              {/* <SortMenu
-                variant="creation"
-                initialSort={creationsSort}
-                onChange={setCreationsSort}
+            )}
+
+            {/* Filters and Sort for each content type */}
+            {contentType === 'creations' && (
+              <>
+                <CreationsFilter
+                  initialFilter={creationsFilter}
+                  // @ts-ignore
+                  onChange={filter => setCreationsFilter(filter)}
+                  className="min-w-0 w-full sm:w-auto"
+                />
+                <SortMenu
+                  variant="creation"
+                  initialSort={creationsSort}
+                  onChange={setCreationsSort}
+                  className="min-w-0 w-full sm:w-auto"
+                />
+              </>
+            )}
+
+            {contentType === 'models' && (
+              <SortMenu
+                variant="model"
+                initialSort={modelsSort}
+                onChange={setModelsSort}
                 className="min-w-0 w-full sm:w-auto"
-              /> */}
-            </>
-          )}
+              />
+            )}
 
-          {contentType === 'models' && (
-            <SortMenu
-              variant="model"
-              initialSort={modelsSort}
-              onChange={setModelsSort}
-              className="min-w-0 w-full sm:w-auto"
+            {contentType === 'agents' && (
+              <SortMenu
+                variant="agent"
+                initialSort={agentsSort}
+                onChange={setAgentsSort}
+                className="min-w-0 w-full sm:w-auto"
+              />
+            )}
+
+            <FeedSearchForm
+              handleSearch={setSearchQuery}
+              className="min-w-0 w-full sm:w-auto sm:min-w-[120px] lg:min-w-[160px]"
             />
-          )}
-
-          {contentType === 'agents' && (
-            <SortMenu
-              variant="agent"
-              initialSort={agentsSort}
-              onChange={setAgentsSort}
-              className="min-w-0 w-full sm:w-auto"
-            />
-          )}
-
-          <FeedSearchForm
-            handleSearch={setSearchQuery}
-            className="min-w-0 w-full sm:w-auto sm:min-w-[120px] lg:min-w-[160px]"
-          />
+          </div>
         </div>
 
-        {/* Content */}
-        <TabsContent value="creations" className="!ring-0 !ring-offset-0 mt-6">
-          <CreationsFeed query={creationsQuery} minCols={2} maxCols={8} />
-        </TabsContent>
+        {/* Content - Show based on selected type with stable rendering */}
+        <div className="mt-6 min-h-[400px]">
+          <div className={contentType === 'agents' ? 'block' : 'hidden'}>
+            <AgentsFeed
+              query={agentsQuery}
+              minCols={1}
+              maxCols={6}
+              hideCreateButton={true}
+              improvedLayout={true}
+              hideContextMenu={true}
+              breakpoints={[
+                { minWidth: 1920, columns: 6 },
+                { minWidth: 1536, columns: 5 },
+                { minWidth: 1280, columns: 4 },
+                { minWidth: 1024, columns: 3 },
+                { minWidth: 768, columns: 2 },
+                { minWidth: 640, columns: 2 },
+                { minWidth: 0, columns: 1 },
+              ]}
+            />
+          </div>
 
-        <TabsContent value="models" className="!ring-0 !ring-offset-0 mt-6">
-          <ModelsFeed
-            query={modelsQuery}
-            minCols={1}
-            maxCols={5}
-            variant="creation-page"
-          />
-        </TabsContent>
+          <div className={contentType === 'creations' ? 'block' : 'hidden'}>
+            <CreationsFeed query={creationsQuery} minCols={2} maxCols={8} />
+          </div>
 
-        <TabsContent value="agents" className="!ring-0 !ring-offset-0 mt-6">
-          <AgentsFeed
-            query={agentsQuery}
-            minCols={1}
-            maxCols={6}
-            hideCreateButton={true}
-            improvedLayout={true}
-            hideContextMenu={true}
-            breakpoints={[
-              { minWidth: 1920, columns: 6 },
-              { minWidth: 1536, columns: 5 },
-              { minWidth: 1280, columns: 4 },
-              { minWidth: 1024, columns: 3 },
-              { minWidth: 768, columns: 2 },
-              { minWidth: 640, columns: 2 },
-              { minWidth: 0, columns: 1 },
-            ]}
-          />
-        </TabsContent>
-      </Tabs>
+          <div className={contentType === 'models' ? 'block' : 'hidden'}>
+            <ModelsFeed
+              query={modelsQuery}
+              minCols={1}
+              maxCols={5}
+              variant="creation-page"
+            />
+          </div>
+
+          <div className={contentType === 'tools' ? 'block' : 'hidden'}>
+            <ToolsFeed category={toolsCategory} searchQuery={searchQuery} />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

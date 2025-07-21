@@ -192,6 +192,15 @@ export type TasksV2ResultOutput = MediaOutput & {
   mediaAttributes?: MediaAttributes & { type: ToolOutputTypeV2 }
   model?: ModelV2
   creation?: CreationV2
+  text?: string
+  author?: string
+  author_name?: string
+  timestamp?: string
+  channel_name?: string
+  url?: string
+  likes?: number
+  retweets?: number
+  replies?: number
 }
 
 export type TaskV2Result = {
@@ -206,6 +215,11 @@ export type TaskV2Result = {
     isolated_vocals?: MediaOutput[]
   }
   metadata?: string | null
+  subtool_calls?: Array<{
+    tool: string
+    args: any
+    output?: any
+  }>
 }
 
 export type TaskV2 = {

@@ -233,6 +233,7 @@ const TaskStatusIndicator = () => {
                                   variant="ghost"
                                   size="sm"
                                   onClick={e => {
+                                    e.preventDefault()
                                     e.stopPropagation()
                                     handleMarkAsRead([notification._id])
                                   }}
@@ -246,6 +247,7 @@ const TaskStatusIndicator = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={e => {
+                                  e.preventDefault()
                                   e.stopPropagation()
                                   handleArchive([notification._id])
                                 }}
@@ -289,6 +291,7 @@ const TaskStatusIndicator = () => {
                                   variant="ghost"
                                   size="sm"
                                   onClick={e => {
+                                    e.preventDefault()
                                     e.stopPropagation()
                                     handleMarkAsRead([notification._id])
                                   }}
@@ -302,6 +305,7 @@ const TaskStatusIndicator = () => {
                                 variant="ghost"
                                 size="sm"
                                 onClick={e => {
+                                  e.preventDefault()
                                   e.stopPropagation()
                                   handleArchive([notification._id])
                                 }}

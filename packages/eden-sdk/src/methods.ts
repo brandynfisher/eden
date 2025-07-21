@@ -188,6 +188,7 @@ import {
   creatorsListRequestConfig,
   creatorsUnfollowRequestConfig,
   creatorsUpdateRequestConfig,
+  creatorsUpdateV2RequestConfig,
   feedConceptsRequestConfig,
   feedCreationsRequestConfig,
   feedCursorCreationsRequestConfig,
@@ -815,6 +816,10 @@ export abstract class Methods {
     update: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
       this,
       creatorsUpdateRequestConfig,
+    ),
+    updateV2: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
+      this,
+      creatorsUpdateV2RequestConfig,
     ),
     me: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
       this,

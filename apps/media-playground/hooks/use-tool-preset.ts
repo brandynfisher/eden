@@ -3,7 +3,7 @@
 import { useCreationQuery } from '@/hooks/query/use-creation-query'
 import { useTaskQuery } from '@/hooks/query/use-task-query'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type GenericValues = {
   [key: string]: number | string | undefined | boolean | null
@@ -13,23 +13,23 @@ export const useToolPreset = () => {
   const [presetValues, setPresetValues] = useState<GenericValues | undefined>(
     undefined,
   )
-  const hasAppliedPresets = useRef(false)
+  const [appliedKey, setAppliedKey] = useState<string | null>(null)
   const router = useRouter()
   const queryParams = useSearchParams()
 
   // Extract query parameters
-  const loraParam = queryParams.get('lora')
-  const creationParam = queryParams.get('creation')
-  const taskParam = queryParams.get('task')
+  const loraParam = queryParams?.get('lora')
+  const creationParam = queryParams?.get('creation')
+  const taskParam = queryParams?.get('task')
 
-  // Use react-query to fetch creation data if creationParam is present
+  const currentPresetKey = creationParam || taskParam || loraParam || null
   const {
     creation: creationData,
     isLoading: isCreationLoading,
     error: creationError,
   } = useCreationQuery({
     key: creationParam || '',
-    enabled: !!creationParam && !hasAppliedPresets.current,
+    enabled: !!creationParam && appliedKey !== currentPresetKey,
     staleTime: Infinity,
   })
 
@@ -40,15 +40,12 @@ export const useToolPreset = () => {
     error: taskError,
   } = useTaskQuery({
     key: taskParam || '',
-    enabled: !!taskParam && !hasAppliedPresets.current,
+    enabled: !!taskParam && appliedKey !== currentPresetKey,
     staleTime: Infinity,
   })
 
   useEffect(() => {
-    // Only proceed if we haven't applied presets yet and we have all the data we need
-    if (hasAppliedPresets.current) {
-      return
-    }
+    if (!currentPresetKey || appliedKey === currentPresetKey) return
 
     // Check if we're still loading any data
     if ((creationParam && isCreationLoading) || (taskParam && isTaskLoading)) {
@@ -111,8 +108,7 @@ export const useToolPreset = () => {
         setPresetValues(filteredPreset)
       }
 
-      // Mark presets as applied
-      hasAppliedPresets.current = true
+      setAppliedKey(currentPresetKey)
 
       // Clean up URL params after applying presets
       if (loraParam || creationParam || taskParam) {
@@ -129,19 +125,21 @@ export const useToolPreset = () => {
 
     derivePresetValues()
   }, [
-    loraParam,
-    creationParam,
+    currentPresetKey,
+    appliedKey,
     creationData,
-    taskParam,
     taskData,
     isCreationLoading,
     isTaskLoading,
+    creationParam,
+    taskParam,
+    loraParam,
     router,
   ])
 
   // Determine if any loading is in progress
   const isLoading =
-    (isCreationLoading || isTaskLoading) && !hasAppliedPresets.current
+    (isCreationLoading || isTaskLoading) && appliedKey !== currentPresetKey
 
   // Capture the first error encountered
   const error = creationError || taskError

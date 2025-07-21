@@ -1,107 +1,117 @@
 'use client'
 
-import ActionsDropdown from '@/components/button/actions-dropdown'
-import CreationActionsMenu from '@/components/button/creations-actions-menu'
-import DownloadActionItem from '@/components/button/download-action-item'
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
-import { DropdownMenuGroup } from '@/components/ui/dropdown-menu'
+import { SocialContentEmbed } from '@/features/chat/components/tools/social-content-embed'
 import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { generateFilename } from '@/utils/slug.util'
-import { TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
-import React, { useState } from 'react'
+import { TaskV2Result, TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
+import React from 'react'
 import ReactMarkdown from 'react-markdown'
 
 export type TaskResultToolProps = {
   toolCall: ToolCall
+  onCancel?: () => void
 }
 
-// Simple download menu for media outputs without a creation
-const MediaDownloadMenu = ({
-  filename,
-  mediaType = 'media',
-  className,
-}: {
-  filename: string
-  mediaType?: string
-  className?: string
+// Social tools mapping
+const SOCIAL_TOOLS = {
+  // Post tools - use SocialPostEmbed
+  POST_TOOLS: {
+    discord_post: { platform: 'discord' as const },
+    telegram_post: { platform: 'telegram' as const },
+    tweet: { platform: 'twitter' as const },
+    farcaster_cast: { platform: 'farcaster' as const },
+  },
+
+  // Content tools - use SocialContentEmbed
+  CONTENT_TOOLS: {
+    discord_search: {
+      platform: 'discord' as const,
+      contentType: 'search' as const,
+    },
+    twitter_search: {
+      platform: 'twitter' as const,
+      contentType: 'search' as const,
+    },
+    'Twitter Search': {
+      platform: 'twitter' as const,
+      contentType: 'search' as const,
+    },
+    farcaster_search: {
+      platform: 'farcaster' as const,
+      contentType: 'search' as const,
+    },
+    twitter_mentions: {
+      platform: 'twitter' as const,
+      contentType: 'mentions' as const,
+    },
+    'Twitter Mentions': {
+      platform: 'twitter' as const,
+      contentType: 'mentions' as const,
+    },
+    farcaster_mentions: {
+      platform: 'farcaster' as const,
+      contentType: 'mentions' as const,
+    },
+    twitter_trends: {
+      platform: 'twitter' as const,
+      contentType: 'trends' as const,
+    },
+  },
+} as const
+
+export const TaskResultTool: React.FC<TaskResultToolProps> = ({
+  toolCall,
+  onCancel,
 }) => {
-  const [isOpen, setIsOpen] = useState(false)
-
-  return (
-    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
-      {isOpen && (
-        <DropdownMenuGroup>
-          <DownloadActionItem
-            type="creation"
-            originalFileUrl={filename}
-            saveAsFileName={generateFilename(
-              'Eden',
-              mediaType,
-              Date.now().toString(),
-            )}
-          />
-        </DropdownMenuGroup>
-      )}
-    </ActionsDropdown>
-  )
-}
-
-export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
   const { tool, result: toolResults } = toolCall
 
-  // Don't render cancelled tool calls
-  if (toolCall.status === 'cancelled') {
-    return null
-  }
+  // Check tool type using mapping
+  const postToolConfig =
+    SOCIAL_TOOLS.POST_TOOLS[tool as keyof typeof SOCIAL_TOOLS.POST_TOOLS]
+  const contentToolConfig =
+    SOCIAL_TOOLS.CONTENT_TOOLS[tool as keyof typeof SOCIAL_TOOLS.CONTENT_TOOLS]
 
-  // Check if this is a Discord or Telegram post tool
-  const isDiscordPost = tool === 'discord_post'
-  const isTelegramPost = tool === 'telegram_post'
-  const isSocialPost = isDiscordPost || isTelegramPost
+  const isSocialPost = !!postToolConfig
+  const isSocialContent = !!contentToolConfig
+
+  // Check if tool is completed with displayable results
+  const hasDisplayableResults =
+    toolResults &&
+    toolResults.length > 0 &&
+    toolResults.some(
+      result =>
+        result &&
+        (Array.isArray(result?.output) ||
+          (typeof (result as TaskV2Result)?.output === 'string' &&
+            (result as TaskV2Result)?.output.length > 0)),
+    )
+  const isCompletedWithResults =
+    toolCall.status === 'completed' && hasDisplayableResults
 
   return (
     <div className="mb-2 max-w-full">
-      <ToolFallback
-        type="tool-call"
-        result={{
-          tool: tool!,
-          result: toolResults || [],
-          status:
-            toolCall.status === 'completed'
-              ? TaskV2Status.Completed
-              : toolCall.status === 'failed'
-              ? TaskV2Status.Failed
-              : toolCall.status === 'running'
-              ? TaskV2Status.Running
-              : TaskV2Status.Pending,
-          error: toolCall.error,
-        }}
-        toolCallId={tool!}
-        toolName={tool!}
-        args={toolCall.args}
-        argsText={JSON.stringify(toolCall.args)}
-        status={
-          toolCall.status === 'completed'
-            ? { type: 'complete' }
-            : toolCall.status === 'failed'
-            ? { type: 'incomplete', reason: 'error' }
-            : { type: 'running' }
-        }
-        addResult={() => true}
-      />
       <ErrorBoundary>
         {isSocialPost ? (
-          // Handle Discord and Telegram post results
-          <div className="mt-4 mb-4">
+          // Handle social post results (Discord, Telegram, Tweet, Farcaster)
+          <div className="mb-2 relative group">
             <SocialPostEmbed
               results={toolResults || []}
-              platform={isDiscordPost ? 'discord' : 'telegram'}
+              platform={postToolConfig?.platform || 'discord'}
+            />
+          </div>
+        ) : isSocialContent ? (
+          // Handle social content results (Search, Mentions, Trends)
+          <div className="mb-2 relative group">
+            <SocialContentEmbed
+              results={toolResults || []}
+              platform={contentToolConfig?.platform || 'discord'}
+              contentType={contentToolConfig?.contentType || 'search'}
             />
           </div>
         ) : (
@@ -111,7 +121,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
             <div
               className={cn([
                 toolResults && toolResults.length > 1 && 'grid',
-                'grid-cols-2 gap-2 md:gap-4 mt-4 mb-4',
+                'grid-cols-2 gap-2 md:gap-4 mb-2',
               ])}
             >
               {toolResults
@@ -204,27 +214,6 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
                                 />
                               </div>
                             )}
-                            {output.creation ? (
-                              <CreationActionsMenu
-                                creation={{
-                                  ...output.creation,
-                                  // @ts-expect-error faked taskv2
-                                  task: { args: toolCall.args },
-                                }}
-                                className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
-                                queryKey={['creations', output.creation?._id]}
-                              />
-                            ) : (
-                              output.filename && (
-                                <MediaDownloadMenu
-                                  filename={output.filename}
-                                  mediaType={getFileTypeByMimeType(
-                                    output.mediaAttributes?.mimeType,
-                                  )}
-                                  className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
-                                />
-                              )
-                            )}
                           </div>
                         ))
                       ) : (
@@ -246,6 +235,41 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({ toolCall }) => {
           </LightboxGallery>
         )}
       </ErrorBoundary>
+      {!isCompletedWithResults && (
+        <ToolFallback
+          type="tool-call"
+          result={{
+            tool: tool!,
+            result: toolResults || [],
+            status:
+              toolCall.status === 'completed'
+                ? TaskV2Status.Completed
+                : toolCall.status === 'failed'
+                ? TaskV2Status.Failed
+                : toolCall.status === 'running'
+                ? TaskV2Status.Running
+                : toolCall.status === 'cancelled'
+                ? 'cancelled'
+                : TaskV2Status.Pending,
+            error: toolCall.error,
+          }}
+          toolCallId={tool!}
+          toolName={tool!}
+          args={toolCall.args}
+          argsText={JSON.stringify(toolCall.args)}
+          status={
+            toolCall.status === 'completed'
+              ? { type: 'complete' }
+              : toolCall.status === 'failed'
+              ? { type: 'incomplete', reason: 'error' }
+              : toolCall.status === 'cancelled'
+              ? { type: 'incomplete', reason: 'cancelled' }
+              : { type: 'running' }
+          }
+          addResult={() => true}
+          onCancel={onCancel}
+        />
+      )}
     </div>
   )
 }

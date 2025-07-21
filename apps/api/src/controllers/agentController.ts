@@ -388,13 +388,6 @@ export const createAgentTrigger = async (
     posting_instructions,
   } = request.body as AgentsCreateTriggerArguments
   const currentUserId = request.user.userId
-
-  if (!request.user.featureFlags.includes(FeatureFlag.Preview)) {
-    return reply.status(401).send({
-      error: 'You are not authorized to use this feature.',
-    })
-  }
-
   const agent = await Agent.findById(agentId)
 
   if (!agent) {
@@ -1103,5 +1096,126 @@ export const getAllUserDeployments = async (
     return reply.status(500).send({
       error: 'Failed to get user deployments',
     })
+  }
+}
+
+const validateAgentAccess = async (agentId: string) => {
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
+
+  if (!agent || agent.deleted) {
+    return { agent: null, error: 'Agent not found' }
+  }
+
+  return { agent, error: null }
+}
+
+const createAgentObjectId = (agentId: string, agentDoc: any, mongoose: any) => {
+  return mongoose.Types.ObjectId.isValid(agentId)
+    ? new mongoose.Types.ObjectId(agentId)
+    : new mongoose.Types.ObjectId(agentDoc._id)
+}
+
+export const getAgentMemory = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_user')
+    const memoryRecord = await memoryCollection.findOne({
+      agent_id: createAgentObjectId(agentId, agent, server.mongoose),
+      user_id: new server.mongoose.Types.ObjectId(userId),
+    })
+
+    let unabsorbedDirectives: string[] = []
+
+    // Get unabsorbed directives if they exist
+    if (memoryRecord?.unabsorbed_directive_ids?.length > 0) {
+      const sessionMemoryCollection =
+        server.mongoose.connection.db.collection('memory_sessions')
+      const directiveIds = memoryRecord?.unabsorbed_directive_ids.map(
+        (id: any) => new server.mongoose.Types.ObjectId(id),
+      )
+
+      const query = {
+        agent_id: createAgentObjectId(agentId, agent, server.mongoose),
+        memory_type: 'directive',
+        related_users: new server.mongoose.Types.ObjectId(userId),
+        _id: { $in: directiveIds },
+      }
+
+      const directives = await sessionMemoryCollection.find(query).toArray()
+
+      unabsorbedDirectives = directives
+        .map(directive => directive.content || '')
+        .filter(content => content.trim() !== '')
+    }
+
+    return reply.status(200).send({
+      content: memoryRecord?.content || '',
+      unabsorbedDirectives,
+    })
+  } catch (error) {
+    server.log.error('Error fetching user memory:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+export const saveAgentMemory = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const { content } = request.body as { content: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_user')
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+
+    await memoryCollection.replaceOne(
+      {
+        agent_id: agentObjectId,
+        user_id: new server.mongoose.Types.ObjectId(userId),
+      },
+      {
+        agent_id: agentObjectId,
+        user_id: new server.mongoose.Types.ObjectId(userId),
+        content: content || '',
+        agent_owner: null,
+        unabsorbed_directive_ids: [],
+      },
+      { upsert: true },
+    )
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error('Error saving user memory:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
   }
 }
