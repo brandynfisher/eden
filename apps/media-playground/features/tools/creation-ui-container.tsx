@@ -86,6 +86,9 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
   const [mobileIsFormVisible, setMobileIsFormVisible] = useState(false)
   const [toolSelectorOpen, setToolSelectorOpen] = useState(false)
 
+  const router = useRouter()
+  const pathname = usePathname()
+
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth
@@ -230,9 +233,6 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
       setIsSubmitting(false)
     }
   }
-
-  const router = useRouter()
-  const pathname = usePathname()
 
   const handleReset = useCallback(() => {
     if (pathname) {

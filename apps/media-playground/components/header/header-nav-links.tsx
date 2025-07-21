@@ -1,6 +1,8 @@
+import { Separator } from '@/components/ui/separator'
 import { useLastAgent } from '@/hooks/use-last-agent'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 interface HeaderNavLinksProps {
   className?: string
@@ -14,14 +16,33 @@ const HeaderNavLinks = ({
   onLinkClick,
 }: HeaderNavLinksProps) => {
   const { getChatUrl, isHydrated } = useLastAgent()
+  const pathname = usePathname()
 
-  const linkClassName =
-    'text-lg font-semibold text-muted-foreground hover:text-foreground transition-colors'
+  const isActive = (path: string) => {
+    if (path === 'chat') {
+      return pathname?.startsWith('/chat') || pathname?.startsWith('/sessions')
+    }
+    if (path === 'explore') {
+      return pathname?.startsWith('/explore')
+    }
+    if (path === 'tools') {
+      return pathname?.startsWith('/create')
+    }
+    return false
+  }
+
+  const getLinkClassName = (path: string) => {
+    const active = isActive(path)
+    return cn(
+      'text-muted-foreground transition-colors hover:text-foreground capitalize py-1.5 px-2 hover:bg-accent hover:shadow-sm rounded-md font-semibold',
+      active ? 'text-foreground bg-accent/50' : '',
+    )
+  }
 
   const baseClassName =
     orientation === 'horizontal'
-      ? 'flex items-center gap-6'
-      : 'flex flex-col gap-2'
+      ? 'flex items-center gap-4 text-sm'
+      : 'flex flex-col gap-2 text-sm'
 
   const handleLinkClick = () => {
     onLinkClick?.()
@@ -31,27 +52,27 @@ const HeaderNavLinks = ({
     <nav className={cn(baseClassName, className)}>
       <Link
         href={isHydrated ? getChatUrl() : '/chat/eve'}
-        className={linkClassName}
+        className={getLinkClassName('chat')}
         onClick={handleLinkClick}
       >
         Chat
       </Link>
       {orientation === 'horizontal' && (
-        <span className="text-muted-foreground/60 text-sm">|</span>
+        <Separator orientation="vertical" className="h-4" />
       )}
       <Link
         href="/explore?type=agents"
-        className={linkClassName}
+        className={getLinkClassName('explore')}
         onClick={handleLinkClick}
       >
         Explore
       </Link>
       {orientation === 'horizontal' && (
-        <span className="text-muted-foreground/60 text-sm">|</span>
+        <Separator orientation="vertical" className="h-4" />
       )}
       <Link
-        href="/explore?type=tools"
-        className={linkClassName}
+        href="/create/image/flux_schnell"
+        className={getLinkClassName('tools')}
         onClick={handleLinkClick}
       >
         Tools
