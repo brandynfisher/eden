@@ -201,21 +201,22 @@ const AccountDropdown = () => {
             <span>Agents</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href="/sessions">
-            <MessageSquareIcon className="mr-2 h-4 w-4" />
-            <span>Sessions</span>
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <Link href={`/settings/tasks`}>
-            <ClockIcon className="mr-2 h-4 w-4" />
-            <span>Tasks</span>
-          </Link>
-        </DropdownMenuItem>
+
         {isPreviewUser && (
           <>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link href="/sessions">
+                <MessageSquareIcon className="mr-2 h-4 w-4" />
+                <span>Sessions</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link href={`/settings/tasks`}>
+                <ClockIcon className="mr-2 h-4 w-4" />
+                <span>Tasks</span>
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link href={`/settings/deployments`}>
                 <ActivityIcon className="mr-2 h-4 w-4" />

@@ -62,29 +62,30 @@ const SettingsNavLinks = () => {
       </div>
 
       <div className="flex flex-col gap-2 text-foreground/90">
-        <div className="text-muted-foreground font-bold text-xs">Agents</div>
-        <Link
-          href="/settings/tasks"
-          className={cn(
-            'px-2 py-1.5 rounded-md',
-            isActive('/settings/tasks') && 'bg-muted/50 text-foreground',
-            '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
-          )}
-        >
-          Tasks
-        </Link>
         {isPreviewUser && (
-          <Link
-            href="/settings/deployments"
-            className={cn(
-              'px-2 py-1.5 rounded-md',
-              isActive('/settings/deployments') &&
-                'bg-muted/50 text-foreground',
-              '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
-            )}
-          >
-            Deployments
-          </Link>
+          <>
+            <Link
+              href="/settings/tasks"
+              className={cn(
+                'px-2 py-1.5 rounded-md',
+                isActive('/settings/tasks') && 'bg-muted/50 text-foreground',
+                '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
+              )}
+            >
+              Tasks
+            </Link>
+            <Link
+              href="/settings/deployments"
+              className={cn(
+                'px-2 py-1.5 rounded-md',
+                isActive('/settings/deployments') &&
+                  'bg-muted/50 text-foreground',
+                '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
+              )}
+            >
+              Deployments
+            </Link>
+          </>
         )}
       </div>
       <Separator orientation="horizontal" className="md:hidden" />

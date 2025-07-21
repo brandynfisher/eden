@@ -82,14 +82,7 @@ const SettingsNav = () => {
             ],
           },
         ]
-      : [
-          {
-            section: 'Agents',
-            items: [
-              { href: '/settings/tasks', label: 'Tasks', icon: ListIcon },
-            ],
-          },
-        ]),
+      : []),
   ]
 
   return (

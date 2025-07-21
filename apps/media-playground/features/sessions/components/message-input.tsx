@@ -22,7 +22,7 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { MicIcon, PaperclipIcon, SendIcon, SquareIcon } from 'lucide-react'
@@ -39,8 +39,6 @@ const formSchema = z.object({
 type MessageInputProps = {
   sessionId: string
   onStreamingMessage?: (content: string, attachments?: string[]) => void
-  onCancel?: () => void
-  isStreaming?: boolean
   enableLiveAudio?: boolean
 }
 
@@ -77,8 +75,6 @@ const AttachmentDropzone = ({
 export const MessageInput = ({
   sessionId,
   onStreamingMessage,
-  onCancel,
-  isStreaming,
   enableLiveAudio = false,
 }: MessageInputProps) => {
   const { user } = useAuthState()
@@ -90,6 +86,8 @@ export const MessageInput = ({
     sessionId,
     enabled: !!sessionId && sessionId !== 'new',
   })
+
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
   const [attachments, setAttachments] = useState<FileUploadProgress[]>([])
@@ -359,8 +357,8 @@ export const MessageInput = ({
     }
   }
 
-  // Use proper live audio hook instead of DOM polling
-  const liveAudioHook = enableLiveAudio ? useLiveAudio() : null
+  // Always call the hook to avoid conditional hook calls
+  const liveAudioHook = useLiveAudio()
   const liveAudioState = liveAudioHook?.state ?? {
     isRecording: false,
     isProcessing: false,
@@ -368,18 +366,24 @@ export const MessageInput = ({
   }
   const { isRecording, isProcessing, actionIntervalProgress } = liveAudioState
 
+  // Only enable live audio features for preview users
+  const shouldShowLiveAudio = enableLiveAudio && isPreviewUser
+
   const handleRecordToggle = () => {
-    if (!enableLiveAudio || !liveAudioHook) return
+    if (!shouldShowLiveAudio || !liveAudioHook) return
 
     // This will trigger the modal to open via the LiveAudioManager
     const managerElement = document.querySelector('[data-live-audio-manager]')
-    if (managerElement && (managerElement as any).__toggleRecording) {
-      ;(managerElement as any).__toggleRecording()
+    const managerWithToggle = managerElement as HTMLElement & {
+      __toggleRecording?: () => void
+    }
+    if (managerElement && managerWithToggle.__toggleRecording) {
+      managerWithToggle.__toggleRecording()
     }
   }
 
   const handleStopRecording = () => {
-    if (!enableLiveAudio || !liveAudioHook) return
+    if (!shouldShowLiveAudio || !liveAudioHook) return
     liveAudioHook.stopLiveAudio()
   }
 
@@ -414,8 +418,8 @@ export const MessageInput = ({
         <AttachmentDropzone isDragging={isDragging} accept={accept} />
       )}
 
-      {/* Live Audio Manager handles recording indicator and modal - only when enabled */}
-      {enableLiveAudio && (
+      {/* Live Audio Manager handles recording indicator and modal - only when enabled for preview users */}
+      {shouldShowLiveAudio && (
         <LiveAudioManager
           sessionId={sessionId}
           onStreamingMessage={onStreamingMessage}
@@ -477,7 +481,7 @@ export const MessageInput = ({
                         <p>Add attachments</p>
                       </TooltipContent>
                     </Tooltip>
-                    {enableLiveAudio && !isRecording && (
+                    {shouldShowLiveAudio && !isRecording && (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -552,38 +556,26 @@ export const MessageInput = ({
                     </div>
                   )}
                 </div>
-                {isStreaming ? (
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="outline"
-                    className="h-8 w-8 animate-pulse border-purple-500/50 hover:border-purple-500"
-                    onClick={onCancel}
-                  >
-                    <SquareIcon className="w-3 h-3 fill-current" />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    size="icon"
-                    variant="outline"
-                    className="h-8 w-8"
-                    disabled={
-                      !form.formState.isValid ||
-                      attachments.some(a => a.status === 'uploading') ||
-                      isSubmitting
-                    }
-                  >
-                    <SendIcon
-                      className={cn('w-4 h-4', isSubmitting && 'animate-pulse')}
-                    />
-                  </Button>
-                )}
+                <Button
+                  type="submit"
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8"
+                  disabled={
+                    !form.formState.isValid ||
+                    attachments.some(a => a.status === 'uploading') ||
+                    isSubmitting
+                  }
+                >
+                  <SendIcon
+                    className={cn('w-4 h-4', isSubmitting && 'animate-pulse')}
+                  />
+                </Button>
               </div>
             </div>
 
-            {/* Bottom half - recording indicator when recording is active */}
-            {isRecording && (
+            {/* Bottom half - recording indicator when recording is active and live audio is enabled for preview users */}
+            {shouldShowLiveAudio && isRecording && (
               <div className="relative bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800 px-4 py-2 overflow-hidden">
                 {/* Progress bar background */}
                 <div

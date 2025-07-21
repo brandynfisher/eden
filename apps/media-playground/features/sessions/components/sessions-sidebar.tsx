@@ -544,7 +544,7 @@ const NavigationButtons: FC<{
         <span>Creations</span>
       </Button>
 
-      {isAgentOwner(agent, userId) && (
+      {isAgentOwner(agent, userId) && isPreviewUser && (
         <Button
           variant={viewMode === 'tasks' ? 'outline' : 'default'}
           onClick={() => handleNavClick('tasks')}
