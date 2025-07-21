@@ -2,7 +2,7 @@ import { Separator } from '@/components/ui/separator'
 import { useLastAgent } from '@/hooks/use-last-agent'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 interface HeaderNavLinksProps {
   className?: string
@@ -17,16 +17,24 @@ const HeaderNavLinks = ({
 }: HeaderNavLinksProps) => {
   const { getChatUrl, isHydrated } = useLastAgent()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   const isActive = (path: string) => {
     if (path === 'chat') {
       return pathname?.startsWith('/chat') || pathname?.startsWith('/sessions')
     }
-    if (path === 'explore') {
-      return pathname?.startsWith('/explore')
-    }
     if (path === 'tools') {
-      return pathname?.startsWith('/create')
+      return (
+        (pathname?.startsWith('/explore') &&
+          searchParams?.get('type') === 'tools') ||
+        pathname?.startsWith('/create')
+      )
+    }
+    if (path === 'explore') {
+      return (
+        pathname?.startsWith('/explore') &&
+        searchParams?.get('type') !== 'tools'
+      )
     }
     return false
   }
@@ -34,14 +42,14 @@ const HeaderNavLinks = ({
   const getLinkClassName = (path: string) => {
     const active = isActive(path)
     return cn(
-      'text-muted-foreground transition-colors hover:text-foreground capitalize py-1.5 px-2 hover:bg-accent hover:shadow-sm rounded-md font-semibold',
+      'text-muted-foreground transition-colors hover:text-foreground capitalize py-1.5 px-1 sm:px-2 hover:bg-accent hover:shadow-sm rounded-md font-semibold text-xs sm:text-sm',
       active ? 'text-foreground bg-accent/50' : '',
     )
   }
 
   const baseClassName =
     orientation === 'horizontal'
-      ? 'flex items-center gap-4 text-sm'
+      ? 'flex items-center gap-1 sm:gap-4 text-xs sm:text-sm'
       : 'flex flex-col gap-2 text-sm'
 
   const handleLinkClick = () => {
@@ -58,7 +66,7 @@ const HeaderNavLinks = ({
         Chat
       </Link>
       {orientation === 'horizontal' && (
-        <Separator orientation="vertical" className="h-4" />
+        <Separator orientation="vertical" className="h-3 sm:h-4" />
       )}
       <Link
         href="/explore?type=agents"
@@ -68,10 +76,10 @@ const HeaderNavLinks = ({
         Explore
       </Link>
       {orientation === 'horizontal' && (
-        <Separator orientation="vertical" className="h-4" />
+        <Separator orientation="vertical" className="h-3 sm:h-4" />
       )}
       <Link
-        href="/create/image/flux_schnell"
+        href="/explore?type=tools"
         className={getLinkClassName('tools')}
         onClick={handleLinkClick}
       >

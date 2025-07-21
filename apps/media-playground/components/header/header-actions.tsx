@@ -31,7 +31,10 @@ const HeaderActions = ({
           </div>
         </Suspense>
       )}
-      <Separator orientation="vertical" className="ml-1 mr-2" />
+      <Separator
+        orientation="vertical"
+        className="ml-1 mr-2 hidden min-[400px]:block sm:block"
+      />
       <MyAccountButton />
     </div>
   )
