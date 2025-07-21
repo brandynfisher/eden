@@ -42,7 +42,7 @@ const ExplorePage = () => {
     collection: env.NEXT_PUBLIC_EDEN_FEATURED_COLLECTION_ID,
   })
   const [modelsFilter] = useState({})
-  const [creationsSort, setCreationsSort] = useState('likeCount;-1')
+  const [creationsSort, setCreationsSort] = useState('createdAt;-1')
   const [modelsSort, setModelsSort] = useState('creationCount;-1')
   const [agentsSort, setAgentsSort] = useState('stats.userMessageCount;-1')
   const [toolsCategory, setToolsCategory] = useState('featured')
