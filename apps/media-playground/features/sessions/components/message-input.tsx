@@ -77,7 +77,7 @@ export const MessageInput = ({
   onStreamingMessage,
   enableLiveAudio = false,
 }: MessageInputProps) => {
-  const { user } = useAuthState()
+  const { user, verifyAuth } = useAuthState()
   const {
     addOptimisticMessage,
     removeOptimisticMessage,
@@ -231,7 +231,12 @@ export const MessageInput = ({
   }, [handleFilesDropped])
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    if (!user || isSubmitting) return
+    if (isSubmitting) return
+
+    // Check authentication and prompt login if needed
+    if (!(await verifyAuth())) {
+      return
+    }
 
     setIsSubmitting(true)
 

@@ -103,7 +103,7 @@ const ChatHeader = ({
                     {agent.username?.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-semibold text-lg text-foreground truncate max-w-[120px]">
+                <span className="font-medium text-sm text-foreground truncate max-w-[120px]">
                   {agent.username}
                 </span>
                 <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -123,7 +123,7 @@ const ChatHeader = ({
                 session?.title && (
                   <button
                     onClick={onBackToChat}
-                    className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
+                    className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
                   >
                     {session.title}
                   </button>
@@ -133,7 +133,7 @@ const ChatHeader = ({
                 session?.title && (
                   <button
                     onClick={handleSessionTitleClick}
-                    className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
+                    className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
                     title={session.title}
                   >
                     {session.title}
@@ -196,7 +196,7 @@ const ChatHeader = ({
                       {agent.username?.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-semibold text-lg text-foreground truncate max-w-[200px]">
+                  <span className="font-medium text-sm text-foreground truncate max-w-[200px]">
                     {agent.username}
                   </span>
                   <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -211,7 +211,7 @@ const ChatHeader = ({
                         <Separator orientation="vertical" className="h-7" />
                         <button
                           onClick={onBackToChat}
-                          className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
+                          className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
                         >
                           {session.title}
                         </button>
@@ -224,7 +224,7 @@ const ChatHeader = ({
                         <Separator orientation="vertical" className="h-7" />
                         <button
                           onClick={handleSessionTitleClick}
-                          className="text-base text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
+                          className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
                           title={session.title}
                         >
                           {session.title}
