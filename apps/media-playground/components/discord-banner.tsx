@@ -14,6 +14,7 @@ const LEGACY_BANNER_KEY = 'discordBannerDismissed'
 const DiscordBanner: React.FC = () => {
   const { isSignedIn } = useAuthState()
   const pathname = usePathname()
+  const [mounted, setMounted] = React.useState(false)
 
   //hide banner on /chat/... - quick and dirty fix to not screw with full height chat layout
   const shouldShowDiscordBanner =
@@ -21,6 +22,11 @@ const DiscordBanner: React.FC = () => {
 
   const [isDismissed, setIsDismissed] = useLocalStorage(BANNER_KEY, false)
   const [legacyDismissed] = useLocalStorage(LEGACY_BANNER_KEY, '')
+
+  // Track when component has mounted to prevent hydration errors
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   //Migrate legacy format to new format
   React.useEffect(() => {
@@ -40,13 +46,20 @@ const DiscordBanner: React.FC = () => {
     setIsDismissed(true)
   }
 
+  // Prevent hydration errors by not rendering until mounted
+  // or while localStorage is still loading
   if (
+    !mounted ||
     !isSignedIn ||
     !shouldShowDiscordBanner ||
     isDismissed.isLoading ||
-    isDismissed.data ||
-    (legacyDismissed.data && !legacyDismissed.isLoading)
+    legacyDismissed.isLoading
   ) {
+    return null
+  }
+
+  // Now safe to check localStorage values since we're mounted
+  if (isDismissed.data || legacyDismissed.data) {
     return null
   }
 
