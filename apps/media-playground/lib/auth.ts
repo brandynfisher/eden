@@ -49,7 +49,6 @@ export const requireFeatureFlag = async (
       userId,
     }
   } catch (error) {
-    console.error('***debug*** Error checking feature flag:', error)
     redirect(redirectTo)
     return
   }
