@@ -77,7 +77,7 @@ const ModelsFeed = ({
   return (
     <MasonryVirtualizerVertical
       scrollRef={scrollRef}
-      key={JSON.stringify(queryKey)}
+      key={`models_${JSON.stringify(query)}`}
       apiEndpoint={'/api/feed/models'}
       queryKey={queryKey}
       query={query}
