@@ -32,6 +32,7 @@ export interface TriggerSchema {
   }
   deleted?: boolean
   last_run_time?: Date
+  next_scheduled_run?: Date
 }
 
 export interface TriggerDocument extends TriggerSchema {}
@@ -88,6 +89,10 @@ const TriggerSchema = new Schema<TriggerDocument>(
       default: false,
     },
     last_run_time: {
+      type: Date,
+      required: false,
+    },
+    next_scheduled_run: {
       type: Date,
       required: false,
     },
