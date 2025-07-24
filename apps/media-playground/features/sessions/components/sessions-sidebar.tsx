@@ -79,6 +79,8 @@ const SessionListItem: FC<SessionListItemProps> = ({
   const [isRenaming, setIsRenaming] = useState(false)
   const [optimisticTitle, setOptimisticTitle] = useState(title)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const isSubmittingRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -329,7 +331,8 @@ const SessionListItem: FC<SessionListItemProps> = ({
               className="flex items-center gap-2 text-destructive hover:!text-destructive focus:!text-destructive focus:!bg-destructive/10"
               onSelect={e => {
                 e.preventDefault()
-                deleteSession(id)
+                setPendingDeleteId(id)
+                setShowDeleteDialog(true)
               }}
               disabled={isDeleting}
             >
@@ -338,6 +341,49 @@ const SessionListItem: FC<SessionListItemProps> = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      )}
+
+      {/* Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-background rounded-lg shadow-lg p-6 max-w-xs w-full">
+            <div className="mb-4 text-base font-medium">
+              Delete this session?
+            </div>
+            <div className="mb-6 text-sm text-muted-foreground">
+              This action cannot be undone. Are you sure you want to delete this
+              session?
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowDeleteDialog(false)
+                  setPendingDeleteId(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  if (pendingDeleteId) {
+                    await deleteSession(pendingDeleteId)
+                  }
+                  setShowDeleteDialog(false)
+                  setPendingDeleteId(null)
+                }}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <LoadingIndicator className="h-4 w-4 animate-spin" />
+                ) : (
+                  'Delete'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
