@@ -21,6 +21,7 @@ export const listModels = async (
       message: 'User missing from request',
     })
   }
+  
 
   const { modelId, limit, page, sort } = request.query as ModelsV2ListArguments
 
@@ -64,7 +65,7 @@ export const getModel = async (
   reply: FastifyReply,
 ) => {
   const { modelId } = request.params as ModelsV2GetArguments
-  const { userId } = request.user
+  const { userId } = request.user || {}
 
   const model = await ModelV2.findOneWithDeleted({
     _id: modelId,

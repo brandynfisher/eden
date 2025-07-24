@@ -255,13 +255,6 @@ const AccountDropdown = () => {
           <ThemeToggleForwardWrap />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
-          <div ref={feedbackButtonRef} className="flex items-center w-full">
-            <MessageSquareIcon className="mr-2 h-4 w-4" />
-            <span>Feedback</span>
-          </div>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem className="cursor-pointer" onClick={logout}>
           <LogOutIcon className="mr-2 h-4 w-4" />
           <span>Log out</span>
