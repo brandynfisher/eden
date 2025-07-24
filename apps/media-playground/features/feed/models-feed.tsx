@@ -7,7 +7,7 @@ import MasonryVirtualizerVertical, {
 import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { FeedConceptsCursorArguments, ModelV2 } from '@edenlabs/eden-sdk'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { RefObject, useMemo } from 'react'
 
 type Props = {
@@ -53,13 +53,9 @@ const ModelsFeed = ({
   }, [defaultQuery, queryProp])
 
   const queryKey = useMemo(() => ['feed', 'models', query], [query])
-  const pathname = usePathname()
 
-  // Include pathname in feedId to differentiate between same queries in different routes
-  const feedId = useMemo(
-    () => JSON.stringify({ queryKey, path: pathname }),
-    [queryKey, pathname],
-  )
+  // Use query-based feedId like creations feed does, not route-based
+  const feedId = useMemo(() => JSON.stringify({ queryKey }), [queryKey])
 
   const { setItems, setActiveIndex, setFetchNextPage } = useFeedStore(feedId)
   const { addToHistory } = useActiveFeedStore()
