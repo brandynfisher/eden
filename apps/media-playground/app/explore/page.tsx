@@ -75,6 +75,16 @@ const ExplorePage = () => {
     }
   }, [searchParams, contentType, creatorType, router, pathname])
 
+  // Reset to public view when user logs out
+  useEffect(() => {
+    if (!user && creatorType === 'user') {
+      setCreatorType('public')
+      const params = new URLSearchParams(searchParams?.toString())
+      params.delete('creator')
+      router.replace(`/explore${params.toString() ? `?${params.toString()}` : ''}`)
+    }
+  }, [user, creatorType, searchParams, router])
+
   // Query builders for each content type
   const creationsQuery = useMemo(
     () => ({
@@ -82,7 +92,7 @@ const ExplorePage = () => {
       ...(creatorType === 'public' ? creationsFilter : {}),
       ...(creatorType === 'user' && user?._id ? { user: user._id } : {}),
       ...(searchQuery ? { search: searchQuery } : {}),
-      sort: creationsSort,
+      sort: [creationsSort],
     }),
     [creationsFilter, creatorType, user?._id, searchQuery, creationsSort],
   )
@@ -92,7 +102,7 @@ const ExplorePage = () => {
       ...modelsFilter,
       ...(creatorType === 'user' && user?._id ? { user: user._id } : {}),
       ...(searchQuery ? { search: searchQuery } : {}),
-      sort: modelsSort,
+      sort: [modelsSort],
     }),
     [modelsFilter, creatorType, user?._id, searchQuery, modelsSort],
   )
@@ -231,8 +241,8 @@ const ExplorePage = () => {
 
           {/* Filter controls */}
           <div className="flex flex-wrap gap-2 lg:gap-3 items-center">
-            {/* Ownership Type Tabs - only show for non-tools content types */}
-            {contentType !== 'tools' && (
+            {/* Ownership Type Tabs - only show for non-tools content types and when user is logged in */}
+            {contentType !== 'tools' && user && (
               <Tabs
                 value={creatorType}
                 onValueChange={handleCreatorTypeChange}

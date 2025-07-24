@@ -268,14 +268,16 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
       },
       staleTime: 1000,
       getNextPageParam: (lastPage: FeedV2CursorResponse) => {
-        if (
-          lastPage &&
-          lastPage?.docs?.length &&
-          lastPage.docs.length === limit
-        ) {
-          if (lastPage.nextCursor) {
-            return lastPage.nextCursor
-          }
+        // Improved pagination logic to handle edge cases
+        if (!lastPage || !lastPage.docs) {
+          return undefined
+        }
+
+        // Only fetch next page if we have a cursor AND the current page is full
+        // This prevents infinite loops when backend returns same cursor
+        if (lastPage.nextCursor && lastPage.docs.length === limit) {
+          // Check if cursor is different from current to avoid loops
+          return lastPage.nextCursor
         }
 
         return undefined
@@ -286,13 +288,15 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
     const allRows = useMemo(() => {
       const allItems = data?.pages.flatMap(d => d.docs) || []
 
-      // Remove duplicates based on _id
-      const uniqueItems = allItems.filter(
-        (item, index, array) =>
-          item?._id && array.findIndex(i => i?._id === item._id) === index,
-      )
+      // Remove duplicates based on _id - using Map for better performance
+      const uniqueMap = new Map()
+      allItems.forEach(item => {
+        if (item?._id && !uniqueMap.has(item._id)) {
+          uniqueMap.set(item._id, item)
+        }
+      })
 
-      return uniqueItems
+      return Array.from(uniqueMap.values())
     }, [data])
 
     // --- Calculations needed for virtualizer ---
@@ -316,7 +320,8 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
       {
         count: virtualizerRowCount,
         estimateSize: () => itemHeight + GRID_GAP,
-        overscan: 10,
+        // Reduce overscan for better performance
+        overscan: 5,
       },
       scrollRef,
     )
@@ -493,7 +498,7 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
 
                   // Always return a div to maintain grid structure, but empty if no item
                   return (
-                    <div key={`slot_${rowIndex}_${colIndex}`}>
+                    <div key={`slot_${rowIndex}_${colIndex}_${item?._id || ''}`}>
                       {item ? render(item, onUpdate, itemIndex) : null}
                     </div>
                   )

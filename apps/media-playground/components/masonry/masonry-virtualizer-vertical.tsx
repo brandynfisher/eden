@@ -311,7 +311,17 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
     // console.log({queryKey, query})
 
     const allRows = useMemo(() => {
-      return data?.pages.flatMap(d => d.docs) || []
+      const allItems = data?.pages.flatMap(d => d.docs) || []
+
+      // Remove duplicates based on _id - using Map for better performance
+      const uniqueMap = new Map()
+      allItems.forEach(item => {
+        if (item?._id && !uniqueMap.has(item._id)) {
+          uniqueMap.set(item._id, item)
+        }
+      })
+
+      return Array.from(uniqueMap.values())
     }, [data])
 
     // --- Calculations needed for virtualizer ---
@@ -554,15 +564,11 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
     const renderItem = useCallback(
       (virtualItem: VirtualItem) => {
         const item = allRows[virtualItem.index]
-        const isLoaderRow = virtualItem.index > allRows.length - 1
-
-        if (!item && !isLoaderRow) {
-          return null
-        }
+        const isLoaderRow = virtualItem.index >= allRows.length
 
         return (
           <div
-            key={`${apiEndpoint}_${virtualItem.index}`}
+            key={item?._id || `virtual_${virtualItem.index}`}
             ref={virtualizer.measureElement}
             data-index={virtualItem.index}
             style={{
@@ -576,19 +582,21 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
             }}
           >
             {isLoaderRow ? (
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center h-32">
                 {hasNextPage ? <LoadingIndicator className="h-6 w-6" /> : null}
               </div>
             ) : item ? (
               render(item, onUpdate, virtualItem.index)
             ) : (
-              <div>Missing data</div>
+              // Always render skeleton to maintain layout - same as creations feed
+              <div className="relative w-full aspect-square">
+                <Skeleton className="w-full h-full rounded-md" />
+              </div>
             )}
           </div>
         )
       },
       [
-        apiEndpoint,
         onUpdate,
         render,
         allRows,
