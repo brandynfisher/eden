@@ -47,18 +47,11 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
-  const initialTab = searchParams.get('tab') || defaultTabName
+  const initialTab = searchParams?.get('tab') || defaultTabName
   const [activeTab, setActiveTab] = useState(initialTab)
   const [search, setSearch] = useState('')
   const [isTabChanging, setIsTabChanging] = useState(false)
   const tabChangeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  const [tabCaches, setTabCaches] = useState<{
-    [key: string]: {
-      filterQuery: FeedCursorRouteQueryParams['filter']
-      content: ReactElement
-    }
-  }>({})
 
   // Filters management
   const [globalFilterQuery, setGlobalFilterQuery] = useState<
@@ -70,6 +63,28 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     const activeTab = tabs.find(t => t.key === initialTab)
     return activeTab?.initialFilter || baseQuery || {}
   })
+
+  const [tabCaches, setTabCaches] = useState<{
+    [key: string]: {
+      filterQuery: FeedCursorRouteQueryParams['filter']
+      fingerprint: string
+      content: ReactElement
+    }
+  }>({})
+
+  // Combine filters with proper memoization
+  const combinedQuery = useMemo(() => {
+    return {
+      ...globalFilterQuery,
+      ...tabFilterQuery,
+      search,
+    }
+  }, [globalFilterQuery, tabFilterQuery, search])
+
+  // Stable query key for cache management
+  const queryFingerprint = useMemo(() => {
+    return JSON.stringify(combinedQuery)
+  }, [combinedQuery])
 
   const handleTabChange = (value: string) => {
     // Clear any existing timeout
@@ -164,26 +179,24 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
   }
 
   useEffect(() => {
-    // Ensure that caching occurs only when filters are fully ready and content is rendered
     const tab = tabs.find(t => t.key === activeTab)
-    if (tab) {
-      const updatedQuery = {
-        ...globalFilterQuery,
-        ...tabFilterQuery,
-        search,
-      }
+    if (!tab) return
 
-      if (!tabCaches[activeTab]) {
-        setTabCaches(prevCache => ({
-          ...prevCache,
-          [activeTab]: {
-            filterQuery: updatedQuery,
-            content: cloneElement(tab.content, { query: updatedQuery }),
-          },
-        }))
-      }
+    // Only update cache if query has actually changed
+    const currentCache = tabCaches[activeTab]
+    const currentFingerprint = currentCache?.fingerprint
+
+    if (currentFingerprint !== queryFingerprint) {
+      setTabCaches(prevCache => ({
+        ...prevCache,
+        [activeTab]: {
+          filterQuery: combinedQuery,
+          fingerprint: queryFingerprint,
+          content: cloneElement(tab.content, { query: combinedQuery }),
+        },
+      }))
     }
-  }, [activeTab, globalFilterQuery, tabFilterQuery, tabs])
+  }, [activeTab, queryFingerprint, tabs])
 
   useEffect(() => {
     // Update activeTab when search params change (e.g., external navigation)

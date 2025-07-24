@@ -9,8 +9,7 @@ import {
 import TaskFormModal from '@/features/chat/components/task-form-modal'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
-import { Trigger } from '@edenlabs/eden-sdk'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   AlertCircle,
@@ -27,10 +26,14 @@ import { FC, useMemo, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
+interface TriggerWithLastRun extends Trigger {
+  last_run_time?: Date
+}
+
 const TaskItem: FC<{
-  trigger: Trigger
+  trigger: TriggerWithLastRun
   agentId: string
-  onEdit: (trigger: Trigger) => void
+  onEdit: (trigger: TriggerWithLastRun) => void
   onDelete: (triggerId: string) => void
 }> = ({ trigger, agentId, onEdit, onDelete }) => {
   const [isDeleting, setIsDeleting] = useState(false)
@@ -51,6 +54,29 @@ const TaskItem: FC<{
     }
   }
 
+  const formatLastRunTime = (lastRunTime?: Date) => {
+    if (!lastRunTime) return 'Never run'
+
+    const date = new Date(lastRunTime)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+    } else if (diffHours > 0) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+    } else {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60))
+      if (diffMinutes > 0) {
+        return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`
+      } else {
+        return 'Just now'
+      }
+    }
+  }
+
   return (
     <div className="group flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -60,6 +86,9 @@ const TaskItem: FC<{
           </div>
           <div className="text-xs text-muted-foreground mt-1">
             {formattedSchedule}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            Last run: {formatLastRunTime(trigger.last_run_time)}
           </div>
         </div>
       </div>
@@ -104,7 +133,9 @@ const AgentTasksView: FC<{
   agent: Agent
 }> = ({ agent }) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<Trigger | null>(null)
+  const [editingTask, setEditingTask] = useState<TriggerWithLastRun | null>(
+    null,
+  )
   const [showFinished, setShowFinished] = useState(false)
 
   const triggersQuery = useAgentTriggersQuery({
@@ -148,7 +179,16 @@ const AgentTasksView: FC<{
     })
 
     // Sort both arrays by updatedAt in descending order (most recent first)
-    const sortByUpdatedAt = (a: Trigger, b: Trigger) => {
+    const sortByUpdatedAt = (a: TriggerWithLastRun, b: TriggerWithLastRun) => {
+      // Sort by last_run_time first (most recent first), then by updatedAt/createdAt
+      const aLastRun = a.last_run_time ? new Date(a.last_run_time).getTime() : 0
+      const bLastRun = b.last_run_time ? new Date(b.last_run_time).getTime() : 0
+
+      if (aLastRun !== bLastRun) {
+        return bLastRun - aLastRun // Most recent last_run_time first
+      }
+
+      // If last_run_time is the same (or both null), fall back to updatedAt/createdAt
       const aDate = new Date(a.updatedAt || a.createdAt)
       const bDate = new Date(b.updatedAt || b.createdAt)
       return bDate.getTime() - aDate.getTime()

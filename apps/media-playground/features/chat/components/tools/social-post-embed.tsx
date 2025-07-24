@@ -6,14 +6,24 @@ import React from 'react'
 
 export type SocialPostEmbedProps = {
   results: TaskV2Result[]
-  platform: 'discord' | 'telegram'
+  platform: 'discord' | 'telegram' | 'twitter' | 'farcaster'
 }
 
 export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
   results,
   platform,
 }) => {
-  const platformName = platform === 'discord' ? 'Discord' : 'Telegram'
+
+  const platformName =
+    platform === 'discord'
+      ? 'Discord'
+      : platform === 'telegram'
+      ? 'Telegram'
+      : platform === 'twitter'
+      ? 'Twitter'
+      : platform === 'farcaster'
+      ? 'Farcaster'
+      : platform
 
   // Handle case where results might not have the expected structure
   if (!results || !Array.isArray(results)) {
@@ -56,6 +66,15 @@ export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
                 )}
               </div>
             ))
+          ) : result && result.output && typeof result.output === 'string' ? (
+            <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
+              <span className="text-sm text-muted-foreground">
+                Posted to {platformName}
+              </span>
+              <div className="text-sm mt-1 text-foreground/80">
+                {result.output}
+              </div>
+            </div>
           ) : (
             <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
               <span className="text-sm text-muted-foreground">

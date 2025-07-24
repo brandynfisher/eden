@@ -399,6 +399,8 @@ export const createSessionMessage = async (
       },
       user_id: userId,
       stream: stream || false,
+      // Include agent_ids from request body if provided (for multi-agent targeting)
+      ...(agent_ids && { actor_agent_ids: agent_ids }),
     },
     headers: {
       'X-Client-Platform': 'web',
@@ -515,13 +517,17 @@ export const listSessions = async (
 
   try {
     const queryOptions: QueryOptions = {
-      select: '_id title name createdAt updatedAt trigger',
+      select: '_id title name createdAt updatedAt trigger agents',
       limit,
       page,
       sort: {
         ...sort,
         updatedAt: -1,
         createdAt: -1,
+      },
+      populate: {
+        path: 'agents',
+        select: '_id username userImage name',
       },
     }
 
@@ -773,7 +779,13 @@ export const renameSession = async (
 
 export const cancelSession = async (
   server: FastifyInstance,
-  request: FastifyRequest<{ Params: { session_id: string } }>,
+  request: FastifyRequest<{
+    Params: { session_id: string }
+    Body?: {
+      tool_call_id?: string
+      tool_call_index?: number
+    }
+  }>,
   reply: FastifyReply,
 ) => {
   const { userId } = request.user || {}
@@ -808,6 +820,12 @@ export const cancelSession = async (
       data: {
         session_id,
         user_id: userId,
+        ...(request.body?.tool_call_id && {
+          tool_call_id: request.body.tool_call_id,
+        }),
+        ...(request.body?.tool_call_index !== undefined && {
+          tool_call_index: request.body.tool_call_index,
+        }),
       },
     }
 

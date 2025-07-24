@@ -33,6 +33,9 @@ export interface CreatorsUpdateArguments extends WebAPICallOptions {
   username?: string
   userImage?: string
   instagramHandle?: string
+  preferences?: {
+    agent_spend_threshold?: number
+  }
 }
 
 export interface CreatorFollowersListArguments
@@ -227,6 +230,9 @@ export type Creator = {
   isFollowing?: boolean
   featureFlags?: FeatureFlag[]
   subscriptionTier?: SubscriptionTier
+  preferences?: {
+    agent_spend_threshold?: number
+  }
   stripeCustomerId?: string
   lastDailyLoginBonus?: Date
   discordLinkBonusClaimed?: boolean

@@ -1,8 +1,8 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { pinMessage, unpinMessage } from '@/features/chat/chat-api'
+import { ToolResultActionBar } from '@/features/chat/components/tool-result-action-bar'
+import { ToolHoverMenu } from '@/features/chat/components/tools/tool-hover-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -17,10 +17,12 @@ import {
   BranchPicker,
   useThreadConfig,
 } from '@assistant-ui/react-ui'
-import { type ThreadMessage as EdenThreadMessage } from '@edenlabs/eden-sdk'
-import { PinIcon, PinOffIcon } from 'lucide-react'
+import {
+  type ThreadMessage as EdenThreadMessage,
+  TaskV2Result,
+} from '@edenlabs/eden-sdk'
 import { useTimeAgo } from 'next-timeago'
-import React, { type FC, useState } from 'react'
+import React, { type FC } from 'react'
 
 const MyAssistantMessageAvatar: FC = () => {
   const { assistantAvatar: avatar = { fallback: 'A' } } = useThreadConfig()
@@ -45,11 +47,9 @@ const MyAssistantMessageAvatar: FC = () => {
 const MyAssistantActionBar: FC = () => {
   const { TimeAgo } = useTimeAgo()
   const createdAt = useMessage(m => m.createdAt)
-  const id = useMessage(m => m.id)
   const myMessages = useMessage(m =>
     getExternalStoreMessages(m),
   ) as EdenThreadMessage[]
-  const [pinnedState, setPinnedState] = useState(myMessages[0].pinned)
   const reactions = myMessages[0].reactions || {}
 
   const { user } = useAuthState()
@@ -58,9 +58,26 @@ const MyAssistantActionBar: FC = () => {
   const hasThumbsUp = userId ? reactions.thumbs_up?.includes(userId) : false
   const hasThumbsDown = userId ? reactions.thumbs_down?.includes(userId) : false
 
+  // Get completed tool calls with results
+  const completedToolCalls =
+    myMessages[0].tool_calls?.filter(
+      toolCall =>
+        toolCall.status === 'completed' &&
+        toolCall.result &&
+        toolCall.result.length > 0 &&
+        toolCall.result.some((result: TaskV2Result) => {
+          if (!result?.output) return false
+          return (
+            Array.isArray(result.output) ||
+            (typeof result.output === 'string' &&
+              (result.output as string).length > 0)
+          )
+        }),
+    ) || []
+
   return (
     <AssistantActionBar.Root
-      autohide="not-last"
+      autohide={completedToolCalls.length > 0 ? 'never' : 'not-last'}
       autohideFloat="single-branch"
       className="flex items-center gap-2 w-full z-10"
     >
@@ -76,32 +93,20 @@ const MyAssistantActionBar: FC = () => {
         )}
       />
 
-      <Button
-        variant={'ghost'}
-        size="icon"
-        className="p-0.5 w-6 h-6 hover:text-foreground hover:bg-muted"
-        onClick={async () => {
-          if (pinnedState) {
-            unpinMessage(id)
-            setPinnedState(false)
-          } else {
-            pinMessage(id)
-            setPinnedState(true)
-          }
-        }}
-      >
-        {pinnedState ? (
-          <PinOffIcon className="w-4 h-4 text-purple-600" />
-        ) : (
-          <PinIcon className="w-4 h-4" />
-        )}
-      </Button>
-
-      <div
-        className="ml-auto text-xs bg-transparent"
-        title={new Date(createdAt).toLocaleString()}
-      >
-        <TimeAgo date={new Date(createdAt)} />
+      <div className="ml-auto flex items-center gap-2">
+        {completedToolCalls.map((toolCall, index) => (
+          <ToolHoverMenu
+            key={`${toolCall.id}-${index}`}
+            toolName={toolCall.tool!}
+            args={toolCall.args}
+          />
+        ))}
+        <div
+          className="text-xs bg-transparent"
+          title={new Date(createdAt).toLocaleString()}
+        >
+          <TimeAgo date={new Date(createdAt)} />
+        </div>
       </div>
     </AssistantActionBar.Root>
   )
@@ -110,7 +115,9 @@ const MyAssistantActionBar: FC = () => {
 const MyAssistantMessage: FC = () => {
   // const content = useMessage(m => m.content)
   const status = useMessage(m => m.status)
-  const id = useMessage(m => m.id)
+  const myMessages = useMessage(m =>
+    getExternalStoreMessages(m),
+  ) as EdenThreadMessage[]
 
   // Memoize the derived state to prevent unnecessary recalculations
   // const { isEmpty, isRunning } = React.useMemo(() => {
@@ -160,7 +167,7 @@ const MyAssistantMessage: FC = () => {
     >
       <MyAssistantMessageAvatar />
       {/* {!isEmpty && ( // Use raw isEmpty */}
-      <AssistantMessage.Content key={id} className="pl-3 !max-w-full pr-2" />
+      <AssistantMessage.Content className="pl-3 !max-w-full pr-2" />
       {/* )} */}
       <BranchPicker />
       {/* {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
@@ -170,7 +177,22 @@ const MyAssistantMessage: FC = () => {
       ) : null} */}
 
       <ThreadPrimitive.If running={false} empty={false}>
-        <MyAssistantActionBar />
+        {myMessages[0]?.tool_calls?.some(
+          toolCall =>
+            toolCall.status === 'completed' &&
+            toolCall.result &&
+            toolCall.result.length > 0 &&
+            toolCall.result.some(
+              result =>
+                result &&
+                Array.isArray(result?.output) &&
+                result.output.some(output => output.creation),
+            ),
+        ) ? (
+          <ToolResultActionBar />
+        ) : (
+          <MyAssistantActionBar />
+        )}
       </ThreadPrimitive.If>
     </AssistantMessage.Root>
   )

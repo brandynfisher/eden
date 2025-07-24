@@ -8,10 +8,9 @@ import {
   listSessions,
   renameSession,
 } from '../../controllers/v2/sessionControllerV2'
-import { hasFeatureFlag, isAuth } from '../../middleware/authMiddleware'
+import { isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import {
-  FeatureFlag,
   SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
   SessionsV2GetArguments,
@@ -30,7 +29,6 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     reply: FastifyReply,
   ) => {
     await isAuth(server, request, reply)
-    await hasFeatureFlag(request, reply, FeatureFlag.SessionsV2)
   }
 
   server.post<{
@@ -127,7 +125,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         content: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),
         stream: Type.Optional(Type.Boolean()),
-        agent_ids: Type.Optional(Type.Array(Type.String(), { minItems: 1 })),
+        agent_ids: Type.Optional(Type.Array(Type.String())),
         scenario: Type.Optional(Type.String({ maxLength: 1000 })),
         budget: Type.Optional(
           Type.Object({
@@ -345,6 +343,10 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
 
   server.post<{
     Params: { session_id: string }
+    Body: {
+      tool_call_id?: string
+      tool_call_index?: number
+    }
   }>('/v2/sessions/:session_id/cancel', {
     schema: {
       tags: ['Sessions'],
@@ -357,6 +359,10 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       params: {
         session_id: Type.String(),
       },
+      body: Type.Object({
+        tool_call_id: Type.Optional(Type.String()),
+        tool_call_index: Type.Optional(Type.Number()),
+      }),
       response: {
         200: Type.Object({
           status: Type.String(),

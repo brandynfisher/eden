@@ -1,13 +1,17 @@
 import ActionBar from './action-bar'
 import { MarkdownText } from './markdown-text'
+import { MessageAttachment } from './message-attachment'
+import ToolResultActionBar from './tool-result-action-bar'
+import { LightboxGallery } from '@/components/media/lightbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { Message } from '@edenlabs/eden-sdk'
+import { Message, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { UserIcon } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 type OtherMessageProps = {
   sessionId: string
@@ -22,14 +26,42 @@ export const OtherMessage = ({
   showAvatar = true,
   isStreamingTokens = false,
 }: OtherMessageProps) => {
+  // Track optimistically cancelled tool calls
+  const [optimisticallyCancelled, setOptimisticallyCancelled] = useState<
+    Set<string>
+  >(new Set())
+
+  // Clean up optimistic state when backend confirms cancellation
+  useEffect(() => {
+    if (message.tool_calls) {
+      const cancelledIds = message.tool_calls
+        .filter(toolCall => toolCall.status === 'cancelled')
+        .map(toolCall => toolCall.id)
+
+      if (cancelledIds.length > 0) {
+        setOptimisticallyCancelled(prev => {
+          const newSet = new Set(prev)
+          cancelledIds.forEach(id => newSet.delete(id))
+          return newSet
+        })
+      }
+    }
+  }, [message.tool_calls])
+
   // Check if all tool calls are cancelled
   const hasActiveToolCalls = message.tool_calls?.some(
-    toolCall => toolCall.status !== 'cancelled',
+    toolCall =>
+      toolCall.status !== 'cancelled' &&
+      !optimisticallyCancelled.has(toolCall.id),
   )
+
+  // Check if message has attachments
+  const hasAttachments = message.attachments && message.attachments.length > 0
 
   if (
     !message.content &&
     !isStreamingTokens &&
+    !hasAttachments &&
     (!message.tool_calls ||
       message.tool_calls.length === 0 ||
       !hasActiveToolCalls)
@@ -131,14 +163,73 @@ export const OtherMessage = ({
         </div>
       </div>
       <div className="aui-assistant-message-content mt-3 md:mt-1.5 md:pl-3 pr-2 max-w-full">
+        {hasAttachments && (
+          <LightboxGallery galleryKey={message._id}>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {message.attachments?.map((attachment, index) => (
+                <MessageAttachment
+                  key={attachment}
+                  url={attachment}
+                  index={index}
+                />
+              ))}
+            </div>
+          </LightboxGallery>
+        )}
         {!isEmpty && <MarkdownText>{message.content}</MarkdownText>}
         {message.tool_calls &&
           message.tool_calls.length > 0 &&
-          message.tool_calls
-            .filter(toolCall => toolCall.status !== 'cancelled')
-            .map(toolCall => {
-              return <TaskResultTool key={toolCall.id} toolCall={toolCall} />
-            })}
+          message.tool_calls.map(toolCall => {
+            // Create optimistic tool call with cancelled status if optimistically cancelled
+            const optimisticToolCall = optimisticallyCancelled.has(toolCall.id)
+              ? { ...toolCall, status: 'cancelled' as const }
+              : toolCall
+
+            return (
+              <TaskResultTool
+                key={toolCall.id}
+                toolCall={optimisticToolCall}
+                onCancel={async () => {
+                  // Optimistically mark as cancelled
+                  setOptimisticallyCancelled(prev =>
+                    new Set(prev).add(toolCall.id),
+                  )
+
+                  try {
+                    const response = await fetch(
+                      `/api/sessions/${sessionId}/cancel`,
+                      {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          tool_call_id: toolCall.id,
+                          tool_call_index:
+                            message.tool_calls?.indexOf(toolCall),
+                        }),
+                      },
+                    )
+                    if (!response.ok) {
+                      // Revert optimistic update on failure
+                      setOptimisticallyCancelled(prev => {
+                        const newSet = new Set(prev)
+                        newSet.delete(toolCall.id)
+                        return newSet
+                      })
+                    }
+                  } catch (error) {
+                    // Revert optimistic update on failure
+                    setOptimisticallyCancelled(prev => {
+                      const newSet = new Set(prev)
+                      newSet.delete(toolCall.id)
+                      return newSet
+                    })
+                  }
+                }}
+              />
+            )
+          })}
 
         {/* Show typing indicator when streaming tokens and no content yet */}
         {isStreamingTokens && isEmpty && !message.tool_calls && (
@@ -148,8 +239,43 @@ export const OtherMessage = ({
         )}
 
         {!isStreamingTokens && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <ActionBar sessionId={sessionId} message={message} />
+          <div
+            className={`transition-opacity ${
+              message.tool_calls?.some(
+                toolCall =>
+                  toolCall.status === 'completed' &&
+                  toolCall.result &&
+                  (toolCall.result as TaskV2Result[]).length > 0 &&
+                  toolCall.result.some(
+                    (result: TaskV2Result) =>
+                      result &&
+                      (Array.isArray(result?.output) ||
+                        (typeof result?.output === 'string' &&
+                          (result?.output as string).length > 0)),
+                  ),
+              )
+                ? 'opacity-100'
+                : 'opacity-0 group-hover:opacity-100'
+            }`}
+          >
+            {message.tool_calls?.some(
+              toolCall =>
+                toolCall.status === 'completed' &&
+                toolCall.result &&
+                toolCall.result.length > 0 &&
+                toolCall.result.some(
+                  (result: TaskV2Result) =>
+                    result &&
+                    Array.isArray(result?.output) &&
+                    result.output.some(
+                      (output: TasksV2ResultOutput) => output.creation,
+                    ),
+                ),
+            ) ? (
+              <ToolResultActionBar message={message} />
+            ) : (
+              <ActionBar sessionId={sessionId} message={message} />
+            )}
           </div>
         )}
       </div>

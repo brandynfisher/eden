@@ -74,18 +74,22 @@ export const ToolCardMedia = ({
 
 const ToolCard = ({ title, image, link, description, priority }: Props) => {
   return (
-    <Link prefetch={false} href={link} className="group aspect-[4/3]">
-      <Card className="text-white relative min-h-48 flex flex-col justify-between overflow-hidden border-0 h-full w-full">
-        <ToolCardMedia mediaUrl={image} title={title} priority={priority} />
-        {/* Hover overlay for darkening effect */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 pointer-events-none" />
-        {/*<div className="relative flex flex-col group bg-gradient-to-b from-popover/90 from-10% via-transparent via-15% hover:via-100% hover:to-100% [@media(pointer:coarse)]:via-30% [@media(pointer:coarse)]:to-75% to-transparent flex-grow transition-all">*/}
-        <div className="relative flex flex-col group generator-gradient flex-grow transition-all drop-shadow">
-          <div className="px-3 py-3">
-            <TypographyH6 className="flex items-center justify-between opacity-75 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-all text-base font-semibold mb-1">
-              {title}
-            </TypographyH6>
-            <div className="text-sm line-clamp-2 opacity-90">{description}</div>
+    <Link prefetch={false} href={link} className="group">
+      <Card className="overflow-hidden border h-full w-full flex flex-col">
+        {/* Image Container */}
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <ToolCardMedia mediaUrl={image} title={title} priority={priority} />
+          {/* Hover overlay for darkening effect */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
+        </div>
+
+        {/* Text Container - Fixed Height */}
+        <div className="p-3 bg-background flex-shrink-0 h-24 flex flex-col justify-center">
+          <TypographyH6 className="text-foreground text-base font-semibold mb-1 line-clamp-1">
+            {title}
+          </TypographyH6>
+          <div className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            {description}
           </div>
         </div>
       </Card>

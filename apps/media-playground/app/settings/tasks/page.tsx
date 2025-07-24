@@ -62,8 +62,31 @@ const TasksPage = () => {
     return unique
   }, [triggers])
 
+  const formatLastRunTime = (lastRunTime?: Date) => {
+    if (!lastRunTime) return 'Never'
+
+    const date = new Date(lastRunTime)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffDays > 0) {
+      return `${diffDays}d ago`
+    } else if (diffHours > 0) {
+      return `${diffHours}h ago`
+    } else {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60))
+      if (diffMinutes > 0) {
+        return `${diffMinutes}m ago`
+      } else {
+        return 'Just now'
+      }
+    }
+  }
+
   const filteredTriggers = useMemo(() => {
-    return triggers.filter(trigger => {
+    const filtered = triggers.filter(trigger => {
       const matchesSearch =
         trigger.instruction.toLowerCase().includes(searchTerm.toLowerCase()) ||
         trigger.agent.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,29 +101,22 @@ const TasksPage = () => {
 
       return matchesSearch && matchesStatus && matchesAgent
     })
-  }, [triggers, searchTerm, statusFilter, agentFilter])
 
-  // If user doesn't have preview flag, show access denied
-  if (!isPreviewUser) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold">Tasks</h2>
-          <p className="text-muted-foreground">
-            Manage all your scheduled tasks across agents
-          </p>
-        </div>
-        <Card>
-          <CardContent className="flex items-center justify-center h-64">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <AlertCircle className="h-5 w-5" />
-              <p>This feature is not available for your account.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+    // Sort by last_run_time first (most recent first), then by createdAt
+    return filtered.sort((a, b) => {
+      const aLastRun = a.last_run_time ? new Date(a.last_run_time).getTime() : 0
+      const bLastRun = b.last_run_time ? new Date(b.last_run_time).getTime() : 0
+
+      if (aLastRun !== bLastRun) {
+        return bLastRun - aLastRun // Most recent last_run_time first
+      }
+
+      // If last_run_time is the same (or both null), fall back to createdAt
+      const aDate = new Date(a.createdAt)
+      const bDate = new Date(b.createdAt)
+      return bDate.getTime() - aDate.getTime()
+    })
+  }, [triggers, searchTerm, statusFilter, agentFilter])
 
   if (isPending) {
     return (
@@ -114,6 +130,28 @@ const TasksPage = () => {
         <Card>
           <CardContent className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // If user doesn't have preview flag, show access denied
+  if (!isPreviewUser) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold">Deployments</h2>
+          <p className="text-muted-foreground">
+            Manage all your agent deployments across platforms
+          </p>
+        </div>
+        <Card>
+          <CardContent className="flex items-center justify-center h-64">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <AlertCircle className="h-5 w-5" />
+              <p>This feature is not available for your account.</p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -158,8 +196,8 @@ const TasksPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-[200px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="sm:col-span-2 lg:col-span-2">
               <Label htmlFor="search">Search</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -172,7 +210,7 @@ const TasksPage = () => {
                 />
               </div>
             </div>
-            <div className="min-w-[150px]">
+            <div>
               <Label>Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
@@ -186,7 +224,7 @@ const TasksPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="min-w-[150px]">
+            <div>
               <Label>Agent</Label>
               <Select value={agentFilter} onValueChange={setAgentFilter}>
                 <SelectTrigger>
@@ -213,109 +251,118 @@ const TasksPage = () => {
             All Tasks ({filteredTriggers.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Task</TableHead>
-                <TableHead>Agent</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Schedule</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTriggers.length === 0 ? (
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[800px]">
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No tasks found.
-                  </TableCell>
+                  <TableHead className="min-w-[180px]">Task</TableHead>
+                  <TableHead className="min-w-[120px]">Agent</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="min-w-[120px]">Schedule</TableHead>
+                  <TableHead className="min-w-[100px]">Last Run</TableHead>
+                  <TableHead className="min-w-[80px]">Created</TableHead>
+                  <TableHead className="min-w-[80px]">Actions</TableHead>
                 </TableRow>
-              ) : (
-                filteredTriggers.map(trigger => (
-                  <TableRow key={trigger._id}>
-                    <TableCell>
-                      <div className="max-w-sm">
-                        <div className="font-medium text-sm truncate">
-                          {trigger.instruction}
+              </TableHeader>
+              <TableBody>
+                {filteredTriggers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      No tasks found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredTriggers.map(trigger => (
+                    <TableRow key={trigger._id}>
+                      <TableCell className="p-4">
+                        <div className="max-w-[250px]">
+                          <div className="font-medium text-sm truncate">
+                            {trigger.instruction}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatCronSchedule(trigger.schedule)}
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <UserAvatar
+                            image={trigger.agent.userImage}
+                            name={trigger.agent.name}
+                            className="h-6 w-6 flex-shrink-0"
+                          />
+                          <Link
+                            href={`/agents/${trigger.agent.username}`}
+                            className="text-sm hover:underline truncate"
+                          >
+                            {trigger.agent.name}
+                          </Link>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <UserAvatar
-                          image={trigger.agent.userImage}
-                          name={trigger.agent.name}
-                          className="h-6 w-6"
-                        />
-                        <Link
-                          href={`/agents/${trigger.agent.username}`}
-                          className="text-sm hover:underline"
-                        >
-                          {trigger.agent.name}
-                        </Link>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          trigger.status === 'active' ? 'default' : 'secondary'
-                        }
-                        className="capitalize"
-                      >
-                        {trigger.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {formatCronSchedule(trigger.schedule)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(trigger.createdAt).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            router.push(
-                              `/chat/${trigger.agent.username}?tab=tasks`,
-                            )
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <Badge
+                          variant={
+                            trigger.status === 'active'
+                              ? 'default'
+                              : 'secondary'
                           }
-                          className="h-8 w-8 p-0"
-                          title="Manage task"
+                          className="capitalize whitespace-nowrap"
                         >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        {trigger.session && (
+                          {trigger.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Clock className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">
+                            {formatCronSchedule(trigger.schedule)}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="text-sm text-muted-foreground whitespace-nowrap">
+                          {formatLastRunTime(trigger.last_run_time)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="text-sm text-muted-foreground whitespace-nowrap">
+                          {new Date(trigger.createdAt).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() =>
-                              router.push(`/sessions/${trigger.session}`)
+                              router.push(
+                                `/chat/${trigger.agent.username}?page=tasks`,
+                              )
                             }
                             className="h-8 w-8 p-0"
-                            title="View session"
+                            title="Manage task"
                           >
-                            <Eye className="h-4 w-4" />
+                            <ExternalLink className="h-4 w-4" />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                          {trigger.session && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                router.push(`/sessions/${trigger.session}`)
+                              }
+                              className="h-8 w-8 p-0"
+                              title="View session"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

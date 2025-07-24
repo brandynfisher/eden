@@ -1,6 +1,9 @@
-import { redirect } from 'next/navigation'
+import SessionsList from '@/components/session/sessions-list'
+import { requireFeatureFlag } from '@/lib/auth'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 
-export default function SessionsPage() {
-  redirect('/sessions/new')
+export default async function SessionsPage() {
+  await requireFeatureFlag(FeatureFlag.Preview)
+
+  return <SessionsList />
 }
-

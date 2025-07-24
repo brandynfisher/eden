@@ -89,6 +89,11 @@ const creatorRoutes: FastifyPluginAsync = async server => {
         body: Type.Object({
           username: Type.Optional(Type.String()),
           userImage: Type.Optional(Type.String()),
+          preferences: Type.Optional(
+            Type.Object({
+              agent_spend_threshold: Type.Optional(Type.Number()),
+            }),
+          ),
         }),
       },
       response: {

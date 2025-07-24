@@ -20,6 +20,7 @@ type LiveAudioState = {
   isRecording: boolean
   isProcessing: boolean
   currentSettings: LiveAudioSettings | null
+  actionIntervalProgress: number
 }
 
 type LiveAudioContextType = {
@@ -62,6 +63,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     isRecording: false,
     isProcessing: false,
     currentSettings: null,
+    actionIntervalProgress: 0,
   })
 
   // Force reset recording state on mount to prevent stuck states
@@ -70,6 +72,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
       ...prev,
       isRecording: false,
       isProcessing: false,
+      actionIntervalProgress: 0,
     }))
     isRecordingRef.current = false
   }, [])
@@ -78,6 +81,8 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
   const mediaStreamRef = useRef<MediaStream | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const intervalStartTimeRef = useRef<number>(0)
   const isRecordingRef = useRef<boolean>(false)
   const onTranscriptionRef = useRef<
     ((transcription: string, timestamp: string) => void) | null
@@ -261,10 +266,24 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
           ...prev,
           isRecording: true,
           currentSettings: settings,
+          actionIntervalProgress: 0,
         }))
         isRecordingRef.current = true
+        intervalStartTimeRef.current = Date.now()
 
         console.log('🎤 [LIVE-AUDIO] Recording started')
+
+        // Set up progress tracking timer
+        progressTimerRef.current = setInterval(() => {
+          if (isRecordingRef.current && intervalStartTimeRef.current > 0) {
+            const elapsed = Date.now() - intervalStartTimeRef.current
+            const progress = Math.min((elapsed / (settings.actionInterval * 1000)) * 100, 100)
+            setState(prev => ({
+              ...prev,
+              actionIntervalProgress: progress,
+            }))
+          }
+        }, 100)
 
         // Set up interval for processing chunks
         intervalRef.current = setInterval(() => {
@@ -273,6 +292,13 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
             mediaRecorderRef.current.state === 'recording' &&
             isRecordingRef.current
           ) {
+            // Reset progress and start time for next interval
+            intervalStartTimeRef.current = Date.now()
+            setState(prev => ({
+              ...prev,
+              actionIntervalProgress: 0,
+            }))
+
             // Stop current recording to process chunk
             mediaRecorderRef.current.stop()
 
@@ -321,6 +347,10 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
           clearInterval(intervalRef.current)
           intervalRef.current = null
         }
+        if (progressTimerRef.current) {
+          clearInterval(progressTimerRef.current)
+          progressTimerRef.current = null
+        }
         if (mediaStreamRef.current) {
           mediaStreamRef.current.getTracks().forEach(track => track.stop())
           mediaStreamRef.current = null
@@ -331,6 +361,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
           isRecording: false,
           isProcessing: false,
           currentSettings: null,
+          actionIntervalProgress: 0,
         }))
 
         toast.error('Live Audio Error', {
@@ -350,10 +381,14 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
   const stopLiveAudio = useCallback(() => {
     isRecordingRef.current = false
 
-    // Clear interval first
+    // Clear intervals first
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
+    }
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current)
+      progressTimerRef.current = null
     }
 
     // Create cleanup function that ensures proper microphone release
@@ -386,6 +421,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
         isRecording: false,
         isProcessing: false,
         currentSettings: null,
+        actionIntervalProgress: 0,
       }))
       
       // Clear refs
@@ -431,6 +467,10 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
+      }
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current)
+        progressTimerRef.current = null
       }
 
       if (

@@ -1,13 +1,7 @@
-import Chat from '@/features/chat/chat'
+import SessionChat from '@/features/sessions/components/session-chat'
 
-type Props = {
-  params: {
-    agentId: string
-  }
+const SessionChatAgentPage = () => {
+  return <SessionChat />
 }
 
-const ChatAgentPage = async ({ params: { agentId } }: Props) => {
-  return <Chat agentId={agentId} />
-}
-
-export default ChatAgentPage
+export default SessionChatAgentPage

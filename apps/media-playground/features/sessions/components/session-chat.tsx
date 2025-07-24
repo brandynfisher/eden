@@ -1,15 +1,15 @@
 'use client'
 
+import AlertDestructive from '@/components/alert/alert-destructive'
+import LoadingIndicator from '@/components/loading-indicator'
+import { AlertDescription } from '@/components/ui/alert'
+import SingleAgentSelectorModal from '@/features/chat/components/single-agent-selector-modal'
 import SessionWelcome from '@/features/sessions/components/session-welcome'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent } from '@edenlabs/eden-sdk'
 import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useState } from 'react'
-import LoadingIndicator from '@/components/loading-indicator'
-import AlertDestructive from '@/components/alert/alert-destructive'
-import { AlertDescription } from '@/components/ui/alert'
-import SingleAgentSelectorModal from '@/features/chat/components/single-agent-selector-modal'
 
 const SessionChat: FC = () => {
   const agentId = useParams()?.agentId as string | undefined
@@ -27,10 +27,10 @@ const SessionChat: FC = () => {
   const handleSendMessage = useCallback(
     async (content: string, attachments?: string[]) => {
       if (!user || !agent) return
-      
+
       // Show loading state immediately
       setIsCreating(true)
-      
+
       try {
         // Send message directly to create session
         const response = await fetch('/api/sessions/prompt', {
@@ -52,7 +52,7 @@ const SessionChat: FC = () => {
         const result = await response.json()
         if (result.session_id) {
           // Go directly to the real session
-          router.push(`/chat2/${agentId}/${result.session_id}`)
+          router.push(`/chat/${agentId}/${result.session_id}`)
         }
       } catch (error) {
         console.error('Error creating session:', error)
@@ -68,7 +68,7 @@ const SessionChat: FC = () => {
     name: string
     userImage?: string
   }) => {
-    router.push(`/chat2/${selectedAgent.username}`)
+    router.push(`/chat/${selectedAgent.username}`)
   }
 
   // Show loading if we're waiting for agent data

@@ -1,12 +1,12 @@
-import { Message } from '@edenlabs/eden-sdk'
-import { useCallback, useEffect, useState } from 'react'
+import { Creator, Message, SessionV2 } from '@edenlabs/eden-sdk'
+import { useCallback, useEffect, useState, Dispatch, SetStateAction } from 'react'
 
 interface UseNonStreamingStateProps {
   sessionId: string
-  session: any // Replace with proper session type
+  session?: SessionV2 // Made optional
   enabled: boolean
   onError: (error: string) => void
-  user: any // Replace with proper user type
+  user?: Creator // Made optional
   onSessionCreated?: (sessionId: string) => void
 }
 
@@ -17,9 +17,18 @@ export function useNonStreamingState({
   onError,
   user,
   onSessionCreated,
-}: UseNonStreamingStateProps) {
+}: UseNonStreamingStateProps): {
+  waitingForResponse: boolean
+  optimisticMessages: Message[]
+  respondingAgentIds: string[]
+  setWaitingForResponse: Dispatch<SetStateAction<boolean>>
+  setOptimisticMessages: Dispatch<SetStateAction<Message[]>>
+  sendMessage: (content: string, attachments?: string[], options?: { agent_ids?: string[] }) => Promise<void>
+  clearNonStreamingState: () => void
+} {
   const [waitingForResponse, setWaitingForResponse] = useState(false)
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([])
+  const [respondingAgentIds, setRespondingAgentIds] = useState<string[]>([])
 
   // Clear waiting state when websocket delivers response
   useEffect(() => {
@@ -28,6 +37,7 @@ export function useNonStreamingState({
       if (lastMessage && lastMessage.role === 'assistant') {
         setWaitingForResponse(false)
         setOptimisticMessages([])
+        setRespondingAgentIds([])
       }
     }
   }, [session?.messages, waitingForResponse, enabled])
@@ -71,9 +81,41 @@ export function useNonStreamingState({
     }
   }, [session?.messages, optimisticMessages, enabled])
 
+  // Handle focus/visibility changes to clear stale waiting states on mobile
+  useEffect(() => {
+    if (!enabled) return
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && waitingForResponse) {
+        if (session?.messages) {
+          const lastMessage = session.messages[session.messages.length - 1]
+          if (lastMessage && lastMessage.role === 'assistant') {
+            setWaitingForResponse(false)
+            setOptimisticMessages([])
+          }
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [enabled, waitingForResponse, session?.messages])
+
   const sendMessage = useCallback(
-    async (content: string, attachments?: string[], options?: { agent_ids?: string[] }) => {
-      if (!user) return
+    async (
+      content: string,
+      attachments?: string[],
+      options?: { agent_ids?: string[] },
+    ) => {
+      // Store the agent IDs for the loading indicators
+      if (options?.agent_ids) {
+        setRespondingAgentIds(options.agent_ids)
+      }
+      if (!user) {
+        return
+      }
 
       try {
         const response = await fetch('/api/sessions/prompt', {
@@ -107,17 +149,19 @@ export function useNonStreamingState({
         setOptimisticMessages([])
       }
     },
-    [user, sessionId, onError],
+    [user, sessionId, onError, onSessionCreated],
   )
 
   const clearNonStreamingState = useCallback(() => {
     setWaitingForResponse(false)
     setOptimisticMessages([])
+    setRespondingAgentIds([])
   }, [])
 
   return {
     waitingForResponse,
     optimisticMessages,
+    respondingAgentIds,
     setWaitingForResponse,
     setOptimisticMessages,
     sendMessage,

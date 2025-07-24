@@ -95,6 +95,12 @@ const defaultImageRemotePatterns = [
     port: '',
     pathname: '**',
   },
+  {
+    protocol: 'https',
+    hostname: 'x.com',
+    port: '',
+    pathname: '**',
+  },
 ]
 
 const devImageRemotePatterns = [

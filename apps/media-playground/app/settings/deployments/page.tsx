@@ -216,8 +216,8 @@ const DeploymentsPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-[200px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="sm:col-span-2 lg:col-span-1">
               <Label htmlFor="search">Search</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -230,7 +230,7 @@ const DeploymentsPage = () => {
                 />
               </div>
             </div>
-            <div className="min-w-[150px]">
+            <div>
               <Label>Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
@@ -244,7 +244,7 @@ const DeploymentsPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="min-w-[150px]">
+            <div>
               <Label>Platform</Label>
               <Select value={platformFilter} onValueChange={setPlatformFilter}>
                 <SelectTrigger>
@@ -263,7 +263,7 @@ const DeploymentsPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="min-w-[150px]">
+            <div>
               <Label>Agent</Label>
               <Select value={agentFilter} onValueChange={setAgentFilter}>
                 <SelectTrigger>
@@ -290,106 +290,108 @@ const DeploymentsPage = () => {
             All Deployments ({filteredDeployments.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Platform</TableHead>
-                <TableHead>Agent</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Configuration</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Updated</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDeployments.length === 0 ? (
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[800px]">
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
-                    No deployments found.
-                  </TableCell>
+                  <TableHead className="min-w-[100px]">Platform</TableHead>
+                  <TableHead className="min-w-[120px]">Agent</TableHead>
+                  <TableHead className="min-w-[80px]">Status</TableHead>
+                  <TableHead className="min-w-[100px]">Configuration</TableHead>
+                  <TableHead className="min-w-[80px]">Created</TableHead>
+                  <TableHead className="min-w-[80px]">Updated</TableHead>
+                  <TableHead className="min-w-[80px]">Actions</TableHead>
                 </TableRow>
-              ) : (
-                filteredDeployments.map(deployment => (
-                  <TableRow key={deployment._id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getPlatformIcon(deployment.platform)}
-                        <span className="font-medium capitalize">
-                          {deployment.platform}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <UserAvatar
-                          image={deployment.agent.userImage}
-                          name={deployment.agent.name}
-                          className="h-6 w-6"
-                        />
-                        <Link
-                          href={`/agents/${deployment.agent.username}`}
-                          className="text-sm hover:underline"
-                        >
-                          {deployment.agent.name}
-                        </Link>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={getStatusVariant(
-                          getDeploymentStatus(deployment),
-                        )}
-                        className="capitalize"
-                      >
-                        {getDeploymentStatus(deployment)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-muted-foreground">
-                        {deployment.config &&
-                        Object.keys(deployment.config).length > 0 ? (
-                          <span>
-                            {Object.keys(deployment.config).length} settings
-                          </span>
-                        ) : (
-                          <span>Default</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(deployment.createdAt).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(deployment.updatedAt).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            router.push(
-                              `/edit/${deployment.agent.username}?tab=deployments`,
-                            )
-                          }
-                          className="h-8 w-8 p-0"
-                          title="Manage deployment"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      </div>
+              </TableHeader>
+              <TableBody>
+                {filteredDeployments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      No deployments found.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  filteredDeployments.map(deployment => (
+                    <TableRow key={deployment._id}>
+                      <TableCell className="p-4">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          {getPlatformIcon(deployment.platform)}
+                          <span className="font-medium capitalize">
+                            {deployment.platform}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <UserAvatar
+                            image={deployment.agent.userImage}
+                            name={deployment.agent.name}
+                            className="h-6 w-6 flex-shrink-0"
+                          />
+                          <Link
+                            href={`/agents/${deployment.agent.username}`}
+                            className="text-sm hover:underline truncate"
+                          >
+                            {deployment.agent.name}
+                          </Link>
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <Badge
+                          variant={getStatusVariant(
+                            getDeploymentStatus(deployment),
+                          )}
+                          className="capitalize whitespace-nowrap"
+                        >
+                          {getDeploymentStatus(deployment)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="text-sm text-muted-foreground whitespace-nowrap">
+                          {deployment.config &&
+                          Object.keys(deployment.config).length > 0 ? (
+                            <span>
+                              {Object.keys(deployment.config).length} settings
+                            </span>
+                          ) : (
+                            <span>Default</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="text-sm text-muted-foreground whitespace-nowrap">
+                          {new Date(deployment.createdAt).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="text-sm text-muted-foreground whitespace-nowrap">
+                          {new Date(deployment.updatedAt).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              router.push(
+                                `/chat/${deployment.agent.username}?page=settings&tab=deployments`,
+                              )
+                            }
+                            className="h-8 w-8 p-0"
+                            title="Manage deployment"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

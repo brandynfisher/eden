@@ -1,22 +1,17 @@
 'use client'
 
-import ActionsDropdown from '@/components/button/actions-dropdown'
-import CreationActionsMenu from '@/components/button/creations-actions-menu'
-import DownloadActionItem from '@/components/button/download-action-item'
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
-import { DropdownMenuGroup } from '@/components/ui/dropdown-menu'
 import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { TwitterEmbed } from '@/features/chat/components/tools/twitter-embed'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { generateFilename } from '@/utils/slug.util'
 import { makeAssistantToolUI } from '@assistant-ui/react'
 import { TaskV2Result, TaskV2Status, ToolV2 } from '@edenlabs/eden-sdk'
-import React, { useState } from 'react'
+import React from 'react'
 import ReactMarkdown from 'react-markdown'
 
 export type TaskResultToolArgs = {
@@ -28,71 +23,46 @@ export type TaskResultToolArgs = {
   // }
 }
 
-// Simple download menu for media outputs without a creation
-const MediaDownloadMenu = ({
-  filename,
-  mediaType = 'media',
-  className,
-}: {
-  filename: string
-  mediaType?: string
-  className?: string
-}) => {
-  const [isOpen, setIsOpen] = useState(false)
-
-  return (
-    <ActionsDropdown className={className} onOpenChange={setIsOpen}>
-      {isOpen && (
-        <DropdownMenuGroup>
-          <DownloadActionItem
-            type="creation"
-            originalFileUrl={filename}
-            saveAsFileName={generateFilename(
-              'Eden',
-              mediaType,
-              Date.now().toString(),
-            )}
-          />
-        </DropdownMenuGroup>
-      )}
-    </ActionsDropdown>
-  )
-}
-
 export const TaskResultTool = makeAssistantToolUI({
   toolName: 'task_result',
   render: ({ args, argsText, status, result }) => {
     const { tool, result: toolResults } = result as TaskResultToolArgs
-    // console.log('args', args)
 
     // Check if this is a Twitter tool and handle it specially
     const isTwitterTool =
       tool === 'twitter_mentions' ||
       tool === 'twitter_search' ||
-      tool === 'tweet' ||
       tool?.includes('twitter')
 
-    // Check if this is a Discord or Telegram post tool
+    // Check if this is a social post tool (Discord, Telegram, Tweet, Farcaster)
     const isDiscordPost = tool === 'discord_post'
     const isTelegramPost = tool === 'telegram_post'
-    const isSocialPost = isDiscordPost || isTelegramPost
+    const isTweetPost = tool === 'tweet'
+    const isFarcasterPost = tool === 'farcaster_cast'
+    const isSocialPost =
+      isDiscordPost || isTelegramPost || isTweetPost || isFarcasterPost
+
+    // Check if tool is completed with displayable results
+    const { status: toolStatus } = result as TaskResultToolArgs
+    const hasDisplayableResults =
+      toolResults &&
+      toolResults.length > 0 &&
+      toolResults.some(
+        result =>
+          result &&
+          (Array.isArray(result?.output) ||
+            (typeof (result as TaskV2Result)?.output === 'string' &&
+              (result as TaskV2Result)?.output.length > 0)),
+      )
+    const isCompletedWithResults =
+      toolStatus === 'completed' && hasDisplayableResults
 
     return (
       <div className="mb-2">
-        <ToolFallback
-          type="tool-call"
-          result={result}
-          toolCallId={tool}
-          toolName={tool}
-          args={args}
-          argsText={argsText}
-          status={status}
-          addResult={() => true}
-        />
         <ErrorBoundary>
           {isTwitterTool ? (
             // Handle Twitter tool results
-            <div className="mt-4 mb-4">
+            <div className="mb-2 relative group">
               {toolResults
                 ? toolResults.map((result, index) => (
                     <div key={`${index}-${tool}`}>
@@ -115,11 +85,21 @@ export const TaskResultTool = makeAssistantToolUI({
                 : null}
             </div>
           ) : isSocialPost ? (
-            // Handle Discord and Telegram post results
-            <div className="mt-4 mb-4">
+            // Handle social post results (Discord, Telegram, Tweet, Farcaster)
+            <div className="mb-2 relative group">
               <SocialPostEmbed
                 results={toolResults || []}
-                platform={isDiscordPost ? 'discord' : 'telegram'}
+                platform={
+                  isDiscordPost
+                    ? 'discord'
+                    : isTelegramPost
+                    ? 'telegram'
+                    : isTweetPost
+                    ? 'twitter'
+                    : isFarcasterPost
+                    ? 'farcaster'
+                    : 'discord' // fallback
+                }
               />
             </div>
           ) : (
@@ -130,7 +110,7 @@ export const TaskResultTool = makeAssistantToolUI({
               <div
                 className={cn([
                   toolResults && toolResults.length > 1 && 'grid',
-                  'grid-cols-2 gap-2 md:gap-4 mt-4 mb-4',
+                  'grid-cols-2 gap-2 md:gap-4 mb-2',
                 ])}
               >
                 {toolResults
@@ -218,27 +198,6 @@ export const TaskResultTool = makeAssistantToolUI({
                                   />
                                 </div>
                               )}
-                              {output.creation ? (
-                                <CreationActionsMenu
-                                  creation={{
-                                    ...output.creation,
-                                    // @ts-expect-error faked taskv2
-                                    task: { args },
-                                  }}
-                                  className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
-                                  queryKey={['creations', output.creation?._id]}
-                                />
-                              ) : (
-                                output.filename && (
-                                  <MediaDownloadMenu
-                                    filename={output.filename}
-                                    mediaType={getFileTypeByMimeType(
-                                      output.mediaAttributes?.mimeType,
-                                    )}
-                                    className="ml-auto z-20 absolute top-1 right-1 md:top-2 md:right-2 [@media(pointer:coarse)]:top-[-4px] [@media(pointer:coarse)]:h-7 [@media(pointer:coarse)]:right-[-4px] opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity [@media(pointer:coarse)]:opacity-100"
-                                  />
-                                )
-                              )}
                             </div>
                           ))
                         ) : (
@@ -260,6 +219,18 @@ export const TaskResultTool = makeAssistantToolUI({
             </LightboxGallery>
           )}
         </ErrorBoundary>
+        {!isCompletedWithResults && (
+          <ToolFallback
+            type="tool-call"
+            result={result}
+            toolCallId={tool}
+            toolName={tool}
+            args={args}
+            argsText={argsText}
+            status={status}
+            addResult={() => true}
+          />
+        )}
       </div>
     )
   },
