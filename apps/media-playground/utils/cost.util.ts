@@ -68,6 +68,7 @@ export function calculateCost(
   }
 
   // 4-D. Evaluate
-  const result = expr.evaluate(context)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = expr.evaluate(context as any)
   return typeof result === 'number' && isFinite(result) ? result : Infinity
 }
