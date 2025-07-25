@@ -98,6 +98,19 @@ const Session = ({
     enabled: !sessionConfig.useStreaming,
     onError: (error: string) => handleError(error),
     user,
+    onSessionCreated: (newSessionId: string) => {
+      console.log(
+        '🎤 [SESSION] Session created (non-streaming), updating currentSessionId:',
+        newSessionId,
+      )
+      setCurrentSessionId(newSessionId)
+      // Also navigate to the new session URL to keep URL in sync
+      if (ischatRoute && params?.agentId) {
+        router.replace(`/chat/${params.agentId}/${newSessionId}`)
+      } else {
+        router.replace(`/sessions/${newSessionId}`)
+      }
+    },
   })
 
   // Unified optimistic messages state

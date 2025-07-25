@@ -50,7 +50,7 @@ import { CronSchedule, Trigger } from '@edenlabs/eden-sdk'
 import { Agent } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { format, addMinutes } from 'date-fns'
+import { addMinutes, format } from 'date-fns'
 import { CalendarIcon, Check, ChevronsUpDown, Loader2 } from 'lucide-react'
 import { FC } from 'react'
 import * as React from 'react'
@@ -159,24 +159,28 @@ export const taskSchema = z
         path: ['postToSessionId'],
       })
     }
-    
+
     // Validate that tasks are scheduled at least 3 minutes in the future
-    if (data.repeat === ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT && data.startDate && data.time) {
+    if (
+      data.repeat === ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT &&
+      data.startDate &&
+      data.time
+    ) {
       const [hour, minute] = data.time.split(':').map(Number)
       const scheduledDateTime = new Date(data.startDate)
       scheduledDateTime.setHours(hour, minute, 0, 0)
-      
-      const minimumTime = addMinutes(new Date(), 3)
-      
+
+      const minimumTime = addMinutes(new Date(), 2)
+
       if (scheduledDateTime < minimumTime) {
         ctx.addIssue({
           code: 'custom',
-          message: 'Tasks must be scheduled at least 3 minutes in the future',
+          message: 'Tasks must be scheduled at least 2 minutes in the future',
           path: ['startDate'],
         })
         ctx.addIssue({
           code: 'custom',
-          message: 'Tasks must be scheduled at least 3 minutes in the future',
+          message: 'Tasks must be scheduled at least 2 minutes in the future',
           path: ['time'],
         })
       }
@@ -212,7 +216,7 @@ const TaskFormModal: FC<{
       if (deployment.platform === 'farcaster') platforms.push('farcaster')
     })
     return platforms
-  }, [deploymentsQuery.deployments, deploymentsQuery.isLoading, open])
+  }, [deploymentsQuery.deployments])
 
   // Get channel options for Discord and Telegram
   const getChannelOptions = React.useMemo(() => {
@@ -262,28 +266,57 @@ const TaskFormModal: FC<{
   const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const currentTime = format(new Date(), 'HH:mm')
 
-  // Create a simplified schema for editing (only instruction validation)
-  const editingTaskSchema = z.object({
-    instructions: z.string().min(1, 'Instructions are required'),
-    // Other fields are optional/ignored when editing
-    sessionType: z.enum(['new', 'another']).optional(),
-    sessionId: z.string().optional(),
-    startDate: z.date().optional(),
-    repeat: z.nativeEnum(ExtendedTriggerRepeatOptions).optional(),
-    time: z.string().optional(),
-    dayOfWeek: z.string().optional(),
-    dayOfMonth: z.string().optional(),
-    month: z.string().optional(),
-    endDate: z.date().optional(),
-    timezone: z.string().optional(),
-    enablePosting: z.boolean().optional(),
-    postTo: z
-      .enum(['same', 'another', 'discord', 'telegram', 'x', 'farcaster'])
-      .optional(),
-    postToSessionId: z.string().optional(),
-    channelId: z.string().optional(),
-    customInstructions: z.string().optional(),
-  })
+  // Create a schema for editing with schedule validation
+  const editingTaskSchema = z
+    .object({
+      instructions: z.string().min(1, 'Instructions are required'),
+      // Schedule fields for editing
+      startDate: z.date().optional(),
+      repeat: z.nativeEnum(ExtendedTriggerRepeatOptions).optional(),
+      time: z.string().optional(),
+      dayOfWeek: z.string().optional(),
+      dayOfMonth: z.string().optional(),
+      month: z.string().optional(),
+      endDate: z.date().optional(),
+      timezone: z.string().optional(),
+      // Other fields are optional when editing
+      sessionType: z.enum(['new', 'another']).optional(),
+      sessionId: z.string().optional(),
+      enablePosting: z.boolean().optional(),
+      postTo: z
+        .enum(['same', 'another', 'discord', 'telegram', 'x', 'farcaster'])
+        .optional(),
+      postToSessionId: z.string().optional(),
+      channelId: z.string().optional(),
+      customInstructions: z.string().optional(),
+    })
+    .superRefine((data, ctx) => {
+      // Validate that edited schedule is at least 2 minutes in the future
+      if (
+        data.repeat === ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT &&
+        data.startDate &&
+        data.time
+      ) {
+        const [hour, minute] = data.time.split(':').map(Number)
+        const scheduledDateTime = new Date(data.startDate)
+        scheduledDateTime.setHours(hour, minute, 0, 0)
+
+        const minimumTime = addMinutes(new Date(), 2)
+
+        if (scheduledDateTime < minimumTime) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Tasks must be scheduled at least 2 minutes in the future',
+            path: ['startDate'],
+          })
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Tasks must be scheduled at least 2 minutes in the future',
+            path: ['time'],
+          })
+        }
+      }
+    })
 
   const form = useForm<TaskFormDto>({
     resolver: zodResolver(editingTask ? editingTaskSchema : taskSchema),
@@ -313,6 +346,18 @@ const TaskFormModal: FC<{
   // Reset form when editingTask changes
   React.useEffect(() => {
     if (editingTask) {
+      // Determine the repeat type from the schedule
+      let repeat = ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT
+      if (editingTask.schedule.day_of_week === '*') {
+        repeat = ExtendedTriggerRepeatOptions.DAILY
+      } else if (editingTask.schedule.day_of_week) {
+        repeat = ExtendedTriggerRepeatOptions.WEEKLY
+      } else if (editingTask.schedule.month && editingTask.schedule.day) {
+        repeat = ExtendedTriggerRepeatOptions.ANNUALLY
+      } else if (editingTask.schedule.day) {
+        repeat = ExtendedTriggerRepeatOptions.MONTHLY
+      }
+
       // Reset form with the editing task data
       const formData = {
         instructions: editingTask.instruction,
@@ -321,8 +366,10 @@ const TaskFormModal: FC<{
         startDate: editingTask.schedule.start_date
           ? new Date(editingTask.schedule.start_date)
           : undefined,
-        repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT, // Default for editing
-        time: editingTask.schedule.start_date
+        repeat,
+        time: editingTask.schedule.hour !== undefined && editingTask.schedule.minute !== undefined
+          ? `${editingTask.schedule.hour.toString().padStart(2, '0')}:${editingTask.schedule.minute.toString().padStart(2, '0')}`
+          : editingTask.schedule.start_date
           ? format(new Date(editingTask.schedule.start_date), 'HH:mm')
           : currentTime,
         dayOfWeek: editingTask.schedule.day_of_week?.toString() || undefined,
@@ -464,12 +511,15 @@ const TaskFormModal: FC<{
       }
 
       if (editingTask) {
-        // Update existing task - only allow instruction changes
+        // Update existing task - allow instruction and schedule changes
+        const updateData: any = {
+          instruction: values.instructions,
+          schedule,
+        }
+        
         await axios.patch(
           `/api/agents/${agent._id}/triggers/${editingTask._id}`,
-          {
-            instruction: values.instructions,
-          },
+          updateData,
         )
         toast.success('Task updated successfully')
       } else {
@@ -947,12 +997,11 @@ const TaskFormModal: FC<{
               </div>
             )}
 
-            {/* Schedule Section - only show when creating new task */}
-            {!editingTask && (
-              <div className="space-y-6 border-t pt-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Schedule</h3>
-                </div>
+            {/* Schedule Section - show for both creating and editing */}
+            <div className="space-y-6 border-t pt-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Schedule</h3>
+              </div>
 
                 <div className="space-y-4">
                   {/* Repeat Selection */}
@@ -1196,7 +1245,10 @@ const TaskFormModal: FC<{
                                   mode="single"
                                   selected={field.value}
                                   onSelect={field.onChange}
-                                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                  disabled={date =>
+                                    date <
+                                    new Date(new Date().setHours(0, 0, 0, 0))
+                                  }
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -1226,7 +1278,6 @@ const TaskFormModal: FC<{
                   )}
                 </div>
               </div>
-            )}
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 pt-6 border-t">

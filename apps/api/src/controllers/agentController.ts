@@ -434,6 +434,67 @@ export const createAgentTrigger = async (
   })
 }
 
+const calculateNextScheduledRun = (schedule: any): Date | null => {
+  if (!schedule) return null
+  
+  const now = new Date()
+  
+  // For one-time tasks (start_date equals end_date)
+  if (schedule.start_date && schedule.end_date) {
+    const startDate = new Date(schedule.start_date)
+    const endDate = new Date(schedule.end_date)
+    
+    if (startDate.getTime() === endDate.getTime()) {
+      // One-time task
+      return startDate > now ? startDate : null
+    }
+  }
+  
+  // For recurring tasks, calculate next run based on current time
+  if (schedule.hour !== undefined && schedule.minute !== undefined) {
+    const nextRun = new Date()
+    nextRun.setHours(parseInt(schedule.hour.toString(), 10))
+    nextRun.setMinutes(parseInt(schedule.minute.toString(), 10))
+    nextRun.setSeconds(0)
+    nextRun.setMilliseconds(0)
+    
+    // If the time today has passed, move to next occurrence based on schedule
+    if (nextRun <= now) {
+      if (schedule.day_of_week === '*') {
+        // Daily - add 1 day
+        nextRun.setDate(nextRun.getDate() + 1)
+      } else if (schedule.day_of_week) {
+        // Weekly - find next occurrence of the day
+        const targetDay = parseInt(schedule.day_of_week.toString(), 10)
+        const currentDay = nextRun.getDay()
+        let daysUntilNext = targetDay - currentDay
+        if (daysUntilNext <= 0) daysUntilNext += 7
+        nextRun.setDate(nextRun.getDate() + daysUntilNext)
+      } else if (schedule.month && schedule.day) {
+        // Annually - find next occurrence
+        const targetMonth = parseInt(schedule.month.toString(), 10) - 1 // 0-indexed
+        const targetDay = parseInt(schedule.day.toString(), 10)
+        nextRun.setMonth(targetMonth)
+        nextRun.setDate(targetDay)
+        if (nextRun <= now) {
+          nextRun.setFullYear(nextRun.getFullYear() + 1)
+        }
+      } else if (schedule.day) {
+        // Monthly - find next occurrence of the day
+        const targetDay = parseInt(schedule.day.toString(), 10)
+        nextRun.setDate(targetDay)
+        if (nextRun <= now) {
+          nextRun.setMonth(nextRun.getMonth() + 1)
+        }
+      }
+    }
+    
+    return nextRun
+  }
+  
+  return null
+}
+
 export const updateAgentTrigger = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -489,13 +550,32 @@ export const updateAgentTrigger = async (
     })
   }
 
+  // Validate schedule if provided
+  if (schedule !== undefined) {
+    const nextRun = calculateNextScheduledRun(schedule)
+    if (nextRun) {
+      const now = new Date()
+      const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000)
+      
+      if (nextRun < twoMinutesFromNow) {
+        return reply.status(400).send({
+          error: 'Next scheduled run must be at least 2 minutes in the future',
+        })
+      }
+    }
+  }
+
   // Build update data - only include fields that are provided
   const updateData: any = {}
 
   if (instruction !== undefined) updateData.instruction = instruction
   if (session_type !== undefined) updateData.session_type = session_type
   if (session !== undefined) updateData.session = session
-  if (schedule !== undefined) updateData.schedule = schedule
+  if (schedule !== undefined) {
+    updateData.schedule = schedule
+    // Calculate and update next_scheduled_run when schedule is updated
+    updateData.next_scheduled_run = calculateNextScheduledRun(schedule)
+  }
   if (status !== undefined) updateData.status = status
   if (posting_instructions !== undefined)
     updateData.posting_instructions = posting_instructions

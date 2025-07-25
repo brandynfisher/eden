@@ -1,134 +1,74 @@
-import { ToolParameterV2 } from '@edenlabs/eden-sdk'
-import { Parser } from 'expr-eval'
+/* --------------------------------------------------------------
+ * cost-helpers.ts (≈ 45 LOC instead of ~130)
+ * ------------------------------------------------------------*/
+import { Expression, Parser } from 'expr-eval'
 
-const regex = /\b[^\d\W]+(\.[^\d\W]+)*\b/g // match words that may contain periods: "(width/1024)/prompts.length * 2"
+/** ------------------------------------------------------------
+ * 1. One parser instance = one grammar
+ *    (conditional operator enabled by default in expr-eval ≥2.0)
+ * ------------------------------------------------------------ */
+const parser = new Parser()
 
-// Helper to determine if a string is a direct value comparison
-const isDirectComparison = (formula: string, paramName: string): boolean => {
-  const comparisonRegex = new RegExp(`${paramName}\\s*[=!]=\\s*(['"].*?['"])`)
-  return comparisonRegex.test(formula)
+/** ------------------------------------------------------------
+ * 2. Detect param == "literal" or param != 'literal'
+ * ------------------------------------------------------------ */
+const hasDirectStringComparison = (formula: string, param: string) =>
+  new RegExp(`${param}\\s*[=!]=\\s*(['"]).*?\\1`).test(formula)
+
+/** ------------------------------------------------------------
+ * 3. Normalise a single variable so that expr-eval
+ *     sees the right type/shape.
+ * ------------------------------------------------------------ */
+function normaliseValue(param: string, raw: unknown, formula: string): unknown {
+  if (raw == null) return '' // undefined/null → ''
+  if (hasDirectStringComparison(formula, param)) {
+    // keep raw for == / !=
+    if (Array.isArray(raw)) return raw[0] ?? ''
+    return typeof raw === 'string' ? raw : String(raw)
+  }
+
+  if (typeof raw === 'boolean') return raw ? 1 : 0
+  if (Array.isArray(raw)) return raw.length
+  if (typeof raw === 'string') return raw.length
+  return raw // number or anything else
 }
 
-type ParameterValue =
-  | string
-  | number
-  | string[]
-  | number[]
-  | string[][]
-  | undefined
-  | boolean
-
-// Helper to get parameter value or length based on context
-const getParameterValue = (
-  value: ParameterValue,
-  paramName: string,
+/** ------------------------------------------------------------
+ * 4. Main entry point: same signature, same return type.
+ * ------------------------------------------------------------ */
+export function calculateCost(
   formula: string,
-): string | number => {
-  // Handle undefined/null case
-  if (value === undefined || value === null) {
-    return ''
-  }
+  formValues: Record<string, unknown>,
+): number {
+  // 4-A. Legacy ".length" → "_length" swap (unchanged)
+  const rewritten = formula.replace(/\.length\b/g, '_length')
 
-  if (typeof value === 'boolean') {
-    return value ? 1 : 0
-  }
-
-  // If it's a direct comparison (e.g., prompt == 'something'), return the raw value
-  if (isDirectComparison(formula, paramName)) {
-    return Array.isArray(value) ? value[0]?.toString() || '' : value.toString()
-  }
-
-  // For arrays and strings, return length
-  if (Array.isArray(value)) {
-    return value.length
-  }
-
-  // For strings without direct comparison, return length
-  if (typeof value === 'string') {
-    return value.length
-  }
-
-  // For numbers, return as is
-  if (typeof value === 'number') {
-    return value
-  }
-
-  return 0
-}
-
-export const getCostConfig = ({
-  parameterNames,
-  parameterValues,
-  formula,
-}: {
-  parameterNames: ToolParameterV2['name'][]
-  parameterValues: (
-    | number
-    | string[]
-    | number[]
-    | string[][]
-    | string
-    | undefined
-    | boolean
-  )[]
-  formula: string
-}) => {
-  return parameterNames.reduce((acc, key, i) => {
-    const value = parameterValues[i]
-    const resolvedValue = getParameterValue(value, key, formula)
-
-    acc[key] = resolvedValue
-    // Still maintain _length for backward compatibility
-    acc[`${key}_length`] =
-      typeof resolvedValue === 'string' ? resolvedValue.length : resolvedValue
-
-    return acc
-  }, {} as Record<string, number | string>)
-}
-
-export const calculateCost = (
-  formula: string,
-  formValues: Record<string, string[] | number[] | string[][] | string>,
-) => {
-  // Replace .length with _length in the formula to maintain backward compatibility
-  const adjustedFormula = formula.replace(/\.length/g, '_length')
-
-  // Extract all parameter names from the formula
-  const matches = adjustedFormula.match(regex) || []
-  const costParameterNames = [
-    ...new Set(matches.map(m => m.replace('_length', ''))),
-  ]
-
-  const parameterValues = costParameterNames.map(name => formValues[name])
-
-  const costConfig = getCostConfig({
-    parameterNames: costParameterNames,
-    parameterValues,
-    formula: adjustedFormula,
-  })
-
+  // 4-B. Parse once → get the variable list from the AST
+  let expr: Expression
   try {
-    // Convert strings to numbers for evaluation unless they're used in direct comparisons
-    const numericConfig = Object.entries(costConfig).reduce(
-      (acc, [key, value]) => {
-        // Keep string values as-is if they're used in direct comparisons
-        if (
-          typeof value === 'string' &&
-          isDirectComparison(adjustedFormula, key)
-        ) {
-          acc[key] = value
-        } else {
-          // Convert to number otherwise
-          acc[key] = typeof value === 'string' ? value.length : value
-        }
-        return acc
-      },
-      {} as Record<string, number | string>,
-    )
-
-    return Parser.evaluate(adjustedFormula, numericConfig)
-  } catch (e) {
-    console.error('Could not parse cost_estimate', e)
+    expr = parser.parse(rewritten)
+  } catch (err) {
+    console.error('Could not parse cost_estimate', err)
     return Infinity
   }
+  const vars = expr.variables() // e.g. ['prompt', 'prompt_length', 'n']
+
+  // 4-C. Build the eval-context
+  const context: Record<string, unknown> = {}
+  for (const name of vars) {
+    if (name.endsWith('_length')) {
+      // "foo_length" always means len(foo)
+      const base = name.slice(0, -7) // drop '_length'
+      const v = formValues[base]
+      context[name] =
+        Array.isArray(v) || typeof v === 'string' ? v.length : v ?? 0
+      continue
+    }
+    context[name] = normaliseValue(name, formValues[name], rewritten)
+  }
+
+  // 4-D. Evaluate
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = expr.evaluate(context as any)
+  return typeof result === 'number' && isFinite(result) ? result : Infinity
 }

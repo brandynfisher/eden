@@ -136,7 +136,7 @@ export function useNonStreamingState({
         }
 
         // Handle session creation for optimistic sessions
-        if (!sessionId || sessionId.startsWith('temp-')) {
+        if (!sessionId || sessionId === 'new' || sessionId.startsWith('temp-')) {
           const result = await response.json()
           if (result.session_id && onSessionCreated) {
             onSessionCreated(result.session_id)

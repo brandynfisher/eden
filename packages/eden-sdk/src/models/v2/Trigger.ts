@@ -34,6 +34,7 @@ export type Trigger = {
   }
   deleted?: boolean
   last_run_time?: Date
+  next_scheduled_run?: Date
   createdAt: Date
   updatedAt: Date
 }
