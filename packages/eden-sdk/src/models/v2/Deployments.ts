@@ -1,7 +1,12 @@
 import { Agent } from 'src/models/v2'
 
 // Base Types
-export type ClientType = 'discord' | 'telegram' | 'farcaster' | 'twitter'
+export type ClientType =
+  | 'discord'
+  | 'telegram'
+  | 'farcaster'
+  | 'twitter'
+  | 'shopify'
 
 export type AllowlistItem = {
   id: string
@@ -60,12 +65,22 @@ export type DeploymentSecretsTwitter = {
   access_token_secret: string
 }
 
+// Shopify Types
+export type DeploymentSettingsShopify = Record<string, never>
+
+export type DeploymentSecretsShopify = {
+  store_name: string
+  access_token: string
+  location_id: number
+}
+
 // Combined Types
 export type DeploymentSecrets = {
   discord?: DeploymentSecretsDiscord
   telegram?: DeploymentSecretsTelegram
   farcaster?: DeploymentSecretsFarcaster
   twitter?: DeploymentSecretsTwitter
+  shopify?: DeploymentSecretsShopify
 }
 
 export type DeploymentConfig = {
@@ -73,6 +88,7 @@ export type DeploymentConfig = {
   telegram?: DeploymentSettingsTelegram
   farcaster?: DeploymentSettingsFarcaster
   twitter?: DeploymentSettingsTwitter
+  shopify?: DeploymentSettingsShopify
 }
 
 export type Deployment = {
