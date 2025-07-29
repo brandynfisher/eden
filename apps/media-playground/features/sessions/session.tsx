@@ -78,10 +78,6 @@ const Session = ({
       }
     },
     onSessionCreated: (newSessionId: string) => {
-      console.log(
-        '🎤 [SESSION] Session created, updating currentSessionId:',
-        newSessionId,
-      )
       setCurrentSessionId(newSessionId)
       // Also navigate to the new session URL to keep URL in sync
       if (ischatRoute && params?.agentId) {
@@ -99,10 +95,6 @@ const Session = ({
     onError: (error: string) => handleError(error),
     user,
     onSessionCreated: (newSessionId: string) => {
-      console.log(
-        '🎤 [SESSION] Session created (non-streaming), updating currentSessionId:',
-        newSessionId,
-      )
       setCurrentSessionId(newSessionId)
       // Also navigate to the new session URL to keep URL in sync
       if (ischatRoute && params?.agentId) {
@@ -489,9 +481,12 @@ const Session = ({
               // Check if we have only user messages (no assistant responses yet)
               // Ignore system/eden messages when checking
               const userMessages =
-                session?.messages?.filter(m => m.role === 'user') || []
+                session?.messages?.filter((m: Message) => m.role === 'user') ||
+                []
               const assistantMessages =
-                session?.messages?.filter(m => m.role === 'assistant') || []
+                session?.messages?.filter(
+                  (m: Message) => m.role === 'assistant',
+                ) || []
               const hasOnlyUserMessage =
                 userMessages.length > 0 && assistantMessages.length === 0
               const isWaitingForFirstResponse =

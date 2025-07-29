@@ -41,9 +41,13 @@ const SingleAgentSelectorModal: FC<{
 
   const currentQuery = {
     limit: 35,
-    sort: ['stats.userMessageCount_7d;-1'],
     ...(currentTab === 'user' && user?._id ? { user: user._id } : {}),
     ...(searchQuery ? { search: searchQuery } : {}),
+    // Sort by popularity for public agents, keep 7d sort for user agents
+    sort:
+      currentTab === 'public'
+        ? ['stats.userMessageCount;-1']
+        : ['stats.userMessageCount_7d;-1'],
   }
 
   const handleAgentClick = (agent: Agent, event?: React.MouseEvent) => {
@@ -57,22 +61,12 @@ const SingleAgentSelectorModal: FC<{
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[90vw] max-w-[90vw] h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-          <div className="space-y-1">
-            <DialogTitle>Select Agent</DialogTitle>
-            <DialogDescription>Choose an agent to chat with</DialogDescription>
-          </div>
-          {currentTab === 'user' && (
-            <Button asChild size="sm" className="gap-2 shrink-0">
-              <Link href="/new/agent">
-                <Plus className="h-4 w-4" />
-                Create Agent
-              </Link>
-            </Button>
-          )}
+        <DialogHeader className="space-y-1 pb-2">
+          <DialogTitle>Select Agent</DialogTitle>
+          <DialogDescription>Choose an agent to chat with</DialogDescription>
         </DialogHeader>
         <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
             <ToggleGroup
               type="single"
               value={currentTab}
@@ -87,11 +81,21 @@ const SingleAgentSelectorModal: FC<{
               <ToggleButton
                 className="w-full sm:w-32 h-8"
                 value={'public'}
-                label={'Explore Agents'}
+                label={'All Agents'}
                 onClick={() => setCurrentTab('public')}
               />
             </ToggleGroup>
-            <FeedSearchForm handleSearch={setSearchQuery} />
+            <div className="flex gap-2 items-center">
+              <FeedSearchForm handleSearch={setSearchQuery} />
+              {currentTab === 'user' && (
+                <Button asChild size="sm" className="gap-2 shrink-0">
+                  <Link href="/new/agent">
+                    <Plus className="h-4 w-4" />
+                    Create Agent
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
           <div
             className="flex-1 overflow-auto [&_a]:pointer-events-none relative min-h-[400px]"

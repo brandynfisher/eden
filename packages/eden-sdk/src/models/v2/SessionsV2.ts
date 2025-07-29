@@ -78,6 +78,20 @@ export interface SessionsV2CancelArguments extends WebAPICallOptions {
   tool_call_index?: number
 }
 
+export interface SessionsV2ShareCreateArguments extends WebAPICallOptions {
+  session_id: string
+  message_id: string
+  title?: string
+}
+
+export interface SessionsV2ShareGetArguments extends WebAPICallOptions {
+  share_id: string
+}
+
+export interface SessionsV2ShareDeleteArguments extends WebAPICallOptions {
+  share_id: string
+}
+
 // Requests
 export const sessionsCreateRequestConfigV2 = (
   args: SessionsV2CreateArguments,
@@ -174,6 +188,37 @@ export const sessionsCancelRequestConfigV2 = (
   }
 }
 
+export const sessionsShareCreateRequestConfigV2 = (
+  args: SessionsV2ShareCreateArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'POST',
+    url: `v2/sessions/${args.session_id}/share`,
+    data: {
+      message_id: args.message_id,
+      ...(args.title && { title: args.title }),
+    },
+  }
+}
+
+export const sessionsShareGetRequestConfigV2 = (
+  args: SessionsV2ShareGetArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/sessions/share/${args.share_id}`,
+  }
+}
+
+export const sessionsShareDeleteRequestConfigV2 = (
+  args: SessionsV2ShareDeleteArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'DELETE',
+    url: `v2/sessions/share/${args.share_id}`,
+  }
+}
+
 // Responses
 export type SessionsV2CreateResponse = WebAPICallResult &
   (
@@ -249,11 +294,46 @@ export type SessionsV2CancelResponse = WebAPICallResult &
       }
   )
 
+export type SessionsV2ShareCreateResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | {
+        success: boolean
+        share_id: string
+        share_url: string
+      }
+  )
+
+export type SessionsV2ShareGetResponse = WebAPICallResult & {
+  error?: string
+  share?: {
+    share_id: string
+    title?: string
+    session: SessionV2
+    messages: Message[]
+    owner: Creator
+    createdAt: Date
+  }
+}
+
+export type SessionsV2ShareDeleteResponse = WebAPICallResult &
+  (
+    | {
+        error?: string
+        message?: string
+      }
+    | { success: boolean }
+  )
+
 export type SessionStatus = 'active' | 'archived'
 
 export type SessionV2 = {
   _id: string
   owner: Creator
+  users?: Creator[]
   session_key?: string
   channel?: string
   parent_session?: string
