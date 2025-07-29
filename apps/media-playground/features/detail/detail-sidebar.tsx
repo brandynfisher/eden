@@ -1,31 +1,48 @@
 import LikeButton from '../../components/button/like-button'
-import CreationActionsMenu from '@/components/button/creations-actions-menu'
 import ModelActionsMenu from '@/components/button/model-actions-menu'
 import ModelMiniCard from '@/components/card/model-mini-card'
 import LoadingIndicator from '@/components/loading-indicator'
 import CopyTextButton from '@/components/text/copy-text-button'
 import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentLink from '@/features/agent/agent-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { useDeleteMutation } from '@/hooks/use-delete-mutation'
 import { getFileTypeByMimeType } from '@/lib/files'
+import { downloadFile } from '@/lib/files'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
+import {
+  updateAddToCollectionModal,
+  updateDeleteDialog,
+  updateShareModal,
+} from '@/stores/dialogs/dialogs.slice'
+import { useAppDispatch } from '@/stores/store'
+import { generateFilename } from '@/utils/slug.util'
 import { CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { ComponentIcon } from 'lucide-react'
+import {
+  BookmarkPlusIcon,
+  ComponentIcon,
+  DownloadIcon,
+  FileSlidersIcon,
+  Share2Icon,
+  TrashIcon,
+} from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
 import React, { Suspense } from 'react'
+import { toast } from 'sonner'
 
 type Props = {
   item?: CreationV2 | ModelV2
@@ -40,6 +57,83 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
     item?.task.args || {}
   const { TimeAgo } = useTimeAgo()
   const { user, isSignedIn } = useAuthState()
+  const dispatch = useAppDispatch()
+
+  const { mutate: deleteMutation } = useDeleteMutation({
+    type: type as 'creation' | 'model',
+    queryKey: queryKey,
+  })
+
+  const isOwner = item?.user?._id === user?._id
+
+  const handleShareClick = () => {
+    if (!item) return
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${baseUrl}/${type}s/${item._id}`
+    dispatch(
+      updateShareModal({
+        isOpen: true,
+        shareUrl: shareUrl,
+      }),
+    )
+  }
+
+  const handleAddToCollectionClick = () => {
+    if (!item || type !== 'creation') return
+    dispatch(
+      updateAddToCollectionModal({
+        isOpen: true,
+        creationIds: [item._id],
+      }),
+    )
+  }
+
+  const handleDownloadClick = async () => {
+    if (!item || type !== 'creation') return
+    const creation = item as CreationV2
+    if (!creation.filename) return
+
+    const saveAsFileName = generateFilename(
+      creation.user?.username || '',
+      creation.task?.args?.prompt?.substring(0, 64).trim() || '',
+      creation._id || '',
+    )
+
+    await downloadFile(
+      getCloudfrontOriginalUrl(creation.filename),
+      `Eden_creation_${saveAsFileName}`,
+    )
+
+    toast.info(`Downloading...`, {
+      description: `creation: ${saveAsFileName}`,
+      dismissible: true,
+      richColors: true,
+      duration: 500,
+    })
+  }
+
+  const handleUseAsPreset = () => {
+    if (!item || type !== 'creation') return '#'
+    const creation = item as CreationV2
+    const fileType =
+      getFileTypeByMimeType(creation.mediaAttributes?.mimeType) || 'image'
+    return `/create/${fileType}/${creation.tool}?creation=${creation._id}`
+  }
+
+  const handleDelete = () => {
+    if (!isOwner || !item) return
+
+    dispatch(
+      updateDeleteDialog({
+        isOpen: true,
+        title: `Delete ${type}`,
+        description: `Are you sure you want to delete this ${type}?`,
+        onDelete: () => {
+          deleteMutation({ ids: [item._id], deleted: true })
+        },
+      }),
+    )
+  }
 
   return (
     <div
@@ -53,15 +147,106 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           {item ? (
             <div>
               {type === 'creation' && (
-                <div className="flex items-center justify-between mb-4 p-2 rounded-md bg-popover border">
-                  <LikeButton
-                    type={type}
-                    id={item._id}
-                    isLiked={item.isLiked}
-                    likeCount={item.likeCount}
-                    disabled={!isSignedIn}
-                  />
-                </div>
+                <TooltipProvider delayDuration={0}>
+                  <div className="flex items-center justify-between mb-4 p-2 rounded-md bg-popover border">
+                    <div className="flex items-center gap-2">
+                      <LikeButton
+                        type={type}
+                        id={item._id}
+                        isLiked={item.isLiked}
+                        likeCount={item.likeCount}
+                        disabled={!isSignedIn}
+                      />
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2"
+                            onClick={handleShareClick}
+                          >
+                            <Share2Icon className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Share</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2"
+                            onClick={handleAddToCollectionClick}
+                            disabled={!isSignedIn}
+                          >
+                            <BookmarkPlusIcon className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Add to Collection</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2"
+                            asChild
+                            disabled={!isSignedIn}
+                          >
+                            <Link href={handleUseAsPreset()}>
+                              <FileSlidersIcon className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Use as Preset</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2"
+                            onClick={handleDownloadClick}
+                            disabled={!isSignedIn}
+                          >
+                            <DownloadIcon className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Download</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+
+                    {isOwner && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-destructive hover:text-destructive"
+                            onClick={handleDelete}
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Delete</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </div>
+                </TooltipProvider>
               )}
               <div className="flex">
                 <UserAvatarLink
@@ -70,13 +255,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
                   isAgent={item?.user?.type === 'agent'}
                 />
                 <Suspense>
-                  {type === 'creation' ? (
-                    <CreationActionsMenu
-                      creation={item as CreationV2}
-                      queryKey={queryKey}
-                      className="ml-auto"
-                    />
-                  ) : (
+                  {type === 'model' && (
                     <ModelActionsMenu
                       model={item as ModelV2}
                       queryKey={queryKey}
@@ -323,30 +502,23 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           </div>
         ) : null}
 
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="parameters" className="!border-b-0">
-            <AccordionTrigger className="hover:no-underline">
-              <div className="font-bold text-sm">Parameters</div>
-            </AccordionTrigger>
-            <AccordionContent>
-              {item && remainingArgs ? (
-                <ParameterTable
-                  taskId={item.task._id?.toString()}
-                  cost={item.task.cost}
-                  args={remainingArgs}
-                />
-              ) : (
-                <div className="space-y-1">
-                  <Skeleton className="h-5 w-[250px]" />
-                  <Skeleton className="h-5 w-[250px]" />
-                  <Skeleton className="h-5 w-[200px]" />
-                  <Skeleton className="h-5 w-[200px]" />
-                  <Skeleton className="h-5 w-[180px]" />
-                </div>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+        <div className="w-full">
+          {item && remainingArgs ? (
+            <ParameterTable
+              taskId={item.task._id?.toString()}
+              cost={item.task.cost}
+              args={remainingArgs}
+            />
+          ) : (
+            <div className="space-y-1">
+              <Skeleton className="h-5 w-[250px]" />
+              <Skeleton className="h-5 w-[250px]" />
+              <Skeleton className="h-5 w-[200px]" />
+              <Skeleton className="h-5 w-[200px]" />
+              <Skeleton className="h-5 w-[180px]" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
