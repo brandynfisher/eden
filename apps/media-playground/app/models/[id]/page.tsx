@@ -57,7 +57,7 @@ export async function generateMetadata(
         customImageLoader({
           src: model?.thumbnail || '',
           width: 1024,
-          format: Formats.JPG,
+          format: Formats.WEBP,
         }),
       ]
     : undefined
