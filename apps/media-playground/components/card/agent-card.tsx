@@ -47,7 +47,7 @@ const AgentCard = ({
     return (
       <Card
         className={cn([
-          'relative overflow-hidden border-2 border-border/60 z-10 transition-all group cursor-pointer bg-card/80 h-full w-full',
+          'relative overflow-hidden border-2 border-border/60 z-10 transition-all group cursor-pointer bg-card/80 h-full w-full max-w-full',
           onClick
             ? 'hover:bg-muted/80 hover:shadow-md hover:border-border/80'
             : 'hover:ring-2 ring-primary/40 hover:shadow-lg hover:shadow-primary/10',
@@ -66,9 +66,9 @@ const AgentCard = ({
         <Link
           href={`/chat/${agent.username}`}
           prefetch={false}
-          className={cn('block', onClick && 'pointer-events-none')}
+          className={cn('block w-full', onClick && 'pointer-events-none')}
         >
-          <div className="flex items-center p-4 gap-3 h-full min-h-[140px] w-full overflow-hidden">
+          <div className="flex items-center p-4 gap-3 h-full min-h-[140px] w-full max-w-full overflow-hidden">
             {/* Avatar on the left - vertically centered */}
             <div className="flex-shrink-0 flex items-center w-20">
               <Avatar className="w-20 h-20">
@@ -91,12 +91,12 @@ const AgentCard = ({
             <div className="flex-1 min-w-0 flex flex-col justify-between h-full space-y-2 overflow-hidden">
               <div className="space-y-1 overflow-hidden">
                 {/* Name - strictly truncated */}
-                <h3 className="font-semibold text-base leading-tight truncate overflow-hidden">
+                <h3 className="font-semibold text-base leading-tight truncate overflow-hidden text-ellipsis whitespace-nowrap">
                   {agent.name}
                 </h3>
 
                 {/* Owner - strictly truncated */}
-                <p className="text-xs text-muted-foreground truncate overflow-hidden">
+                <p className="text-xs text-muted-foreground truncate overflow-hidden text-ellipsis whitespace-nowrap">
                   By{' '}
                   <span className="font-medium">@{agent.owner.username}</span>
                 </p>
