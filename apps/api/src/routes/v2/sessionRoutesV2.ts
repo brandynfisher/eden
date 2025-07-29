@@ -3,8 +3,11 @@ import {
   cancelSession,
   createSession,
   createSessionMessage,
+  createSessionShare,
   deleteSession,
+  deleteSessionShare,
   getSession,
+  getSharedSession,
   listSessions,
   renameSession,
 } from '../../controllers/v2/sessionControllerV2'
@@ -384,6 +387,118 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => cancelSession(server, request, reply),
+  })
+
+  // Session Share Routes
+  server.post<{
+    Params: { session_id: string }
+    Body: { message_id: string; title?: string }
+  }>('/v2/sessions/:session_id/share', {
+    schema: {
+      tags: ['Sessions'],
+      description: 'Create a share point for a session',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        session_id: Type.String(),
+      },
+      body: {
+        message_id: Type.String(),
+        title: Type.Optional(Type.String({ maxLength: 200 })),
+      },
+      response: {
+        201: Type.Object({
+          success: Type.Boolean(),
+          share_id: Type.String(),
+          share_url: Type.String(),
+        }),
+        400: {
+          error: Type.Optional(Type.String()),
+        },
+        403: {
+          error: Type.Optional(Type.String()),
+        },
+        404: {
+          error: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => createSessionShare(server, request, reply),
+  })
+
+  server.get<{
+    Params: { share_id: string }
+  }>('/v2/sessions/share/:share_id', {
+    schema: {
+      tags: ['Sessions'],
+      description: 'Get a shared session (public)',
+      params: {
+        share_id: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          share: Type.Object({
+            share_id: Type.String(),
+            title: Type.Optional(Type.String()),
+            session: Type.Any(),
+            messages: Type.Array(Type.Any()),
+            owner: Type.Any(),
+            createdAt: Type.String(),
+          }),
+        }),
+        404: {
+          error: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    // No auth required - this is a public endpoint
+    handler: (request, reply) => getSharedSession(server, request, reply),
+  })
+
+  server.delete<{
+    Params: { share_id: string }
+  }>('/v2/sessions/share/:share_id', {
+    schema: {
+      tags: ['Sessions'],
+      description: 'Delete a session share',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        share_id: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+        }),
+        400: {
+          error: Type.Optional(Type.String()),
+        },
+        403: {
+          error: Type.Optional(Type.String()),
+        },
+        404: {
+          error: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => deleteSessionShare(server, request, reply),
   })
 }
 

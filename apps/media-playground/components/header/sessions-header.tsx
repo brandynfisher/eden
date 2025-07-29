@@ -12,7 +12,9 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
 import { SessionBudget } from '@/features/sessions/components/session-budget'
+import { SessionShareButton } from '@/features/sessions/components/session-share-button'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { EditIcon, MenuIcon } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 
@@ -27,6 +29,7 @@ const SessionsHeader = ({
 }: SessionsHeaderProps) => {
   const params = useParams()
   const router = useRouter()
+  const { user } = useAuthState()
   const sessionId = params?.id as string
 
   // Get current session data
@@ -115,6 +118,15 @@ const SessionsHeader = ({
 
         {/* Right section - Budget and profile items (removed agents dropdown) */}
         <div className="ml-auto flex items-center gap-2 h-10">
+          {/* Share button */}
+          {session && session.owner._id === user?._id && (
+            <SessionShareButton
+              sessionId={sessionId}
+              messages={session.messages || []}
+              isOwner={session.owner._id === user?._id}
+              className="h-9 w-auto px-2"
+            />
+          )}
           {session?.budget && (
             <div className="mx-1">
               <SessionBudget budget={session.budget} />
@@ -229,6 +241,15 @@ const SessionsHeader = ({
 
             {/* Right section - Budget only (agents dropdown moved to avatars) */}
             <div className="flex items-center gap-2">
+              {/* Share button */}
+              {session && session.owner._id === user?._id && (
+                <SessionShareButton
+                  sessionId={sessionId}
+                  messages={session.messages || []}
+                  isOwner={session.owner._id === user?._id}
+                  className="h-9 w-auto px-3"
+                />
+              )}
               {session?.budget && (
                 <div className="mx-1">
                   <SessionBudget budget={session.budget} />
