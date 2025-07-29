@@ -84,7 +84,7 @@ const CreationCard = ({
         ])}
       >
         {!creation.public ? (
-          <PrivateIcon className="absolute right-2 top-2 pointer-events-none" />
+          <PrivateIcon className="absolute left-2 top-2 pointer-events-none" />
         ) : null}
         {multiselect ? (
           <div className={`absolute inset-0 w-full h-full z-10 card-gradient`}>

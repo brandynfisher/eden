@@ -33,7 +33,7 @@ const DeleteActionItem = ({ type, item, queryKey }: Props) => {
       onClick={onDelete}
       className="cursor-pointer text-destructive"
     >
-      <Trash2Icon className="mr-2 h-4 w-4" />
+      <Trash2Icon className="mr-2 h-4 w-4 text-red-500" />
       <span>Delete</span>
     </DropdownMenuItem>
   )

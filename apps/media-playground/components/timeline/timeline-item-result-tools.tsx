@@ -227,7 +227,7 @@ const TimelineItemResultTools = ({ output, queryKey, className }: Props) => {
                     className="h-8 w-8 p-0.5 bg-black/40 hover:bg-black/60 text-white border-0 hover:text-destructive"
                     onClick={handleDelete}
                   >
-                    <TrashIcon className="h-4 w-4" />
+                    <TrashIcon className="h-4 w-4 text-red-500" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="top">

@@ -10,7 +10,7 @@ const PrivateIcon = ({ className }: Props) => {
   return (
     <LockIcon
       className={cn([
-        'absolute h-4 w-4 right-2 top-2 text-white bg-accent/50 rounded-sm p-0.5 z-20',
+        'absolute h-6 w-6 left-2 top-2 text-red-500 bg-accent/50 rounded-sm p-1 z-20',
         className,
       ])}
     />
