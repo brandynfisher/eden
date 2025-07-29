@@ -12,6 +12,7 @@ import {
 import { AgentDeploymentSettings } from '@/features/agent/agent-deployment-settings'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
+import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
@@ -96,6 +97,12 @@ const AgentDeploymentFormSheet = () => {
               agentId={agentId}
               deployment={deploymentsQuery.deployments?.find(
                 deployment => deployment.platform === 'twitter',
+              )}
+            />
+            <ShopifyDeploymentForm
+              agentId={agentId}
+              deployment={deploymentsQuery.deployments?.find(
+                deployment => deployment.platform === 'shopify',
               )}
             />
           </div>

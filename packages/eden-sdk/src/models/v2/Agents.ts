@@ -84,6 +84,7 @@ export type AgentClientType =
   | 'twitter'
   | 'farcaster'
   | 'web'
+  | 'shopify'
 export type AgentDeployCommand = 'deploy' | 'stop'
 export type AgentDeployCredentials = {
   CLIENT_DISCORD_TOKEN: string
@@ -182,6 +183,14 @@ interface TwitterDeploymentSecrets {
   access_token_secret: string
 }
 
+interface ShopifyDeploymentConfig extends Record<string, never> {}
+
+interface ShopifyDeploymentSecrets {
+  store_name: string
+  access_token: string
+  location_id: number
+}
+
 export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -194,12 +203,14 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     telegram?: TelegramDeploymentConfig
     farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
+    shopify?: ShopifyDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
     telegram?: TelegramDeploymentSecrets
     farcaster?: FarcasterDeploymentSecrets
     twitter?: TwitterDeploymentSecrets
+    shopify?: ShopifyDeploymentSecrets
   }
 }
 
@@ -209,6 +220,9 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
   config?: {
     discord?: DiscordDeploymentConfig
     telegram?: TelegramDeploymentConfig
+    farcaster?: FarcasterDeploymentConfig
+    twitter?: TwitterDeploymentConfig
+    shopify?: ShopifyDeploymentConfig
   }
 }
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
