@@ -84,7 +84,7 @@ export async function generateMetadata(
           customImageLoader({
             src: response.collection?.coverCreation?.thumbnail || '',
             width: 1024,
-            format: Formats.JPG,
+            format: Formats.WEBP,
           }),
         ]
       : undefined,
@@ -100,7 +100,7 @@ export async function generateMetadata(
           customImageLoader({
             src: response.collection?.coverCreation.thumbnail || '',
             width: 1024,
-            format: Formats.JPG,
+            format: Formats.WEBP,
           }),
         ]
       : undefined,

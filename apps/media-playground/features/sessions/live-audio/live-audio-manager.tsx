@@ -15,7 +15,6 @@ type LiveAudioManagerProps = {
 export const LiveAudioManager = ({
   sessionId,
   onStreamingMessage,
-  isSubmitting: _isSubmitting,
 }: LiveAudioManagerProps) => {
   const { state, startLiveAudio, stopLiveAudio } = useLiveAudio()
   const [showModal, setShowModal] = useState(false)
@@ -262,8 +261,11 @@ Please await further instructions.`
         style={{ display: 'none' }}
         ref={el => {
           if (el) {
-            ;(el as any).__toggleRecording = handleToggleRecording
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (el as any).__toggleRecording = handleToggleRecording
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(el as any).__isRecording = state.isRecording
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(el as any).__isProcessing = state.isProcessing
           }
         }}

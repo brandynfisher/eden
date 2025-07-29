@@ -1,6 +1,6 @@
 import { IPage } from '@/lib/query/cache-updates'
 import { PageData } from '@/lib/query/cache-updates'
-import { Agent, CreationV2, ModelV2 } from '@edenlabs/eden-sdk'
+import { Agent, CreationV2, ModelV2, TaskV2 } from '@edenlabs/eden-sdk'
 import {
   QueryClient,
   QueryKey,
@@ -66,6 +66,19 @@ export const useToggleLikeQuery = ({
     },
   })
 
+  // Get tasks queries for timeline updates
+  const tasksQueries = queryClient.getQueriesData({
+    predicate: query => {
+      const queryKey = query.queryKey as unknown as Array<unknown>
+      return (
+        Array.isArray(queryKey) &&
+        queryKey.length >= 1 &&
+        Array.isArray(queryKey[0]) &&
+        (queryKey[0] as Array<unknown>)[0] === 'tasks'
+      )
+    },
+  })
+
   const { mutateAsync: toggleLike, isPending } = useMutation({
     mutationFn: async () => {
       if (isLiked) {
@@ -91,6 +104,17 @@ export const useToggleLikeQuery = ({
           queryClient,
           query[0] as QueryKey,
           entityId,
+          false,
+        )
+      }
+
+      for (const query of tasksQueries) {
+        handleMutationForTasks(
+          query[1] as PageData<IPage<TaskV2>>,
+          queryClient,
+          query[0] as QueryKey,
+          entityId,
+          entityType,
           false,
         )
       }
@@ -124,6 +148,17 @@ export const useToggleLikeQuery = ({
           queryClient,
           query[0] as QueryKey,
           entityId,
+          true,
+        )
+      }
+
+      for (const query of tasksQueries) {
+        handleMutationForTasks(
+          query[1] as PageData<IPage<TaskV2>>,
+          queryClient,
+          query[0] as QueryKey,
+          entityId,
+          entityType,
           true,
         )
       }
@@ -262,6 +297,80 @@ const handleMutationForList = (
           }
         },
       )
+    } else {
+      queryClient.setQueryData(queryKey, () => {
+        return originalData
+      })
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const handleMutationForTasks = (
+  originalData: PageData<IPage<TaskV2>>,
+  queryClient: QueryClient,
+  queryKey: QueryKey,
+  entityId: string,
+  entityType: 'creation' | 'model' | 'agent',
+  isError: boolean,
+) => {
+  try {
+    if (!isError) {
+      queryClient.setQueryData(queryKey, (oldData: PageData<IPage<TaskV2>>) => {
+        if (!oldData) return oldData
+
+        return {
+          ...oldData,
+          pages: oldData.pages.map(page => ({
+            ...page,
+            docs: page.docs?.map(task => {
+              // Update the creation/model within the task results
+              return {
+                ...task,
+                result: task.result?.map(result => ({
+                  ...result,
+                  output: result.output?.map(output => {
+                    if (
+                      entityType === 'creation' &&
+                      output.creation?._id === entityId
+                    ) {
+                      const likeCount = output.creation.likeCount || 0
+                      return {
+                        ...output,
+                        creation: {
+                          ...output.creation,
+                          isLiked: !output.creation.isLiked,
+                          likeCount: !output.creation.isLiked
+                            ? likeCount + 1
+                            : likeCount - 1,
+                        },
+                      }
+                    }
+                    if (
+                      entityType === 'model' &&
+                      output.model?._id === entityId
+                    ) {
+                      const likeCount = output.model.likeCount || 0
+                      return {
+                        ...output,
+                        model: {
+                          ...output.model,
+                          isLiked: !output.model.isLiked,
+                          likeCount: !output.model.isLiked
+                            ? likeCount + 1
+                            : likeCount - 1,
+                        },
+                      }
+                    }
+                    return output
+                  }),
+                })),
+              }
+            }),
+          })),
+        }
+      })
     } else {
       queryClient.setQueryData(queryKey, () => {
         return originalData

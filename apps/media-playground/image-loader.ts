@@ -1,9 +1,8 @@
 import { getCloudfrontUrl } from '@/lib/media'
 
 export enum Formats {
-  JPG = 'jpg',
   WEBP = 'webp',
-  // Add more here...
+  PNG = 'png',
 }
 
 const SIZES = [384, 768, 1024, 2560]
@@ -43,9 +42,13 @@ export default function customImageLoader(args: ImageLoaderProps): string {
   // set size and change extensions
   const selectedSize = determineSize(width)
 
-  if (src.endsWith('_1024.webp')) {
-    // prepend cloudfront url
-    return src.replace('_1024', `_${selectedSize}`)
+  // Handle already sized webp files (e.g., _384.webp, _768.webp, _1024.webp, _2560.webp)
+  const sizedWebpMatch = src.match(/_(384|768|1024|2560)\.webp$/)
+  if (sizedWebpMatch) {
+    // Replace the size with the selected size
+    return getCloudfrontUrl(
+      src.replace(`_${sizedWebpMatch[1]}`, `_${selectedSize}`),
+    )
   }
 
   const srcWithCDNPrefix = src.startsWith('/')
