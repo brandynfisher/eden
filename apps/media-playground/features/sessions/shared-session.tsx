@@ -9,13 +9,15 @@ import { OtherMessage } from '@/features/sessions/components/other-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSharedSessionQuery } from '@/hooks/query/use-shared-session-query'
 import { Message } from '@edenlabs/eden-sdk'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 interface SharedSessionProps {
   shareId: string
 }
 
 export const SharedSession = ({ shareId }: SharedSessionProps) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
   const {
     data: sharedSessionData,
     isLoading,
@@ -35,9 +37,16 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
     [messages],
   )
 
+  // Scroll to bottom when messages load
+  useEffect(() => {
+    if (messages.length > 0 && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages])
+
   if (isLoading) {
     return (
-      <div className="flex mx-auto py-16">
+      <div className="flex justify-center items-center h-full">
         <LoadingIndicator />
       </div>
     )
@@ -45,24 +54,28 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
 
   if (error) {
     return (
-      <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
-        <AlertDestructive>
-          <AlertDescription>
-            This shared session could not be found or is no longer available.
-          </AlertDescription>
-        </AlertDestructive>
+      <div className="flex justify-center items-center h-full p-4">
+        <div className="w-full max-w-md">
+          <AlertDestructive>
+            <AlertDescription>
+              This shared session could not be found or is no longer available.
+            </AlertDescription>
+          </AlertDestructive>
+        </div>
       </div>
     )
   }
 
   if (!sharedSessionData?.share) {
     return (
-      <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
-        <AlertDestructive>
-          <AlertDescription>
-            This shared session is not available.
-          </AlertDescription>
-        </AlertDestructive>
+      <div className="flex justify-center items-center h-full p-4">
+        <div className="w-full max-w-md">
+          <AlertDestructive>
+            <AlertDescription>
+              This shared session is not available.
+            </AlertDescription>
+          </AlertDestructive>
+        </div>
       </div>
     )
   }
@@ -70,71 +83,66 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
   const { share } = sharedSessionData
 
   return (
-    <div className="flex-1 pb-4">
-      <div className="p-4 pb-8 max-w-[--aui-thread-max-width] mx-auto w-full">
-        {/* Shared Session Header */}
-        <div className="mb-6 border-b border-border pb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold">
-                {share.title || 'Shared Conversation'}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Shared by {share.owner.username} on{' '}
-                {new Date(share.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-            <div className="bg-muted px-3 py-1 rounded-full">
-              <span className="text-xs font-medium text-muted-foreground">
-                Shared Session
-              </span>
-            </div>
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 max-w-3xl mx-auto">
+          {/* Session Info */}
+          <div className="mb-8 pb-6 border-b border-border">
+            <h1 className="text-2xl font-bold mb-2">
+              {share.title || 'Shared Conversation'}
+            </h1>
+            <p className="text-muted-foreground">
+              Shared by {share.owner.username} on{' '}
+              {new Date(share.createdAt).toLocaleDateString()}
+            </p>
           </div>
-        </div>
 
-        {/* Messages */}
-        <div className="space-y-4">
-          {messageGroups.map((group, groupIndex) =>
-            group.map((message: Message, messageIndex: number) => {
-              if (message.role === 'user') {
-                return (
-                  <UserMessage
-                    key={message._id}
-                    message={message}
-                    session={share.session}
-                  />
-                )
-              } else if (message.role === 'assistant') {
-                return (
-                  <OtherMessage
-                    key={message._id}
-                    message={message}
-                    session={share.session}
-                  />
-                )
-              } else if (
-                message.role === 'system' &&
-                message.eden_message_data
-              ) {
-                return (
-                  <EdenMessage
-                    key={message._id}
-                    message={message}
-                    session={share.session}
-                  />
-                )
-              }
-              return null
-            }),
-          )}
-        </div>
+          {/* Messages */}
+          <div className="space-y-6">
+            {messageGroups.map((group, groupIndex) =>
+              group.map((message: Message, messageIndex: number) => {
+                if (message.role === 'user') {
+                  return (
+                    <UserMessage
+                      key={message._id}
+                      message={message}
+                      session={share.session}
+                    />
+                  )
+                } else if (message.role === 'assistant') {
+                  return (
+                    <OtherMessage
+                      key={message._id}
+                      message={message}
+                      session={share.session}
+                    />
+                  )
+                } else if (
+                  message.role === 'system' &&
+                  message.eden_message_data
+                ) {
+                  return (
+                    <EdenMessage
+                      key={message._id}
+                      message={message}
+                      session={share.session}
+                    />
+                  )
+                }
+                return null
+              }),
+            )}
+            {/* Invisible element to scroll to */}
+            <div ref={messagesEndRef} />
+          </div>
 
-        {/* Footer Notice */}
-        <div className="mt-8 p-4 bg-muted/30 rounded-lg">
-          <p className="text-sm text-muted-foreground text-center">
-            This is a shared conversation. You cannot interact with this
-            session.
-          </p>
+          {/* Footer Notice */}
+          <div className="mt-12 mb-8 p-4 bg-muted/50 rounded-lg border">
+            <p className="text-sm text-muted-foreground text-center">
+              This is a shared conversation. You cannot interact with this
+              session.
+            </p>
+          </div>
         </div>
       </div>
     </div>

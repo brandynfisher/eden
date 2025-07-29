@@ -10,14 +10,38 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { cn } from '@/lib/utils'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { PropsWithChildren, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const params = useParams()
+  const pathname = usePathname()
   const sessionId = params?.id as string
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+
+  // Check if we're on a share route
+  const isShareRoute = pathname?.includes('/sessions/share/')
+
+  // If it's a share route, render layout with header but no sidebar
+  if (isShareRoute) {
+    return (
+      <LiveAudioProvider>
+        {/* Sessions header for navigation */}
+        <SessionsHeader
+          onChatClick={() => {}} // No sidebar to open
+          isSidebarCollapsed={false}
+        />
+
+        <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-14">
+          {/* Main content without sidebar */}
+          <div className="flex-1 overflow-y-auto bg-background">
+            <div className="mx-auto w-full max-w-4xl h-full">{children}</div>
+          </div>
+        </div>
+      </LiveAudioProvider>
+    )
+  }
 
   // Hide sidebar on main sessions page
   const isMainSessionsPage = !sessionId
