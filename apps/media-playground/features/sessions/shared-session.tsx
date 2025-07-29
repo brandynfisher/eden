@@ -99,8 +99,8 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
 
           {/* Messages */}
           <div className="space-y-6">
-            {messageGroups.map((group, groupIndex) =>
-              group.map((message: Message, messageIndex: number) => {
+            {messageGroups.map(group =>
+              group.map((message: Message) => {
                 if (message.role === 'user') {
                   return (
                     <UserMessage
@@ -114,20 +114,14 @@ export const SharedSession = ({ shareId }: SharedSessionProps) => {
                     <OtherMessage
                       key={message._id}
                       message={message}
-                      session={share.session}
+                      sessionId={share.session._id}
                     />
                   )
                 } else if (
                   message.role === 'system' &&
                   message.eden_message_data
                 ) {
-                  return (
-                    <EdenMessage
-                      key={message._id}
-                      message={message}
-                      session={share.session}
-                    />
-                  )
+                  return <EdenMessage key={message._id} message={message} />
                 }
                 return null
               }),
