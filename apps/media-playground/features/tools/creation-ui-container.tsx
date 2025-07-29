@@ -132,6 +132,32 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
     return cost <= balance
   }, [cost, balance])
 
+  // Add keyboard shortcut for CMD+Enter to submit form
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+        event.preventDefault()
+
+        // Check if form is valid and not already submitting
+        if (
+          !isSubmitting &&
+          hasEnoughBalance &&
+          Object.keys(form.formState.errors).length === 0
+        ) {
+          form.handleSubmit(onSubmit)()
+        }
+      }
+    }
+
+    // Add event listener to document
+    document.addEventListener('keydown', handleKeyDown)
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isSubmitting, hasEnoughBalance, form, onSubmit])
+
   // Add scroll to error effect
   useEffect(() => {
     const errors = form.formState.errors
