@@ -275,18 +275,21 @@ export const updateAgent = async (
     }
   }
 
-  if (!image || image === '') {
-    updateData.userImage = null
-    updateData.blurhash = null
-  } else if (image.startsWith('http')) {
-    // This is a new uploaded image URL - process it
-    const blurhash = await generateBlurhash(server, image)
-    const imageFilename = image.split('/').pop()
+  // Only update image fields if image is explicitly provided in the request
+  if (image !== undefined) {
+    if (!image || image === '') {
+      updateData.userImage = null
+      updateData.blurhash = null
+    } else if (image.startsWith('http')) {
+      // This is a new uploaded image URL - process it
+      const blurhash = await generateBlurhash(server, image)
+      const imageFilename = image.split('/').pop()
 
-    updateData.userImage = imageFilename
-    updateData.blurhash = blurhash
+      updateData.userImage = imageFilename
+      updateData.blurhash = blurhash
+    }
+    // If image is just a filename (existing image), don't update image fields
   }
-  // If image is just a filename (existing image), don't update image fields
 
   let result: UpdateResult
   // Check if user is owner or editor
@@ -436,20 +439,20 @@ export const createAgentTrigger = async (
 
 const calculateNextScheduledRun = (schedule: any): Date | null => {
   if (!schedule) return null
-  
+
   const now = new Date()
-  
+
   // For one-time tasks (start_date equals end_date)
   if (schedule.start_date && schedule.end_date) {
     const startDate = new Date(schedule.start_date)
     const endDate = new Date(schedule.end_date)
-    
+
     if (startDate.getTime() === endDate.getTime()) {
       // One-time task
       return startDate > now ? startDate : null
     }
   }
-  
+
   // For recurring tasks, calculate next run based on current time
   if (schedule.hour !== undefined && schedule.minute !== undefined) {
     const nextRun = new Date()
@@ -457,7 +460,7 @@ const calculateNextScheduledRun = (schedule: any): Date | null => {
     nextRun.setMinutes(parseInt(schedule.minute.toString(), 10))
     nextRun.setSeconds(0)
     nextRun.setMilliseconds(0)
-    
+
     // If the time today has passed, move to next occurrence based on schedule
     if (nextRun <= now) {
       if (schedule.day_of_week === '*') {
@@ -488,10 +491,10 @@ const calculateNextScheduledRun = (schedule: any): Date | null => {
         }
       }
     }
-    
+
     return nextRun
   }
-  
+
   return null
 }
 
@@ -556,7 +559,7 @@ export const updateAgentTrigger = async (
     if (nextRun) {
       const now = new Date()
       const twoMinutesFromNow = new Date(now.getTime() + 2 * 60 * 1000)
-      
+
       if (nextRun < twoMinutesFromNow) {
         return reply.status(400).send({
           error: 'Next scheduled run must be at least 2 minutes in the future',

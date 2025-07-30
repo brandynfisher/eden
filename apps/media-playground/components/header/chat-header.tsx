@@ -9,7 +9,7 @@ import { SessionShareButton } from '@/features/sessions/components/session-share
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { isAgentOwner } from '@/lib/utils'
+import { canEditAgent } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
@@ -50,7 +50,7 @@ const ChatHeader = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
-  const showSettingsIcon = agent && isAgentOwner(agent, user?._id)
+  const showSettingsIcon = agent && canEditAgent(agent, user?._id)
 
   const handleSessionTitleClick = () => {
     // Check if we're on mobile (window width < 768px for md breakpoint)
