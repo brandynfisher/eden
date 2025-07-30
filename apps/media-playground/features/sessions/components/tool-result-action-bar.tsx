@@ -173,7 +173,11 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
         Array.isArray(result?.output)
           ? result.output
               .filter((output: TasksV2ResultOutput) => output.creation)
-              .map((output: TasksV2ResultOutput) => output.creation)
+              .map((output: TasksV2ResultOutput) =>
+                typeof output.creation === 'string'
+                  ? output.creation
+                  : output.creation?._id,
+              )
           : [],
       ) || [],
   )
