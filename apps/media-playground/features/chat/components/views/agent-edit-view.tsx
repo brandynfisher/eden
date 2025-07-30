@@ -21,6 +21,7 @@ import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
+import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
 // import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
@@ -960,6 +961,12 @@ const AgentEditView: FC<{
                               deployment={deploymentsQuery.deployments?.find(
                                 deployment =>
                                   deployment.platform === 'farcaster',
+                              )}
+                            />
+                            <ShopifyDeploymentForm
+                              agentId={agent._id}
+                              deployment={deploymentsQuery.deployments?.find(
+                                deployment => deployment.platform === 'shopify',
                               )}
                             />
                           </div>

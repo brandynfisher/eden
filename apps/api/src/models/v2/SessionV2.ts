@@ -12,6 +12,7 @@ import paginate from 'mongoose-paginate-v2'
 
 export interface SessionSchema {
   owner: UserDocument
+  users?: UserDocument[]
   agents: AgentDocument[]
   status: 'active' | 'archived'
   title?: string
@@ -49,6 +50,10 @@ export const sessionSchema = new Schema<SessionDocument>(
       type: Schema.Types.ObjectId,
       ref: 'users3',
       required: true,
+    },
+    users: {
+      type: [Schema.Types.ObjectId],
+      ref: 'users3',
     },
     agents: {
       type: [Schema.Types.ObjectId],

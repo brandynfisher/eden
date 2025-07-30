@@ -301,6 +301,12 @@ import {
   SessionsV2MessageResponse,
   SessionsV2RenameArguments,
   SessionsV2RenameResponse,
+  SessionsV2ShareCreateArguments,
+  SessionsV2ShareCreateResponse,
+  SessionsV2ShareDeleteArguments,
+  SessionsV2ShareDeleteResponse,
+  SessionsV2ShareGetArguments,
+  SessionsV2ShareGetResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -374,6 +380,9 @@ import {
   sessionsMessageReactRequestConfigV2,
   sessionsMessageRequestConfigV2,
   sessionsRenameRequestConfigV2,
+  sessionsShareCreateRequestConfigV2,
+  sessionsShareDeleteRequestConfigV2,
+  sessionsShareGetRequestConfigV2,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -995,6 +1004,20 @@ export abstract class Methods {
         this,
         sessionsCancelRequestConfigV2,
       ),
+      share: {
+        create: bindApiCall<
+          SessionsV2ShareCreateArguments,
+          SessionsV2ShareCreateResponse
+        >(this, sessionsShareCreateRequestConfigV2),
+        delete: bindApiCall<
+          SessionsV2ShareDeleteArguments,
+          SessionsV2ShareDeleteResponse
+        >(this, sessionsShareDeleteRequestConfigV2),
+        get: bindApiCall<
+          SessionsV2ShareGetArguments,
+          SessionsV2ShareGetResponse
+        >(this, sessionsShareGetRequestConfigV2),
+      },
     },
   }
 

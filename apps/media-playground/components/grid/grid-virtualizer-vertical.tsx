@@ -498,7 +498,10 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
 
                   // Always return a div to maintain grid structure, but empty if no item
                   return (
-                    <div key={`slot_${rowIndex}_${colIndex}_${item?._id || ''}`}>
+                    <div
+                      key={`slot_${rowIndex}_${colIndex}_${item?._id || ''}`}
+                      className="w-full min-w-0 overflow-hidden"
+                    >
                       {item ? render(item, onUpdate, itemIndex) : null}
                     </div>
                   )

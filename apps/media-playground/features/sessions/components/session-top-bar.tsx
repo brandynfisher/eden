@@ -8,9 +8,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { SessionBudget } from '@/features/sessions/components/session-budget'
+import { SessionShareButton } from '@/features/sessions/components/session-share-button'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, Message } from '@edenlabs/eden-sdk'
 import { UsersIcon } from 'lucide-react'
 import Link from 'next/link'
 
@@ -26,6 +27,10 @@ interface SessionTopBarProps {
     manna_spent?: number
     turns_spent?: number
   }
+  // New props for sharing
+  sessionId?: string
+  messages?: Message[]
+  isOwner?: boolean
 }
 
 export const SessionTopBar = ({
@@ -33,6 +38,9 @@ export const SessionTopBar = ({
   title,
   className,
   sessionBudget,
+  sessionId,
+  messages,
+  isOwner,
 }: SessionTopBarProps) => {
   const AgentsPopoverContent = ({ agents }: { agents: Agent[] }) => (
     <div className="grid grid-cols-1 gap-2 min-w-48">
@@ -85,7 +93,15 @@ export const SessionTopBar = ({
           )}
         </div>
 
-        {/* Right side - Agents popover trigger */}
+        {/* Right side - Share button, Session budget, and Agents popover trigger */}
+        {sessionId && messages && isOwner && (
+          <SessionShareButton
+            sessionId={sessionId}
+            messages={messages}
+            isOwner={isOwner}
+            className="mr-2"
+          />
+        )}
         {sessionBudget && (
           <div className="mx-1">
             <SessionBudget budget={sessionBudget} />

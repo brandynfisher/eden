@@ -2,9 +2,17 @@ import PrivateIcon from '@/components/icons/private-icon'
 import { LightboxTrigger } from '@/components/media/lightbox'
 import { IntermediateOutputsDialog } from '@/components/timeline/intermediate-outputs-dialog'
 import TimelineItemResultTools from '@/components/timeline/timeline-item-result-tools'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { TaskV2, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
+import { ExternalLinkIcon } from 'lucide-react'
+import Link from 'next/link'
 import React from 'react'
 
 type Props = {
@@ -47,6 +55,23 @@ export const MediaResultOutput = ({
       }}
     >
       {!output.creation?.public ? <PrivateIcon /> : null}
+      {output.creation && (
+        <TooltipProvider delayDuration={0}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href={`/creations/${output.creation._id}`}
+                className="absolute top-2 right-2 z-20 bg-black/60 hover:bg-black/80 rounded-md p-1.5 transition-colors"
+              >
+                <ExternalLinkIcon className="h-4 w-4 text-white" />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>View Details</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
       {output.creation === null || output.creation?.deleted ? (
         <div className="absolute inset-0 w-full h-full z-10 bg-accent/70 drop-shadow flex justify-center items-center">
           <div className="p-1 px-2 border border-destructive/50 bg-destructive/20 text-destructive-foreground text-xs rounded-sm backdrop-blur-[2px]">

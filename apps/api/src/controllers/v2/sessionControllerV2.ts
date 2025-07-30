@@ -1,6 +1,7 @@
 import { Agent } from '../../models/Agent'
 import { User } from '../../models/User'
 import { Message } from '../../models/v2/Message'
+import { SessionShare } from '../../models/v2/SessionShareV2'
 import { Session } from '../../models/v2/SessionV2'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
@@ -235,6 +236,10 @@ export const createSession = async (
         select: '_id username userId userImage',
       })
       .populate({
+        path: 'users',
+        select: '_id username userImage',
+      })
+      .populate({
         path: 'agents',
         select: '_id username userImage name description',
       })
@@ -380,6 +385,19 @@ export const createSessionMessage = async (
         message: 'session not found',
       })
     }
+
+    // Check if user has access to the session (owner or in users list)
+    const currentUserIdStr = userId.toString()
+    const isOwner = session.owner.toString() === currentUserIdStr
+    const isAllowedUser = session.users?.some(
+      (user: any) => user.toString() === currentUserIdStr,
+    )
+
+    if (!isOwner && !isAllowedUser) {
+      return reply.status(403).send({
+        message: 'You do not have access to this session',
+      })
+    }
   }
 
   const userDocument = await User.findById(userId)
@@ -517,7 +535,7 @@ export const listSessions = async (
 
   try {
     const queryOptions: QueryOptions = {
-      select: '_id title name createdAt updatedAt trigger agents',
+      select: '_id title name createdAt updatedAt trigger agents users',
       limit,
       page,
       sort: {
@@ -525,15 +543,21 @@ export const listSessions = async (
         updatedAt: -1,
         createdAt: -1,
       },
-      populate: {
-        path: 'agents',
-        select: '_id username userImage name',
-      },
+      populate: [
+        {
+          path: 'agents',
+          select: '_id username userImage name',
+        },
+        {
+          path: 'users',
+          select: '_id username userImage',
+        },
+      ],
     }
 
     const sessionsRepository = new SessionRepository(Session)
     const sessionQuery: any = {
-      owner: userId,
+      $or: [{ owner: userId }, { users: userId }],
     }
 
     // Add agent filter if provided - look up agent by username first
@@ -572,6 +596,13 @@ export const getSession = async (
   request: FastifyRequest<{ Params: SessionsV2GetArguments }>,
   reply: FastifyReply,
 ) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
   const { session_id } = request.params
 
   try {
@@ -581,6 +612,10 @@ export const getSession = async (
       .populate({
         path: 'owner',
         select: '_id username userId userImage',
+      })
+      .populate({
+        path: 'users',
+        select: '_id username userImage',
       })
       .populate({
         path: 'agents',
@@ -599,6 +634,19 @@ export const getSession = async (
     if (!session) {
       return reply.status(404).send({
         message: 'Session not found',
+      })
+    }
+
+    // Check if user has access to the session (owner or in users list)
+    const getSessionUserIdStr = userId.toString()
+    const isSessionOwner = session.owner._id.toString() === getSessionUserIdStr
+    const isSessionUser = session.users?.some(
+      (user: any) => user.toString() === getSessionUserIdStr,
+    )
+
+    if (!isSessionOwner && !isSessionUser) {
+      return reply.status(403).send({
+        message: 'You do not have access to this session',
       })
     }
 
@@ -654,6 +702,30 @@ export const addSessionMessageReaction = async (
   if (!message) {
     return reply.status(404).send({
       message: 'Message not found',
+    })
+  }
+
+  // Find the session to check access
+  const session = await Session.findOne({
+    _id: message.session,
+  })
+
+  if (!session) {
+    return reply.status(404).send({
+      message: 'Session not found',
+    })
+  }
+
+  // Check if user has access to the session (owner or in users list)
+  const reactionUserIdStr = userId.toString()
+  const isSessionOwner = session.owner.toString() === reactionUserIdStr
+  const isSessionUser = session.users?.some(
+    (user: any) => user.toString() === reactionUserIdStr,
+  )
+
+  if (!isSessionOwner && !isSessionUser) {
+    return reply.status(403).send({
+      message: 'You do not have access to this session',
     })
   }
 
@@ -848,5 +920,207 @@ export const cancelSession = async (
     const errorMessage = error?.response?.data || 'Failed to cancel session'
     console.log(e)
     return reply.status(500).send({ error: errorMessage })
+  }
+}
+
+export const createSessionShare = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Params: { session_id: string }
+    Body: { message_id: string; title?: string }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  const { session_id } = request.params
+  const { message_id, title } = request.body
+
+  if (!message_id) {
+    return reply.status(400).send({
+      error: 'message_id is required',
+    })
+  }
+
+  if (title && (typeof title !== 'string' || title.length > 200)) {
+    return reply.status(400).send({
+      error: 'title must be a string with max 200 characters',
+    })
+  }
+
+  try {
+    // Find the session and verify ownership
+    const session = await Session.findOne({
+      _id: new ObjectId(session_id),
+    })
+
+    if (!session) {
+      return reply.status(404).send({
+        error: 'Session not found',
+      })
+    }
+
+    if (session.owner.toString() !== userId.toString()) {
+      return reply.status(403).send({
+        error: 'Only session owner can create shares',
+      })
+    }
+
+    // Verify the message exists and belongs to this session
+    const message = await Message.findOne({
+      _id: new ObjectId(message_id),
+      session: session._id,
+    })
+
+    if (!message) {
+      return reply.status(404).send({
+        error: 'Message not found in this session',
+      })
+    }
+
+    // Create the share
+    const sessionShare = new SessionShare({
+      session: session._id,
+      owner: userId,
+      message_id: new ObjectId(message_id),
+      title: title || undefined,
+    })
+
+    await sessionShare.save()
+
+    return reply.status(201).send({
+      success: true,
+      share_id: sessionShare._id.toString(),
+      share_url: `/sessions/share/${sessionShare._id.toString()}`,
+    })
+  } catch (error) {
+    server.log.error({
+      message: 'Failed to create session share',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    return reply.status(500).send({
+      error: 'Failed to create session share',
+    })
+  }
+}
+
+export const getSharedSession = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{ Params: { share_id: string } }>,
+  reply: FastifyReply,
+) => {
+  const { share_id } = request.params
+
+  try {
+    // Find the share by ObjectId
+    const sessionShare = await SessionShare.findById(share_id)
+      .populate({
+        path: 'session',
+        select: '_id title scenario agents createdAt',
+        populate: [
+          {
+            path: 'agents',
+            select: '_id username userImage name description',
+          },
+        ],
+      })
+      .populate({
+        path: 'owner',
+        select: '_id username userImage',
+      })
+
+    if (!sessionShare) {
+      return reply.status(404).send({
+        error: 'Shared session not found',
+      })
+    }
+
+    // Get messages up to the shared message (inclusive)
+    const messages = await Message.find({
+      session: sessionShare.session._id,
+      createdAt: {
+        $lte: (await Message.findById(sessionShare.message_id))?.createdAt,
+      },
+    })
+      .populate({
+        path: 'sender',
+        select: '_id username userImage name',
+      })
+      .sort({ createdAt: 1 })
+      .select(
+        '_id content sender role eden_message_data tool_calls attachments createdAt',
+      )
+
+    return reply.status(200).send({
+      share: {
+        share_id: sessionShare._id.toString(),
+        title: sessionShare.title,
+        session: sessionShare.session,
+        messages,
+        owner: sessionShare.owner,
+        createdAt: sessionShare.createdAt,
+      },
+    })
+  } catch (error) {
+    server.log.error({
+      message: 'Failed to get shared session',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    return reply.status(500).send({
+      error: 'Failed to get shared session',
+    })
+  }
+}
+
+export const deleteSessionShare = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{ Params: { share_id: string } }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  const { share_id } = request.params
+
+  try {
+    const sessionShare = await SessionShare.findById(share_id)
+
+    if (!sessionShare) {
+      return reply.status(404).send({
+        error: 'Share not found',
+      })
+    }
+
+    if (sessionShare.owner.toString() !== userId.toString()) {
+      return reply.status(403).send({
+        error: 'Only share owner can delete this share',
+      })
+    }
+
+    await sessionShare.delete()
+
+    return reply.status(200).send({
+      success: true,
+    })
+  } catch (error) {
+    server.log.error({
+      message: 'Failed to delete session share',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    return reply.status(500).send({
+      error: 'Failed to delete session share',
+    })
   }
 }

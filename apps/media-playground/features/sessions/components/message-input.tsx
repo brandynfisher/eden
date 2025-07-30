@@ -25,7 +25,15 @@ import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { MicIcon, PaperclipIcon, SendIcon, SquareIcon } from 'lucide-react'
+import {
+  MessageSquareIcon,
+  MicIcon,
+  PaperclipIcon,
+  PencilOffIcon,
+  SendIcon,
+  SquareIcon,
+} from 'lucide-react'
+import Link from 'next/link'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -416,6 +424,34 @@ export const MessageInput = ({
       textarea.removeEventListener('paste', handlePaste)
     }
   }, [handleFilesDropped])
+
+  // Check if this is a read-only view (session belongs to another user)
+  const isReadOnly = session && user && session.owner?._id !== user._id
+
+  // If read-only, show read-only indicator
+  if (isReadOnly) {
+    return (
+      <div className="relative z-[51] bg-accent w-full">
+        <div className="flex items-center justify-between gap-2 md:gap-3 py-2 px-2 md:px-4 h-[58px] w-full border border-aui-border bg-accent-foreground/5 rounded-lg">
+          <div className="flex flex-wrap items-center gap-2 px-2 md:gap-3 py-2 md:px-4 border border-secondary rounded-lg bg-muted-darker">
+            <PencilOffIcon className="w-4 h-4 text-muted-foreground" />
+            <p className="text-sm">
+              Read-only view{' '}
+              <span className="hidden lg:inline">
+                of another user's session.
+              </span>
+            </p>
+          </div>
+          <Button variant="outline" asChild>
+            <Link href="/chat" className="bg-purple-600/20 border-purple-600">
+              <MessageSquareIcon className="w-4 h-4 mr-2" />
+              <span className="text-sm">New Chat</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>

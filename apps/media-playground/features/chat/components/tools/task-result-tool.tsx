@@ -39,8 +39,13 @@ export const TaskResultTool = makeAssistantToolUI({
     const isTelegramPost = tool === 'telegram_post'
     const isTweetPost = tool === 'tweet'
     const isFarcasterPost = tool === 'farcaster_cast'
+    const isShopifyPost = tool === 'shopify'
     const isSocialPost =
-      isDiscordPost || isTelegramPost || isTweetPost || isFarcasterPost
+      isDiscordPost ||
+      isTelegramPost ||
+      isTweetPost ||
+      isFarcasterPost ||
+      isShopifyPost
 
     // Check if tool is completed with displayable results
     const { status: toolStatus } = result as TaskResultToolArgs
@@ -98,6 +103,8 @@ export const TaskResultTool = makeAssistantToolUI({
                     ? 'twitter'
                     : isFarcasterPost
                     ? 'farcaster'
+                    : isShopifyPost
+                    ? 'shopify'
                     : 'discord' // fallback
                 }
               />

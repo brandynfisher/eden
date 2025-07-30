@@ -5,10 +5,11 @@ import HeaderNavLinks from '@/components/header/header-nav-links'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { SessionShareButton } from '@/features/sessions/components/session-share-button'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { isAgentOwner } from '@/lib/utils'
+import { canEditAgent } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
@@ -49,7 +50,7 @@ const ChatHeader = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
-  const showSettingsIcon = agent && isAgentOwner(agent, user?._id)
+  const showSettingsIcon = agent && canEditAgent(agent, user?._id)
 
   const handleSessionTitleClick = () => {
     // Check if we're on mobile (window width < 768px for md breakpoint)
@@ -143,6 +144,15 @@ const ChatHeader = ({
 
           {/* Right section - HeaderActions only (settings gear hidden on mobile) */}
           <div className="flex items-center gap-1 flex-shrink-0">
+            {/* Share button */}
+            {session && session.owner._id === user?._id && (
+              <SessionShareButton
+                sessionId={sessionId}
+                messages={session.messages || []}
+                isOwner={session.owner._id === user?._id}
+                className="h-9 w-auto px-2"
+              />
+            )}
             <HeaderActions hideMannaMobile />
           </div>
         </header>
@@ -242,6 +252,16 @@ const ChatHeader = ({
 
           {/* Right section - New Chat icon (when sidebar collapsed) and Settings icon */}
           <div className="ml-auto flex items-center gap-2">
+            {/* Share button */}
+            {session && session.owner._id === user?._id && (
+              <SessionShareButton
+                sessionId={sessionId}
+                messages={session.messages || []}
+                isOwner={session.owner._id === user?._id}
+                className="h-9 w-auto px-3"
+              />
+            )}
+
             {/* New Chat button - only show when sidebar is collapsed */}
             {isSidebarCollapsed && (
               <Button

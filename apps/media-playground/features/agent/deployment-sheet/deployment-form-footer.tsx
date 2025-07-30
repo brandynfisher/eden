@@ -111,6 +111,10 @@ export const DeploymentFormFooter = ({
             username: data.username,
           },
         }
+      } else if (platform === 'shopify') {
+        config = {
+          shopify: {},
+        }
       }
 
       if (isDeployed) {
@@ -153,6 +157,14 @@ export const DeploymentFormFooter = ({
               consumer_secret: data.consumerSecret,
               access_token: data.accessToken,
               access_token_secret: data.accessTokenSecret,
+            },
+          }
+        } else if (platform === 'shopify') {
+          payload.secrets = {
+            shopify: {
+              store_name: data.storeName,
+              access_token: data.accessToken,
+              location_id: parseInt(data.locationId, 10),
             },
           }
         }
