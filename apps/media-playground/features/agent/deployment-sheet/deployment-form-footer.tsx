@@ -164,7 +164,7 @@ export const DeploymentFormFooter = ({
             shopify: {
               store_name: data.storeName,
               access_token: data.accessToken,
-              location_id: parseInt(data.locationId, 10),
+              location_id: data.locationId,
             },
           }
         }
