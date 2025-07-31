@@ -71,7 +71,7 @@ export type DeploymentSettingsShopify = Record<string, never>
 export type DeploymentSecretsShopify = {
   store_name: string
   access_token: string
-  location_id: number
+  location_id: string
 }
 
 // Combined Types

@@ -188,7 +188,7 @@ interface ShopifyDeploymentConfig extends Record<string, never> {}
 interface ShopifyDeploymentSecrets {
   store_name: string
   access_token: string
-  location_id: number
+  location_id: string
 }
 
 export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
