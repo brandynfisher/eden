@@ -25,13 +25,13 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
       await axios.patch(`/api/agents/${agent._id}`, {
         owner_pays: ownerPays,
       })
-      toast.success('Deployment settings updated successfully', {
+      toast.success('Integration settings updated successfully', {
         description: 'Your changes have been saved.',
         richColors: true,
         dismissible: true,
       })
     } catch (error) {
-      toast.error('Failed to update deployment settings', {
+      toast.error('Failed to update integration settings', {
         description: 'Please try again later.',
         richColors: true,
         dismissible: true,
@@ -160,10 +160,10 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
           </div>
         </div>
 
-        {/* Deployment Settings - Inline version to avoid form nesting */}
+        {/* Integration Settings - Inline version to avoid form nesting */}
         <div className="mt-8 space-y-4 rounded-lg">
           <h2 className="text-lg font-medium">
-            Deployment Settings
+            Integration Settings
           </h2>
           <DeploymentSettingsInline agent={agent} />
         </div>

@@ -40,13 +40,13 @@ export const AgentDeploymentSettings = ({
       await axios.patch(`/api/agents/${agent._id}`, {
         owner_pays: data.owner_pays,
       })
-      toast.success('Deployment settings updated successfully', {
+      toast.success('Integration settings updated successfully', {
         description: 'Your changes have been saved.',
         richColors: true,
         dismissible: true,
       })
     } catch (error) {
-      toast.error('Failed to update deployment settings', {
+      toast.error('Failed to update integration settings', {
         description: 'Please try again later.',
         richColors: true,
         dismissible: true,
@@ -56,7 +56,7 @@ export const AgentDeploymentSettings = ({
 
   return (
     <div className="mt-8 space-y-4 rounded-lg">
-      <h2 className="text-lg font-medium">Deployment Settings</h2>
+      <h2 className="text-lg font-medium">Integration Settings</h2>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

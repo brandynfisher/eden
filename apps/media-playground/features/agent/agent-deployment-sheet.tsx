@@ -54,9 +54,9 @@ const AgentDeploymentFormSheet = () => {
         className="overflow-y-auto w-full sm:!max-w-2xl"
       >
         <SheetHeader>
-          <SheetTitle>Configure Deployment</SheetTitle>
+          <SheetTitle>Configure Integrations</SheetTitle>
           <SheetDescription>
-            Configure your agent's deployment settings across different
+            Configure your agent's integration settings across different
             platforms.
           </SheetDescription>
         </SheetHeader>
