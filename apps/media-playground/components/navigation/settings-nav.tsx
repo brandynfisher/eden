@@ -45,8 +45,8 @@ const SettingsNav = () => {
         return 'API Keys'
       case '/settings/tasks':
         return 'Tasks'
-      case '/settings/deployments':
-        return 'Deployments'
+      case '/settings/integrations':
+        return 'Integrations'
       default:
         return 'Settings'
     }
@@ -75,8 +75,8 @@ const SettingsNav = () => {
             items: [
               { href: '/settings/tasks', label: 'Tasks', icon: ListIcon },
               {
-                href: '/settings/deployments',
-                label: 'Deployments',
+                href: '/settings/integrations',
+                label: 'Integrations',
                 icon: RadioIcon,
               },
             ],
