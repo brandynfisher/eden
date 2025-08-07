@@ -1281,17 +1281,21 @@ export const saveAgentMemory = async (
       server.mongoose.connection.db.collection('memory_user')
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
 
-    await memoryCollection.replaceOne(
+    await memoryCollection.updateOne(
       {
         agent_id: agentObjectId,
         user_id: new server.mongoose.Types.ObjectId(userId),
       },
       {
-        agent_id: agentObjectId,
-        user_id: new server.mongoose.Types.ObjectId(userId),
-        content: content || '',
-        agent_owner: null,
-        unabsorbed_directive_ids: [],
+        $set: {
+          content: content || '',
+        },
+        $setOnInsert: {
+          agent_id: agentObjectId,
+          user_id: new server.mongoose.Types.ObjectId(userId),
+          agent_owner: null,
+          unabsorbed_directive_ids: [],
+        },
       },
       { upsert: true },
     )
