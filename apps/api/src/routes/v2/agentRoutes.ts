@@ -12,7 +12,9 @@ import {
   getAllUserDeployments,
   getAllUserTriggers,
   likeAgent,
+  removeMemoryFromAgent,
   removeUnabsorbedMemory,
+  retrieveMemoryAgent,
   retrieveMemorySession,
   retrieveMemoryUser,
   saveAgentMemory,
@@ -20,6 +22,7 @@ import {
   updateAgent,
   updateAgentDeployment,
   updateAgentTrigger,
+  updateMemoryAgent,
   updateMemorySession,
   updateMemoryUser,
 } from '../../controllers/agentController'
@@ -459,6 +462,74 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => removeUnabsorbedMemory(server, request, reply),
+  })
+
+  // Collective Memory routes
+  server.get('/v2/agents/:agentId/memory-agent', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get collective memory (memory_agent documents)',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      response: {
+        200: {
+          shards: Type.Array(Type.Object({
+            _id: Type.String(),
+            agent_id: Type.Any(),
+            content: Type.Optional(Type.String()),
+            extraction_prompt: Type.Optional(Type.String()),
+            is_active: Type.Optional(Type.Boolean()),
+            facts: Type.Array(Type.Object({
+              _id: Type.String(),
+              content: Type.String(),
+              createdAt: Type.Optional(Type.String()),
+            })),
+            unabsorbed_memory_ids: Type.Array(Type.Object({
+              _id: Type.String(),
+              content: Type.String(),
+              createdAt: Type.Optional(Type.String()),
+            })),
+          })),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => retrieveMemoryAgent(server, request, reply),
+  })
+
+  server.patch('/v2/agents/:agentId/memory-agent/:memoryAgentId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Update memory_agent document',
+      security: [{ apiKey: [] }],
+      params: { 
+        agentId: Type.String(),
+        memoryAgentId: Type.String(),
+      },
+      body: Type.Record(Type.String(), Type.Any()),
+      response: { 200: { success: Type.Boolean() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateMemoryAgent(server, request, reply),
+  })
+
+  server.delete('/v2/agents/:agentId/memory-agent/:memoryAgentId/memory/:memoryId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Remove memory from memory_agent arrays (facts or unabsorbed_memory_ids)',
+      security: [{ apiKey: [] }],
+      params: { 
+        agentId: Type.String(),
+        memoryAgentId: Type.String(),
+        memoryId: Type.String(),
+      },
+      body: Type.Object({
+        arrayField: Type.Union([Type.Literal('facts'), Type.Literal('unabsorbed_memory_ids')])
+      }),
+      response: { 200: { success: Type.Boolean() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => removeMemoryFromAgent(server, request, reply),
   })
 }
 

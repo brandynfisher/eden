@@ -1353,6 +1353,182 @@ export const retrieveMemoryUser = async (
   }
 }
 
+// Helper function: retrieve_memory_agent
+export const retrieveMemoryAgent = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_agent')
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+    
+    // Find all memory_agent documents for this agent
+    const memoryRecords = await memoryCollection.find({
+      agent_id: agentObjectId,
+    }).toArray()
+
+    console.log('DEBUG: memoryRecords found:', memoryRecords.length)
+
+    let processedRecords: any[] = []
+
+    for (const record of memoryRecords) {
+      let factsWithContent: any[] = []
+      let unabsorbedWithContent: any[] = []
+
+      // Process facts array (similar to unabsorbed_memory_ids in User Memory)
+      if (record.facts && Array.isArray(record.facts)) {
+        const memorySessionCollection = server.mongoose.connection.db.collection('memory_sessions')
+        const factDocs = await memorySessionCollection.find({
+          _id: { $in: record.facts.map((id: any) => new server.mongoose.Types.ObjectId(id)) }
+        }).toArray()
+
+        factsWithContent = factDocs.map((doc: any) => ({
+          _id: doc._id.toString(),
+          content: doc.content || '',
+          createdAt: doc.createdAt,
+        }))
+      }
+
+      // Process unabsorbed_memory_ids array
+      if (record.unabsorbed_memory_ids && Array.isArray(record.unabsorbed_memory_ids)) {
+        const memorySessionCollection = server.mongoose.connection.db.collection('memory_sessions')
+        const unabsorbedDocs = await memorySessionCollection.find({
+          _id: { $in: record.unabsorbed_memory_ids.map((id: any) => new server.mongoose.Types.ObjectId(id)) }
+        }).toArray()
+
+        unabsorbedWithContent = unabsorbedDocs.map((doc: any) => ({
+          _id: doc._id.toString(),
+          content: doc.content || '',
+          createdAt: doc.createdAt,
+        }))
+      }
+
+      processedRecords.push({
+        ...record,
+        _id: record._id.toString(),
+        facts: factsWithContent,
+        unabsorbed_memory_ids: unabsorbedWithContent,
+      })
+    }
+
+    return reply.status(200).send({
+      shards: processedRecords
+    })
+  } catch (error) {
+    server.log.error('Error retrieving memory agent:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Helper function: update_memory_agent
+export const updateMemoryAgent = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId, memoryAgentId } = request.params as { agentId: string, memoryAgentId: string }
+  const updates = request.body as Record<string, any>
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_agent')
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+
+    // Ensure we're only updating a memory_agent document that belongs to this agent
+    const result = await memoryCollection.updateOne(
+      {
+        _id: new server.mongoose.Types.ObjectId(memoryAgentId),
+        agent_id: agentObjectId,
+      },
+      { $set: updates }
+    )
+
+    if (result.matchedCount === 0) {
+      return reply.status(404).send({ error: 'Memory agent document not found or access denied' })
+    }
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error('Error updating memory agent:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Helper function: remove memory from memory_agent arrays
+export const removeMemoryFromAgent = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId, memoryAgentId, memoryId } = request.params as { 
+    agentId: string, 
+    memoryAgentId: string, 
+    memoryId: string 
+  }
+  const { arrayField } = request.body as { arrayField: 'facts' | 'unabsorbed_memory_ids' }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_agent')
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+
+    const result = await memoryCollection.updateOne(
+      {
+        _id: new server.mongoose.Types.ObjectId(memoryAgentId),
+        agent_id: agentObjectId,
+      },
+      {
+        $pull: {
+          [arrayField]: new server.mongoose.Types.ObjectId(memoryId),
+        }
+      }
+    )
+
+    if (result.matchedCount === 0) {
+      return reply.status(404).send({ error: 'Memory agent document not found or access denied' })
+    }
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error('Error removing memory from agent:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
 // Helper function: retrieve_memory_session
 export const retrieveMemorySession = async (
   server: FastifyInstance,

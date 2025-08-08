@@ -35,6 +35,7 @@ import { FC, useEffect, useState, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import CollectiveMemory from './collective-memory'
 
 // Schema for memory form
 const memorySchema = z.object({
@@ -47,61 +48,6 @@ interface UnabsorbedDirective {
   _id: string
   content: string
   createdAt?: string
-}
-
-// Collective Memory Component - Separate for future expansion
-const CollectiveMemoryContent: FC<{
-  agent: Agent
-  hasAccess: boolean
-}> = ({ agent, hasAccess }) => {
-  return (
-    <div className="space-y-8">
-      {!hasAccess ? (
-        /* Scenario 2: Owner without credentials - show upgrade message */
-        <div className="text-center py-16">
-          <div className="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-orange-50/50 to-red-50/50 dark:bg-gradient-to-r dark:from-orange-900/10 dark:to-red-900/10 border border-orange-200/50 dark:border-orange-500/20 backdrop-blur-sm">
-            <span className="text-orange-700 dark:text-orange-300 font-medium">
-              🌐 Collective memory is only available to &gt;pro tier users.
-              <br />
-              <a 
-                href="/settings/subscription" 
-                className="underline hover:text-orange-600 dark:hover:text-orange-200 transition-colors"
-              >
-                Upgrade your subscription
-              </a>{' '}
-              to enable Collective Memory for {agent.name}
-            </span>
-          </div>
-        </div>
-      ) : (
-        /* Scenario 3: Owner with credentials - show full functionality */
-        <div className="relative">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 cursor-help">
-                  Collective Memory
-                </h2>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>This is {agent.name}'s collective memory. This memory is formed and evolved by all its conversations with all users. Collective memory is a powerful, experimental feature that enables many new applications for creative agents that are driven by collective group interaction.</p>
-              </TooltipContent>
-            </Tooltip>
-            <div className="flex-1 h-px bg-gradient-to-r from-blue-200 to-transparent dark:from-blue-500/30"></div>
-          </div>
-          <div className="relative overflow-hidden rounded-xl border border-blue-200/50 dark:border-blue-500/20 bg-white/80 dark:bg-black/40 backdrop-blur-sm shadow-lg min-h-[200px]">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/10 dark:to-indigo-900/10"></div>
-            <div className="relative px-4 py-8 text-center">
-              <span className="text-muted-foreground italic">
-                Collective Memory coming soon
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
 }
 
 const AgentMemoryView: FC<{
@@ -287,16 +233,16 @@ const AgentMemoryView: FC<{
     <TooltipProvider>
       <div className="flex-1 overflow-auto bg-gradient-to-br from-accent to-accent/50 p-6">
         <div className="mx-auto max-w-4xl">
-          <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="mb-4 flex flex-col md:flex-row md:items-start md:justify-between">
             {/* Memory Type Tabs - Side Menu - Show if owner */}
             {collectiveMemoryAccess.showTab && (
-              <div className="flex md:flex-col gap-1 mb-4 md:mb-0 md:mr-8">
+              <div className="flex md:flex-col gap-1 mb-3 md:mb-0 md:mr-6">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => setMemoryTab('user')}
                       className={cn(
-                        'flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 min-w-[120px]',
+                        'flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 min-w-[110px]',
                         memoryTab === 'user'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
                           : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300',
@@ -314,7 +260,7 @@ const AgentMemoryView: FC<{
                     <button
                       onClick={() => setMemoryTab('collective')}
                       className={cn(
-                        'flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 min-w-[120px]',
+                        'flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 min-w-[110px]',
                         memoryTab === 'collective'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
                           : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300',
@@ -432,7 +378,7 @@ const AgentMemoryView: FC<{
               )}
             </div>
           ) : (
-            <CollectiveMemoryContent 
+            <CollectiveMemory 
               agent={agent}
               hasAccess={collectiveMemoryAccess.hasAccess}
             />
