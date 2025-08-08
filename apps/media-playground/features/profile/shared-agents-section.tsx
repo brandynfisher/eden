@@ -2,13 +2,11 @@
 
 import AgentCard from '@/components/card/agent-card'
 import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
-import { PermissionLevel } from '@edenlabs/eden-sdk'
 import { Loader2 } from 'lucide-react'
 import { FC } from 'react'
 
 export const SharedAgentsSection: FC = () => {
-  const { sharedAgents, isLoading, data, error } = useSharedAgentsQuery({})
-  console.log('SharedAgentsSection debug:', { sharedAgents, data, error, isLoading })
+  const { sharedAgents, isLoading } = useSharedAgentsQuery({})
 
   if (isLoading) {
     return (
@@ -32,10 +30,10 @@ export const SharedAgentsSection: FC = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-        {sharedAgents.map(({ agent, permissionLevel }) => (
-          <AgentCard 
-            key={agent._id} 
-            agent={agent} 
+        {sharedAgents.map(({ agent }) => (
+          <AgentCard
+            key={agent._id}
+            agent={agent}
             queryKey={['agents', agent._id]}
             improvedLayout={true}
           />

@@ -32,41 +32,25 @@ import { UpdateResult } from 'mongodb'
 import { UpdateQuery } from 'mongoose'
 
 // Helper function to check if user has owner-level permissions
-const hasOwnerPermissions = async (agentId: string, userId: string): Promise<boolean> => {
+const hasOwnerPermissions = async (
+  agentId: string,
+  userId: string,
+): Promise<boolean> => {
   // Check if user is the original owner
   const agent = await Agent.findById(agentId)
   if (!agent) return false
-  
+
   if (agent.owner.toString() === userId) {
     return true
   }
-  
+
   // Check if user has owner permission
   const permission = await AgentPermission.findOne({
     agent: agentId,
     user: userId,
     level: PermissionLevel.Owner,
   })
-  
-  return !!permission
-}
 
-// Helper function to check if user has any edit permissions
-const hasEditPermissions = async (agentId: string, userId: string): Promise<boolean> => {
-  // Check if user is the original owner
-  const agent = await Agent.findById(agentId)
-  if (!agent) return false
-  
-  if (agent.owner.toString() === userId) {
-    return true
-  }
-  
-  // Check if user has any permission (editor or owner)
-  const permission = await AgentPermission.findOne({
-    agent: agentId,
-    user: userId,
-  })
-  
   return !!permission
 }
 
@@ -121,12 +105,13 @@ export const getAgent = async (
     })
     agent.isLiked = !!userLike
   }
-  
+
   // Get permissions if user is owner
   if (isOwnAgent) {
-    const permissions = await AgentPermission.find({ agent: agent._id })
-      .populate('user', '_id userId username userImage')
-    
+    const permissions = await AgentPermission.find({
+      agent: agent._id,
+    }).populate('user', '_id userId username userImage')
+
     // Attach permissions to response
     ;(agent as any).permissions = permissions
   }
@@ -281,68 +266,6 @@ export const updateAgent = async (
     updateData.models = models
   }
 
-  // Handle agent_extras (only owner or other owners can modify permissions)
-  if (agent_extras) {
-    if (agent_extras.permissions) {
-      // First check that the agent exists and user is the owner or has owner permission
-      const agentToUpdate = await Agent.findById(agentId)
-      if (!agentToUpdate) {
-        return reply.status(404).send({
-          error: 'Agent not found',
-        })
-      }
-
-      const isOriginalOwner = agentToUpdate.owner.toString() === currentUserId.toString()
-      const isOwnerPermission = agentToUpdate.agent_extras?.permissions?.owners?.some(
-        owner => owner.toString() === currentUserId.toString(),
-      )
-
-      if (!isOriginalOwner && !isOwnerPermission) {
-        return reply.status(401).send({
-          error: 'Only agent owners can modify permissions',
-        })
-      }
-
-      if (agent_extras.permissions.editors) {
-        // Validate and convert usernames to user IDs
-        const editorIds = []
-        for (const usernameOrId of agent_extras.permissions.editors) {
-          const query = createMultiFieldQuery(usernameOrId, [
-            'userId',
-            'username',
-          ])
-          const user = await User.findOne(query)
-          if (!user) {
-            return reply.status(404).send({
-              error: `User not found: ${usernameOrId}`,
-            })
-          }
-          editorIds.push(user._id)
-        }
-        updateData['agent_extras.permissions.editors'] = editorIds
-      }
-
-      if (agent_extras.permissions.owners) {
-        // Validate and convert usernames to user IDs
-        const ownerIds = []
-        for (const usernameOrId of agent_extras.permissions.owners) {
-          const query = createMultiFieldQuery(usernameOrId, [
-            'userId',
-            'username',
-          ])
-          const user = await User.findOne(query)
-          if (!user) {
-            return reply.status(404).send({
-              error: `User not found: ${usernameOrId}`,
-            })
-          }
-          ownerIds.push(user._id)
-        }
-        updateData['agent_extras.permissions.owners'] = ownerIds
-      }
-    }
-  }
-
   // Only update image fields if image is explicitly provided in the request
   if (image !== undefined) {
     if (!image || image === '') {
@@ -372,15 +295,20 @@ export const updateAgent = async (
     })
   }
 
-  const isOriginalOwner = agentToCheck.owner.toString() === currentUserId.toString()
-  const isOwnerPermission = agentToCheck.agent_extras?.permissions?.owners?.some(
-    owner => owner.toString() === currentUserId.toString(),
-  )
-  const isEditor = agentToCheck.agent_extras?.permissions?.editors?.some(
-    editor => editor.toString() === currentUserId.toString(),
-  )
+  const isOriginalOwner =
+    agentToCheck.owner.toString() === currentUserId.toString()
 
-  if (!isOriginalOwner && !isOwnerPermission && !isEditor) {
+  // Check new permissions system
+  let hasPermission = isOriginalOwner
+  if (!hasPermission) {
+    const permission = await AgentPermission.findOne({
+      agent: agentId,
+      user: currentUserId,
+    })
+    hasPermission = !!permission
+  }
+
+  if (!hasPermission) {
     return reply.status(401).send({
       error: 'You are not authorized to update this agent',
     })
@@ -432,7 +360,9 @@ export const getAgentTriggers = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       error: 'User not authorized to view triggers for this agent',
     })
@@ -470,7 +400,9 @@ export const createAgentTrigger = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       error: 'User not authorized to create triggers for this agent',
     })
@@ -602,7 +534,9 @@ export const updateAgentTrigger = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       error: 'User not authorized to update triggers for this agent',
     })
@@ -685,7 +619,9 @@ export const deleteAgentTrigger = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       error: 'User not authorized to delete triggers for this agent',
     })
@@ -727,7 +663,9 @@ export const getAgentDeployments = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       error: 'User not authorized to view deployments for this agent',
     })
@@ -765,7 +703,9 @@ export const deployAgent = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       error: 'User not authorized to deploy this agent',
     })
@@ -828,7 +768,9 @@ export const updateAgentDeployment = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       error: 'User not authorized to update this deployment',
     })
@@ -893,7 +835,9 @@ export const deleteAgentDeployment = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       error: 'User not authorized to stop this deployment',
     })
@@ -960,7 +904,9 @@ export const deleteAgent = async (
     })
   }
 
-  if (!(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))) {
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
     return reply.status(401).send({
       message: 'User not authorized to delete this',
     })
@@ -1295,7 +1241,6 @@ export const getAgentMemory = async (
       user_id: new server.mongoose.Types.ObjectId(userId),
     })
 
-
     let unabsorbedDirectives: any[] = []
 
     // Get unabsorbed directives if they exist
@@ -1438,11 +1383,13 @@ export const retrieveMemoryAgent = async (
     const memoryCollection =
       server.mongoose.connection.db.collection('memory_agent')
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
-    
+
     // Find all memory_agent documents for this agent
-    const memoryRecords = await memoryCollection.find({
-      agent_id: agentObjectId,
-    }).toArray()
+    const memoryRecords = await memoryCollection
+      .find({
+        agent_id: agentObjectId,
+      })
+      .toArray()
 
     let processedRecords: any[] = []
 
@@ -1452,10 +1399,17 @@ export const retrieveMemoryAgent = async (
 
       // Process facts array (similar to unabsorbed_memory_ids in User Memory)
       if (record.facts && Array.isArray(record.facts)) {
-        const memorySessionCollection = server.mongoose.connection.db.collection('memory_sessions')
-        const factDocs = await memorySessionCollection.find({
-          _id: { $in: record.facts.map((id: any) => new server.mongoose.Types.ObjectId(id)) }
-        }).toArray()
+        const memorySessionCollection =
+          server.mongoose.connection.db.collection('memory_sessions')
+        const factDocs = await memorySessionCollection
+          .find({
+            _id: {
+              $in: record.facts.map(
+                (id: any) => new server.mongoose.Types.ObjectId(id),
+              ),
+            },
+          })
+          .toArray()
 
         factsWithContent = factDocs.map((doc: any) => ({
           _id: doc._id.toString(),
@@ -1466,11 +1420,21 @@ export const retrieveMemoryAgent = async (
       }
 
       // Process unabsorbed_memory_ids array
-      if (record.unabsorbed_memory_ids && Array.isArray(record.unabsorbed_memory_ids)) {
-        const memorySessionCollection = server.mongoose.connection.db.collection('memory_sessions')
-        const unabsorbedDocs = await memorySessionCollection.find({
-          _id: { $in: record.unabsorbed_memory_ids.map((id: any) => new server.mongoose.Types.ObjectId(id)) }
-        }).toArray()
+      if (
+        record.unabsorbed_memory_ids &&
+        Array.isArray(record.unabsorbed_memory_ids)
+      ) {
+        const memorySessionCollection =
+          server.mongoose.connection.db.collection('memory_sessions')
+        const unabsorbedDocs = await memorySessionCollection
+          .find({
+            _id: {
+              $in: record.unabsorbed_memory_ids.map(
+                (id: any) => new server.mongoose.Types.ObjectId(id),
+              ),
+            },
+          })
+          .toArray()
 
         unabsorbedWithContent = unabsorbedDocs.map((doc: any) => ({
           _id: doc._id.toString(),
@@ -1489,7 +1453,7 @@ export const retrieveMemoryAgent = async (
     }
 
     return reply.status(200).send({
-      shards: processedRecords
+      shards: processedRecords,
     })
   } catch (error) {
     server.log.error('Error retrieving memory agent:', error)
@@ -1503,7 +1467,10 @@ export const updateMemoryAgent = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { agentId, memoryAgentId } = request.params as { agentId: string, memoryAgentId: string }
+  const { agentId, memoryAgentId } = request.params as {
+    agentId: string
+    memoryAgentId: string
+  }
   const updates = request.body as Record<string, any>
   const userId = request.user?.userId
 
@@ -1527,11 +1494,13 @@ export const updateMemoryAgent = async (
         _id: new server.mongoose.Types.ObjectId(memoryAgentId),
         agent_id: agentObjectId,
       },
-      { $set: updates }
+      { $set: updates },
     )
 
     if (result.matchedCount === 0) {
-      return reply.status(404).send({ error: 'Memory agent document not found or access denied' })
+      return reply
+        .status(404)
+        .send({ error: 'Memory agent document not found or access denied' })
     }
 
     return reply.status(200).send({ success: true })
@@ -1547,12 +1516,14 @@ export const removeMemoryFromAgent = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { agentId, memoryAgentId, memoryId } = request.params as { 
-    agentId: string, 
-    memoryAgentId: string, 
-    memoryId: string 
+  const { agentId, memoryAgentId, memoryId } = request.params as {
+    agentId: string
+    memoryAgentId: string
+    memoryId: string
   }
-  const { arrayField } = request.body as { arrayField: 'facts' | 'unabsorbed_memory_ids' }
+  const { arrayField } = request.body as {
+    arrayField: 'facts' | 'unabsorbed_memory_ids'
+  }
   const userId = request.user?.userId
 
   if (!userId) {
@@ -1577,12 +1548,14 @@ export const removeMemoryFromAgent = async (
       {
         $pull: {
           [arrayField]: new server.mongoose.Types.ObjectId(memoryId),
-        }
-      }
+        },
+      },
     )
 
     if (result.matchedCount === 0) {
-      return reply.status(404).send({ error: 'Memory agent document not found or access denied' })
+      return reply
+        .status(404)
+        .send({ error: 'Memory agent document not found or access denied' })
     }
 
     return reply.status(200).send({ success: true })
@@ -1608,7 +1581,7 @@ export const retrieveMemorySession = async (
   try {
     const sessionMemoryCollection =
       server.mongoose.connection.db.collection('memory_sessions')
-    
+
     const memoryRecord = await sessionMemoryCollection.findOne({
       _id: new server.mongoose.Types.ObjectId(memoryId),
       related_users: new server.mongoose.Types.ObjectId(userId),
@@ -1708,7 +1681,10 @@ export const removeUnabsorbedMemory = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { agentId, memoryId } = request.params as { agentId: string, memoryId: string }
+  const { agentId, memoryId } = request.params as {
+    agentId: string
+    memoryId: string
+  }
   const userId = request.user?.userId
 
   if (!userId) {
@@ -1751,22 +1727,18 @@ export const getAgentPermissions = async (
   reply: FastifyReply,
 ) => {
   const { agentId } = request.params as { agentId: string }
-  const currentUserId = request.user.userId
 
   const agent = await Agent.findById(agentId)
   if (!agent || agent.deleted) {
     return reply.status(404).send({ error: 'Agent not found' })
   }
 
-  // Only owner can view permissions
-  if (!(await hasOwnerPermissions(agentId, currentUserId.toString()))) {
-    return reply.status(401).send({
-      error: 'Only agent owners can view permissions',
-    })
-  }
+  // Anyone can view agent permissions for transparency
 
-  const permissions = await AgentPermission.find({ agent: agentId })
-    .populate('user', '_id userId username userImage')
+  const permissions = await AgentPermission.find({ agent: agentId }).populate(
+    'user',
+    '_id userId username userImage',
+  )
 
   return reply.status(200).send({ permissions })
 }
@@ -1796,11 +1768,12 @@ export const updateAgentPermissions = async (
 
   try {
     // Get existing permissions for notification comparison
-    const existingPermissions = await AgentPermission.find({ agent: agentId })
-      .populate('user', 'username')
+    const existingPermissions = await AgentPermission.find({
+      agent: agentId,
+    }).populate('user', 'username')
 
     const existingUserMap = new Map(
-      existingPermissions.map(p => [(p.user as any).username, p.level])
+      existingPermissions.map(p => [(p.user as any).username, p.level]),
     )
 
     // Delete existing permissions
@@ -1812,7 +1785,7 @@ export const updateAgentPermissions = async (
     for (const perm of permissions) {
       const query = createMultiFieldQuery(perm.username, ['userId', 'username'])
       const user = await User.findOne(query)
-      
+
       if (!user) {
         return reply.status(404).send({
           error: `User not found: ${perm.username}`,
@@ -1822,7 +1795,10 @@ export const updateAgentPermissions = async (
       const newPermission = await AgentPermission.create({
         agent: agentId,
         user: user._id,
-        level: perm.level === 'owner' ? PermissionLevel.Owner : PermissionLevel.Editor,
+        level:
+          perm.level === 'owner'
+            ? PermissionLevel.Owner
+            : PermissionLevel.Editor,
         grantedBy: currentUserId,
         grantedAt: new Date(),
       })
@@ -1848,7 +1824,12 @@ export const updateAgentPermissions = async (
           action_url: `/chat/${agent.username}`,
           channels: ['in_app'],
         })
-      } else if (existingLevel !== (perm.level === 'owner' ? PermissionLevel.Owner : PermissionLevel.Editor)) {
+      } else if (
+        existingLevel !==
+        (perm.level === 'owner'
+          ? PermissionLevel.Owner
+          : PermissionLevel.Editor)
+      ) {
         // Permission level changed - send notification
         await Notification.create({
           user: user._id,
@@ -1865,12 +1846,12 @@ export const updateAgentPermissions = async (
 
     // Check for removed permissions and send notifications
     const newUserMap = new Map(newPermissions.map(p => [p.username, p.level]))
-    
+
     for (const [username, _] of existingUserMap) {
       if (!newUserMap.has(username)) {
         // Permission was removed - send notification
         const removedUser = await User.findOne(
-          createMultiFieldQuery(username, ['userId', 'username'])
+          createMultiFieldQuery(username, ['userId', 'username']),
         )
         if (removedUser) {
           await Notification.create({
@@ -1906,15 +1887,16 @@ export const getSharedAgents = async (
 
   try {
     // Find all permissions for this user
-    const permissions = await AgentPermission.find({ user: currentUserId })
-      .populate({
-        path: 'agent',
-        match: { deleted: false },
-        populate: {
-          path: 'owner',
-          select: '_id userId username userImage',
-        },
-      })
+    const permissions = await AgentPermission.find({
+      user: currentUserId,
+    }).populate({
+      path: 'agent',
+      match: { deleted: false },
+      populate: {
+        path: 'owner',
+        select: '_id userId username userImage',
+      },
+    })
 
     // Filter out null agents (deleted ones)
     const sharedAgents = permissions
@@ -1932,7 +1914,10 @@ export const getSharedAgents = async (
         agent.userImage = forceCloudfrontUrl(server, agent.userImage)
       }
       if (agent.owner?.userImage) {
-        agent.owner.userImage = forceCloudfrontUrl(server, agent.owner.userImage)
+        agent.owner.userImage = forceCloudfrontUrl(
+          server,
+          agent.owner.userImage,
+        )
       }
     })
 
@@ -1951,7 +1936,10 @@ export const createMemoryAgent = async (
   reply: FastifyReply,
 ) => {
   const { agentId } = request.params as { agentId: string }
-  const { shard_name, extraction_prompt } = request.body as { shard_name: string, extraction_prompt: string }
+  const { shard_name, extraction_prompt } = request.body as {
+    shard_name: string
+    extraction_prompt: string
+  }
   const userId = request.user?.userId
 
   if (!userId) {
@@ -1967,11 +1955,15 @@ export const createMemoryAgent = async (
   }
 
   if (shard_name.length > 50) {
-    return reply.status(400).send({ error: 'Shard name cannot exceed 50 characters' })
+    return reply
+      .status(400)
+      .send({ error: 'Shard name cannot exceed 50 characters' })
   }
 
   if (extraction_prompt.length > 2000) {
-    return reply.status(400).send({ error: 'Extraction prompt cannot exceed 2000 characters' })
+    return reply
+      .status(400)
+      .send({ error: 'Extraction prompt cannot exceed 2000 characters' })
   }
 
   try {
@@ -1991,7 +1983,9 @@ export const createMemoryAgent = async (
     })
 
     if (existingShard) {
-      return reply.status(400).send({ error: 'A shard with this name already exists for this agent' })
+      return reply
+        .status(400)
+        .send({ error: 'A shard with this name already exists for this agent' })
     }
 
     // Create the new memory agent shard
@@ -2009,10 +2003,10 @@ export const createMemoryAgent = async (
 
     const result = await memoryCollection.insertOne(newShard)
 
-    return reply.status(200).send({ 
-      success: true, 
+    return reply.status(200).send({
+      success: true,
       shard_id: result.insertedId.toString(),
-      message: 'Collective Memory Shard created successfully'
+      message: 'Collective Memory Shard created successfully',
     })
   } catch (error) {
     server.log.error('Error creating memory agent shard:', error)

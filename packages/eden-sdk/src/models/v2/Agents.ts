@@ -71,7 +71,12 @@ export type Agent = Omit<
   isLiked?: boolean
   owner_pays?: boolean
   stats?: AgentStats
-  // Permissions are now stored in a separate collection
+  agent_extras?: {
+    permissions?: {
+      editors?: Creator[]
+      owners?: Creator[]
+    }
+  }
 }
 
 export type AgentClientType =
@@ -130,6 +135,12 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
     use_when?: string
   }>
   owner_pays?: boolean
+  agent_extras?: {
+    permissions?: {
+      editors?: Creator[]
+      owners?: Creator[]
+    }
+  }
 }
 
 interface DiscordDeploymentConfig {

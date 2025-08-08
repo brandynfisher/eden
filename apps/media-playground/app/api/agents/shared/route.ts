@@ -20,13 +20,10 @@ export async function GET(request: NextRequest) {
     })
 
     const res = await eden.agents.getShared({})
-    
-    console.log('Shared agents API response:', JSON.stringify(res, null, 2))
 
     return NextResponse.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
-    console.error(errorMessage)
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })

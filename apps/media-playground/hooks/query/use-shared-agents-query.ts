@@ -42,8 +42,6 @@ export const useSharedAgentsQuery = ({
 
   const queryClient = useQueryClient()
 
-  console.log('useSharedAgentsQuery data:', data)
-
   return {
     sharedAgents: (data?.sharedAgents as SharedAgent[]) || [],
     data,

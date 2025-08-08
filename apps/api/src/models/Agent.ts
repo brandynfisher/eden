@@ -36,6 +36,12 @@ export interface AgentSchema extends BaseUserSchema {
   isLiked?: boolean
   owner_pays?: boolean
   // Permissions are now stored in AgentPermission collection
+  agent_extras?: {
+    permissions?: {
+      editors?: UserDocument[]
+      owners?: UserDocument[]
+    }
+  }
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}

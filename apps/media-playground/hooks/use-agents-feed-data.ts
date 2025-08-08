@@ -1,5 +1,5 @@
 import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
-import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
+import { FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
 
 interface UseAgentsFeedDataProps {
@@ -7,29 +7,29 @@ interface UseAgentsFeedDataProps {
   enabled?: boolean
 }
 
-export const useAgentsFeedData = ({ query, enabled = true }: UseAgentsFeedDataProps) => {
+export const useAgentsFeedData = ({
+  query,
+  enabled = true,
+}: UseAgentsFeedDataProps) => {
   // Check if we're filtering for shared agents
   const isSharedFilter = useMemo(() => {
     const filter = query.filter as any
-    console.log('useAgentsFeedData query:', query)
-    console.log('useAgentsFeedData filter:', filter)
-    console.log('ownership filter value:', filter?.ownership)
     return filter?.ownership === 'shared'
   }, [query.filter])
 
   // Use shared agents query when filtering for shared agents
-  const { 
-    sharedAgents, 
-    isLoading: isSharedLoading, 
-    error: sharedError 
-  } = useSharedAgentsQuery({ 
-    enabled: enabled && isSharedFilter 
+  const {
+    sharedAgents,
+    isLoading: isSharedLoading,
+    error: sharedError,
+  } = useSharedAgentsQuery({
+    enabled: enabled && isSharedFilter,
   })
 
   // Transform shared agents to match the expected format
   const transformedSharedAgents = useMemo(() => {
     if (!isSharedFilter || !sharedAgents?.length) return []
-    
+
     return sharedAgents.map(({ agent, permissionLevel }) => ({
       ...agent,
       // Add permission level as metadata if needed
