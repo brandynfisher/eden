@@ -69,26 +69,31 @@ const AgentMemoryView: FC<{
 
   const isPreviewUser = authUser?.featureFlags?.includes(FeatureFlag.Preview)
   
-  // Collective Memory Access Logic - Three Scenarios:
+  // Collective Memory Access Logic - Four Scenarios:
   // 1. Not owner: no tab visible (handled by isOwner check)
-  // 2. Owner but no credentials: show upgrade message  
-  // 3. Owner with credentials: show full functionality
+  // 2. Owner but no preview flag: show "coming soon" message
+  // 3. Owner with preview flag: show full functionality (regardless of subscription tier)
+  // 4. Owner with pro tier but no preview flag: show "coming soon" message
   const collectiveMemoryAccess = useMemo(() => {
     if (!isOwner) {
-      return { showTab: false, hasAccess: false }
+      return { showTab: false, hasAccess: false, needsPreview: false }
     }
     
     // User is owner - always show tab
     if (!authUser) {
-      return { showTab: true, hasAccess: false }
+      return { showTab: true, hasAccess: false, needsPreview: true }
     }
     
-    // Check subscription tier (2=pro, 3=believer) OR preview feature flag
-    const hasProTier = authUser?.subscriptionTier >= 2
     const hasPreviewFlag = authUser?.featureFlags?.includes(FeatureFlag.Preview)
-    const hasAccess = hasProTier || hasPreviewFlag
+    const hasProTier = authUser?.subscriptionTier >= 2
     
-    return { showTab: true, hasAccess }
+    // Preview feature flag gives access regardless of subscription tier
+    if (hasPreviewFlag) {
+      return { showTab: true, hasAccess: true, needsPreview: false }
+    }
+    
+    // No preview flag means no access, even with pro tier
+    return { showTab: true, hasAccess: false, needsPreview: true }
   }, [isOwner, authUser?.subscriptionTier, authUser?.featureFlags])
 
   const form = useForm<MemoryFormDto>({
@@ -113,9 +118,6 @@ const AgentMemoryView: FC<{
       if (agent && authUser) {
         try {
           const response = await axios.get(`/api/agents/${agent._id}/memory`)
-
-          console.log('DEBUG: API response:', response.data)
-          console.log('DEBUG: unabsorbedDirectives from API:', response.data.unabsorbedDirectives)
 
           const content = response.data.content || ''
           form.setValue('content', content)
@@ -235,10 +237,17 @@ const AgentMemoryView: FC<{
     <TooltipProvider>
       <div className="flex-1 overflow-auto bg-gradient-to-br from-accent to-accent/50 p-3 md:p-4">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-4 flex flex-col md:flex-row md:items-start md:justify-between">
-            {/* Memory Type Tabs - Side Menu - Show if owner */}
+          <div className="mb-4 flex flex-col items-center gap-4">
+            {/* Title */}
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-white/95 dark:text-white/90" style={{textShadow: '0 0 20px rgba(147, 51, 234, 0.3)'}}>
+                Manage {agent.name}'s memories
+              </h1>
+            </div>
+            
+            {/* Memory Type Tabs - Show if owner */}
             {collectiveMemoryAccess.showTab && (
-              <div className="flex md:flex-col gap-1 mb-3 md:mb-0 md:mr-6">
+              <div className="flex gap-1 justify-center md:justify-start w-full md:w-auto">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -253,7 +262,7 @@ const AgentMemoryView: FC<{
                       User Memory
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-xs">
+                  <TooltipContent side="bottom" className="max-w-xs">
                     <p>This is your personal memory with {agent.name}, extracted from all your conversations with this agent. These memories only affect your own interactions with {agent.name}.</p>
                   </TooltipContent>
                 </Tooltip>
@@ -271,19 +280,12 @@ const AgentMemoryView: FC<{
                       Collective Memory
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-xs">
+                  <TooltipContent side="bottom" className="max-w-xs">
                     <p>This is {agent.name}'s collective memory. This memory is formed and evolved by all its conversations with all users. Collective memory is a powerful, experimental feature that enables many new applications for creative agents that are driven by collective group interaction.</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
             )}
-            
-            {/* Title */}
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold text-white/95 dark:text-white/90" style={{textShadow: '0 0 20px rgba(147, 51, 234, 0.3)'}}>
-                Manage {agent.name}'s memories
-              </h1>
-            </div>
           </div>
 
           {/* Tab Content */}
@@ -304,7 +306,7 @@ const AgentMemoryView: FC<{
                   </Tooltip>
                   <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-transparent dark:from-purple-500/30"></div>
                 </div>
-                <div className="relative overflow-hidden rounded-xl border border-purple-200/50 dark:border-purple-500/20 bg-white/80 dark:bg-black/40 backdrop-blur-sm shadow-lg">
+                <div className="group relative overflow-hidden rounded-xl border border-purple-200/50 dark:border-purple-500/20 bg-white/80 dark:bg-black/40 backdrop-blur-sm shadow-lg">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-900/10 dark:to-blue-900/10"></div>
                   <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[120px] max-h-[250px] overflow-y-auto">
                     {displayContent || (
@@ -316,30 +318,35 @@ const AgentMemoryView: FC<{
                   <Button
                     onClick={handleEditClick}
                     size="sm"
-                    className="absolute bottom-3 right-3 bg-purple-500 hover:bg-purple-600 text-white shadow-md transition-all duration-200 hover:scale-105"
+                    className="absolute bottom-3 right-3 bg-purple-500 hover:bg-purple-600 text-white shadow-md transition-all duration-200 hover:scale-105 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
                   >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Edit
+                    <Edit className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
 
               {/* Unabsorbed Directives Display - Only show if there are directives */}
-              {console.log('DEBUG: About to render, unabsorbedDirectives.length:', unabsorbedDirectives.length)}
               {unabsorbedDirectives.length > 0 && (
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
-                    <h2 className="text-lg font-semibold text-amber-700 dark:text-amber-300">
-                      Recent Context
-                    </h2>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <h2 className="text-lg font-semibold text-amber-700 dark:text-amber-300 cursor-help">
+                          Recent Context
+                        </h2>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-md">
+                        <p>These are new directives picked up from recent conversations that will be integrated into User Memory soon.</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent dark:from-amber-500/30"></div>
                     <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
                       Will be integrated soon
                     </span>
                   </div>
-                  <div className="grid gap-4">
-                    {unabsorbedDirectives.map((directive, index) => (
+                  <div className="grid gap-2">
+                    {unabsorbedDirectives.map((directive) => (
                       <div key={directive._id} className="relative group">
                         <div className="relative overflow-hidden rounded-lg border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                           <div className="absolute inset-0 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-900/5 dark:to-orange-900/5"></div>
@@ -378,6 +385,7 @@ const AgentMemoryView: FC<{
             <CollectiveMemory 
               agent={agent}
               hasAccess={collectiveMemoryAccess.hasAccess}
+              needsPreview={collectiveMemoryAccess.needsPreview}
             />
           )}
         </div>

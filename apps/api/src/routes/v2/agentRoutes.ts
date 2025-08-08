@@ -1,6 +1,7 @@
 import {
   createAgent,
   createAgentTrigger,
+  createMemoryAgent,
   deleteAgent,
   deleteAgentDeployment,
   deleteAgentTrigger,
@@ -495,6 +496,28 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => retrieveMemoryAgent(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/memory-agent', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Create new collective memory shard',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Object({
+        shard_name: Type.String({ minLength: 1, maxLength: 50 }),
+        extraction_prompt: Type.String({ minLength: 1, maxLength: 2000 }),
+      }),
+      response: {
+        200: {
+          success: Type.Boolean(),
+          shard_id: Type.String(),
+          message: Type.String(),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => createMemoryAgent(server, request, reply),
   })
 
   server.patch('/v2/agents/:agentId/memory-agent/:memoryAgentId', {

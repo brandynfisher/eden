@@ -1224,8 +1224,6 @@ export const getAgentMemory = async (
       user_id: new server.mongoose.Types.ObjectId(userId),
     })
 
-    console.log('DEBUG: memoryRecord found:', memoryRecord)
-    console.log('DEBUG: unabsorbed_memory_ids:', memoryRecord?.unabsorbed_memory_ids)
 
     let unabsorbedDirectives: any[] = []
 
@@ -1246,10 +1244,6 @@ export const getAgentMemory = async (
 
       const directives = await sessionMemoryCollection.find(query).toArray()
 
-      console.log('DEBUG: query used:', query)
-      console.log('DEBUG: directives found from memory_sessions:', directives.length)
-      console.log('DEBUG: raw directives:', directives)
-
       unabsorbedDirectives = directives
         .filter(directive => directive.content?.trim() !== '')
         .map(directive => ({
@@ -1257,8 +1251,6 @@ export const getAgentMemory = async (
           content: directive.content,
           createdAt: directive.createdAt,
         }))
-
-      console.log('DEBUG: filtered unabsorbedDirectives:', unabsorbedDirectives.length)
     }
 
     return reply.status(200).send({
@@ -1381,8 +1373,6 @@ export const retrieveMemoryAgent = async (
       agent_id: agentObjectId,
     }).toArray()
 
-    console.log('DEBUG: memoryRecords found:', memoryRecords.length)
-
     let processedRecords: any[] = []
 
     for (const record of memoryRecords) {
@@ -1400,6 +1390,7 @@ export const retrieveMemoryAgent = async (
           _id: doc._id.toString(),
           content: doc.content || '',
           createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt,
         }))
       }
 
@@ -1414,6 +1405,7 @@ export const retrieveMemoryAgent = async (
           _id: doc._id.toString(),
           content: doc.content || '',
           createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt,
         }))
       }
 
@@ -1677,6 +1669,82 @@ export const removeUnabsorbedMemory = async (
     return reply.status(200).send({ success: true })
   } catch (error) {
     server.log.error('Error removing unabsorbed directive:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Create new memory agent shard
+export const createMemoryAgent = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const { shard_name, extraction_prompt } = request.body as { shard_name: string, extraction_prompt: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  if (!shard_name || shard_name.trim() === '') {
+    return reply.status(400).send({ error: 'Shard name is required' })
+  }
+
+  if (!extraction_prompt || extraction_prompt.trim() === '') {
+    return reply.status(400).send({ error: 'Extraction prompt is required' })
+  }
+
+  if (shard_name.length > 50) {
+    return reply.status(400).send({ error: 'Shard name cannot exceed 50 characters' })
+  }
+
+  if (extraction_prompt.length > 2000) {
+    return reply.status(400).send({ error: 'Extraction prompt cannot exceed 2000 characters' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_agent')
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+
+    // Check if a shard with this name already exists for this agent
+    const existingShard = await memoryCollection.findOne({
+      agent_id: agentObjectId,
+      shard_name: shard_name,
+    })
+
+    if (existingShard) {
+      return reply.status(400).send({ error: 'A shard with this name already exists for this agent' })
+    }
+
+    // Create the new memory agent shard
+    const newShard = {
+      agent_id: agentObjectId,
+      shard_name: shard_name.trim(),
+      extraction_prompt: extraction_prompt.trim(),
+      content: '',
+      is_active: true,
+      facts: [],
+      unabsorbed_memory_ids: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    const result = await memoryCollection.insertOne(newShard)
+
+    return reply.status(200).send({ 
+      success: true, 
+      shard_id: result.insertedId.toString(),
+      message: 'Collective Memory Shard created successfully'
+    })
+  } catch (error) {
+    server.log.error('Error creating memory agent shard:', error)
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
