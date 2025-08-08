@@ -81,9 +81,7 @@ export const TokenField = ({
               </Button>
             )}
           </div>
-          <FormDescription>
-            {description} This must be unique and can only be used by one agent.
-          </FormDescription>
+          <FormDescription>{description}</FormDescription>
           <FormMessage />
         </FormItem>
       )}

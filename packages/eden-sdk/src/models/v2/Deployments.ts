@@ -7,6 +7,8 @@ export type ClientType =
   | 'farcaster'
   | 'twitter'
   | 'shopify'
+  | 'printify'
+  | 'captions'
 
 export type AllowlistItem = {
   id: string
@@ -74,6 +76,21 @@ export type DeploymentSecretsShopify = {
   location_id: string
 }
 
+// Printify Types
+export type DeploymentSettingsPrintify = Record<string, never>
+
+export type DeploymentSecretsPrintify = {
+  api_key: string
+  shop_id: string
+}
+
+// Captions Types
+export type DeploymentSettingsCaptions = Record<string, never>
+
+export type DeploymentSecretsCaptions = {
+  api_key: string
+}
+
 // Combined Types
 export type DeploymentSecrets = {
   discord?: DeploymentSecretsDiscord
@@ -81,6 +98,8 @@ export type DeploymentSecrets = {
   farcaster?: DeploymentSecretsFarcaster
   twitter?: DeploymentSecretsTwitter
   shopify?: DeploymentSecretsShopify
+  printify?: DeploymentSecretsPrintify
+  captions?: DeploymentSecretsCaptions
 }
 
 export type DeploymentConfig = {
@@ -89,6 +108,8 @@ export type DeploymentConfig = {
   farcaster?: DeploymentSettingsFarcaster
   twitter?: DeploymentSettingsTwitter
   shopify?: DeploymentSettingsShopify
+  printify?: DeploymentSettingsPrintify
+  captions?: DeploymentSettingsCaptions
 }
 
 export type Deployment = {

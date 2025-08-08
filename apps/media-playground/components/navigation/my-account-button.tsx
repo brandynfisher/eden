@@ -218,9 +218,9 @@ const AccountDropdown = () => {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link href={`/settings/deployments`}>
+              <Link href={`/settings/integrations`}>
                 <ActivityIcon className="mr-2 h-4 w-4" />
-                <span>Deployments</span>
+                <span>Integrations</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

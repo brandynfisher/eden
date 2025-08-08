@@ -75,15 +75,15 @@ const SettingsNavLinks = () => {
               Tasks
             </Link>
             <Link
-              href="/settings/deployments"
+              href="/settings/integrations"
               className={cn(
                 'px-2 py-1.5 rounded-md',
-                isActive('/settings/deployments') &&
+                isActive('/settings/integrations') &&
                   'bg-muted/50 text-foreground',
                 '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
               )}
             >
-              Deployments
+              Integrations
             </Link>
           </>
         )}
