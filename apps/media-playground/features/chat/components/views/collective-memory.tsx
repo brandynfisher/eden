@@ -35,8 +35,8 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const memorySchema = z.object({
-  content: z.string().optional(),
-  extraction_prompt: z.string().optional(),
+  content: z.string().max(3000, 'Memory content cannot exceed 3000 characters').optional(),
+  extraction_prompt: z.string().max(2000, 'Extraction prompt cannot exceed 2000 characters').optional(),
   is_active: z.boolean().optional(),
 })
 
@@ -83,7 +83,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
   })
 
   const memoryForm = useForm<{ content: string }>({
-    resolver: zodResolver(z.object({ content: z.string() })),
+    resolver: zodResolver(z.object({ 
+      content: z.string().max(100, 'Memory session content cannot exceed 100 characters')
+    })),
     defaultValues: { content: '' },
   })
 
@@ -270,7 +272,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
 
   return (
     <TooltipProvider>
-      <div className="space-y-8">
+      <div className="space-y-8 px-2">
         <div className="relative">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -312,7 +314,14 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
           {/* Extraction Prompt Section */}
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-md font-medium text-purple-700 dark:text-purple-300">Extraction Prompt</h3>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <h3 className="text-md font-medium text-purple-700 dark:text-purple-300 cursor-help">Extraction Prompt</h3>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-md">
+                  <p>This prompt tells the agent how it should extract memories from its conversations. Explain the agent what the goal of this collective memory shard is and which things are important for it to remember. This prompt is the most crucial part of making collective memory work well. Iterate on this a lot!</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             <div className="relative overflow-hidden rounded-xl border border-purple-200/50 dark:border-purple-500/20 bg-white/80 dark:bg-black/40 backdrop-blur-sm shadow-lg">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-900/10 dark:to-pink-900/10"></div>
@@ -337,7 +346,14 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
           {/* Memory Content Section */}
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-md font-medium text-blue-700 dark:text-blue-300">Memory</h3>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <h3 className="text-md font-medium text-blue-700 dark:text-blue-300 cursor-help">Memory</h3>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-md">
+                  <p>This is the main blob of collective memory for this agent, evolving over time through collective interaction with all users.</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             <div className="relative overflow-hidden rounded-xl border border-blue-200/50 dark:border-blue-500/20 bg-white/80 dark:bg-black/40 backdrop-blur-sm shadow-lg">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/10 dark:to-indigo-900/10"></div>
@@ -364,9 +380,16 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
             <div className="space-y-6 mb-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
-                <h2 className="text-lg font-semibold text-amber-700 dark:text-amber-300">
-                  New Context
-                </h2>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h2 className="text-lg font-semibold text-amber-700 dark:text-amber-300 cursor-help">
+                      New Context
+                    </h2>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-md">
+                    <p>These are recent ideas and suggestions that are being considered for integration into the collective memory.</p>
+                  </TooltipContent>
+                </Tooltip>
                 <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent dark:from-amber-500/30"></div>
                 <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
                   Will be integrated soon
@@ -378,13 +401,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
                     <div className="relative overflow-hidden rounded-lg border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="absolute inset-0 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-900/5 dark:to-orange-900/5"></div>
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                        <div className="flex items-start gap-2">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 flex items-center justify-center text-white text-xs font-medium mt-0.5 shadow-sm">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1 text-gray-700 dark:text-gray-300">
-                            {memory.content}
-                          </div>
+                        <div className="text-gray-700 dark:text-gray-300">
+                          {memory.content}
                         </div>
                       </div>
                       <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -418,9 +436,16 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-green-500 rounded-full"></div>
-                <h2 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">
-                  Facts
-                </h2>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h2 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300 cursor-help">
+                      Facts
+                    </h2>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-md">
+                    <p>These are atomic facts the agent has picked up from its interactions which it deemed relevant to its collective memory goal. Remove any facts that aren't relevant and update the extraction prompt accordingly.</p>
+                  </TooltipContent>
+                </Tooltip>
                 <div className="flex-1 h-px bg-gradient-to-r from-emerald-200 to-transparent dark:from-emerald-500/30"></div>
                 <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
                   {shard.facts.length} facts
@@ -432,13 +457,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
                     <div className="relative overflow-hidden rounded-lg border border-emerald-200/50 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="absolute inset-0 bg-gradient-to-r from-emerald-50/30 to-green-50/30 dark:from-emerald-900/5 dark:to-green-900/5"></div>
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                        <div className="flex items-start gap-2">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-emerald-400 to-green-400 flex items-center justify-center text-white text-xs font-medium mt-0.5 shadow-sm">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1 text-gray-700 dark:text-gray-300">
-                            {fact.content}
-                          </div>
+                        <div className="text-gray-700 dark:text-gray-300">
+                          {fact.content}
                         </div>
                       </div>
                       <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -501,6 +521,12 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
                         {...field}
                       />
                     </FormControl>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span></span>
+                      <span>
+                        {field.value?.length || 0} / {editingField === 'content' ? 3000 : 2000}
+                      </span>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -557,6 +583,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({ agent, hasAccess }) => {
                         {...field}
                       />
                     </FormControl>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span></span>
+                      <span>{field.value?.length || 0} / 100</span>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

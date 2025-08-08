@@ -99,7 +99,9 @@ const AgentMemoryView: FC<{
   })
 
   const directiveForm = useForm<MemoryFormDto>({
-    resolver: zodResolver(memorySchema),
+    resolver: zodResolver(z.object({ 
+      content: z.string().max(100, 'Directive content cannot exceed 100 characters').optional()
+    })),
     defaultValues: {
       content: '',
     },
@@ -231,8 +233,8 @@ const AgentMemoryView: FC<{
 
   return (
     <TooltipProvider>
-      <div className="flex-1 overflow-auto bg-gradient-to-br from-accent to-accent/50 p-6">
-        <div className="mx-auto max-w-4xl">
+      <div className="flex-1 overflow-auto bg-gradient-to-br from-accent to-accent/50 p-3 md:p-4">
+        <div className="mx-auto max-w-5xl">
           <div className="mb-4 flex flex-col md:flex-row md:items-start md:justify-between">
             {/* Memory Type Tabs - Side Menu - Show if owner */}
             {collectiveMemoryAccess.showTab && (
@@ -342,13 +344,8 @@ const AgentMemoryView: FC<{
                         <div className="relative overflow-hidden rounded-lg border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                           <div className="absolute inset-0 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-900/5 dark:to-orange-900/5"></div>
                           <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                            <div className="flex items-start gap-2">
-                              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 flex items-center justify-center text-white text-xs font-medium mt-0.5 shadow-sm">
-                                {index + 1}
-                              </div>
-                              <div className="flex-1 text-gray-700 dark:text-gray-300">
-                                {directive.content}
-                              </div>
+                            <div className="text-gray-700 dark:text-gray-300">
+                              {directive.content}
                             </div>
                           </div>
                           <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -406,6 +403,10 @@ const AgentMemoryView: FC<{
                         {...field}
                       />
                     </FormControl>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span></span>
+                      <span>{field.value?.length || 0} characters</span>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -458,6 +459,10 @@ const AgentMemoryView: FC<{
                         {...field}
                       />
                     </FormControl>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span></span>
+                      <span>{field.value?.length || 0} / 100</span>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
