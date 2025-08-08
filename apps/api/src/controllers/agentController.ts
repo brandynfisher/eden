@@ -1224,13 +1224,16 @@ export const getAgentMemory = async (
       user_id: new server.mongoose.Types.ObjectId(userId),
     })
 
-    let unabsorbedDirectives: string[] = []
+    console.log('DEBUG: memoryRecord found:', memoryRecord)
+    console.log('DEBUG: unabsorbed_memory_ids:', memoryRecord?.unabsorbed_memory_ids)
+
+    let unabsorbedDirectives: any[] = []
 
     // Get unabsorbed directives if they exist
-    if (memoryRecord?.unabsorbed_directive_ids?.length > 0) {
+    if (memoryRecord?.unabsorbed_memory_ids?.length > 0) {
       const sessionMemoryCollection =
         server.mongoose.connection.db.collection('memory_sessions')
-      const directiveIds = memoryRecord?.unabsorbed_directive_ids.map(
+      const directiveIds = memoryRecord?.unabsorbed_memory_ids.map(
         (id: any) => new server.mongoose.Types.ObjectId(id),
       )
 
@@ -1243,9 +1246,19 @@ export const getAgentMemory = async (
 
       const directives = await sessionMemoryCollection.find(query).toArray()
 
+      console.log('DEBUG: query used:', query)
+      console.log('DEBUG: directives found from memory_sessions:', directives.length)
+      console.log('DEBUG: raw directives:', directives)
+
       unabsorbedDirectives = directives
-        .map(directive => directive.content || '')
-        .filter(content => content.trim() !== '')
+        .filter(directive => directive.content?.trim() !== '')
+        .map(directive => ({
+          _id: directive._id,
+          content: directive.content,
+          createdAt: directive.createdAt,
+        }))
+
+      console.log('DEBUG: filtered unabsorbedDirectives:', unabsorbedDirectives.length)
     }
 
     return reply.status(200).send({
@@ -1294,7 +1307,7 @@ export const saveAgentMemory = async (
           agent_id: agentObjectId,
           user_id: new server.mongoose.Types.ObjectId(userId),
           agent_owner: null,
-          unabsorbed_directive_ids: [],
+          unabsorbed_memory_ids: [],
         },
       },
       { upsert: true },
@@ -1303,6 +1316,191 @@ export const saveAgentMemory = async (
     return reply.status(200).send({ success: true })
   } catch (error) {
     server.log.error('Error saving user memory:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Helper function: retrieve_memory_user
+export const retrieveMemoryUser = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_user')
+    const memoryRecord = await memoryCollection.findOne({
+      agent_id: createAgentObjectId(agentId, agent, server.mongoose),
+      user_id: new server.mongoose.Types.ObjectId(userId),
+    })
+
+    return reply.status(200).send(memoryRecord || {})
+  } catch (error) {
+    server.log.error('Error retrieving memory user:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Helper function: retrieve_memory_session
+export const retrieveMemorySession = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { memoryId } = request.params as { memoryId: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const sessionMemoryCollection =
+      server.mongoose.connection.db.collection('memory_sessions')
+    
+    const memoryRecord = await sessionMemoryCollection.findOne({
+      _id: new server.mongoose.Types.ObjectId(memoryId),
+      related_users: new server.mongoose.Types.ObjectId(userId),
+    })
+
+    if (!memoryRecord) {
+      return reply.status(404).send({ error: 'Memory session not found' })
+    }
+
+    return reply.status(200).send(memoryRecord)
+  } catch (error) {
+    server.log.error('Error retrieving memory session:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Helper function: update_memory_user
+export const updateMemoryUser = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const updates = request.body as Record<string, any>
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_user')
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+
+    await memoryCollection.updateOne(
+      {
+        agent_id: agentObjectId,
+        user_id: new server.mongoose.Types.ObjectId(userId),
+      },
+      { $set: updates },
+      { upsert: true },
+    )
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error('Error updating memory user:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Helper function: update_memory_session
+export const updateMemorySession = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { memoryId } = request.params as { memoryId: string }
+  const updates = request.body as Record<string, any>
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const sessionMemoryCollection =
+      server.mongoose.connection.db.collection('memory_sessions')
+
+    const result = await sessionMemoryCollection.updateOne(
+      {
+        _id: new server.mongoose.Types.ObjectId(memoryId),
+        related_users: new server.mongoose.Types.ObjectId(userId),
+      },
+      { $set: updates },
+    )
+
+    if (result.matchedCount === 0) {
+      return reply.status(404).send({ error: 'Memory session not found' })
+    }
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error('Error updating memory session:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Remove unabsorbed memory from memory_user
+export const removeUnabsorbedMemory = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId, memoryId } = request.params as { agentId: string, memoryId: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const memoryCollection =
+      server.mongoose.connection.db.collection('memory_user')
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+
+    await memoryCollection.updateOne(
+      {
+        agent_id: agentObjectId,
+        user_id: new server.mongoose.Types.ObjectId(userId),
+      },
+      {
+        $pull: {
+          unabsorbed_memory_ids: new server.mongoose.Types.ObjectId(memoryId),
+        },
+      },
+    )
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error('Error removing unabsorbed directive:', error)
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }

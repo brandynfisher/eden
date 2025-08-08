@@ -12,11 +12,16 @@ import {
   getAllUserDeployments,
   getAllUserTriggers,
   likeAgent,
+  removeUnabsorbedMemory,
+  retrieveMemorySession,
+  retrieveMemoryUser,
   saveAgentMemory,
   unlikeAgent,
   updateAgent,
   updateAgentDeployment,
   updateAgentTrigger,
+  updateMemorySession,
+  updateMemoryUser,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -367,7 +372,11 @@ const agentRoutes: FastifyPluginAsync = async server => {
       response: {
         200: {
           content: Type.String(),
-          unabsorbedDirectives: Type.Array(Type.String()),
+          unabsorbedDirectives: Type.Array(Type.Object({
+            _id: Type.String(),
+            content: Type.String(),
+            createdAt: Type.Optional(Type.String()),
+          })),
         },
       },
     },
@@ -386,6 +395,70 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => saveAgentMemory(server, request, reply),
+  })
+
+  // New routes for memory operations
+  server.get('/v2/agents/:agentId/memory-user', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get full memory_user document',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => retrieveMemoryUser(server, request, reply),
+  })
+
+  server.patch('/v2/agents/:agentId/memory-user', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Update memory_user document',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Record(Type.String(), Type.Any()),
+      response: { 200: { success: Type.Boolean() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateMemoryUser(server, request, reply),
+  })
+
+  server.get('/v2/memory-sessions/:memoryId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get memory_session document',
+      security: [{ apiKey: [] }],
+      params: { memoryId: Type.String() },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => retrieveMemorySession(server, request, reply),
+  })
+
+  server.patch('/v2/memory-sessions/:memoryId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Update memory_session document',
+      security: [{ apiKey: [] }],
+      params: { memoryId: Type.String() },
+      body: Type.Record(Type.String(), Type.Any()),
+      response: { 200: { success: Type.Boolean() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateMemorySession(server, request, reply),
+  })
+
+  server.delete('/v2/agents/:agentId/memory/:memoryId', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Remove unabsorbed memory from memory_user',
+      security: [{ apiKey: [] }],
+      params: { 
+        agentId: Type.String(),
+        memoryId: Type.String(),
+      },
+      response: { 200: { success: Type.Boolean() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => removeUnabsorbedMemory(server, request, reply),
   })
 }
 
