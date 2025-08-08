@@ -191,6 +191,19 @@ interface ShopifyDeploymentSecrets {
   location_id: string
 }
 
+interface PrintifyDeploymentConfig extends Record<string, never> {}
+
+interface PrintifyDeploymentSecrets {
+  api_token: string
+  shop_id: string
+}
+
+interface CaptionsDeploymentConfig extends Record<string, never> {}
+
+interface CaptionsDeploymentSecrets {
+  api_key: string
+}
+
 export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -204,6 +217,8 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
     shopify?: ShopifyDeploymentConfig
+    printify?: PrintifyDeploymentConfig
+    captions?: CaptionsDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
@@ -211,6 +226,8 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     farcaster?: FarcasterDeploymentSecrets
     twitter?: TwitterDeploymentSecrets
     shopify?: ShopifyDeploymentSecrets
+    printify?: PrintifyDeploymentSecrets
+    captions?: CaptionsDeploymentSecrets
   }
 }
 

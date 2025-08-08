@@ -1,5 +1,6 @@
 'use client'
 
+import CollectiveMemory from './collective-memory'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -11,19 +12,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form'
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { isAgentOwner } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -31,11 +31,10 @@ import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { Edit, Loader2, Trash2 } from 'lucide-react'
-import { FC, useEffect, useState, useMemo } from 'react'
+import { FC, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import CollectiveMemory from './collective-memory'
 
 // Schema for memory form
 const memorySchema = z.object({
@@ -52,23 +51,24 @@ interface UnabsorbedDirective {
 
 const AgentMemoryView: FC<{
   agent: Agent
-  user: unknown
-}> = ({ agent, user }) => {
+}> = ({ agent }: { agent: Agent }) => {
   const { user: authUser } = useAuthState()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [unabsorbedDirectives, setUnabsorbedDirectives] = useState<UnabsorbedDirective[]>([])
+  const [unabsorbedDirectives, setUnabsorbedDirectives] = useState<
+    UnabsorbedDirective[]
+  >([])
   const [memoryTab, setMemoryTab] = useState<'user' | 'collective'>('user')
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isDirectiveEditModalOpen, setIsDirectiveEditModalOpen] = useState(false)
-  const [editingDirective, setEditingDirective] = useState<UnabsorbedDirective | null>(null)
+  const [isDirectiveEditModalOpen, setIsDirectiveEditModalOpen] =
+    useState(false)
+  const [editingDirective, setEditingDirective] =
+    useState<UnabsorbedDirective | null>(null)
   const [displayContent, setDisplayContent] = useState('')
 
   const isOwner = useMemo(() => {
     return isAgentOwner(agent, authUser?._id)
   }, [agent, authUser])
 
-  const isPreviewUser = authUser?.featureFlags?.includes(FeatureFlag.Preview)
-  
   // Collective Memory Access Logic - Four Scenarios:
   // 1. Not owner: no tab visible (handled by isOwner check)
   // 2. Owner but no preview flag: show "coming soon" message
@@ -78,20 +78,19 @@ const AgentMemoryView: FC<{
     if (!isOwner) {
       return { showTab: false, hasAccess: false, needsPreview: false }
     }
-    
+
     // User is owner - always show tab
     if (!authUser) {
       return { showTab: true, hasAccess: false, needsPreview: true }
     }
-    
+
     const hasPreviewFlag = authUser?.featureFlags?.includes(FeatureFlag.Preview)
-    const hasProTier = authUser?.subscriptionTier >= 2
-    
+
     // Preview feature flag gives access regardless of subscription tier
     if (hasPreviewFlag) {
       return { showTab: true, hasAccess: true, needsPreview: false }
     }
-    
+
     // No preview flag means no access, even with pro tier
     return { showTab: true, hasAccess: false, needsPreview: true }
   }, [isOwner, authUser?.subscriptionTier, authUser?.featureFlags])
@@ -104,9 +103,14 @@ const AgentMemoryView: FC<{
   })
 
   const directiveForm = useForm<MemoryFormDto>({
-    resolver: zodResolver(z.object({ 
-      content: z.string().max(100, 'Directive content cannot exceed 100 characters').optional()
-    })),
+    resolver: zodResolver(
+      z.object({
+        content: z
+          .string()
+          .max(100, 'Directive content cannot exceed 100 characters')
+          .optional(),
+      }),
+    ),
     defaultValues: {
       content: '',
     },
@@ -197,8 +201,8 @@ const AgentMemoryView: FC<{
         prev.map(directive =>
           directive._id === editingDirective._id
             ? { ...directive, content: data.content || '' }
-            : directive
-        )
+            : directive,
+        ),
       )
 
       toast.success('Directive updated successfully')
@@ -221,7 +225,7 @@ const AgentMemoryView: FC<{
 
       // Update the local state
       setUnabsorbedDirectives(prev =>
-        prev.filter(directive => directive._id !== directiveId)
+        prev.filter(directive => directive._id !== directiveId),
       )
 
       toast.success('Directive removed successfully')
@@ -240,11 +244,14 @@ const AgentMemoryView: FC<{
           <div className="mb-4 flex flex-col items-center gap-4">
             {/* Title */}
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-white/95 dark:text-white/90" style={{textShadow: '0 0 20px rgba(147, 51, 234, 0.3)'}}>
+              <h1
+                className="text-3xl font-bold text-white/95 dark:text-white/90"
+                style={{ textShadow: '0 0 20px rgba(147, 51, 234, 0.3)' }}
+              >
                 Manage {agent.name}'s memories
               </h1>
             </div>
-            
+
             {/* Memory Type Tabs - Show if owner */}
             {collectiveMemoryAccess.showTab && (
               <div className="flex gap-1 justify-center md:justify-start w-full md:w-auto">
@@ -263,7 +270,12 @@ const AgentMemoryView: FC<{
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs">
-                    <p>This is your personal memory with {agent.name}, extracted from all your conversations with this agent. These memories only affect your own interactions with {agent.name}.</p>
+                    <p>
+                      This is your personal memory with {agent.name}, extracted
+                      from all your conversations with this agent. These
+                      memories only affect your own interactions with{' '}
+                      {agent.name}.
+                    </p>
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -281,7 +293,13 @@ const AgentMemoryView: FC<{
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs">
-                    <p>This is {agent.name}'s collective memory. This memory is formed and evolved by all its conversations with all users. Collective memory is a powerful, experimental feature that enables many new applications for creative agents that are driven by collective group interaction.</p>
+                    <p>
+                      This is {agent.name}'s collective memory. This memory is
+                      formed and evolved by all its conversations with all
+                      users. Collective memory is a powerful, experimental
+                      feature that enables many new applications for creative
+                      agents that are driven by collective group interaction.
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -301,7 +319,12 @@ const AgentMemoryView: FC<{
                       </h2>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs">
-                      <p>This is your personal memory with {agent.name}, extracted from all your conversations with this agent. These memories only affect your own interactions with {agent.name}.</p>
+                      <p>
+                        This is your personal memory with {agent.name},
+                        extracted from all your conversations with this agent.
+                        These memories only affect your own interactions with{' '}
+                        {agent.name}.
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                   <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-transparent dark:from-purple-500/30"></div>
@@ -311,7 +334,9 @@ const AgentMemoryView: FC<{
                   <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[120px] max-h-[250px] overflow-y-auto">
                     {displayContent || (
                       <span className="text-muted-foreground italic">
-                        💭 No user memories stored yet. Just interact with {agent.name} and memories will automatically appear here.
+                        💭 No user memories stored yet. Just interact with{' '}
+                        {agent.name} and memories will automatically appear
+                        here.
                       </span>
                     )}
                   </div>
@@ -337,7 +362,11 @@ const AgentMemoryView: FC<{
                         </h2>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-md">
-                        <p>These are new directives picked up from recent conversations that will be integrated into User Memory soon.</p>
+                        <p>
+                          These are new directives picked up from recent
+                          conversations that will be integrated into User Memory
+                          soon.
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                     <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent dark:from-amber-500/30"></div>
@@ -346,7 +375,7 @@ const AgentMemoryView: FC<{
                     </span>
                   </div>
                   <div className="grid gap-2">
-                    {unabsorbedDirectives.map((directive) => (
+                    {unabsorbedDirectives.map(directive => (
                       <div key={directive._id} className="relative group">
                         <div className="relative overflow-hidden rounded-lg border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                           <div className="absolute inset-0 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-900/5 dark:to-orange-900/5"></div>
@@ -365,7 +394,9 @@ const AgentMemoryView: FC<{
                               <Edit className="w-3 h-3" />
                             </Button>
                             <Button
-                              onClick={() => handleDirectiveDelete(directive._id)}
+                              onClick={() =>
+                                handleDirectiveDelete(directive._id)
+                              }
                               variant="ghost"
                               size="sm"
                               className="h-7 w-7 p-0 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 hover:text-red-600 rounded-full"
@@ -382,7 +413,7 @@ const AgentMemoryView: FC<{
               )}
             </div>
           ) : (
-            <CollectiveMemory 
+            <CollectiveMemory
               agent={agent}
               hasAccess={collectiveMemoryAccess.hasAccess}
               needsPreview={collectiveMemoryAccess.needsPreview}
@@ -398,7 +429,10 @@ const AgentMemoryView: FC<{
             <DialogTitle>Edit User Memory</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-4"
+            >
               <FormField
                 control={form.control}
                 name="content"
@@ -445,7 +479,10 @@ const AgentMemoryView: FC<{
       </Dialog>
 
       {/* Directive Edit Modal */}
-      <Dialog open={isDirectiveEditModalOpen} onOpenChange={setIsDirectiveEditModalOpen}>
+      <Dialog
+        open={isDirectiveEditModalOpen}
+        onOpenChange={setIsDirectiveEditModalOpen}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Directive</DialogTitle>
@@ -454,7 +491,10 @@ const AgentMemoryView: FC<{
             </DialogDescription>
           </DialogHeader>
           <Form {...directiveForm}>
-            <form onSubmit={directiveForm.handleSubmit(handleDirectiveUpdate)} className="space-y-4">
+            <form
+              onSubmit={directiveForm.handleSubmit(handleDirectiveUpdate)}
+              className="space-y-4"
+            >
               <FormField
                 control={directiveForm.control}
                 name="content"

@@ -8,7 +8,6 @@ import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farca
 import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
 import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
-import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { AlertCircle, Loader2 } from 'lucide-react'

@@ -13,12 +13,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { agentSchema } from '@/features/agent/agent-form-sheet'
+import { Agent } from '@edenlabs/eden-sdk'
 import { FC } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { z } from 'zod'
-import { agentSchema } from '@/features/agent/agent-form-sheet'
-import { Agent } from '@edenlabs/eden-sdk'
 
 type AgentFormDto = z.infer<typeof agentSchema>
 
@@ -54,11 +53,7 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                         className={'hidden'}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
-                        value={
-                          field.value === null
-                            ? ''
-                            : field.value || ''
-                        }
+                        value={field.value === null ? '' : field.value || ''}
                       />
                     </FormControl>
                     <ProfileImageUploader
@@ -114,9 +109,7 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                         placeholder="Display name"
                         {...field}
                         onChange={e => {
-                          field.onChange(
-                            e.target.value.slice(0, 42),
-                          )
+                          field.onChange(e.target.value.slice(0, 42))
                         }}
                       />
                     </FormControl>
@@ -139,8 +132,8 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                   Make Agent Public
                 </FormLabel>
                 <FormDescription>
-                  When public, other users can discover and
-                  interact with your agent
+                  When public, other users can discover and interact with your
+                  agent
                 </FormDescription>
               </div>
               <FormControl>
@@ -171,10 +164,7 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                 />
               </FormControl>
               <div className="flex justify-end mt-2">
-                <CharacterCount
-                  current={field.value?.length || 0}
-                  max={5000}
-                />
+                <CharacterCount current={field.value?.length || 0} max={5000} />
               </div>
               <FormMessage />
             </FormItem>
@@ -216,12 +206,10 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
           name="greeting"
           render={({ field }) => (
             <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-              <FormLabel className="text-base font-medium">
-                Greeting
-              </FormLabel>
+              <FormLabel className="text-base font-medium">Greeting</FormLabel>
               <FormDescription className="mt-1 mb-3">
-                This will be displayed to users when they first
-                interact with the agent.
+                This will be displayed to users when they first interact with
+                the agent.
               </FormDescription>
               <FormControl>
                 <AutosizeTextarea
@@ -231,10 +219,7 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                 />
               </FormControl>
               <div className="flex justify-end mt-2">
-                <CharacterCount
-                  current={field.value?.length || 0}
-                  max={140}
-                />
+                <CharacterCount current={field.value?.length || 0} max={140} />
               </div>
               <FormMessage />
             </FormItem>
