@@ -4,6 +4,7 @@ import AgentCard from '@/components/card/agent-card'
 import GridVirtualizerVertical from '@/components/grid/grid-virtualizer-vertical'
 import { BreakpointConfig } from '@/components/masonry/masonry-virtualizer-vertical'
 import { Button } from '@/components/ui/button'
+import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
 import { RowItem } from '@/lib/query/cache-updates'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
 import { useAppDispatch } from '@/stores/store'
@@ -67,6 +68,16 @@ const AgentsFeed = ({
 
   const { setItems, setFetchNextPage } = useFeedStore(feedId)
 
+  // Check URL params directly for ownership filter
+  const searchParams = new URLSearchParams(window.location.search)
+  const ownershipFilter = searchParams.get('ownership')
+  const isSharedFilter = ownershipFilter === 'shared'
+  
+  // Use shared agents query when filtering for shared agents
+  const { sharedAgents, isLoading: isSharedLoading } = useSharedAgentsQuery({ 
+    enabled: isSharedFilter 
+  })
+
   const handleItemsLoaded = (newItems: RowItem[]) => {
     setItems(newItems)
   }
@@ -87,6 +98,57 @@ const AgentsFeed = ({
     )
   }
 
+  // Render shared agents as a simple grid
+  if (isSharedFilter) {
+    return (
+      <div className="space-y-4">
+        {!hideCreateButton && (
+          <Button
+            onClick={handleCreateClick}
+            variant="outline"
+            className="gap-x-2 text-sm font-semibold bg-purple-600/40 hover:bg-purple-600/20 border-purple-600/60 hover:border-purple-600"
+          >
+            <PlusIcon className="size-4" />
+            Create Agent
+          </Button>
+        )}
+        {isSharedLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+            ))}
+          </div>
+        ) : sharedAgents.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {sharedAgents.map(({ agent }) => (
+              <AgentCard
+                key={agent._id}
+                agent={agent}
+                queryKey={queryKey}
+                onClick={isSelectable ? onClick : undefined}
+                isSelected={
+                  isSelectable && selectedIds.includes(agent._id)
+                }
+                className={
+                  isSelectable && selectedIds.includes(agent._id)
+                    ? 'ring-2 ring-primary ring-offset-2'
+                    : undefined
+                }
+                hideContextMenu={hideContextMenu}
+                improvedLayout={improvedLayout}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-muted-foreground">
+            No agents have been shared with you yet.
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Regular agents feed using virtualized grid
   return (
     <div className="space-y-4">
       {!hideCreateButton && (

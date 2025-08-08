@@ -1,8 +1,10 @@
 import { BaseFilter, FilterSection } from '@/components/filter/base-filter'
+import { profileAgentsOwnershipFilter } from '@/features/profile/profile-agents-ownership-filter'
 import { profilePrivacyFilterSections } from '@/features/profile/profile-shared-privacy-filter'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 
 const profileAgentsFilterSections: FilterSection[] = [
+  profileAgentsOwnershipFilter,
   profilePrivacyFilterSections,
 ]
 

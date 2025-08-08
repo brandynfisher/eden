@@ -1,4 +1,5 @@
 import { Agent, AgentDocument } from './Agent'
+import { AgentPermission, AgentPermissionDocument } from './AgentPermission'
 import { ApiKey, ApiKeyDocument } from './ApiKey'
 import { BaseUser, BaseUserDocument } from './BaseUser'
 import Challenge, { ChallengeDocument } from './Challenge'
@@ -71,6 +72,7 @@ export interface Database {
   TransactionV2: Model<TransactionV2Document>
   Message: Model<MessageDocument>
   SessionV2: Model<SessionV2Document>
+  AgentPermission: Model<AgentPermissionDocument>
 }
 
 export const models: Database = {
@@ -107,4 +109,5 @@ export const models: Database = {
   TransactionV2,
   Message,
   SessionV2,
+  AgentPermission,
 }

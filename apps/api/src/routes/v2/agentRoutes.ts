@@ -9,9 +9,11 @@ import {
   getAgent,
   getAgentDeployments,
   getAgentMemory,
+  getAgentPermissions,
   getAgentTriggers,
   getAllUserDeployments,
   getAllUserTriggers,
+  getSharedAgents,
   likeAgent,
   removeMemoryFromAgent,
   removeUnabsorbedMemory,
@@ -22,6 +24,7 @@ import {
   unlikeAgent,
   updateAgent,
   updateAgentDeployment,
+  updateAgentPermissions,
   updateAgentTrigger,
   updateMemoryAgent,
   updateMemorySession,
@@ -142,15 +145,6 @@ const agentRoutes: FastifyPluginAsync = async server => {
         ),
         owner_pays: Type.Optional(Type.Boolean()),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
-        agent_extras: Type.Optional(
-          Type.Object({
-            permissions: Type.Optional(
-              Type.Object({
-                editors: Type.Optional(Type.Array(Type.String())),
-              }),
-            ),
-          }),
-        ),
       }),
       response: {
         200: Type.Object({
@@ -553,6 +547,73 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => removeMemoryFromAgent(server, request, reply),
+  })
+
+  // Permissions routes
+  server.get('/v2/agents/:agentId/permissions', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get agent permissions',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      response: {
+        200: {
+          permissions: Type.Array(Type.Object({
+            _id: Type.String(),
+            agent: Type.String(),
+            user: Type.Object({
+              _id: Type.String(),
+              userId: Type.Optional(Type.String()),
+              username: Type.String(),
+              userImage: Type.Optional(Type.String()),
+            }),
+            level: Type.String(),
+            grantedAt: Type.String(),
+          })),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAgentPermissions(request, reply),
+  })
+
+  server.put('/v2/agents/:agentId/permissions', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Update agent permissions',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Object({
+        permissions: Type.Array(Type.Object({
+          username: Type.String(),
+          level: Type.Union([Type.Literal('editor'), Type.Literal('owner')]),
+        })),
+      }),
+      response: {
+        200: { success: Type.Boolean() },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateAgentPermissions(request, reply),
+  })
+
+  server.get('/v2/agents/shared', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get agents shared with the current user',
+      security: [{ apiKey: [] }],
+      response: {
+        200: {
+          sharedAgents: Type.Array(Type.Object({
+            agent: Type.Any(),
+            permissionLevel: Type.String(),
+            grantedAt: Type.String(),
+          })),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getSharedAgents(server, request, reply),
   })
 }
 

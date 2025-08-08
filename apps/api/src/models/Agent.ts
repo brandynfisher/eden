@@ -35,11 +35,7 @@ export interface AgentSchema extends BaseUserSchema {
   likeCount?: number
   isLiked?: boolean
   owner_pays?: boolean
-  agent_extras?: {
-    permissions?: {
-      editors?: UserDocument[]
-    }
-  }
+  // Permissions are now stored in AgentPermission collection
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}
@@ -170,22 +166,7 @@ const AgentSchema = new Schema<AgentDocument>(
       type: Boolean,
       default: false,
     },
-    agent_extras: {
-      type: {
-        permissions: {
-          type: {
-            editors: [
-              {
-                type: Schema.Types.ObjectId,
-                ref: 'users3',
-              },
-            ],
-          },
-          default: {},
-        },
-      },
-      default: {},
-    },
+    // Permissions are now stored in AgentPermission collection
   },
   {
     discriminatorKey: 'type',

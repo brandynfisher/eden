@@ -71,11 +71,7 @@ export type Agent = Omit<
   isLiked?: boolean
   owner_pays?: boolean
   stats?: AgentStats
-  agent_extras?: {
-    permissions?: {
-      editors?: Creator[]
-    }
-  }
+  // Permissions are now stored in a separate collection
 }
 
 export type AgentClientType =
@@ -134,11 +130,6 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
     use_when?: string
   }>
   owner_pays?: boolean
-  agent_extras?: {
-    permissions?: {
-      editors?: string[]
-    }
-  }
 }
 
 interface DiscordDeploymentConfig {
@@ -569,4 +560,88 @@ export type AgentsLikeResponse = WebAPICallResult & {
 export type AgentsUnlikeResponse = WebAPICallResult & {
   success: boolean
   error?: string
+}
+
+// Permission types
+export enum PermissionLevel {
+  Editor = 'editor',
+  Owner = 'owner',
+}
+
+export interface AgentPermission {
+  _id: string
+  agent: string
+  user: {
+    _id: string
+    userId?: string
+    username: string
+    userImage?: string
+  }
+  level: PermissionLevel
+  grantedAt: Date
+}
+
+export interface AgentsGetPermissionsArguments extends WebAPICallOptions {
+  agentId: string
+}
+
+export interface AgentsUpdatePermissionsArguments extends WebAPICallOptions {
+  agentId: string
+  permissions: Array<{
+    username: string
+    level: 'editor' | 'owner'
+  }>
+}
+
+export interface AgentsGetSharedArguments extends WebAPICallOptions {}
+
+export type AgentsGetPermissionsResponse = WebAPICallResult & {
+  permissions: AgentPermission[]
+  error?: string
+}
+
+export type AgentsUpdatePermissionsResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+export type AgentsGetSharedResponse = WebAPICallResult & {
+  sharedAgents: Array<{
+    agent: Agent
+    permissionLevel: string
+    grantedAt: Date
+  }>
+  error?: string
+}
+
+// Request configs for new permission endpoints
+export const agentsGetPermissionsRequestConfig = (
+  args: AgentsGetPermissionsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/agents/${args.agentId}/permissions`,
+  }
+}
+
+export const agentsUpdatePermissionsRequestConfig = (
+  args: AgentsUpdatePermissionsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PUT',
+    url: `v2/agents/${args.agentId}/permissions`,
+    data: {
+      permissions: args.permissions,
+    },
+  }
+}
+
+export const agentsGetSharedRequestConfig = (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _args: AgentsGetSharedArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'v2/agents/shared',
+  }
 }

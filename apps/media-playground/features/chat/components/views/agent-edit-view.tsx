@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { cn, isAgentOwner } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -152,18 +153,33 @@ const AgentEditView: FC<{
     }
   }
 
+  // Check user permissions using the new hook
+  const { isOriginalOwner, hasOwnerAccess, hasEditAccess, isLoading: isPermissionsLoading } = useAgentPermissions(
+    agent,
+    user?._id
+  )
+
   // Get available tabs
   const getAvailableTabs = () => {
-    const tabs = [
-      { key: 'profile', label: 'Profile', icon: UserIcon },
-      { key: 'concepts', label: 'Tools', icon: WrenchIcon },
-    ]
-
-    if (isAgentOwner(agent, user?._id) && isPreviewUser) {
-      tabs.push(
-        { key: 'integrations', label: 'Integrations', icon: SettingsIcon },
-        { key: 'permissions', label: 'Permissions', icon: UserIcon },
-      )
+    const tabs = []
+    
+    // All users with edit access can see profile
+    if (hasEditAccess) {
+      tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
+    }
+    
+    // Only owners can see tools, integrations, and permissions
+    if (hasOwnerAccess) {
+      tabs.push({ key: 'concepts', label: 'Tools', icon: WrenchIcon })
+      
+      if (isPreviewUser) {
+        tabs.push({ key: 'integrations', label: 'Integrations', icon: SettingsIcon })
+        
+        // Only original owner can see permissions tab
+        if (isOriginalOwner) {
+          tabs.push({ key: 'permissions', label: 'Permissions', icon: UserIcon })
+        }
+      }
     }
 
     return tabs
@@ -252,6 +268,14 @@ const AgentEditView: FC<{
     )
   }
 
+  if (isPermissionsLoading) {
+    return (
+      <div className="flex-1 bg-accent flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 bg-accent flex flex-col h-full">
       <TopTabsContent />
@@ -267,14 +291,14 @@ const AgentEditView: FC<{
                   <ProfileTab form={form} agent={agent} />
                 )}
 
-                {activeTab === 'concepts' && (
+                {activeTab === 'concepts' && hasOwnerAccess && (
                   <ToolsTab 
                     form={form} 
                     hasDeployments={deploymentsQuery.deployments && deploymentsQuery.deployments.length > 0}
                   />
                 )}
                 {activeTab === 'integrations' &&
-                  isAgentOwner(agent, user?._id) &&
+                  hasOwnerAccess &&
                   isPreviewUser && (
                     <IntegrationsTab
                       agent={agent}
@@ -284,7 +308,7 @@ const AgentEditView: FC<{
                     />
                   )}
                 {activeTab === 'permissions' &&
-                  isAgentOwner(agent, user?._id) &&
+                  isOriginalOwner &&
                   isPreviewUser && (
                     <PermissionsTab agent={agent} />
                   )}
