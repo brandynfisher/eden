@@ -180,7 +180,7 @@ const TasksPage = () => {
   }
 
   return (
-    <div className="space-y-6  max-w-[100vw]">
+    <div className="space-y-6 max-w-[100vw] px-2">
       <div>
         <h2 className="text-2xl font-bold">Tasks</h2>
         <p className="text-muted-foreground">
