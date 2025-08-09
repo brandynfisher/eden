@@ -35,6 +35,7 @@ import { FC, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES } from './memory-constants'
 
 // Schema for memory form
 const memorySchema = z.object({
@@ -104,7 +105,7 @@ const AgentMemoryView: FC<{
       z.object({
         content: z
           .string()
-          .max(100, 'Directive content cannot exceed 100 characters')
+          .max(MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX, MEMORY_ERROR_MESSAGES.DIRECTIVE_CONTENT_MAX)
           .optional(),
       }),
     ),
@@ -506,7 +507,7 @@ const AgentMemoryView: FC<{
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / 100</span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
