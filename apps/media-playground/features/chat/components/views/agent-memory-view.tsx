@@ -25,7 +25,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { isAgentOwner } from '@/lib/utils'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -53,6 +53,7 @@ const AgentMemoryView: FC<{
   agent: Agent
 }> = ({ agent }: { agent: Agent }) => {
   const { user: authUser } = useAuthState()
+  const { hasEditAccess } = useAgentPermissions(agent, authUser?._id)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [unabsorbedDirectives, setUnabsorbedDirectives] = useState<
     UnabsorbedDirective[]
@@ -65,21 +66,17 @@ const AgentMemoryView: FC<{
     useState<UnabsorbedDirective | null>(null)
   const [displayContent, setDisplayContent] = useState('')
 
-  const isOwner = useMemo(() => {
-    return isAgentOwner(agent, authUser?._id)
-  }, [agent, authUser])
-
   // Collective Memory Access Logic - Four Scenarios:
-  // 1. Not owner: no tab visible (handled by isOwner check)
-  // 2. Owner but no preview flag: show "coming soon" message
-  // 3. Owner with preview flag: show full functionality (regardless of subscription tier)
-  // 4. Owner with pro tier but no preview flag: show "coming soon" message
+  // 1. Not editor/owner: no tab visible (handled by hasEditAccess check)
+  // 2. Editor/owner but no preview flag: show "coming soon" message
+  // 3. Editor/owner with preview flag: show full functionality (regardless of subscription tier)
+  // 4. Editor/owner with pro tier but no preview flag: show "coming soon" message
   const collectiveMemoryAccess = useMemo(() => {
-    if (!isOwner) {
+    if (!hasEditAccess) {
       return { showTab: false, hasAccess: false, needsPreview: false }
     }
 
-    // User is owner - always show tab
+    // User has edit access - always show tab
     if (!authUser) {
       return { showTab: true, hasAccess: false, needsPreview: true }
     }
@@ -93,7 +90,7 @@ const AgentMemoryView: FC<{
 
     // No preview flag means no access, even with pro tier
     return { showTab: true, hasAccess: false, needsPreview: true }
-  }, [isOwner, authUser?.subscriptionTier, authUser?.featureFlags])
+  }, [hasEditAccess, authUser?.subscriptionTier, authUser?.featureFlags])
 
   const form = useForm<MemoryFormDto>({
     resolver: zodResolver(memorySchema),
