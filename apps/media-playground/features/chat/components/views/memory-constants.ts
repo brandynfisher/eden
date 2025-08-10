@@ -3,21 +3,21 @@
 
 export const MEMORY_LIMITS = {
   // Collective Memory - Memory Content
-  MEMORY_CONTENT_MAX: 3000,
+  MEMORY_CONTENT_MAX: 2500,
   
   // Collective Memory - Extraction Prompt
   EXTRACTION_PROMPT_MIN: 100,
-  EXTRACTION_PROMPT_MAX: 2000,
+  EXTRACTION_PROMPT_MAX: 2500,
   
   // Collective Memory - Shard Name
   SHARD_NAME_MIN: 6,
   SHARD_NAME_MAX: 50,
   
   // Memory Sessions (facts, unabsorbed memory)
-  MEMORY_SESSION_MAX: 100,
+  MEMORY_SESSION_MAX: 200,
   
   // Directive Content (from agent-memory-view)
-  DIRECTIVE_CONTENT_MAX: 100,
+  DIRECTIVE_CONTENT_MAX: 200,
 } as const
 
 // Error messages
