@@ -319,7 +319,7 @@ const AgentMemoryView: FC<{
                     <TooltipContent className="max-w-xs">
                       <p>
                         This is your personal memory with {agent.name},
-                        extracted from all your conversations with this agent.
+                        extracted from all your conversations with this agent. 
                         These memories only affect your own interactions with{' '}
                         {agent.name}.
                       </p>
