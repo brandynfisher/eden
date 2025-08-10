@@ -34,18 +34,20 @@ export const TaskResultTool = makeAssistantToolUI({
       tool === 'twitter_search' ||
       tool?.includes('twitter')
 
-    // Check if this is a social post tool (Discord, Telegram, Tweet, Farcaster)
+    // Check if this is a social post tool (Discord, Telegram, Tweet, Farcaster, Shopify, Printify)
     const isDiscordPost = tool === 'discord_post'
     const isTelegramPost = tool === 'telegram_post'
     const isTweetPost = tool === 'tweet'
     const isFarcasterPost = tool === 'farcaster_cast'
     const isShopifyPost = tool === 'shopify'
+    const isPrintifyPost = tool === 'printify'
     const isSocialPost =
       isDiscordPost ||
       isTelegramPost ||
       isTweetPost ||
       isFarcasterPost ||
-      isShopifyPost
+      isShopifyPost ||
+      isPrintifyPost
 
     // Check if tool is completed with displayable results
     const { status: toolStatus } = result as TaskResultToolArgs
@@ -105,6 +107,8 @@ export const TaskResultTool = makeAssistantToolUI({
                     ? 'farcaster'
                     : isShopifyPost
                     ? 'shopify'
+                    : isPrintifyPost
+                    ? 'printify'
                     : 'discord' // fallback
                 }
               />

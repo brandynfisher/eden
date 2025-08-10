@@ -27,6 +27,7 @@ const SOCIAL_TOOLS = {
     tweet: { platform: 'twitter' as const },
     farcaster_cast: { platform: 'farcaster' as const },
     shopify: { platform: 'shopify' as const },
+    printify: { platform: 'printify' as const },
   },
 
   // Content tools - use SocialContentEmbed
@@ -99,7 +100,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     <div className="mb-2 max-w-full">
       <ErrorBoundary>
         {isSocialPost ? (
-          // Handle social post results (Discord, Telegram, Tweet, Farcaster, Shopify)
+          // Handle social post results (Discord, Telegram, Tweet, Farcaster, Shopify, Printify)
           <div className="mb-2 relative group">
             <SocialPostEmbed
               results={toolResults || []}

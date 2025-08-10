@@ -101,6 +101,12 @@ const defaultImageRemotePatterns = [
     port: '',
     pathname: '**',
   },
+  {
+    protocol: 'https',
+    hostname: 'app.printify.com',
+    port: '',
+    pathname: '**',
+  },
 ]
 
 const devImageRemotePatterns = [
