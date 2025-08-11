@@ -97,6 +97,33 @@ const calculateAgeInDays = (updatedAt?: string): number => {
   return diffDays
 }
 
+// Helper function to extract error message from axios error
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data
+    if (responseData?.message) {
+      return responseData.message
+    } else if (responseData?.error) {
+      return responseData.error
+    }
+    
+    // Handle common status codes
+    switch (error.response?.status) {
+      case 404:
+        return 'Resource not found'
+      case 401:
+        return 'You are not authorized to perform this action'
+      case 403:
+        return 'You do not have permission to perform this action'
+      case 400:
+        return 'Invalid request data'
+      default:
+        return fallback
+    }
+  }
+  return fallback
+}
+
 const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   agent,
   hasAccess,
@@ -196,7 +223,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       toast.success(`Shard ${newValue ? 'activated' : 'deactivated'}`)
     } catch (error) {
       console.error('Error toggling active state:', error)
-      toast.error('Failed to update active state')
+      const errorMessage = getErrorMessage(error, 'Failed to update active state')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -226,7 +254,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setEditingField(null)
     } catch (error) {
       console.error('Error updating field:', error)
-      toast.error('Failed to update field')
+      const errorMessage = getErrorMessage(error, 'Failed to update field')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -265,7 +294,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setEditingMemory(null)
     } catch (error) {
       console.error('Error updating memory:', error)
-      toast.error('Failed to update memory')
+      const errorMessage = getErrorMessage(error, 'Failed to update memory')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -300,7 +330,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       toast.success('Memory removed successfully')
     } catch (error) {
       console.error('Error deleting memory:', error)
-      toast.error('Failed to remove memory')
+      const errorMessage = getErrorMessage(error, 'Failed to remove memory')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -324,7 +355,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setIsNewShardModalOpen(false)
       newShardForm.reset()
     } catch (error) {
-      handleAxiosServerError(error)
+      console.error('Error creating new shard:', error)
+      const errorMessage = getErrorMessage(error, 'Failed to create collective memory shard')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }

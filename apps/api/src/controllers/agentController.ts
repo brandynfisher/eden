@@ -1649,7 +1649,17 @@ export const updateMemorySession = async (
   const userId = request.user?.userId
 
   if (!userId) {
-    return reply.status(401).send({ error: 'User not authenticated' })
+    return reply.status(401).send({ 
+      error: 'Authentication required',
+      message: 'You must be logged in to update memory sessions'
+    })
+  }
+
+  if (!memoryId) {
+    return reply.status(400).send({ 
+      error: 'Invalid request',
+      message: 'Memory session ID is required'
+    })
   }
 
   try {
@@ -1657,21 +1667,41 @@ export const updateMemorySession = async (
       server.mongoose.connection.db.collection('memory_sessions')
 
     const result = await sessionMemoryCollection.updateOne(
-      {
-        _id: new server.mongoose.Types.ObjectId(memoryId),
-        related_users: new server.mongoose.Types.ObjectId(userId),
-      },
+      { _id: new server.mongoose.Types.ObjectId(memoryId) },
       { $set: updates },
     )
 
     if (result.matchedCount === 0) {
-      return reply.status(404).send({ error: 'Memory session not found' })
+      return reply.status(404).send({ 
+        error: 'Memory session not found',
+        message: `No memory session found with ID: ${memoryId}`
+      })
     }
 
     return reply.status(200).send({ success: true })
   } catch (error) {
     server.log.error('Error updating memory session:', error)
-    return reply.status(500).send({ error: 'Internal server error' })
+    
+    // Provide more specific error messages based on the error type
+    if (error instanceof Error) {
+      if (error.message.includes('ObjectId')) {
+        return reply.status(400).send({ 
+          error: 'Invalid memory ID',
+          message: 'The provided memory session ID is not valid'
+        })
+      }
+      if (error.message.includes('validation')) {
+        return reply.status(400).send({ 
+          error: 'Validation error',
+          message: 'The update data contains invalid values'
+        })
+      }
+    }
+    
+    return reply.status(500).send({ 
+      error: 'Server error',
+      message: 'Failed to update memory session due to an internal error'
+    })
   }
 }
 
