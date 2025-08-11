@@ -40,12 +40,12 @@ import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES, MEMORY_UI_MESSAGES } from './memo
 const memorySchema = z.object({
   content: z
     .string()
-    .max(MEMORY_LIMITS.MEMORY_CONTENT_MAX, MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX)
+    .max(MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX_CHARS)
     .optional(),
   extraction_prompt: z
     .string()
-    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN)
-    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX)
+    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN_CHARS)
+    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX_CHARS)
     .optional(),
   is_active: z.boolean().optional(),
 })
@@ -53,12 +53,12 @@ const memorySchema = z.object({
 const newShardSchema = z.object({
   shard_name: z
     .string()
-    .min(MEMORY_LIMITS.SHARD_NAME_MIN, MEMORY_ERROR_MESSAGES.SHARD_NAME_MIN)
-    .max(MEMORY_LIMITS.SHARD_NAME_MAX, MEMORY_ERROR_MESSAGES.SHARD_NAME_MAX),
+    .min(MEMORY_LIMITS.SHARD_NAME_MIN_CHARS, MEMORY_ERROR_MESSAGES.SHARD_NAME_MIN_CHARS)
+    .max(MEMORY_LIMITS.SHARD_NAME_MAX_CHARS, MEMORY_ERROR_MESSAGES.SHARD_NAME_MAX_CHARS),
   extraction_prompt: z
     .string()
-    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN)
-    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX),
+    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN_CHARS)
+    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX_CHARS),
 })
 
 type MemoryFormDto = z.infer<typeof memorySchema>
@@ -128,7 +128,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       z.object({
         content: z
           .string()
-          .max(MEMORY_LIMITS.MEMORY_SESSION_MAX, MEMORY_ERROR_MESSAGES.MEMORY_SESSION_MAX),
+          .max(MEMORY_LIMITS.FACTS_MAX_CHARS, MEMORY_ERROR_MESSAGES.FACTS_MAX_CHARS),
       }),
     ),
     defaultValues: { content: '' },
@@ -422,7 +422,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       </FormControl>
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span></span>
-                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX}</span>
+                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX_CHARS}</span>
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -442,10 +442,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                         />
                       </FormControl>
                       <div className="flex justify-between text-sm text-muted-foreground">
-                        <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN ? 'text-red-500' : 'text-muted-foreground'}`}>
+                        <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS ? 'text-red-500' : 'text-muted-foreground'}`}>
                           {MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED}
                         </span>
-                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX}</span>
+                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}</span>
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -464,7 +464,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN}
+                    disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS}
                     className="min-w-[100px]"
                   >
                     {isSubmitting ? (
@@ -803,12 +803,12 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       />
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span className={`text-xs ${editingField === 'extraction_prompt' && (field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN ? 'text-red-500' : 'text-muted-foreground'}`}>
+                      <span className={`text-xs ${editingField === 'extraction_prompt' && (field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS ? 'text-red-500' : 'text-muted-foreground'}`}>
                         {editingField === 'extraction_prompt' ? MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED : ''}
                       </span>
                       <span>
                         {field.value?.length || 0} /{' '}
-                        {editingField === 'content' ? MEMORY_LIMITS.MEMORY_CONTENT_MAX : MEMORY_LIMITS.EXTRACTION_PROMPT_MAX}
+                        {editingField === 'content' ? MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS : MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}
                       </span>
                     </div>
                     <FormMessage />
@@ -829,7 +829,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || (editingField === 'extraction_prompt' && (form.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN)}
+                  disabled={isSubmitting || (editingField === 'extraction_prompt' && (form.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS)}
                   className="min-w-[100px]"
                 >
                   {isSubmitting ? (
@@ -875,7 +875,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.MEMORY_SESSION_MAX}</span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.FACTS_MAX_CHARS}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -938,7 +938,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX}</span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX_CHARS}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -958,10 +958,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       />
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN ? 'text-red-500' : 'text-muted-foreground'}`}>
+                      <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS ? 'text-red-500' : 'text-muted-foreground'}`}>
                         {MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED}
                       </span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX}</span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -980,7 +980,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN}
+                  disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS}
                   className="min-w-[100px]"
                 >
                   {isSubmitting ? (

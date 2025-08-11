@@ -39,7 +39,10 @@ import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES } from './memory-constants'
 
 // Schema for memory form
 const memorySchema = z.object({
-  content: z.string().optional(),
+  content: z
+    .string()
+    .max(MEMORY_LIMITS.USER_MEMORY_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.USER_MEMORY_CONTENT_MAX_CHARS)
+    .optional(),
 })
 
 type MemoryFormDto = z.infer<typeof memorySchema>
@@ -105,7 +108,7 @@ const AgentMemoryView: FC<{
       z.object({
         content: z
           .string()
-          .max(MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX, MEMORY_ERROR_MESSAGES.DIRECTIVE_CONTENT_MAX)
+          .max(MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.DIRECTIVE_CONTENT_MAX_CHARS)
           .optional(),
       }),
     ),
@@ -445,7 +448,7 @@ const AgentMemoryView: FC<{
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} characters</span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.USER_MEMORY_CONTENT_MAX_CHARS}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -507,7 +510,7 @@ const AgentMemoryView: FC<{
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX}</span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX_CHARS}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
