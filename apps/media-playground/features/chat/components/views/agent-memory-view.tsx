@@ -272,10 +272,10 @@ const AgentMemoryView: FC<{
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs">
                     <p>
-                      This is your personal memory with {agent.name}, extracted
-                      from all your conversations with this agent. These
+                      This is your personal preferences memory with {agent.name}, 
+                      extracted from all your conversations with this agent. These
                       memories only affect your own interactions with{' '}
-                      {agent.name}.
+                      {agent.name} and primarily store custom instructions you give to the agent.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -336,8 +336,8 @@ const AgentMemoryView: FC<{
                     {displayContent || (
                       <span className="text-muted-foreground italic">
                         💭 No user memories stored yet. Just interact with{' '}
-                        {agent.name} and memories will automatically appear
-                        here.
+                        {agent.name} and custom instructions you give to the agent 
+                        will automatically appear here.
                       </span>
                     )}
                   </div>
