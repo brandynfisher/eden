@@ -536,17 +536,20 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
               {currentPrompt || currentTextInput || currentPromptText ? (
                 <CopyTextButton
                   title={'Prompt'}
-                  text={
-                    currentPrompt || currentTextInput || currentPromptText || ''
-                  }
+                  text={String(
+                    currentPrompt ||
+                      currentTextInput ||
+                      currentPromptText ||
+                      '',
+                  )}
                 />
               ) : null}
             </div>
             {item ? (
               <TextClampMore
-                text={
-                  currentPrompt || currentTextInput || currentPromptText || '-'
-                }
+                text={String(
+                  currentPrompt || currentTextInput || currentPromptText || '-',
+                )}
               />
             ) : (
               <div className="space-y-1">
@@ -558,7 +561,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           </div>
         ) : null}
 
-        {currentLora ? (
+        {currentLora && typeof currentLora === 'string' ? (
           <div>
             <div className="font-bold text-sm mb-3">Model</div>
             <Suspense fallback={<LoadingIndicator />}>
@@ -581,7 +584,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           </div>
         ) : null}
 
-        {currentLora2 ? (
+        {currentLora2 && typeof currentLora2 === 'string' ? (
           <div>
             <div className="font-bold text-sm mb-3 mt-4">Model 2</div>
             <Suspense fallback={<LoadingIndicator />}>
