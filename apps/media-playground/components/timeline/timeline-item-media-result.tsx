@@ -97,6 +97,7 @@ export const MediaResultOutput = ({
             duration: output.mediaAttributes?.duration || undefined,
             title: task.tool || undefined,
             description: task.args.prompt || undefined,
+            type: task.output_type === 'audio' ? 'audio' : undefined,
           }}
           startIndex={index}
           videoProps={{

@@ -175,7 +175,12 @@ export const TaskResultTool = makeAssistantToolUI({
                                   <LightboxTrigger
                                     className="absolute inset-0"
                                     slide={{
-                                      type: 'video',
+                                      type:
+                                        getFileTypeByMimeType(
+                                          output.mediaAttributes?.mimeType,
+                                        ) === 'video'
+                                          ? 'video'
+                                          : 'image',
                                       url: getCloudfrontOriginalUrl(
                                         output.filename,
                                       ),
