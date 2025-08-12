@@ -367,7 +367,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     return (
       <div className="text-center py-16">
         <div className="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-orange-50/50 to-red-50/50 dark:bg-gradient-to-r dark:from-orange-900/10 dark:to-red-900/10 border border-orange-200/50 dark:border-orange-500/20 backdrop-blur-sm">
-          <span className="text-orange-700 dark:text-orange-300 font-medium">
+          <span className="text-orange-600 dark:text-orange-300 font-medium">
             {needsPreview ? (
               <>
                 🚀 Collective Memory is coming soon...
@@ -381,7 +381,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 <br />
                 <a
                   href="/settings/subscription"
-                  className="underline hover:text-orange-600 dark:hover:text-orange-200 transition-colors"
+                  className="underline hover:text-orange-500 dark:hover:text-orange-200 transition-colors"
                 >
                   Upgrade your subscription
                 </a>{' '}
@@ -527,7 +527,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
               <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 cursor-help">
+                  <h2 className="text-lg font-semibold text-blue-600 dark:text-blue-300 cursor-help">
                     Collective Memory
                   </h2>
                 </TooltipTrigger>
@@ -548,8 +548,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   <div
                     className={`text-sm font-medium cursor-help ${
                       shard.is_active
-                        ? 'text-green-700 dark:text-green-300'
-                        : 'text-orange-700 dark:text-orange-300'
+                        ? 'text-green-600 dark:text-green-300'
+                        : 'text-orange-600 dark:text-orange-300'
                     }`}
                   >
                     {shard.is_active ? 'Active' : 'Paused'}
@@ -582,7 +582,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
             <div className="flex items-center gap-3 mb-3">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <h3 className="text-md font-medium text-purple-700 dark:text-purple-300 cursor-help">
+                  <h3 className="text-md font-medium text-purple-600 dark:text-purple-300 cursor-help">
                     Extraction Prompt
                   </h3>
                 </TooltipTrigger>
@@ -622,7 +622,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
             <div className="flex items-center gap-3 mb-3">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <h3 className="text-md font-medium text-blue-700 dark:text-blue-300 cursor-help">
+                  <h3 className="text-md font-medium text-blue-600 dark:text-blue-300 cursor-help">
                     Memory
                   </h3>
                 </TooltipTrigger>
@@ -662,7 +662,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h2 className="text-lg font-semibold text-amber-700 dark:text-amber-300 cursor-help">
+                    <h2 className="text-lg font-semibold text-amber-600 dark:text-amber-300 cursor-help">
                       Recent Context
                     </h2>
                   </TooltipTrigger>
@@ -674,7 +674,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent dark:from-amber-500/30"></div>
-                <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
+                <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
                   Will be integrated soon
                 </span>
               </div>
@@ -684,7 +684,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     <div className="relative overflow-hidden rounded-lg border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="absolute inset-0 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-900/5 dark:to-orange-900/5"></div>
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                        <div className="text-gray-700 dark:text-gray-300">
+                        <div className="text-gray-600 dark:text-gray-300">
                           {memory.content}
                         </div>
                       </div>
@@ -693,7 +693,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                           onClick={() => handleMemoryEdit(memory)}
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 hover:text-amber-700 rounded-full"
+                          className="h-7 w-7 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 hover:text-amber-500 rounded-full"
                         >
                           <Edit className="w-3 h-3" />
                         </Button>
@@ -727,7 +727,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-green-500 rounded-full"></div>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h2 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300 cursor-help">
+                    <h2 className="text-lg font-semibold text-emerald-600 dark:text-emerald-300 cursor-help">
                       Facts
                     </h2>
                   </TooltipTrigger>
@@ -741,7 +741,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex-1 h-px bg-gradient-to-r from-emerald-200 to-transparent dark:from-emerald-500/30"></div>
-                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
                   {shard.facts.length} facts
                 </span>
               </div>
@@ -753,7 +753,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       <div className="relative overflow-hidden rounded-lg border border-emerald-200/50 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                         <div className="absolute inset-0 bg-gradient-to-r from-emerald-50/30 to-green-50/30 dark:from-emerald-900/5 dark:to-green-900/5"></div>
                         <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                          <div className="text-gray-700 dark:text-gray-300">
+                          <div className="text-gray-600 dark:text-gray-300">
                             {fact.content}
                           </div>
                         </div>
@@ -771,7 +771,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                               onClick={() => handleMemoryEdit(fact)}
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 hover:text-emerald-700 rounded-full"
+                              className="h-7 w-7 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 hover:text-emerald-500 rounded-full"
                             >
                               <Edit className="w-3 h-3" />
                             </Button>

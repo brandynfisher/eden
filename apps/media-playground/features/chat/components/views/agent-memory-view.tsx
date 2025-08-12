@@ -246,7 +246,7 @@ const AgentMemoryView: FC<{
             {/* Title */}
             <div className="text-center">
               <h1
-                className="text-3xl font-bold text-white/95 dark:text-white/90"
+                className="text-3xl font-bold text-gray-900 dark:text-white/90"
                 style={{ textShadow: '0 0 20px rgba(147, 51, 234, 0.3)' }}
               >
                 Manage {agent.name}'s memories
@@ -264,7 +264,7 @@ const AgentMemoryView: FC<{
                         'flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 min-w-[110px]',
                         memoryTab === 'user'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
-                          : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300',
+                          : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-300',
                       )}
                     >
                       User Memory
@@ -287,7 +287,7 @@ const AgentMemoryView: FC<{
                         'flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 min-w-[110px]',
                         memoryTab === 'collective'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
-                          : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300',
+                          : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-300',
                       )}
                     >
                       Collective Memory
@@ -315,7 +315,7 @@ const AgentMemoryView: FC<{
                   <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <h2 className="text-lg font-semibold text-purple-700 dark:text-purple-300 cursor-help">
+                      <h2 className="text-lg font-semibold text-purple-600 dark:text-purple-300 cursor-help">
                         User Memory
                       </h2>
                     </TooltipTrigger>
@@ -358,7 +358,7 @@ const AgentMemoryView: FC<{
                     <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <h2 className="text-lg font-semibold text-amber-700 dark:text-amber-300 cursor-help">
+                        <h2 className="text-lg font-semibold text-amber-600 dark:text-amber-300 cursor-help">
                           Recent Context
                         </h2>
                       </TooltipTrigger>
@@ -371,7 +371,7 @@ const AgentMemoryView: FC<{
                       </TooltipContent>
                     </Tooltip>
                     <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent dark:from-amber-500/30"></div>
-                    <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
+                    <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
                       Will be integrated soon
                     </span>
                   </div>
@@ -381,7 +381,7 @@ const AgentMemoryView: FC<{
                         <div className="relative overflow-hidden rounded-lg border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                           <div className="absolute inset-0 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-900/5 dark:to-orange-900/5"></div>
                           <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                            <div className="text-gray-700 dark:text-gray-300">
+                            <div className="text-gray-600 dark:text-gray-300">
                               {directive.content}
                             </div>
                           </div>
@@ -390,7 +390,7 @@ const AgentMemoryView: FC<{
                               onClick={() => handleDirectiveEdit(directive)}
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 hover:text-amber-700 rounded-full"
+                              className="h-7 w-7 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 hover:text-amber-500 rounded-full"
                             >
                               <Edit className="w-3 h-3" />
                             </Button>
