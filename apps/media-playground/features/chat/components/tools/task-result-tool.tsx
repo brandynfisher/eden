@@ -3,6 +3,7 @@
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
+import { CollectionAddedEmbed } from '@/features/chat/components/tools/collection-added-embed'
 import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { TwitterEmbed } from '@/features/chat/components/tools/twitter-embed'
@@ -33,6 +34,9 @@ export const TaskResultTool = makeAssistantToolUI({
       tool === 'twitter_mentions' ||
       tool === 'twitter_search' ||
       tool?.includes('twitter')
+
+    // Check if this is a collection tool
+    const isCollectionTool = tool === 'add_to_collection'
 
     // Check if this is a social post tool (Discord, Telegram, Tweet, Farcaster, Shopify, Printify)
     const isDiscordPost = tool === 'discord_post'
@@ -90,6 +94,11 @@ export const TaskResultTool = makeAssistantToolUI({
                     </div>
                   ))
                 : null}
+            </div>
+          ) : isCollectionTool ? (
+            // Handle collection tool results
+            <div className="mb-2 relative group">
+              <CollectionAddedEmbed results={toolResults || []} />
             </div>
           ) : isSocialPost ? (
             // Handle social post results (Discord, Telegram, Tweet, Farcaster)

@@ -3,6 +3,7 @@
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
+import { CollectionAddedEmbed } from '@/features/chat/components/tools/collection-added-embed'
 import { SocialContentEmbed } from '@/features/chat/components/tools/social-content-embed'
 import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
@@ -28,6 +29,11 @@ const SOCIAL_TOOLS = {
     farcaster_cast: { platform: 'farcaster' as const },
     shopify: { platform: 'shopify' as const },
     printify: { platform: 'printify' as const },
+  },
+
+  // Collection tools - use CollectionAddedEmbed
+  COLLECTION_TOOLS: {
+    add_to_collection: { platform: 'collection' as const },
   },
 
   // Content tools - use SocialContentEmbed
@@ -78,9 +84,14 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     SOCIAL_TOOLS.POST_TOOLS[tool as keyof typeof SOCIAL_TOOLS.POST_TOOLS]
   const contentToolConfig =
     SOCIAL_TOOLS.CONTENT_TOOLS[tool as keyof typeof SOCIAL_TOOLS.CONTENT_TOOLS]
+  const collectionToolConfig =
+    SOCIAL_TOOLS.COLLECTION_TOOLS[
+      tool as keyof typeof SOCIAL_TOOLS.COLLECTION_TOOLS
+    ]
 
   const isSocialPost = !!postToolConfig
   const isSocialContent = !!contentToolConfig
+  const isCollectionTool = !!collectionToolConfig
 
   // Check if tool is completed with displayable results
   const hasDisplayableResults =
@@ -106,6 +117,11 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
               results={toolResults || []}
               platform={postToolConfig?.platform || 'discord'}
             />
+          </div>
+        ) : isCollectionTool ? (
+          // Handle collection tool results
+          <div className="mb-2 relative group">
+            <CollectionAddedEmbed results={toolResults || []} />
           </div>
         ) : isSocialContent ? (
           // Handle social content results (Search, Mentions, Trends)
