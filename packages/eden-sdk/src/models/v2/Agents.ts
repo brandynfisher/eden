@@ -74,6 +74,7 @@ export type Agent = Omit<
   agent_extras?: {
     permissions?: {
       editors?: Creator[]
+      owners?: Creator[]
     }
   }
 }
@@ -136,7 +137,8 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   owner_pays?: boolean
   agent_extras?: {
     permissions?: {
-      editors?: string[]
+      editors?: Creator[]
+      owners?: Creator[]
     }
   }
 }
@@ -191,6 +193,19 @@ interface ShopifyDeploymentSecrets {
   location_id: string
 }
 
+interface PrintifyDeploymentConfig extends Record<string, never> {}
+
+interface PrintifyDeploymentSecrets {
+  api_token: string
+  shop_id: string
+}
+
+interface CaptionsDeploymentConfig extends Record<string, never> {}
+
+interface CaptionsDeploymentSecrets {
+  api_key: string
+}
+
 export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -204,6 +219,8 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
     shopify?: ShopifyDeploymentConfig
+    printify?: PrintifyDeploymentConfig
+    captions?: CaptionsDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
@@ -211,6 +228,8 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     farcaster?: FarcasterDeploymentSecrets
     twitter?: TwitterDeploymentSecrets
     shopify?: ShopifyDeploymentSecrets
+    printify?: PrintifyDeploymentSecrets
+    captions?: CaptionsDeploymentSecrets
   }
 }
 
@@ -552,4 +571,88 @@ export type AgentsLikeResponse = WebAPICallResult & {
 export type AgentsUnlikeResponse = WebAPICallResult & {
   success: boolean
   error?: string
+}
+
+// Permission types
+export enum PermissionLevel {
+  Editor = 'editor',
+  Owner = 'owner',
+}
+
+export interface AgentPermission {
+  _id: string
+  agent: string
+  user: {
+    _id: string
+    userId?: string
+    username: string
+    userImage?: string
+  }
+  level: PermissionLevel
+  grantedAt: Date
+}
+
+export interface AgentsGetPermissionsArguments extends WebAPICallOptions {
+  agentId: string
+}
+
+export interface AgentsUpdatePermissionsArguments extends WebAPICallOptions {
+  agentId: string
+  permissions: Array<{
+    username: string
+    level: 'editor' | 'owner'
+  }>
+}
+
+export interface AgentsGetSharedArguments extends WebAPICallOptions {}
+
+export type AgentsGetPermissionsResponse = WebAPICallResult & {
+  permissions: AgentPermission[]
+  error?: string
+}
+
+export type AgentsUpdatePermissionsResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+export type AgentsGetSharedResponse = WebAPICallResult & {
+  sharedAgents: Array<{
+    agent: Agent
+    permissionLevel: string
+    grantedAt: Date
+  }>
+  error?: string
+}
+
+// Request configs for new permission endpoints
+export const agentsGetPermissionsRequestConfig = (
+  args: AgentsGetPermissionsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/agents/${args.agentId}/permissions`,
+  }
+}
+
+export const agentsUpdatePermissionsRequestConfig = (
+  args: AgentsUpdatePermissionsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PUT',
+    url: `v2/agents/${args.agentId}/permissions`,
+    data: {
+      permissions: args.permissions,
+    },
+  }
+}
+
+export const agentsGetSharedRequestConfig = (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _args: AgentsGetSharedArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'v2/agents/shared',
+  }
 }

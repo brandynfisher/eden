@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { SessionShareButton } from '@/features/sessions/components/session-share-button'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { canEditAgent } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
@@ -50,7 +50,9 @@ const ChatHeader = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
-  const showSettingsIcon = agent && canEditAgent(agent, user?._id)
+  // Use the new permissions hook instead of the deprecated canEditAgent function
+  const { hasEditAccess } = useAgentPermissions(agent, user?._id)
+  const showSettingsIcon = agent && hasEditAccess
 
   const handleSessionTitleClick = () => {
     // Check if we're on mobile (window width < 768px for md breakpoint)

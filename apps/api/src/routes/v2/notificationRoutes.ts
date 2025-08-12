@@ -30,6 +30,8 @@ const notificationRoutes: FastifyPluginAsync = async server => {
           Type.Literal('session_failed'),
           Type.Literal('agent_mentioned'),
           Type.Literal('system_alert'),
+          Type.Literal('agent_permission_added'),
+          Type.Literal('agent_permission_removed'),
         ]),
         title: Type.String(),
         message: Type.String(),
@@ -90,6 +92,8 @@ const notificationRoutes: FastifyPluginAsync = async server => {
             Type.Literal('session_failed'),
             Type.Literal('agent_mentioned'),
             Type.Literal('system_alert'),
+            Type.Literal('agent_permission_added'),
+            Type.Literal('agent_permission_removed'),
           ]),
         ),
         priority: Type.Optional(

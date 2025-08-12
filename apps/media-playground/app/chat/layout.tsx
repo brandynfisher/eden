@@ -323,7 +323,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                       />
                     )
                   : viewMode === 'memories'
-                  ? agent && <AgentMemoryView agent={agent} user={user} />
+                  ? agent && <AgentMemoryView agent={agent} />
                   : children}
               </div>
             </div>

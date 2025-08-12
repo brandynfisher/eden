@@ -5,6 +5,9 @@ export enum ClientType {
   TELEGRAM = 'telegram',
   FARCASTER = 'farcaster',
   TWITTER = 'twitter',
+  SHOPIFY = 'shopify',
+  PRINTIFY = 'printify',
+  CAPTIONS = 'captions',
 }
 
 // Allowlist item base interface
@@ -65,12 +68,39 @@ export interface DeploymentSecretsTwitter {
   access_token_secret: string
 }
 
+// Shopify Types
+export interface DeploymentSettingsShopify {}
+
+export interface DeploymentSecretsShopify {
+  store_name: string
+  access_token: string
+  location_id: string
+}
+
+// Printify Types
+export interface DeploymentSettingsPrintify {}
+
+export interface DeploymentSecretsPrintify {
+  api_key: string
+  shop_id: string
+}
+
+// Captions Types
+export interface DeploymentSettingsCaptions {}
+
+export interface DeploymentSecretsCaptions {
+  api_key: string
+}
+
 // Combined Types
 export interface DeploymentSecrets {
   discord?: DeploymentSecretsDiscord
   telegram?: DeploymentSecretsTelegram
   farcaster?: DeploymentSecretsFarcaster
   twitter?: DeploymentSecretsTwitter
+  shopify?: DeploymentSecretsShopify
+  printify?: DeploymentSecretsPrintify
+  captions?: DeploymentSecretsCaptions
 }
 
 export interface DeploymentConfig {
@@ -78,6 +108,9 @@ export interface DeploymentConfig {
   telegram?: DeploymentSettingsTelegram
   farcaster?: DeploymentSettingsFarcaster
   twitter?: DeploymentSettingsTwitter
+  shopify?: DeploymentSettingsShopify
+  printify?: DeploymentSettingsPrintify
+  captions?: DeploymentSettingsCaptions
 }
 
 export interface DeploymentSchema {

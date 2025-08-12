@@ -21,7 +21,13 @@ import {
   AgentsGetAllDeploymentsResponse,
   AgentsGetAllTriggersArguments,
   AgentsGetAllTriggersResponse,
+  AgentsGetPermissionsArguments,
+  AgentsGetPermissionsResponse,
+  AgentsGetSharedArguments,
+  AgentsGetSharedResponse,
   AgentsUpdateArguments,
+  AgentsUpdatePermissionsArguments,
+  AgentsUpdatePermissionsResponse,
   AgentsUpdateResponse,
   ApiKeysCreateArguments,
   ApiKeysCreateResponse,
@@ -342,11 +348,14 @@ import {
   agentsDeleteTriggerRequestConfig,
   agentsDeployRequestConfig,
   agentsGetDeploymentsRequestConfig,
+  agentsGetPermissionsRequestConfig,
+  agentsGetSharedRequestConfig,
   agentsGetTriggersRequestConfig,
   agentsLikeRequestConfig,
   agentsStopDeploymentRequestConfig,
   agentsUnlikeRequestConfig,
   agentsUpdateDeploymentRequestConfig,
+  agentsUpdatePermissionsRequestConfig,
   agentsUpdateTriggerRequestConfig,
   collectionsV2AddCreationsRequestConfig,
   collectionsV2CreateRequestConfig,
@@ -724,6 +733,18 @@ export abstract class Methods {
       this,
       agentsDeleteRequestConfig,
     ),
+    getPermissions: bindApiCall<
+      AgentsGetPermissionsArguments,
+      AgentsGetPermissionsResponse
+    >(this, agentsGetPermissionsRequestConfig),
+    updatePermissions: bindApiCall<
+      AgentsUpdatePermissionsArguments,
+      AgentsUpdatePermissionsResponse
+    >(this, agentsUpdatePermissionsRequestConfig),
+    getShared: bindApiCall<
+      AgentsGetSharedArguments,
+      AgentsGetSharedResponse
+    >(this, agentsGetSharedRequestConfig),
     triggers: {
       getAll: bindApiCall<
         AgentsGetTriggersArguments,

@@ -11,8 +11,11 @@ import { ProfileAgentsFilter } from '@/features/profile/profile-agents-filter'
 import { ProfileCollectionsFilter } from '@/features/profile/profile-collections-filter'
 import { ProfileCreationsFilter } from '@/features/profile/profile-creations-filter'
 import { ProfileModelsFilter } from '@/features/profile/profile-models-filter'
+import { SharedAgentsSection } from '@/features/profile/shared-agents-section'
 import { useCreatorQuery } from '@/hooks/query/use-creator-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { useMe } from '@/hooks/use-me'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { LightningBoltIcon } from '@radix-ui/react-icons'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -22,6 +25,7 @@ const ProfileTabs = () => {
   const params = useParams<{ name: string }>()
   const { user, isSignedIn } = useAuthState()
   const { creator } = useCreatorQuery({ key: params?.name })
+  const { user: meUser } = useMe({ isAuthenticated: !!isSignedIn })
 
   if (!creator || (isSignedIn && !user)) {
     return null
@@ -32,6 +36,7 @@ const ProfileTabs = () => {
   }
 
   const isOwnProfile = user?._id === creator._id
+  const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
 
   const tabs: RouterTab[] = [
     {
@@ -82,7 +87,7 @@ const ProfileTabs = () => {
     },
     {
       key: 'agents',
-      title: 'Agents',
+      title: 'My Agents',
       filterMenu: ProfileAgentsFilter,
       canSearch: true,
       sortMenu: props => <SortMenu {...props} variant="agent" />,
@@ -113,6 +118,11 @@ const ProfileTabs = () => {
         />
       ),
     },
+    ...(isOwnProfile && isPreviewUser ? [{
+      key: 'shared-agents',
+      title: 'Shared Agents',
+      content: <SharedAgentsSection />,
+    }] : []),
   ]
 
   return <RouterTabs tabs={tabs} baseQuery={baseQuery} />

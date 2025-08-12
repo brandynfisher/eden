@@ -167,6 +167,19 @@ export const DeploymentFormFooter = ({
               location_id: data.locationId,
             },
           }
+        } else if (platform === 'printify') {
+          payload.secrets = {
+            printify: {
+              api_token: data.api_token,
+              shop_id: data.shop_id,
+            },
+          }
+        } else if (platform === 'captions') {
+          payload.secrets = {
+            captions: {
+              api_key: data.api_key,
+            },
+          }
         }
 
         await axios.post(`/api/agents/${agentId}/deployments`, payload)

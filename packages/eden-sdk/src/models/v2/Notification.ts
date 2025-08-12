@@ -13,6 +13,8 @@ export type NotificationType =
   | 'session_failed'
   | 'agent_mentioned'
   | 'system_alert'
+  | 'agent_permission_added'
+  | 'agent_permission_removed'
 
 export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent'
 
