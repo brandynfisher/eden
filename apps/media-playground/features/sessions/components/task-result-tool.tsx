@@ -7,6 +7,7 @@ import { CollectionAddedEmbed } from '@/features/chat/components/tools/collectio
 import { SocialContentEmbed } from '@/features/chat/components/tools/social-content-embed'
 import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
+import { WebSearchCitations } from '@/features/chat/components/tools/web-search-citations'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -34,6 +35,11 @@ const SOCIAL_TOOLS = {
   // Collection tools - use CollectionAddedEmbed
   COLLECTION_TOOLS: {
     add_to_collection: { platform: 'collection' as const },
+  },
+
+  // Web search tools - use custom rendering
+  WEB_SEARCH_TOOLS: {
+    web_search: { platform: 'web' as const },
   },
 
   // Content tools - use SocialContentEmbed
@@ -88,10 +94,15 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     SOCIAL_TOOLS.COLLECTION_TOOLS[
       tool as keyof typeof SOCIAL_TOOLS.COLLECTION_TOOLS
     ]
+  const webSearchToolConfig =
+    SOCIAL_TOOLS.WEB_SEARCH_TOOLS[
+      tool as keyof typeof SOCIAL_TOOLS.WEB_SEARCH_TOOLS
+    ]
 
   const isSocialPost = !!postToolConfig
   const isSocialContent = !!contentToolConfig
   const isCollectionTool = !!collectionToolConfig
+  const isWebSearchTool = !!webSearchToolConfig
 
   // Check if tool is completed with displayable results
   const hasDisplayableResults =
@@ -122,6 +133,11 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
           // Handle collection tool results
           <div className="mb-2 relative group">
             <CollectionAddedEmbed results={toolResults || []} />
+          </div>
+        ) : isWebSearchTool && toolCall.status === 'completed' ? (
+          // Handle web search tool results - only show when completed
+          <div className="mb-2 relative group">
+            <WebSearchCitations results={toolResults || []} />
           </div>
         ) : isSocialContent ? (
           // Handle social content results (Search, Mentions, Trends)
@@ -253,41 +269,42 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
           </LightboxGallery>
         )}
       </ErrorBoundary>
-      {!isCompletedWithResults && (
-        <ToolFallback
-          type="tool-call"
-          result={{
-            tool: tool!,
-            result: toolResults || [],
-            status:
+      {!isCompletedWithResults &&
+        !(isWebSearchTool && toolCall.status === 'completed') && (
+          <ToolFallback
+            type="tool-call"
+            result={{
+              tool: tool!,
+              result: toolResults || [],
+              status:
+                toolCall.status === 'completed'
+                  ? TaskV2Status.Completed
+                  : toolCall.status === 'failed'
+                  ? TaskV2Status.Failed
+                  : toolCall.status === 'running'
+                  ? TaskV2Status.Running
+                  : toolCall.status === 'cancelled'
+                  ? 'cancelled'
+                  : TaskV2Status.Pending,
+              error: toolCall.error,
+            }}
+            toolCallId={tool!}
+            toolName={tool!}
+            args={toolCall.args}
+            argsText={JSON.stringify(toolCall.args)}
+            status={
               toolCall.status === 'completed'
-                ? TaskV2Status.Completed
+                ? { type: 'complete' }
                 : toolCall.status === 'failed'
-                ? TaskV2Status.Failed
-                : toolCall.status === 'running'
-                ? TaskV2Status.Running
+                ? { type: 'incomplete', reason: 'error' }
                 : toolCall.status === 'cancelled'
-                ? 'cancelled'
-                : TaskV2Status.Pending,
-            error: toolCall.error,
-          }}
-          toolCallId={tool!}
-          toolName={tool!}
-          args={toolCall.args}
-          argsText={JSON.stringify(toolCall.args)}
-          status={
-            toolCall.status === 'completed'
-              ? { type: 'complete' }
-              : toolCall.status === 'failed'
-              ? { type: 'incomplete', reason: 'error' }
-              : toolCall.status === 'cancelled'
-              ? { type: 'incomplete', reason: 'cancelled' }
-              : { type: 'running' }
-          }
-          addResult={() => true}
-          onCancel={onCancel}
-        />
-      )}
+                ? { type: 'incomplete', reason: 'cancelled' }
+                : { type: 'running' }
+            }
+            addResult={() => true}
+            onCancel={onCancel}
+          />
+        )}
     </div>
   )
 }

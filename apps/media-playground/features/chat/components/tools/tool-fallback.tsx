@@ -49,7 +49,7 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
   // Determine current args and tool name to display
   const currentArgs =
     selectedArgsIndex === 0
-      ? args
+      ? args || {}
       : subtoolCalls[selectedArgsIndex - 1]?.args || {}
 
   // Filter out lora/lora2 from args if they exist (since we show them as ModelMiniCards)
