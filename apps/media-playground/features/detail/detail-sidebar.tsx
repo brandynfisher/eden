@@ -7,6 +7,7 @@ import TextClampMore from '@/components/text/text-clamp-more'
 import ParameterTable from '@/components/timeline/parameter-table'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import {
   Tooltip,
   TooltipContent,
@@ -16,6 +17,7 @@ import {
 import UserAvatarLink from '@/components/user/user-avatar-link'
 import AgentLink from '@/features/agent/agent-link'
 import PrivacyToggle from '@/features/detail/privacy-toggle'
+import { useTaskQuery } from '@/hooks/query/use-task-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useDeleteMutation } from '@/hooks/use-delete-mutation'
 import { getFileTypeByMimeType } from '@/lib/files'
@@ -41,7 +43,7 @@ import {
 } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
-import React, { Suspense } from 'react'
+import React, { Suspense, useState } from 'react'
 import { toast } from 'sonner'
 
 type Props = {
@@ -58,6 +60,7 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { TimeAgo } = useTimeAgo()
   const { user, isSignedIn } = useAuthState()
   const dispatch = useAppDispatch()
+  const [selectedArgsIndex, setSelectedArgsIndex] = useState<number>(0) // 0 = main args, 1+ = subtool indices
 
   const { mutate: deleteMutation } = useDeleteMutation({
     type: type as 'creation' | 'model',
@@ -65,6 +68,60 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   })
 
   const isOwner = item?.user?._id === user?._id
+
+  // Fetch the full task data to get results with subtool_calls
+  const taskId =
+    type === 'creation' && item ? (item as CreationV2).task._id : undefined
+  const { task: fullTaskData } = useTaskQuery({
+    key: taskId as string,
+    enabled: !!taskId && type === 'creation',
+  })
+
+  // Extract subtool_calls from the task result if they exist (only for creations)
+  // Use the full task data if available, otherwise fall back to embedded task
+  const taskWithResults =
+    fullTaskData ||
+    (type === 'creation' ? (item as CreationV2)?.task : undefined)
+  const taskResults = taskWithResults?.result
+  const subtoolCalls: Array<{ tool: string; args?: Record<string, unknown> }> =
+    taskResults?.[0]?.subtool_calls || []
+  const hasSubtools = subtoolCalls.length > 0
+
+  // Determine current args to display based on selected index
+  const getCurrentArgs = () => {
+    if (selectedArgsIndex === 0) {
+      // Main tool args
+      return { prompt, text_input, prompt_text, lora, lora2, ...remainingArgs }
+    } else {
+      // Subtool args
+      const subtool = subtoolCalls[selectedArgsIndex - 1]
+      if (!subtool) return {}
+      const {
+        lora: subtoolLora,
+        lora2: subtoolLora2,
+        ...subtoolRemainingArgs
+      } = subtool.args || {}
+      return {
+        prompt:
+          subtool.args?.prompt ||
+          subtool.args?.text_input ||
+          subtool.args?.prompt_text,
+        lora: subtoolLora,
+        lora2: subtoolLora2,
+        ...subtoolRemainingArgs,
+      }
+    }
+  }
+
+  const currentArgs = getCurrentArgs()
+  const {
+    prompt: currentPrompt = undefined,
+    text_input: currentTextInput = undefined,
+    prompt_text: currentPromptText = undefined,
+    lora: currentLora = undefined,
+    lora2: currentLora2 = undefined,
+    ...currentRemainingArgs
+  } = currentArgs as Record<string, unknown>
 
   const handleShareClick = () => {
     if (!item) return
@@ -307,22 +364,63 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         ) : null}
 
         {type === 'creation' ? (
-          <div className="pb-4 text-sm">
-            <div className="h-9 flex items-center justify-between font-bold">
-              Tool
+          <>
+            <div className="pb-4 text-sm">
+              <div className="h-9 flex items-center justify-between font-bold">
+                Tool
+              </div>
+              {item && (item as CreationV2).tool ? (
+                <Link
+                  href={`/create/${getFileTypeByMimeType(
+                    (item as CreationV2).mediaAttributes?.mimeType,
+                  )}/${(item as CreationV2).tool}`}
+                >
+                  {(item as CreationV2).tool}
+                </Link>
+              ) : (
+                <Skeleton className="h-5 w-[125px]" />
+              )}
             </div>
-            {item && (item as CreationV2).tool ? (
-              <Link
-                href={`/create/${getFileTypeByMimeType(
-                  (item as CreationV2).mediaAttributes?.mimeType,
-                )}/${(item as CreationV2).tool}`}
-              >
-                {(item as CreationV2).tool}
-              </Link>
-            ) : (
-              <Skeleton className="h-5 w-[125px]" />
+
+            {/* SUBTOOL NAVIGATION */}
+            {hasSubtools && (
+              <div className="pb-4">
+                <ToggleGroup
+                  type="single"
+                  value={selectedArgsIndex.toString()}
+                  onValueChange={value => {
+                    if (value) setSelectedArgsIndex(parseInt(value))
+                  }}
+                  className="flex flex-row items-center gap-2 justify-start flex-wrap"
+                >
+                  <ToggleGroupItem
+                    value="0"
+                    variant="outline"
+                    size="sm"
+                    className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    {(item as CreationV2).tool}
+                  </ToggleGroupItem>
+                  {subtoolCalls.length > 0 && (
+                    <span className="text-muted-foreground text-xs px-1">
+                      →
+                    </span>
+                  )}
+                  {subtoolCalls.map((subtool, index) => (
+                    <ToggleGroupItem
+                      key={index}
+                      value={(index + 1).toString()}
+                      variant="outline"
+                      size="sm"
+                      className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
+                    >
+                      {subtool.tool}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              </div>
             )}
-          </div>
+          </>
         ) : null}
 
         {type === 'model' ? (
@@ -435,16 +533,20 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           <div className="pb-4 text-sm">
             <div className="h-9 flex items-center justify-between">
               <div className="font-bold">Prompt</div>
-              {prompt || text_input || prompt_text ? (
+              {currentPrompt || currentTextInput || currentPromptText ? (
                 <CopyTextButton
                   title={'Prompt'}
-                  text={prompt || text_input || prompt_text || ''}
+                  text={
+                    currentPrompt || currentTextInput || currentPromptText || ''
+                  }
                 />
               ) : null}
             </div>
             {item ? (
               <TextClampMore
-                text={prompt || text_input || prompt_text || '-'}
+                text={
+                  currentPrompt || currentTextInput || currentPromptText || '-'
+                }
               />
             ) : (
               <div className="space-y-1">
@@ -456,16 +558,16 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           </div>
         ) : null}
 
-        {lora ? (
+        {currentLora ? (
           <div>
             <div className="font-bold text-sm mb-3">Model</div>
             <Suspense fallback={<LoadingIndicator />}>
-              <ModelMiniCard modelId={lora} className="bg-popover">
+              <ModelMiniCard modelId={currentLora} className="bg-popover">
                 <Button size="sm" variant="outline" asChild>
                   <Link
                     href={`/create/image/${
                       (item as CreationV2).tool
-                    }?lora=${lora}`}
+                    }?lora=${currentLora}`}
                     className="ml-auto mr-2"
                     scroll={false}
                     shallow={true}
@@ -479,16 +581,16 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
           </div>
         ) : null}
 
-        {lora2 ? (
+        {currentLora2 ? (
           <div>
             <div className="font-bold text-sm mb-3 mt-4">Model 2</div>
             <Suspense fallback={<LoadingIndicator />}>
-              <ModelMiniCard modelId={lora2} className="bg-popover">
+              <ModelMiniCard modelId={currentLora2} className="bg-popover">
                 <Button size="sm" variant="outline" asChild>
                   <Link
                     href={`/create/image/${
                       (item as CreationV2).tool
-                    }?lora2=${lora2}`}
+                    }?lora2=${currentLora2}`}
                     className="ml-auto mr-2"
                     scroll={false}
                     shallow={true}
@@ -503,11 +605,13 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         ) : null}
 
         <div className="w-full">
-          {item && remainingArgs ? (
+          {item && currentRemainingArgs ? (
             <ParameterTable
-              taskId={item.task._id?.toString()}
-              cost={item.task.cost}
-              args={remainingArgs}
+              taskId={
+                selectedArgsIndex === 0 ? item.task._id?.toString() : undefined
+              }
+              cost={selectedArgsIndex === 0 ? item.task.cost : undefined}
+              args={currentRemainingArgs}
             />
           ) : (
             <div className="space-y-1">
