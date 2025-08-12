@@ -478,11 +478,13 @@ const agentRoutes: FastifyPluginAsync = async server => {
               _id: Type.String(),
               content: Type.String(),
               createdAt: Type.Optional(Type.String()),
+              updatedAt: Type.Optional(Type.String()),
             })),
             unabsorbed_memory_ids: Type.Array(Type.Object({
               _id: Type.String(),
               content: Type.String(),
               createdAt: Type.Optional(Type.String()),
+              updatedAt: Type.Optional(Type.String()),
             })),
           })),
         },
