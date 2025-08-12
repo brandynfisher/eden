@@ -720,10 +720,6 @@ const AgentFormSheet = () => {
                                     label: 'Create images',
                                   },
                                   {
-                                    key: 'create_video',
-                                    label: 'Create Video',
-                                  },
-                                  {
                                     key: 'create_audio',
                                     label:
                                       'Create Audio (including music and speech)',
@@ -734,8 +730,8 @@ const AgentFormSheet = () => {
                                       'VJ Tools (Texture Flow and Video FX)',
                                   },
                                   {
-                                    key: 'news',
-                                    label: 'Read the news',
+                                    key: 'manage_collections',
+                                    label: 'Manage collections',
                                   },
                                   {
                                     key: 'social_media_tools',

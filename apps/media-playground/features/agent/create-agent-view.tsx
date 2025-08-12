@@ -650,10 +650,6 @@ const CreateAgentView = () => {
                                         label: 'Create images',
                                       },
                                       {
-                                        key: 'create_video',
-                                        label: 'Create Video',
-                                      },
-                                      {
                                         key: 'create_audio',
                                         label:
                                           'Create Audio (including music and speech)',
@@ -664,8 +660,8 @@ const CreateAgentView = () => {
                                           'VJ Tools (Texture Flow and Video FX)',
                                       },
                                       {
-                                        key: 'news',
-                                        label: 'Read the news',
+                                        key: 'manage_collections',
+                                        label: 'Manage collections',
                                       },
                                     ].map(tool => (
                                       <div
