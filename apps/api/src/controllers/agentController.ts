@@ -1391,7 +1391,7 @@ export const retrieveMemoryAgent = async (
       })
       .toArray()
 
-    let processedRecords: any[] = []
+    const processedRecords: any[] = []
 
     for (const record of memoryRecords) {
       let factsWithContent: any[] = []

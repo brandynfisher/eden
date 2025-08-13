@@ -7,6 +7,7 @@ import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
 import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
+import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import axios from 'axios'
@@ -121,6 +122,12 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
               agentId={agent._id}
               deployment={deployments?.find(
                 deployment => deployment.platform === 'twitter',
+              )}
+            />
+            <TiktokDeploymentForm
+              agentId={agent._id}
+              deployment={deployments?.find(
+                deployment => deployment.platform === 'tiktok',
               )}
             />
             <FarcasterDeploymentForm

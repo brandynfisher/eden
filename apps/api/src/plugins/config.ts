@@ -74,6 +74,9 @@ const ConfigSchema = Type.Strict(
     EMAIL_FROM_NAME: Type.Optional(Type.String()),
     TWITTER_CLIENT_ID: Type.Optional(Type.String()),
     TWITTER_CLIENT_SECRET: Type.Optional(Type.String()),
+    TIKTOK_CLIENT_KEY: Type.Optional(Type.String()),
+    TIKTOK_CLIENT_SECRET: Type.Optional(Type.String()),
+    TIKTOK_REDIRECT_URI: Type.Optional(Type.String()),
   }),
 )
 
