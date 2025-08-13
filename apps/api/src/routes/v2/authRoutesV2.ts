@@ -1,9 +1,9 @@
 import {
-  disconnectTwitter,
   disconnectTikTok,
+  disconnectTwitter,
   discordOAuth,
-  twitterOAuth,
   tiktokOAuth,
+  twitterOAuth,
 } from '../../controllers/auth/v2/authControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -66,7 +66,7 @@ const authRoutes: FastifyPluginAsync = async server => {
         agentId: Type.String(),
       }),
     },
-    handler: (request, reply) => disconnectTikTok(server, request, reply),
+    handler: (request, reply) => disconnectTikTok(request, reply),
     preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 }

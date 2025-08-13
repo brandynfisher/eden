@@ -369,7 +369,6 @@ export const tiktokOAuth = async (
 }
 
 export const disconnectTikTok = async (
-  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
