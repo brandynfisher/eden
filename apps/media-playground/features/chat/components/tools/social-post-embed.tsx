@@ -6,7 +6,7 @@ import React from 'react'
 
 export type SocialPostEmbedProps = {
   results: TaskV2Result[]
-  platform: 'discord' | 'telegram' | 'twitter' | 'farcaster' | 'shopify'
+  platform: 'discord' | 'telegram' | 'twitter' | 'farcaster' | 'shopify' | 'printify'
 }
 
 export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
@@ -24,6 +24,8 @@ export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
       ? 'Farcaster'
       : platform === 'shopify'
       ? 'Shopify'
+      : platform === 'printify'
+      ? 'Printify'
       : platform
 
   // Handle case where results might not have the expected structure

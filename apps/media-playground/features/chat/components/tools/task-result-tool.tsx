@@ -3,9 +3,11 @@
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
+import { CollectionAddedEmbed } from '@/features/chat/components/tools/collection-added-embed'
 import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
 import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
 import { TwitterEmbed } from '@/features/chat/components/tools/twitter-embed'
+import { WebSearchCitations } from '@/features/chat/components/tools/web-search-citations'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -34,18 +36,26 @@ export const TaskResultTool = makeAssistantToolUI({
       tool === 'twitter_search' ||
       tool?.includes('twitter')
 
-    // Check if this is a social post tool (Discord, Telegram, Tweet, Farcaster)
+    // Check if this is a collection tool
+    const isCollectionTool = tool === 'add_to_collection'
+
+    // Check if this is a web search tool
+    const isWebSearchTool = tool === 'web_search'
+
+    // Check if this is a social post tool (Discord, Telegram, Tweet, Farcaster, Shopify, Printify)
     const isDiscordPost = tool === 'discord_post'
     const isTelegramPost = tool === 'telegram_post'
     const isTweetPost = tool === 'tweet'
     const isFarcasterPost = tool === 'farcaster_cast'
     const isShopifyPost = tool === 'shopify'
+    const isPrintifyPost = tool === 'printify'
     const isSocialPost =
       isDiscordPost ||
       isTelegramPost ||
       isTweetPost ||
       isFarcasterPost ||
-      isShopifyPost
+      isShopifyPost ||
+      isPrintifyPost
 
     // Check if tool is completed with displayable results
     const { status: toolStatus } = result as TaskResultToolArgs
@@ -89,6 +99,16 @@ export const TaskResultTool = makeAssistantToolUI({
                   ))
                 : null}
             </div>
+          ) : isCollectionTool ? (
+            // Handle collection tool results
+            <div className="mb-2 relative group">
+              <CollectionAddedEmbed results={toolResults || []} />
+            </div>
+          ) : isWebSearchTool && toolStatus === 'completed' ? (
+            // Handle web search tool results - only show when completed
+            <div className="mb-2 relative group">
+              <WebSearchCitations results={toolResults || []} />
+            </div>
           ) : isSocialPost ? (
             // Handle social post results (Discord, Telegram, Tweet, Farcaster)
             <div className="mb-2 relative group">
@@ -105,6 +125,8 @@ export const TaskResultTool = makeAssistantToolUI({
                     ? 'farcaster'
                     : isShopifyPost
                     ? 'shopify'
+                    : isPrintifyPost
+                    ? 'printify'
                     : 'discord' // fallback
                 }
               />
@@ -226,18 +248,19 @@ export const TaskResultTool = makeAssistantToolUI({
             </LightboxGallery>
           )}
         </ErrorBoundary>
-        {!isCompletedWithResults && (
-          <ToolFallback
-            type="tool-call"
-            result={result}
-            toolCallId={tool}
-            toolName={tool}
-            args={args}
-            argsText={argsText}
-            status={status}
-            addResult={() => true}
-          />
-        )}
+        {!isCompletedWithResults &&
+          !(isWebSearchTool && toolStatus === 'completed') && (
+            <ToolFallback
+              type="tool-call"
+              result={result}
+              toolCallId={tool}
+              toolName={tool}
+              args={args}
+              argsText={argsText}
+              status={status}
+              addResult={() => true}
+            />
+          )}
       </div>
     )
   },

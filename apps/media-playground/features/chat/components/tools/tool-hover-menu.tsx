@@ -74,7 +74,7 @@ export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
                   value="0"
                   variant="outline"
                   size="sm"
-                  className="bg-white text-black border-gray-300 data-[state=on]:bg-gray-100 data-[state=on]:text-black hover:bg-gray-50 hover:text-black"
+                  className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
                 >
                   {toolName}
                 </ToggleGroupItem>
@@ -87,7 +87,7 @@ export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
                     value={(index + 1).toString()}
                     variant="outline"
                     size="sm"
-                    className="bg-white text-black border-gray-300 data-[state=on]:bg-gray-100 data-[state=on]:text-black hover:bg-gray-50 hover:text-black"
+                    className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
                   >
                     {subtool.tool}
                   </ToggleGroupItem>
