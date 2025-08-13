@@ -36,6 +36,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES, MEMORY_UI_MESSAGES } from './memory-constants'
+import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 
 const memorySchema = z.object({
   content: z
@@ -140,6 +141,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   const [isMemoryEditModalOpen, setIsMemoryEditModalOpen] = useState(false)
   const [editingMemory, setEditingMemory] = useState<MemorySession | null>(null)
   const [isNewShardModalOpen, setIsNewShardModalOpen] = useState(false)
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
+  const [pendingSubmitData, setPendingSubmitData] = useState<MemoryFormDto | null>(null)
+  const [isMemoryConfirmationOpen, setIsMemoryConfirmationOpen] = useState(false)
+  const [pendingMemoryData, setPendingMemoryData] = useState<{ content: string } | null>(null)
 
   const form = useForm<MemoryFormDto>({
     resolver: zodResolver(memorySchema),
@@ -233,9 +238,47 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   const handleFieldSubmit = async (data: MemoryFormDto) => {
     if (!editingShard || !editingField) return
 
+    // Only show confirmation for content, not extraction_prompt
+    if (editingField === 'content') {
+      setPendingSubmitData(data)
+      setIsConfirmationOpen(true)
+    } else {
+      // For extraction_prompt, submit directly without confirmation
+      try {
+        setIsSubmitting(true)
+        const updateData = { [editingField]: data[editingField] || '' }
+
+        await axios.patch(
+          `/api/agents/${agent._id}/collective-memory/${editingShard._id}`,
+          updateData,
+        )
+
+        setShards(prev =>
+          prev.map(s =>
+            s._id === editingShard._id ? { ...s, ...updateData } : s,
+          ),
+        )
+
+        toast.success(`${editingField.replace('_', ' ')} updated successfully`)
+        setIsEditModalOpen(false)
+        setEditingShard(null)
+        setEditingField(null)
+      } catch (error) {
+        console.error('Error updating field:', error)
+        const errorMessage = getErrorMessage(error, 'Failed to update field')
+        toast.error(errorMessage)
+      } finally {
+        setIsSubmitting(false)
+      }
+    }
+  }
+
+  const handleConfirmedFieldSubmit = async () => {
+    if (!editingShard || !editingField || !pendingSubmitData) return
+
     try {
       setIsSubmitting(true)
-      const updateData = { [editingField]: data[editingField] || '' }
+      const updateData = { [editingField]: pendingSubmitData[editingField] || '' }
 
       await axios.patch(
         `/api/agents/${agent._id}/collective-memory/${editingShard._id}`,
@@ -252,6 +295,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setIsEditModalOpen(false)
       setEditingShard(null)
       setEditingField(null)
+      setPendingSubmitData(null)
     } catch (error) {
       console.error('Error updating field:', error)
       const errorMessage = getErrorMessage(error, 'Failed to update field')
@@ -270,10 +314,18 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   const handleMemoryUpdate = async (data: { content: string }) => {
     if (!editingMemory) return
 
+    // Show confirmation dialog first
+    setPendingMemoryData(data)
+    setIsMemoryConfirmationOpen(true)
+  }
+
+  const handleConfirmedMemoryUpdate = async () => {
+    if (!editingMemory || !pendingMemoryData) return
+
     try {
       setIsSubmitting(true)
       await axios.patch(`/api/memory-sessions/${editingMemory._id}`, {
-        content: data.content || '',
+        content: pendingMemoryData.content || '',
       })
 
       // Update local state for both facts and unabsorbed_memory_ids
@@ -281,10 +333,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         prev.map(shard => ({
           ...shard,
           facts: shard.facts.map(f =>
-            f._id === editingMemory._id ? { ...f, content: data.content } : f,
+            f._id === editingMemory._id ? { ...f, content: pendingMemoryData.content } : f,
           ),
           unabsorbed_memory_ids: shard.unabsorbed_memory_ids.map(u =>
-            u._id === editingMemory._id ? { ...u, content: data.content } : u,
+            u._id === editingMemory._id ? { ...u, content: pendingMemoryData.content } : u,
           ),
         })),
       )
@@ -292,6 +344,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       toast.success('Memory updated successfully')
       setIsMemoryEditModalOpen(false)
       setEditingMemory(null)
+      setPendingMemoryData(null)
     } catch (error) {
       console.error('Error updating memory:', error)
       const errorMessage = getErrorMessage(error, 'Failed to update memory')
@@ -533,8 +586,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <p>
-                    This is {agent.name}'s collective memory. This memory is
-                    formed and evolved by all its conversations with all users.
+                    {agent.name}'s collective memory. This memory grows and
+                    evolves through all conversations with all users.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -588,9 +641,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 </TooltipTrigger>
                 <TooltipContent className="max-w-md">
                   <p>
-                    This prompt tells the agent how it should extract memories
+                    This prompt tells {agent.name} what information to remember
                     from its conversations. Explain the agent what the goal of
-                    this collective memory shard is and which things are
+                    this collective memory is and which things are
                     important for it to remember. This prompt is the most
                     crucial part of making collective memory work well. Iterate
                     on this a lot!
@@ -641,7 +694,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 {shard.content || (
                   <span className="text-muted-foreground italic">
                     💭 No collective memory content yet. This will be populated
-                    as users interact with {agent.name}.
+                    automatically as users interact with {agent.name}.
                   </span>
                 )}
               </div>
@@ -734,7 +787,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   <TooltipContent className="max-w-md">
                     <p>
                       These are atomic facts the agent has picked up from its
-                      interactions which it deemed relevant to its collective
+                      interactions which are relevant to its collective
                       memory goal. Remove any facts that aren't relevant and
                       update the extraction prompt accordingly.
                     </p>
@@ -1027,6 +1080,25 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Field Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isConfirmationOpen}
+        onOpenChange={setIsConfirmationOpen}
+        onConfirm={handleConfirmedFieldSubmit}
+        title={`Modify ${editingField === 'content' ? 'Memory Content' : 'Extraction Prompt'}`}
+        isSubmitting={isSubmitting}
+      />
+
+      {/* Memory Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isMemoryConfirmationOpen}
+        onOpenChange={setIsMemoryConfirmationOpen}
+        onConfirm={handleConfirmedMemoryUpdate}
+        title="Modify Memory"
+        description="Are you sure you want to modify this memory? Saving this will cause the original memory to be lost!"
+        isSubmitting={isSubmitting}
+      />
     </TooltipProvider>
   )
 }

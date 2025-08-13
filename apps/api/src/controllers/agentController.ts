@@ -740,7 +740,6 @@ export const deployAgent = async (
     })
   } catch (error: any) {
     console.error(error)
-    console.log(error.response?.data)
     return reply.status(500).send({
       error:
         error.response?.data?.message ||

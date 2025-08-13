@@ -36,6 +36,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES } from './memory-constants'
+import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 
 // Schema for memory form
 const memorySchema = z.object({
@@ -69,6 +70,10 @@ const AgentMemoryView: FC<{
   const [editingDirective, setEditingDirective] =
     useState<UnabsorbedDirective | null>(null)
   const [displayContent, setDisplayContent] = useState('')
+  const [isUserMemoryConfirmationOpen, setIsUserMemoryConfirmationOpen] = useState(false)
+  const [pendingUserMemoryData, setPendingUserMemoryData] = useState<MemoryFormDto | null>(null)
+  const [isDirectiveConfirmationOpen, setIsDirectiveConfirmationOpen] = useState(false)
+  const [pendingDirectiveData, setPendingDirectiveData] = useState<MemoryFormDto | null>(null)
 
   // Collective Memory Access Logic - Four Scenarios:
   // 1. Not editor/owner: no tab visible (handled by hasEditAccess check)
@@ -143,14 +148,23 @@ const AgentMemoryView: FC<{
   const handleSubmit = async (data: MemoryFormDto) => {
     if (!agent || !authUser) return
 
+    // Show confirmation dialog first
+    setPendingUserMemoryData(data)
+    setIsUserMemoryConfirmationOpen(true)
+  }
+
+  const handleConfirmedSubmit = async () => {
+    if (!agent || !authUser || !pendingUserMemoryData) return
+
     try {
       setIsSubmitting(true)
       await axios.post(`/api/agents/${agent._id}/memory`, {
-        content: data.content || '',
+        content: pendingUserMemoryData.content || '',
       })
-      setDisplayContent(data.content || '')
+      setDisplayContent(pendingUserMemoryData.content || '')
       toast.success('Memory saved successfully')
       setIsEditModalOpen(false)
+      setPendingUserMemoryData(null)
     } catch (error) {
       console.error('Error saving memory for agent:', agent._id, error)
 
@@ -191,17 +205,25 @@ const AgentMemoryView: FC<{
   const handleDirectiveUpdate = async (data: MemoryFormDto) => {
     if (!editingDirective || !agent || !authUser) return
 
+    // Show confirmation dialog first
+    setPendingDirectiveData(data)
+    setIsDirectiveConfirmationOpen(true)
+  }
+
+  const handleConfirmedDirectiveUpdate = async () => {
+    if (!editingDirective || !agent || !authUser || !pendingDirectiveData) return
+
     try {
       setIsSubmitting(true)
       await axios.patch(`/api/memory-sessions/${editingDirective._id}`, {
-        content: data.content || '',
+        content: pendingDirectiveData.content || '',
       })
 
       // Update the local state
       setUnabsorbedDirectives(prev =>
         prev.map(directive =>
           directive._id === editingDirective._id
-            ? { ...directive, content: data.content || '' }
+            ? { ...directive, content: pendingDirectiveData.content || '' }
             : directive,
         ),
       )
@@ -209,6 +231,7 @@ const AgentMemoryView: FC<{
       toast.success('Directive updated successfully')
       setIsDirectiveEditModalOpen(false)
       setEditingDirective(null)
+      setPendingDirectiveData(null)
     } catch (error) {
       console.error('Error updating directive:', error)
       toast.error('Failed to update directive. Please try again.')
@@ -428,6 +451,9 @@ const AgentMemoryView: FC<{
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit User Memory</DialogTitle>
+            <DialogDescription>
+              Edit your personal memory content with this agent.
+            </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form
@@ -543,6 +569,26 @@ const AgentMemoryView: FC<{
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* User Memory Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isUserMemoryConfirmationOpen}
+        onOpenChange={setIsUserMemoryConfirmationOpen}
+        onConfirm={handleConfirmedSubmit}
+        title="Modify User Memory"
+        description="Are you sure you want to modify this memory? Saving this will cause the original memory to be lost!"
+        isSubmitting={isSubmitting}
+      />
+
+      {/* Directive Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isDirectiveConfirmationOpen}
+        onOpenChange={setIsDirectiveConfirmationOpen}
+        onConfirm={handleConfirmedDirectiveUpdate}
+        title="Modify Directive"
+        description="Are you sure you want to modify this directive? Saving this will cause the original directive to be lost!"
+        isSubmitting={isSubmitting}
+      />
     </TooltipProvider>
   )
 }
