@@ -2126,6 +2126,8 @@ export const createMemoryAgent = async (
       unabsorbed_memory_ids: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      fully_formed_memory: null,
+      last_updated_at: new Date(),
     }
 
     const result = await memoryCollection.insertOne(newShard)
