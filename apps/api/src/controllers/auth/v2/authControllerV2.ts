@@ -371,7 +371,7 @@ export const tiktokOAuth = async (
     })
 
     // Redirect back to agent settings
-    const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agentId}?page=settings&tab=integrations`
+    const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
 
     return reply.redirect(redirectUrl)
   } catch (error) {
