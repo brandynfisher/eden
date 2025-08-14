@@ -8,6 +8,7 @@ export enum ClientType {
   SHOPIFY = 'shopify',
   PRINTIFY = 'printify',
   CAPTIONS = 'captions',
+  TIKTOK = 'tiktok',
 }
 
 // Allowlist item base interface
@@ -92,6 +93,17 @@ export interface DeploymentSecretsCaptions {
   api_key: string
 }
 
+// TikTok Types
+export interface DeploymentSettingsTiktok {}
+
+export interface DeploymentSecretsTiktok {
+  access_token: string
+  refresh_token: string
+  open_id: string
+  expires_at: Date
+  username?: string
+}
+
 // Combined Types
 export interface DeploymentSecrets {
   discord?: DeploymentSecretsDiscord
@@ -101,6 +113,7 @@ export interface DeploymentSecrets {
   shopify?: DeploymentSecretsShopify
   printify?: DeploymentSecretsPrintify
   captions?: DeploymentSecretsCaptions
+  tiktok?: DeploymentSecretsTiktok
 }
 
 export interface DeploymentConfig {
@@ -111,6 +124,7 @@ export interface DeploymentConfig {
   shopify?: DeploymentSettingsShopify
   printify?: DeploymentSettingsPrintify
   captions?: DeploymentSettingsCaptions
+  tiktok?: DeploymentSettingsTiktok
 }
 
 export interface DeploymentSchema {

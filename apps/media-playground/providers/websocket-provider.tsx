@@ -81,7 +81,7 @@ export const WebSocketProvider = ({ endpoint, children }: Props) => {
   const sendAuthMessageToWorker = useCallback(
     (authData: { event: string; data: { userId: string; token: string } }) => {
       if (authData?.event === 'auth') {
-        console.log('Provider sending auth message to worker:', authData.data)
+        // console.log('Provider sending auth message to worker:', authData.data)
         sendWorkerMessage({ type: 'auth', data: authData.data })
       } else {
         console.warn(

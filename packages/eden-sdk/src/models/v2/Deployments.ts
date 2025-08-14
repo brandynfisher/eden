@@ -9,6 +9,7 @@ export type ClientType =
   | 'shopify'
   | 'printify'
   | 'captions'
+  | 'tiktok'
 
 export type AllowlistItem = {
   id: string
@@ -91,6 +92,17 @@ export type DeploymentSecretsCaptions = {
   api_key: string
 }
 
+// TikTok Types
+export type DeploymentSettingsTiktok = Record<string, never>
+
+export type DeploymentSecretsTiktok = {
+  access_token: string
+  refresh_token: string
+  open_id: string
+  expires_at: Date
+  username?: string
+}
+
 // Combined Types
 export type DeploymentSecrets = {
   discord?: DeploymentSecretsDiscord
@@ -100,6 +112,7 @@ export type DeploymentSecrets = {
   shopify?: DeploymentSecretsShopify
   printify?: DeploymentSecretsPrintify
   captions?: DeploymentSecretsCaptions
+  tiktok?: DeploymentSecretsTiktok
 }
 
 export type DeploymentConfig = {
@@ -110,6 +123,7 @@ export type DeploymentConfig = {
   shopify?: DeploymentSettingsShopify
   printify?: DeploymentSettingsPrintify
   captions?: DeploymentSettingsCaptions
+  tiktok?: DeploymentSettingsTiktok
 }
 
 export type Deployment = {

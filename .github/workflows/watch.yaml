@@ -68,7 +68,7 @@ jobs:
             "NEXT_PUBLIC_APP_ENV=production"
             "NEXT_PUBLIC_HOST=https://watch.eden.art"
             "NEXT_PUBLIC_EDEN_API_URL=https://api.eden.art"
-            "NEXT_PUBLIC_EDEN_APP_URL=https://beta.eden.art"
+            "NEXT_PUBLIC_EDEN_APP_URL=https://app.eden.art"
             "NEXT_PUBLIC_EDEN_SSE_URL=https://api.eden.art"
             "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://api.eden.art/ws/updates"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}"

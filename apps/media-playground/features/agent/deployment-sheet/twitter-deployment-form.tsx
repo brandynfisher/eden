@@ -1,7 +1,16 @@
 'use client'
 
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Form } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
@@ -72,21 +81,41 @@ export const TwitterDeploymentForm = ({
       >
         <Form {...form}>
           <form className="flex flex-col w-full space-y-4 p-4">
-            <TokenField
-              form={form}
+            <FormField
+              control={form.control}
               name="userId"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="User ID"
-              description="Your Twitter user ID."
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>User ID</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Your Twitter user ID"
+                      disabled={form.formState.isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>Your Twitter user ID.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <TokenField
-              form={form}
+            <FormField
+              control={form.control}
               name="username"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="Username"
-              description="Your Twitter username."
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Your Twitter username"
+                      disabled={form.formState.isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>Your Twitter username.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <TokenField
               form={form}

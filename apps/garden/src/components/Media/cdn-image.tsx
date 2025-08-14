@@ -11,7 +11,17 @@ const CdnImage = (props: CldImageProps&ImageProps) => {
   }
 
   // fallback to support local, other remote or existing s3/cloudfront assets
-  return <Image src={src} {...{...rest, quality: props.quality ? Number(props.quality) : undefined, alt: props.alt ? props.alt : props.src}} />
+  // For CloudFront URLs, use unoptimized to avoid loader width issues
+  const isCloudFrontUrl = src && (src.includes('cloudfront.net') || src.includes('s3.amazonaws.com'))
+  return <Image 
+    src={src} 
+    {...{
+      ...rest, 
+      quality: props.quality ? Number(props.quality) : undefined, 
+      alt: props.alt ? props.alt : props.src,
+      unoptimized: isCloudFrontUrl ? true : rest.unoptimized
+    }} 
+  />
 }
 
 export default CdnImage
