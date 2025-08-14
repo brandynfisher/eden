@@ -29,6 +29,7 @@ import {
   updateMemoryAgent,
   updateMemorySession,
   updateMemoryUser,
+  updateUserMemoryEnabled,
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -418,6 +419,21 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateMemoryUser(server, request, reply),
+  })
+
+  server.patch('/v2/agents/:agentId/user-memory-enabled', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Update user_memory_enabled field for an agent',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      body: Type.Object({
+        user_memory_enabled: Type.Boolean(),
+      }),
+      response: { 200: { success: Type.Boolean() } },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => updateUserMemoryEnabled(server, request, reply),
   })
 
   server.get('/v2/memory-sessions/:memoryId', {

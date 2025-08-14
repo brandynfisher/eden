@@ -2142,3 +2142,45 @@ export const createMemoryAgent = async (
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
+
+export const updateUserMemoryEnabled = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Params: { agentId: string }
+    Body: { user_memory_enabled: boolean }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params
+  const { user_memory_enabled } = request.body
+
+  try {
+    // Validate agent access
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    // Permission check is handled by validateAgentAccess (same as other memory operations)
+
+    // Update the agent's user_memory_enabled field
+    const updateResult = await Agent.updateOne(
+      { _id: agentId },
+      { 
+        $set: { 
+          user_memory_enabled: user_memory_enabled,
+          updatedAt: new Date(),
+        }
+      }
+    )
+
+    if (updateResult.matchedCount === 0) {
+      return reply.status(404).send({ error: 'Agent not found' })
+    }
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error('Error updating user memory enabled status:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}

@@ -18,6 +18,7 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
+import { Switch } from '@/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
@@ -74,6 +75,7 @@ const AgentMemoryView: FC<{
   const [pendingUserMemoryData, setPendingUserMemoryData] = useState<MemoryFormDto | null>(null)
   const [isDirectiveConfirmationOpen, setIsDirectiveConfirmationOpen] = useState(false)
   const [pendingDirectiveData, setPendingDirectiveData] = useState<MemoryFormDto | null>(null)
+  const [userMemoryEnabled, setUserMemoryEnabled] = useState<boolean>(true)
 
   // Collective Memory Access Logic - Four Scenarios:
   // 1. Not editor/owner: no tab visible (handled by hasEditAccess check)
@@ -126,6 +128,9 @@ const AgentMemoryView: FC<{
   useEffect(() => {
     const loadMemoryData = async () => {
       if (agent && authUser) {
+        // Load user_memory_enabled status from agent data, default to true if undefined
+        setUserMemoryEnabled(agent.user_memory_enabled !== undefined ? agent.user_memory_enabled : true)
+        
         try {
           const response = await axios.get(`/api/agents/${agent._id}/memory`)
 
@@ -143,7 +148,7 @@ const AgentMemoryView: FC<{
     }
 
     loadMemoryData()
-  }, [agent?._id, authUser, form])
+  }, [agent?._id, authUser, form, agent.user_memory_enabled])
 
   const handleSubmit = async (data: MemoryFormDto) => {
     if (!agent || !authUser) return
@@ -235,6 +240,53 @@ const AgentMemoryView: FC<{
     } catch (error) {
       console.error('Error updating directive:', error)
       toast.error('Failed to update directive. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleToggleUserMemoryEnabled = async () => {
+    if (!agent || !authUser) return
+
+    try {
+      setIsSubmitting(true)
+      const newValue = !userMemoryEnabled
+
+      await axios.patch(`/api/agents/${agent._id}/user-memory-enabled`, {
+        user_memory_enabled: newValue,
+      })
+
+      setUserMemoryEnabled(newValue)
+      toast.success(`User memory ${newValue ? 'enabled' : 'disabled'}`)
+    } catch (error) {
+      console.error('Error toggling user memory enabled state:', error)
+      
+      const getErrorMessage = (error: unknown): string => {
+        if (axios.isAxiosError(error)) {
+          const responseData = error.response?.data
+          if (responseData?.message) {
+            return responseData.message
+          } else if (responseData?.error) {
+            return responseData.error
+          }
+          
+          switch (error.response?.status) {
+            case 404:
+              return 'Agent not found'
+            case 401:
+              return 'You are not authorized to perform this action'
+            case 403:
+              return 'You do not have permission to perform this action'
+            case 400:
+              return 'Invalid request data'
+            default:
+              return 'Failed to update user memory state'
+          }
+        }
+        return 'Failed to update user memory state'
+      }
+
+      toast.error(getErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
@@ -334,24 +386,63 @@ const AgentMemoryView: FC<{
           {memoryTab === 'user' ? (
             <div className="space-y-8">
               <div className="relative group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <h2 className="text-lg font-semibold text-purple-600 dark:text-purple-300 cursor-help">
-                        User Memory
-                      </h2>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>
-                        This is your personal memory with {agent.name},
-                        extracted from all your conversations with this agent.
-                        These memories only affect your own interactions with{' '}
-                        {agent.name}.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-transparent dark:from-purple-500/30"></div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <h2 className="text-lg font-semibold text-purple-600 dark:text-purple-300 cursor-help">
+                          User Memory
+                        </h2>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>
+                          This is your personal memory with {agent.name},
+                          extracted from all your conversations with this agent.
+                          These memories only affect your own interactions with{' '}
+                          {agent.name}.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-transparent dark:from-purple-500/30"></div>
+                  </div>
+
+                  {/* User Memory Active/Disabled Toggle - Only show if user has edit access */}
+                  {hasEditAccess && (
+                    <div className="flex items-center gap-3">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={`text-sm font-medium cursor-help ${
+                              userMemoryEnabled
+                                ? 'text-green-600 dark:text-green-300'
+                                : 'text-orange-600 dark:text-orange-300'
+                            }`}
+                          >
+                            {userMemoryEnabled ? 'Active' : 'Disabled'}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {userMemoryEnabled
+                              ? 'User memory is active and will be used in conversations'
+                              : 'User memory is disabled and will not be used in conversations'}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Switch
+                        checked={userMemoryEnabled}
+                        onCheckedChange={handleToggleUserMemoryEnabled}
+                        disabled={isSubmitting}
+                        style={{
+                          backgroundColor: userMemoryEnabled
+                            ? 'rgb(34 197 94)' // green-500
+                            : 'rgb(249 115 22)', // orange-500
+                          opacity: isSubmitting ? 0.5 : 1,
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="group relative overflow-hidden rounded-xl border border-purple-200/50 dark:border-purple-500/20 bg-white/80 dark:bg-black/40 backdrop-blur-sm shadow-lg">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-900/10 dark:to-blue-900/10"></div>
