@@ -36,16 +36,17 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES, MEMORY_UI_MESSAGES } from './memory-constants'
+import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 
 const memorySchema = z.object({
   content: z
     .string()
-    .max(MEMORY_LIMITS.MEMORY_CONTENT_MAX, MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX)
+    .max(MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX_CHARS)
     .optional(),
   extraction_prompt: z
     .string()
-    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN)
-    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX)
+    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN_CHARS)
+    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX_CHARS)
     .optional(),
   is_active: z.boolean().optional(),
 })
@@ -53,12 +54,12 @@ const memorySchema = z.object({
 const newShardSchema = z.object({
   shard_name: z
     .string()
-    .min(MEMORY_LIMITS.SHARD_NAME_MIN, MEMORY_ERROR_MESSAGES.SHARD_NAME_MIN)
-    .max(MEMORY_LIMITS.SHARD_NAME_MAX, MEMORY_ERROR_MESSAGES.SHARD_NAME_MAX),
+    .min(MEMORY_LIMITS.SHARD_NAME_MIN_CHARS, MEMORY_ERROR_MESSAGES.SHARD_NAME_MIN_CHARS)
+    .max(MEMORY_LIMITS.SHARD_NAME_MAX_CHARS, MEMORY_ERROR_MESSAGES.SHARD_NAME_MAX_CHARS),
   extraction_prompt: z
     .string()
-    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN)
-    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX),
+    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN_CHARS)
+    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX_CHARS),
 })
 
 type MemoryFormDto = z.infer<typeof memorySchema>
@@ -97,6 +98,33 @@ const calculateAgeInDays = (updatedAt?: string): number => {
   return diffDays
 }
 
+// Helper function to extract error message from axios error
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data
+    if (responseData?.message) {
+      return responseData.message
+    } else if (responseData?.error) {
+      return responseData.error
+    }
+    
+    // Handle common status codes
+    switch (error.response?.status) {
+      case 404:
+        return 'Resource not found'
+      case 401:
+        return 'You are not authorized to perform this action'
+      case 403:
+        return 'You do not have permission to perform this action'
+      case 400:
+        return 'Invalid request data'
+      default:
+        return fallback
+    }
+  }
+  return fallback
+}
+
 const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   agent,
   hasAccess,
@@ -113,6 +141,11 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   const [isMemoryEditModalOpen, setIsMemoryEditModalOpen] = useState(false)
   const [editingMemory, setEditingMemory] = useState<MemorySession | null>(null)
   const [isNewShardModalOpen, setIsNewShardModalOpen] = useState(false)
+  const [isMemoryConfirmationOpen, setIsMemoryConfirmationOpen] = useState(false)
+  const [pendingMemoryData, setPendingMemoryData] = useState<{ content: string } | null>(null)
+  const [isContentEditModalOpen, setIsContentEditModalOpen] = useState(false)
+  const [pendingContentData, setPendingContentData] = useState<{ content: string } | null>(null)
+  const [isContentConfirmationOpen, setIsContentConfirmationOpen] = useState(false)
 
   const form = useForm<MemoryFormDto>({
     resolver: zodResolver(memorySchema),
@@ -128,7 +161,18 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       z.object({
         content: z
           .string()
-          .max(MEMORY_LIMITS.MEMORY_SESSION_MAX, MEMORY_ERROR_MESSAGES.MEMORY_SESSION_MAX),
+          .max(MEMORY_LIMITS.FACTS_MAX_CHARS, MEMORY_ERROR_MESSAGES.FACTS_MAX_CHARS),
+      }),
+    ),
+    defaultValues: { content: '' },
+  })
+
+  const contentForm = useForm<{ content: string }>({
+    resolver: zodResolver(
+      z.object({
+        content: z
+          .string()
+          .max(MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX_CHARS),
       }),
     ),
     defaultValues: { content: '' },
@@ -196,15 +240,22 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       toast.success(`Shard ${newValue ? 'activated' : 'deactivated'}`)
     } catch (error) {
       console.error('Error toggling active state:', error)
-      toast.error('Failed to update active state')
+      const errorMessage = getErrorMessage(error, 'Failed to update active state')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleFieldSubmit = async (data: MemoryFormDto) => {
-    if (!editingShard || !editingField) return
+    if (!editingShard || !editingField) {
+      console.warn('handleFieldSubmit called without editingShard or editingField', { editingShard, editingField })
+      return
+    }
 
+    console.log('handleFieldSubmit called', { editingField, data })
+
+    // This function now only handles extraction_prompt (content is handled by separate flow)
     try {
       setIsSubmitting(true)
       const updateData = { [editingField]: data[editingField] || '' }
@@ -226,11 +277,13 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setEditingField(null)
     } catch (error) {
       console.error('Error updating field:', error)
-      toast.error('Failed to update field')
+      const errorMessage = getErrorMessage(error, 'Failed to update field')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
   }
+
 
   const handleMemoryEdit = (memory: MemorySession) => {
     setEditingMemory(memory)
@@ -241,10 +294,64 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   const handleMemoryUpdate = async (data: { content: string }) => {
     if (!editingMemory) return
 
+    // Show confirmation dialog first
+    setPendingMemoryData(data)
+    setIsMemoryConfirmationOpen(true)
+  }
+
+  const handleContentEdit = (shard: CollectiveShard) => {
+    setEditingShard(shard)
+    contentForm.setValue('content', shard.content || '')
+    setIsContentEditModalOpen(true)
+  }
+
+  const handleContentUpdate = async (data: { content: string }) => {
+    if (!editingShard) return
+
+    // Show confirmation dialog first
+    setPendingContentData(data)
+    setIsContentConfirmationOpen(true)
+  }
+
+  const handleConfirmedContentUpdate = async () => {
+    if (!editingShard || !pendingContentData) return
+
+    try {
+      setIsSubmitting(true)
+      await axios.patch(
+        `/api/agents/${agent._id}/collective-memory/${editingShard._id}`,
+        {
+          content: pendingContentData.content || '',
+        },
+      )
+
+      setShards(prev =>
+        prev.map(s =>
+          s._id === editingShard._id ? { ...s, content: pendingContentData.content } : s,
+        ),
+      )
+
+      toast.success('Memory updated successfully')
+      setIsContentEditModalOpen(false)
+      setIsContentConfirmationOpen(false)
+      setEditingShard(null)
+      setPendingContentData(null)
+    } catch (error) {
+      console.error('Error updating memory content:', error)
+      const errorMessage = getErrorMessage(error, 'Failed to update memory content')
+      toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleConfirmedMemoryUpdate = async () => {
+    if (!editingMemory || !pendingMemoryData) return
+
     try {
       setIsSubmitting(true)
       await axios.patch(`/api/memory-sessions/${editingMemory._id}`, {
-        content: data.content || '',
+        content: pendingMemoryData.content || '',
       })
 
       // Update local state for both facts and unabsorbed_memory_ids
@@ -252,10 +359,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         prev.map(shard => ({
           ...shard,
           facts: shard.facts.map(f =>
-            f._id === editingMemory._id ? { ...f, content: data.content } : f,
+            f._id === editingMemory._id ? { ...f, content: pendingMemoryData.content } : f,
           ),
           unabsorbed_memory_ids: shard.unabsorbed_memory_ids.map(u =>
-            u._id === editingMemory._id ? { ...u, content: data.content } : u,
+            u._id === editingMemory._id ? { ...u, content: pendingMemoryData.content } : u,
           ),
         })),
       )
@@ -263,9 +370,11 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       toast.success('Memory updated successfully')
       setIsMemoryEditModalOpen(false)
       setEditingMemory(null)
+      setPendingMemoryData(null)
     } catch (error) {
       console.error('Error updating memory:', error)
-      toast.error('Failed to update memory')
+      const errorMessage = getErrorMessage(error, 'Failed to update memory')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -300,7 +409,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       toast.success('Memory removed successfully')
     } catch (error) {
       console.error('Error deleting memory:', error)
-      toast.error('Failed to remove memory')
+      const errorMessage = getErrorMessage(error, 'Failed to remove memory')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -324,7 +434,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setIsNewShardModalOpen(false)
       newShardForm.reset()
     } catch (error) {
-      handleAxiosServerError(error)
+      console.error('Error creating new shard:', error)
+      const errorMessage = getErrorMessage(error, 'Failed to create collective memory shard')
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -334,7 +446,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     return (
       <div className="text-center py-16">
         <div className="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-orange-50/50 to-red-50/50 dark:bg-gradient-to-r dark:from-orange-900/10 dark:to-red-900/10 border border-orange-200/50 dark:border-orange-500/20 backdrop-blur-sm">
-          <span className="text-orange-700 dark:text-orange-300 font-medium">
+          <span className="text-orange-600 dark:text-orange-300 font-medium">
             {needsPreview ? (
               <>
                 🚀 Collective Memory is coming soon...
@@ -348,7 +460,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 <br />
                 <a
                   href="/settings/subscription"
-                  className="underline hover:text-orange-600 dark:hover:text-orange-200 transition-colors"
+                  className="underline hover:text-orange-500 dark:hover:text-orange-200 transition-colors"
                 >
                   Upgrade your subscription
                 </a>{' '}
@@ -422,7 +534,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       </FormControl>
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span></span>
-                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX}</span>
+                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX_CHARS}</span>
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -436,16 +548,16 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       <FormLabel>Extraction prompt</FormLabel>
                       <FormControl>
                         <AutosizeTextarea
-                          placeholder="The extraction prompt tells the agent what this Collective Memory Shard is for, what kinds of information is relevant and what kinds of facts and ideas should be remembered. Clearly describing what the purpose is of this Collective Memory Shard is essential to make things work well. Iterate over time!"
+                          placeholder="The extraction prompt tells the agent what this Collective Memory Shard is for, what kinds of information are relevant and what kinds of facts and ideas should be remembered. Clearly describing what the purpose is of this Collective Memory Shard is essential to make things work well. Iterate over time!"
                           className="min-h-[200px] resize-y"
                           {...field}
                         />
                       </FormControl>
                       <div className="flex justify-between text-sm text-muted-foreground">
-                        <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN ? 'text-red-500' : 'text-muted-foreground'}`}>
+                        <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS ? 'text-red-500' : 'text-muted-foreground'}`}>
                           {MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED}
                         </span>
-                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX}</span>
+                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}</span>
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -464,7 +576,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN}
+                    disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS}
                     className="min-w-[100px]"
                   >
                     {isSubmitting ? (
@@ -494,14 +606,14 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
               <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-300 cursor-help">
+                  <h2 className="text-lg font-semibold text-blue-600 dark:text-blue-300 cursor-help">
                     Collective Memory
                   </h2>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <p>
-                    This is {agent.name}'s collective memory. This memory is
-                    formed and evolved by all its conversations with all users.
+                    {agent.name}'s collective memory. This memory grows and
+                    evolves through all conversations with all users.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -515,8 +627,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   <div
                     className={`text-sm font-medium cursor-help ${
                       shard.is_active
-                        ? 'text-green-700 dark:text-green-300'
-                        : 'text-orange-700 dark:text-orange-300'
+                        ? 'text-green-600 dark:text-green-300'
+                        : 'text-orange-600 dark:text-orange-300'
                     }`}
                   >
                     {shard.is_active ? 'Active' : 'Paused'}
@@ -549,15 +661,15 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
             <div className="flex items-center gap-3 mb-3">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <h3 className="text-md font-medium text-purple-700 dark:text-purple-300 cursor-help">
+                  <h3 className="text-md font-medium text-purple-600 dark:text-purple-300 cursor-help">
                     Extraction Prompt
                   </h3>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-md">
                   <p>
-                    This prompt tells the agent how it should extract memories
+                    This prompt tells {agent.name} what information to remember
                     from its conversations. Explain the agent what the goal of
-                    this collective memory shard is and which things are
+                    this collective memory is and which things are
                     important for it to remember. This prompt is the most
                     crucial part of making collective memory work well. Iterate
                     on this a lot!
@@ -589,7 +701,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
             <div className="flex items-center gap-3 mb-3">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <h3 className="text-md font-medium text-blue-700 dark:text-blue-300 cursor-help">
+                  <h3 className="text-md font-medium text-blue-600 dark:text-blue-300 cursor-help">
                     Memory
                   </h3>
                 </TooltipTrigger>
@@ -608,12 +720,12 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 {shard.content || (
                   <span className="text-muted-foreground italic">
                     💭 No collective memory content yet. This will be populated
-                    as users interact with {agent.name}.
+                    automatically as users interact with {agent.name}.
                   </span>
                 )}
               </div>
               <Button
-                onClick={() => handleFieldEdit(shard, 'content')}
+                onClick={() => handleContentEdit(shard)}
                 size="sm"
                 className="absolute bottom-3 right-3 bg-blue-500 hover:bg-blue-600 text-white shadow-md transition-all duration-200 hover:scale-105 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
               >
@@ -629,7 +741,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h2 className="text-lg font-semibold text-amber-700 dark:text-amber-300 cursor-help">
+                    <h2 className="text-lg font-semibold text-amber-600 dark:text-amber-300 cursor-help">
                       Recent Context
                     </h2>
                   </TooltipTrigger>
@@ -641,7 +753,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent dark:from-amber-500/30"></div>
-                <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
+                <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
                   Will be integrated soon
                 </span>
               </div>
@@ -651,7 +763,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     <div className="relative overflow-hidden rounded-lg border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                       <div className="absolute inset-0 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-900/5 dark:to-orange-900/5"></div>
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                        <div className="text-gray-700 dark:text-gray-300">
+                        <div className="text-gray-600 dark:text-gray-300">
                           {memory.content}
                         </div>
                       </div>
@@ -660,7 +772,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                           onClick={() => handleMemoryEdit(memory)}
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 hover:text-amber-700 rounded-full"
+                          className="h-7 w-7 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 hover:text-amber-500 rounded-full"
                         >
                           <Edit className="w-3 h-3" />
                         </Button>
@@ -694,21 +806,21 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 <div className="w-1 h-6 bg-gradient-to-b from-emerald-500 to-green-500 rounded-full"></div>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h2 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300 cursor-help">
+                    <h2 className="text-lg font-semibold text-emerald-600 dark:text-emerald-300 cursor-help">
                       Facts
                     </h2>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-md">
                     <p>
                       These are atomic facts the agent has picked up from its
-                      interactions which it deemed relevant to its collective
+                      interactions which are relevant to its collective
                       memory goal. Remove any facts that aren't relevant and
                       update the extraction prompt accordingly.
                     </p>
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex-1 h-px bg-gradient-to-r from-emerald-200 to-transparent dark:from-emerald-500/30"></div>
-                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-500/20">
                   {shard.facts.length} facts
                 </span>
               </div>
@@ -720,7 +832,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       <div className="relative overflow-hidden rounded-lg border border-emerald-200/50 dark:border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                         <div className="absolute inset-0 bg-gradient-to-r from-emerald-50/30 to-green-50/30 dark:from-emerald-900/5 dark:to-green-900/5"></div>
                         <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                          <div className="text-gray-700 dark:text-gray-300">
+                          <div className="text-gray-600 dark:text-gray-300">
                             {fact.content}
                           </div>
                         </div>
@@ -738,7 +850,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                               onClick={() => handleMemoryEdit(fact)}
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 hover:text-emerald-700 rounded-full"
+                              className="h-7 w-7 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600 hover:text-emerald-500 rounded-full"
                             >
                               <Edit className="w-3 h-3" />
                             </Button>
@@ -803,12 +915,12 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       />
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span className={`text-xs ${editingField === 'extraction_prompt' && (field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN ? 'text-red-500' : 'text-muted-foreground'}`}>
+                      <span className={`text-xs ${editingField === 'extraction_prompt' && (field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS ? 'text-red-500' : 'text-muted-foreground'}`}>
                         {editingField === 'extraction_prompt' ? MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED : ''}
                       </span>
                       <span>
                         {field.value?.length || 0} /{' '}
-                        {editingField === 'content' ? MEMORY_LIMITS.MEMORY_CONTENT_MAX : MEMORY_LIMITS.EXTRACTION_PROMPT_MAX}
+                        {editingField === 'content' ? MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS : MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}
                       </span>
                     </div>
                     <FormMessage />
@@ -829,7 +941,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || (editingField === 'extraction_prompt' && (form.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN)}
+                  disabled={isSubmitting || (editingField === 'extraction_prompt' && (form.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS)}
                   className="min-w-[100px]"
                 >
                   {isSubmitting ? (
@@ -875,7 +987,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.MEMORY_SESSION_MAX}</span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.FACTS_MAX_CHARS}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -909,59 +1021,38 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* New Shard Creation Modal */}
-      <Dialog open={isNewShardModalOpen} onOpenChange={setIsNewShardModalOpen}>
+      {/* Content Edit Modal */}
+      <Dialog
+        open={isContentEditModalOpen}
+        onOpenChange={setIsContentEditModalOpen}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Create a new Collective Memory Shard</DialogTitle>
+            <DialogTitle>Edit Memory Content</DialogTitle>
             <DialogDescription>
-              Create a new collective memory shard to organize and extract
-              specific types of information from conversations.
+              Edit the main collective memory content
             </DialogDescription>
           </DialogHeader>
-          <Form {...newShardForm}>
+          <Form {...contentForm}>
             <form
-              onSubmit={newShardForm.handleSubmit(handleCreateNewShard)}
+              onSubmit={contentForm.handleSubmit(handleContentUpdate)}
               className="space-y-4"
             >
               <FormField
-                control={newShardForm.control}
-                name="shard_name"
+                control={contentForm.control}
+                name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Shard name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="A simple name to remember the purpose of this Shard"
-                        {...field}
-                      />
-                    </FormControl>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX}</span>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={newShardForm.control}
-                name="extraction_prompt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Extraction prompt</FormLabel>
                     <FormControl>
                       <AutosizeTextarea
-                        placeholder="The extraction prompt tells the agent what this Collective Memory Shard is for, what kinds of information is relevant and what kinds of facts and ideas should be remembered. Clearly describing what the purpose is of this Collective Memory Shard is essential to make things work well. Iterate over time!"
+                        placeholder="Enter collective memory content..."
                         className="min-h-[200px] resize-y"
                         {...field}
                       />
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN ? 'text-red-500' : 'text-muted-foreground'}`}>
-                        {MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED}
-                      </span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX}</span>
+                      <span></span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS}</span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -972,21 +1063,21 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    setIsNewShardModalOpen(false)
-                    newShardForm.reset()
+                    setIsContentEditModalOpen(false)
+                    setEditingShard(null)
                   }}
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN}
+                  disabled={isSubmitting}
                   className="min-w-[100px]"
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    'Create Shard'
+                    'Save'
                   )}
                 </Button>
               </DialogFooter>
@@ -994,6 +1085,28 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           </Form>
         </DialogContent>
       </Dialog>
+
+
+
+      {/* Memory Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isMemoryConfirmationOpen}
+        onOpenChange={setIsMemoryConfirmationOpen}
+        onConfirm={handleConfirmedMemoryUpdate}
+        title="Modify Memory"
+        description="Are you sure you want to modify this memory? Saving this will cause the original memory to be lost!"
+        isSubmitting={isSubmitting}
+      />
+
+      {/* Content Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isContentConfirmationOpen}
+        onOpenChange={setIsContentConfirmationOpen}
+        onConfirm={handleConfirmedContentUpdate}
+        title="Modify Memory Content"
+        description="Are you sure you want to modify this memory content? Saving this will cause the original content to be lost!"
+        isSubmitting={isSubmitting}
+      />
     </TooltipProvider>
   )
 }

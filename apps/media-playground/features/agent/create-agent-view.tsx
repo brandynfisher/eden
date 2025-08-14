@@ -45,7 +45,7 @@ import { z } from 'zod'
 // Agent form schema
 const agentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(42),
-  key: z.string().min(1, 'Key is required'),
+  key: z.string().min(1, 'Key is required').regex(/^[a-z0-9_-]+$/, 'Key must only contain lowercase letters, numbers, underscores and dashes.'),
   image: z.string().optional(),
   description: z.string().min(1, 'Description is required').max(5000),
   persona: z.string().min(1, 'Persona is required').max(30000),
