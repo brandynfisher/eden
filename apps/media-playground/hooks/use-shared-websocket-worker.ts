@@ -300,9 +300,9 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
 
     // Only log non-debug messages at debug level
     if (message.type !== 'debug') {
-      const data = message.data
-        ? JSON.parse(message.data as string)
-        : message.data
+      // const data = message.data
+      //   ? JSON.parse(message.data as string)
+      //   : message.data
       // console.debug(
       //   'Worker message:',
       //   message.type,

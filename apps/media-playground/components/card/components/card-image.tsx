@@ -21,9 +21,11 @@ const CardImage = ({ media, unoptimized, className }: Props) => {
     siteConfig.mediaErrorUrl
   
   // Check if the URL is from CloudFront or S3
-  const isCloudFrontUrl = imageUrl && (
-    imageUrl.includes('cloudfront.net') || 
-    imageUrl.includes('s3.amazonaws.com')
+  const isCloudFrontUrl = Boolean(
+    imageUrl && (
+      imageUrl.includes('cloudfront.net') || 
+      imageUrl.includes('s3.amazonaws.com')
+    )
   )
 
   return (
