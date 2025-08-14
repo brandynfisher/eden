@@ -33,7 +33,7 @@ import {
 } from '../../controllers/agentController'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
+import { FastifyPluginAsync, FastifyRequest } from 'fastify'
 
 const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId', {
@@ -433,7 +433,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       response: { 200: { success: Type.Boolean() } },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => updateUserMemoryEnabled(server, request, reply),
+    handler: (request: FastifyRequest<{ Params: { agentId: string }; Body: { user_memory_enabled: boolean } }>, reply) => updateUserMemoryEnabled(server, request, reply),
   })
 
   server.get('/v2/memory-sessions/:memoryId', {
