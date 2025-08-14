@@ -1,5 +1,11 @@
 'use client'
 
+import {
+  MEMORY_ERROR_MESSAGES,
+  MEMORY_LIMITS,
+  MEMORY_UI_MESSAGES,
+} from './memory-constants'
+import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -34,18 +40,25 @@ import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES, MEMORY_UI_MESSAGES } from './memory-constants'
-import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 
 const memorySchema = z.object({
   content: z
     .string()
-    .max(MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX_CHARS)
+    .max(
+      MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS,
+      MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX_CHARS,
+    )
     .optional(),
   extraction_prompt: z
     .string()
-    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN_CHARS)
-    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX_CHARS)
+    .min(
+      MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS,
+      MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN_CHARS,
+    )
+    .max(
+      MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS,
+      MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX_CHARS,
+    )
     .optional(),
   is_active: z.boolean().optional(),
 })
@@ -53,12 +66,24 @@ const memorySchema = z.object({
 const newShardSchema = z.object({
   shard_name: z
     .string()
-    .min(MEMORY_LIMITS.SHARD_NAME_MIN_CHARS, MEMORY_ERROR_MESSAGES.SHARD_NAME_MIN_CHARS)
-    .max(MEMORY_LIMITS.SHARD_NAME_MAX_CHARS, MEMORY_ERROR_MESSAGES.SHARD_NAME_MAX_CHARS),
+    .min(
+      MEMORY_LIMITS.SHARD_NAME_MIN_CHARS,
+      MEMORY_ERROR_MESSAGES.SHARD_NAME_MIN_CHARS,
+    )
+    .max(
+      MEMORY_LIMITS.SHARD_NAME_MAX_CHARS,
+      MEMORY_ERROR_MESSAGES.SHARD_NAME_MAX_CHARS,
+    ),
   extraction_prompt: z
     .string()
-    .min(MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN_CHARS)
-    .max(MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS, MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX_CHARS),
+    .min(
+      MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS,
+      MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MIN_CHARS,
+    )
+    .max(
+      MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS,
+      MEMORY_ERROR_MESSAGES.EXTRACTION_PROMPT_MAX_CHARS,
+    ),
 })
 
 type MemoryFormDto = z.infer<typeof memorySchema>
@@ -106,7 +131,7 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
     } else if (responseData?.error) {
       return responseData.error
     }
-    
+
     // Handle common status codes
     switch (error.response?.status) {
       case 404:
@@ -140,11 +165,17 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   const [isMemoryEditModalOpen, setIsMemoryEditModalOpen] = useState(false)
   const [editingMemory, setEditingMemory] = useState<MemorySession | null>(null)
   const [isNewShardModalOpen, setIsNewShardModalOpen] = useState(false)
-  const [isMemoryConfirmationOpen, setIsMemoryConfirmationOpen] = useState(false)
-  const [pendingMemoryData, setPendingMemoryData] = useState<{ content: string } | null>(null)
+  const [isMemoryConfirmationOpen, setIsMemoryConfirmationOpen] =
+    useState(false)
+  const [pendingMemoryData, setPendingMemoryData] = useState<{
+    content: string
+  } | null>(null)
   const [isContentEditModalOpen, setIsContentEditModalOpen] = useState(false)
-  const [pendingContentData, setPendingContentData] = useState<{ content: string } | null>(null)
-  const [isContentConfirmationOpen, setIsContentConfirmationOpen] = useState(false)
+  const [pendingContentData, setPendingContentData] = useState<{
+    content: string
+  } | null>(null)
+  const [isContentConfirmationOpen, setIsContentConfirmationOpen] =
+    useState(false)
 
   const form = useForm<MemoryFormDto>({
     resolver: zodResolver(memorySchema),
@@ -160,7 +191,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       z.object({
         content: z
           .string()
-          .max(MEMORY_LIMITS.FACTS_MAX_CHARS, MEMORY_ERROR_MESSAGES.FACTS_MAX_CHARS),
+          .max(
+            MEMORY_LIMITS.FACTS_MAX_CHARS,
+            MEMORY_ERROR_MESSAGES.FACTS_MAX_CHARS,
+          ),
       }),
     ),
     defaultValues: { content: '' },
@@ -171,7 +205,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       z.object({
         content: z
           .string()
-          .max(MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX_CHARS),
+          .max(
+            MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS,
+            MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX_CHARS,
+          ),
       }),
     ),
     defaultValues: { content: '' },
@@ -239,7 +276,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       toast.success(`Shard ${newValue ? 'activated' : 'deactivated'}`)
     } catch (error) {
       console.error('Error toggling active state:', error)
-      const errorMessage = getErrorMessage(error, 'Failed to update active state')
+      const errorMessage = getErrorMessage(
+        error,
+        'Failed to update active state',
+      )
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -248,7 +288,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
 
   const handleFieldSubmit = async (data: MemoryFormDto) => {
     if (!editingShard || !editingField) {
-      console.warn('handleFieldSubmit called without editingShard or editingField', { editingShard, editingField })
+      console.warn(
+        'handleFieldSubmit called without editingShard or editingField',
+        { editingShard, editingField },
+      )
       return
     }
 
@@ -282,7 +325,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setIsSubmitting(false)
     }
   }
-
 
   const handleMemoryEdit = (memory: MemorySession) => {
     setEditingMemory(memory)
@@ -326,7 +368,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
 
       setShards(prev =>
         prev.map(s =>
-          s._id === editingShard._id ? { ...s, content: pendingContentData.content } : s,
+          s._id === editingShard._id
+            ? { ...s, content: pendingContentData.content }
+            : s,
         ),
       )
 
@@ -337,7 +381,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setPendingContentData(null)
     } catch (error) {
       console.error('Error updating memory content:', error)
-      const errorMessage = getErrorMessage(error, 'Failed to update memory content')
+      const errorMessage = getErrorMessage(
+        error,
+        'Failed to update memory content',
+      )
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -358,10 +405,14 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         prev.map(shard => ({
           ...shard,
           facts: shard.facts.map(f =>
-            f._id === editingMemory._id ? { ...f, content: pendingMemoryData.content } : f,
+            f._id === editingMemory._id
+              ? { ...f, content: pendingMemoryData.content }
+              : f,
           ),
           unabsorbed_memory_ids: shard.unabsorbed_memory_ids.map(u =>
-            u._id === editingMemory._id ? { ...u, content: pendingMemoryData.content } : u,
+            u._id === editingMemory._id
+              ? { ...u, content: pendingMemoryData.content }
+              : u,
           ),
         })),
       )
@@ -434,7 +485,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       newShardForm.reset()
     } catch (error) {
       console.error('Error creating new shard:', error)
-      const errorMessage = getErrorMessage(error, 'Failed to create collective memory shard')
+      const errorMessage = getErrorMessage(
+        error,
+        'Failed to create collective memory shard',
+      )
       toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
@@ -533,7 +587,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       </FormControl>
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span></span>
-                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX_CHARS}</span>
+                        <span>
+                          {field.value?.length || 0} /{' '}
+                          {MEMORY_LIMITS.SHARD_NAME_MAX_CHARS}
+                        </span>
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -553,10 +610,20 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                         />
                       </FormControl>
                       <div className="flex justify-between text-sm text-muted-foreground">
-                        <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS ? 'text-red-500' : 'text-muted-foreground'}`}>
+                        <span
+                          className={`text-xs ${
+                            (field.value?.length || 0) <
+                            MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS
+                              ? 'text-red-500'
+                              : 'text-muted-foreground'
+                          }`}
+                        >
                           {MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED}
                         </span>
-                        <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}</span>
+                        <span>
+                          {field.value?.length || 0} /{' '}
+                          {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}
+                        </span>
                       </div>
                       <FormMessage />
                     </FormItem>
@@ -575,7 +642,11 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS}
+                    disabled={
+                      isSubmitting ||
+                      (newShardForm.watch('extraction_prompt')?.length || 0) <
+                        MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS
+                    }
                     className="min-w-[100px]"
                   >
                     {isSubmitting ? (
@@ -668,10 +739,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   <p>
                     This prompt tells {agent.name} what information to remember
                     from its conversations. Explain the agent what the goal of
-                    this collective memory is and which things are
-                    important for it to remember. This prompt is the most
-                    crucial part of making collective memory work well. Iterate
-                    on this a lot!
+                    this collective memory is and which things are important for
+                    it to remember. This prompt is the most crucial part of
+                    making collective memory work well. Iterate on this a lot!
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -812,9 +882,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   <TooltipContent className="max-w-md">
                     <p>
                       These are atomic facts the agent has picked up from its
-                      interactions which are relevant to its collective
-                      memory goal. Remove any facts that aren't relevant and
-                      update the extraction prompt accordingly.
+                      interactions which are relevant to its collective memory
+                      goal. Remove any facts that aren't relevant and update the
+                      extraction prompt accordingly.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -914,12 +984,24 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       />
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span className={`text-xs ${editingField === 'extraction_prompt' && (field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS ? 'text-red-500' : 'text-muted-foreground'}`}>
-                        {editingField === 'extraction_prompt' ? MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED : ''}
+                      <span
+                        className={`text-xs ${
+                          editingField === 'extraction_prompt' &&
+                          (field.value?.length || 0) <
+                            MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS
+                            ? 'text-red-500'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        {editingField === 'extraction_prompt'
+                          ? MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED
+                          : ''}
                       </span>
                       <span>
                         {field.value?.length || 0} /{' '}
-                        {editingField === 'content' ? MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS : MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}
+                        {editingField === 'content'
+                          ? MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS
+                          : MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}
                       </span>
                     </div>
                     <FormMessage />
@@ -940,7 +1022,12 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting || (editingField === 'extraction_prompt' && (form.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS)}
+                  disabled={
+                    isSubmitting ||
+                    (editingField === 'extraction_prompt' &&
+                      (form.watch('extraction_prompt')?.length || 0) <
+                        MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS)
+                  }
                   className="min-w-[100px]"
                 >
                   {isSubmitting ? (
@@ -986,7 +1073,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.FACTS_MAX_CHARS}</span>
+                      <span>
+                        {field.value?.length || 0} /{' '}
+                        {MEMORY_LIMITS.FACTS_MAX_CHARS}
+                      </span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -1051,7 +1141,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS}</span>
+                      <span>
+                        {field.value?.length || 0} /{' '}
+                        {MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS}
+                      </span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -1084,8 +1177,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           </Form>
         </DialogContent>
       </Dialog>
-
-
 
       {/* Memory Edit Confirmation Dialog */}
       <MemoryEditConfirmationDialog

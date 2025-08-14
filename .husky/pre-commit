@@ -1,4 +1,25 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Run lint-staged for formatting and linting
 yarn lint-staged
+
+# Check TypeScript compilation for apps/api
+echo "🔍 Checking TypeScript compilation for apps/api..."
+cd apps/api && yarn tsc --noEmit --incremental
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript compilation failed in apps/api! Fix the errors before committing."
+  exit 1
+fi
+cd ../..
+
+# Check TypeScript compilation for apps/media-playground
+echo "🔍 Checking TypeScript compilation for apps/media-playground..."
+cd apps/media-playground && yarn tsc --noEmit --incremental
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript compilation failed in apps/media-playground! Fix the errors before committing."
+  exit 1
+fi
+cd ../..
+
+echo "✅ All TypeScript checks passed!"
