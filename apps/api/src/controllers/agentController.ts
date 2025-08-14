@@ -2156,7 +2156,7 @@ export const updateUserMemoryEnabled = async (
 
   try {
     // Validate agent access
-    const { agent, error } = await validateAgentAccess(agentId)
+    const { error } = await validateAgentAccess(agentId)
     if (error) {
       return reply.status(404).send({ error })
     }
