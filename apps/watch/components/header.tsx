@@ -45,7 +45,7 @@ export function Header() {
           <DropdownMenuContent align="end" className="w-[200px]">
             <DropdownMenuItem asChild>
               <Link
-                href={`https://beta.eden.art/creators/${user?.username}`}
+                href={`https://app.eden.art/creators/${user?.username}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -296,7 +296,7 @@ const NavMenu = ({
 
         <div className="bg-purple-900 text-sm flex justify-center items-center p-2 py-3">
           <a
-            href={'https://beta.eden.art'}
+            href={'https://app.eden.art'}
             target="_blank"
             rel="noopener noreferrer"
             className="text-gray-200 hover:underline hover:text-gray-300"

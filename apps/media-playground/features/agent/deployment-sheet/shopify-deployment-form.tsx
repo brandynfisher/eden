@@ -1,7 +1,16 @@
 'use client'
 
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Form } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
@@ -64,13 +73,23 @@ export const ShopifyDeploymentForm = ({
       >
         <Form {...form}>
           <form className="flex flex-col w-full space-y-4 p-4">
-            <TokenField
-              form={form}
+            <FormField
+              control={form.control}
               name="storeName"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="Store Name"
-              description="Your Shopify store name (e.g., my-store)."
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Store Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="my-store"
+                      disabled={form.formState.isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>Your Shopify store name (e.g., my-store).</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <TokenField
               form={form}
@@ -80,13 +99,23 @@ export const ShopifyDeploymentForm = ({
               label="Access Token"
               description="Your Shopify access token."
             />
-            <TokenField
-              form={form}
+            <FormField
+              control={form.control}
               name="locationId"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="Location ID"
-              description="Your Shopify location ID (number)."
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location ID</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Location ID"
+                      disabled={form.formState.isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>Your Shopify location ID (number).</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <DeploymentFormFooter
               agentId={agentId}
