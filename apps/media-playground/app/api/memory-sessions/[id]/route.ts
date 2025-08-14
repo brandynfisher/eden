@@ -2,6 +2,7 @@ import { handleAxiosServerError } from '@/lib/fetcher'
 import { getAuth } from '@clerk/nextjs/server'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
+import axios from 'axios'
 
 export async function GET(
   request: NextRequest,
@@ -83,8 +84,28 @@ export async function PATCH(
     return NextResponse.json(response)
   } catch (error) {
     console.error('Error updating memory session:', error)
+    
+    // Extract error details for better frontend messaging
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status || 500
+      const errorData = error.response?.data || {}
+      const errorMessage = errorData.message || errorData.error || 'Failed to update memory session'
+      
+      return new NextResponse(
+        JSON.stringify({ 
+          message: errorMessage,
+          error: errorData.error || 'Unknown error',
+          details: errorData
+        }), 
+        { status: statusCode }
+      )
+    }
+    
     const errorMessage = handleAxiosServerError(error)
-    return new NextResponse(JSON.stringify({ message: errorMessage }), {
+    return new NextResponse(JSON.stringify({ 
+      message: errorMessage,
+      error: 'Unknown error' 
+    }), {
       status: 500,
     })
   }

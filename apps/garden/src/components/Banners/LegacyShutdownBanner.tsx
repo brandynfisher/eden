@@ -84,7 +84,7 @@ const LegacyShutdownBanner: FC<LegacyShutdownBannerProps> = ({
               </div>
               <div>
                 <a
-                  href="https://beta.eden.art"
+                  href="https://app.eden.art"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="banner-link underline font-semibold hover:text-white/90"

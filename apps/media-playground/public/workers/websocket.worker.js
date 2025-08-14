@@ -5,7 +5,7 @@ self.name = 'websocket-worker'
 self.WORKER_VERSION = '1.1'
 
 // Enable debugging for the worker
-self.DEBUG = true
+self.DEBUG = false
 
 // Listen for cleanup messages using BroadcastChannel
 let cleanupChannel
@@ -26,14 +26,7 @@ try {
 
 // Ensure worker is registered for inspection
 if (typeof SharedWorkerGlobalScope !== 'undefined' && self instanceof SharedWorkerGlobalScope) {
-  // Log initialization with more details
-  console.log('SharedWorker initialized:', {
-    name: self.name,
-    version: self.WORKER_VERSION,
-    timestamp: new Date().toISOString(),
-    location: self.location?.href,
-    type: 'SharedWorker'
-  })
+  // SharedWorker initialized
 
   // Send a cleanup message for legacy workers
   if (cleanupChannel) {

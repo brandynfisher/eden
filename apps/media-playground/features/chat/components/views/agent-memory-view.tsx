@@ -1,6 +1,8 @@
 'use client'
 
 import CollectiveMemory from './collective-memory'
+import { MEMORY_ERROR_MESSAGES, MEMORY_LIMITS } from './memory-constants'
+import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -18,14 +20,15 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form'
+import { Switch } from '@/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useAuthState } from '@/hooks/use-auth-state'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -35,11 +38,16 @@ import { FC, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES } from './memory-constants'
 
 // Schema for memory form
 const memorySchema = z.object({
-  content: z.string().optional(),
+  content: z
+    .string()
+    .max(
+      MEMORY_LIMITS.USER_MEMORY_CONTENT_MAX_CHARS,
+      MEMORY_ERROR_MESSAGES.USER_MEMORY_CONTENT_MAX_CHARS,
+    )
+    .optional(),
 })
 
 type MemoryFormDto = z.infer<typeof memorySchema>
@@ -66,6 +74,15 @@ const AgentMemoryView: FC<{
   const [editingDirective, setEditingDirective] =
     useState<UnabsorbedDirective | null>(null)
   const [displayContent, setDisplayContent] = useState('')
+  const [isUserMemoryConfirmationOpen, setIsUserMemoryConfirmationOpen] =
+    useState(false)
+  const [pendingUserMemoryData, setPendingUserMemoryData] =
+    useState<MemoryFormDto | null>(null)
+  const [isDirectiveConfirmationOpen, setIsDirectiveConfirmationOpen] =
+    useState(false)
+  const [pendingDirectiveData, setPendingDirectiveData] =
+    useState<MemoryFormDto | null>(null)
+  const [userMemoryEnabled, setUserMemoryEnabled] = useState<boolean>(true)
 
   // Collective Memory Access Logic - Four Scenarios:
   // 1. Not editor/owner: no tab visible (handled by hasEditAccess check)
@@ -105,7 +122,10 @@ const AgentMemoryView: FC<{
       z.object({
         content: z
           .string()
-          .max(MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX, MEMORY_ERROR_MESSAGES.DIRECTIVE_CONTENT_MAX)
+          .max(
+            MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX_CHARS,
+            MEMORY_ERROR_MESSAGES.DIRECTIVE_CONTENT_MAX_CHARS,
+          )
           .optional(),
       }),
     ),
@@ -114,19 +134,32 @@ const AgentMemoryView: FC<{
     },
   })
 
-  // Load existing memory data from memory_user collection
+  // Initialize and load data on component mount
   useEffect(() => {
-    const loadMemoryData = async () => {
+    const loadData = async () => {
       if (agent && authUser) {
-        try {
-          const response = await axios.get(`/api/agents/${agent._id}/memory`)
+        // 1. Set toggle state from agent prop
+        const isUserMemoryEnabled =
+          agent.user_memory_enabled !== undefined
+            ? agent.user_memory_enabled
+            : true
+        setUserMemoryEnabled(isUserMemoryEnabled)
 
-          const content = response.data.content || ''
-          form.setValue('content', content)
-          setDisplayContent(content)
-          setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
-        } catch (error) {
-          console.error('Error loading memory data:', error)
+        // 2. If enabled, fetch memory data; if disabled, clear display
+        if (isUserMemoryEnabled) {
+          try {
+            const response = await axios.get(`/api/agents/${agent._id}/memory`)
+            const content = response.data.content || ''
+            form.setValue('content', content)
+            setDisplayContent(content)
+            setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
+          } catch (error) {
+            console.error('Error loading memory data:', error)
+            form.setValue('content', '')
+            setDisplayContent('')
+            setUnabsorbedDirectives([])
+          }
+        } else {
           form.setValue('content', '')
           setDisplayContent('')
           setUnabsorbedDirectives([])
@@ -134,20 +167,29 @@ const AgentMemoryView: FC<{
       }
     }
 
-    loadMemoryData()
-  }, [agent?._id, authUser, form])
+    loadData()
+  }, [agent?._id, authUser, form, agent?.user_memory_enabled])
 
   const handleSubmit = async (data: MemoryFormDto) => {
     if (!agent || !authUser) return
 
+    // Show confirmation dialog first
+    setPendingUserMemoryData(data)
+    setIsUserMemoryConfirmationOpen(true)
+  }
+
+  const handleConfirmedSubmit = async () => {
+    if (!agent || !authUser || !pendingUserMemoryData) return
+
     try {
       setIsSubmitting(true)
       await axios.post(`/api/agents/${agent._id}/memory`, {
-        content: data.content || '',
+        content: pendingUserMemoryData.content || '',
       })
-      setDisplayContent(data.content || '')
+      setDisplayContent(pendingUserMemoryData.content || '')
       toast.success('Memory saved successfully')
       setIsEditModalOpen(false)
+      setPendingUserMemoryData(null)
     } catch (error) {
       console.error('Error saving memory for agent:', agent._id, error)
 
@@ -188,17 +230,26 @@ const AgentMemoryView: FC<{
   const handleDirectiveUpdate = async (data: MemoryFormDto) => {
     if (!editingDirective || !agent || !authUser) return
 
+    // Show confirmation dialog first
+    setPendingDirectiveData(data)
+    setIsDirectiveConfirmationOpen(true)
+  }
+
+  const handleConfirmedDirectiveUpdate = async () => {
+    if (!editingDirective || !agent || !authUser || !pendingDirectiveData)
+      return
+
     try {
       setIsSubmitting(true)
       await axios.patch(`/api/memory-sessions/${editingDirective._id}`, {
-        content: data.content || '',
+        content: pendingDirectiveData.content || '',
       })
 
       // Update the local state
       setUnabsorbedDirectives(prev =>
         prev.map(directive =>
           directive._id === editingDirective._id
-            ? { ...directive, content: data.content || '' }
+            ? { ...directive, content: pendingDirectiveData.content || '' }
             : directive,
         ),
       )
@@ -206,9 +257,79 @@ const AgentMemoryView: FC<{
       toast.success('Directive updated successfully')
       setIsDirectiveEditModalOpen(false)
       setEditingDirective(null)
+      setPendingDirectiveData(null)
     } catch (error) {
       console.error('Error updating directive:', error)
       toast.error('Failed to update directive. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleToggleUserMemoryEnabled = async () => {
+    if (!agent || !authUser) return
+
+    try {
+      setIsSubmitting(true)
+      const newValue = !userMemoryEnabled
+
+      // 1. Update MongoDB through API
+      await axios.patch(`/api/agents/${agent._id}/user-memory-enabled`, {
+        user_memory_enabled: newValue,
+      })
+
+      // 2. Update local toggle state
+      setUserMemoryEnabled(newValue)
+
+      // 3. Refresh display based on new state
+      if (newValue) {
+        // If enabled, fetch memory data
+        try {
+          const response = await axios.get(`/api/agents/${agent._id}/memory`)
+          const content = response.data.content || ''
+          form.setValue('content', content)
+          setDisplayContent(content)
+          setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
+        } catch (error) {
+          console.error('Error loading memory data after toggle:', error)
+        }
+      } else {
+        // If disabled, clear display
+        form.setValue('content', '')
+        setDisplayContent('')
+        setUnabsorbedDirectives([])
+      }
+
+      toast.success(`User memory ${newValue ? 'enabled' : 'disabled'}`)
+    } catch (error) {
+      console.error('Error toggling user memory enabled state:', error)
+
+      const getErrorMessage = (error: unknown): string => {
+        if (axios.isAxiosError(error)) {
+          const responseData = error.response?.data
+          if (responseData?.message) {
+            return responseData.message
+          } else if (responseData?.error) {
+            return responseData.error
+          }
+
+          switch (error.response?.status) {
+            case 404:
+              return 'Agent not found'
+            case 401:
+              return 'You are not authorized to perform this action'
+            case 403:
+              return 'You do not have permission to perform this action'
+            case 400:
+              return 'Invalid request data'
+            default:
+              return 'Failed to update user memory state'
+          }
+        }
+        return 'Failed to update user memory state'
+      }
+
+      toast.error(getErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }
@@ -243,7 +364,7 @@ const AgentMemoryView: FC<{
             {/* Title */}
             <div className="text-center">
               <h1
-                className="text-3xl font-bold text-white/95 dark:text-white/90"
+                className="text-3xl font-bold text-gray-900 dark:text-white/90"
                 style={{ textShadow: '0 0 20px rgba(147, 51, 234, 0.3)' }}
               >
                 Manage {agent.name}'s memories
@@ -261,7 +382,7 @@ const AgentMemoryView: FC<{
                         'flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 min-w-[110px]',
                         memoryTab === 'user'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
-                          : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300',
+                          : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-300',
                       )}
                     >
                       User Memory
@@ -269,10 +390,11 @@ const AgentMemoryView: FC<{
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs">
                     <p>
-                      This is your personal memory with {agent.name}, extracted
-                      from all your conversations with this agent. These
-                      memories only affect your own interactions with{' '}
-                      {agent.name}.
+                      This is your personal preferences memory with {agent.name}
+                      , extracted from all your conversations with this agent.
+                      These memories only affect your own interactions with{' '}
+                      {agent.name} and primarily store custom instructions you
+                      give to the agent.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -284,7 +406,7 @@ const AgentMemoryView: FC<{
                         'flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 min-w-[110px]',
                         memoryTab === 'collective'
                           ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-md'
-                          : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300',
+                          : 'bg-white/30 dark:bg-black/20 backdrop-blur-sm border border-purple-200/30 dark:border-purple-500/20 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-300',
                       )}
                     >
                       Collective Memory
@@ -308,33 +430,72 @@ const AgentMemoryView: FC<{
           {memoryTab === 'user' ? (
             <div className="space-y-8">
               <div className="relative group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <h2 className="text-lg font-semibold text-purple-700 dark:text-purple-300 cursor-help">
-                        User Memory
-                      </h2>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <p>
-                        This is your personal memory with {agent.name},
-                        extracted from all your conversations with this agent.
-                        These memories only affect your own interactions with{' '}
-                        {agent.name}.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-transparent dark:from-purple-500/30"></div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-blue-500 rounded-full"></div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <h2 className="text-lg font-semibold text-purple-600 dark:text-purple-300 cursor-help">
+                          User Memory
+                        </h2>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>
+                          This is your personal memory with {agent.name},
+                          extracted from all your conversations with this agent.
+                          These memories only affect your own interactions with{' '}
+                          {agent.name}.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="flex-1 h-px bg-gradient-to-r from-purple-200 to-transparent dark:from-purple-500/30"></div>
+                  </div>
+
+                  {/* User Memory Active/Disabled Toggle - Only show if user has edit access */}
+                  {hasEditAccess && (
+                    <div className="flex items-center gap-3">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={`text-sm font-medium cursor-help ${
+                              userMemoryEnabled
+                                ? 'text-green-600 dark:text-green-300'
+                                : 'text-orange-600 dark:text-orange-300'
+                            }`}
+                          >
+                            {userMemoryEnabled ? 'Active' : 'Disabled'}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {userMemoryEnabled
+                              ? 'User memory is active and will be used in conversations'
+                              : 'User memory is disabled and will not be used in conversations'}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Switch
+                        checked={userMemoryEnabled}
+                        onCheckedChange={handleToggleUserMemoryEnabled}
+                        disabled={isSubmitting}
+                        style={{
+                          backgroundColor: userMemoryEnabled
+                            ? 'rgb(34 197 94)' // green-500
+                            : 'rgb(249 115 22)', // orange-500
+                          opacity: isSubmitting ? 0.5 : 1,
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="group relative overflow-hidden rounded-xl border border-purple-200/50 dark:border-purple-500/20 bg-white/80 dark:bg-black/40 backdrop-blur-sm shadow-lg">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-900/10 dark:to-blue-900/10"></div>
                   <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[120px] max-h-[250px] overflow-y-auto">
                     {displayContent || (
                       <span className="text-muted-foreground italic">
-                        💭 No user memories stored yet. Just interact with{' '}
-                        {agent.name} and memories will automatically appear
-                        here.
+                        {!userMemoryEnabled
+                          ? '💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)'
+                          : `💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here.`}
                       </span>
                     )}
                   </div>
@@ -348,14 +509,14 @@ const AgentMemoryView: FC<{
                 </div>
               </div>
 
-              {/* Unabsorbed Directives Display - Only show if there are directives */}
-              {unabsorbedDirectives.length > 0 && (
+              {/* Unabsorbed Directives Display - Only show if there are directives and user memory is enabled */}
+              {unabsorbedDirectives.length > 0 && userMemoryEnabled && (
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <h2 className="text-lg font-semibold text-amber-700 dark:text-amber-300 cursor-help">
+                        <h2 className="text-lg font-semibold text-amber-600 dark:text-amber-300 cursor-help">
                           Recent Context
                         </h2>
                       </TooltipTrigger>
@@ -368,7 +529,7 @@ const AgentMemoryView: FC<{
                       </TooltipContent>
                     </Tooltip>
                     <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent dark:from-amber-500/30"></div>
-                    <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
+                    <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300 px-2 py-1 rounded-full border border-amber-200 dark:border-amber-500/20">
                       Will be integrated soon
                     </span>
                   </div>
@@ -378,7 +539,7 @@ const AgentMemoryView: FC<{
                         <div className="relative overflow-hidden rounded-lg border border-amber-200/50 dark:border-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200">
                           <div className="absolute inset-0 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-900/5 dark:to-orange-900/5"></div>
                           <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                            <div className="text-gray-700 dark:text-gray-300">
+                            <div className="text-gray-600 dark:text-gray-300">
                               {directive.content}
                             </div>
                           </div>
@@ -387,7 +548,7 @@ const AgentMemoryView: FC<{
                               onClick={() => handleDirectiveEdit(directive)}
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 hover:text-amber-700 rounded-full"
+                              className="h-7 w-7 p-0 hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-600 hover:text-amber-500 rounded-full"
                             >
                               <Edit className="w-3 h-3" />
                             </Button>
@@ -425,6 +586,9 @@ const AgentMemoryView: FC<{
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit User Memory</DialogTitle>
+            <DialogDescription>
+              Edit your personal memory content with this agent.
+            </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form
@@ -445,7 +609,10 @@ const AgentMemoryView: FC<{
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} characters</span>
+                      <span>
+                        {field.value?.length || 0} /{' '}
+                        {MEMORY_LIMITS.USER_MEMORY_CONTENT_MAX_CHARS}
+                      </span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -507,7 +674,10 @@ const AgentMemoryView: FC<{
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX}</span>
+                      <span>
+                        {field.value?.length || 0} /{' '}
+                        {MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX_CHARS}
+                      </span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -540,6 +710,26 @@ const AgentMemoryView: FC<{
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* User Memory Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isUserMemoryConfirmationOpen}
+        onOpenChange={setIsUserMemoryConfirmationOpen}
+        onConfirm={handleConfirmedSubmit}
+        title="Modify User Memory"
+        description="Are you sure you want to modify this memory? Saving this will cause the original memory to be lost!"
+        isSubmitting={isSubmitting}
+      />
+
+      {/* Directive Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isDirectiveConfirmationOpen}
+        onOpenChange={setIsDirectiveConfirmationOpen}
+        onConfirm={handleConfirmedDirectiveUpdate}
+        title="Modify Directive"
+        description="Are you sure you want to modify this directive? Saving this will cause the original directive to be lost!"
+        isSubmitting={isSubmitting}
+      />
     </TooltipProvider>
   )
 }

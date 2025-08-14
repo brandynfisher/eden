@@ -68,7 +68,7 @@ jobs:
             "NEXT_PUBLIC_APP_ENV=staging"
             "NEXT_PUBLIC_HOST=https://staging.watch.eden.art"
             "NEXT_PUBLIC_EDEN_API_URL=https://staging.api.eden.art"
-            "NEXT_PUBLIC_EDEN_APP_URL=https://staging2.app.eden.art"
+            "NEXT_PUBLIC_EDEN_APP_URL=https://staging.app.eden.art"
             "NEXT_PUBLIC_EDEN_SSE_URL=https://staging.api.eden.art"
             "NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL=wss://staging.api.eden.art/ws/updates"
             "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_STG }}"

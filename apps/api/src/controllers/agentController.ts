@@ -740,7 +740,6 @@ export const deployAgent = async (
     })
   } catch (error: any) {
     console.error(error)
-    console.log(error.response?.data)
     return reply.status(500).send({
       error:
         error.response?.data?.message ||
@@ -1310,6 +1309,7 @@ export const saveAgentMemory = async (
       {
         $set: {
           content: content || '',
+          fully_formed_memory: null,
         },
         $setOnInsert: {
           agent_id: agentObjectId,
@@ -1391,7 +1391,7 @@ export const retrieveMemoryAgent = async (
       })
       .toArray()
 
-    let processedRecords: any[] = []
+    const processedRecords: any[] = []
 
     for (const record of memoryRecords) {
       let factsWithContent: any[] = []
@@ -1488,13 +1488,21 @@ export const updateMemoryAgent = async (
       server.mongoose.connection.db.collection('memory_agent')
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
 
+    // Check if we're updating fields that require invalidating fully_formed_memory
+    const invalidatingFields = ['content', 'unabsorbed_memory_ids', 'facts', 'extraction_prompt']
+    const shouldInvalidate = Object.keys(updates).some(key => invalidatingFields.includes(key))
+    
+    const finalUpdates = shouldInvalidate 
+      ? { ...updates, fully_formed_memory: null }
+      : updates
+
     // Ensure we're only updating a memory_agent document that belongs to this agent
     const result = await memoryCollection.updateOne(
       {
         _id: new server.mongoose.Types.ObjectId(memoryAgentId),
         agent_id: agentObjectId,
       },
-      { $set: updates },
+      { $set: finalUpdates },
     )
 
     if (result.matchedCount === 0) {
@@ -1548,6 +1556,9 @@ export const removeMemoryFromAgent = async (
       {
         $pull: {
           [arrayField]: new server.mongoose.Types.ObjectId(memoryId),
+        },
+        $set: {
+          fully_formed_memory: null,
         },
       },
     )
@@ -1622,12 +1633,20 @@ export const updateMemoryUser = async (
       server.mongoose.connection.db.collection('memory_user')
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
 
+    // Check if we're updating fields that require invalidating fully_formed_memory
+    const invalidatingFields = ['content', 'unabsorbed_memory_ids']
+    const shouldInvalidate = Object.keys(updates).some(key => invalidatingFields.includes(key))
+    
+    const finalUpdates = shouldInvalidate 
+      ? { ...updates, fully_formed_memory: null }
+      : updates
+
     await memoryCollection.updateOne(
       {
         agent_id: agentObjectId,
         user_id: new server.mongoose.Types.ObjectId(userId),
       },
-      { $set: updates },
+      { $set: finalUpdates },
       { upsert: true },
     )
 
@@ -1649,7 +1668,17 @@ export const updateMemorySession = async (
   const userId = request.user?.userId
 
   if (!userId) {
-    return reply.status(401).send({ error: 'User not authenticated' })
+    return reply.status(401).send({ 
+      error: 'Authentication required',
+      message: 'You must be logged in to update memory sessions'
+    })
+  }
+
+  if (!memoryId) {
+    return reply.status(400).send({ 
+      error: 'Invalid request',
+      message: 'Memory session ID is required'
+    })
   }
 
   try {
@@ -1657,21 +1686,46 @@ export const updateMemorySession = async (
       server.mongoose.connection.db.collection('memory_sessions')
 
     const result = await sessionMemoryCollection.updateOne(
-      {
-        _id: new server.mongoose.Types.ObjectId(memoryId),
-        related_users: new server.mongoose.Types.ObjectId(userId),
-      },
+      { _id: new server.mongoose.Types.ObjectId(memoryId) },
       { $set: updates },
     )
 
     if (result.matchedCount === 0) {
-      return reply.status(404).send({ error: 'Memory session not found' })
+      return reply.status(404).send({ 
+        error: 'Memory session not found',
+        message: `No memory session found with ID: ${memoryId}`
+      })
+    }
+
+    // If we updated the content field, invalidate related memories
+    if (updates.content !== undefined) {
+      await invalidateFullyFormedMemories(server, memoryId)
     }
 
     return reply.status(200).send({ success: true })
   } catch (error) {
     server.log.error('Error updating memory session:', error)
-    return reply.status(500).send({ error: 'Internal server error' })
+    
+    // Provide more specific error messages based on the error type
+    if (error instanceof Error) {
+      if (error.message.includes('ObjectId')) {
+        return reply.status(400).send({ 
+          error: 'Invalid memory ID',
+          message: 'The provided memory session ID is not valid'
+        })
+      }
+      if (error.message.includes('validation')) {
+        return reply.status(400).send({ 
+          error: 'Validation error',
+          message: 'The update data contains invalid values'
+        })
+      }
+    }
+    
+    return reply.status(500).send({ 
+      error: 'Server error',
+      message: 'Failed to update memory session due to an internal error'
+    })
   }
 }
 
@@ -1709,6 +1763,9 @@ export const removeUnabsorbedMemory = async (
       {
         $pull: {
           unabsorbed_memory_ids: new server.mongoose.Types.ObjectId(memoryId),
+        },
+        $set: {
+          fully_formed_memory: null,
         },
       },
     )
@@ -1930,6 +1987,76 @@ export const getSharedAgents = async (
   }
 }
 
+// Helper function to invalidate fully_formed_memory for related UserMemory/AgentMemory documents
+const invalidateFullyFormedMemories = async (
+  server: FastifyInstance, 
+  sessionMemoryId: string
+) => {
+  try {
+    const sessionMemoryCollection = server.mongoose.connection.db.collection('memory_sessions')
+    const sessionMemory = await sessionMemoryCollection.findOne({
+      _id: new server.mongoose.Types.ObjectId(sessionMemoryId)
+    })
+
+    if (!sessionMemory) {
+      return
+    }
+
+    const memoryUserCollection = server.mongoose.connection.db.collection('memory_user')
+    const memoryAgentCollection = server.mongoose.connection.db.collection('memory_agent')
+
+    // Handle SessionMemory with memory_type = "directive" -> invalidate UserMemory
+    if (sessionMemory.memory_type === 'directive' && sessionMemory.related_users) {
+      const relatedUsers = Array.isArray(sessionMemory.related_users) 
+        ? sessionMemory.related_users 
+        : [sessionMemory.related_users]
+
+      for (const userId of relatedUsers) {
+        await memoryUserCollection.updateMany(
+          {
+            agent_id: sessionMemory.agent_id,
+            user_id: userId
+          },
+          {
+            $set: { fully_formed_memory: null }
+          }
+        )
+      }
+    }
+
+    // Handle SessionMemory with memory_type = "fact" or "suggestion" -> invalidate AgentMemory
+    if (sessionMemory.memory_type === 'fact' || sessionMemory.memory_type === 'suggestion') {
+      // If there's a direct shard relationship
+      if (sessionMemory.shard_id) {
+        await memoryAgentCollection.updateOne(
+          {
+            _id: sessionMemory.shard_id
+          },
+          {
+            $set: { fully_formed_memory: null }
+          }
+        )
+      } else {
+        // Find by searching unabsorbed_memory_ids or facts arrays
+        await memoryAgentCollection.updateMany(
+          {
+            agent_id: sessionMemory.agent_id,
+            $or: [
+              { unabsorbed_memory_ids: new server.mongoose.Types.ObjectId(sessionMemoryId) },
+              { facts: new server.mongoose.Types.ObjectId(sessionMemoryId) }
+            ]
+          },
+          {
+            $set: { fully_formed_memory: null }
+          }
+        )
+      }
+    }
+  } catch (error) {
+    server.log.error('Error invalidating fully formed memories:', error)
+  }
+}
+
 export const createMemoryAgent = async (
   server: FastifyInstance,
   request: FastifyRequest,
@@ -1999,6 +2126,8 @@ export const createMemoryAgent = async (
       unabsorbed_memory_ids: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      fully_formed_memory: null,
+      last_updated_at: new Date(),
     }
 
     const result = await memoryCollection.insertOne(newShard)
@@ -2010,6 +2139,48 @@ export const createMemoryAgent = async (
     })
   } catch (error) {
     server.log.error('Error creating memory agent shard:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+export const updateUserMemoryEnabled = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Params: { agentId: string }
+    Body: { user_memory_enabled: boolean }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params
+  const { user_memory_enabled } = request.body
+
+  try {
+    // Validate agent access
+    const { error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    // Permission check is handled by validateAgentAccess (same as other memory operations)
+
+    // Update the agent's user_memory_enabled field in users3 collection
+    const updateResult = await Agent.updateOne(
+      { _id: agentId },
+      { 
+        $set: { 
+          user_memory_enabled: user_memory_enabled,
+          updatedAt: new Date(),
+        }
+      }
+    )
+
+    if (updateResult.matchedCount === 0) {
+      return reply.status(404).send({ error: 'Agent not found' })
+    }
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    server.log.error('Error updating user memory enabled status:', error)
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
