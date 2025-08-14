@@ -1,6 +1,8 @@
 'use client'
 
 import CollectiveMemory from './collective-memory'
+import { MEMORY_ERROR_MESSAGES, MEMORY_LIMITS } from './memory-constants'
+import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -25,8 +27,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useAuthState } from '@/hooks/use-auth-state'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -36,14 +38,15 @@ import { FC, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { MEMORY_LIMITS, MEMORY_ERROR_MESSAGES } from './memory-constants'
-import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 
 // Schema for memory form
 const memorySchema = z.object({
   content: z
     .string()
-    .max(MEMORY_LIMITS.USER_MEMORY_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.USER_MEMORY_CONTENT_MAX_CHARS)
+    .max(
+      MEMORY_LIMITS.USER_MEMORY_CONTENT_MAX_CHARS,
+      MEMORY_ERROR_MESSAGES.USER_MEMORY_CONTENT_MAX_CHARS,
+    )
     .optional(),
 })
 
@@ -71,10 +74,14 @@ const AgentMemoryView: FC<{
   const [editingDirective, setEditingDirective] =
     useState<UnabsorbedDirective | null>(null)
   const [displayContent, setDisplayContent] = useState('')
-  const [isUserMemoryConfirmationOpen, setIsUserMemoryConfirmationOpen] = useState(false)
-  const [pendingUserMemoryData, setPendingUserMemoryData] = useState<MemoryFormDto | null>(null)
-  const [isDirectiveConfirmationOpen, setIsDirectiveConfirmationOpen] = useState(false)
-  const [pendingDirectiveData, setPendingDirectiveData] = useState<MemoryFormDto | null>(null)
+  const [isUserMemoryConfirmationOpen, setIsUserMemoryConfirmationOpen] =
+    useState(false)
+  const [pendingUserMemoryData, setPendingUserMemoryData] =
+    useState<MemoryFormDto | null>(null)
+  const [isDirectiveConfirmationOpen, setIsDirectiveConfirmationOpen] =
+    useState(false)
+  const [pendingDirectiveData, setPendingDirectiveData] =
+    useState<MemoryFormDto | null>(null)
   const [userMemoryEnabled, setUserMemoryEnabled] = useState<boolean>(true)
 
   // Collective Memory Access Logic - Four Scenarios:
@@ -115,7 +122,10 @@ const AgentMemoryView: FC<{
       z.object({
         content: z
           .string()
-          .max(MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.DIRECTIVE_CONTENT_MAX_CHARS)
+          .max(
+            MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX_CHARS,
+            MEMORY_ERROR_MESSAGES.DIRECTIVE_CONTENT_MAX_CHARS,
+          )
           .optional(),
       }),
     ),
@@ -129,9 +139,12 @@ const AgentMemoryView: FC<{
     const loadData = async () => {
       if (agent && authUser) {
         // 1. Set toggle state from agent prop
-        const isUserMemoryEnabled = agent.user_memory_enabled !== undefined ? agent.user_memory_enabled : true
+        const isUserMemoryEnabled =
+          agent.user_memory_enabled !== undefined
+            ? agent.user_memory_enabled
+            : true
         setUserMemoryEnabled(isUserMemoryEnabled)
-        
+
         // 2. If enabled, fetch memory data; if disabled, clear display
         if (isUserMemoryEnabled) {
           try {
@@ -223,7 +236,8 @@ const AgentMemoryView: FC<{
   }
 
   const handleConfirmedDirectiveUpdate = async () => {
-    if (!editingDirective || !agent || !authUser || !pendingDirectiveData) return
+    if (!editingDirective || !agent || !authUser || !pendingDirectiveData)
+      return
 
     try {
       setIsSubmitting(true)
@@ -289,7 +303,7 @@ const AgentMemoryView: FC<{
       toast.success(`User memory ${newValue ? 'enabled' : 'disabled'}`)
     } catch (error) {
       console.error('Error toggling user memory enabled state:', error)
-      
+
       const getErrorMessage = (error: unknown): string => {
         if (axios.isAxiosError(error)) {
           const responseData = error.response?.data
@@ -298,7 +312,7 @@ const AgentMemoryView: FC<{
           } else if (responseData?.error) {
             return responseData.error
           }
-          
+
           switch (error.response?.status) {
             case 404:
               return 'Agent not found'
@@ -376,10 +390,11 @@ const AgentMemoryView: FC<{
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs">
                     <p>
-                      This is your personal preferences memory with {agent.name}, 
-                      extracted from all your conversations with this agent. These
-                      memories only affect your own interactions with{' '}
-                      {agent.name} and primarily store custom instructions you give to the agent.
+                      This is your personal preferences memory with {agent.name}
+                      , extracted from all your conversations with this agent.
+                      These memories only affect your own interactions with{' '}
+                      {agent.name} and primarily store custom instructions you
+                      give to the agent.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -478,10 +493,9 @@ const AgentMemoryView: FC<{
                   <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[120px] max-h-[250px] overflow-y-auto">
                     {displayContent || (
                       <span className="text-muted-foreground italic">
-                        {!userMemoryEnabled 
-                          ? "💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)"
-                          : "💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here."
-                        }
+                        {!userMemoryEnabled
+                          ? '💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)'
+                          : `💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here.`}
                       </span>
                     )}
                   </div>
@@ -595,7 +609,10 @@ const AgentMemoryView: FC<{
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.USER_MEMORY_CONTENT_MAX_CHARS}</span>
+                      <span>
+                        {field.value?.length || 0} /{' '}
+                        {MEMORY_LIMITS.USER_MEMORY_CONTENT_MAX_CHARS}
+                      </span>
                     </div>
                     <FormMessage />
                   </FormItem>
@@ -657,7 +674,10 @@ const AgentMemoryView: FC<{
                     </FormControl>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX_CHARS}</span>
+                      <span>
+                        {field.value?.length || 0} /{' '}
+                        {MEMORY_LIMITS.DIRECTIVE_CONTENT_MAX_CHARS}
+                      </span>
                     </div>
                     <FormMessage />
                   </FormItem>
