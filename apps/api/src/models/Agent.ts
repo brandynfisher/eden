@@ -42,6 +42,7 @@ export interface AgentSchema extends BaseUserSchema {
       owners?: UserDocument[]
     }
   }
+  user_memory_enabled?: boolean
 }
 
 export interface AgentDocument extends AgentSchema, BaseUserDocument {}
@@ -171,6 +172,10 @@ const AgentSchema = new Schema<AgentDocument>(
     owner_pays: {
       type: Boolean,
       default: false,
+    },
+    user_memory_enabled: {
+      type: Boolean,
+      default: true,
     },
     // Permissions are now stored in AgentPermission collection
   },

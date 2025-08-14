@@ -124,22 +124,29 @@ const AgentMemoryView: FC<{
     },
   })
 
-  // Load existing memory data from memory_user collection
+  // Initialize and load data on component mount
   useEffect(() => {
-    const loadMemoryData = async () => {
+    const loadData = async () => {
       if (agent && authUser) {
-        // Load user_memory_enabled status from agent data, default to true if undefined
-        setUserMemoryEnabled(agent.user_memory_enabled !== undefined ? agent.user_memory_enabled : true)
+        // 1. Set toggle state from agent prop
+        const isUserMemoryEnabled = agent.user_memory_enabled !== undefined ? agent.user_memory_enabled : true
+        setUserMemoryEnabled(isUserMemoryEnabled)
         
-        try {
-          const response = await axios.get(`/api/agents/${agent._id}/memory`)
-
-          const content = response.data.content || ''
-          form.setValue('content', content)
-          setDisplayContent(content)
-          setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
-        } catch (error) {
-          console.error('Error loading memory data:', error)
+        // 2. If enabled, fetch memory data; if disabled, clear display
+        if (isUserMemoryEnabled) {
+          try {
+            const response = await axios.get(`/api/agents/${agent._id}/memory`)
+            const content = response.data.content || ''
+            form.setValue('content', content)
+            setDisplayContent(content)
+            setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
+          } catch (error) {
+            console.error('Error loading memory data:', error)
+            form.setValue('content', '')
+            setDisplayContent('')
+            setUnabsorbedDirectives([])
+          }
+        } else {
           form.setValue('content', '')
           setDisplayContent('')
           setUnabsorbedDirectives([])
@@ -147,8 +154,8 @@ const AgentMemoryView: FC<{
       }
     }
 
-    loadMemoryData()
-  }, [agent?._id, authUser, form, agent.user_memory_enabled])
+    loadData()
+  }, [agent?._id, authUser, form, agent?.user_memory_enabled])
 
   const handleSubmit = async (data: MemoryFormDto) => {
     if (!agent || !authUser) return
@@ -252,11 +259,33 @@ const AgentMemoryView: FC<{
       setIsSubmitting(true)
       const newValue = !userMemoryEnabled
 
+      // 1. Update MongoDB through API
       await axios.patch(`/api/agents/${agent._id}/user-memory-enabled`, {
         user_memory_enabled: newValue,
       })
 
+      // 2. Update local toggle state
       setUserMemoryEnabled(newValue)
+
+      // 3. Refresh display based on new state
+      if (newValue) {
+        // If enabled, fetch memory data
+        try {
+          const response = await axios.get(`/api/agents/${agent._id}/memory`)
+          const content = response.data.content || ''
+          form.setValue('content', content)
+          setDisplayContent(content)
+          setUnabsorbedDirectives(response.data.unabsorbedDirectives || [])
+        } catch (error) {
+          console.error('Error loading memory data after toggle:', error)
+        }
+      } else {
+        // If disabled, clear display
+        form.setValue('content', '')
+        setDisplayContent('')
+        setUnabsorbedDirectives([])
+      }
+
       toast.success(`User memory ${newValue ? 'enabled' : 'disabled'}`)
     } catch (error) {
       console.error('Error toggling user memory enabled state:', error)
@@ -449,9 +478,10 @@ const AgentMemoryView: FC<{
                   <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[120px] max-h-[250px] overflow-y-auto">
                     {displayContent || (
                       <span className="text-muted-foreground italic">
-                        💭 No user memories stored yet. Just interact with{' '}
-                        {agent.name} and custom instructions you give to the agent 
-                        will automatically appear here.
+                        {!userMemoryEnabled 
+                          ? "💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)"
+                          : "💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here."
+                        }
                       </span>
                     )}
                   </div>
@@ -465,8 +495,8 @@ const AgentMemoryView: FC<{
                 </div>
               </div>
 
-              {/* Unabsorbed Directives Display - Only show if there are directives */}
-              {unabsorbedDirectives.length > 0 && (
+              {/* Unabsorbed Directives Display - Only show if there are directives and user memory is enabled */}
+              {unabsorbedDirectives.length > 0 && userMemoryEnabled && (
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
