@@ -2,6 +2,7 @@ import { handleAxiosServerError } from '@/lib/fetcher'
 import { getAuth } from '@clerk/nextjs/server'
 import { EdenClient } from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
+import axios from 'axios'
 
 export async function GET(
   request: NextRequest,
