@@ -123,6 +123,7 @@ export const ShopifyDeploymentForm = ({
               form={form}
               isDeployed={isDeployed}
               valid={deployment?.valid}
+              guideUrl="https://docs.eden.art/docs/guides/shopify"
             />
           </form>
         </Form>

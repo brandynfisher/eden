@@ -74,6 +74,7 @@ export const CaptionsDeploymentForm = ({
               form={form}
               isDeployed={isDeployed}
               valid={deployment?.valid}
+              guideUrl="https://docs.eden.art/docs/guides/captions"
             />
           </form>
         </Form>
