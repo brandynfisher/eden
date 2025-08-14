@@ -1,12 +1,12 @@
-name: "Build / Deploy - API - PROD"
+name: 'Build / Deploy - API - PROD'
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "apps/api/**"
-      - ".github/workflows/api.yaml"
+      - 'apps/api/**'
+      - '.github/workflows/api.yaml'
 
 env:
   REGISTRY: ghcr.io
@@ -59,14 +59,16 @@ jobs:
           context: .
           file: ./apps/api/Dockerfile
           push: true
-          tags: ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image }}:latest
+          tags:
+            ${{ steps.prep.outputs.tagged_image }},${{ steps.prep.outputs.image
+            }}:latest
           build-args: |
             "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}"
             "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
             "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}"
             "EDEN_COMPUTE_API_URL=${{ secrets.EDEN_COMPUTE_API_URL }}"
             "EDEN_COMPUTE_API_KEY=${{ secrets.EDEN_COMPUTE_API_KEY }}"
-            "EDEN2_FRONTEND_URL=https://beta.eden.art"
+            "EDEN2_FRONTEND_URL=https://app.eden.art"
             "CLERK_JWT_KEY=${{ secrets.CLERK_JWT_KEY }}"
             "MANNA_BONUS_SIGNUP=20"
             "MANNA_BONUS_DAILY_LOGIN=10"
