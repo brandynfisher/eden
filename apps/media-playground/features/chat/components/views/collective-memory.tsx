@@ -145,6 +145,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   const [pendingSubmitData, setPendingSubmitData] = useState<MemoryFormDto | null>(null)
   const [isMemoryConfirmationOpen, setIsMemoryConfirmationOpen] = useState(false)
   const [pendingMemoryData, setPendingMemoryData] = useState<{ content: string } | null>(null)
+  const [isContentEditModalOpen, setIsContentEditModalOpen] = useState(false)
+  const [pendingContentData, setPendingContentData] = useState<{ content: string } | null>(null)
+  const [isContentConfirmationOpen, setIsContentConfirmationOpen] = useState(false)
 
   const form = useForm<MemoryFormDto>({
     resolver: zodResolver(memorySchema),
@@ -161,6 +164,17 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         content: z
           .string()
           .max(MEMORY_LIMITS.FACTS_MAX_CHARS, MEMORY_ERROR_MESSAGES.FACTS_MAX_CHARS),
+      }),
+    ),
+    defaultValues: { content: '' },
+  })
+
+  const contentForm = useForm<{ content: string }>({
+    resolver: zodResolver(
+      z.object({
+        content: z
+          .string()
+          .max(MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS, MEMORY_ERROR_MESSAGES.MEMORY_CONTENT_MAX_CHARS),
       }),
     ),
     defaultValues: { content: '' },
@@ -236,49 +250,17 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   }
 
   const handleFieldSubmit = async (data: MemoryFormDto) => {
-    if (!editingShard || !editingField) return
-
-    // Only show confirmation for content, not extraction_prompt
-    if (editingField === 'content') {
-      setPendingSubmitData(data)
-      setIsConfirmationOpen(true)
-    } else {
-      // For extraction_prompt, submit directly without confirmation
-      try {
-        setIsSubmitting(true)
-        const updateData = { [editingField]: data[editingField] || '' }
-
-        await axios.patch(
-          `/api/agents/${agent._id}/collective-memory/${editingShard._id}`,
-          updateData,
-        )
-
-        setShards(prev =>
-          prev.map(s =>
-            s._id === editingShard._id ? { ...s, ...updateData } : s,
-          ),
-        )
-
-        toast.success(`${editingField.replace('_', ' ')} updated successfully`)
-        setIsEditModalOpen(false)
-        setEditingShard(null)
-        setEditingField(null)
-      } catch (error) {
-        console.error('Error updating field:', error)
-        const errorMessage = getErrorMessage(error, 'Failed to update field')
-        toast.error(errorMessage)
-      } finally {
-        setIsSubmitting(false)
-      }
+    if (!editingShard || !editingField) {
+      console.warn('handleFieldSubmit called without editingShard or editingField', { editingShard, editingField })
+      return
     }
-  }
 
-  const handleConfirmedFieldSubmit = async () => {
-    if (!editingShard || !editingField || !pendingSubmitData) return
+    console.log('handleFieldSubmit called', { editingField, data })
 
+    // This function now only handles extraction_prompt (content is handled by separate flow)
     try {
       setIsSubmitting(true)
-      const updateData = { [editingField]: pendingSubmitData[editingField] || '' }
+      const updateData = { [editingField]: data[editingField] || '' }
 
       await axios.patch(
         `/api/agents/${agent._id}/collective-memory/${editingShard._id}`,
@@ -295,7 +277,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       setIsEditModalOpen(false)
       setEditingShard(null)
       setEditingField(null)
-      setPendingSubmitData(null)
     } catch (error) {
       console.error('Error updating field:', error)
       const errorMessage = getErrorMessage(error, 'Failed to update field')
@@ -303,6 +284,12 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleConfirmedFieldSubmit = async () => {
+    // This function is now only used for extraction_prompt confirmation (if needed in future)
+    // Content editing uses the separate handleConfirmedContentUpdate function
+    console.warn('handleConfirmedFieldSubmit called - this should not be used for content editing anymore')
   }
 
   const handleMemoryEdit = (memory: MemorySession) => {
@@ -317,6 +304,52 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     // Show confirmation dialog first
     setPendingMemoryData(data)
     setIsMemoryConfirmationOpen(true)
+  }
+
+  const handleContentEdit = (shard: CollectiveShard) => {
+    setEditingShard(shard)
+    contentForm.setValue('content', shard.content || '')
+    setIsContentEditModalOpen(true)
+  }
+
+  const handleContentUpdate = async (data: { content: string }) => {
+    if (!editingShard) return
+
+    // Show confirmation dialog first
+    setPendingContentData(data)
+    setIsContentConfirmationOpen(true)
+  }
+
+  const handleConfirmedContentUpdate = async () => {
+    if (!editingShard || !pendingContentData) return
+
+    try {
+      setIsSubmitting(true)
+      await axios.patch(
+        `/api/agents/${agent._id}/collective-memory/${editingShard._id}`,
+        {
+          content: pendingContentData.content || '',
+        },
+      )
+
+      setShards(prev =>
+        prev.map(s =>
+          s._id === editingShard._id ? { ...s, content: pendingContentData.content } : s,
+        ),
+      )
+
+      toast.success('Memory updated successfully')
+      setIsContentEditModalOpen(false)
+      setIsContentConfirmationOpen(false)
+      setEditingShard(null)
+      setPendingContentData(null)
+    } catch (error) {
+      console.error('Error updating memory content:', error)
+      const errorMessage = getErrorMessage(error, 'Failed to update memory content')
+      toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleConfirmedMemoryUpdate = async () => {
@@ -699,7 +732,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 )}
               </div>
               <Button
-                onClick={() => handleFieldEdit(shard, 'content')}
+                onClick={() => handleContentEdit(shard)}
                 size="sm"
                 className="absolute bottom-3 right-3 bg-blue-500 hover:bg-blue-600 text-white shadow-md transition-all duration-200 hover:scale-105 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
               >
@@ -995,6 +1028,71 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         </DialogContent>
       </Dialog>
 
+      {/* Content Edit Modal */}
+      <Dialog
+        open={isContentEditModalOpen}
+        onOpenChange={setIsContentEditModalOpen}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Memory Content</DialogTitle>
+            <DialogDescription>
+              Edit the main collective memory content
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...contentForm}>
+            <form
+              onSubmit={contentForm.handleSubmit(handleContentUpdate)}
+              className="space-y-4"
+            >
+              <FormField
+                control={contentForm.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <AutosizeTextarea
+                        placeholder="Enter collective memory content..."
+                        className="min-h-[200px] resize-y"
+                        {...field}
+                      />
+                    </FormControl>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span></span>
+                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.MEMORY_CONTENT_MAX_CHARS}</span>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsContentEditModalOpen(false)
+                    setEditingShard(null)
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="min-w-[100px]"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Save'
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
       {/* New Shard Creation Modal */}
       <Dialog open={isNewShardModalOpen} onOpenChange={setIsNewShardModalOpen}>
         <DialogContent className="max-w-2xl">
@@ -1084,9 +1182,17 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       {/* Field Edit Confirmation Dialog */}
       <MemoryEditConfirmationDialog
         open={isConfirmationOpen}
-        onOpenChange={setIsConfirmationOpen}
+        onOpenChange={(open) => {
+          console.log('Confirmation dialog onOpenChange', { open, wasOpen: isConfirmationOpen })
+          setIsConfirmationOpen(open)
+          if (!open) {
+            // Clean up pending data when dialog is closed
+            console.log('Cleaning up pending data')
+            setPendingSubmitData(null)
+          }
+        }}
         onConfirm={handleConfirmedFieldSubmit}
-        title={`Modify ${editingField === 'content' ? 'Memory Content' : 'Extraction Prompt'}`}
+        title="Modify Extraction Prompt"
         isSubmitting={isSubmitting}
       />
 
@@ -1097,6 +1203,16 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         onConfirm={handleConfirmedMemoryUpdate}
         title="Modify Memory"
         description="Are you sure you want to modify this memory? Saving this will cause the original memory to be lost!"
+        isSubmitting={isSubmitting}
+      />
+
+      {/* Content Edit Confirmation Dialog */}
+      <MemoryEditConfirmationDialog
+        open={isContentConfirmationOpen}
+        onOpenChange={setIsContentConfirmationOpen}
+        onConfirm={handleConfirmedContentUpdate}
+        title="Modify Memory Content"
+        description="Are you sure you want to modify this memory content? Saving this will cause the original content to be lost!"
         isSubmitting={isSubmitting}
       />
     </TooltipProvider>
