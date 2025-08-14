@@ -279,6 +279,16 @@ export const tiktokOAuth = async (
       })
     }
 
+    console.log('TikTok OAuth', {
+      code,
+      state,
+      agentId,
+    })
+    console.log('TikTok OAuth', {
+      clientKey: server.config.TIKTOK_CLIENT_KEY,
+      clientSecret: server.config.TIKTOK_CLIENT_SECRET,
+    })
+
     // Exchange code for access token
     const tokenResponse = await axios.post(
       'https://open.tiktokapis.com/v2/oauth/token/',
@@ -301,6 +311,12 @@ export const tiktokOAuth = async (
 
     // Validate that we have the required credentials
     if (!access_token || !open_id) {
+      console.error(
+        'Invalid credentials received from TikTok',
+        tokenResponse.data,
+      )
+      console.error('Access token:', access_token)
+      console.error('Open ID:', open_id)
       return reply.status(400).send({
         message: 'Invalid credentials received from TikTok',
       })
