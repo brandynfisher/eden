@@ -287,9 +287,7 @@ export const tiktokOAuth = async (
         client_secret: server.config.TIKTOK_CLIENT_SECRET as string,
         code,
         grant_type: 'authorization_code',
-        redirect_uri:
-          server.config.TIKTOK_REDIRECT_URI ||
-          `${server.config.API_URL}/v2/auth/tiktok/callback`,
+        redirect_uri: `${server.config.API_URL}/v2/auth/tiktok/callback`,
       }),
       {
         headers: {

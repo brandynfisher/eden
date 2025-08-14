@@ -3,18 +3,18 @@
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { Form } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
+import { AlertCircle, CheckCircle } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { AlertCircle, CheckCircle } from 'lucide-react'
-import { Label } from '@/components/ui/label'
 
 const schema = z.object({})
 
@@ -46,7 +46,7 @@ export const TiktokDeploymentForm = ({
 
   const handleConnect = async () => {
     const clientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY
-    const redirectUri = process.env.NEXT_PUBLIC_TIKTOK_REDIRECT_URI || `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/tiktok/callback`
+    const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/tiktok/callback`
     const scope = 'user.info.basic,video.publish'
 
     // Pass agentId in state so OAuth callback knows which agent to associate with
@@ -94,7 +94,8 @@ export const TiktokDeploymentForm = ({
                     <>
                       <CheckCircle className="w-4 h-4 text-green-500" />
                       <span className="text-sm">
-                        Connected {tiktokUsername ? `as @${tiktokUsername}` : ''}
+                        Connected{' '}
+                        {tiktokUsername ? `as @${tiktokUsername}` : ''}
                       </span>
                     </>
                   ) : (
@@ -107,7 +108,11 @@ export const TiktokDeploymentForm = ({
               </div>
 
               {!isConnected ? (
-                <Button type="button" onClick={handleConnect} className="w-full">
+                <Button
+                  type="button"
+                  onClick={handleConnect}
+                  className="w-full"
+                >
                   Connect TikTok Account
                 </Button>
               ) : (
