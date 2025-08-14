@@ -6,8 +6,9 @@ import MasonryVirtualizerVertical, {
 } from '@/components/masonry/masonry-virtualizer-vertical'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { RowItem } from '@/lib/query/cache-updates'
-import { useFeedStore } from '@/zustand/feed-store'
+import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
+import { useRouter } from 'next/navigation'
 import { RefObject, useMemo, useRef } from 'react'
 
 type Props = {
@@ -32,6 +33,7 @@ const CreationsFeed = ({
   showSkeleton = false,
 }: Props) => {
   const { isSignedIn } = useAuthState()
+  const router = useRouter()
   const virtualizerRef = useRef<MasonryVirtualizerHandle>(null)
 
   const defaultQuery: FeedCreationsCursorArguments = useMemo(
@@ -51,10 +53,17 @@ const CreationsFeed = ({
   // Use query-based feedId like profile page does, not route-based
   const feedId = useMemo(() => JSON.stringify({ queryKey }), [queryKey])
 
-  const { setItems, setFetchNextPage } = useFeedStore(feedId)
+  const { setItems, setActiveIndex, setFetchNextPage } = useFeedStore(feedId)
+  const { addToHistory } = useActiveFeedStore()
 
   const handleItemsLoaded = (newItems: RowItem[]) => {
     setItems(newItems)
+  }
+
+  const handleCardClick = (item: CreationV2, index: number) => {
+    setActiveIndex(index)
+    addToHistory(feedId) // Add current feed to history when navigating
+    router.push(`/creations/${item._id}`) // Navigate to the creation
   }
 
   return (
@@ -71,7 +80,7 @@ const CreationsFeed = ({
       initialScrollIndex={initialScrollIndex}
       onScrollRestored={onScrollRestored}
       showSkeleton={showSkeleton}
-      render={(item: RowItem, onUpdate, _index) => (
+      render={(item: RowItem, onUpdate, index) => (
         <CreationCard
           onUpdate={onUpdate}
           creation={item as CreationV2}
@@ -79,6 +88,7 @@ const CreationsFeed = ({
           linkHref={`/creations/${item._id}`}
           multiselect={multiselect}
           isSignedIn={isSignedIn}
+          onClick={() => handleCardClick(item as CreationV2, index)}
         />
       )}
     />

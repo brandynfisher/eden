@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@clerk/nextjs'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 type AuthMessage = {
   event: 'auth'
@@ -33,47 +33,48 @@ export const useWebSocketAuth = (
   sendJsonMessage: (msg: AuthMessage) => void,
 ) => {
   const { isLoaded, isSignedIn, userId, getToken } = useAuth()
-  const [currentAuthToken, setCurrentAuthToken] = useState<string | null>(null)
+  // Use a ref to store the token to avoid re-renders
+  const authTokenRef = useRef<string | null>(null)
   const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   const refreshToken = useCallback(async () => {
     try {
       const newToken = await getToken()
-      if (newToken && newToken !== currentAuthToken) {
+      // Compare the new token with the value in the ref
+      if (newToken && newToken !== authTokenRef.current) {
+        authTokenRef.current = newToken // Update the ref's value
+
+        // Send the auth message immediately after getting a new token
+        if (userId) {
+          sendJsonMessage({
+            event: 'auth',
+            data: { userId, token: newToken },
+          })
+        }
+
         const decoded = parseJwt(newToken)
         if (!decoded || !decoded.exp) {
           console.error('Could not get token expiration')
           return
         }
 
-        // Get expiration time in milliseconds
         const expiryTime = decoded.exp * 1000
         const now = Date.now()
         const timeUntilExpiry = expiryTime - now
-
-        // Schedule refresh for 10 seconds before expiry
-        // But no less than 1 second from now
         const refreshIn = Math.max(timeUntilExpiry - 10000, 1000)
-
-        setCurrentAuthToken(newToken)
 
         if (refreshTimeoutRef.current) {
           clearTimeout(refreshTimeoutRef.current)
         }
 
-        console.log(
-          `Token expires in ${timeUntilExpiry / 1000}s, scheduling refresh in ${
-            refreshIn / 1000
-          }s`,
-        )
         refreshTimeoutRef.current = setTimeout(refreshToken, refreshIn)
       }
     } catch (error) {
       console.error('Error refreshing token', error)
-      // On error, try again in 5 seconds
       refreshTimeoutRef.current = setTimeout(refreshToken, 5000)
     }
-  }, [getToken, currentAuthToken])
+    // The dependency array is now stable and won't cause a loop
+  }, [getToken, userId, sendJsonMessage])
 
   // Handle tab visibility changes
   useEffect(() => {
@@ -82,13 +83,14 @@ export const useWebSocketAuth = (
         refreshToken()
       }
     }
-
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [isSignedIn, refreshToken])
 
+  // This effect now has a stable refreshToken dependency and will only run
+  // when the user's auth state actually changes.
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       refreshToken()
@@ -100,14 +102,6 @@ export const useWebSocketAuth = (
     }
   }, [isLoaded, isSignedIn, refreshToken])
 
-  useEffect(() => {
-    if (currentAuthToken && userId) {
-      sendJsonMessage({
-        event: 'auth',
-        data: { userId, token: currentAuthToken },
-      })
-    }
-  }, [currentAuthToken, userId, sendJsonMessage])
-
+  // We no longer need the third useEffect that listened for state changes
   return { isSignedIn, userId }
 }

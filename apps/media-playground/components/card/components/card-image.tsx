@@ -15,24 +15,30 @@ const CardImage = ({ media, unoptimized, className }: Props) => {
   const { blurhash, width, height } = media
 
   const blurDataUrl = useBlurDataUrl(blurhash, width, height)
+  
+  const imageUrl = media.thumbnail ||
+    (media.type === 'image' ? media.url : siteConfig.mediaErrorUrl) ||
+    siteConfig.mediaErrorUrl
+  
+  // Check if the URL is from CloudFront or S3
+  const isCloudFrontUrl = imageUrl && (
+    imageUrl.includes('cloudfront.net') || 
+    imageUrl.includes('s3.amazonaws.com')
+  )
 
   return (
     <Image
       data-test-id={'card-image'}
       sizes={'(max-width: 768px) 30vw, (max-width: 1280px) 20vw, 15vw'}
-      loader={customImageLoader}
-      src={
-        media.thumbnail ||
-        (media.type === 'image' ? media.url : siteConfig.mediaErrorUrl) ||
-        siteConfig.mediaErrorUrl
-      }
+      loader={isCloudFrontUrl ? undefined : customImageLoader}
+      src={imageUrl}
       alt={'card media thumbnail'}
       width={media.width || 1024}
       height={media.height || 1024}
       blurDataURL={blurDataUrl}
       placeholder={blurDataUrl ? 'blur' : undefined}
       className={cn(['w-full h-full', className])}
-      unoptimized={unoptimized}
+      unoptimized={unoptimized || isCloudFrontUrl}
     />
   )
 }
