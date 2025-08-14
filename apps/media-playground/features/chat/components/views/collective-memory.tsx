@@ -141,8 +141,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   const [isMemoryEditModalOpen, setIsMemoryEditModalOpen] = useState(false)
   const [editingMemory, setEditingMemory] = useState<MemorySession | null>(null)
   const [isNewShardModalOpen, setIsNewShardModalOpen] = useState(false)
-  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
-  const [pendingSubmitData, setPendingSubmitData] = useState<MemoryFormDto | null>(null)
   const [isMemoryConfirmationOpen, setIsMemoryConfirmationOpen] = useState(false)
   const [pendingMemoryData, setPendingMemoryData] = useState<{ content: string } | null>(null)
   const [isContentEditModalOpen, setIsContentEditModalOpen] = useState(false)
@@ -286,11 +284,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     }
   }
 
-  const handleConfirmedFieldSubmit = async () => {
-    // This function is now only used for extraction_prompt confirmation (if needed in future)
-    // Content editing uses the separate handleConfirmedContentUpdate function
-    console.warn('handleConfirmedFieldSubmit called - this should not be used for content editing anymore')
-  }
 
   const handleMemoryEdit = (memory: MemorySession) => {
     setEditingMemory(memory)
@@ -555,7 +548,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                       <FormLabel>Extraction prompt</FormLabel>
                       <FormControl>
                         <AutosizeTextarea
-                          placeholder="The extraction prompt tells the agent what this Collective Memory Shard is for, what kinds of information is relevant and what kinds of facts and ideas should be remembered. Clearly describing what the purpose is of this Collective Memory Shard is essential to make things work well. Iterate over time!"
+                          placeholder="The extraction prompt tells the agent what this Collective Memory Shard is for, what kinds of information are relevant and what kinds of facts and ideas should be remembered. Clearly describing what the purpose is of this Collective Memory Shard is essential to make things work well. Iterate over time!"
                           className="min-h-[200px] resize-y"
                           {...field}
                         />
@@ -1093,108 +1086,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* New Shard Creation Modal */}
-      <Dialog open={isNewShardModalOpen} onOpenChange={setIsNewShardModalOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Create a new Collective Memory Shard</DialogTitle>
-            <DialogDescription>
-              Create a new collective memory shard to organize and extract
-              specific types of information from conversations.
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...newShardForm}>
-            <form
-              onSubmit={newShardForm.handleSubmit(handleCreateNewShard)}
-              className="space-y-4"
-            >
-              <FormField
-                control={newShardForm.control}
-                name="shard_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Shard name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="A simple name to remember the purpose of this Shard"
-                        {...field}
-                      />
-                    </FormControl>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span></span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.SHARD_NAME_MAX_CHARS}</span>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={newShardForm.control}
-                name="extraction_prompt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Extraction prompt</FormLabel>
-                    <FormControl>
-                      <AutosizeTextarea
-                        placeholder="The extraction prompt tells the agent what this Collective Memory Shard is for, what kinds of information is relevant and what kinds of facts and ideas should be remembered. Clearly describing what the purpose is of this Collective Memory Shard is essential to make things work well. Iterate over time!"
-                        className="min-h-[200px] resize-y"
-                        {...field}
-                      />
-                    </FormControl>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span className={`text-xs ${(field.value?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS ? 'text-red-500' : 'text-muted-foreground'}`}>
-                        {MEMORY_UI_MESSAGES.EXTRACTION_PROMPT_MIN_REQUIRED}
-                      </span>
-                      <span>{field.value?.length || 0} / {MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS}</span>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsNewShardModalOpen(false)
-                    newShardForm.reset()
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || (newShardForm.watch('extraction_prompt')?.length || 0) < MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS}
-                  className="min-w-[100px]"
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    'Create Shard'
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
 
-      {/* Field Edit Confirmation Dialog */}
-      <MemoryEditConfirmationDialog
-        open={isConfirmationOpen}
-        onOpenChange={(open) => {
-          console.log('Confirmation dialog onOpenChange', { open, wasOpen: isConfirmationOpen })
-          setIsConfirmationOpen(open)
-          if (!open) {
-            // Clean up pending data when dialog is closed
-            console.log('Cleaning up pending data')
-            setPendingSubmitData(null)
-          }
-        }}
-        onConfirm={handleConfirmedFieldSubmit}
-        title="Modify Extraction Prompt"
-        isSubmitting={isSubmitting}
-      />
 
       {/* Memory Edit Confirmation Dialog */}
       <MemoryEditConfirmationDialog
