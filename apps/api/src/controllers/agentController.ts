@@ -2163,7 +2163,7 @@ export const updateUserMemoryEnabled = async (
 
     // Permission check is handled by validateAgentAccess (same as other memory operations)
 
-    // Update the agent's user_memory_enabled field
+    // Update the agent's user_memory_enabled field in users3 collection
     const updateResult = await Agent.updateOne(
       { _id: agentId },
       { 

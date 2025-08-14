@@ -3,14 +3,14 @@
 
 export const MEMORY_LIMITS = {
   // Collective Memory - Memory Content
-  MEMORY_CONTENT_MAX_CHARS: 5000,
+  MEMORY_CONTENT_MAX_CHARS: 7000,
   
   // Collective Memory - Extraction Prompt
   EXTRACTION_PROMPT_MIN_CHARS: 100,
-  EXTRACTION_PROMPT_MAX_CHARS: 2500,
+  EXTRACTION_PROMPT_MAX_CHARS: 3000,
   
   // Collective Memory - Shard Name
-  SHARD_NAME_MIN_CHARS: 6,
+  SHARD_NAME_MIN_CHARS: 4,
   SHARD_NAME_MAX_CHARS: 50,
   
   // Memory Sessions - Facts & Unabsorbed Memory Content
