@@ -1,6 +1,6 @@
 import AgentDetail from '@/features/detail/agent-detail'
 import { getAgentCached } from '@/lib/actions/agent'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { getCloudfrontUrl } from '@/lib/media'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
 import { Metadata, ResolvingMetadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -22,25 +22,31 @@ export async function generateMetadata(
   const previousOg = (await parent).openGraph || {}
   const previousTwitter = (await parent).twitter || {}
 
-  const title = `Agent: ${response.agent.name} | Eden`
-  const description = response.agent.description?.substring(0, 320) || ''
+  const title = `${response.agent.name} | Eden`
+  const description =
+    response.agent.description?.substring(0, 160) ||
+    `${response.agent.name}, an AI agent on Eden`
 
+  // Use resized image (1200px) for Open Graph - optimal for social media previews
+  // Fallback to Eden logo if no profile image
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eden.art'
   const ogImage = response.agent.userImage
-    ? getCloudfrontOriginalUrl(response.agent.userImage)
-    : undefined
+    ? getCloudfrontUrl(response.agent.userImage, 1200)
+    : `${baseUrl}/eden-logo-with-text.png`
 
   const og: OpenGraph = {
     ...previousOg,
     title,
     description,
-    images: ogImage ? [ogImage] : undefined,
+    images: [ogImage],
+    type: 'profile',
   }
 
   const twitter: TwitterMetadata = {
     ...previousTwitter,
     title,
     description,
-    images: ogImage ? [ogImage] : undefined,
+    images: [ogImage],
     card: 'summary_large_image',
   }
 
