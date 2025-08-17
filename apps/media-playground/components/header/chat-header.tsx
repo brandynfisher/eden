@@ -106,7 +106,7 @@ const ChatHeader = ({
                     {agent.username?.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-medium text-sm text-foreground truncate max-w-[120px]">
+                <span className="font-medium text-sm text-foreground truncate max-w-[100px]">
                   {agent.username}
                 </span>
                 <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -144,17 +144,8 @@ const ChatHeader = ({
                 )}
           </div>
 
-          {/* Right section - HeaderActions only (settings gear hidden on mobile) */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Share button */}
-            {session && session.owner._id === user?._id && (
-              <SessionShareButton
-                sessionId={sessionId}
-                messages={session.messages || []}
-                isOwner={session.owner._id === user?._id}
-                className="h-9 w-auto px-2"
-              />
-            )}
+          {/* Right section - HeaderActions only (share button moved to sidebar on mobile) */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             <HeaderActions hideMannaMobile />
           </div>
         </header>

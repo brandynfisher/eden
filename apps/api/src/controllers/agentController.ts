@@ -757,7 +757,8 @@ export const updateAgentDeployment = async (
 ) => {
   const currentUserId = request.user.userId
   const { agentId } = request.params as AgentsUpdateDeploymentArguments
-  const { platform, config } = request.body as AgentsUpdateDeploymentArguments
+  const { platform, config, secrets } =
+    request.body as AgentsUpdateDeploymentArguments
 
   const agent = await Agent.findById(agentId)
 
@@ -798,6 +799,7 @@ export const updateAgentDeployment = async (
       data: {
         deployment_id: deployment._id,
         config,
+        secrets,
       },
     }
 
@@ -1489,10 +1491,17 @@ export const updateMemoryAgent = async (
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
 
     // Check if we're updating fields that require invalidating fully_formed_memory
-    const invalidatingFields = ['content', 'unabsorbed_memory_ids', 'facts', 'extraction_prompt']
-    const shouldInvalidate = Object.keys(updates).some(key => invalidatingFields.includes(key))
-    
-    const finalUpdates = shouldInvalidate 
+    const invalidatingFields = [
+      'content',
+      'unabsorbed_memory_ids',
+      'facts',
+      'extraction_prompt',
+    ]
+    const shouldInvalidate = Object.keys(updates).some(key =>
+      invalidatingFields.includes(key),
+    )
+
+    const finalUpdates = shouldInvalidate
       ? { ...updates, fully_formed_memory: null }
       : updates
 
@@ -1635,9 +1644,11 @@ export const updateMemoryUser = async (
 
     // Check if we're updating fields that require invalidating fully_formed_memory
     const invalidatingFields = ['content', 'unabsorbed_memory_ids']
-    const shouldInvalidate = Object.keys(updates).some(key => invalidatingFields.includes(key))
-    
-    const finalUpdates = shouldInvalidate 
+    const shouldInvalidate = Object.keys(updates).some(key =>
+      invalidatingFields.includes(key),
+    )
+
+    const finalUpdates = shouldInvalidate
       ? { ...updates, fully_formed_memory: null }
       : updates
 
@@ -1668,16 +1679,16 @@ export const updateMemorySession = async (
   const userId = request.user?.userId
 
   if (!userId) {
-    return reply.status(401).send({ 
+    return reply.status(401).send({
       error: 'Authentication required',
-      message: 'You must be logged in to update memory sessions'
+      message: 'You must be logged in to update memory sessions',
     })
   }
 
   if (!memoryId) {
-    return reply.status(400).send({ 
+    return reply.status(400).send({
       error: 'Invalid request',
-      message: 'Memory session ID is required'
+      message: 'Memory session ID is required',
     })
   }
 
@@ -1691,9 +1702,9 @@ export const updateMemorySession = async (
     )
 
     if (result.matchedCount === 0) {
-      return reply.status(404).send({ 
+      return reply.status(404).send({
         error: 'Memory session not found',
-        message: `No memory session found with ID: ${memoryId}`
+        message: `No memory session found with ID: ${memoryId}`,
       })
     }
 
@@ -1705,26 +1716,26 @@ export const updateMemorySession = async (
     return reply.status(200).send({ success: true })
   } catch (error) {
     server.log.error('Error updating memory session:', error)
-    
+
     // Provide more specific error messages based on the error type
     if (error instanceof Error) {
       if (error.message.includes('ObjectId')) {
-        return reply.status(400).send({ 
+        return reply.status(400).send({
           error: 'Invalid memory ID',
-          message: 'The provided memory session ID is not valid'
+          message: 'The provided memory session ID is not valid',
         })
       }
       if (error.message.includes('validation')) {
-        return reply.status(400).send({ 
+        return reply.status(400).send({
           error: 'Validation error',
-          message: 'The update data contains invalid values'
+          message: 'The update data contains invalid values',
         })
       }
     }
-    
-    return reply.status(500).send({ 
+
+    return reply.status(500).send({
       error: 'Server error',
-      message: 'Failed to update memory session due to an internal error'
+      message: 'Failed to update memory session due to an internal error',
     })
   }
 }
@@ -1989,52 +2000,61 @@ export const getSharedAgents = async (
 
 // Helper function to invalidate fully_formed_memory for related UserMemory/AgentMemory documents
 const invalidateFullyFormedMemories = async (
-  server: FastifyInstance, 
-  sessionMemoryId: string
+  server: FastifyInstance,
+  sessionMemoryId: string,
 ) => {
   try {
-    const sessionMemoryCollection = server.mongoose.connection.db.collection('memory_sessions')
+    const sessionMemoryCollection =
+      server.mongoose.connection.db.collection('memory_sessions')
     const sessionMemory = await sessionMemoryCollection.findOne({
-      _id: new server.mongoose.Types.ObjectId(sessionMemoryId)
+      _id: new server.mongoose.Types.ObjectId(sessionMemoryId),
     })
 
     if (!sessionMemory) {
       return
     }
 
-    const memoryUserCollection = server.mongoose.connection.db.collection('memory_user')
-    const memoryAgentCollection = server.mongoose.connection.db.collection('memory_agent')
+    const memoryUserCollection =
+      server.mongoose.connection.db.collection('memory_user')
+    const memoryAgentCollection =
+      server.mongoose.connection.db.collection('memory_agent')
 
     // Handle SessionMemory with memory_type = "directive" -> invalidate UserMemory
-    if (sessionMemory.memory_type === 'directive' && sessionMemory.related_users) {
-      const relatedUsers = Array.isArray(sessionMemory.related_users) 
-        ? sessionMemory.related_users 
+    if (
+      sessionMemory.memory_type === 'directive' &&
+      sessionMemory.related_users
+    ) {
+      const relatedUsers = Array.isArray(sessionMemory.related_users)
+        ? sessionMemory.related_users
         : [sessionMemory.related_users]
 
       for (const userId of relatedUsers) {
         await memoryUserCollection.updateMany(
           {
             agent_id: sessionMemory.agent_id,
-            user_id: userId
+            user_id: userId,
           },
           {
-            $set: { fully_formed_memory: null }
-          }
+            $set: { fully_formed_memory: null },
+          },
         )
       }
     }
 
     // Handle SessionMemory with memory_type = "fact" or "suggestion" -> invalidate AgentMemory
-    if (sessionMemory.memory_type === 'fact' || sessionMemory.memory_type === 'suggestion') {
+    if (
+      sessionMemory.memory_type === 'fact' ||
+      sessionMemory.memory_type === 'suggestion'
+    ) {
       // If there's a direct shard relationship
       if (sessionMemory.shard_id) {
         await memoryAgentCollection.updateOne(
           {
-            _id: sessionMemory.shard_id
+            _id: sessionMemory.shard_id,
           },
           {
-            $set: { fully_formed_memory: null }
-          }
+            $set: { fully_formed_memory: null },
+          },
         )
       } else {
         // Find by searching unabsorbed_memory_ids or facts arrays
@@ -2042,13 +2062,17 @@ const invalidateFullyFormedMemories = async (
           {
             agent_id: sessionMemory.agent_id,
             $or: [
-              { unabsorbed_memory_ids: new server.mongoose.Types.ObjectId(sessionMemoryId) },
-              { facts: new server.mongoose.Types.ObjectId(sessionMemoryId) }
-            ]
+              {
+                unabsorbed_memory_ids: new server.mongoose.Types.ObjectId(
+                  sessionMemoryId,
+                ),
+              },
+              { facts: new server.mongoose.Types.ObjectId(sessionMemoryId) },
+            ],
           },
           {
-            $set: { fully_formed_memory: null }
-          }
+            $set: { fully_formed_memory: null },
+          },
         )
       }
     }
@@ -2166,12 +2190,12 @@ export const updateUserMemoryEnabled = async (
     // Update the agent's user_memory_enabled field in users3 collection
     const updateResult = await Agent.updateOne(
       { _id: agentId },
-      { 
-        $set: { 
+      {
+        $set: {
           user_memory_enabled: user_memory_enabled,
           updatedAt: new Date(),
-        }
-      }
+        },
+      },
     )
 
     if (updateResult.matchedCount === 0) {

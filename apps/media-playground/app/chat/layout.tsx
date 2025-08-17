@@ -16,9 +16,10 @@ import { ViewMode } from '@/features/chat/types'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, SessionV2 } from '@edenlabs/eden-sdk'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   FC,
@@ -44,6 +45,7 @@ const SessionChatSidebarContent: FC<{
   userId?: string | null
   onAgentSelect?: () => void
   onSettingsClick?: () => void
+  session?: SessionV2
 }> = ({
   onItemClick,
   agentId,
@@ -53,6 +55,8 @@ const SessionChatSidebarContent: FC<{
   userId,
   onAgentSelect,
   onSettingsClick,
+  currentSessionId,
+  session,
 }) => {
   return (
     <>
@@ -67,6 +71,8 @@ const SessionChatSidebarContent: FC<{
         onViewModeChange={onViewModeChange}
         onAgentSelect={onAgentSelect}
         onSettingsClick={onSettingsClick}
+        sessionId={currentSessionId}
+        session={session}
       />
     </>
   )
@@ -86,6 +92,10 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   const { agent } = useAgentQuery({ key: agentId })
+  const { data: session } = useSessionQuery({
+    sessionId: sessionId,
+    enabled: !!sessionId && sessionId !== 'new',
+  })
 
   // Mount effect
   useEffect(() => {
@@ -232,7 +242,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetContent
             side="left"
-            className="flex flex-col max-h-full pt-3 px-3 bg-[#0e1421] border-r gap-0 [&>button]:hidden"
+            className="flex flex-col max-h-full pt-3 px-3 bg-[#0e1421] border-r gap-0"
           >
             <SheetTitle className="sr-only">Session List</SheetTitle>
             <SessionChatSidebarContent
@@ -248,6 +258,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
               userId={user?._id}
               onAgentSelect={() => setIsAgentSelectorOpen(true)}
               onSettingsClick={() => setViewMode('settings')}
+              session={session}
             />
           </SheetContent>
         </Sheet>
@@ -288,6 +299,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                 userId={user?._id}
                 onAgentSelect={() => setIsAgentSelectorOpen(true)}
                 onSettingsClick={() => setViewMode('settings')}
+                session={session}
               />
             )}
           </ResizablePanel>

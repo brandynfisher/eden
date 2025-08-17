@@ -1,6 +1,7 @@
 'use client'
 
 import { AgentAvatars } from './agent-avatars'
+import { SessionShareButton } from './session-share-button'
 import LoadingIndicator from '@/components/loading-indicator'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -19,7 +20,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { isAgentOwner } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag, SessionV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   BrainIcon,
@@ -457,6 +458,8 @@ const AgentSelectorAndNewChat: FC<{
   onAgentSelect?: () => void
   onSettingsClick?: () => void
   userId?: string | null
+  sessionId?: string
+  session?: SessionV2
 }> = ({
   onItemClick,
   isChat,
@@ -465,6 +468,8 @@ const AgentSelectorAndNewChat: FC<{
   onAgentSelect,
   onSettingsClick,
   userId,
+  sessionId,
+  session,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -554,6 +559,16 @@ const AgentSelectorAndNewChat: FC<{
         <EditIcon className="size-4" />
         <span>{isChat ? 'New Chat' : 'New Session'}</span>
       </Button>
+
+      {/* Row 3: Share Chat button - only show when user owns the session */}
+      {session && sessionId && session.owner._id === userId && (
+        <SessionShareButton
+          sessionId={sessionId}
+          messages={session.messages || []}
+          isOwner={session.owner._id === userId}
+          className="h-12 w-full justify-start border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary"
+        />
+      )}
     </div>
   )
 }
@@ -635,7 +650,7 @@ const MobileSidebarHeader: FC<{
   }
 
   return (
-    <div className="mb-3 pb-3 border-b border-border">
+    <div className="mb-3 pb-3 border-b border-border pr-8">
       {/* Eden logo + Navigation links in one row */}
       <div className="flex items-center justify-between">
         <button
@@ -828,6 +843,8 @@ export const SessionsSidebarContent = ({
   onViewModeChange,
   onAgentSelect,
   onSettingsClick,
+  sessionId,
+  session,
 }: {
   onItemClick?: () => void
   agentId?: string
@@ -838,6 +855,8 @@ export const SessionsSidebarContent = ({
   onViewModeChange?: (mode: ViewMode) => void
   onAgentSelect?: () => void
   onSettingsClick?: () => void
+  sessionId?: string
+  session?: SessionV2
 }) => {
   return (
     <>
@@ -856,6 +875,8 @@ export const SessionsSidebarContent = ({
           onAgentSelect={onAgentSelect}
           onSettingsClick={onSettingsClick}
           userId={userId}
+          sessionId={sessionId}
+          session={session}
         />
       </div>
 

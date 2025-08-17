@@ -79,7 +79,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetContent
               side="left"
-              className="flex flex-col max-h-full pt-3 px-3 bg-accent border-r gap-0 [&>button]:hidden"
+              className="flex flex-col max-h-full pt-3 px-3 bg-accent border-r gap-0"
             >
               <SheetTitle className="sr-only">Session List</SheetTitle>
               <SessionsSidebarContent
