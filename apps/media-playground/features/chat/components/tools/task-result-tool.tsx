@@ -28,6 +28,7 @@ export type TaskResultToolArgs = {
 export const TaskResultTool = makeAssistantToolUI({
   toolName: 'task_result',
   render: ({ args, argsText, status, result }) => {
+    console.log('This is the chat task result tool')
     const { tool, result: toolResults } = result as TaskResultToolArgs
 
     // Check if this is a Twitter tool and handle it specially

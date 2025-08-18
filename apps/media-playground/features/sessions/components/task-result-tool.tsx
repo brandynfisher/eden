@@ -84,6 +84,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   toolCall,
   onCancel,
 }) => {
+  console.log('This is the session task result tool')
   const { tool, result: toolResults } = toolCall
 
   // Check tool type using mapping
@@ -285,7 +286,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
                   : toolCall.status === 'running'
                   ? TaskV2Status.Running
                   : toolCall.status === 'cancelled'
-                  ? 'cancelled'
+                  ? TaskV2Status.Cancelled
                   : TaskV2Status.Pending,
               error: toolCall.error,
             }}
