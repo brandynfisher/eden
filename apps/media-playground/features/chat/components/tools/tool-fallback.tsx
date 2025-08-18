@@ -9,10 +9,9 @@ import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { TaskResultToolArgs } from '@/features/chat/components/tools/task-result-tool'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
-import { TaskV2Status } from '@edenlabs/eden-sdk'
+import { TaskV2Result, TaskV2Status, ToolV2 } from '@edenlabs/eden-sdk'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -22,6 +21,15 @@ import {
   XIcon, // HourglassIcon,
 } from 'lucide-react'
 import React, { Suspense, useState } from 'react'
+
+type TaskResultToolArgs = {
+  // result: {
+  tool: ToolV2['key']
+  result: TaskV2Result[]
+  status: TaskV2Status
+  error?: string
+  // }
+}
 
 interface ToolFallbackProps
   extends React.ComponentProps<ToolCallContentPartComponent> {

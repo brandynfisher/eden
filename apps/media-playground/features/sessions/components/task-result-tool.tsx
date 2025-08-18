@@ -120,6 +120,16 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   const isCompletedWithResults =
     toolCall.status === 'completed' && hasDisplayableResults
 
+  console.log('toolCall.status:', toolCall.status)
+  console.log('hasDisplayableResults:', hasDisplayableResults)
+  console.log('isCompletedWithResults:', isCompletedWithResults)
+  console.log('isWebSearchTool:', isWebSearchTool)
+  console.log(
+    'Should render ToolFallback:',
+    !isCompletedWithResults &&
+      !(isWebSearchTool && toolCall.status === 'completed'),
+  )
+
   return (
     <div className="mb-2 max-w-full">
       <ErrorBoundary>
