@@ -1,6 +1,5 @@
 import AgentDetail from '@/features/detail/agent-detail'
 import { getAgentCached } from '@/lib/actions/agent'
-import { getCloudfrontUrl } from '@/lib/media'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
 import { Metadata, ResolvingMetadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -27,12 +26,14 @@ export async function generateMetadata(
     response.agent.description?.substring(0, 160) ||
     `${response.agent.name}, an AI agent on Eden`
 
-  // Use resized image (1200px) for Open Graph - optimal for social media previews
+  // Use agent's profile image for Open Graph - optimal for social media previews
   // Fallback to Eden logo if no profile image
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://eden.art'
-  const ogImage = response.agent.userImage
-    ? getCloudfrontUrl(response.agent.userImage, 1200)
-    : `${baseUrl}/eden-logo-with-text.png`
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.NEXT_PUBLIC_HOST ||
+    'https://staging.app.eden.art'
+  const ogImage =
+    response.agent.userImage || `${baseUrl}/eden-logo-with-text.png`
 
   const og: OpenGraph = {
     ...previousOg,
