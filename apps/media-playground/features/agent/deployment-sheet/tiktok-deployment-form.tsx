@@ -50,9 +50,10 @@ export const TiktokDeploymentForm = ({
     const scope = 'user.info.basic,video.publish'
 
     // Pass agentId in state so OAuth callback knows which agent to associate with
+    // Add disable_auto_auth=1 to force account selection even if user was previously authenticated
     window.location.href = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
       redirectUri,
-    )}&state=${agentId}`
+    )}&state=${agentId}&disable_auto_auth=1`
   }
 
   const handleDisconnect = async () => {

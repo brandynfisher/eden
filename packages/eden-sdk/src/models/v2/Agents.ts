@@ -243,6 +243,15 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     twitter?: TwitterDeploymentConfig
     shopify?: ShopifyDeploymentConfig
   }
+  secrets?: {
+    discord?: DiscordDeploymentSecrets
+    telegram?: TelegramDeploymentSecrets
+    farcaster?: FarcasterDeploymentSecrets
+    twitter?: TwitterDeploymentSecrets
+    shopify?: ShopifyDeploymentSecrets
+    printify?: PrintifyDeploymentSecrets
+    captions?: CaptionsDeploymentSecrets
+  }
 }
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {
   agentId: string
@@ -370,6 +379,7 @@ export const agentsUpdateDeploymentRequestConfig = (
     data: {
       platform: args.platform,
       config: args.config,
+      secrets: args.secrets,
     },
   }
 }

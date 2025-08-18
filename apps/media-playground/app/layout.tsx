@@ -106,7 +106,7 @@ export default function RootLayout({
         >
           <HolyLoader color="#9333ea" height="1px" />
           <Providers>
-            <div className="flex min-h-screen w-full flex-col ">
+            <div className="flex min-h-screen w-full flex-col overflow-x-hidden">
               <ConditionalHeader />
               {modal}
               {children}

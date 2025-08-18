@@ -170,7 +170,7 @@ export async function PATCH(
   }
 
   const requestJson = await request.json()
-  const { platform, config } = requestJson
+  const { platform, config, secrets } = requestJson
 
   try {
     const eden = new EdenClient({
@@ -182,6 +182,7 @@ export async function PATCH(
       agentId: id,
       platform,
       config,
+      secrets,
     })
 
     return NextResponse.json<AgentsUpdateDeploymentResponse>(res)
