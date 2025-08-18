@@ -365,10 +365,19 @@ const Session = ({
         const hasEdenData = m.role === 'eden' && m.eden_message_data
 
         // Log cancelled tool calls specifically
-        if (
-          m.role === 'assistant' &&
-          m.tool_calls?.some(tc => tc.status === 'cancelled')
-        ) {
+        if (m.tool_calls?.some(tc => tc.status === 'cancelled')) {
+          const filterResult =
+            hasRole &&
+            (hasContent || hasToolCalls || hasEdenData) &&
+            // Filter out eden messages with agent_add and agent_remove types in chat routes
+            !(
+              ischatRoute &&
+              m.role === 'eden' &&
+              m.eden_message_data &&
+              (m.eden_message_data.message_type === 'agent_add' ||
+                m.eden_message_data.message_type === 'agent_remove')
+            )
+
           console.log(
             'Found message with cancelled tool call:',
             m._id,
@@ -376,6 +385,16 @@ const Session = ({
             hasToolCalls,
             'tool_calls:',
             m.tool_calls,
+            'hasRole:',
+            hasRole,
+            'hasContent:',
+            hasContent,
+            'hasEdenData:',
+            hasEdenData,
+            'ischatRoute:',
+            ischatRoute,
+            'filterResult:',
+            filterResult,
           )
         }
 
