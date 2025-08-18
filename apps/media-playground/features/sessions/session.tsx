@@ -352,16 +352,36 @@ const Session = ({
     [session],
   )
 
+  console.log('existing messages', session?.messages)
+
   const filteredMessages = useMemo(() => {
     const existingMessages =
-      session?.messages?.filter(
-        m =>
-          (m.role === 'user' || m.role === 'assistant' || m.role === 'eden') &&
-          ((m.content && m.content.trim() !== '') ||
-            (m.role === 'assistant' &&
-              m.tool_calls &&
-              m.tool_calls.length > 0) ||
-            (m.role === 'eden' && m.eden_message_data)) &&
+      session?.messages?.filter(m => {
+        const hasRole =
+          m.role === 'user' || m.role === 'assistant' || m.role === 'eden'
+        const hasContent = m.content && m.content.trim() !== ''
+        const hasToolCalls =
+          m.role === 'assistant' && m.tool_calls && m.tool_calls.length > 0
+        const hasEdenData = m.role === 'eden' && m.eden_message_data
+
+        // Log cancelled tool calls specifically
+        if (
+          m.role === 'assistant' &&
+          m.tool_calls?.some(tc => tc.status === 'cancelled')
+        ) {
+          console.log(
+            'Found message with cancelled tool call:',
+            m._id,
+            'hasToolCalls:',
+            hasToolCalls,
+            'tool_calls:',
+            m.tool_calls,
+          )
+        }
+
+        return (
+          hasRole &&
+          (hasContent || hasToolCalls || hasEdenData) &&
           // Filter out eden messages with agent_add and agent_remove types in chat routes
           !(
             ischatRoute &&
@@ -369,8 +389,9 @@ const Session = ({
             m.eden_message_data &&
             (m.eden_message_data.message_type === 'agent_add' ||
               m.eden_message_data.message_type === 'agent_remove')
-          ),
-      ) ?? []
+          )
+        )
+      }) ?? []
 
     if (sessionId === 'new' && isSessionLoading) {
       return [...existingMessages, ...optimisticMessages]
@@ -402,6 +423,8 @@ const Session = ({
     optimisticMessages,
     ischatRoute,
   ])
+
+  console.log('filtered messages', filteredMessages)
 
   const messageGroups = useMemo(
     () => groupConsecutiveMessages(filteredMessages),

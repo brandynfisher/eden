@@ -47,9 +47,6 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
     error: toolError,
     result: toolResults,
   } = result as TaskResultToolArgs
-  console.log('toolStatus', toolStatus)
-  console.log('toolError', toolError)
-  console.log('result', toolResults)
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [selectedArgsIndex, setSelectedArgsIndex] = useState<number>(0) // 0 = main args, 1+ = subtool indices
 
