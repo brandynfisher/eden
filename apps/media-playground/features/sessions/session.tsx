@@ -352,8 +352,6 @@ const Session = ({
     [session],
   )
 
-  console.log('existing messages', session?.messages)
-
   const filteredMessages = useMemo(() => {
     const existingMessages =
       session?.messages?.filter(m => {
@@ -363,40 +361,6 @@ const Session = ({
         const hasToolCalls =
           m.role === 'assistant' && m.tool_calls && m.tool_calls.length > 0
         const hasEdenData = m.role === 'eden' && m.eden_message_data
-
-        // Log cancelled tool calls specifically
-        if (m.tool_calls?.some(tc => tc.status === 'cancelled')) {
-          const filterResult =
-            hasRole &&
-            (hasContent || hasToolCalls || hasEdenData) &&
-            // Filter out eden messages with agent_add and agent_remove types in chat routes
-            !(
-              ischatRoute &&
-              m.role === 'eden' &&
-              m.eden_message_data &&
-              (m.eden_message_data.message_type === 'agent_add' ||
-                m.eden_message_data.message_type === 'agent_remove')
-            )
-
-          console.log(
-            'Found message with cancelled tool call:',
-            m._id,
-            'hasToolCalls:',
-            hasToolCalls,
-            'tool_calls:',
-            m.tool_calls,
-            'hasRole:',
-            hasRole,
-            'hasContent:',
-            hasContent,
-            'hasEdenData:',
-            hasEdenData,
-            'ischatRoute:',
-            ischatRoute,
-            'filterResult:',
-            filterResult,
-          )
-        }
 
         return (
           hasRole &&
@@ -442,8 +406,6 @@ const Session = ({
     optimisticMessages,
     ischatRoute,
   ])
-
-  console.log('filtered messages', filteredMessages)
 
   const messageGroups = useMemo(
     () => groupConsecutiveMessages(filteredMessages),

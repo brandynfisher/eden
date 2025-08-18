@@ -48,13 +48,6 @@ export const OtherMessage = ({
     }
   }, [message.tool_calls])
 
-  // Check if all tool calls are cancelled
-  const hasActiveToolCalls = message.tool_calls?.some(
-    toolCall =>
-      toolCall.status !== 'cancelled' &&
-      !optimisticallyCancelled.has(toolCall.id),
-  )
-
   // Check if message has attachments
   const hasAttachments = message.attachments && message.attachments.length > 0
 
@@ -62,9 +55,7 @@ export const OtherMessage = ({
     !message.content &&
     !isStreamingTokens &&
     !hasAttachments &&
-    (!message.tool_calls ||
-      message.tool_calls.length === 0 ||
-      !hasActiveToolCalls)
+    (!message.tool_calls || message.tool_calls.length === 0)
   )
     return null
 
