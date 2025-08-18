@@ -39,6 +39,9 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
     error: toolError,
     result: toolResults,
   } = result as TaskResultToolArgs
+  console.log('toolStatus', toolStatus)
+  console.log('toolError', toolError)
+  console.log('result', toolResults)
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [selectedArgsIndex, setSelectedArgsIndex] = useState<number>(0) // 0 = main args, 1+ = subtool indices
 
@@ -70,7 +73,7 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
         <div className="flex items-center gap-2">
           <div>
             <span className="font-bold">{toolName}</span>
-            {toolStatus === 'cancelled' && (
+            {toolStatus === TaskV2Status.Cancelled && (
               <span className="ml-2 text-orange-500 text-sm">(Cancelled)</span>
             )}
           </div>
