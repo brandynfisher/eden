@@ -15,7 +15,6 @@ const DiscordAuthButton: React.FC = () => {
   const handleClick = async () => {
     if (!(await maybeAuthenticate())) return
     setIsLoading(true)
-    console.log('discord-connect')
 
     try {
       sendGTMEvent({
