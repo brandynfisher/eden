@@ -75,7 +75,7 @@ export const ToolCardMedia = ({
 const ToolCard = ({ title, image, link, description, priority }: Props) => {
   return (
     <Link prefetch={false} href={link} className="group">
-      <Card className="overflow-hidden border border-gray-800  hover:border-purple-500/50 transition-all duration-300 h-full w-full">
+      <Card className="overflow-hidden border  hover:border-purple-500/50 transition-all duration-300 h-full w-full">
         <div className="p-2 flex items-center gap-2">
           <div className="relative w-40 aspect-[4/3] flex-shrink-0 overflow-hidden rounded-sm">
             <ToolCardMedia
