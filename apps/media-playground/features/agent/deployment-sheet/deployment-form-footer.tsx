@@ -118,11 +118,66 @@ export const DeploymentFormFooter = ({
       }
 
       if (isDeployed) {
-        await axios.patch(`/api/agents/${agentId}/deployments`, {
+        const payload: any = {
           agentId,
           platform,
           config,
-        })
+        }
+
+        // Add secrets for updates if provided
+        if (platform === 'discord' && data.token) {
+          payload.secrets = {
+            discord: {
+              token: data.token,
+            },
+          }
+        } else if (platform === 'telegram' && data.token) {
+          payload.secrets = {
+            telegram: {
+              token: data.token,
+            },
+          }
+        } else if (platform === 'farcaster' && data.mnemonic) {
+          payload.secrets = {
+            farcaster: {
+              mnemonic: data.mnemonic,
+            },
+          }
+        } else if (platform === 'twitter' && data.bearerToken) {
+          payload.secrets = {
+            twitter: {
+              user_id: data.userId,
+              bearer_token: data.bearerToken,
+              consumer_key: data.consumerKey,
+              consumer_secret: data.consumerSecret,
+              access_token: data.accessToken,
+              access_token_secret: data.accessTokenSecret,
+            },
+          }
+        } else if (platform === 'shopify' && data.accessToken) {
+          payload.secrets = {
+            shopify: {
+              store_name: data.storeName,
+              access_token: data.accessToken,
+              location_id: data.locationId,
+            },
+          }
+        } else if (platform === 'printify' && data.api_token) {
+          payload.secrets = {
+            printify: {
+              api_token: data.api_token,
+              shop_id: data.shop_id,
+            },
+          }
+        } else if (platform === 'captions' && data.api_key) {
+          payload.secrets = {
+            captions: {
+              api_key: data.api_key,
+            },
+          }
+        }
+
+        await axios.patch(`/api/agents/${agentId}/deployments`, payload)
       } else {
         const payload: AgentsDeployArguments = {
           agentId,

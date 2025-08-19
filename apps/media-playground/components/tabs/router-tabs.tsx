@@ -2,6 +2,13 @@
 
 import FeedSearchForm from '@/components/filter/feed-search-form'
 import { MasonrySkeleton } from '@/components/masonry/masonry-virtualizer-vertical'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
@@ -225,13 +232,50 @@ const RouterTabs = ({ tabs, sharedFilterMenu, baseQuery }: Props) => {
     >
       <div className="flex flex-wrap flex-col sm:flex-row gap-4 w-full mb-4 sm:justify-between">
         <div className="flex flex-wrap flex-col sm:flex-row gap-4 flex-1">
-          <TabsList className="flex justify-stretch min-w-[328px] w-full md:w-auto md:min-w-[420px]">
-            {tabs.map(tab => (
-              <TabsTrigger key={tab.key} value={tab.key} className="w-full">
-                {tab.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          {/* Mobile: Use Select when there are 4+ tabs */}
+          {tabs.length >= 4 ? (
+            <>
+              <Select value={activeTab} onValueChange={handleTabChange}>
+                <SelectTrigger className="w-full sm:hidden">
+                  <SelectValue>
+                    {tabs.find(tab => tab.key === activeTab)?.title}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {tabs.map(tab => (
+                    <SelectItem key={tab.key} value={tab.key}>
+                      {tab.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* Desktop: Keep original TabsList */}
+              <TabsList className="hidden sm:flex justify-stretch w-auto min-w-[420px]">
+                {tabs.map(tab => (
+                  <TabsTrigger
+                    key={tab.key}
+                    value={tab.key}
+                    className="flex-1 min-w-fit whitespace-nowrap"
+                  >
+                    {tab.title}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </>
+          ) : (
+            /* Use TabsList for both mobile and desktop when 3 or fewer tabs */
+            <TabsList className="flex justify-stretch w-full md:w-auto md:min-w-[420px] overflow-x-auto">
+              {tabs.map(tab => (
+                <TabsTrigger
+                  key={tab.key}
+                  value={tab.key}
+                  className="flex-1 min-w-fit whitespace-nowrap"
+                >
+                  {tab.title}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          )}
 
           {activeRouterTab?.filterMenu ? (
             <activeRouterTab.filterMenu

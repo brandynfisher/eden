@@ -48,13 +48,6 @@ export const OtherMessage = ({
     }
   }, [message.tool_calls])
 
-  // Check if all tool calls are cancelled
-  const hasActiveToolCalls = message.tool_calls?.some(
-    toolCall =>
-      toolCall.status !== 'cancelled' &&
-      !optimisticallyCancelled.has(toolCall.id),
-  )
-
   // Check if message has attachments
   const hasAttachments = message.attachments && message.attachments.length > 0
 
@@ -62,9 +55,7 @@ export const OtherMessage = ({
     !message.content &&
     !isStreamingTokens &&
     !hasAttachments &&
-    (!message.tool_calls ||
-      message.tool_calls.length === 0 ||
-      !hasActiveToolCalls)
+    (!message.tool_calls || message.tool_calls.length === 0)
   )
     return null
 
@@ -210,21 +201,19 @@ export const OtherMessage = ({
                         }),
                       },
                     )
+                    // Only revert if we get a definitive failure response
+                    // For now, keep the cancelled UI even if the API call fails
+                    // since the user clicked cancel and expects to see it cancelled
                     if (!response.ok) {
-                      // Revert optimistic update on failure
-                      setOptimisticallyCancelled(prev => {
-                        const newSet = new Set(prev)
-                        newSet.delete(toolCall.id)
-                        return newSet
-                      })
+                      console.warn(
+                        'Cancel API call failed, but keeping UI cancelled state',
+                      )
                     }
                   } catch (error) {
-                    // Revert optimistic update on failure
-                    setOptimisticallyCancelled(prev => {
-                      const newSet = new Set(prev)
-                      newSet.delete(toolCall.id)
-                      return newSet
-                    })
+                    console.warn(
+                      'Cancel API call error, but keeping UI cancelled state:',
+                      error,
+                    )
                   }
                 }}
               />

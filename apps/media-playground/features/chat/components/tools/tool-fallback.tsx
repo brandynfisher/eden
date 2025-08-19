@@ -9,10 +9,9 @@ import { AlertDescription } from '@/components/ui/alert'
 import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-button'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { TaskResultToolArgs } from '@/features/chat/components/tools/task-result-tool'
 import { cn } from '@/lib/utils'
 import { ToolCallContentPartComponent } from '@assistant-ui/react'
-import { TaskV2Status } from '@edenlabs/eden-sdk'
+import { TaskV2Result, TaskV2Status, ToolV2 } from '@edenlabs/eden-sdk'
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -22,6 +21,15 @@ import {
   XIcon, // HourglassIcon,
 } from 'lucide-react'
 import React, { Suspense, useState } from 'react'
+
+type TaskResultToolArgs = {
+  // result: {
+  tool: ToolV2['key']
+  result: TaskV2Result[]
+  status: TaskV2Status
+  error?: string
+  // }
+}
 
 interface ToolFallbackProps
   extends React.ComponentProps<ToolCallContentPartComponent> {
@@ -49,7 +57,7 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
   // Determine current args and tool name to display
   const currentArgs =
     selectedArgsIndex === 0
-      ? args
+      ? args || {}
       : subtoolCalls[selectedArgsIndex - 1]?.args || {}
 
   // Filter out lora/lora2 from args if they exist (since we show them as ModelMiniCards)
@@ -70,7 +78,7 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
         <div className="flex items-center gap-2">
           <div>
             <span className="font-bold">{toolName}</span>
-            {toolStatus === 'cancelled' && (
+            {toolStatus === TaskV2Status.Cancelled && (
               <span className="ml-2 text-orange-500 text-sm">(Cancelled)</span>
             )}
           </div>
@@ -134,7 +142,7 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
                   value="0"
                   variant="outline"
                   size="sm"
-                  className="bg-white text-black border-gray-300 data-[state=on]:bg-gray-100 data-[state=on]:text-black hover:bg-gray-50 hover:text-black"
+                  className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
                 >
                   {toolName}
                 </ToggleGroupItem>
@@ -147,7 +155,7 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
                     value={(index + 1).toString()}
                     variant="outline"
                     size="sm"
-                    className="bg-white text-black border-gray-300 data-[state=on]:bg-gray-100 data-[state=on]:text-black hover:bg-gray-50 hover:text-black"
+                    className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=off]:bg-muted/30 data-[state=off]:text-muted-foreground hover:bg-muted/50 transition-colors"
                   >
                     {subtool.tool}
                   </ToggleGroupItem>

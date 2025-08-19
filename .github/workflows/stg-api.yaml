@@ -66,7 +66,7 @@ jobs:
             "CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}"
             "EDEN_COMPUTE_API_URL=${{ secrets.EDEN_COMPUTE_API_URL }}"
             "EDEN_COMPUTE_API_KEY=${{ secrets.EDEN_COMPUTE_API_KEY }}"
-            "EDEN2_FRONTEND_URL=https://staging2.app.eden.art"
+            "EDEN2_FRONTEND_URL=https://staging.app.eden.art"
             "CLERK_JWT_KEY=${{ secrets.CLERK_JWT_KEY }}"
             "MANNA_BONUS_SIGNUP=20"
             "MANNA_BONUS_DAILY_LOGIN=10"

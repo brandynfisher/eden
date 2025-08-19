@@ -7,10 +7,10 @@ const Header = () => {
   return (
     <>
       {/* Mobile: Single navbar */}
-      <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 sm:gap-4 border-b bg-background px-1 sm:px-2">
+      <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-1 sm:gap-4 border-b bg-background px-1 sm:px-2">
         {/* Left section - Eden logo and navigation */}
-        <div className="flex items-center gap-2 sm:gap-6 min-w-0 flex-1">
-          <HeaderLogo />
+        <div className="flex items-center gap-1 sm:gap-6 min-w-0 flex-1 overflow-hidden">
+          <HeaderLogo className="flex-shrink-0" />
           <HeaderNavLinks />
         </div>
 

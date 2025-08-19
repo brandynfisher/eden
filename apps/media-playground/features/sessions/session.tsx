@@ -354,14 +354,17 @@ const Session = ({
 
   const filteredMessages = useMemo(() => {
     const existingMessages =
-      session?.messages?.filter(
-        m =>
-          (m.role === 'user' || m.role === 'assistant' || m.role === 'eden') &&
-          ((m.content && m.content.trim() !== '') ||
-            (m.role === 'assistant' &&
-              m.tool_calls &&
-              m.tool_calls.length > 0) ||
-            (m.role === 'eden' && m.eden_message_data)) &&
+      session?.messages?.filter(m => {
+        const hasRole =
+          m.role === 'user' || m.role === 'assistant' || m.role === 'eden'
+        const hasContent = m.content && m.content.trim() !== ''
+        const hasToolCalls =
+          m.role === 'assistant' && m.tool_calls && m.tool_calls.length > 0
+        const hasEdenData = m.role === 'eden' && m.eden_message_data
+
+        return (
+          hasRole &&
+          (hasContent || hasToolCalls || hasEdenData) &&
           // Filter out eden messages with agent_add and agent_remove types in chat routes
           !(
             ischatRoute &&
@@ -369,8 +372,9 @@ const Session = ({
             m.eden_message_data &&
             (m.eden_message_data.message_type === 'agent_add' ||
               m.eden_message_data.message_type === 'agent_remove')
-          ),
-      ) ?? []
+          )
+        )
+      }) ?? []
 
     if (sessionId === 'new' && isSessionLoading) {
       return [...existingMessages, ...optimisticMessages]

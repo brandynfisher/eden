@@ -66,8 +66,7 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments }) => {
             <FormItem className="p-4 bg-secondary rounded-lg">
               <FormLabel>Custom Models</FormLabel>
               <FormDescription>
-                Give your agent a unique aesthetic using up to 10
-                custom models.
+                Give your agent a unique aesthetic using up to 10 custom models.
               </FormDescription>
               <div>
                 {models.fields.map((model, index) => (
@@ -125,16 +124,11 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments }) => {
                     currentValue=""
                     selectedIds={models.fields.map(m => m.lora)}
                     onChange={id => {
-                      const modelId =
-                        typeof id === 'string' ? id : id[0]
+                      const modelId = typeof id === 'string' ? id : id[0]
                       if (!modelId) return
 
                       // Check if model already exists
-                      if (
-                        models.fields.some(
-                          m => m.lora === modelId,
-                        )
-                      ) {
+                      if (models.fields.some(m => m.lora === modelId)) {
                         toast.error('This model is already added')
                         return
                       }
@@ -170,8 +164,7 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments }) => {
             <FormItem className="p-4 bg-secondary rounded-lg mt-4">
               <FormLabel>Tools</FormLabel>
               <FormDescription>
-                Select which tools this agent can use to help
-                users.
+                Select which tools this agent can use to help users.
               </FormDescription>
               <FormControl>
                 <div className="space-y-3">
@@ -181,29 +174,22 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments }) => {
                       label: 'Create images',
                     },
                     {
-                      key: 'create_video',
-                      label: 'Create Video',
-                    },
-                    {
                       key: 'create_audio',
-                      label:
-                        'Create Audio (including music and speech)',
+                      label: 'Create Audio (including music and speech)',
                     },
                     {
                       key: 'vj_tools',
-                      label:
-                        'VJ Tools (Texture Flow and Video FX)',
+                      label: 'VJ Tools (Texture Flow and Video FX)',
                     },
                     {
-                      key: 'news',
-                      label: 'Read the news',
+                      key: 'manage_collections',
+                      label: 'Manage collections',
                     },
                     ...(hasDeployments
                       ? [
                           {
                             key: 'social_media_tools',
-                            label:
-                              'Social media tools (read and post)',
+                            label: 'Social media tools (read and post)',
                           },
                         ]
                       : []),
@@ -219,10 +205,7 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments }) => {
                         'Make available individual tools inside the image, video, and audio multi-tools (50+ individual tools)',
                     },
                   ].map(tool => (
-                    <div
-                      key={tool.key}
-                      className="flex items-center space-x-2"
-                    >
+                    <div key={tool.key} className="flex items-center space-x-2">
                       <Switch
                         checked={Boolean(field.value?.[tool.key])}
                         onCheckedChange={checked => {

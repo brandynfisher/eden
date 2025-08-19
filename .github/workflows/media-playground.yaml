@@ -85,6 +85,7 @@ jobs:
             "NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
             "NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/"
+            "NEXT_PUBLIC_TIKTOK_CLIENT_KEY=sbawwrport54ck7qyi"
 
       - name: Move cache
         run: |

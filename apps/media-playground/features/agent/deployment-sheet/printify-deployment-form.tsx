@@ -1,7 +1,16 @@
 'use client'
 
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Form } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { TokenField } from '@/features/agent/deployment-sheet/token-field'
@@ -70,13 +79,23 @@ export const PrintifyDeploymentForm = ({
               label="API Token"
               description="Your Printify API token. You can find this in your Printify account settings."
             />
-            <TokenField
-              form={form}
+            <FormField
+              control={form.control}
               name="shop_id"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="Shop ID"
-              description="Your Printify shop ID. You can find this in your Printify dashboard."
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Shop ID</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Shop ID"
+                      disabled={form.formState.isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>Your Printify shop ID. You can find this in your Printify dashboard.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <DeploymentFormFooter
               agentId={agentId}
@@ -84,6 +103,7 @@ export const PrintifyDeploymentForm = ({
               form={form}
               isDeployed={isDeployed}
               valid={deployment?.valid}
+              guideUrl="https://docs.eden.art/docs/guides/printify"
             />
           </form>
         </Form>

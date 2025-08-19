@@ -1,6 +1,7 @@
 'use client'
 
 import { AgentAvatars } from './agent-avatars'
+import { SessionShareButton } from './session-share-button'
 import LoadingIndicator from '@/components/loading-indicator'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -19,7 +20,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { isAgentOwner } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag, SessionV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   BrainIcon,
@@ -213,12 +214,12 @@ const SessionListItem: FC<SessionListItemProps> = ({
         'group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5',
         isActive
           ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground font-medium'
-          : 'hover:text-white hover:bg-muted/50',
+          : 'hover:text-foreground hover:bg-muted/50',
       )}
     >
       <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
         {isEditing ? (
-          <div className="flex items-center gap-1 flex-grow min-w-0 text-white">
+          <div className="flex items-center gap-1 flex-grow min-w-0 text-foreground">
             <Input
               id="session-title-input"
               name="title"
@@ -242,7 +243,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0 text-white hover:text-white"
+              className="h-7 w-7 shrink-0 text-foreground hover:text-foreground"
               onClick={handleRenameSubmit}
               onMouseDown={e => e.preventDefault()}
               disabled={isRenaming}
@@ -259,7 +260,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
           <button
             className={cn(
               'flex-grow min-w-0 text-left hover:bg-transparent disabled:opacity-100 disabled:pointer-events-none w-full self-stretch flex items-center gap-2',
-              isActive ? 'text-primary-foreground' : 'text-white',
+              isActive ? 'text-primary-foreground' : 'text-foreground',
             )}
             onClick={onItemClick}
             disabled={isEditing}
@@ -457,6 +458,8 @@ const AgentSelectorAndNewChat: FC<{
   onAgentSelect?: () => void
   onSettingsClick?: () => void
   userId?: string | null
+  sessionId?: string
+  session?: SessionV2
 }> = ({
   onItemClick,
   isChat,
@@ -465,6 +468,8 @@ const AgentSelectorAndNewChat: FC<{
   onAgentSelect,
   onSettingsClick,
   userId,
+  sessionId,
+  session,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -554,6 +559,16 @@ const AgentSelectorAndNewChat: FC<{
         <EditIcon className="size-4" />
         <span>{isChat ? 'New Chat' : 'New Session'}</span>
       </Button>
+
+      {/* Row 3: Share Chat button - only show when user owns the session */}
+      {session && sessionId && session.owner._id === userId && (
+        <SessionShareButton
+          sessionId={sessionId}
+          messages={session.messages || []}
+          isOwner={session.owner._id === userId}
+          className="h-12 w-full justify-start border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary"
+        />
+      )}
     </div>
   )
 }
@@ -635,7 +650,7 @@ const MobileSidebarHeader: FC<{
   }
 
   return (
-    <div className="mb-3 pb-3 border-b border-border">
+    <div className="mb-3 pb-3 border-b border-border pr-8">
       {/* Eden logo + Navigation links in one row */}
       <div className="flex items-center justify-between">
         <button
@@ -828,6 +843,8 @@ export const SessionsSidebarContent = ({
   onViewModeChange,
   onAgentSelect,
   onSettingsClick,
+  sessionId,
+  session,
 }: {
   onItemClick?: () => void
   agentId?: string
@@ -838,6 +855,8 @@ export const SessionsSidebarContent = ({
   onViewModeChange?: (mode: ViewMode) => void
   onAgentSelect?: () => void
   onSettingsClick?: () => void
+  sessionId?: string
+  session?: SessionV2
 }) => {
   return (
     <>
@@ -856,6 +875,8 @@ export const SessionsSidebarContent = ({
           onAgentSelect={onAgentSelect}
           onSettingsClick={onSettingsClick}
           userId={userId}
+          sessionId={sessionId}
+          session={session}
         />
       </div>
 
