@@ -31,6 +31,8 @@ import {
   ImageIcon,
   MoreHorizontal,
   PencilIcon,
+  PinIcon,
+  PinOffIcon,
   SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
@@ -53,6 +55,8 @@ interface SessionListItemProps {
     userImage: string
     name?: string
   }>
+  isPinned?: boolean
+  onPinToggle?: (sessionId: string, pinned: boolean) => Promise<void>
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -64,6 +68,8 @@ const SessionListItem: FC<SessionListItemProps> = ({
   isChat = false,
   agentId,
   agents = [],
+  isPinned = false,
+  onPinToggle,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -317,6 +323,41 @@ const SessionListItem: FC<SessionListItemProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              className="flex items-center gap-2"
+              onSelect={async () => {
+                if (onPinToggle) {
+                  try {
+                    await onPinToggle(id, !isPinned)
+                    toast.success(
+                      isPinned ? 'Session unpinned' : 'Session pinned',
+                      {
+                        dismissible: true,
+                        richColors: true,
+                      },
+                    )
+                  } catch (error) {
+                    toast.error('Failed to update pin status', {
+                      dismissible: true,
+                      richColors: true,
+                    })
+                  }
+                }
+              }}
+              disabled={isDeleting}
+            >
+              {isPinned ? (
+                <>
+                  <PinOffIcon className="size-4" />
+                  Unpin
+                </>
+              ) : (
+                <>
+                  <PinIcon className="size-4" />
+                  Pin
+                </>
+              )}
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="flex items-center gap-2"
               onSelect={() => {
@@ -703,11 +744,31 @@ const MainLeft = ({
   const params = useParams()
   const currentSessionId =
     (params?.id as string) || (params?.sessionId as string)
-  const { isLoading, hasMore, isFetchingNextPage, fetchNextPage, sessions } =
-    useSessionListQuery({
-      enabled: !!isSignedIn,
-      agent_id: agentId,
-    })
+  const {
+    isLoading,
+    hasMore,
+    isFetchingNextPage,
+    fetchNextPage,
+    sessions,
+    updatePinStatus,
+  } = useSessionListQuery({
+    enabled: !!isSignedIn,
+    agent_id: agentId,
+  })
+
+  const handlePinToggle = async (sessionId: string, pinned: boolean) => {
+    try {
+      // Optimistically update the UI
+      await updatePinStatus(sessionId, pinned)
+      // Make the API call - using the same path as rename
+      await axios.patch(`/api/sessions/${sessionId}`, { pinned })
+    } catch (error) {
+      console.error('Failed to update pin status:', error)
+      // Revert the optimistic update on error
+      await updatePinStatus(sessionId, !pinned)
+      throw error
+    }
+  }
 
   // Setup intersection observer for infinite scrolling
   useEffect(() => {
@@ -750,13 +811,31 @@ const MainLeft = ({
     }
   }, [hasMore, isFetchingNextPage, fetchNextPage])
 
+  // Separate pinned and unpinned sessions
+  const filteredSessions = sessions.filter(
+    (session): session is NonNullable<typeof session> =>
+      session != null &&
+      // Include sessions with valid titles
+      ((session.title != null &&
+        session.title !== '' &&
+        session.title !== 'Untitled') ||
+        // Include trigger sessions even without titles
+        !!session.trigger) &&
+      // For chat mode, only show sessions with one agent or less
+      (!isChat || !session.agents || session.agents.length <= 1),
+  )
+
+  const pinnedSessions = filteredSessions
+    .filter(session => session.pinned === true)
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    )
+
+  const unpinnedSessions = filteredSessions.filter(session => !session.pinned)
+
   return (
     <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-1">
-      {/* Sticky Recent header */}
-      <div className="sticky top-0 z-10 pb-1 mb-1">
-        <div className="text-muted-foreground">Recent</div>
-      </div>
-
       {/* Scrollable session list */}
       <nav className="flex flex-col items-stretch gap-1 overflow-y-auto flex-1">
         {isLoading ? (
@@ -769,51 +848,86 @@ const MainLeft = ({
           <>
             {isSignedIn ? (
               <>
-                {sessions
-                  .filter(
-                    (session): session is NonNullable<typeof session> =>
-                      session != null &&
-                      // Include sessions with valid titles
-                      ((session.title != null &&
-                        session.title !== '' &&
-                        session.title !== 'Untitled') ||
-                        // Include trigger sessions even without titles
-                        !!session.trigger) &&
-                      // For chat mode, only show sessions with one agent or less
-                      (!isChat ||
-                        !session.agents ||
-                        session.agents.length <= 1),
-                  )
-                  .map(session => (
-                    <SessionListItem
-                      key={session._id}
-                      id={session._id}
-                      title={
-                        session.title ||
-                        (session.trigger ? 'Scheduled Task' : 'Untitled')
-                      }
-                      isActive={session._id === currentSessionId}
-                      isFromTrigger={!!session.trigger}
-                      isChat={isChat}
-                      agentId={agentId}
-                      agents={session.agents}
-                      onItemClick={() => {
-                        onItemClick?.()
-                        if (isChat && agentId) {
-                          // Switch to chat mode first, then navigate to session
-                          onViewModeChange?.('chat')
-                          router.push(`/chat/${agentId}/${session._id}`, {
-                            scroll: false,
-                          })
-                        } else {
-                          // For regular sessions, go to /sessions/[sessionId]
-                          router.push(`/sessions/${session._id}`, {
-                            scroll: false,
-                          })
+                {/* Pinned section */}
+                {pinnedSessions.length > 0 && (
+                  <>
+                    <div className="sticky top-0 z-10 pb-1 mb-1 bg-accent">
+                      <div className="text-muted-foreground flex items-center gap-1">
+                        <PinIcon className="h-3 w-3" />
+                        Pinned
+                      </div>
+                    </div>
+                    {pinnedSessions.map(session => (
+                      <SessionListItem
+                        key={session._id}
+                        id={session._id}
+                        title={
+                          session.title ||
+                          (session.trigger ? 'Scheduled Task' : 'Untitled')
                         }
-                      }}
-                    />
-                  ))}
+                        isActive={session._id === currentSessionId}
+                        isFromTrigger={!!session.trigger}
+                        isChat={isChat}
+                        agentId={agentId}
+                        agents={session.agents}
+                        isPinned={true}
+                        onPinToggle={handlePinToggle}
+                        onItemClick={() => {
+                          onItemClick?.()
+                          if (isChat && agentId) {
+                            // Switch to chat mode first, then navigate to session
+                            onViewModeChange?.('chat')
+                            router.push(`/chat/${agentId}/${session._id}`, {
+                              scroll: false,
+                            })
+                          } else {
+                            // For regular sessions, go to /sessions/[sessionId]
+                            router.push(`/sessions/${session._id}`, {
+                              scroll: false,
+                            })
+                          }
+                        }}
+                      />
+                    ))}
+                  </>
+                )}
+
+                {/* Recent section */}
+                <div className="sticky top-0 z-10 pb-1 mb-1 bg-accent">
+                  <div className="text-muted-foreground">Recent</div>
+                </div>
+                {unpinnedSessions.map(session => (
+                  <SessionListItem
+                    key={session._id}
+                    id={session._id}
+                    title={
+                      session.title ||
+                      (session.trigger ? 'Scheduled Task' : 'Untitled')
+                    }
+                    isActive={session._id === currentSessionId}
+                    isFromTrigger={!!session.trigger}
+                    isChat={isChat}
+                    agentId={agentId}
+                    agents={session.agents}
+                    isPinned={false}
+                    onPinToggle={handlePinToggle}
+                    onItemClick={() => {
+                      onItemClick?.()
+                      if (isChat && agentId) {
+                        // Switch to chat mode first, then navigate to session
+                        onViewModeChange?.('chat')
+                        router.push(`/chat/${agentId}/${session._id}`, {
+                          scroll: false,
+                        })
+                      } else {
+                        // For regular sessions, go to /sessions/[sessionId]
+                        router.push(`/sessions/${session._id}`, {
+                          scroll: false,
+                        })
+                      }
+                    }}
+                  />
+                ))}
                 {/* Observer target for infinite scrolling */}
                 <div id="session-list-observer-target" className="h-1"></div>
               </>

@@ -69,7 +69,8 @@ export interface SessionsV2DeleteArguments extends WebAPICallOptions {
 
 export interface SessionsV2RenameArguments extends WebAPICallOptions {
   session_id: string
-  title: string
+  title?: string
+  pinned?: boolean
 }
 
 export interface SessionsV2CancelArguments extends WebAPICallOptions {
@@ -161,12 +162,17 @@ export const sessionsDeleteRequestConfigV2 = (
 export const sessionsRenameRequestConfigV2 = (
   args: SessionsV2RenameArguments,
 ): AxiosRequestConfig => {
+  const data: any = {}
+  if (args.title !== undefined) {
+    data.title = args.title
+  }
+  if (args.pinned !== undefined) {
+    data.pinned = args.pinned
+  }
   return {
     method: 'PATCH',
     url: `v2/sessions/${args.session_id}`,
-    data: {
-      title: args.title,
-    },
+    data,
   }
 }
 
@@ -363,6 +369,7 @@ export type SessionV2 = {
   }
   platform?: 'discord' | 'telegram' | 'twitter' | 'farcaster'
   trigger?: string
+  pinned?: boolean
   active_requests?: string[]
   createdAt: Date
   updatedAt: Date

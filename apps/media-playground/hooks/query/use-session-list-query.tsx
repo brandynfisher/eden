@@ -112,6 +112,35 @@ export const useSessionListQuery = (props?: Props) => {
       },
     )
   }
+
+  const updatePinStatus = async (sessionId: string, pinned: boolean) => {
+    queryClient.setQueryData(
+      queryKey,
+      (old: InfiniteData<SessionsV2ListResponse>) => {
+        // Guard against undefined data
+        if (!old || !old.pages) {
+          return old
+        }
+
+        const newPages = old.pages.map(page => {
+          return {
+            ...page,
+            docs: page.docs?.map(doc =>
+              doc._id === sessionId
+                ? { ...doc, pinned, updatedAt: new Date() }
+                : doc,
+            ),
+          }
+        })
+
+        return {
+          ...old,
+          pages: newPages,
+        }
+      },
+    )
+  }
+
   return {
     sessions,
     hasMore: hasNextPage,
@@ -132,5 +161,6 @@ export const useSessionListQuery = (props?: Props) => {
     status,
     renameSession,
     deleteSession,
+    updatePinStatus,
   }
 }
