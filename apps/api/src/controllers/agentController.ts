@@ -649,6 +649,86 @@ export const deleteAgentTrigger = async (
   })
 }
 
+export const executeAgentTrigger = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { trigger_id } = request.body as { trigger_id: string }
+  const currentUserId = request.user.userId
+
+  if (!trigger_id) {
+    return reply.status(400).send({
+      message: 'Missing trigger_id',
+    })
+  }
+
+  // First, get the trigger to check ownership
+  const trigger = await Trigger.findById(trigger_id)
+  if (!trigger) {
+    return reply.status(404).send({
+      message: 'Trigger not found',
+    })
+  }
+
+  // Check if the user owns the agent that this trigger belongs to
+  const agent = await Agent.findById(trigger.agent)
+  if (!agent) {
+    return reply.status(404).send({
+      message: 'Agent not found',
+    })
+  }
+
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
+    return reply.status(403).send({
+      message: 'User not authorized to execute triggers for this agent',
+    })
+  }
+
+  try {
+    const edenComputeRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/run`,
+      data: { trigger_id },
+    }
+
+    const edenComputeResponse = await axios.post(
+      edenComputeRequest.endpoint,
+      edenComputeRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const response = edenComputeResponse.data
+
+    return reply.status(200).send({
+      trigger_id,
+      executed: response.executed || true,
+      chat_response: response.chat_response,
+    })
+  } catch (error) {
+    console.error('Error executing trigger:', error)
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status || 500
+      const message =
+        error.response?.data?.message || 'Failed to execute trigger'
+
+      return reply.status(status).send({
+        message,
+      })
+    }
+
+    return reply.status(500).send({
+      message: 'Internal server error',
+    })
+  }
+}
+
 export const getAgentDeployments = async (
   request: FastifyRequest,
   reply: FastifyReply,

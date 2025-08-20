@@ -18,6 +18,7 @@ import {
   EditIcon,
   Eye,
   Loader2,
+  PlayIcon,
   PlusIcon,
   TrashIcon,
 } from 'lucide-react'
@@ -35,8 +36,10 @@ const TaskItem: FC<{
   agentId: string
   onEdit: (trigger: TriggerWithLastRun) => void
   onDelete: (triggerId: string) => void
-}> = ({ trigger, agentId, onEdit, onDelete }) => {
+  isFinished?: boolean
+}> = ({ trigger, agentId, onEdit, onDelete, isFinished = false }) => {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isExecuting, setIsExecuting] = useState(false)
   const router = useRouter()
 
   const formattedSchedule = formatCronSchedule(trigger.schedule)
@@ -51,6 +54,31 @@ const TaskItem: FC<{
       toast.error('Failed to delete task')
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleExecuteNow = async () => {
+    setIsExecuting(true)
+    try {
+      const response = await axios.post('/api/triggers/run', {
+        trigger_id: trigger._id,
+      })
+
+      if (response.data.executed) {
+        toast.success('Task started successfully', {
+          description: 'Your task is now running',
+        })
+      } else {
+        toast.error('Failed to start task', {
+          description: 'Task could not be executed at this time',
+        })
+      }
+    } catch (error) {
+      toast.error('Failed to trigger task', {
+        description: 'There was an error starting the task',
+      })
+    } finally {
+      setIsExecuting(false)
     }
   }
 
@@ -87,12 +115,33 @@ const TaskItem: FC<{
           <div className="text-xs text-muted-foreground mt-1">
             {formattedSchedule}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            Last run: {formatLastRunTime(trigger.last_run_time)}
-          </div>
+          {!isFinished && (
+            <div className="text-xs text-muted-foreground mt-1">
+              Last run: {formatLastRunTime(trigger.last_run_time)}
+            </div>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-2">
+        {/* Run Now button - only for active tasks */}
+        {!isFinished && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExecuteNow}
+            disabled={isExecuting}
+            className="h-8 w-8 p-0"
+            title="Run task now"
+          >
+            {isExecuting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <PlayIcon className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+
+        {/* View session button - for all tasks */}
         {trigger.session && (
           <Button
             variant="ghost"
@@ -104,27 +153,33 @@ const TaskItem: FC<{
             <Eye className="h-4 w-4" />
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onEdit(trigger)}
-          className="h-8 w-8 p-0"
-        >
-          <EditIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDelete}
-          disabled={isDeleting}
-          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-        >
-          {isDeleting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <TrashIcon className="h-4 w-4" />
-          )}
-        </Button>
+
+        {/* Edit and Delete buttons - only for active tasks */}
+        {!isFinished && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(trigger)}
+              className="h-8 w-8 p-0"
+            >
+              <EditIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+            >
+              {isDeleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <TrashIcon className="h-4 w-4" />
+              )}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   )
@@ -296,6 +351,7 @@ const AgentTasksView: FC<{
                         agentId={agent._id}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        isFinished={false}
                       />
                     ))}
                   </div>
@@ -332,6 +388,7 @@ const AgentTasksView: FC<{
                             agentId={agent._id}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
+                            isFinished={true}
                           />
                         ))}
                       </div>
