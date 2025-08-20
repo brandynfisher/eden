@@ -303,7 +303,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       const updateData = { [editingField]: data[editingField] || '' }
 
       await axios.patch(
-        `/api/agents/${agent._id}/collective-memory/${editingShard._id}`,
+        `/api/agents/${agent._id}/collective-memory/${editingGuide._id}`,
         updateData,
       )
 
@@ -360,13 +360,13 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     try {
       setIsSubmitting(true)
       await axios.patch(
-        `/api/agents/${agent._id}/collective-memory/${editingShard._id}`,
+        `/api/agents/${agent._id}/collective-memory/${editingGuide._id}`,
         {
           content: pendingContentData.content || '',
         },
       )
 
-      setShards(prev =>
+      setGuides(prev =>
         prev.map(s =>
           s._id === editingGuide._id
             ? { ...s, content: pendingContentData.content }
@@ -716,12 +716,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 checked={guide.is_active || false}
                 onCheckedChange={() => handleToggleActive(guide)}
                 disabled={isSubmitting}
-                style={{
-                  backgroundColor: shard.is_active
-                    ? 'rgb(34 197 94)' // green-500
-                    : 'rgb(249 115 22)', // orange-500
-                  opacity: isSubmitting ? 0.5 : 1,
-                }}
               />
             </div>
           </div>
@@ -755,7 +749,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 )}
               </div>
               <Button
-                onClick={() => handleFieldEdit(guide, 'extraction_prompt')
+                onClick={() => handleFieldEdit(guide, 'extraction_prompt')}
                 size="sm"
                 className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
               >
@@ -792,7 +786,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 )}
               </div>
               <Button
-                onClick={() => handleContentEdit(guide)
+                onClick={() => handleContentEdit(guide)}
                 size="sm"
                 className="absolute bottom-3 right-3 md:opacity-0 md:group-hover:opacity-100 h-8 w-8 p-0"
               >
@@ -829,9 +823,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   <div key={memory._id} className="relative group">
                     <div className="rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                        <div className="text-foreground">
-                          {memory.content}
-                        </div>
+                        <div className="text-foreground">{memory.content}</div>
                       </div>
                       <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <Button
@@ -897,9 +889,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     <div key={fact._id} className="relative group">
                       <div className="rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
                         <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
-                          <div className="text-foreground">
-                            {fact.content}
-                          </div>
+                          <div className="text-foreground">{fact.content}</div>
                         </div>
                         <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                           {/* Age text */}
@@ -948,14 +938,12 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           <DialogHeader>
             <DialogTitle>
               Edit{' '}
-              {editingField === 'content'
-                ? 'Memory Content'
-                : 'Extraction Prompt'}
+              {editingField === 'content' ? 'Memory Content' : 'Memory Guide'}
             </DialogTitle>
             <DialogDescription>
               {editingField === 'content'
                 ? 'Edit the main collective memory content'
-                : 'Edit the prompt used for extracting memories'}
+                : 'Memory guides instruct your agent what they should pay attention to and what kind of memories to form'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
