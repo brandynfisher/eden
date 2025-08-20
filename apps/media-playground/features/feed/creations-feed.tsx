@@ -20,6 +20,15 @@ type Props = {
   initialScrollIndex?: number | null
   onScrollRestored?: () => void
   showSkeleton?: boolean
+  onNavigate?: (creationId: string, direction: 'prev' | 'next') => void
+}
+
+export type CreationsFeedHandle = {
+  getAdjacentCreationId: (
+    currentId: string,
+    direction: 'prev' | 'next',
+  ) => string | null
+  getAllCreationIds: () => string[]
 }
 
 const CreationsFeed = ({

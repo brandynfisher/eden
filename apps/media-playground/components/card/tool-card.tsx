@@ -75,21 +75,25 @@ export const ToolCardMedia = ({
 const ToolCard = ({ title, image, link, description, priority }: Props) => {
   return (
     <Link prefetch={false} href={link} className="group">
-      <Card className="overflow-hidden border h-full w-full flex flex-col">
-        {/* Image Container */}
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <ToolCardMedia mediaUrl={image} title={title} priority={priority} />
-          {/* Hover overlay for darkening effect */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
-        </div>
+      <Card className="overflow-hidden border  hover:border-purple-500/50 transition-all duration-300 h-full w-full">
+        <div className="p-2 flex items-center gap-2">
+          <div className="relative w-40 aspect-[4/3] flex-shrink-0 overflow-hidden rounded-sm">
+            <ToolCardMedia
+              mediaUrl={image}
+              title={title}
+              priority={priority}
+              variant="full"
+            />
+          </div>
 
-        {/* Text Container - Fixed Height */}
-        <div className="p-3 bg-background flex-shrink-0 h-24 flex flex-col justify-center">
-          <TypographyH6 className="text-foreground text-base font-semibold mb-1 line-clamp-1">
-            {title}
-          </TypographyH6>
-          <div className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-            {description}
+          {/* Content Container - Takes remaining space */}
+          <div className="flex-1 min-w-0 p-3 flex flex-col justify-between">
+            <TypographyH6 className="text-white text-base font-medium mb-1 line-clamp-1">
+              {title}
+            </TypographyH6>
+            <div className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
+              {description}
+            </div>
           </div>
         </div>
       </Card>

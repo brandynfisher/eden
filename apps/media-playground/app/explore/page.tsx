@@ -4,7 +4,9 @@ import FeedSearchForm from '@/components/filter/feed-search-form'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
-import CreationsFeed from '@/features/feed/creations-feed'
+import CreationsFeed, {
+  CreationsFeedHandle,
+} from '@/features/feed/creations-feed'
 import { CreationsFilter } from '@/features/feed/creations-filter'
 import ModelsFeed from '@/features/feed/models-feed'
 import { SortMenu } from '@/features/feed/sort-menu'
@@ -14,9 +16,8 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
 import { Plus, Zap } from 'lucide-react'
 import Link from 'next/link'
-// Removed unused imports
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 type ContentType = 'creations' | 'models' | 'agents' | 'tools'
 type CreatorType = 'public' | 'user'
@@ -26,6 +27,7 @@ const ExplorePage = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
+  const creationsFeedRef = useRef<CreationsFeedHandle>(null)
 
   // Initialize state from URL parameters
   const initialContentType =
@@ -81,7 +83,9 @@ const ExplorePage = () => {
       setCreatorType('public')
       const params = new URLSearchParams(searchParams?.toString())
       params.delete('creator')
-      router.replace(`/explore${params.toString() ? `?${params.toString()}` : ''}`)
+      router.replace(
+        `/explore${params.toString() ? `?${params.toString()}` : ''}`,
+      )
     }
   }, [user, creatorType, searchParams, router])
 
@@ -200,6 +204,48 @@ const ExplorePage = () => {
   }
 
   const pageInfo = getPageInfo()
+
+  // Handle arrow key navigation for creation modals
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle navigation if we're viewing a creation modal
+      if (!pathname?.startsWith('/creations/')) return
+
+      const creationId = pathname.split('/creations/')[1]
+      if (!creationId || !creationsFeedRef.current) return
+
+      let targetId: string | null = null
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        targetId = creationsFeedRef.current.getAdjacentCreationId(
+          creationId,
+          'prev',
+        )
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        targetId = creationsFeedRef.current.getAdjacentCreationId(
+          creationId,
+          'next',
+        )
+      }
+
+      if (targetId) {
+        router.push(`/creations/${targetId}`)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [pathname, router])
+
+  const handleCreationNavigation = useCallback(
+    (creationId: string) => {
+      // This could be used for programmatic navigation if needed
+      router.push(`/creations/${creationId}`)
+    },
+    [router],
+  )
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -345,7 +391,13 @@ const ExplorePage = () => {
           </div>
 
           <div className={contentType === 'creations' ? 'block' : 'hidden'}>
-            <CreationsFeed query={creationsQuery} minCols={2} maxCols={8} />
+            <CreationsFeed
+              ref={creationsFeedRef}
+              query={creationsQuery}
+              minCols={2}
+              maxCols={8}
+              onNavigate={handleCreationNavigation}
+            />
           </div>
 
           <div className={contentType === 'models' ? 'block' : 'hidden'}>
