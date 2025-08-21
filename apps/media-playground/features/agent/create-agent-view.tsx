@@ -454,7 +454,10 @@ const CreateAgentView = () => {
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder="Describe in detail how your agent should behave: its character, behavioral traits, communication style, goals, backstory, rules. Create a first version of the persona, then chat with your agent and iterate!"
+                                  placeholder={`Describe in detail how your agent should behave: its character, behavioral traits, communication style, its knowledge, goals, backstory, rules... 
+
+Typically this is all written in 2nd person:
+'You are agent_name, you always talk like this, your goals are to..., you know the following things...'`}
                                   {...field}
                                   className="min-h-[240px]"
                                   variant="xl"
