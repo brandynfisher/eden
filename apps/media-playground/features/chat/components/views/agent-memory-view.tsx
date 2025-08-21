@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Tooltip,
   TooltipContent,
@@ -360,97 +361,89 @@ const AgentMemoryView: FC<{
     <TooltipProvider>
       <div className="flex-1 overflow-auto bg-accent p-3 md:p-4">
         <div className="mx-auto max-w-5xl">
-          <div className="mb-4 flex flex-col items-center gap-4">
+          <div className="mb-4">
             {/* Title */}
-            <div className="text-left w-full">
+            <div className="text-left w-full mb-6">
               <h1 className="text-3xl font-bold text-foreground">
                 Manage {agent.name}'s memories
               </h1>
             </div>
+          </div>
 
-            {/* Memory Type Tabs - Show if owner */}
-            {collectiveMemoryAccess.showTab && (
-              <div className="flex gap-1 justify-start w-full">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setMemoryTab('user')}
-                      className={cn(
-                        'flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors min-w-[110px]',
-                        memoryTab === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'border border-border hover:bg-muted text-muted-foreground hover:text-foreground',
-                      )}
-                    >
-                      User Memory
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-xs">
-                    <p>
-                      This is your personal preferences memory with {agent.name}
-                      , extracted from all your conversations with this agent.
-                      These memories only affect your own interactions with{' '}
-                      {agent.name} and primarily store custom instructions you
-                      give to the agent.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setMemoryTab('collective')}
-                      className={cn(
-                        'flex items-center justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors min-w-[110px]',
-                        memoryTab === 'collective'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'border border-border hover:bg-muted text-muted-foreground hover:text-foreground',
-                      )}
-                    >
-                      Collective Memory
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-xs">
-                    <p>
-                      This is {agent.name}'s collective memory. This memory is
-                      formed and evolved by all its conversations with all
-                      users. Collective memory is a powerful, experimental
-                      feature that enables many new applications for creative
-                      agents that are driven by collective group interaction.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            )}
+          {/* Tab Toggle - Always show at top level */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-6 bg-border rounded-full"></div>
+              {/* Memory Type Toggle - A/B style buttons */}
+              {collectiveMemoryAccess.showTab ? (
+                <div className="flex items-center border border-border rounded-lg overflow-hidden">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setMemoryTab('user')}
+                        className={cn(
+                          'flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32',
+                          memoryTab === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                        )}
+                      >
+                        User
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p>
+                        This is your personal preferences memory with{' '}
+                        {agent.name}, extracted from all your conversations with
+                        this agent. These memories only affect your own
+                        interactions with {agent.name} and primarily store
+                        custom instructions you give to the agent.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="w-px bg-border h-8"></div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setMemoryTab('collective')}
+                        className={cn(
+                          'flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32',
+                          memoryTab === 'collective'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                        )}
+                      >
+                        Collective
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p>
+                        This is {agent.name}'s collective memory. This memory is
+                        formed and evolved by all its conversations with all
+                        users. Collective memory is a powerful, experimental
+                        feature that enables many new applications for creative
+                        agents that are driven by collective group interaction.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              ) : (
+                <h2 className="text-lg font-semibold text-foreground ml-2">
+                  User Memory
+                </h2>
+              )}
+              <div className="flex-1 h-px bg-border"></div>
+            </div>
           </div>
 
           {/* Tab Content */}
           {memoryTab === 'user' ? (
             <div className="space-y-8">
               <div className="relative group">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-6 bg-border rounded-full"></div>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <h2 className="text-lg font-semibold text-foreground cursor-help">
-                          User Memory
-                        </h2>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        <p>
-                          This is your personal memory with {agent.name},
-                          extracted from all your conversations with this agent.
-                          These memories only affect your own interactions with{' '}
-                          {agent.name}.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <div className="flex-1 h-px bg-border"></div>
-                  </div>
-
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-4">
                   {/* User Memory Active/Disabled Toggle - Only show if user has edit access */}
                   {hasEditAccess && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 md:justify-end ml-auto">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div
@@ -479,8 +472,8 @@ const AgentMemoryView: FC<{
                     </div>
                   )}
                 </div>
-                <div className="group relative rounded-lg border border-border bg-card shadow-sm">
-                  <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[120px] max-h-[250px] overflow-y-auto">
+                <div className="group relative rounded-lg border border-border bg-blue-50/20 dark:bg-blue-950/15 shadow-sm">
+                  <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[150px] max-h-[312px] overflow-y-auto">
                     {displayContent || (
                       <span className="text-muted-foreground italic">
                         {!userMemoryEnabled
@@ -565,6 +558,8 @@ const AgentMemoryView: FC<{
               agent={agent}
               hasAccess={collectiveMemoryAccess.hasAccess}
               needsPreview={collectiveMemoryAccess.needsPreview}
+              onTabChange={setMemoryTab}
+              showTabToggle={false}
             />
           )}
         </div>
@@ -572,7 +567,7 @@ const AgentMemoryView: FC<{
 
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[80vw] max-w-none h-[90vh] max-h-none flex flex-col">
           <DialogHeader>
             <DialogTitle>Edit User Memory</DialogTitle>
             <DialogDescription>
@@ -582,17 +577,17 @@ const AgentMemoryView: FC<{
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-4"
+              className="space-y-4 flex-1 flex flex-col"
             >
               <FormField
                 control={form.control}
                 name="content"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <AutosizeTextarea
+                  <FormItem className="flex-1 flex flex-col">
+                    <FormControl className="flex-1">
+                      <Textarea
                         placeholder="Enter memories, context, or notes about your conversations with this agent..."
-                        className="min-h-[300px] resize-y"
+                        className="min-h-0 resize-none flex-1 h-full"
                         {...field}
                       />
                     </FormControl>
@@ -607,7 +602,7 @@ const AgentMemoryView: FC<{
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <DialogFooter className="mt-auto pt-4">
                 <Button
                   type="button"
                   variant="outline"

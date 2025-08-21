@@ -7,7 +7,6 @@ import {
 } from './memory-constants'
 import MemoryEditConfirmationDialog from './memory-edit-confirmation-dialog'
 import { Button } from '@/components/ui/button'
-import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   Dialog,
   DialogContent,
@@ -26,6 +25,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Tooltip,
   TooltipContent,
@@ -110,6 +110,8 @@ interface CollectiveMemoryProps {
   agent: Agent
   hasAccess: boolean
   needsPreview?: boolean
+  onTabChange?: (tab: 'user' | 'collective') => void
+  showTabToggle?: boolean
 }
 
 // Helper function to calculate age in days
@@ -153,6 +155,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   agent,
   hasAccess,
   needsPreview = false,
+  onTabChange,
+  showTabToggle = false,
 }) => {
   const [guides, setGuides] = useState<CollectiveGuide[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -273,7 +277,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         ),
       )
 
-      toast.success(`Guide ${newValue ? 'activated' : 'deactivated'}`)
+      toast.success(`Memory ${newValue ? 'activated' : 'deactivated'}`)
     } catch (error) {
       console.error('Error toggling active state:', error)
       const errorMessage = getErrorMessage(
@@ -480,14 +484,14 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       )
       setGuides(guidesResponse.data.shards || [])
 
-      toast.success('Collective Memory Guide created successfully')
+      toast.success('Collective Memory created successfully')
       setIsNewGuideModalOpen(false)
       newGuideForm.reset()
     } catch (error) {
       console.error('Error creating new guide:', error)
       const errorMessage = getErrorMessage(
         error,
-        'Failed to create collective memory guide',
+        'Failed to create collective memory',
       )
       toast.error(errorMessage)
     } finally {
@@ -543,7 +547,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         <div className="text-center py-16">
           <div className="mb-6">
             <span className="text-muted-foreground italic">
-              No collective memory guides found.
+              No collective memory found.
             </span>
           </div>
           <Button
@@ -551,7 +555,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
             variant="default"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Create a new Collective Memory Guide
+            Create a new Collective Memory
           </Button>
         </div>
 
@@ -562,10 +566,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         >
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create a new Collective Memory Guide</DialogTitle>
+              <DialogTitle>Create a new Collective Memory</DialogTitle>
               <DialogDescription>
-                Create a new collective memory guide to organize and extract
-                specific types of information from conversations.
+                Create a new collective memory to organize and extract specific
+                types of information from conversations.
               </DialogDescription>
             </DialogHeader>
             <Form {...newGuideForm}>
@@ -601,11 +605,11 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   name="extraction_prompt"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Memory guide</FormLabel>
+                      <FormLabel>Memory instructions</FormLabel>
                       <FormControl>
-                        <AutosizeTextarea
-                          placeholder="The memory guide tells the agent what this Collective Memory Guide is for, what kinds of information are relevant and what kinds of facts and ideas should be remembered. Clearly describing what the purpose is of this Collective Memory Guide is essential to make things work well. Iterate over time!"
-                          className="min-h-[200px] resize-y"
+                        <Textarea
+                          placeholder="The memory instructions tell the agent what this Collective Memory is for, what kinds of information are relevant and what kinds of facts and ideas should be remembered. Clearly describing the purpose of this Collective Memory is essential to make things work well. Iterate over time!"
+                          className="min-h-[50vh] resize-y flex-1"
                           {...field}
                         />
                       </FormControl>
@@ -629,7 +633,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     </FormItem>
                   )}
                 />
-                <DialogFooter>
+                <DialogFooter className="mt-auto pt-4">
                   <Button
                     type="button"
                     variant="outline"
@@ -671,27 +675,62 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     <TooltipProvider>
       <div className="space-y-8 px-2">
         <div className="relative">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-1 h-6 bg-border rounded-full"></div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <h2 className="text-lg font-semibold text-foreground cursor-help">
-                    Collective Memory
-                  </h2>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>
-                    {agent.name}'s collective memory. This memory grows and
-                    evolves through all conversations with all users.
-                  </p>
-                </TooltipContent>
-              </Tooltip>
+              {/* Memory Type Toggle - A/B style buttons */}
+              {showTabToggle ? (
+                <div className="flex items-center border border-border rounded-lg overflow-hidden">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => onTabChange?.('user')}
+                        className="flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      >
+                        User
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p>
+                        This is your personal preferences memory with{' '}
+                        {agent.name}, extracted from all your conversations with
+                        this agent. These memories only affect your own
+                        interactions with {agent.name} and primarily store
+                        custom instructions you give to the agent.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="w-px bg-border h-8"></div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => onTabChange?.('collective')}
+                        className="flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32 bg-primary text-primary-foreground"
+                      >
+                        Collective
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs">
+                      <p>
+                        This is {agent.name}'s collective memory. This memory is
+                        formed and evolved by all its conversations with all
+                        users. Collective memory is a powerful, experimental
+                        feature that enables many new applications for creative
+                        agents that are driven by collective group interaction.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              ) : (
+                <h2 className="text-lg font-semibold text-foreground ml-2">
+                  Collective Memory
+                </h2>
+              )}
               <div className="flex-1 h-px bg-border"></div>
             </div>
 
             {/* Active/Paused Toggle - Inline with title */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 md:justify-end">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
@@ -707,8 +746,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 <TooltipContent>
                   <p>
                     {guide.is_active
-                      ? 'This memory guide is active and will be used in conversations'
-                      : 'This memory guide is paused and will not be used in conversations'}
+                      ? 'This memory is active and will be used in conversations'
+                      : 'This memory is paused and will not be used in conversations'}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -726,7 +765,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <h3 className="text-md font-medium text-foreground cursor-help">
-                    Memory Guide
+                    Memory Instructions
                   </h3>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-md">
@@ -741,7 +780,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
               </Tooltip>
             </div>
             <div className="group relative rounded-lg border border-border bg-card shadow-sm">
-              <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[60px] max-h-[150px] overflow-y-auto">
+              <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[72px] max-h-[180px] overflow-y-auto">
                 {guide.extraction_prompt || (
                   <span className="text-muted-foreground italic">
                     No extraction prompt set
@@ -758,9 +797,13 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
             </div>
           </div>
 
+          {/* Divider between user input and auto-generated content */}
+          <div className="my-8 border-t border-border/40"></div>
+
           {/* Memory Content Section */}
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-3">
+              <div className="w-1 h-6 bg-blue-400/60 dark:bg-blue-600/60 rounded-full"></div>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <h3 className="text-md font-medium text-foreground cursor-help">
@@ -775,9 +818,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </p>
                 </TooltipContent>
               </Tooltip>
+              <div className="flex-1 h-px bg-border"></div>
             </div>
-            <div className="group relative rounded-lg border border-border bg-card shadow-sm">
-              <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[120px] max-h-[250px] overflow-y-auto">
+            <div className="group relative rounded-lg border border-border bg-blue-50/20 dark:bg-blue-950/15 shadow-sm">
+              <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[216px] max-h-[450px] overflow-y-auto">
                 {guide.content || (
                   <span className="text-muted-foreground italic">
                     💭 No collective memory content yet. This will be populated
@@ -799,7 +843,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           {guide.unabsorbed_memory_ids.length > 0 && (
             <div className="space-y-6 mb-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-border rounded-full"></div>
+                <div className="w-1 h-6 bg-yellow-400/60 dark:bg-yellow-600/60 rounded-full"></div>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <h2 className="text-lg font-semibold text-foreground cursor-help">
@@ -814,14 +858,14 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex-1 h-px bg-border"></div>
-                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full border border-border">
+                <span className="text-xs bg-yellow-100/40 dark:bg-yellow-900/25 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded-full border border-yellow-200/40 dark:border-yellow-800/40">
                   Will be integrated soon
                 </span>
               </div>
               <div className="grid gap-2">
                 {guide.unabsorbed_memory_ids.map(memory => (
                   <div key={memory._id} className="relative group">
-                    <div className="rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
+                    <div className="rounded-lg border border-border bg-yellow-50/25 dark:bg-yellow-950/15 hover:bg-yellow-100/35 dark:hover:bg-yellow-900/25 transition-colors">
                       <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
                         <div className="text-foreground">{memory.content}</div>
                       </div>
@@ -861,7 +905,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           {guide.facts.length > 0 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-1 h-6 bg-border rounded-full"></div>
+                <div className="w-1 h-6 bg-green-400/60 dark:bg-green-600/60 rounded-full"></div>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <h2 className="text-lg font-semibold text-foreground cursor-help">
@@ -878,7 +922,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </TooltipContent>
                 </Tooltip>
                 <div className="flex-1 h-px bg-border"></div>
-                <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full border border-border">
+                <span className="text-xs bg-green-100/40 dark:bg-green-900/25 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-200/40 dark:border-green-800/40">
                   {guide.facts.length} facts
                 </span>
               </div>
@@ -887,7 +931,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   const ageInDays = calculateAgeInDays(fact.updatedAt)
                   return (
                     <div key={fact._id} className="relative group">
-                      <div className="rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors">
+                      <div className="rounded-lg border border-border bg-green-50/20 dark:bg-green-950/15 hover:bg-green-100/30 dark:hover:bg-green-900/20 transition-colors">
                         <div className="relative px-4 py-3 text-sm whitespace-pre-wrap pr-20">
                           <div className="text-foreground">{fact.content}</div>
                         </div>
@@ -934,11 +978,13 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
 
       {/* Field Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[80vw] max-w-none h-[90vh] max-h-none flex flex-col">
           <DialogHeader>
             <DialogTitle>
               Edit{' '}
-              {editingField === 'content' ? 'Memory Content' : 'Memory Guide'}
+              {editingField === 'content'
+                ? 'Memory Content'
+                : 'Memory Instructions'}
             </DialogTitle>
             <DialogDescription>
               {editingField === 'content'
@@ -949,21 +995,21 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleFieldSubmit)}
-              className="space-y-4"
+              className="space-y-4 flex-1 flex flex-col"
             >
               <FormField
                 control={form.control}
                 name={editingField || 'content'}
                 render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <AutosizeTextarea
+                  <FormItem className="flex-1 flex flex-col">
+                    <FormControl className="flex-1">
+                      <Textarea
                         placeholder={
                           editingField === 'content'
                             ? 'Enter collective memory content...'
                             : 'Enter extraction prompt...'
                         }
-                        className="min-h-[300px] resize-y"
+                        className="min-h-0 resize-none flex-1 h-full"
                         {...field}
                       />
                     </FormControl>
@@ -992,7 +1038,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <DialogFooter className="mt-auto pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -1049,9 +1095,9 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <AutosizeTextarea
+                      <Textarea
                         placeholder="Enter memory content..."
-                        className="min-h-[200px] resize-y"
+                        className="min-h-[50vh] resize-y flex-1"
                         {...field}
                       />
                     </FormControl>
@@ -1066,7 +1112,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <DialogFooter className="mt-auto pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -1099,7 +1145,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
         open={isContentEditModalOpen}
         onOpenChange={setIsContentEditModalOpen}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[80vw] max-w-none h-[90vh] max-h-none flex flex-col">
           <DialogHeader>
             <DialogTitle>Edit Memory Content</DialogTitle>
             <DialogDescription>
@@ -1109,17 +1155,17 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           <Form {...contentForm}>
             <form
               onSubmit={contentForm.handleSubmit(handleContentUpdate)}
-              className="space-y-4"
+              className="space-y-4 flex-1 flex flex-col"
             >
               <FormField
                 control={contentForm.control}
                 name="content"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <AutosizeTextarea
+                  <FormItem className="flex-1 flex flex-col">
+                    <FormControl className="flex-1">
+                      <Textarea
                         placeholder="Enter collective memory content..."
-                        className="min-h-[200px] resize-y"
+                        className="min-h-0 resize-none flex-1 h-full"
                         {...field}
                       />
                     </FormControl>
@@ -1134,7 +1180,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <DialogFooter className="mt-auto pt-4">
                 <Button
                   type="button"
                   variant="outline"
