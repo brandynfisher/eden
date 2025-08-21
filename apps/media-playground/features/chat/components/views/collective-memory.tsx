@@ -729,7 +729,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
               <div className="flex-1 h-px bg-border"></div>
             </div>
 
-            {/* Active/Paused Toggle - Inline with title */}
+            {/* Active/Paused Toggle - Moved to inline with tab toggle */}
             <div className="flex items-center gap-3 md:justify-end">
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -372,67 +372,101 @@ const AgentMemoryView: FC<{
 
           {/* Tab Toggle - Always show at top level */}
           <div className="mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-6 bg-border rounded-full"></div>
-              {/* Memory Type Toggle - A/B style buttons */}
-              {collectiveMemoryAccess.showTab ? (
-                <div className="flex items-center border border-border rounded-lg overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-6 bg-border rounded-full"></div>
+                {/* Memory Type Toggle - A/B style buttons */}
+                {collectiveMemoryAccess.showTab ? (
+                  <div className="flex items-center border border-border rounded-lg overflow-hidden">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setMemoryTab('user')}
+                          className={cn(
+                            'flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32',
+                            memoryTab === 'user'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                          )}
+                        >
+                          User
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs">
+                        <p>
+                          This is your personal preferences memory with{' '}
+                          {agent.name}, extracted from all your conversations
+                          with this agent. These memories only affect your own
+                          interactions with {agent.name} and primarily store
+                          custom instructions you give to the agent.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="w-px bg-border h-8"></div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => setMemoryTab('collective')}
+                          className={cn(
+                            'flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32',
+                            memoryTab === 'collective'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                          )}
+                        >
+                          Collective
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs">
+                        <p>
+                          This is {agent.name}'s collective memory. This memory
+                          is formed and evolved by all its conversations with
+                          all users. Collective memory is a powerful,
+                          experimental feature that enables many new
+                          applications for creative agents that are driven by
+                          collective group interaction.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                ) : (
+                  <h2 className="text-lg font-semibold text-foreground ml-2">
+                    User Memory
+                  </h2>
+                )}
+                <div className="flex-1 h-px bg-border"></div>
+              </div>
+
+              {/* User Memory Active/Disabled Toggle - Moved to inline position */}
+              {memoryTab === 'user' && hasEditAccess && (
+                <div className="flex items-center gap-3 md:justify-end">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setMemoryTab('user')}
-                        className={cn(
-                          'flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32',
-                          memoryTab === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-                        )}
+                      <div
+                        className={`text-sm font-medium cursor-help ${
+                          userMemoryEnabled
+                            ? 'text-foreground'
+                            : 'text-muted-foreground'
+                        }`}
                       >
-                        User
-                      </button>
+                        {userMemoryEnabled ? 'Active' : 'Disabled'}
+                      </div>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs">
+                    <TooltipContent>
                       <p>
-                        This is your personal preferences memory with{' '}
-                        {agent.name}, extracted from all your conversations with
-                        this agent. These memories only affect your own
-                        interactions with {agent.name} and primarily store
-                        custom instructions you give to the agent.
+                        {userMemoryEnabled
+                          ? 'User memory is active and will be used in conversations'
+                          : 'User memory is disabled and will not be used in conversations'}
                       </p>
                     </TooltipContent>
                   </Tooltip>
-                  <div className="w-px bg-border h-8"></div>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setMemoryTab('collective')}
-                        className={cn(
-                          'flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32',
-                          memoryTab === 'collective'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-                        )}
-                      >
-                        Collective
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs">
-                      <p>
-                        This is {agent.name}'s collective memory. This memory is
-                        formed and evolved by all its conversations with all
-                        users. Collective memory is a powerful, experimental
-                        feature that enables many new applications for creative
-                        agents that are driven by collective group interaction.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <Switch
+                    checked={userMemoryEnabled}
+                    onCheckedChange={handleToggleUserMemoryEnabled}
+                    disabled={isSubmitting}
+                  />
                 </div>
-              ) : (
-                <h2 className="text-lg font-semibold text-foreground ml-2">
-                  User Memory
-                </h2>
               )}
-              <div className="flex-1 h-px bg-border"></div>
             </div>
           </div>
 
@@ -440,38 +474,6 @@ const AgentMemoryView: FC<{
           {memoryTab === 'user' ? (
             <div className="space-y-8">
               <div className="relative group">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-4">
-                  {/* User Memory Active/Disabled Toggle - Only show if user has edit access */}
-                  {hasEditAccess && (
-                    <div className="flex items-center gap-3 md:justify-end ml-auto">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div
-                            className={`text-sm font-medium cursor-help ${
-                              userMemoryEnabled
-                                ? 'text-foreground'
-                                : 'text-muted-foreground'
-                            }`}
-                          >
-                            {userMemoryEnabled ? 'Active' : 'Disabled'}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            {userMemoryEnabled
-                              ? 'User memory is active and will be used in conversations'
-                              : 'User memory is disabled and will not be used in conversations'}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Switch
-                        checked={userMemoryEnabled}
-                        onCheckedChange={handleToggleUserMemoryEnabled}
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                  )}
-                </div>
                 <div className="group relative rounded-lg border border-border bg-blue-50/20 dark:bg-blue-950/15 shadow-sm">
                   <div className="relative px-4 py-4 text-sm whitespace-pre-wrap min-h-[150px] max-h-[312px] overflow-y-auto">
                     {displayContent || (
