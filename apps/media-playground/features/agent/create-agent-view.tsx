@@ -45,11 +45,17 @@ import { z } from 'zod'
 // Agent form schema
 const agentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(42),
-  key: z.string().min(1, 'Key is required').regex(/^[a-z0-9_-]+$/, 'Key must only contain lowercase letters, numbers, underscores and dashes.'),
+  key: z
+    .string()
+    .min(1, 'Key is required')
+    .regex(
+      /^[a-z0-9_-]+$/,
+      'Key must only contain lowercase letters, numbers, underscores and dashes.',
+    ),
   image: z.string().optional(),
-  description: z.string().min(1, 'Description is required').max(5000),
+  description: z.string().min(1, 'Description is required').max(500),
   persona: z.string().min(1, 'Persona is required').max(30000),
-  public: z.boolean().default(false),
+  public: z.boolean().default(true),
   knowledge: z.string().optional(),
   greeting: z.string().max(140).optional(),
   voice: z.string().optional(),
@@ -96,7 +102,7 @@ const CreateAgentView = () => {
       image: '',
       description: '',
       persona: '',
-      public: false,
+      public: true,
       knowledge: '',
       greeting: '',
       voice: '',
@@ -420,7 +426,7 @@ const CreateAgentView = () => {
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder="Short description of the agent shown on profile and cards."
+                                  placeholder="Short description of the agent shown on its public profile page."
                                   {...field}
                                   className="min-h-[80px]"
                                 />
@@ -428,7 +434,7 @@ const CreateAgentView = () => {
                               <div className="flex justify-end mt-2">
                                 <CharacterCount
                                   current={field.value?.length || 0}
-                                  max={5000}
+                                  max={500}
                                 />
                               </div>
                               <FormMessage />
@@ -448,7 +454,7 @@ const CreateAgentView = () => {
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
+                                  placeholder="Describe in detail how your agent should behave: its character, behavioral traits, communication style, goals, backstory, rules. Create a first version of the persona, then chat with your agent and iterate!"
                                   {...field}
                                   className="min-h-[240px]"
                                   variant="xl"

@@ -836,7 +836,7 @@ export const updateAgentDeployment = async (
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
-  const { agentId } = request.params as AgentsUpdateDeploymentArguments
+  const { agentId } = request.params as { agentId: string }
   const { platform, config, secrets } =
     request.body as AgentsUpdateDeploymentArguments
 
