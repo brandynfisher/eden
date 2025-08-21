@@ -29,6 +29,7 @@ import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegr
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
 import { ProfileImageUploader } from '@/features/chat/components/profile-image-uploader'
 import TaskFormModal from '@/features/chat/components/task-form-modal'
+import { AGENT_FIELD_LIMITS } from '@/features/chat/components/views/agent-constants'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
@@ -54,7 +55,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 export const agentSchema = z.object({
-  name: z.string().min(1).max(42),
+  name: z.string().min(1).max(AGENT_FIELD_LIMITS.NAME_MAX_CHARS),
   key: z
     .string()
     .min(1)
@@ -64,8 +65,8 @@ export const agentSchema = z.object({
         'Key must only contain lowercase letters, numbers, underscores and dashes.',
     }),
   image: z.string().optional(),
-  description: z.string().min(1).max(5000),
-  greeting: z.string().max(140).optional(),
+  description: z.string().min(1).max(AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS),
+  greeting: z.string().max(AGENT_FIELD_LIMITS.GREETING_MAX_CHARS).optional(),
   voice: z.string().optional(),
   models: z
     .array(
@@ -75,7 +76,7 @@ export const agentSchema = z.object({
       }),
     )
     .optional(),
-  persona: z.string().max(30000).optional(),
+  persona: z.string().max(AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS).optional(),
   public: z.boolean().optional(),
   knowledge: z.string().max(100000).optional(),
   suggestions: z

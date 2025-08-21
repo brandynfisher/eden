@@ -14,6 +14,7 @@ import {
   getAgentTriggers,
   getAllUserDeployments,
   getAllUserTriggers,
+  getDashboardData,
   getSharedAgents,
   likeAgent,
   removeMemoryFromAgent,
@@ -625,6 +626,39 @@ const agentRoutes: FastifyPluginAsync = async server => {
         removeMemoryFromAgent(server, request, reply),
     },
   )
+
+  // Dashboard route
+  server.get('/v2/agents/:agentId/dashboard', {
+    schema: {
+      tags: ['Agents'],
+      description: 'Get dashboard data for an agent',
+      security: [{ apiKey: [] }],
+      params: { agentId: Type.String() },
+      querystring: {
+        startDate: Type.Optional(Type.String()),
+        endDate: Type.Optional(Type.String()),
+      },
+      response: {
+        200: {
+          sessionActivity: Type.Array(
+            Type.Object({
+              date: Type.String(),
+              platform: Type.String(),
+              totalUserMessages: Type.Number(),
+              sessionCount: Type.Number(),
+            }),
+          ),
+          dateRange: Type.Object({
+            start: Type.String(),
+            end: Type.String(),
+          }),
+          platforms: Type.Array(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getDashboardData(server, request, reply),
+  })
 
   // Permissions routes
   server.get('/v2/agents/:agentId/permissions', {

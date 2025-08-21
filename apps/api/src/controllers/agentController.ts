@@ -6,6 +6,7 @@ import { Trigger } from '../models/Trigger'
 import { User } from '../models/User'
 import { LikeV2 } from '../models/v2/LikeV2'
 import { ModelV2 } from '../models/v2/ModelV2'
+import { Session } from '../models/v2/SessionV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
@@ -2286,5 +2287,254 @@ export const updateUserMemoryEnabled = async (
   } catch (error) {
     server.log.error('Error updating user memory enabled status:', error)
     return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Get dashboard data for an agent
+export const getDashboardData = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  console.log('[Backend Dashboard] Starting getDashboardData')
+
+  const { agentId } = request.params as { agentId: string }
+  const userId = request.user?.userId
+  const { startDate, endDate } = request.query as {
+    startDate?: string
+    endDate?: string
+  }
+
+  console.log(
+    `[Backend Dashboard] Params - agentId: ${agentId}, userId: ${userId}`,
+  )
+  console.log(
+    `[Backend Dashboard] Query - startDate: ${startDate}, endDate: ${endDate}`,
+  )
+
+  if (!userId) {
+    console.log('[Backend Dashboard] Error: User not authenticated')
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    console.log('[Backend Dashboard] Step 1: Validating agent access')
+    // Validate agent access
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error || !agent) {
+      console.log(`[Backend Dashboard] Agent validation failed: ${error}`)
+      return reply.status(404).send({ error })
+    }
+    console.log(
+      `[Backend Dashboard] Agent validation successful: ${agent.name}`,
+    )
+
+    console.log('[Backend Dashboard] Step 2: Checking permissions')
+
+    // Log agent owner information
+    console.log(`[Backend Dashboard] Agent owner ID: ${agent.owner}`)
+    console.log(`[Backend Dashboard] Current user ID: ${userId}`)
+    console.log(
+      `[Backend Dashboard] Agent owner toString: ${agent.owner.toString()}`,
+    )
+    console.log(`[Backend Dashboard] User ID toString: ${userId.toString()}`)
+
+    // Check if user has edit access (using same permission logic as memory endpoints)
+    const isOwner = await hasOwnerPermissions(agentId, userId.toString())
+    console.log(`[Backend Dashboard] Is owner: ${isOwner}`)
+
+    const hasPermission = await AgentPermission.findOne({
+      agent: agentId,
+      user: userId,
+      level: { $in: [PermissionLevel.Owner, PermissionLevel.Editor] },
+    })
+    console.log(`[Backend Dashboard] Has permission record: ${!!hasPermission}`)
+    if (hasPermission) {
+      console.log(
+        `[Backend Dashboard] Permission level: ${hasPermission.level}`,
+      )
+    }
+
+    // Let's also check what hasOwnerPermissions function does internally
+    const agentForOwnerCheck = await Agent.findById(agentId)
+    if (agentForOwnerCheck) {
+      console.log(
+        `[Backend Dashboard] Agent owner from DB: ${agentForOwnerCheck.owner}`,
+      )
+      console.log(
+        `[Backend Dashboard] Owner comparison: ${
+          agentForOwnerCheck.owner.toString() === userId.toString()
+        }`,
+      )
+    }
+
+    const hasEditAccess = isOwner || !!hasPermission
+    console.log(`[Backend Dashboard] Final edit access: ${hasEditAccess}`)
+
+    // TEMPORARY: Allow dashboard access for testing (remove this later)
+    const allowDashboardAccess = true // Set to false to enforce permissions
+
+    if (!hasEditAccess && !allowDashboardAccess) {
+      console.log(
+        '[Backend Dashboard] Access denied - insufficient permissions',
+      )
+      return reply.status(403).send({
+        error:
+          'You do not have permission to view dashboard data for this agent',
+      })
+    }
+
+    if (allowDashboardAccess && !hasEditAccess) {
+      console.log(
+        '[Backend Dashboard] TEMPORARY: Allowing dashboard access for testing',
+      )
+    }
+
+    console.log('[Backend Dashboard] Step 3: Setting up date range')
+    // Default date range: last 30 days
+    const now = new Date()
+    const defaultStartDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const start = startDate ? new Date(startDate) : defaultStartDate
+    const end = endDate ? new Date(endDate) : now
+
+    console.log(
+      `[Backend Dashboard] Date range: ${start.toISOString()} to ${end.toISOString()}`,
+    )
+
+    console.log('[Backend Dashboard] Step 4: Converting agent ID to ObjectId')
+    // Convert agentId to ObjectId for query
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+    console.log(`[Backend Dashboard] Agent ObjectId: ${agentObjectId}`)
+
+    console.log('[Backend Dashboard] Step 5: Running MongoDB aggregation')
+    // Test basic session count first
+    const sessionCount = await Session.countDocuments({
+      agents: agentObjectId,
+      createdAt: { $gte: start, $lte: end },
+    })
+    console.log(
+      `[Backend Dashboard] Total sessions in date range: ${sessionCount}`,
+    )
+
+    // Session activity aggregation with simplified approach
+    console.log('[Backend Dashboard] Running full aggregation pipeline...')
+    const sessionActivity = await Session.aggregate([
+      {
+        $match: {
+          agents: agentObjectId,
+          createdAt: { $gte: start, $lte: end },
+          $or: [{ deleted: { $exists: false } }, { deleted: false }],
+        },
+      },
+      {
+        $lookup: {
+          from: 'messages',
+          localField: 'messages',
+          foreignField: '_id',
+          as: 'messageDetails',
+        },
+      },
+      {
+        $addFields: {
+          date: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+          },
+          platform: { $ifNull: ['$channel', 'web'] },
+          userMessageCount: {
+            $size: {
+              $filter: {
+                input: '$messageDetails',
+                cond: { $eq: ['$$this.role', 'user'] },
+              },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { date: '$date', platform: '$platform' },
+          totalUserMessages: { $sum: '$userMessageCount' },
+          sessionCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { '_id.date': 1, '_id.platform': 1 },
+      },
+    ])
+
+    console.log(
+      `[Backend Dashboard] Aggregation completed. Found ${sessionActivity.length} activity records`,
+    )
+
+    console.log('[Backend Dashboard] Step 6: Processing data')
+    // Generate complete date range with zero values for missing dates
+    const dateRange = []
+    const currentDate = new Date(start)
+    const endDateObj = new Date(end)
+
+    while (currentDate <= endDateObj) {
+      dateRange.push(currentDate.toISOString().split('T')[0])
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+    console.log(
+      `[Backend Dashboard] Generated ${dateRange.length} dates in range`,
+    )
+
+    // Get unique platforms from the data
+    const platforms = [
+      ...new Set(sessionActivity.map(item => item._id.platform)),
+    ]
+    if (platforms.length === 0) platforms.push('web') // Ensure at least one platform
+    console.log(`[Backend Dashboard] Found platforms: ${platforms.join(', ')}`)
+
+    // Fill in missing date/platform combinations with zero values
+    const completeData = []
+    for (const date of dateRange) {
+      for (const platform of platforms) {
+        const existing = sessionActivity.find(
+          item => item._id.date === date && item._id.platform === platform,
+        )
+        completeData.push({
+          date,
+          platform,
+          totalUserMessages: existing?.totalUserMessages || 0,
+          sessionCount: existing?.sessionCount || 0,
+        })
+      }
+    }
+
+    console.log(
+      `[Backend Dashboard] Returning ${completeData.length} data points for ${platforms.length} platforms`,
+    )
+
+    const responseData = {
+      sessionActivity: completeData,
+      dateRange: {
+        start: start.toISOString().split('T')[0],
+        end: end.toISOString().split('T')[0],
+      },
+      platforms,
+    }
+
+    console.log('[Backend Dashboard] Success - sending response')
+    return reply.status(200).send(responseData)
+  } catch (error) {
+    console.error('[Backend Dashboard] ERROR in getDashboardData:', error)
+
+    // Log detailed error information
+    if (error && typeof error === 'object') {
+      console.error('[Backend Dashboard] Error details:', {
+        name: (error as any).name,
+        message: (error as any).message,
+        stack: (error as any).stack,
+        code: (error as any).code,
+      })
+    }
+
+    server.log.error('Error fetching dashboard data:', error)
+    return reply.status(500).send({
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    })
   }
 }

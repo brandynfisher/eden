@@ -25,6 +25,10 @@ import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { ProfileImageUploader } from '@/features/chat/components/profile-image-uploader'
+import {
+  AGENT_FIELD_GUIDANCE,
+  AGENT_FIELD_LIMITS,
+} from '@/features/chat/components/views/agent-constants'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -44,7 +48,10 @@ import { z } from 'zod'
 
 // Agent form schema
 const agentSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(42),
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(AGENT_FIELD_LIMITS.NAME_MAX_CHARS),
   key: z
     .string()
     .min(1, 'Key is required')
@@ -53,11 +60,17 @@ const agentSchema = z.object({
       'Key must only contain lowercase letters, numbers, underscores and dashes.',
     ),
   image: z.string().optional(),
-  description: z.string().min(1, 'Description is required').max(500),
-  persona: z.string().min(1, 'Persona is required').max(30000),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .max(AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS),
+  persona: z
+    .string()
+    .min(1, 'Persona is required')
+    .max(AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS),
   public: z.boolean().default(true),
   knowledge: z.string().optional(),
-  greeting: z.string().max(140).optional(),
+  greeting: z.string().max(AGENT_FIELD_LIMITS.GREETING_MAX_CHARS).optional(),
   voice: z.string().optional(),
   models: z
     .array(
@@ -376,7 +389,10 @@ const CreateAgentView = () => {
                                         {...field}
                                         onChange={e => {
                                           field.onChange(
-                                            e.target.value.slice(0, 42),
+                                            e.target.value.slice(
+                                              0,
+                                              AGENT_FIELD_LIMITS.NAME_MAX_CHARS,
+                                            ),
                                           )
                                         }}
                                       />
@@ -426,7 +442,7 @@ const CreateAgentView = () => {
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder="Short description of the agent shown on its public profile page."
+                                  placeholder={AGENT_FIELD_GUIDANCE.DESCRIPTION}
                                   {...field}
                                   className="min-h-[80px]"
                                 />
@@ -434,7 +450,7 @@ const CreateAgentView = () => {
                               <div className="flex justify-end mt-2">
                                 <CharacterCount
                                   current={field.value?.length || 0}
-                                  max={500}
+                                  max={AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS}
                                 />
                               </div>
                               <FormMessage />
@@ -454,10 +470,9 @@ const CreateAgentView = () => {
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder={`Describe in detail how your agent should behave: its character, behavioral traits, communication style, its knowledge, goals, backstory, rules... 
-
-Typically this is all written in 2nd person:
-'You are agent_name, you always talk like this, your goals are to..., you know the following things...'`}
+                                  placeholder={
+                                    AGENT_FIELD_GUIDANCE.INSTRUCTIONS
+                                  }
                                   {...field}
                                   className="min-h-[240px]"
                                   variant="xl"
@@ -466,7 +481,9 @@ Typically this is all written in 2nd person:
                               <div className="flex justify-end mt-2">
                                 <CharacterCount
                                   current={field.value?.length || 0}
-                                  max={30000}
+                                  max={
+                                    AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS
+                                  }
                                 />
                               </div>
                               <FormMessage />
@@ -497,7 +514,7 @@ Typically this is all written in 2nd person:
                               <div className="flex justify-end mt-2">
                                 <CharacterCount
                                   current={field.value?.length || 0}
-                                  max={140}
+                                  max={AGENT_FIELD_LIMITS.GREETING_MAX_CHARS}
                                 />
                               </div>
                               <FormMessage />
