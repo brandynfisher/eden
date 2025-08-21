@@ -339,21 +339,25 @@ const AgentMemoryView: FC<{
   const handleDirectiveDelete = async (directiveId: string) => {
     if (!agent || !authUser) return
 
+    // Store the directive being deleted in case we need to revert
+    const directiveToDelete = unabsorbedDirectives.find(
+      d => d._id === directiveId,
+    )
+    if (!directiveToDelete) return
+
+    // Optimistically update the UI immediately
+    setUnabsorbedDirectives(prev =>
+      prev.filter(directive => directive._id !== directiveId),
+    )
+
     try {
-      setIsSubmitting(true)
       await axios.delete(`/api/agents/${agent._id}/memory/${directiveId}`)
-
-      // Update the local state
-      setUnabsorbedDirectives(prev =>
-        prev.filter(directive => directive._id !== directiveId),
-      )
-
-      toast.success('Directive removed successfully')
+      // Success - no toast notification to avoid blocking UI
     } catch (error) {
+      // Revert the optimistic update on error
+      setUnabsorbedDirectives(prev => [...prev, directiveToDelete])
       console.error('Error deleting directive:', error)
       toast.error('Failed to remove directive. Please try again.')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -543,7 +547,6 @@ const AgentMemoryView: FC<{
                               variant="ghost"
                               size="sm"
                               className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
-                              disabled={isSubmitting}
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>

@@ -439,34 +439,34 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     memory: MemorySession,
     arrayField: 'facts' | 'unabsorbed_memory_ids',
   ) => {
+    const originalGuides = guides
+
+    // Optimistically update the UI immediately
+    setGuides(prev =>
+      prev.map(s =>
+        s._id === guide._id
+          ? {
+              ...s,
+              [arrayField]: s[arrayField].filter(m => m._id !== memory._id),
+            }
+          : s,
+      ),
+    )
+
     try {
-      setIsSubmitting(true)
       await axios.delete(
         `/api/agents/${agent._id}/collective-memory/${guide._id}/memory/${memory._id}`,
         {
           data: { arrayField },
         },
       )
-
-      // Update local state
-      setGuides(prev =>
-        prev.map(s =>
-          s._id === guide._id
-            ? {
-                ...s,
-                [arrayField]: s[arrayField].filter(m => m._id !== memory._id),
-              }
-            : s,
-        ),
-      )
-
-      toast.success('Memory removed successfully')
+      // Success - no toast notification to avoid blocking UI
     } catch (error) {
+      // Revert the optimistic update on error
+      setGuides(originalGuides)
       console.error('Error deleting memory:', error)
       const errorMessage = getErrorMessage(error, 'Failed to remove memory')
       toast.error(errorMessage)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -889,7 +889,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                           variant="ghost"
                           size="sm"
                           className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
-                          disabled={isSubmitting}
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>
@@ -960,7 +959,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                               variant="ghost"
                               size="sm"
                               className="h-7 w-7 p-0 hover:bg-muted text-destructive hover:text-destructive rounded-full"
-                              disabled={isSubmitting}
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>
