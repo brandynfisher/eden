@@ -1,6 +1,7 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { ThoughtBlock } from '@/features/chat/components/thought-block'
 import { ToolResultActionBar } from '@/features/chat/components/tool-result-action-bar'
 import { ToolHoverMenu } from '@/features/chat/components/tools/tool-hover-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -20,6 +21,7 @@ import {
 import {
   type ThreadMessage as EdenThreadMessage,
   TaskV2Result,
+  Thought,
 } from '@edenlabs/eden-sdk'
 import { useTimeAgo } from 'next-timeago'
 import React, { type FC } from 'react'
@@ -166,9 +168,21 @@ const MyAssistantMessage: FC = () => {
       ])}
     >
       <MyAssistantMessageAvatar />
-      {/* {!isEmpty && ( // Use raw isEmpty */}
-      <AssistantMessage.Content className="pl-3 !max-w-full pr-2" />
-      {/* )} */}
+      <div className="pl-3 !max-w-full pr-2">
+        {(() => {
+          const thought =
+            myMessages[0]?.thought ||
+            (Array.isArray(myMessages[0]?.metadata?.thought)
+              ? (myMessages[0].metadata.thought as Thought[])
+              : undefined)
+
+          if (thought && thought.length > 0) {
+            return <ThoughtBlock thought={thought} />
+          }
+          return null
+        })()}
+        <AssistantMessage.Content />
+      </div>
       <BranchPicker />
       {/* {isEmpty || isRunning ? ( // Use raw isEmpty and isRunning
         <div className="col-start-3 row-start-2 bg-red-500">

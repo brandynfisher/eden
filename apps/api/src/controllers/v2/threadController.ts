@@ -263,7 +263,17 @@ export const getThread = async (
         },
       })
 
-    // console.log(thread)
+    console.log(
+      '[threadController] Raw thread from DB:',
+      JSON.stringify(thread, null, 2),
+    )
+
+    // Log thinking blocks specifically
+    if (thread?.messages) {
+      thread.messages.forEach((msg, index) => {
+        console.log(`[threadController] Message ${index} thought:`, msg.thought)
+      })
+    }
 
     if (!thread) {
       return reply.status(404).send({
@@ -293,6 +303,23 @@ export const getThread = async (
     })
 
     thread.messages = extendedMessages
+
+    console.log(
+      '[threadController] Final processed thread:',
+      JSON.stringify(
+        {
+          _id: thread._id,
+          messagesCount: thread.messages.length,
+          messages: thread.messages.map(msg => ({
+            id: msg.id,
+            role: msg.role,
+            thought: msg.thought,
+          })),
+        },
+        null,
+        2,
+      ),
+    )
 
     return reply.status(200).send({ thread })
   } catch (e) {

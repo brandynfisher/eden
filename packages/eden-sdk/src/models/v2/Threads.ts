@@ -7,6 +7,7 @@ import {
 } from '../../types'
 import { Creator } from '../Creators'
 import { Agent } from './Agents'
+import { Thought } from './Messages'
 import { TaskV2Args, TaskV2Result, TaskV2Status } from './TasksV2'
 import { AxiosRequestConfig } from 'axios'
 
@@ -277,6 +278,7 @@ export type ThreadMessage = {
   }
   reply_to?: string
   tool_calls?: ToolCall[]
+  thought?: Thought[]
   attachments?: string[]
   createdAt: Date
 }
@@ -293,6 +295,7 @@ export type ThreadAssistantMessage = BaseThreadMessage & {
   content: string
   status?: { type: 'running' | 'complete'; reason?: string }
   tool_calls?: ToolCall[]
+  thought?: Thought[]
 }
 
 export type ThreadSystemMessage = BaseThreadMessage & {
