@@ -2371,10 +2371,7 @@ export const getDashboardData = async (
     const hasEditAccess = isOwner || !!hasPermission
     console.log(`[Backend Dashboard] Final edit access: ${hasEditAccess}`)
 
-    // TEMPORARY: Allow dashboard access for testing (remove this later)
-    const allowDashboardAccess = true // Set to false to enforce permissions
-
-    if (!hasEditAccess && !allowDashboardAccess) {
+    if (!hasEditAccess) {
       console.log(
         '[Backend Dashboard] Access denied - insufficient permissions',
       )
@@ -2382,12 +2379,6 @@ export const getDashboardData = async (
         error:
           'You do not have permission to view dashboard data for this agent',
       })
-    }
-
-    if (allowDashboardAccess && !hasEditAccess) {
-      console.log(
-        '[Backend Dashboard] TEMPORARY: Allowing dashboard access for testing',
-      )
     }
 
     console.log('[Backend Dashboard] Step 3: Setting up date range')
@@ -2439,7 +2430,13 @@ export const getDashboardData = async (
           date: {
             $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
           },
-          platform: { $ifNull: ['$channel', 'web'] },
+          platform: {
+            $cond: {
+              if: { $eq: ['$channel', null] },
+              then: 'null',
+              else: { $ifNull: ['$channel', 'null'] },
+            },
+          },
           userMessageCount: {
             $size: {
               $filter: {
