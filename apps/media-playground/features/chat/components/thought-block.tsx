@@ -29,44 +29,42 @@ export const ThoughtBlock: React.FC<ThoughtBlockProps> = ({
 
   return (
     <div className={cn('mb-4', className)}>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-fit h-auto p-2 text-muted-foreground hover:text-foreground"
-          >
-            <Brain className="h-4 w-4 mr-2" />
-            <span className="text-sm">Reasoning traces ({thought.length})</span>
-            {isOpen ? (
-              <ChevronDown className="h-4 w-4 ml-1" />
-            ) : (
-              <ChevronRight className="h-4 w-4 ml-1" />
-            )}
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-2">
-          <div className="border rounded-lg bg-muted/20 overflow-hidden">
-            <ScrollArea className="max-h-[400px]">
-              <div className="p-4 space-y-4">
-                {thought.map((thought_block, index) => (
-                  <div
-                    key={index}
-                    className="border-l-2 border-muted-foreground/30 pl-4"
-                  >
-                    <div className="text-sm font-medium text-muted-foreground mb-2">
-                      Thinking Block {index + 1}
-                    </div>
-                    <div className="text-sm whitespace-pre-wrap text-foreground/80">
+      <div className="border rounded-lg bg-muted/20 overflow-hidden">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-3 h-auto text-left hover:bg-muted/40"
+            >
+              <div className="flex items-center">
+                <Brain className="h-4 w-4 mr-2" />
+                <span className="text-sm font-medium">{thought[0].title}</span>
+              </div>
+              {isOpen ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="border-t">
+              <ScrollArea className="h-[400px] w-full">
+                <div className="p-4 space-y-4">
+                  {thought.map((thought_block, index) => (
+                    <div
+                      key={index}
+                      className="text-sm whitespace-pre-wrap text-foreground/80 break-words"
+                    >
                       {thought_block.thinking}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
     </div>
   )
 }

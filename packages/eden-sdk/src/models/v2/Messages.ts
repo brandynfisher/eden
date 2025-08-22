@@ -29,6 +29,7 @@ export type EdenMessageData = {
 
 export type Thought = {
   type: 'thinking'
+  title?: string
   thinking: string
   signature: string
 }

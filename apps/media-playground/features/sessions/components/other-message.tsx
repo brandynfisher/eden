@@ -156,11 +156,17 @@ export const OtherMessage = ({
       </div>
       <div className="aui-assistant-message-content mt-3 md:mt-1.5 md:pl-3 pr-2 max-w-full">
         {/* Show thought for assistant messages */}
-        {message.role === 'assistant' &&
-          message.thought &&
-          message.thought.length > 0 && (
-            <ThoughtBlock thought={message.thought} className="mb-4" />
-          )}
+        {(() => {
+          const shouldShowThought =
+            message.role === 'assistant' &&
+            message.thought &&
+            message.thought.length > 0
+
+          if (shouldShowThought) {
+            return <ThoughtBlock thought={message.thought!} className="mb-4" />
+          }
+          return null
+        })()}
 
         {hasAttachments && (
           <LightboxGallery galleryKey={message._id}>
