@@ -49,6 +49,7 @@ const createServer = async (
     logger: {
       level: process.env.LOG_LEVEL,
     },
+    disableRequestLogging: true,
     pluginTimeout: 0,
     connectionTimeout: 60000, // 60 seconds
     keepAliveTimeout: 30000, // 30 seconds
