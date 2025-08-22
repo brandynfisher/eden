@@ -16,12 +16,14 @@ interface BarChartProps {
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
-  web: '#3b82f6', // blue-500
-  discord: '#5865f2', // discord purple
-  telegram: '#26a5e4', // telegram blue
-  twitter: '#1da1f2', // twitter blue
-  api: '#10b981', // emerald-500
-  default: '#6b7280', // gray-500
+  web: 'hsl(271, 82%, 50%)', // Primary purple - slightly brighter for visibility
+  discord: 'hsl(255, 91%, 76%)', // Discord's signature purple
+  telegram: 'hsl(200, 82%, 56%)', // Telegram blue
+  twitter: 'hsl(204, 88%, 53%)', // Twitter blue
+  api: 'hsl(240, 73%, 65%)', // Blue-purple for API
+  whatsapp: 'hsl(142, 70%, 49%)', // WhatsApp green
+  slack: 'hsl(31, 100%, 50%)', // Slack orange
+  default: 'hsl(220, 9%, 46%)', // Muted foreground color
 }
 
 const BarChart: FC<BarChartProps> = ({
@@ -118,7 +120,7 @@ const BarChart: FC<BarChartProps> = ({
                 className="w-full mb-2 rounded-t-sm transition-all duration-200 hover:opacity-80"
                 style={{
                   height: `${barHeight}%`,
-                  backgroundColor: '#3b82f6',
+                  backgroundColor: 'hsl(271, 82%, 50%)',
                 }}
               >
                 {showPlatformColors &&

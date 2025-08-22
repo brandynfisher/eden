@@ -2432,9 +2432,9 @@ export const getDashboardData = async (
           },
           platform: {
             $cond: {
-              if: { $eq: ['$channel', null] },
-              then: 'null',
-              else: { $ifNull: ['$channel', 'null'] },
+              if: { $eq: ['$platform', null] },
+              then: 'web',
+              else: { $ifNull: ['$platform', 'web'] },
             },
           },
           userMessageCount: {
