@@ -331,6 +331,7 @@ const AgentEditView: FC<{
                       deploymentsQuery.deployments &&
                       deploymentsQuery.deployments.length > 0
                     }
+                    user={user}
                   />
                 )}
                 {activeTab === 'integrations' &&

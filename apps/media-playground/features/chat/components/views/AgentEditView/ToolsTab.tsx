@@ -2,6 +2,7 @@
 
 import ModelMiniCard from '@/components/card/model-mini-card'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
@@ -13,17 +14,11 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
-import { XIcon } from 'lucide-react'
+import { Lock, XIcon } from 'lucide-react'
 import { FC } from 'react'
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -34,143 +29,307 @@ type AgentFormDto = z.infer<typeof agentSchema>
 interface ToolsTabProps {
   form: UseFormReturn<AgentFormDto>
   hasDeployments: boolean
+  user?: { featureFlags?: string[] }
+  agent?: { _id?: string; owner?: string | { _id: string } }
 }
 
-export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments }) => {
+export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
   const models = useFieldArray({
     control: form.control,
     name: 'models',
   })
+
+  const hasReasoningFeature = user?.featureFlags?.includes('reasoning') || false
+
+  // show reasoning option if user has reasoning feature flag
+  // true / false controls if to show to user who doesn't have flag
+  const showReasoningOption = hasReasoningFeature || false // make invisible for now
 
   return (
     <div className="space-y-6">
       <div>
         {/* LLM Preferences */}
         <div className="p-4 bg-secondary rounded-lg mb-4">
-          <div className="mb-4">
-            <h3 className="text-base font-medium">LLM Preferences</h3>
-            <p className="text-sm text-muted-foreground">
+          <div className="mb-6">
+            <h3 className="text-base font-medium">LLM Preference</h3>
+            {/* <p className="text-sm text-muted-foreground">
               Configure reasoning and thinking behavior for this agent.
-            </p>
+            </p> */}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <FormField
               control={form.control}
               name="llm_settings.model_profile"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Model Profile</FormLabel>
-                  <FormDescription>
-                    Select the reasoning capability level for this agent.
-                  </FormDescription>
+                  {/* <FormLabel className="text-sm font-medium mb-3 block">Model Profile</FormLabel> */}
                   <FormControl>
-                    <Select
-                      value={field.value || 'low'}
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select model profile" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Efficient</SelectItem>
-                        <SelectItem value="medium">Balanced</SelectItem>
-                        <SelectItem value="high">Deep Reasoning</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-3">
+                      {/* Efficient Option */}
+                      <div
+                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                          field.value === 'low' || !field.value
+                            ? 'border-primary bg-card text-foreground'
+                            : 'border-muted bg-muted/50 text-muted-foreground hover:border-muted-foreground/50'
+                        }`}
+                        onClick={() => field.onChange('low')}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="text-sm font-medium">
+                                Efficient
+                              </div>
+                              <Badge variant="secondary" className="text-xs">
+                                Fastest
+                              </Badge>
+                            </div>
+                            <p className="text-xs opacity-70">
+                              Fastest & cheapest. Best for: chat, simple Q&A,
+                              single tool workflows.
+                            </p>
+                          </div>
+                          <div className="ml-3">
+                            <div
+                              className={`w-4 h-4 rounded-full border-2 ${
+                                field.value === 'low' || !field.value
+                                  ? 'border-primary bg-primary'
+                                  : 'border-muted-foreground/50'
+                              }`}
+                            >
+                              {(field.value === 'low' || !field.value) && (
+                                <div className="w-2 h-2 bg-white rounded-full m-0.5" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Balanced Option */}
+                      <div
+                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                          field.value === 'medium'
+                            ? 'border-primary bg-card text-foreground'
+                            : 'border-muted bg-muted/50 text-muted-foreground hover:border-muted-foreground/50'
+                        }`}
+                        onClick={() => field.onChange('medium')}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="text-sm font-medium">
+                                Balanced
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                Recommended
+                              </Badge>
+                            </div>
+                            <p className="text-xs opacity-70">
+                              Good balance of speed and smarts. Best for:
+                              general purpose, creative tasks, multi-step
+                              workflows.
+                            </p>
+                          </div>
+                          <div className="ml-3">
+                            <div
+                              className={`w-4 h-4 rounded-full border-2 ${
+                                field.value === 'medium'
+                                  ? 'border-primary bg-primary'
+                                  : 'border-muted-foreground/50'
+                              }`}
+                            >
+                              {field.value === 'medium' && (
+                                <div className="w-2 h-2 bg-white rounded-full m-0.5" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Deep Reasoning Option */}
+                      {showReasoningOption && (
+                        <div
+                          className={`p-4 border rounded-lg transition-all ${
+                            !hasReasoningFeature
+                              ? 'border-muted bg-muted/30 cursor-not-allowed opacity-50'
+                              : field.value === 'high'
+                              ? 'border-primary bg-card text-foreground cursor-pointer'
+                              : 'border-muted bg-muted/50 text-muted-foreground hover:border-muted-foreground/50 cursor-pointer'
+                          }`}
+                          onClick={() =>
+                            hasReasoningFeature && field.onChange('high')
+                          }
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="text-sm font-medium flex items-center gap-2">
+                                  Deep Reasoning
+                                  {!hasReasoningFeature && (
+                                    <Lock className="h-3 w-3" />
+                                  )}
+                                </div>
+                                <Badge
+                                  className={`text-xs ${
+                                    hasReasoningFeature
+                                      ? 'bg-green-600 hover:bg-green-700 text-white border-green-600'
+                                      : 'bg-red-600 hover:bg-red-700 text-white border-red-600'
+                                  }`}
+                                >
+                                  Premium
+                                </Badge>
+                              </div>
+                              <p className="text-xs opacity-70">
+                                {!hasReasoningFeature
+                                  ? 'Premium feature - contact support for access.'
+                                  : 'Advanced reasoning & thinking. Best for: analysis, problem solving, complex workflows.'}
+                              </p>
+                            </div>
+                            <div className="ml-3">
+                              <div
+                                className={`w-4 h-4 rounded-full border-2 ${
+                                  field.value === 'high' && hasReasoningFeature
+                                    ? 'border-primary bg-primary'
+                                    : 'border-muted-foreground/50'
+                                }`}
+                              >
+                                {field.value === 'high' &&
+                                  hasReasoningFeature && (
+                                    <div className="w-2 h-2 bg-white rounded-full m-0.5" />
+                                  )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {form.watch('llm_settings.model_profile') === 'high' && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="llm_settings.thinking_policy"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Thinking Intensity</FormLabel>
-                      <FormDescription>
-                        Control when the agent uses deeper reasoning.
-                      </FormDescription>
-                      <FormControl>
-                        <Select
-                          value={field.value || 'auto'}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select thinking policy" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="auto">Auto</SelectItem>
-                            <SelectItem value="off">Off</SelectItem>
-                            <SelectItem value="always">Always</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {form.watch('llm_settings.thinking_policy') === 'auto' && (
+            {form.watch('llm_settings.model_profile') === 'high' &&
+              hasReasoningFeature && (
+                <>
                   <FormField
                     control={form.control}
-                    name="llm_settings.thinking_effort_instructions"
+                    name="llm_settings.thinking_policy"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Reasoning Guidelines</FormLabel>
-                        <FormDescription>
-                          Guide the agent on when to use low, medium, or high
-                          reasoning intensity.
+                        <FormLabel className="text-sm font-medium mb-3 block">
+                          Thinking Intensity
+                        </FormLabel>
+                        <FormDescription className="mb-3">
+                          When should the agent think?
                         </FormDescription>
                         <FormControl>
-                          <AutosizeTextarea
-                            placeholder="e.g., 'Use high reasoning for complex technical questions, medium for creative tasks, low for simple queries'"
-                            {...field}
-                            className="min-h-[80px]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                {form.watch('llm_settings.thinking_policy') === 'always' && (
-                  <FormField
-                    control={form.control}
-                    name="llm_settings.thinking_effort_cap"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Reasoning Effort Cap</FormLabel>
-                        <FormDescription>
-                          Set the maximum reasoning intensity level.
-                        </FormDescription>
-                        <FormControl>
-                          <Select
-                            value={field.value || 'medium'}
-                            onValueChange={field.onChange}
+                          <ToggleGroup
+                            type="single"
+                            value={field.value || 'auto'}
+                            onValueChange={value =>
+                              value && field.onChange(value)
+                            }
+                            className="justify-start gap-2"
                           >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select effort cap" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="low">Low</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="high">High</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            <ToggleGroupItem
+                              value="auto"
+                              className="border border-muted data-[state=off]:border-muted data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                            >
+                              Auto
+                            </ToggleGroupItem>
+                            <ToggleGroupItem
+                              value="off"
+                              className="border border-muted data-[state=off]:border-muted data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                            >
+                              Off
+                            </ToggleGroupItem>
+                            <ToggleGroupItem
+                              value="always"
+                              className="border border-muted data-[state=off]:border-muted data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                            >
+                              Always
+                            </ToggleGroupItem>
+                          </ToggleGroup>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                )}
-              </>
-            )}
+
+                  {form.watch('llm_settings.thinking_policy') === 'auto' && (
+                    <FormField
+                      control={form.control}
+                      name="llm_settings.thinking_effort_instructions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Reasoning Guidelines</FormLabel>
+                          <FormDescription>
+                            Guide your agent on when to choose low, medium, or
+                            high thinking intensity.
+                          </FormDescription>
+                          <FormControl>
+                            <AutosizeTextarea
+                              placeholder="e.g., 'Use high reasoning for complex math questions, medium for drawing tasks, low for chit-chat'"
+                              {...field}
+                              className="min-h-[80px]"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {form.watch('llm_settings.thinking_policy') === 'always' && (
+                    <FormField
+                      control={form.control}
+                      name="llm_settings.thinking_effort_cap"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium mb-3 block">
+                            Reasoning Effort Cap
+                          </FormLabel>
+                          <FormDescription className="mb-3">
+                            Set the maximum reasoning intensity level.
+                          </FormDescription>
+                          <FormControl>
+                            <ToggleGroup
+                              type="single"
+                              value={field.value || 'medium'}
+                              onValueChange={value =>
+                                value && field.onChange(value)
+                              }
+                              className="justify-start gap-2"
+                            >
+                              <ToggleGroupItem
+                                value="low"
+                                className="border border-muted data-[state=off]:border-muted data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                              >
+                                Low
+                              </ToggleGroupItem>
+                              <ToggleGroupItem
+                                value="medium"
+                                className="border border-muted data-[state=off]:border-muted data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                              >
+                                Medium
+                              </ToggleGroupItem>
+                              <ToggleGroupItem
+                                value="high"
+                                className="border border-muted data-[state=off]:border-muted data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary"
+                              >
+                                High
+                              </ToggleGroupItem>
+                            </ToggleGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </>
+              )}
           </div>
         </div>
 
