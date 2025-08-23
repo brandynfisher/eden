@@ -2,7 +2,7 @@ import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
 import { DeploymentDocument } from './Deployment'
 import { UserDocument } from './User'
 import { ModelV2Document } from './v2/ModelV2'
-import { AgentStats, AgentSuggestion } from '@edenlabs/eden-sdk'
+import { AgentStats, AgentSuggestion, LLMSettings } from '@edenlabs/eden-sdk'
 import { Schema } from 'mongoose'
 
 export interface AgentSchema extends BaseUserSchema {
@@ -22,6 +22,7 @@ export interface AgentSchema extends BaseUserSchema {
     lora: ModelV2Document
     use_when?: string
   }>
+  llm_settings?: LLMSettings
   discordChannelAllowlist?: {
     id: string
     note: string
@@ -176,6 +177,28 @@ const AgentSchema = new Schema<AgentDocument>(
     user_memory_enabled: {
       type: Boolean,
       default: true,
+    },
+    llm_settings: {
+      model_profile: {
+        type: String,
+        enum: ['low', 'medium', 'high'],
+        default: 'low',
+      },
+      thinking_policy: {
+        type: String,
+        enum: ['auto', 'off', 'always'],
+        default: 'auto',
+      },
+      thinking_effort_cap: {
+        type: String,
+        enum: ['low', 'medium', 'high'],
+        default: 'medium',
+      },
+      thinking_effort_instructions: {
+        type: String,
+        maxlength: 1000,
+        default: '',
+      },
     },
     // Permissions are now stored in AgentPermission collection
   },

@@ -137,6 +137,7 @@ export const createAgent = async (
     suggestions,
     voice,
     tools,
+    llm_settings,
   } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
@@ -171,6 +172,7 @@ export const createAgent = async (
     voice,
     models: models || [],
     tools,
+    llm_settings: llm_settings,
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -215,6 +217,7 @@ export const updateAgent = async (
     public: isPublic,
     owner_pays,
     tools,
+    llm_settings,
   } = request.body as AgentsUpdateArguments
 
   if (models && models.length > 10) {
@@ -253,7 +256,10 @@ export const updateAgent = async (
     public: isPublic,
     owner_pays,
     tools,
+    llm_settings: llm_settings,
   }
+
+  console.log('UPDATE AGENT - updateData:', JSON.stringify(updateData, null, 2))
 
   // Handle models array
   if (!models || models.length === 0) {

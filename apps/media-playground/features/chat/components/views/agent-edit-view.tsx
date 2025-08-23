@@ -1,5 +1,11 @@
 'use client'
 
+import {
+  IntegrationsTab,
+  PermissionsTab,
+  ProfileTab,
+  ToolsTab,
+} from './AgentEditView'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
@@ -23,8 +29,6 @@ import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { ProfileTab, ToolsTab, IntegrationsTab, PermissionsTab } from './AgentEditView'
-
 
 type AgentFormDto = z.infer<typeof agentSchema>
 
@@ -44,7 +48,9 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      ['profile', 'concepts', 'integrations', 'permissions'].includes(tabFromUrl)
+      ['profile', 'concepts', 'integrations', 'permissions'].includes(
+        tabFromUrl,
+      )
     ) {
       return tabFromUrl
     }
@@ -76,16 +82,25 @@ const AgentEditView: FC<{
       voice: agent?.voice || '',
       models: agent?.models || [],
       tools: agent.tools || {},
+      llm_settings: {
+        model_profile: agent?.llm_settings?.model_profile || 'low',
+        thinking_policy: agent?.llm_settings?.thinking_policy || 'auto',
+        thinking_effort_cap:
+          agent?.llm_settings?.thinking_effort_cap || 'medium',
+        thinking_effort_instructions:
+          agent?.llm_settings?.thinking_effort_instructions || '',
+      },
     },
   })
-
 
   // Update active tab when URL search parameters change
   useEffect(() => {
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      ['profile', 'concepts', 'integrations', 'permissions'].includes(tabFromUrl)
+      ['profile', 'concepts', 'integrations', 'permissions'].includes(
+        tabFromUrl,
+      )
     ) {
       setActiveTab(tabFromUrl)
     }
@@ -108,6 +123,14 @@ const AgentEditView: FC<{
         voice: agent.voice || '',
         models: agent.models || [],
         tools: agent.tools || {},
+        llm_settings: {
+          model_profile: agent.llm_settings?.model_profile || 'low',
+          thinking_policy: agent.llm_settings?.thinking_policy || 'auto',
+          thinking_effort_cap:
+            agent.llm_settings?.thinking_effort_cap || 'medium',
+          thinking_effort_instructions:
+            agent.llm_settings?.thinking_effort_instructions || '',
+        },
       })
     }
   }, [agent, form])
@@ -154,30 +177,40 @@ const AgentEditView: FC<{
   }
 
   // Check user permissions using the new hook
-  const { isOriginalOwner, hasOwnerAccess, hasEditAccess, isLoading: isPermissionsLoading } = useAgentPermissions(
-    agent,
-    user?._id
-  )
+  const {
+    isOriginalOwner,
+    hasOwnerAccess,
+    hasEditAccess,
+    isLoading: isPermissionsLoading,
+  } = useAgentPermissions(agent, user?._id)
 
   // Get available tabs
   const getAvailableTabs = () => {
     const tabs = []
-    
+
     // All users with edit access can see profile
     if (hasEditAccess) {
       tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
     }
-    
+
     // Only owners can see tools, integrations, and permissions
     if (hasOwnerAccess) {
       tabs.push({ key: 'concepts', label: 'Tools', icon: WrenchIcon })
-      
+
       if (isPreviewUser) {
-        tabs.push({ key: 'integrations', label: 'Integrations', icon: SettingsIcon })
-        
+        tabs.push({
+          key: 'integrations',
+          label: 'Integrations',
+          icon: SettingsIcon,
+        })
+
         // Only original owner can see permissions tab
         if (isOriginalOwner) {
-          tabs.push({ key: 'permissions', label: 'Permissions', icon: UserIcon })
+          tabs.push({
+            key: 'permissions',
+            label: 'Permissions',
+            icon: UserIcon,
+          })
         }
       }
     }
@@ -292,9 +325,12 @@ const AgentEditView: FC<{
                 )}
 
                 {activeTab === 'concepts' && hasOwnerAccess && (
-                  <ToolsTab 
-                    form={form} 
-                    hasDeployments={deploymentsQuery.deployments && deploymentsQuery.deployments.length > 0}
+                  <ToolsTab
+                    form={form}
+                    hasDeployments={
+                      deploymentsQuery.deployments &&
+                      deploymentsQuery.deployments.length > 0
+                    }
                   />
                 )}
                 {activeTab === 'integrations' &&
@@ -309,9 +345,7 @@ const AgentEditView: FC<{
                   )}
                 {activeTab === 'permissions' &&
                   isOriginalOwner &&
-                  isPreviewUser && (
-                    <PermissionsTab agent={agent} />
-                  )}
+                  isPreviewUser && <PermissionsTab agent={agent} />}
               </form>
             </Form>
 

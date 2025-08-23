@@ -3,6 +3,7 @@
 import ModelMiniCard from '@/components/card/model-mini-card'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
+import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   FormControl,
   FormDescription,
@@ -12,6 +13,13 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
@@ -37,6 +45,135 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments }) => {
   return (
     <div className="space-y-6">
       <div>
+        {/* LLM Preferences */}
+        <div className="p-4 bg-secondary rounded-lg mb-4">
+          <div className="mb-4">
+            <h3 className="text-base font-medium">LLM Preferences</h3>
+            <p className="text-sm text-muted-foreground">
+              Configure reasoning and thinking behavior for this agent.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="llm_settings.model_profile"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Model Profile</FormLabel>
+                  <FormDescription>
+                    Select the reasoning capability level for this agent.
+                  </FormDescription>
+                  <FormControl>
+                    <Select
+                      value={field.value || 'low'}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select model profile" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Efficient</SelectItem>
+                        <SelectItem value="medium">Balanced</SelectItem>
+                        <SelectItem value="high">Deep Reasoning</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {form.watch('llm_settings.model_profile') === 'high' && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="llm_settings.thinking_policy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Thinking Intensity</FormLabel>
+                      <FormDescription>
+                        Control when the agent uses deeper reasoning.
+                      </FormDescription>
+                      <FormControl>
+                        <Select
+                          value={field.value || 'auto'}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select thinking policy" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">Auto</SelectItem>
+                            <SelectItem value="off">Off</SelectItem>
+                            <SelectItem value="always">Always</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch('llm_settings.thinking_policy') === 'auto' && (
+                  <FormField
+                    control={form.control}
+                    name="llm_settings.thinking_effort_instructions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Reasoning Guidelines</FormLabel>
+                        <FormDescription>
+                          Guide the agent on when to use low, medium, or high
+                          reasoning intensity.
+                        </FormDescription>
+                        <FormControl>
+                          <AutosizeTextarea
+                            placeholder="e.g., 'Use high reasoning for complex technical questions, medium for creative tasks, low for simple queries'"
+                            {...field}
+                            className="min-h-[80px]"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {form.watch('llm_settings.thinking_policy') === 'always' && (
+                  <FormField
+                    control={form.control}
+                    name="llm_settings.thinking_effort_cap"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Reasoning Effort Cap</FormLabel>
+                        <FormDescription>
+                          Set the maximum reasoning intensity level.
+                        </FormDescription>
+                        <FormControl>
+                          <Select
+                            value={field.value || 'medium'}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select effort cap" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Voice Field */}
         <FormField
           control={form.control}

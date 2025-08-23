@@ -95,6 +95,32 @@ const agentRoutes: FastifyPluginAsync = async server => {
           ),
         ),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+        llm_settings: Type.Optional(
+          Type.Object({
+            model_profile: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_policy: Type.Optional(
+              Type.Union([
+                Type.Literal('auto'),
+                Type.Literal('off'),
+                Type.Literal('always'),
+              ]),
+            ),
+            thinking_effort_cap: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_effort_instructions: Type.Optional(Type.String()),
+          }),
+        ),
       }),
       response: {
         200: {
@@ -147,6 +173,32 @@ const agentRoutes: FastifyPluginAsync = async server => {
         ),
         owner_pays: Type.Optional(Type.Boolean()),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+        llm_settings: Type.Optional(
+          Type.Object({
+            model_profile: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_policy: Type.Optional(
+              Type.Union([
+                Type.Literal('auto'),
+                Type.Literal('off'),
+                Type.Literal('always'),
+              ]),
+            ),
+            thinking_effort_cap: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_effort_instructions: Type.Optional(Type.String()),
+          }),
+        ),
       }),
       response: {
         200: Type.Object({
