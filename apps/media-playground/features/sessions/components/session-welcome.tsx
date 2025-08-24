@@ -19,7 +19,11 @@ interface ChatVariantProps extends BaseProps {
   variant: 'chat'
   agent: Agent
   isLoading: boolean
-  onSendMessage: (content: string, attachments?: string[]) => void
+  onSendMessage: (
+    content: string,
+    attachments?: string[],
+    thinking?: boolean,
+  ) => void
   onAgentSelectorOpen?: () => void
 }
 
@@ -32,8 +36,59 @@ interface SessionVariantProps extends BaseProps {
 type SessionWelcomeProps = ChatVariantProps | SessionVariantProps
 
 const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
+  // Move all hooks to the top
+  const [showAll /*setShowAll*/] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [, /*visibleCount*/ setVisibleCount] = useState(
+    props.variant === 'chat' ? (props.agent?.suggestions || []).length : 0,
+  )
+
+  const measureAndUpdate = useCallback(() => {
+    if (props.variant !== 'chat') return
+    const container = containerRef.current
+    if (!container) return
+
+    const welcomeCenter = container.closest('.aui-thread-welcome-center')
+    if (!welcomeCenter) return
+
+    const containerWidth = welcomeCenter.clientWidth - 86
+    const items = Array.from(container.querySelectorAll('.suggestion-item'))
+
+    let totalWidth = 0
+    let count = items.length
+
+    for (let i = 0; i < items.length; i++) {
+      const itemWidth = items[i].getBoundingClientRect().width + 8
+      if (totalWidth + itemWidth > containerWidth) {
+        count = Math.max(1, i)
+        break
+      }
+      totalWidth += itemWidth
+    }
+
+    setVisibleCount(count)
+  }, [props.variant])
+
+  useEffect(() => {
+    if (props.variant !== 'chat') return
+    const container = containerRef.current
+    if (!container) return
+    const welcomeCenter = container.closest('.aui-thread-welcome-center')
+    if (!welcomeCenter) return
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (!showAll) measureAndUpdate()
+    })
+
+    resizeObserver.observe(welcomeCenter)
+    measureAndUpdate()
+    return () => resizeObserver.disconnect()
+  }, [showAll, props.variant, measureAndUpdate])
+
+  // Handle different variants
   const onAgentSelectorOpen =
     'onAgentSelectorOpen' in props ? props.onAgentSelectorOpen : undefined
+
   if (props.variant === 'session') {
     const { agents, sessionTitle } = props
     return (
@@ -63,51 +118,9 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
     )
   }
 
+  // Chat variant logic
   const { agent, isLoading, onSendMessage } = props
   const suggestions = agent?.suggestions || []
-  const [showAll /*setShowAll*/] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [, /*visibleCount*/ setVisibleCount] = useState(suggestions.length)
-
-  const measureAndUpdate = useCallback(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const welcomeCenter = container.closest('.aui-thread-welcome-center')
-    if (!welcomeCenter) return
-
-    const containerWidth = welcomeCenter.clientWidth - 86
-    const items = Array.from(container.querySelectorAll('.suggestion-item'))
-
-    let totalWidth = 0
-    let count = items.length
-
-    for (let i = 0; i < items.length; i++) {
-      const itemWidth = items[i].getBoundingClientRect().width + 8
-      if (totalWidth + itemWidth > containerWidth) {
-        count = Math.max(1, i)
-        break
-      }
-      totalWidth += itemWidth
-    }
-
-    setVisibleCount(count)
-  }, [])
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-    const welcomeCenter = container.closest('.aui-thread-welcome-center')
-    if (!welcomeCenter) return
-
-    const resizeObserver = new ResizeObserver(() => {
-      if (!showAll) measureAndUpdate()
-    })
-
-    resizeObserver.observe(welcomeCenter)
-    measureAndUpdate()
-    return () => resizeObserver.disconnect()
-  }, [showAll, suggestions.length, measureAndUpdate])
 
   return (
     <div className="aui-thread-welcome min-h-full flex items-center justify-center">
@@ -138,10 +151,11 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
         </div>
 
         <div className="w-full max-w-[--aui-thread-max-width] mx-auto mb-6">
-          <MessageInput 
-            sessionId={'new'} 
-            onStreamingMessage={onSendMessage} 
+          <MessageInput
+            sessionId={'new'}
+            onStreamingMessage={onSendMessage}
             enableLiveAudio={true}
+            agent={agent}
           />
         </div>
 

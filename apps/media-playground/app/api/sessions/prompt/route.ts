@@ -31,7 +31,6 @@ export async function POST(request: NextRequest) {
     )
   }
 
-
   // If no session_id, we need agent_ids for creation
   if (!requestJson.session_id && !requestJson.agent_ids) {
     return new Response(
@@ -45,6 +44,25 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const payload = {
+      session_id: requestJson.session_id,
+      content: requestJson.content || '',
+      attachments: requestJson.attachments || [],
+      stream: sessionConfig.useStreaming,
+      thinking: requestJson.thinking || false, // Always send thinking from sessions UI
+      // Always include agent_ids for multi-agent targeting
+      agent_ids: requestJson.agent_ids,
+      // For new sessions, include creation parameters
+      ...(requestJson.session_id
+        ? {}
+        : {
+            scenario: requestJson.scenario,
+            budget: requestJson.budget,
+            title: requestJson.title,
+            autonomy_settings: requestJson.autonomy_settings,
+          }),
+    }
+
     const response = await fetch(
       `${env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions`,
       {
@@ -53,21 +71,7 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({
-          session_id: requestJson.session_id,
-          content: requestJson.content || '',
-          attachments: requestJson.attachments || [],
-          stream: sessionConfig.useStreaming,
-          // Always include agent_ids for multi-agent targeting
-          agent_ids: requestJson.agent_ids,
-          // For new sessions, include creation parameters
-          ...(requestJson.session_id ? {} : {
-            scenario: requestJson.scenario,
-            budget: requestJson.budget,
-            title: requestJson.title,
-            autonomy_settings: requestJson.autonomy_settings,
-          }),
-        }),
+        body: JSON.stringify(payload),
       },
     )
 

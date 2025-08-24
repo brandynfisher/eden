@@ -25,24 +25,30 @@ const SessionChat: FC = () => {
   } = useAgentQuery({ key: agentId as string })
 
   const handleSendMessage = useCallback(
-    async (content: string, attachments?: string[]) => {
+    async (content: string, attachments?: string[], thinking?: boolean) => {
       if (!user || !agent) return
+
+      console.log('[SessionChat] Handling message with thinking:', thinking)
 
       // Show loading state immediately
       setIsCreating(true)
 
       try {
         // Send message directly to create session
+        const payload = {
+          content,
+          attachments,
+          agent_ids: [agent._id],
+          thinking, // Pass thinking state to API
+        }
+        console.log('[SessionChat] Sending to /api/sessions/prompt:', payload)
+
         const response = await fetch('/api/sessions/prompt', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            content,
-            attachments,
-            agent_ids: [agent._id],
-          }),
+          body: JSON.stringify(payload),
         })
 
         if (!response.ok) {

@@ -6,10 +6,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { Thought } from '@edenlabs/eden-sdk'
-import { Brain, ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, Clock } from 'lucide-react'
 import React, { useState } from 'react'
 
 interface ThoughtBlockProps {
@@ -37,7 +36,7 @@ export const ThoughtBlock: React.FC<ThoughtBlockProps> = ({
               className="w-full justify-between p-3 h-auto text-left hover:bg-muted/40"
             >
               <div className="flex items-center">
-                <Brain className="h-4 w-4 mr-2" />
+                <Clock className="h-4 w-4 mr-2" />
                 <span className="text-sm font-medium">{thought[0].title}</span>
               </div>
               {isOpen ? (
@@ -48,19 +47,17 @@ export const ThoughtBlock: React.FC<ThoughtBlockProps> = ({
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="border-t">
-              <ScrollArea className="h-[400px] w-full">
-                <div className="p-4 space-y-4">
-                  {thought.map((thought_block, index) => (
-                    <div
-                      key={index}
-                      className="text-sm whitespace-pre-wrap text-foreground/80 break-words"
-                    >
-                      {thought_block.thinking}
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+            <div className="border-t max-h-[400px] overflow-y-auto">
+              <div className="p-4 space-y-4">
+                {thought.map((thought_block, index) => (
+                  <div
+                    key={index}
+                    className="text-sm whitespace-pre-wrap text-foreground/80 break-words"
+                  >
+                    {thought_block.thinking}
+                  </div>
+                ))}
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>

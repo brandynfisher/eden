@@ -272,6 +272,7 @@ export const createSessionMessage = async (
   request: FastifyRequest<{
     Body: SessionsV2MessageArguments & {
       stream?: boolean
+      thinking?: boolean
       agent_ids?: string[]
       scenario?: string
       budget?: {
@@ -301,6 +302,7 @@ export const createSessionMessage = async (
     content,
     attachments,
     stream,
+    thinking,
     agent_ids,
     scenario,
     budget,
@@ -419,6 +421,8 @@ export const createSessionMessage = async (
       stream: stream || false,
       // Include agent_ids from request body if provided (for multi-agent targeting)
       ...(agent_ids && { actor_agent_ids: agent_ids }),
+      // Only include thinking override if explicitly provided
+      ...(thinking !== undefined && { thinking }),
     },
     headers: {
       'X-Client-Platform': 'web',
