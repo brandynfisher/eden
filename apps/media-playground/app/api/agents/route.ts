@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
     voice,
     models,
     tools,
+    llm_settings,
   } = requestJson as AgentsCreateArguments
 
   const isPublic = requestJson.public
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
       voice,
       models,
       tools,
+      llm_settings,
     })
 
     if (!res) {

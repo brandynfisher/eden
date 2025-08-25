@@ -6,6 +6,7 @@ import {
 } from '@assistant-ui/react'
 import {
   BaseThreadMessage,
+  Thought,
   ThreadAssistantMessage,
   ThreadSystemMessage,
   ThreadUserMessage,
@@ -27,6 +28,7 @@ export interface EdenMessage extends BaseThreadMessage {
   content: string
   attachments?: string[]
   tool_calls?: ToolCall[]
+  thought?: Thought[]
   reply_to?: string
   status?: {
     type: 'running' | 'complete'
@@ -87,8 +89,8 @@ export function convertEdenMessage(msg: EdenMessage): ThreadMessageLike {
         ),
         createdAt: msg.createdAt,
       }
-    case 'assistant':
-      return {
+    case 'assistant': {
+      const convertedMessage = {
         id: msg.id,
         role: msg.role,
         content: [
@@ -110,9 +112,15 @@ export function convertEdenMessage(msg: EdenMessage): ThreadMessageLike {
             }),
           ) ?? []),
         ],
-        metadata: msg.metadata,
+        metadata: {
+          ...msg.metadata,
+          thought: msg.thought,
+        },
         status: msg.status,
         createdAt: msg.createdAt,
       } as ThreadMessageLike
+
+      return convertedMessage
+    }
   }
 }

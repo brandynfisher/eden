@@ -207,7 +207,7 @@ const ParameterTable = ({
       }
     }
 
-    // Handle Long objects
+    // Handle objects and arrays
     if (typeof value === 'object' && !Array.isArray(value)) {
       if (paramName === 'performance') {
         return {
@@ -233,10 +233,67 @@ const ParameterTable = ({
         }
       }
 
+      // Handle JSON objects - stringify them
+      if (value !== null && typeof value === 'object') {
+        try {
+          const jsonString = JSON.stringify(value, null, 2)
+          const isLongJson = jsonString.length > SHORT_STRING_LENGTH
+
+          return {
+            isInline: !isLongJson,
+            content: (
+              <div onClick={handleCopyString(paramName, jsonString)}>
+                <TextClampMore
+                  text={jsonString}
+                  lines={isLongJson ? 3 : 1}
+                  className="text-xs font-mono"
+                />
+              </div>
+            ),
+          }
+        } catch {
+          // Fallback for objects that can't be stringified (like Long objects)
+          return {
+            isInline: true,
+            content:
+              value !== null
+                ? toBigInt(value as unknown as Long).toString()
+                : '-',
+          }
+        }
+      }
+
       return {
         isInline: true,
         content:
           value !== null ? toBigInt(value as unknown as Long).toString() : '-',
+      }
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+      try {
+        const jsonString = JSON.stringify(value, null, 2)
+        const isLongJson = jsonString.length > SHORT_STRING_LENGTH
+
+        return {
+          isInline: !isLongJson,
+          content: (
+            <div onClick={handleCopyString(paramName, jsonString)}>
+              <TextClampMore
+                text={jsonString}
+                lines={isLongJson ? 3 : 1}
+                className="text-xs font-mono"
+              />
+            </div>
+          ),
+        }
+      } catch {
+        // Fallback for arrays that can't be stringified
+        return {
+          isInline: true,
+          content: String(value),
+        }
       }
     }
 

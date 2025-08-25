@@ -272,6 +272,7 @@ export const createSessionMessage = async (
   request: FastifyRequest<{
     Body: SessionsV2MessageArguments & {
       stream?: boolean
+      thinking?: boolean
       agent_ids?: string[]
       scenario?: string
       budget?: {
@@ -301,6 +302,7 @@ export const createSessionMessage = async (
     content,
     attachments,
     stream,
+    thinking,
     agent_ids,
     scenario,
     budget,
@@ -419,6 +421,8 @@ export const createSessionMessage = async (
       stream: stream || false,
       // Include agent_ids from request body if provided (for multi-agent targeting)
       ...(agent_ids && { actor_agent_ids: agent_ids }),
+      // Only include thinking override if explicitly provided
+      ...(thinking !== undefined && { thinking }),
     },
     headers: {
       'X-Client-Platform': 'web',
@@ -624,7 +628,7 @@ export const getSession = async (
       .populate({
         path: 'messages',
         select:
-          '_id content sender role eden_message_data tool_calls attachments createdAt reactions',
+          '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
         populate: {
           path: 'sender',
           select: '_id username userImage',
@@ -1060,7 +1064,7 @@ export const getSharedSession = async (
       })
       .sort({ createdAt: 1 })
       .select(
-        '_id content sender role eden_message_data tool_calls attachments createdAt',
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt',
       )
 
     return reply.status(200).send({

@@ -24,6 +24,23 @@ export type AgentStats = {
   toolCallCount_7d: number
   lastUpdated: Date
 }
+// Model quality levels for agent LLM selection
+export type ModelProfile = 'low' | 'medium' | 'high'
+
+// Thinking policy settings for agent behavior
+export type ThinkingPolicy = 'auto' | 'off' | 'always'
+
+// Thinking effort cap settings for agent behavior
+export type ThinkingEffortCap = 'low' | 'medium' | 'high'
+
+// LLM settings type
+export type LLMSettings = {
+  model_profile?: ModelProfile
+  thinking_policy?: ThinkingPolicy
+  thinking_effort_cap?: ThinkingEffortCap
+  thinking_effort_instructions?: string
+}
+
 // Types
 export type Agent = Omit<
   Creator,
@@ -61,6 +78,7 @@ export type Agent = Omit<
     lora: ModelV2
     use_when?: string
   }[]
+  llm_settings?: LLMSettings
   discordUsername?: string
   telegramId?: string
   telegramUsername?: string
@@ -113,6 +131,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
     lora: string
     use_when?: string
   }>
+  llm_settings?: LLMSettings
 }
 
 export interface AgentsUpdateArguments extends WebAPICallOptions {
@@ -134,6 +153,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
     lora: string
     use_when?: string
   }>
+  llm_settings?: LLMSettings
   owner_pays?: boolean
   agent_extras?: {
     permissions?: {

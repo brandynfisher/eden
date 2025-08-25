@@ -252,11 +252,13 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
                           </div>
                         ))
                       ) : (
-                        <div className=" px-4 p-2 bg-accent rounded-md border border-secondary">
+                        <div className=" px-4 p-2 bg-accent rounded-md border border-secondary text-sm">
                           <TextClampMore
                             text={
                               <ReactMarkdown>
-                                {(result?.output as unknown as string) || ''}
+                                {(
+                                  (result?.output as unknown as string) || ''
+                                ).replace(/\n/g, '  \n')}
                               </ReactMarkdown>
                             }
                             lines={3}

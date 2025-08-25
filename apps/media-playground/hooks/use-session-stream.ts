@@ -55,6 +55,7 @@ export const useSessionStream = ({
       attachments?: string[],
       creationArgs?: {
         agent_ids: string[]
+        thinking?: boolean
         scenario?: string
         budget?: {
           manna_budget?: number

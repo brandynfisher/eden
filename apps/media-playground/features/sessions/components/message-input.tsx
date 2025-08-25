@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { uploadFileToS3 } from '@/lib/files'
@@ -26,6 +27,7 @@ import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import {
+  ClockIcon,
   MessageSquareIcon,
   MicIcon,
   PaperclipIcon,
@@ -46,8 +48,13 @@ const formSchema = z.object({
 
 type MessageInputProps = {
   sessionId: string
-  onStreamingMessage?: (content: string, attachments?: string[]) => void
+  onStreamingMessage?: (
+    content: string,
+    attachments?: string[],
+    thinking?: boolean,
+  ) => void
   enableLiveAudio?: boolean
+  agent?: Agent // Optional agent prop for welcome screen
 }
 
 type AttachmentDropzoneProps = {
@@ -84,6 +91,7 @@ export const MessageInput = ({
   sessionId,
   onStreamingMessage,
   enableLiveAudio = false,
+  agent: propAgent,
 }: MessageInputProps) => {
   const { user, verifyAuth } = useAuthState()
   const {
@@ -95,11 +103,19 @@ export const MessageInput = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
+  // Get full agent data for the first agent (most common case)
+  const firstAgentId = session?.agents?.[0]?._id
+  const { agent: fullAgent } = useAgentQuery({
+    key: firstAgentId!,
+    enabled: !!firstAgentId,
+  })
+
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
   const [attachments, setAttachments] = useState<FileUploadProgress[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isThinkingEnabled, setIsThinkingEnabled] = useState(false)
   const accept = 'image/*,video/*,/*'
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showMention, setShowMention] = useState(false)
@@ -107,6 +123,11 @@ export const MessageInput = ({
   const [mentionPosition, setMentionPosition] = useState(0)
   const textareaRef = useRef<AutosizeTextAreaRef>(null)
   const mentionInputRef = useRef<MentionInputRef>(null)
+
+  // Check if the agent has reasoning capability (high model profile)
+  // Use prop agent if available (for welcome screen), otherwise use session agent
+  const activeAgent = propAgent || fullAgent
+  const hasReasoningAgent = activeAgent?.llm_settings?.model_profile === 'high'
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -263,18 +284,32 @@ export const MessageInput = ({
     // Clear form and attachments immediately
     form.reset()
     setAttachments([])
+    // Keep thinking mode state - don't reset after sending
 
     try {
+      // Log thinking state for debugging
+      console.log(
+        '[MessageInput] Sending message with thinking:',
+        isThinkingEnabled,
+      )
+
       // Use streaming if available, otherwise fall back to regular message
       if (onStreamingMessage) {
-        onStreamingMessage(data.content, completedAttachments)
+        // Pass thinking state along with message
+        onStreamingMessage(
+          data.content,
+          completedAttachments,
+          isThinkingEnabled,
+        )
       } else {
-        // Send to server
-        await axios.post(`/api/sessions/${sessionId}/messages`, {
+        // Send to server with thinking state as separate field
+        const payload = {
           session_id: sessionId,
           content: data.content,
           attachments: completedAttachments,
-        })
+          thinking: isThinkingEnabled,
+        }
+        await axios.post(`/api/sessions/${sessionId}/messages`, payload)
       }
 
       // Success - the websocket will handle updating with the real message
@@ -473,12 +508,16 @@ export const MessageInput = ({
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className={cn(
-              'relative z-[51] border border-aui-border bg-accent-foreground/5 rounded-lg focus-within:border-aui-ring/20 transition-all duration-300',
-              isRecording ? 'flex flex-col' : 'items-start p-2.5',
+              'relative z-[51] border border-aui-border bg-accent-foreground/5 rounded-lg focus-within:border-aui-ring/20 transition-all duration-300 flex flex-col',
             )}
           >
-            {/* Top half - regular input area */}
-            <div className={cn('flex-1', isRecording ? 'p-2.5 pb-0' : '')}>
+            {/* Top section - full width text input */}
+            <div
+              className={cn(
+                'flex-1',
+                isRecording ? 'p-2.5 pb-0' : 'px-2.5 pt-2.5',
+              )}
+            >
               {attachments.length > 0 && (
                 <LightboxGallery>
                   <div className="flex flex-wrap gap-2 mb-2">
@@ -494,17 +533,67 @@ export const MessageInput = ({
                 </LightboxGallery>
               )}
 
-              <div className="flex gap-1 items-start">
-                <Input
-                  ref={fileInputRef}
-                  type="file"
-                  accept={accept}
-                  onChange={handleFileSelect}
-                  className="hidden"
-                  multiple
+              <div className="relative">
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <AutosizeTextarea
+                          {...field}
+                          ref={textareaRef}
+                          placeholder="Write a message..."
+                          className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-1 pr-4 resize-none min-h-[1.5rem]"
+                          disabled={isSubmitting}
+                          onKeyDown={e => {
+                            const mentionHandled = handleKeyDown(e)
+                            // Only submit on Enter if mention dropdown didn't handle it
+                            if (
+                              !mentionHandled &&
+                              e.key === 'Enter' &&
+                              !e.shiftKey
+                            ) {
+                              e.preventDefault()
+                              form.handleSubmit(onSubmit)()
+                            }
+                          }}
+                          onChange={e => {
+                            field.onChange(e)
+                            handleTextChange(e)
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
                 />
-                <TooltipProvider>
-                  <div className="flex flex-col gap-1">
+                {showMention && session?.agents && (
+                  <div className="absolute bottom-full mb-2">
+                    <MentionInput
+                      ref={mentionInputRef}
+                      agents={session.agents}
+                      onSelect={handleMentionSelect}
+                      onClose={() => setShowMention(false)}
+                      searchFilter={mentionTrigger}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom row - attachment (left) + voice/send (right) */}
+            {!isRecording && (
+              <div className="flex items-center justify-between px-2.5 pb-2.5 pt-1">
+                <div className="flex items-center gap-1">
+                  <Input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={accept}
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    multiple
+                  />
+                  <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -522,7 +611,53 @@ export const MessageInput = ({
                         <p>Add attachments</p>
                       </TooltipContent>
                     </Tooltip>
-                    {shouldShowLiveAudio && !isRecording && (
+                  </TooltipProvider>
+
+                  {/* Think toggle - only show for reasoning agents */}
+                  {hasReasoningAgent && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant={isThinkingEnabled ? 'default' : 'ghost'}
+                            className={cn(
+                              'h-8 px-2 transition-all flex items-center gap-1',
+                              isThinkingEnabled &&
+                                'bg-purple-600 hover:bg-purple-700 text-white shadow-md',
+                            )}
+                            onClick={() => {
+                              const newValue = !isThinkingEnabled
+                              console.log(
+                                '[MessageInput] Think button clicked - old:',
+                                isThinkingEnabled,
+                                'new:',
+                                newValue,
+                              )
+                              setIsThinkingEnabled(newValue)
+                            }}
+                            disabled={isSubmitting}
+                          >
+                            <ClockIcon className="w-4 h-4" />
+                            <span className="text-xs font-medium">Think</span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            {isThinkingEnabled
+                              ? 'Thinking enabled'
+                              : 'Enable thinking'}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {shouldShowLiveAudio && (
+                    <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -548,72 +683,26 @@ export const MessageInput = ({
                           <p>Start audio session</p>
                         </TooltipContent>
                       </Tooltip>
-                    )}
-                  </div>
-                </TooltipProvider>
-                <div className="flex-1 relative">
-                  <FormField
-                    control={form.control}
-                    name="content"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <AutosizeTextarea
-                            {...field}
-                            ref={textareaRef}
-                            placeholder="Write a message..."
-                            className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-1"
-                            disabled={isSubmitting}
-                            onKeyDown={e => {
-                              const mentionHandled = handleKeyDown(e)
-                              // Only submit on Enter if mention dropdown didn't handle it
-                              if (
-                                !mentionHandled &&
-                                e.key === 'Enter' &&
-                                !e.shiftKey
-                              ) {
-                                e.preventDefault()
-                                form.handleSubmit(onSubmit)()
-                              }
-                            }}
-                            onChange={e => {
-                              field.onChange(e)
-                              handleTextChange(e)
-                            }}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  {showMention && session?.agents && (
-                    <div className="absolute bottom-full mb-2">
-                      <MentionInput
-                        ref={mentionInputRef}
-                        agents={session.agents}
-                        onSelect={handleMentionSelect}
-                        onClose={() => setShowMention(false)}
-                        searchFilter={mentionTrigger}
-                      />
-                    </div>
+                    </TooltipProvider>
                   )}
+                  <Button
+                    type="submit"
+                    size="icon"
+                    variant="outline"
+                    className="h-8 w-8"
+                    disabled={
+                      !form.formState.isValid ||
+                      attachments.some(a => a.status === 'uploading') ||
+                      isSubmitting
+                    }
+                  >
+                    <SendIcon
+                      className={cn('w-4 h-4', isSubmitting && 'animate-pulse')}
+                    />
+                  </Button>
                 </div>
-                <Button
-                  type="submit"
-                  size="icon"
-                  variant="outline"
-                  className="h-8 w-8"
-                  disabled={
-                    !form.formState.isValid ||
-                    attachments.some(a => a.status === 'uploading') ||
-                    isSubmitting
-                  }
-                >
-                  <SendIcon
-                    className={cn('w-4 h-4', isSubmitting && 'animate-pulse')}
-                  />
-                </Button>
               </div>
-            </div>
+            )}
 
             {/* Bottom half - recording indicator when recording is active and live audio is enabled for preview users */}
             {shouldShowLiveAudio && isRecording && (
