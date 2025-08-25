@@ -4,10 +4,11 @@ import { Deployment } from '../models/Deployment'
 import { Notification } from '../models/Notification'
 import { Trigger } from '../models/Trigger'
 import { User } from '../models/User'
+import { CreationV2 } from '../models/v2/CreationV2'
 import { LikeV2 } from '../models/v2/LikeV2'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { Session } from '../models/v2/SessionV2'
-import { forceCloudfrontUrl } from '../plugins/s3Plugin'
+import { forceCloudfrontUrl, s3ThumbnailUrl, s3Url } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
@@ -1896,6 +1897,142 @@ export const getAgentPermissions = async (
   )
 
   return reply.status(200).send({ permissions })
+}
+
+// ========================= Creations Listing =========================
+// Returns creations for an agent consisting of:
+// 1. All creations created by the authenticated user for this agent (any visibility, not deleted)
+// 2. All public creations for this agent created by other users (public=true, not deleted)
+// Results are sorted by createdAt desc / _id desc for stable pagination.
+// Supports cursor based pagination using ?cursor=<creationId>&limit=<n>
+// If no auth user provided returns only public creations for the agent.
+export const getAgentCreations = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.params as { agentId: string }
+    const { limit = 50, cursor } = request.query as {
+      limit?: number | string
+      cursor?: string
+    }
+
+    // -------- Parameter validation --------
+    const parsedLimit = Number(limit)
+    if (Number.isNaN(parsedLimit) || !Number.isInteger(parsedLimit)) {
+      return reply
+        .status(400)
+        .send({ message: 'Invalid limit parameter (must be integer)' })
+    }
+    if (parsedLimit < 1 || parsedLimit > 100) {
+      return reply.status(400).send({
+        message: 'Invalid limit parameter (must be between 1 and 100)',
+      })
+    }
+
+    let cursorObjectId: any = null
+    if (cursor) {
+      if (!server.mongoose.isObjectIdOrHexString(cursor)) {
+        return reply
+          .status(400)
+          .send({ message: 'Invalid cursor parameter (must be a valid id)' })
+      }
+      cursorObjectId = new server.mongoose.Types.ObjectId(cursor)
+    }
+
+    // Validate / locate agent (by id or slug)
+    const query = createIdOrSlugQuery(agentId)
+    const agent = await Agent.findOne(query).select('_id deleted owner public')
+    if (!agent || agent.deleted) {
+      return reply.status(404).send({ message: 'Agent not found' })
+    }
+
+    const authUserId = request.user?.userId
+
+    // Access control for private agents
+    if (agent.public === false) {
+      if (!authUserId) {
+        return reply.status(401).send({
+          message: 'Authentication required to view private agent creations',
+        })
+      }
+      const isOwner =
+        agent.owner && agent.owner.toString() === authUserId.toString()
+      if (!isOwner) {
+        return reply.status(403).send({
+          message:
+            "Forbidden: you do not have access to this agent's private creations",
+        })
+      }
+    }
+
+    // Build match conditions
+    const match: any = {
+      agent: agent._id,
+      deleted: false,
+      ...(cursorObjectId ? { _id: { $lt: cursorObjectId } } : {}),
+    }
+
+    if (!authUserId) {
+      // Unauthenticated users only see public creations
+      match.public = true
+    } else {
+      // User gets their own (any visibility) + public from others
+      match.$or = [{ user: authUserId }, { public: true }]
+    }
+
+    const docs = await CreationV2.find(match)
+      .sort({ _id: -1 })
+      .limit(parsedLimit)
+      .populate({
+        path: 'user',
+        select: '_id userId username userImage type',
+        model: 'users3',
+      })
+      .populate({ path: 'agent', select: '_id username name userImage type' })
+      .populate({ path: 'task', select: '_id args' })
+
+    // Enrich like state if authenticated
+    if (authUserId && docs.length) {
+      const creationIds = docs.map(d => d._id)
+      const likes = await LikeV2.find({
+        user: authUserId,
+        entityType: 'creation',
+        entityId: { $in: creationIds },
+      }).select('entityId')
+      const likedSet = new Set(likes.map(l => l.entityId.toString()))
+      docs.forEach(d => {
+        d.isLiked = likedSet.has(d._id.toString())
+      })
+    }
+
+    // Attach URLs & thumbnails
+    docs.forEach(doc => {
+      // @ts-ignore
+      doc.url = s3Url(server, doc.filename || '')
+      // @ts-ignore
+      doc.thumbnail = s3ThumbnailUrl(server, doc.filename || '', 512)
+      // @ts-ignore
+      if (doc.user?.userImage) {
+        // @ts-ignore
+        doc.user.userImage = forceCloudfrontUrl(server, doc.user.userImage)
+      }
+    })
+
+    const nextCursor = docs.length ? docs[docs.length - 1]._id : undefined
+
+    return reply.status(200).send({
+      docs,
+      nextCursor,
+    })
+  } catch (error) {
+    server.log.error('Error fetching agent creations', error)
+    if ((error as any).name === 'CastError') {
+      return reply.status(400).send({ message: 'Invalid parameter format' })
+    }
+    return reply.status(500).send({ message: 'Internal server error' })
+  }
 }
 
 // Update agent permissions
