@@ -139,8 +139,8 @@ export const createAgent = async (
     suggestions,
     voice,
     tools,
+    llm_settings,
   } = request.body as AgentsCreateArguments
-  const llm_settings = (request.body as any).llm_settings
 
   const currentUserId = request.user.userId
 
@@ -219,8 +219,8 @@ export const updateAgent = async (
     public: isPublic,
     owner_pays,
     tools,
+    llm_settings,
   } = request.body as AgentsUpdateArguments
-  const llm_settings = (request.body as any).llm_settings
 
   if (models && models.length > 10) {
     return reply.status(422).send({
@@ -1953,21 +1953,17 @@ export const getAgentCreations = async (
     // Access control for private agents
     if (agent.public === false) {
       if (!authUserId) {
-        return reply
-          .status(401)
-          .send({
-            message: 'Authentication required to view private agent creations',
-          })
+        return reply.status(401).send({
+          message: 'Authentication required to view private agent creations',
+        })
       }
       const isOwner =
         agent.owner && agent.owner.toString() === authUserId.toString()
       if (!isOwner) {
-        return reply
-          .status(403)
-          .send({
-            message:
-              "Forbidden: you do not have access to this agent's private creations",
-          })
+        return reply.status(403).send({
+          message:
+            "Forbidden: you do not have access to this agent's private creations",
+        })
       }
     }
 
