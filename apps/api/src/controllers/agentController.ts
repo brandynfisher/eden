@@ -1914,41 +1914,81 @@ export const getAgentCreations = async (
   try {
     const { agentId } = request.params as { agentId: string }
     const { limit = 50, cursor } = request.query as {
-      limit?: number
+      limit?: number | string
       cursor?: string
+    }
+
+    // -------- Parameter validation --------
+    const parsedLimit = Number(limit)
+    if (Number.isNaN(parsedLimit) || !Number.isInteger(parsedLimit)) {
+      return reply
+        .status(400)
+        .send({ message: 'Invalid limit parameter (must be integer)' })
+    }
+    if (parsedLimit < 1 || parsedLimit > 100) {
+      return reply.status(400).send({
+        message: 'Invalid limit parameter (must be between 1 and 100)',
+      })
+    }
+
+    let cursorObjectId: any = null
+    if (cursor) {
+      if (!server.mongoose.isObjectIdOrHexString(cursor)) {
+        return reply
+          .status(400)
+          .send({ message: 'Invalid cursor parameter (must be a valid id)' })
+      }
+      cursorObjectId = new server.mongoose.Types.ObjectId(cursor)
     }
 
     // Validate / locate agent (by id or slug)
     const query = createIdOrSlugQuery(agentId)
-    const agent = await Agent.findOne(query).select('_id deleted')
+    const agent = await Agent.findOne(query).select('_id deleted owner public')
     if (!agent || agent.deleted) {
       return reply.status(404).send({ message: 'Agent not found' })
     }
 
     const authUserId = request.user?.userId
 
-    // Build base match conditions
+    // Access control for private agents
+    if (agent.public === false) {
+      if (!authUserId) {
+        return reply
+          .status(401)
+          .send({
+            message: 'Authentication required to view private agent creations',
+          })
+      }
+      const isOwner =
+        agent.owner && agent.owner.toString() === authUserId.toString()
+      if (!isOwner) {
+        return reply
+          .status(403)
+          .send({
+            message:
+              "Forbidden: you do not have access to this agent's private creations",
+          })
+      }
+    }
+
+    // Build match conditions
     const match: any = {
       agent: agent._id,
       deleted: false,
+      ...(cursorObjectId ? { _id: { $lt: cursorObjectId } } : {}),
     }
 
-    if (cursor) {
-      // For cursor pagination we fetch creations with _id < cursor (assuming descending sort)
-      match._id = { $lt: cursor }
-    }
-
-    // If no auth user => only public
     if (!authUserId) {
+      // Unauthenticated users only see public creations
       match.public = true
     } else {
-      // We need union of (user's creations for agent) OR (public creations by others)
+      // User gets their own (any visibility) + public from others
       match.$or = [{ user: authUserId }, { public: true }]
     }
 
     const docs = await CreationV2.find(match)
       .sort({ _id: -1 })
-      .limit(Math.min(100, Math.max(1, Number(limit))))
+      .limit(parsedLimit)
       .populate({
         path: 'user',
         select: '_id userId username userImage type',
@@ -1992,7 +2032,10 @@ export const getAgentCreations = async (
     })
   } catch (error) {
     server.log.error('Error fetching agent creations', error)
-    return reply.status(500).send({ message: 'Error fetching agent creations' })
+    if ((error as any).name === 'CastError') {
+      return reply.status(400).send({ message: 'Invalid parameter format' })
+    }
+    return reply.status(500).send({ message: 'Internal server error' })
   }
 }
 
