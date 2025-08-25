@@ -4,10 +4,11 @@ import { Deployment } from '../models/Deployment'
 import { Notification } from '../models/Notification'
 import { Trigger } from '../models/Trigger'
 import { User } from '../models/User'
+import { CreationV2 } from '../models/v2/CreationV2'
 import { LikeV2 } from '../models/v2/LikeV2'
 import { ModelV2 } from '../models/v2/ModelV2'
 import { Session } from '../models/v2/SessionV2'
-import { forceCloudfrontUrl } from '../plugins/s3Plugin'
+import { forceCloudfrontUrl, s3ThumbnailUrl, s3Url } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
@@ -138,8 +139,8 @@ export const createAgent = async (
     suggestions,
     voice,
     tools,
-    llm_settings,
   } = request.body as AgentsCreateArguments
+  const llm_settings = (request.body as any).llm_settings
 
   const currentUserId = request.user.userId
 
@@ -218,8 +219,8 @@ export const updateAgent = async (
     public: isPublic,
     owner_pays,
     tools,
-    llm_settings,
   } = request.body as AgentsUpdateArguments
+  const llm_settings = (request.body as any).llm_settings
 
   if (models && models.length > 10) {
     return reply.status(422).send({
@@ -1896,6 +1897,103 @@ export const getAgentPermissions = async (
   )
 
   return reply.status(200).send({ permissions })
+}
+
+// ========================= Creations Listing =========================
+// Returns creations for an agent consisting of:
+// 1. All creations created by the authenticated user for this agent (any visibility, not deleted)
+// 2. All public creations for this agent created by other users (public=true, not deleted)
+// Results are sorted by createdAt desc / _id desc for stable pagination.
+// Supports cursor based pagination using ?cursor=<creationId>&limit=<n>
+// If no auth user provided returns only public creations for the agent.
+export const getAgentCreations = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.params as { agentId: string }
+    const { limit = 50, cursor } = request.query as {
+      limit?: number
+      cursor?: string
+    }
+
+    // Validate / locate agent (by id or slug)
+    const query = createIdOrSlugQuery(agentId)
+    const agent = await Agent.findOne(query).select('_id deleted')
+    if (!agent || agent.deleted) {
+      return reply.status(404).send({ message: 'Agent not found' })
+    }
+
+    const authUserId = request.user?.userId
+
+    // Build base match conditions
+    const match: any = {
+      agent: agent._id,
+      deleted: false,
+    }
+
+    if (cursor) {
+      // For cursor pagination we fetch creations with _id < cursor (assuming descending sort)
+      match._id = { $lt: cursor }
+    }
+
+    // If no auth user => only public
+    if (!authUserId) {
+      match.public = true
+    } else {
+      // We need union of (user's creations for agent) OR (public creations by others)
+      match.$or = [{ user: authUserId }, { public: true }]
+    }
+
+    const docs = await CreationV2.find(match)
+      .sort({ _id: -1 })
+      .limit(Math.min(100, Math.max(1, Number(limit))))
+      .populate({
+        path: 'user',
+        select: '_id userId username userImage type',
+        model: 'users3',
+      })
+      .populate({ path: 'agent', select: '_id username name userImage type' })
+      .populate({ path: 'task', select: '_id args' })
+
+    // Enrich like state if authenticated
+    if (authUserId && docs.length) {
+      const creationIds = docs.map(d => d._id)
+      const likes = await LikeV2.find({
+        user: authUserId,
+        entityType: 'creation',
+        entityId: { $in: creationIds },
+      }).select('entityId')
+      const likedSet = new Set(likes.map(l => l.entityId.toString()))
+      docs.forEach(d => {
+        d.isLiked = likedSet.has(d._id.toString())
+      })
+    }
+
+    // Attach URLs & thumbnails
+    docs.forEach(doc => {
+      // @ts-ignore
+      doc.url = s3Url(server, doc.filename || '')
+      // @ts-ignore
+      doc.thumbnail = s3ThumbnailUrl(server, doc.filename || '', 512)
+      // @ts-ignore
+      if (doc.user?.userImage) {
+        // @ts-ignore
+        doc.user.userImage = forceCloudfrontUrl(server, doc.user.userImage)
+      }
+    })
+
+    const nextCursor = docs.length ? docs[docs.length - 1]._id : undefined
+
+    return reply.status(200).send({
+      docs,
+      nextCursor,
+    })
+  } catch (error) {
+    server.log.error('Error fetching agent creations', error)
+    return reply.status(500).send({ message: 'Error fetching agent creations' })
+  }
 }
 
 // Update agent permissions
