@@ -6,6 +6,7 @@ import {
   ProfileTab,
   ToolsTab,
 } from './AgentEditView'
+import AgentDashboardView from './agent-dashboard-view'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
@@ -18,6 +19,7 @@ import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
+  BarChart3Icon,
   Loader2,
   MessageCircleIcon,
   SettingsIcon,
@@ -48,9 +50,13 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      ['profile', 'concepts', 'integrations', 'permissions'].includes(
-        tabFromUrl,
-      )
+      [
+        'profile',
+        'concepts',
+        'integrations',
+        'permissions',
+        'dashboard',
+      ].includes(tabFromUrl)
     ) {
       return tabFromUrl
     }
@@ -98,9 +104,13 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      ['profile', 'concepts', 'integrations', 'permissions'].includes(
-        tabFromUrl,
-      )
+      [
+        'profile',
+        'concepts',
+        'integrations',
+        'permissions',
+        'dashboard',
+      ].includes(tabFromUrl)
     ) {
       setActiveTab(tabFromUrl)
     }
@@ -213,6 +223,11 @@ const AgentEditView: FC<{
           })
         }
       }
+    }
+
+    // All users with edit access can see dashboard
+    if (hasEditAccess) {
+      tabs.push({ key: 'dashboard', label: 'Dashboard', icon: BarChart3Icon })
     }
 
     return tabs
@@ -347,13 +362,19 @@ const AgentEditView: FC<{
                 {activeTab === 'permissions' &&
                   isOriginalOwner &&
                   isPreviewUser && <PermissionsTab agent={agent} />}
+                {activeTab === 'dashboard' && hasEditAccess && (
+                  <div className="-m-6">
+                    <AgentDashboardView agent={agent} />
+                  </div>
+                )}
               </form>
             </Form>
 
             {/* Global Update Button */}
             {activeTab !== 'integrations' &&
               activeTab !== 'tasks' &&
-              activeTab !== 'permissions' && (
+              activeTab !== 'permissions' &&
+              activeTab !== 'dashboard' && (
                 <div className="border-t border-border p-6">
                   <div className="mx-auto max-w-4xl">
                     <Button
