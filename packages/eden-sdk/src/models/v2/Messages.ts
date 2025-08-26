@@ -45,7 +45,6 @@ export type Message = {
   tool_call_id?: string
   channel?: Channel
   reply_to?: Message
-  sender_name?: string
   reactions?: MessageReaction
   attachments?: string[]
   tool_calls?: ToolCall[]

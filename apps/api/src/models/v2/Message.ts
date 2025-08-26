@@ -22,7 +22,6 @@ export interface MessageSchema {
   tool_call_id?: string
   channel?: Channel
   reply_to?: MessageDocument
-  sender_name?: string
   reactions?: MessageReaction
   attachments?: string[]
   tool_calls?: ToolCall[]
@@ -74,9 +73,6 @@ const messageSchema = new Schema<MessageDocument>(
     reply_to: {
       type: Schema.Types.ObjectId,
       ref: 'messages',
-    },
-    sender_name: {
-      type: String,
     },
     attachments: {
       type: [String],
