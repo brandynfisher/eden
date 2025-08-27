@@ -6,13 +6,16 @@ import {
   deleteAgentDeployment,
   deleteAgentTrigger,
   deployAgent,
+  executeAgentTrigger,
   getAgent,
+  getAgentCreations,
   getAgentDeployments,
   getAgentMemory,
   getAgentPermissions,
   getAgentTriggers,
   getAllUserDeployments,
   getAllUserTriggers,
+  getDashboardData,
   getSharedAgents,
   likeAgent,
   removeMemoryFromAgent,
@@ -94,6 +97,32 @@ const agentRoutes: FastifyPluginAsync = async server => {
           ),
         ),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+        llm_settings: Type.Optional(
+          Type.Object({
+            model_profile: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_policy: Type.Optional(
+              Type.Union([
+                Type.Literal('auto'),
+                Type.Literal('off'),
+                Type.Literal('always'),
+              ]),
+            ),
+            thinking_effort_cap: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_effort_instructions: Type.Optional(Type.String()),
+          }),
+        ),
       }),
       response: {
         200: {
@@ -146,6 +175,32 @@ const agentRoutes: FastifyPluginAsync = async server => {
         ),
         owner_pays: Type.Optional(Type.Boolean()),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+        llm_settings: Type.Optional(
+          Type.Object({
+            model_profile: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_policy: Type.Optional(
+              Type.Union([
+                Type.Literal('auto'),
+                Type.Literal('off'),
+                Type.Literal('always'),
+              ]),
+            ),
+            thinking_effort_cap: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_effort_instructions: Type.Optional(Type.String()),
+          }),
+        ),
       }),
       response: {
         200: Type.Object({
@@ -191,6 +246,42 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteAgentTrigger(server, request, reply),
+  })
+
+  server.post('/v2/triggers/run', {
+    schema: {
+      tags: ['Triggers'],
+      description: 'Execute a trigger immediately',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        trigger_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          trigger_id: Type.String(),
+          executed: Type.Boolean(),
+          chat_response: Type.Optional(Type.Any()),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        403: Type.Object({
+          message: Type.String(),
+        }),
+        404: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => executeAgentTrigger(server, request, reply),
   })
 
   server.get('/v2/agents/:agentId/deployments', {
@@ -371,11 +462,13 @@ const agentRoutes: FastifyPluginAsync = async server => {
       response: {
         200: {
           content: Type.String(),
-          unabsorbedDirectives: Type.Array(Type.Object({
-            _id: Type.String(),
-            content: Type.String(),
-            createdAt: Type.Optional(Type.String()),
-          })),
+          unabsorbedDirectives: Type.Array(
+            Type.Object({
+              _id: Type.String(),
+              content: Type.String(),
+              createdAt: Type.Optional(Type.String()),
+            }),
+          ),
         },
       },
     },
@@ -433,7 +526,13 @@ const agentRoutes: FastifyPluginAsync = async server => {
       response: { 200: { success: Type.Boolean() } },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request: FastifyRequest<{ Params: { agentId: string }; Body: { user_memory_enabled: boolean } }>, reply) => updateUserMemoryEnabled(server, request, reply),
+    handler: (
+      request: FastifyRequest<{
+        Params: { agentId: string }
+        Body: { user_memory_enabled: boolean }
+      }>,
+      reply,
+    ) => updateUserMemoryEnabled(server, request, reply),
   })
 
   server.get('/v2/memory-sessions/:memoryId', {
@@ -465,7 +564,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       tags: ['Agents'],
       description: 'Remove unabsorbed memory from memory_user',
       security: [{ apiKey: [] }],
-      params: { 
+      params: {
         agentId: Type.String(),
         memoryId: Type.String(),
       },
@@ -484,25 +583,31 @@ const agentRoutes: FastifyPluginAsync = async server => {
       params: { agentId: Type.String() },
       response: {
         200: {
-          shards: Type.Array(Type.Object({
-            _id: Type.String(),
-            agent_id: Type.Any(),
-            content: Type.Optional(Type.String()),
-            extraction_prompt: Type.Optional(Type.String()),
-            is_active: Type.Optional(Type.Boolean()),
-            facts: Type.Array(Type.Object({
+          shards: Type.Array(
+            Type.Object({
               _id: Type.String(),
-              content: Type.String(),
-              createdAt: Type.Optional(Type.String()),
-              updatedAt: Type.Optional(Type.String()),
-            })),
-            unabsorbed_memory_ids: Type.Array(Type.Object({
-              _id: Type.String(),
-              content: Type.String(),
-              createdAt: Type.Optional(Type.String()),
-              updatedAt: Type.Optional(Type.String()),
-            })),
-          })),
+              agent_id: Type.Any(),
+              content: Type.Optional(Type.String()),
+              extraction_prompt: Type.Optional(Type.String()),
+              is_active: Type.Optional(Type.Boolean()),
+              facts: Type.Array(
+                Type.Object({
+                  _id: Type.String(),
+                  content: Type.String(),
+                  createdAt: Type.Optional(Type.String()),
+                  updatedAt: Type.Optional(Type.String()),
+                }),
+              ),
+              unabsorbed_memory_ids: Type.Array(
+                Type.Object({
+                  _id: Type.String(),
+                  content: Type.String(),
+                  createdAt: Type.Optional(Type.String()),
+                  updatedAt: Type.Optional(Type.String()),
+                }),
+              ),
+            }),
+          ),
         },
       },
     },
@@ -537,7 +642,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
       tags: ['Agents'],
       description: 'Update memory_agent document',
       security: [{ apiKey: [] }],
-      params: { 
+      params: {
         agentId: Type.String(),
         memoryAgentId: Type.String(),
       },
@@ -548,23 +653,99 @@ const agentRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => updateMemoryAgent(server, request, reply),
   })
 
-  server.delete('/v2/agents/:agentId/memory-agent/:memoryAgentId/memory/:memoryId', {
+  server.delete(
+    '/v2/agents/:agentId/memory-agent/:memoryAgentId/memory/:memoryId',
+    {
+      schema: {
+        tags: ['Agents'],
+        description:
+          'Remove memory from memory_agent arrays (facts or unabsorbed_memory_ids)',
+        security: [{ apiKey: [] }],
+        params: {
+          agentId: Type.String(),
+          memoryAgentId: Type.String(),
+          memoryId: Type.String(),
+        },
+        body: Type.Object({
+          arrayField: Type.Union([
+            Type.Literal('facts'),
+            Type.Literal('unabsorbed_memory_ids'),
+          ]),
+        }),
+        response: { 200: { success: Type.Boolean() } },
+      },
+      preHandler: [(request, reply) => isAuth(server, request, reply)],
+      handler: (request, reply) =>
+        removeMemoryFromAgent(server, request, reply),
+    },
+  )
+
+  // Dashboard route
+  server.get('/v2/agents/:agentId/dashboard', {
     schema: {
       tags: ['Agents'],
-      description: 'Remove memory from memory_agent arrays (facts or unabsorbed_memory_ids)',
+      description: 'Get dashboard data for an agent',
       security: [{ apiKey: [] }],
-      params: { 
-        agentId: Type.String(),
-        memoryAgentId: Type.String(),
-        memoryId: Type.String(),
+      params: { agentId: Type.String() },
+      querystring: {
+        startDate: Type.Optional(Type.String()),
+        endDate: Type.Optional(Type.String()),
       },
-      body: Type.Object({
-        arrayField: Type.Union([Type.Literal('facts'), Type.Literal('unabsorbed_memory_ids')])
-      }),
-      response: { 200: { success: Type.Boolean() } },
+      response: {
+        200: {
+          sessionActivity: Type.Array(
+            Type.Object({
+              date: Type.String(),
+              platform: Type.String(),
+              totalUserMessages: Type.Number(),
+              sessionCount: Type.Number(),
+            }),
+          ),
+          dateRange: Type.Object({
+            start: Type.String(),
+            end: Type.String(),
+          }),
+          platforms: Type.Array(Type.String()),
+        },
+      },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => removeMemoryFromAgent(server, request, reply),
+    handler: (request, reply) => getDashboardData(server, request, reply),
+  })
+
+  // Agent creations
+  server.get('/v2/agents/:agentId/creations', {
+    schema: {
+      tags: ['Agents'],
+      description:
+        "List an agent's creations: union of auth user's creations and public creations by others",
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: { agentId: Type.String() },
+      querystring: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number' },
+          cursor: { type: 'string' },
+        },
+      },
+      response: {
+        200: Type.Object({
+          docs: Type.Array(Type.Any()),
+          nextCursor: Type.Optional(Type.String()),
+        }),
+        400: Type.Object({ message: Type.String() }),
+        401: Type.Object({ message: Type.String() }),
+        403: Type.Object({ message: Type.String() }),
+        404: Type.Object({ message: Type.String() }),
+        500: Type.Object({ message: Type.String() }),
+      },
+    },
+    preHandler: [request => maybeAuth(server, request)],
+    handler: (request, reply) => getAgentCreations(server, request, reply),
   })
 
   // Permissions routes
@@ -576,18 +757,20 @@ const agentRoutes: FastifyPluginAsync = async server => {
       params: { agentId: Type.String() },
       response: {
         200: {
-          permissions: Type.Array(Type.Object({
-            _id: Type.String(),
-            agent: Type.String(),
-            user: Type.Object({
+          permissions: Type.Array(
+            Type.Object({
               _id: Type.String(),
-              userId: Type.Optional(Type.String()),
-              username: Type.String(),
-              userImage: Type.Optional(Type.String()),
+              agent: Type.String(),
+              user: Type.Object({
+                _id: Type.String(),
+                userId: Type.Optional(Type.String()),
+                username: Type.String(),
+                userImage: Type.Optional(Type.String()),
+              }),
+              level: Type.String(),
+              grantedAt: Type.String(),
             }),
-            level: Type.String(),
-            grantedAt: Type.String(),
-          })),
+          ),
         },
       },
     },
@@ -602,10 +785,12 @@ const agentRoutes: FastifyPluginAsync = async server => {
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       body: Type.Object({
-        permissions: Type.Array(Type.Object({
-          username: Type.String(),
-          level: Type.Union([Type.Literal('editor'), Type.Literal('owner')]),
-        })),
+        permissions: Type.Array(
+          Type.Object({
+            username: Type.String(),
+            level: Type.Union([Type.Literal('editor'), Type.Literal('owner')]),
+          }),
+        ),
       }),
       response: {
         200: { success: Type.Boolean() },
@@ -622,11 +807,13 @@ const agentRoutes: FastifyPluginAsync = async server => {
       security: [{ apiKey: [] }],
       response: {
         200: {
-          sharedAgents: Type.Array(Type.Object({
-            agent: Type.Any(),
-            permissionLevel: Type.String(),
-            grantedAt: Type.String(),
-          })),
+          sharedAgents: Type.Array(
+            Type.Object({
+              agent: Type.Any(),
+              permissionLevel: Type.String(),
+              grantedAt: Type.String(),
+            }),
+          ),
         },
       },
     },

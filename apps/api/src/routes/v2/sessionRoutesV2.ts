@@ -100,6 +100,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   server.post<{
     Body: SessionsV2MessageArguments & {
       stream?: boolean
+      thinking?: boolean
       agent_ids?: string[]
       scenario?: string
       budget?: {
@@ -128,6 +129,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         content: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),
         stream: Type.Optional(Type.Boolean()),
+        thinking: Type.Optional(Type.Boolean()),
         agent_ids: Type.Optional(Type.Array(Type.String())),
         scenario: Type.Optional(Type.String({ maxLength: 1000 })),
         budget: Type.Optional(
@@ -270,7 +272,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
 
   server.patch<{
     Params: Pick<SessionsV2RenameArguments, 'session_id'>
-    Body: Pick<SessionsV2RenameArguments, 'title'>
+    Body: Pick<SessionsV2RenameArguments, 'title'> & { pinned?: boolean }
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
@@ -285,6 +287,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       },
       body: {
         title: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
+        pinned: Type.Optional(Type.Boolean()),
       },
       response: {
         200: Type.Object({

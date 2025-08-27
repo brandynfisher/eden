@@ -34,6 +34,7 @@ export interface SessionSchema {
   }
   last_actor_id?: ObjectId
   trigger?: ObjectId
+  pinned?: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -127,6 +128,10 @@ export const sessionSchema = new Schema<SessionDocument>(
     trigger: {
       type: Schema.Types.ObjectId,
       ref: 'triggers2',
+    },
+    pinned: {
+      type: Boolean,
+      default: false,
     },
     deleted: {
       type: Boolean,

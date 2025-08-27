@@ -210,10 +210,16 @@ export function useSessionQuery({
             updatedMessages.push(enrichedMessage)
           }
         } else {
-          // Existing message - update it
+          // Existing message - update it, ensuring we preserve all fields including thought
+          const existingMessage = updatedMessages[existingMessageIndex]
+          const mergedThought =
+            enrichedMessage.thought || existingMessage.thought
+
           updatedMessages[existingMessageIndex] = {
-            ...updatedMessages[existingMessageIndex],
+            ...existingMessage,
             ...enrichedMessage,
+            // Explicitly preserve thought field if it exists in either message
+            thought: mergedThought,
           }
         }
 

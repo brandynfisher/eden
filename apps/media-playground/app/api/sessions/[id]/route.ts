@@ -88,12 +88,15 @@ export async function PATCH(
   const authToken = await getToken()
 
   const body = await request.json()
-  const title = body.title
+  const { title, pinned } = body
 
-  if (!title) {
-    return new NextResponse(JSON.stringify({ message: 'Missing title' }), {
-      status: 400,
-    })
+  if (title === undefined && pinned === undefined) {
+    return new NextResponse(
+      JSON.stringify({ message: 'Missing title or pinned status' }),
+      {
+        status: 400,
+      },
+    )
   }
 
   try {
@@ -102,10 +105,16 @@ export async function PATCH(
       token: authToken !== null ? authToken : undefined,
     })
 
-    const res = await eden.sessions.v2.rename({
-      session_id: id,
-      title: title,
-    })
+    const updateData: { session_id: string; title?: string; pinned?: boolean } =
+      { session_id: id }
+    if (title !== undefined) {
+      updateData.title = title
+    }
+    if (pinned !== undefined) {
+      updateData.pinned = pinned
+    }
+
+    const res = await eden.sessions.v2.rename(updateData)
 
     return NextResponse.json(res)
   } catch (error) {

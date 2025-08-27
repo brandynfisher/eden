@@ -272,6 +272,7 @@ export const createSessionMessage = async (
   request: FastifyRequest<{
     Body: SessionsV2MessageArguments & {
       stream?: boolean
+      thinking?: boolean
       agent_ids?: string[]
       scenario?: string
       budget?: {
@@ -301,6 +302,7 @@ export const createSessionMessage = async (
     content,
     attachments,
     stream,
+    thinking,
     agent_ids,
     scenario,
     budget,
@@ -419,6 +421,8 @@ export const createSessionMessage = async (
       stream: stream || false,
       // Include agent_ids from request body if provided (for multi-agent targeting)
       ...(agent_ids && { actor_agent_ids: agent_ids }),
+      // Only include thinking override if explicitly provided
+      ...(thinking !== undefined && { thinking }),
     },
     headers: {
       'X-Client-Platform': 'web',
@@ -535,7 +539,7 @@ export const listSessions = async (
 
   try {
     const queryOptions: QueryOptions = {
-      select: '_id title name createdAt updatedAt trigger agents users',
+      select: '_id title name createdAt updatedAt trigger agents users pinned',
       limit,
       page,
       sort: {
@@ -624,7 +628,7 @@ export const getSession = async (
       .populate({
         path: 'messages',
         select:
-          '_id content sender role eden_message_data tool_calls attachments createdAt reactions',
+          '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
         populate: {
           path: 'sender',
           select: '_id username userImage',
@@ -804,7 +808,7 @@ export const deleteSession = async (
 export const renameSession = async (
   request: FastifyRequest<{
     Params: Pick<SessionsV2RenameArguments, 'session_id'>
-    Body: Pick<SessionsV2RenameArguments, 'title'>
+    Body: Pick<SessionsV2RenameArguments, 'title'> & { pinned?: boolean }
   }>,
   reply: FastifyReply,
 ) => {
@@ -816,11 +820,11 @@ export const renameSession = async (
   }
 
   const { session_id } = request.params
-  const { title } = request.body
+  const { title, pinned } = request.body
 
-  if (!title) {
+  if (title === undefined && pinned === undefined) {
     return reply.status(400).send({
-      error: 'Title not provided',
+      error: 'Title or pinned status must be provided',
     })
   }
 
@@ -836,14 +840,20 @@ export const renameSession = async (
 
   if (session.owner.toString() !== userId.toString()) {
     return reply.status(401).send({
-      error: 'You are not allowed to rename this session',
+      error: 'You are not allowed to modify this session',
     })
   }
 
+  const updateData: any = {}
+  if (title !== undefined) {
+    updateData.title = title
+  }
+  if (pinned !== undefined) {
+    updateData.pinned = pinned
+  }
+
   await session.updateOne({
-    $set: {
-      title: title,
-    },
+    $set: updateData,
   })
 
   return reply.status(200).send({ success: true })
@@ -1054,7 +1064,7 @@ export const getSharedSession = async (
       })
       .sort({ createdAt: 1 })
       .select(
-        '_id content sender role eden_message_data tool_calls attachments createdAt',
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt',
       )
 
     return reply.status(200).send({

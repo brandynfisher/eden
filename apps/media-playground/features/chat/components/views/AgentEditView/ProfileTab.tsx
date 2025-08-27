@@ -1,6 +1,7 @@
 'use client'
 
 import { ProfileImageUploader } from '../../profile-image-uploader'
+import { AGENT_FIELD_GUIDANCE, AGENT_FIELD_LIMITS } from '../agent-constants'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   FormControl,
@@ -13,6 +14,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { Agent } from '@edenlabs/eden-sdk'
 import { FC } from 'react'
@@ -153,8 +160,21 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
           render={({ field }) => (
             <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
               <FormLabel className="text-base font-medium">
-                Description
-                <span className="text-red-500 ml-1">*</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-help">
+                        Description
+                        <span className="text-red-500 ml-1">*</span>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">
+                        {AGENT_FIELD_GUIDANCE.DESCRIPTION}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </FormLabel>
               <FormControl>
                 <AutosizeTextarea
@@ -164,7 +184,10 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                 />
               </FormControl>
               <div className="flex justify-end mt-2">
-                <CharacterCount current={field.value?.length || 0} max={5000} />
+                <CharacterCount
+                  current={field.value?.length || 0}
+                  max={AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS}
+                />
               </div>
               <FormMessage />
             </FormItem>
@@ -178,8 +201,21 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
           render={({ field }) => (
             <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
               <FormLabel className="text-base font-medium">
-                Instructions
-                <span className="text-red-500 ml-1">*</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-help">
+                        Instructions
+                        <span className="text-red-500 ml-1">*</span>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs whitespace-pre-wrap">
+                        {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </FormLabel>
               <FormControl>
                 <AutosizeTextarea
@@ -192,7 +228,7 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
               <div className="flex justify-end mt-2">
                 <CharacterCount
                   current={field.value?.length || 0}
-                  max={30000}
+                  max={AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS}
                 />
               </div>
               <FormMessage />

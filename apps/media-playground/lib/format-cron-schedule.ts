@@ -110,12 +110,6 @@ export function formatCronSchedule(schedule: CronSchedule): string {
     parts.push(`${hour}:${minute} ${timezoneAbbr}`)
   }
 
-  // Add timezone if specified
-  if (schedule.timezone && schedule.timezone !== 'UTC') {
-    const utcOffset = dayjs().tz(schedule.timezone).format('Z')
-    parts.push(`UTC${utcOffset}`)
-  }
-
   // Add end date if specified
   if (schedule.end_date) {
     const endDate = dayjs(schedule.end_date).tz(schedule.timezone || 'UTC')

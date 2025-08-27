@@ -54,8 +54,8 @@ const CreationCard = ({
     if (onClick) {
       event.preventDefault()
       onClick()
-      // router.push(`/creations/${creation._id}`)
     }
+    // Don't prevent default if no onClick handler - let Link handle navigation
   }
 
   const fileType =

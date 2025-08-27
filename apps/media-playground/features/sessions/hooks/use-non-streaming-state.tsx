@@ -1,5 +1,11 @@
 import { Creator, Message, SessionV2 } from '@edenlabs/eden-sdk'
-import { useCallback, useEffect, useState, Dispatch, SetStateAction } from 'react'
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react'
 
 interface UseNonStreamingStateProps {
   sessionId: string
@@ -23,7 +29,11 @@ export function useNonStreamingState({
   respondingAgentIds: string[]
   setWaitingForResponse: Dispatch<SetStateAction<boolean>>
   setOptimisticMessages: Dispatch<SetStateAction<Message[]>>
-  sendMessage: (content: string, attachments?: string[], options?: { agent_ids?: string[] }) => Promise<void>
+  sendMessage: (
+    content: string,
+    attachments?: string[],
+    options?: { agent_ids?: string[]; thinking?: boolean },
+  ) => Promise<void>
   clearNonStreamingState: () => void
 } {
   const [waitingForResponse, setWaitingForResponse] = useState(false)
@@ -107,7 +117,7 @@ export function useNonStreamingState({
     async (
       content: string,
       attachments?: string[],
-      options?: { agent_ids?: string[] },
+      options?: { agent_ids?: string[]; thinking?: boolean },
     ) => {
       // Store the agent IDs for the loading indicators
       if (options?.agent_ids) {
@@ -136,7 +146,11 @@ export function useNonStreamingState({
         }
 
         // Handle session creation for optimistic sessions
-        if (!sessionId || sessionId === 'new' || sessionId.startsWith('temp-')) {
+        if (
+          !sessionId ||
+          sessionId === 'new' ||
+          sessionId.startsWith('temp-')
+        ) {
           const result = await response.json()
           if (result.session_id && onSessionCreated) {
             onSessionCreated(result.session_id)

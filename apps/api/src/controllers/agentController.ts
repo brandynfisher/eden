@@ -4,9 +4,11 @@ import { Deployment } from '../models/Deployment'
 import { Notification } from '../models/Notification'
 import { Trigger } from '../models/Trigger'
 import { User } from '../models/User'
+import { CreationV2 } from '../models/v2/CreationV2'
 import { LikeV2 } from '../models/v2/LikeV2'
 import { ModelV2 } from '../models/v2/ModelV2'
-import { forceCloudfrontUrl } from '../plugins/s3Plugin'
+import { Session } from '../models/v2/SessionV2'
+import { forceCloudfrontUrl, s3ThumbnailUrl, s3Url } from '../plugins/s3Plugin'
 import AgentRepository from '../repositories/AgentRepository'
 import { generateBlurhash } from '../utils/blurhash'
 import { createIdOrSlugQuery, createMultiFieldQuery } from '../utils/mongoUtils'
@@ -137,6 +139,7 @@ export const createAgent = async (
     suggestions,
     voice,
     tools,
+    llm_settings,
   } = request.body as AgentsCreateArguments
 
   const currentUserId = request.user.userId
@@ -171,6 +174,7 @@ export const createAgent = async (
     voice,
     models: models || [],
     tools,
+    llm_settings: llm_settings,
     featureFlags: [FeatureFlag.FreeTools],
   })
 
@@ -215,6 +219,7 @@ export const updateAgent = async (
     public: isPublic,
     owner_pays,
     tools,
+    llm_settings,
   } = request.body as AgentsUpdateArguments
 
   if (models && models.length > 10) {
@@ -253,7 +258,10 @@ export const updateAgent = async (
     public: isPublic,
     owner_pays,
     tools,
+    llm_settings: llm_settings,
   }
+
+  console.log('UPDATE AGENT - updateData:', JSON.stringify(updateData, null, 2))
 
   // Handle models array
   if (!models || models.length === 0) {
@@ -649,6 +657,86 @@ export const deleteAgentTrigger = async (
   })
 }
 
+export const executeAgentTrigger = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { trigger_id } = request.body as { trigger_id: string }
+  const currentUserId = request.user.userId
+
+  if (!trigger_id) {
+    return reply.status(400).send({
+      message: 'Missing trigger_id',
+    })
+  }
+
+  // First, get the trigger to check ownership
+  const trigger = await Trigger.findById(trigger_id)
+  if (!trigger) {
+    return reply.status(404).send({
+      message: 'Trigger not found',
+    })
+  }
+
+  // Check if the user owns the agent that this trigger belongs to
+  const agent = await Agent.findById(trigger.agent)
+  if (!agent) {
+    return reply.status(404).send({
+      message: 'Agent not found',
+    })
+  }
+
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
+    return reply.status(403).send({
+      message: 'User not authorized to execute triggers for this agent',
+    })
+  }
+
+  try {
+    const edenComputeRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/triggers/run`,
+      data: { trigger_id },
+    }
+
+    const edenComputeResponse = await axios.post(
+      edenComputeRequest.endpoint,
+      edenComputeRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const response = edenComputeResponse.data
+
+    return reply.status(200).send({
+      trigger_id,
+      executed: response.executed || true,
+      chat_response: response.chat_response,
+    })
+  } catch (error) {
+    console.error('Error executing trigger:', error)
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status || 500
+      const message =
+        error.response?.data?.message || 'Failed to execute trigger'
+
+      return reply.status(status).send({
+        message,
+      })
+    }
+
+    return reply.status(500).send({
+      message: 'Internal server error',
+    })
+  }
+}
+
 export const getAgentDeployments = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -756,7 +844,7 @@ export const updateAgentDeployment = async (
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
-  const { agentId } = request.params as AgentsUpdateDeploymentArguments
+  const { agentId } = request.params as { agentId: string }
   const { platform, config, secrets } =
     request.body as AgentsUpdateDeploymentArguments
 
@@ -1811,6 +1899,142 @@ export const getAgentPermissions = async (
   return reply.status(200).send({ permissions })
 }
 
+// ========================= Creations Listing =========================
+// Returns creations for an agent consisting of:
+// 1. All creations created by the authenticated user for this agent (any visibility, not deleted)
+// 2. All public creations for this agent created by other users (public=true, not deleted)
+// Results are sorted by createdAt desc / _id desc for stable pagination.
+// Supports cursor based pagination using ?cursor=<creationId>&limit=<n>
+// If no auth user provided returns only public creations for the agent.
+export const getAgentCreations = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.params as { agentId: string }
+    const { limit = 50, cursor } = request.query as {
+      limit?: number | string
+      cursor?: string
+    }
+
+    // -------- Parameter validation --------
+    const parsedLimit = Number(limit)
+    if (Number.isNaN(parsedLimit) || !Number.isInteger(parsedLimit)) {
+      return reply
+        .status(400)
+        .send({ message: 'Invalid limit parameter (must be integer)' })
+    }
+    if (parsedLimit < 1 || parsedLimit > 100) {
+      return reply.status(400).send({
+        message: 'Invalid limit parameter (must be between 1 and 100)',
+      })
+    }
+
+    let cursorObjectId: any = null
+    if (cursor) {
+      if (!server.mongoose.isObjectIdOrHexString(cursor)) {
+        return reply
+          .status(400)
+          .send({ message: 'Invalid cursor parameter (must be a valid id)' })
+      }
+      cursorObjectId = new server.mongoose.Types.ObjectId(cursor)
+    }
+
+    // Validate / locate agent (by id or slug)
+    const query = createIdOrSlugQuery(agentId)
+    const agent = await Agent.findOne(query).select('_id deleted owner public')
+    if (!agent || agent.deleted) {
+      return reply.status(404).send({ message: 'Agent not found' })
+    }
+
+    const authUserId = request.user?.userId
+
+    // Access control for private agents
+    if (agent.public === false) {
+      if (!authUserId) {
+        return reply.status(401).send({
+          message: 'Authentication required to view private agent creations',
+        })
+      }
+      const isOwner =
+        agent.owner && agent.owner.toString() === authUserId.toString()
+      if (!isOwner) {
+        return reply.status(403).send({
+          message:
+            "Forbidden: you do not have access to this agent's private creations",
+        })
+      }
+    }
+
+    // Build match conditions
+    const match: any = {
+      agent: agent._id,
+      deleted: false,
+      ...(cursorObjectId ? { _id: { $lt: cursorObjectId } } : {}),
+    }
+
+    if (!authUserId) {
+      // Unauthenticated users only see public creations
+      match.public = true
+    } else {
+      // User gets their own (any visibility) + public from others
+      match.$or = [{ user: authUserId }, { public: true }]
+    }
+
+    const docs = await CreationV2.find(match)
+      .sort({ _id: -1 })
+      .limit(parsedLimit)
+      .populate({
+        path: 'user',
+        select: '_id userId username userImage type',
+        model: 'users3',
+      })
+      .populate({ path: 'agent', select: '_id username name userImage type' })
+      .populate({ path: 'task', select: '_id args' })
+
+    // Enrich like state if authenticated
+    if (authUserId && docs.length) {
+      const creationIds = docs.map(d => d._id)
+      const likes = await LikeV2.find({
+        user: authUserId,
+        entityType: 'creation',
+        entityId: { $in: creationIds },
+      }).select('entityId')
+      const likedSet = new Set(likes.map(l => l.entityId.toString()))
+      docs.forEach(d => {
+        d.isLiked = likedSet.has(d._id.toString())
+      })
+    }
+
+    // Attach URLs & thumbnails
+    docs.forEach(doc => {
+      // @ts-ignore
+      doc.url = s3Url(server, doc.filename || '')
+      // @ts-ignore
+      doc.thumbnail = s3ThumbnailUrl(server, doc.filename || '', 512)
+      // @ts-ignore
+      if (doc.user?.userImage) {
+        // @ts-ignore
+        doc.user.userImage = forceCloudfrontUrl(server, doc.user.userImage)
+      }
+    })
+
+    const nextCursor = docs.length ? docs[docs.length - 1]._id : undefined
+
+    return reply.status(200).send({
+      docs,
+      nextCursor,
+    })
+  } catch (error) {
+    server.log.error('Error fetching agent creations', error)
+    if ((error as any).name === 'CastError') {
+      return reply.status(400).send({ message: 'Invalid parameter format' })
+    }
+    return reply.status(500).send({ message: 'Internal server error' })
+  }
+}
+
 // Update agent permissions
 export const updateAgentPermissions = async (
   request: FastifyRequest,
@@ -2206,5 +2430,251 @@ export const updateUserMemoryEnabled = async (
   } catch (error) {
     server.log.error('Error updating user memory enabled status:', error)
     return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
+
+// Get dashboard data for an agent
+export const getDashboardData = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  console.log('[Backend Dashboard] Starting getDashboardData')
+
+  const { agentId } = request.params as { agentId: string }
+  const userId = request.user?.userId
+  const { startDate, endDate } = request.query as {
+    startDate?: string
+    endDate?: string
+  }
+
+  console.log(
+    `[Backend Dashboard] Params - agentId: ${agentId}, userId: ${userId}`,
+  )
+  console.log(
+    `[Backend Dashboard] Query - startDate: ${startDate}, endDate: ${endDate}`,
+  )
+
+  if (!userId) {
+    console.log('[Backend Dashboard] Error: User not authenticated')
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    console.log('[Backend Dashboard] Step 1: Validating agent access')
+    // Validate agent access
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error || !agent) {
+      console.log(`[Backend Dashboard] Agent validation failed: ${error}`)
+      return reply.status(404).send({ error })
+    }
+    console.log(
+      `[Backend Dashboard] Agent validation successful: ${agent.name}`,
+    )
+
+    console.log('[Backend Dashboard] Step 2: Checking permissions')
+
+    // Log agent owner information
+    console.log(`[Backend Dashboard] Agent owner ID: ${agent.owner}`)
+    console.log(`[Backend Dashboard] Current user ID: ${userId}`)
+    console.log(
+      `[Backend Dashboard] Agent owner toString: ${agent.owner.toString()}`,
+    )
+    console.log(`[Backend Dashboard] User ID toString: ${userId.toString()}`)
+
+    // Check if user has edit access (using same permission logic as memory endpoints)
+    const isOwner = await hasOwnerPermissions(agentId, userId.toString())
+    console.log(`[Backend Dashboard] Is owner: ${isOwner}`)
+
+    const hasPermission = await AgentPermission.findOne({
+      agent: agentId,
+      user: userId,
+      level: { $in: [PermissionLevel.Owner, PermissionLevel.Editor] },
+    })
+    console.log(`[Backend Dashboard] Has permission record: ${!!hasPermission}`)
+    if (hasPermission) {
+      console.log(
+        `[Backend Dashboard] Permission level: ${hasPermission.level}`,
+      )
+    }
+
+    // Let's also check what hasOwnerPermissions function does internally
+    const agentForOwnerCheck = await Agent.findById(agentId)
+    if (agentForOwnerCheck) {
+      console.log(
+        `[Backend Dashboard] Agent owner from DB: ${agentForOwnerCheck.owner}`,
+      )
+      console.log(
+        `[Backend Dashboard] Owner comparison: ${
+          agentForOwnerCheck.owner.toString() === userId.toString()
+        }`,
+      )
+    }
+
+    const hasEditAccess = isOwner || !!hasPermission
+    console.log(`[Backend Dashboard] Final edit access: ${hasEditAccess}`)
+
+    if (!hasEditAccess) {
+      console.log(
+        '[Backend Dashboard] Access denied - insufficient permissions',
+      )
+      return reply.status(403).send({
+        error:
+          'You do not have permission to view dashboard data for this agent',
+      })
+    }
+
+    console.log('[Backend Dashboard] Step 3: Setting up date range')
+    // Default date range: last 30 days
+    const now = new Date()
+    const defaultStartDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const start = startDate ? new Date(startDate) : defaultStartDate
+    const end = endDate ? new Date(endDate) : now
+
+    console.log(
+      `[Backend Dashboard] Date range: ${start.toISOString()} to ${end.toISOString()}`,
+    )
+
+    console.log('[Backend Dashboard] Step 4: Converting agent ID to ObjectId')
+    // Convert agentId to ObjectId for query
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+    console.log(`[Backend Dashboard] Agent ObjectId: ${agentObjectId}`)
+
+    console.log('[Backend Dashboard] Step 5: Running MongoDB aggregation')
+    // Test basic session count first
+    const sessionCount = await Session.countDocuments({
+      agents: agentObjectId,
+      createdAt: { $gte: start, $lte: end },
+    })
+    console.log(
+      `[Backend Dashboard] Total sessions in date range: ${sessionCount}`,
+    )
+
+    // Session activity aggregation with simplified approach
+    console.log('[Backend Dashboard] Running full aggregation pipeline...')
+    const sessionActivity = await Session.aggregate([
+      {
+        $match: {
+          agents: agentObjectId,
+          createdAt: { $gte: start, $lte: end },
+          $or: [{ deleted: { $exists: false } }, { deleted: false }],
+        },
+      },
+      {
+        $lookup: {
+          from: 'messages',
+          localField: 'messages',
+          foreignField: '_id',
+          as: 'messageDetails',
+        },
+      },
+      {
+        $addFields: {
+          date: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+          },
+          platform: {
+            $cond: {
+              if: { $eq: ['$channel', null] },
+              then: 'null',
+              else: { $ifNull: ['$channel', 'null'] },
+            },
+          },
+          userMessageCount: {
+            $size: {
+              $filter: {
+                input: '$messageDetails',
+                cond: { $eq: ['$$this.role', 'user'] },
+              },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { date: '$date', platform: '$platform' },
+          totalUserMessages: { $sum: '$userMessageCount' },
+          sessionCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { '_id.date': 1, '_id.platform': 1 },
+      },
+    ])
+
+    console.log(
+      `[Backend Dashboard] Aggregation completed. Found ${sessionActivity.length} activity records`,
+    )
+
+    console.log('[Backend Dashboard] Step 6: Processing data')
+    // Generate complete date range with zero values for missing dates
+    const dateRange = []
+    const currentDate = new Date(start)
+    const endDateObj = new Date(end)
+
+    while (currentDate <= endDateObj) {
+      dateRange.push(currentDate.toISOString().split('T')[0])
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+    console.log(
+      `[Backend Dashboard] Generated ${dateRange.length} dates in range`,
+    )
+
+    // Get unique platforms from the data
+    const platforms = [
+      ...new Set(sessionActivity.map(item => item._id.platform)),
+    ]
+    if (platforms.length === 0) platforms.push('web') // Ensure at least one platform
+    console.log(`[Backend Dashboard] Found platforms: ${platforms.join(', ')}`)
+
+    // Fill in missing date/platform combinations with zero values
+    const completeData = []
+    for (const date of dateRange) {
+      for (const platform of platforms) {
+        const existing = sessionActivity.find(
+          item => item._id.date === date && item._id.platform === platform,
+        )
+        completeData.push({
+          date,
+          platform,
+          totalUserMessages: existing?.totalUserMessages || 0,
+          sessionCount: existing?.sessionCount || 0,
+        })
+      }
+    }
+
+    console.log(
+      `[Backend Dashboard] Returning ${completeData.length} data points for ${platforms.length} platforms`,
+    )
+
+    const responseData = {
+      sessionActivity: completeData,
+      dateRange: {
+        start: start.toISOString().split('T')[0],
+        end: end.toISOString().split('T')[0],
+      },
+      platforms,
+    }
+
+    console.log('[Backend Dashboard] Success - sending response')
+    return reply.status(200).send(responseData)
+  } catch (error) {
+    console.error('[Backend Dashboard] ERROR in getDashboardData:', error)
+
+    // Log detailed error information
+    if (error && typeof error === 'object') {
+      console.error('[Backend Dashboard] Error details:', {
+        name: (error as any).name,
+        message: (error as any).message,
+        stack: (error as any).stack,
+        code: (error as any).code,
+      })
+    }
+
+    server.log.error('Error fetching dashboard data:', error)
+    return reply.status(500).send({
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    })
   }
 }

@@ -1,9 +1,13 @@
 'use client'
 
-import CreationsFeed from '@/features/feed/creations-feed'
+import CreationsFeed, {
+  CreationsFeedHandle,
+} from '@/features/feed/creations-feed'
 import { cn } from '@/lib/utils'
 import { Agent, Creator } from '@edenlabs/eden-sdk'
-import { FC, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as React from 'react'
 
 const AgentCreationsView: FC<{
@@ -11,6 +15,9 @@ const AgentCreationsView: FC<{
   user?: Creator
 }> = ({ agent, user }) => {
   const [filterMode, setFilterMode] = useState<'mine' | 'all'>('mine')
+  const router = useRouter()
+  const pathname = usePathname()
+  const creationsFeedRef = useRef<CreationsFeedHandle>(null)
 
   // Construct the query for RecentCreationsFeed based on filterMode
   const recentCreationsQuery = useMemo(() => {
@@ -21,6 +28,46 @@ const AgentCreationsView: FC<{
     }
     return baseAgentQuery
   }, [agent, filterMode, user?._id])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle navigation if we're viewing a creation modal
+      if (!pathname?.startsWith('/creations/')) return
+
+      const creationId = pathname.split('/creations/')[1]
+      if (!creationId || !creationsFeedRef.current) return
+
+      let targetId: string | null = null
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        targetId = creationsFeedRef.current.getAdjacentCreationId(
+          creationId,
+          'prev',
+        )
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        targetId = creationsFeedRef.current.getAdjacentCreationId(
+          creationId,
+          'next',
+        )
+      }
+
+      if (targetId) {
+        router.push(`/creations/${targetId}`)
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [pathname, router])
+  const handleCreationNavigation = useCallback(
+    (creationId: string) => {
+      // This could be used for programmatic navigation if needed
+      router.push(`/creations/${creationId}`)
+    },
+    [router],
+  )
 
   const showFilterTabs = !!user
 
@@ -66,6 +113,7 @@ const AgentCreationsView: FC<{
             minCols={1}
             maxCols={8}
             showSkeleton
+            onNavigate={handleCreationNavigation}
           />
         </div>
       </div>

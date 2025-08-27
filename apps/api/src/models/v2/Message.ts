@@ -6,6 +6,7 @@ import {
   EdenMessageData,
   MessageReaction,
   MessageRole,
+  Thought,
   ToolCall,
 } from '@edenlabs/eden-sdk'
 import { Schema, model } from 'mongoose'
@@ -21,10 +22,10 @@ export interface MessageSchema {
   tool_call_id?: string
   channel?: Channel
   reply_to?: MessageDocument
-  sender_name?: string
   reactions?: MessageReaction
   attachments?: string[]
   tool_calls?: ToolCall[]
+  thought?: Thought[]
   createdAt?: Date
   updatedAt?: Date
 }
@@ -66,12 +67,12 @@ const messageSchema = new Schema<MessageDocument>(
     tool_calls: {
       type: [Schema.Types.Mixed],
     },
+    thought: {
+      type: [Schema.Types.Mixed],
+    },
     reply_to: {
       type: Schema.Types.ObjectId,
       ref: 'messages',
-    },
-    sender_name: {
-      type: String,
     },
     attachments: {
       type: [String],
