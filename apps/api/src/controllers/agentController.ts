@@ -33,6 +33,8 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { UpdateResult } from 'mongodb'
 import { UpdateQuery } from 'mongoose'
 
+//import { t } from 'tar'
+
 // Helper function to check if user has owner-level permissions
 const hasOwnerPermissions = async (
   agentId: string,
@@ -1982,6 +1984,9 @@ export const getAgentCreations = async (
       match.$or = [{ user: authUserId }, { public: true }]
     }
 
+    // Get total count of matching creations (for pagination UI)
+    const totalDocs = await CreationV2.countDocuments(match)
+
     const docs = await CreationV2.find(match)
       .sort({ _id: -1 })
       .limit(parsedLimit)
@@ -2025,6 +2030,7 @@ export const getAgentCreations = async (
     return reply.status(200).send({
       docs,
       nextCursor,
+      totalDocs,
     })
   } catch (error) {
     server.log.error('Error fetching agent creations', error)
