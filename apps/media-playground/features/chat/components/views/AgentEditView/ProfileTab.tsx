@@ -2,6 +2,7 @@
 
 import { ProfileImageUploader } from '../../profile-image-uploader'
 import { AGENT_FIELD_GUIDANCE, AGENT_FIELD_LIMITS } from '../agent-constants'
+import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
 import {
   FormControl,
@@ -22,8 +23,10 @@ import {
 } from '@/components/ui/tooltip'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { Agent } from '@edenlabs/eden-sdk'
+import { Copy } from 'lucide-react'
 import { FC } from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -42,11 +45,16 @@ interface ProfileTabProps {
 }
 
 export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(agent._id)
+    toast.success('Agent ID copied to clipboard')
+  }
+
   return (
     <div className="space-y-8">
       <div>
         {/* Combined Profile Section */}
-        <div className="p-6 bg-card rounded-xl border border-border mb-6">
+        <div className="p-6 bg-card rounded-xl border border-border mb-6 relative">
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Profile Image */}
             <div className="flex-shrink-0">
@@ -125,6 +133,22 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                 )}
               />
             </div>
+          </div>
+
+          {/* Agent ID Display */}
+          <div className="absolute bottom-6 right-6 flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              ID: {agent._id}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={handleCopyId}
+            >
+              <Copy className="h-3 w-3" />
+            </Button>
           </div>
         </div>
 
