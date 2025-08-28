@@ -202,7 +202,8 @@ export const OtherMessage = ({
                       className="text-xs underline text-muted-foreground hover:text-foreground"
                       onClick={() => setExpanded(true)}
                     >
-                      Show full message ({contentLen.toLocaleString()} chars)
+                      Show full message ({contentLen.toLocaleString()}{' '}
+                      characters)
                     </button>
                   </div>
                 )}
