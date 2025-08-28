@@ -454,7 +454,7 @@ const Session = ({
     <>
       <div
         className={cn(
-          'flex-1 pb-4',
+          'flex-1 min-h-0 overflow-y-auto pb-4',
           messageGroups.length === 0 &&
             'flex flex-col justify-center items-center',
         )}

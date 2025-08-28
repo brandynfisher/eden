@@ -31,6 +31,13 @@ export const OtherMessage = ({
   const [optimisticallyCancelled, setOptimisticallyCancelled] = useState<
     Set<string>
   >(new Set())
+  const [expanded, setExpanded] = useState(false)
+  const contentLen = message.content?.length ?? 0
+  const isHuge = contentLen > 40000 // character threshold
+  const previewLimit = 8000 // render a safe preview chunk
+  const preview = isHuge
+    ? message.content!.slice(0, previewLimit)
+    : message.content
 
   // Clean up optimistic state when backend confirms cancellation
   useEffect(() => {
@@ -181,7 +188,34 @@ export const OtherMessage = ({
             </div>
           </LightboxGallery>
         )}
-        {!isEmpty && <MarkdownText>{message.content}</MarkdownText>}
+
+        {!isEmpty && (
+          <>
+            {/* Preview */}
+            {!expanded && (
+              <div className="whitespace-pre-wrap break-words break-all overflow-x-auto relative">
+                <MarkdownText>{preview!}</MarkdownText>
+                {isHuge && (
+                  <div className="mt-2 flex">
+                    <button
+                      type="button"
+                      className="text-xs underline text-muted-foreground hover:text-foreground"
+                      onClick={() => setExpanded(true)}
+                    >
+                      Show full message ({contentLen.toLocaleString()} chars)
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Full (own scroll) */}
+            {expanded && (
+              <div className="whitespace-pre-wrap break-words break-all overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
+                <MarkdownText>{message.content!}</MarkdownText>
+              </div>
+            )}
+          </>
+        )}
         {message.tool_calls &&
           message.tool_calls.length > 0 &&
           message.tool_calls.map(toolCall => {
