@@ -736,6 +736,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
         200: Type.Object({
           docs: Type.Array(Type.Any()),
           nextCursor: Type.Optional(Type.String()),
+          totalDocs: Type.Number(),
         }),
         400: Type.Object({ message: Type.String() }),
         401: Type.Object({ message: Type.String() }),
