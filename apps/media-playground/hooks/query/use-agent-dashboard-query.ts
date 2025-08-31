@@ -8,13 +8,40 @@ export interface SessionActivityData {
   sessionCount: number
 }
 
+export interface MessageActivityData {
+  date: string
+  platform: string
+  messageCount: number
+}
+
+export interface UserStatsData {
+  username: string
+  messageCount: number
+}
+
+export interface MessageDataItem {
+  _id: string
+  platform: string
+  role: string
+  username: string
+  timestamp: string
+  date: string
+  sender: string
+}
+
 export interface DashboardData {
+  // Backward compatibility
   sessionActivity: SessionActivityData[]
+  // New enhanced data
+  messageActivity: MessageActivityData[]
+  userStats: UserStatsData[]
+  messageDataList: MessageDataItem[]
   dateRange: {
     start: string
     end: string
   }
   platforms: string[]
+  roles: string[]
 }
 
 export interface UseAgentDashboardQueryOptions {
@@ -38,9 +65,22 @@ export const useAgentDashboardQuery = ({
     queryParams.toString() ? `?${queryParams.toString()}` : ''
   }`
 
+  console.log('[useAgentDashboardQuery] URL:', url)
+  console.log('[useAgentDashboardQuery] Query params:', {
+    agentId,
+    startDate,
+    endDate,
+  })
+  console.log('[useAgentDashboardQuery] Query enabled:', enabled && !!agentId)
+
   return useQuery<DashboardData>({
     queryKey: ['agents', agentId, 'dashboard', startDate, endDate],
-    queryFn: () => fetcher(url),
+    queryFn: async (): Promise<DashboardData> => {
+      console.log('[useAgentDashboardQuery] Fetching data from:', url)
+      const result = await fetcher(url)
+      console.log('[useAgentDashboardQuery] Received result:', result)
+      return result as DashboardData
+    },
     enabled: enabled && !!agentId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   })

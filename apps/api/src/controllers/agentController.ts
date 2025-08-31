@@ -365,6 +365,8 @@ export const updateAgent = async (
     })
   }
 
+  updateData.user_memory_enabled = agentToCheck.user_memory_enabled
+
   try {
     result = await Agent.updateOne(
       {

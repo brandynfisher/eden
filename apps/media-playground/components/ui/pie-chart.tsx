@@ -1,0 +1,164 @@
+'use client'
+
+import { cn } from '@/lib/utils'
+import { FC, useMemo } from 'react'
+
+interface PieChartProps {
+  data: Array<{
+    label: string
+    value: number
+    color?: string
+  }>
+  width?: number
+  height?: number
+  className?: string
+  showLabels?: boolean
+  showValues?: boolean
+}
+
+const DEFAULT_COLORS = [
+  '#3b82f6', // blue-500
+  '#ef4444', // red-500
+  '#22c55e', // green-500
+  '#f59e0b', // amber-500
+  '#8b5cf6', // violet-500
+  '#ec4899', // pink-500
+  '#06b6d4', // cyan-500
+  '#84cc16', // lime-500
+  '#f97316', // orange-500
+  '#6366f1', // indigo-500
+]
+
+const PieChart: FC<PieChartProps> = ({
+  data,
+  width = 200,
+  height = 200,
+  className,
+  showLabels = true,
+  showValues = true,
+}) => {
+  console.log('[PieChart] Received data:', data)
+  const processedData = useMemo(() => {
+    const total = data.reduce((sum, item) => sum + item.value, 0)
+    if (total === 0) return []
+
+    let currentAngle = 0
+    return data.map((item, index) => {
+      const percentage = (item.value / total) * 100
+      const angle = (item.value / total) * 360
+      const startAngle = currentAngle
+      const endAngle = currentAngle + angle
+
+      // Calculate path for arc
+      const centerX = width / 2
+      const centerY = height / 2
+      const radius = Math.min(width, height) / 2 - 10
+
+      const startAngleRad = (startAngle * Math.PI) / 180
+      const endAngleRad = (endAngle * Math.PI) / 180
+
+      const x1 = centerX + radius * Math.cos(startAngleRad)
+      const y1 = centerY + radius * Math.sin(startAngleRad)
+      const x2 = centerX + radius * Math.cos(endAngleRad)
+      const y2 = centerY + radius * Math.sin(endAngleRad)
+
+      const largeArcFlag = angle > 180 ? 1 : 0
+
+      const pathData = [
+        `M ${centerX} ${centerY}`,
+        `L ${x1} ${y1}`,
+        `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+        'Z',
+      ].join(' ')
+
+      // Calculate label position
+      const labelAngle = startAngle + angle / 2
+      const labelAngleRad = (labelAngle * Math.PI) / 180
+      const labelRadius = radius * 0.7
+      const labelX = centerX + labelRadius * Math.cos(labelAngleRad)
+      const labelY = centerY + labelRadius * Math.sin(labelAngleRad)
+
+      currentAngle += angle
+
+      return {
+        ...item,
+        pathData,
+        percentage,
+        color: item.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
+        labelX,
+        labelY,
+        angle,
+      }
+    })
+  }, [data, width, height])
+
+  if (processedData.length === 0) {
+    return (
+      <div
+        className={cn(
+          'flex items-center justify-center bg-muted rounded-lg',
+          className,
+        )}
+        style={{ width, height }}
+      >
+        <span className="text-muted-foreground text-sm">No data available</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className={cn('relative', className)} style={{ width, height }}>
+      <svg width={width} height={height} className="overflow-visible">
+        {processedData.map((item, index) => (
+          <g key={index}>
+            {/* Pie slice */}
+            <path
+              d={item.pathData}
+              fill={item.color}
+              stroke="white"
+              strokeWidth={2}
+              className="transition-all duration-200 hover:opacity-80"
+            />
+
+            {/* Label */}
+            {showLabels &&
+              item.percentage > 5 && ( // Only show labels for slices > 5%
+                <text
+                  x={item.labelX}
+                  y={item.labelY}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="text-xs fill-white font-medium"
+                  style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}
+                >
+                  {showValues ? `${Math.round(item.percentage)}%` : item.label}
+                </text>
+              )}
+          </g>
+        ))}
+      </svg>
+
+      {/* Legend */}
+      {showLabels && (
+        <div className="absolute -right-4 top-0 translate-x-full space-y-1">
+          {processedData.map((item, index) => (
+            <div key={index} className="flex items-center gap-2 text-sm">
+              <div
+                className="w-3 h-3 rounded-sm"
+                style={{ backgroundColor: item.color }}
+              />
+              <span className="text-foreground truncate max-w-[120px]">
+                {item.label}
+              </span>
+              <span className="text-muted-foreground ml-auto">
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default PieChart

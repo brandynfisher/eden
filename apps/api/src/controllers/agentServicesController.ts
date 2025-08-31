@@ -2,6 +2,8 @@ import { Agent } from '../models/Agent'
 import { AgentPermission, PermissionLevel } from '../models/AgentPermission'
 import { Deployment } from '../models/Deployment'
 import { Trigger } from '../models/Trigger'
+import { User } from '../models/User'
+import { Message } from '../models/v2/Message'
 import { Session } from '../models/v2/SessionV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
@@ -905,79 +907,155 @@ export const getDashboardData = async (
       `[Backend Dashboard] Date range: ${start.toISOString()} to ${end.toISOString()}`,
     )
 
-    console.log('[Backend Dashboard] Step 5: Converting agent ID to ObjectId')
+    console.log('[Backend Dashboard] Step 4: Converting agent ID to ObjectId')
     // Convert agentId to ObjectId for query
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
     console.log(`[Backend Dashboard] Agent ObjectId: ${agentObjectId}`)
 
-    console.log('[Backend Dashboard] Step 5: Running MongoDB aggregation')
-    // Test basic session count first
-    const sessionCount = await Session.countDocuments({
+    console.log(
+      '[Backend Dashboard] Step 5: Query 1 - Getting sessions for agent',
+    )
+    // Query 1: Get all sessions containing this agent
+    const sessions = await Session.find({
       agents: agentObjectId,
-      createdAt: { $gte: start, $lte: end },
+      $or: [{ deleted: { $exists: false } }, { deleted: false }],
+    }).select('_id platform messages')
+
+    console.log(
+      `[Backend Dashboard] Found ${sessions.length} sessions for agent`,
+    )
+
+    if (sessions.length === 0) {
+      console.log('[Backend Dashboard] No sessions found, returning empty data')
+      return reply.status(200).send({
+        messageActivity: [],
+        userStats: [],
+        dateRange: {
+          start: start.toISOString().split('T')[0],
+          end: end.toISOString().split('T')[0],
+        },
+        platforms: ['web'],
+      })
+    }
+
+    console.log(
+      '[Backend Dashboard] Step 6: Query 2 - Getting messages from sessions',
+    )
+    // Query 2: Extract all message IDs from sessions and query messages collection
+    const allMessageIds: string[] = []
+    const sessionPlatformMap = new Map<string, string>()
+
+    const sessionPlatforms = new Set<string>()
+    sessions.forEach(session => {
+      // Store platform for each session - handle potential missing platform field
+      const sessionData = session as any
+      const platform = sessionData.platform || 'web'
+      sessionPlatforms.add(platform)
+      sessionPlatformMap.set(session._id.toString(), platform)
+      // Collect all message IDs from this session
+      if (session.messages && Array.isArray(session.messages)) {
+        allMessageIds.push(...session.messages.map(msg => msg.toString()))
+      }
     })
-    console.log(
-      `[Backend Dashboard] Total sessions in date range: ${sessionCount}`,
-    )
-
-    // Session activity aggregation with simplified approach
-    console.log('[Backend Dashboard] Running full aggregation pipeline...')
-    const sessionActivity = await Session.aggregate([
-      {
-        $match: {
-          agents: agentObjectId,
-          createdAt: { $gte: start, $lte: end },
-          $or: [{ deleted: { $exists: false } }, { deleted: false }],
-        },
-      },
-      {
-        $lookup: {
-          from: 'messages',
-          localField: 'messages',
-          foreignField: '_id',
-          as: 'messageDetails',
-        },
-      },
-      {
-        $addFields: {
-          date: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
-          },
-          platform: {
-            $cond: {
-              if: { $eq: ['$platform', null] },
-              then: 'web',
-              else: { $ifNull: ['$platform', 'web'] },
-            },
-          },
-          userMessageCount: {
-            $size: {
-              $filter: {
-                input: '$messageDetails',
-                cond: { $eq: ['$$this.role', 'user'] },
-              },
-            },
-          },
-        },
-      },
-      {
-        $group: {
-          _id: { date: '$date', platform: '$platform' },
-          totalUserMessages: { $sum: '$userMessageCount' },
-          sessionCount: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { '_id.date': 1, '_id.platform': 1 },
-      },
-    ])
 
     console.log(
-      `[Backend Dashboard] Aggregation completed. Found ${sessionActivity.length} activity records`,
+      `[Backend Dashboard] Session platforms found:`,
+      Array.from(sessionPlatforms),
     )
 
-    console.log('[Backend Dashboard] Step 6: Processing data')
-    // Generate complete date range with zero values for missing dates
+    console.log(
+      `[Backend Dashboard] Collected ${allMessageIds.length} message IDs from sessions`,
+    )
+
+    // Query messages collection with the collected message IDs, filtered by date range
+    const messages = await Message.find({
+      _id: { $in: allMessageIds },
+      createdAt: { $gte: start, $lte: end },
+    }).select('_id session sender role name createdAt')
+
+    console.log(
+      `[Backend Dashboard] Found ${messages.length} messages in date range`,
+    )
+
+    // Process messages and collect unique sender IDs
+    const uniqueSenderIds = new Set()
+    const processedMessages = messages.map(message => {
+      const senderId = message.sender.toString()
+      uniqueSenderIds.add(senderId)
+
+      return {
+        _id: message._id,
+        session: message.session,
+        sender: message.sender,
+        role: message.role || message.name || 'unknown',
+        createdAt: message.createdAt,
+        platform: sessionPlatformMap.get(message.session.toString()) || 'web',
+      }
+    })
+
+    console.log(
+      `[Backend Dashboard] Processed ${processedMessages.length} messages with ${uniqueSenderIds.size} unique senders`,
+    )
+
+    console.log(
+      '[Backend Dashboard] Step 7: Query 3 - Getting usernames for sender IDs',
+    )
+    // Query 3: Get usernames from users3 collection for all sender IDs
+    const users = await User.find({
+      _id: { $in: Array.from(uniqueSenderIds) },
+    }).select('_id username')
+
+    // Create mapping from user ID to username
+    const userIdToUsernameMap = new Map()
+    users.forEach(user => {
+      userIdToUsernameMap.set(user._id.toString(), user.username || 'unknown')
+    })
+
+    console.log(
+      `[Backend Dashboard] Retrieved usernames for ${users.length} users`,
+    )
+
+    console.log('[Backend Dashboard] Step 8: Aggregating final message data')
+    // Create final message data list with all required fields
+    const messageDataList = processedMessages.map(message => ({
+      _id: message._id.toString(),
+      platform: message.platform,
+      role: message.role,
+      username: userIdToUsernameMap.get(message.sender.toString()) || 'unknown',
+      timestamp: message.createdAt || new Date(),
+      date: (message.createdAt || new Date()).toISOString().split('T')[0],
+      sender: message.sender.toString(),
+    }))
+
+    console.log('[Backend Dashboard] Step 9: Processing data for charts')
+    // Process data for bar chart (messages by date and platform)
+    const messagesByDatePlatform = new Map()
+    const userMessageCounts = new Map()
+    const platforms = new Set() // Don't pre-populate, let data drive platform detection
+    const roles = new Set()
+
+    messageDataList.forEach(message => {
+      const { date, platform, role, username } = message
+
+      // Track platforms and roles
+      platforms.add(platform)
+      roles.add(role)
+
+      // Count messages by date and platform
+      const key = `${date}-${platform}`
+      if (!messagesByDatePlatform.has(key)) {
+        messagesByDatePlatform.set(key, { date, platform, count: 0 })
+      }
+      messagesByDatePlatform.get(key).count++
+
+      // Count messages by username for pie chart
+      userMessageCounts.set(
+        username,
+        (userMessageCounts.get(username) || 0) + 1,
+      )
+    })
+
+    // Generate complete date range for bar chart
     const dateRange = []
     const currentDate = new Date(start)
     const endDateObj = new Date(end)
@@ -986,25 +1064,87 @@ export const getDashboardData = async (
       dateRange.push(currentDate.toISOString().split('T')[0])
       currentDate.setDate(currentDate.getDate() + 1)
     }
+
+    // Use the platforms actually found in the data, fallback to sessionPlatforms, then ['web']
+    let platformArray = Array.from(platforms)
+    if (platformArray.length === 0) {
+      platformArray = Array.from(sessionPlatforms)
+    }
+    if (platformArray.length === 0) {
+      platformArray = ['web']
+    }
+
+    console.log(`[Backend Dashboard] Final platform array:`, platformArray)
+
+    // Fill in missing date/platform combinations with zero values for bar chart
+    const messageActivity = []
+
+    for (const date of dateRange) {
+      for (const platform of platformArray) {
+        const key = `${date}-${platform}`
+        const existing = messagesByDatePlatform.get(key)
+        messageActivity.push({
+          date,
+          platform,
+          messageCount: existing?.count || 0,
+        })
+      }
+    }
+
+    // Convert user message counts to array format for pie chart
+    const userStats = Array.from(userMessageCounts.entries())
+      .map(([username, count]) => ({ username, messageCount: count }))
+      .sort((a, b) => b.messageCount - a.messageCount) // Sort by message count descending
+
     console.log(
-      `[Backend Dashboard] Generated ${dateRange.length} dates in range`,
+      `[Backend Dashboard] Returning ${
+        messageActivity.length
+      } message activity points, ${userStats.length} user stats for ${
+        platformArray.length
+      } platforms and ${Array.from(roles).length} roles`,
     )
 
-    // Get unique platforms from the data
-    const platforms = [
-      ...new Set(sessionActivity.map(item => item._id.platform)),
-    ]
-    if (platforms.length === 0) platforms.push('web') // Ensure at least one platform
-    console.log(`[Backend Dashboard] Found platforms: ${platforms.join(', ')}`)
+    // Debug logs for data structure
+    console.log(
+      '[Backend Dashboard] Sample messageActivity:',
+      JSON.stringify(messageActivity.slice(0, 3), null, 2),
+    )
+    console.log(
+      '[Backend Dashboard] Sample userStats:',
+      JSON.stringify(userStats.slice(0, 3), null, 2),
+    )
+    console.log(
+      '[Backend Dashboard] Sample messageDataList:',
+      JSON.stringify(messageDataList.slice(0, 3), null, 2),
+    )
+    console.log('[Backend Dashboard] Platforms:', platformArray)
+    console.log('[Backend Dashboard] Roles:', Array.from(roles))
 
-    // Fill in missing date/platform combinations with zero values
-    const completeData = []
+    // For backward compatibility, also create sessionActivity with the old format
+    // This aggregates messages back to the session level for existing frontend code
+    const sessionActivityMap = new Map()
+    messageDataList.forEach(message => {
+      const key = `${message.date}-${message.platform}`
+      if (!sessionActivityMap.has(key)) {
+        sessionActivityMap.set(key, {
+          date: message.date,
+          platform: message.platform,
+          totalUserMessages: 0,
+          sessionCount: 0,
+        })
+      }
+      if (message.role === 'user') {
+        sessionActivityMap.get(key).totalUserMessages++
+      }
+    })
+
+    // Fill in missing dates for sessionActivity (backward compatibility)
+    const sessionActivity = []
     for (const date of dateRange) {
-      for (const platform of platforms) {
-        const existing = sessionActivity.find(
-          item => item._id.date === date && item._id.platform === platform,
-        )
-        completeData.push({
+      for (const platform of platformArray) {
+        const key = `${date}-${platform}`
+        const existing = sessionActivityMap.get(key)
+        sessionActivity.push({
           date,
           platform,
           totalUserMessages: existing?.totalUserMessages || 0,
@@ -1013,17 +1153,19 @@ export const getDashboardData = async (
       }
     }
 
-    console.log(
-      `[Backend Dashboard] Returning ${completeData.length} data points for ${platforms.length} platforms`,
-    )
-
     const responseData = {
-      sessionActivity: completeData,
+      // Backward compatibility fields
+      sessionActivity, // Old format for existing frontend
+      // New enhanced data
+      messageActivity, // New format showing all messages by actual timestamp
+      userStats, // Pie chart data for user message counts
+      messageDataList, // Raw message data for advanced filtering
       dateRange: {
         start: start.toISOString().split('T')[0],
         end: end.toISOString().split('T')[0],
       },
-      platforms,
+      platforms: platformArray,
+      roles: Array.from(roles),
     }
 
     console.log('[Backend Dashboard] Success - sending response')
