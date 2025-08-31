@@ -47,10 +47,10 @@ export const UserMessage = ({
         )}
         {hasContent && (
           <div className="aui-user-message-content">
-            <div className="whitespace-pre-wrap break-words break-all overflow-x-auto">
+            <div className="overflow-x-auto">
               {/* Preview */}
               {!expanded && (
-                <div className="whitespace-pre-wrap break-words break-all overflow-x-auto relative">
+                <div className="overflow-x-auto relative">
                   <MarkdownText>{preview!}</MarkdownText>
                   {isHuge && (
                     <div className="mt-2 flex">
@@ -68,7 +68,7 @@ export const UserMessage = ({
               )}
               {/* Full (own scroll) */}
               {expanded && (
-                <div className="whitespace-pre-wrap break-words break-all overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
+                <div className="overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
                   <MarkdownText>{message.content!}</MarkdownText>
                 </div>
               )}
