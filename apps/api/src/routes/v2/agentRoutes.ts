@@ -701,11 +701,29 @@ const agentRoutes: FastifyPluginAsync = async server => {
               sessionCount: Type.Number(),
             }),
           ),
+          messageActivity: Type.Optional(
+            Type.Array(
+              Type.Object({
+                date: Type.String(),
+                platform: Type.String(),
+                messageCount: Type.Number(),
+              }),
+            ),
+          ),
+          userStats: Type.Optional(
+            Type.Array(
+              Type.Object({
+                username: Type.String(),
+                messageCount: Type.Number(),
+              }),
+            ),
+          ),
           dateRange: Type.Object({
             start: Type.String(),
             end: Type.String(),
           }),
           platforms: Type.Array(Type.String()),
+          roles: Type.Optional(Type.Array(Type.String())),
         },
       },
     },

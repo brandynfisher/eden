@@ -11,6 +11,8 @@ export const UserMessage = ({
   message: Message
   session?: SessionV2
 }) => {
+  const [expanded, setExpanded] = useState(false)
+
   const hasAttachments = message.attachments && message.attachments.length > 0
   const hasContent = message.content && message.content.trim().length > 0
 
@@ -20,8 +22,6 @@ export const UserMessage = ({
   const isMultiAgentSession = session?.agents && session.agents.length > 1
   const hasMentions = message.content && /@\S+/.test(message.content)
   const shouldShowTip = isMultiAgentSession && !hasMentions
-
-  const [expanded, setExpanded] = useState(false)
   const contentLen = message.content?.length ?? 0
   const isHuge = contentLen > 40000 // character threshold
   const previewLimit = 8000 // render a safe preview chunk

@@ -256,6 +256,8 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     setEditingGuide(guide)
     setEditingField(field)
     form.setValue(field, guide[field] || '')
+    // Set is_active to the current guide's value to prevent accidental overwrites
+    form.setValue('is_active', guide.is_active || false)
     setIsEditModalOpen(true)
   }
 
