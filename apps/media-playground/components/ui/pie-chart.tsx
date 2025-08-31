@@ -1,7 +1,8 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { FC, useMemo } from 'react'
+import { FC, useMemo, useState } from 'react'
+import React from 'react'
 
 interface PieChartProps {
   data: Array<{
@@ -38,6 +39,9 @@ const PieChart: FC<PieChartProps> = ({
   showValues = true,
 }) => {
   console.log('[PieChart] Received data:', data)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+
   const processedData = useMemo(() => {
     const total = data.reduce((sum, item) => sum + item.value, 0)
     if (total === 0) return []
@@ -106,6 +110,19 @@ const PieChart: FC<PieChartProps> = ({
     )
   }
 
+  const handleMouseMove = (e: React.MouseEvent, index: number) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setMousePosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+    setHoveredIndex(index)
+  }
+
+  const handleMouseLeave = () => {
+    setHoveredIndex(null)
+  }
+
   return (
     <div className={cn('relative', className)} style={{ width, height }}>
       <svg width={width} height={height} className="overflow-visible">
@@ -117,7 +134,9 @@ const PieChart: FC<PieChartProps> = ({
               fill={item.color}
               stroke="white"
               strokeWidth={2}
-              className="transition-all duration-200 hover:opacity-80"
+              className="transition-all duration-200 hover:opacity-80 cursor-pointer"
+              onMouseMove={e => handleMouseMove(e, index)}
+              onMouseLeave={handleMouseLeave}
             />
 
             {/* Label */}
@@ -128,7 +147,7 @@ const PieChart: FC<PieChartProps> = ({
                   y={item.labelY}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className="text-xs fill-white font-medium"
+                  className="text-xs fill-white font-medium pointer-events-none"
                   style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}
                 >
                   {showValues ? `${Math.round(item.percentage)}%` : item.label}
@@ -155,6 +174,35 @@ const PieChart: FC<PieChartProps> = ({
               </span>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Tooltip */}
+      {hoveredIndex !== null && (
+        <div
+          className="absolute z-10 px-3 py-2 bg-background border border-border rounded-lg shadow-lg text-sm pointer-events-none"
+          style={{
+            left: mousePosition.x + 10,
+            top: mousePosition.y - 10,
+            transform:
+              mousePosition.x > width / 2
+                ? 'translateX(-100%)'
+                : 'translateX(0)',
+          }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <div
+              className="w-3 h-3 rounded-sm"
+              style={{ backgroundColor: processedData[hoveredIndex].color }}
+            />
+            <span className="font-medium text-foreground">
+              {processedData[hoveredIndex].label}
+            </span>
+          </div>
+          <div className="text-muted-foreground">
+            {processedData[hoveredIndex].value} messages (
+            {Math.round(processedData[hoveredIndex].percentage)}%)
+          </div>
         </div>
       )}
     </div>

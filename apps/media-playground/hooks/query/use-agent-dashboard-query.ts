@@ -35,13 +35,18 @@ export interface DashboardData {
   // New enhanced data
   messageActivity: MessageActivityData[]
   userStats: UserStatsData[]
-  messageDataList: MessageDataItem[]
   dateRange: {
     start: string
     end: string
   }
   platforms: string[]
   roles: string[]
+  activityMetadata?: {
+    oldestMessageDate?: string
+    newestMessageDate?: string
+    totalMessages: number
+    hasRecentActivityOnly: boolean
+  }
 }
 
 export interface UseAgentDashboardQueryOptions {

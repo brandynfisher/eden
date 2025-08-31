@@ -20,17 +20,35 @@ interface AgentDashboardViewProps {
 }
 
 const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
-  // Default to last 7 days
-  const defaultEndDate = new Date()
-  const defaultStartDate = new Date(
-    defaultEndDate.getTime() - 7 * 24 * 60 * 60 * 1000,
-  )
-
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: defaultStartDate,
-    to: defaultEndDate,
-  })
   const [showPlatformColors, setShowPlatformColors] = useState(true)
+
+  // Date range presets
+  const getDateRangePreset = (preset: string) => {
+    const endDate = new Date()
+    let startDate: Date
+
+    switch (preset) {
+      case 'lastWeek':
+        startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000)
+        break
+      case 'last4Weeks':
+        startDate = new Date(endDate.getTime() - 28 * 24 * 60 * 60 * 1000)
+        break
+      case 'last3Months':
+        startDate = new Date(endDate.getTime() - 90 * 24 * 60 * 60 * 1000)
+        break
+      default:
+        startDate = new Date(endDate.getTime() - 28 * 24 * 60 * 60 * 1000)
+    }
+
+    return { from: startDate, to: endDate }
+  }
+
+  // Default to last 4 weeks (will be overridden by smart defaulting)
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(
+    getDateRangePreset('last4Weeks'),
+  )
+  const [selectedPreset, setSelectedPreset] = useState<string>('last4Weeks')
 
   const startDate = dateRange?.from?.toISOString().split('T')[0]
   const endDate = dateRange?.to?.toISOString().split('T')[0]
@@ -46,55 +64,24 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
     endDate,
   })
 
-  // Debug logs for dashboard data
+  // Smart defaulting: adjust date range based on backend-calculated activity metadata (performance optimized)
   React.useEffect(() => {
-    console.log('[Frontend Dashboard] Query state:', {
-      isLoading,
-      isError,
-      error,
-    })
-    console.log('[Frontend Dashboard] Agent ID:', agent._id)
-    console.log('[Frontend Dashboard] Date range:', { startDate, endDate })
-
-    if (dashboardData) {
-      console.log('[Frontend Dashboard] Received dashboardData:', {
-        messageActivity: dashboardData.messageActivity?.length || 0,
-        userStats: dashboardData.userStats?.length || 0,
-        messageDataList: dashboardData.messageDataList?.length || 0,
-        platforms: dashboardData.platforms,
-        roles: dashboardData.roles,
-      })
-      console.log(
-        '[Frontend Dashboard] Sample messageDataList:',
-        dashboardData.messageDataList?.slice(0, 3),
-      )
-      console.log(
-        '[Frontend Dashboard] Sample messageActivity:',
-        dashboardData.messageActivity?.slice(0, 3),
-      )
-      console.log(
-        '[Frontend Dashboard] Sample userStats:',
-        dashboardData.userStats?.slice(0, 3),
-      )
-      console.log(
-        '[Frontend Dashboard] Full response keys:',
-        Object.keys(dashboardData),
-      )
-      console.log('[Frontend Dashboard] Full response:', dashboardData)
-    } else {
-      console.log('[Frontend Dashboard] dashboardData is null/undefined')
+    if (dashboardData?.activityMetadata && selectedPreset === 'last4Weeks') {
+      // Use backend-calculated metadata instead of expensive frontend processing
+      if (
+        dashboardData.activityMetadata.hasRecentActivityOnly &&
+        dashboardData.activityMetadata.totalMessages > 0
+      ) {
+        const lastWeekRange = getDateRangePreset('lastWeek')
+        setDateRange(lastWeekRange)
+        setSelectedPreset('lastWeek')
+      }
     }
-  }, [dashboardData, isLoading, isError, error, agent._id, startDate, endDate])
+  }, [dashboardData?.activityMetadata, selectedPreset])
 
   // Chart data for bar chart (use messageActivity from backend)
   const chartData = useMemo(() => {
-    console.log('[Frontend Dashboard] Computing chartData...')
-    console.log('[Frontend Dashboard] dashboardData:', dashboardData)
-
     if (!dashboardData) {
-      console.log(
-        '[Frontend Dashboard] No dashboardData, returning empty array',
-      )
       return []
     }
 
@@ -103,23 +90,12 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
       dashboardData.messageActivity &&
       dashboardData.messageActivity.length > 0
     ) {
-      console.log(
-        '[Frontend Dashboard] Using messageActivity data',
-        dashboardData.messageActivity.length,
-      )
-      const result = dashboardData.messageActivity.map(
-        (item: MessageActivityData) => ({
-          date: item.date,
-          platform: item.platform,
-          value: item.messageCount || 0,
-          label: `${item.messageCount || 0} messages`,
-        }),
-      )
-      console.log(
-        '[Frontend Dashboard] Final chartData from messageActivity:',
-        result.slice(0, 3),
-      )
-      return result
+      return dashboardData.messageActivity.map((item: MessageActivityData) => ({
+        date: item.date,
+        platform: item.platform,
+        value: item.messageCount || 0,
+        label: `${item.messageCount || 0} messages`,
+      }))
     }
 
     // Fallback to sessionActivity (backward compatibility)
@@ -127,65 +103,40 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
       dashboardData.sessionActivity &&
       dashboardData.sessionActivity.length > 0
     ) {
-      console.log(
-        '[Frontend Dashboard] Using sessionActivity fallback',
-        dashboardData.sessionActivity.length,
-      )
-      const result = dashboardData.sessionActivity.map(
-        (item: SessionActivityData) => ({
-          date: item.date,
-          platform: item.platform,
-          value: item.totalUserMessages || 0,
-          label: `${item.totalUserMessages || 0} messages`,
-        }),
-      )
-      console.log(
-        '[Frontend Dashboard] Final chartData from sessionActivity:',
-        result.slice(0, 3),
-      )
-      return result
+      return dashboardData.sessionActivity.map((item: SessionActivityData) => ({
+        date: item.date,
+        platform: item.platform,
+        value: item.totalUserMessages || 0,
+        label: `${item.totalUserMessages || 0} messages`,
+      }))
     }
 
-    console.log(
-      '[Frontend Dashboard] No valid data found, returning empty array',
-    )
     return []
   }, [dashboardData])
 
   // Pie chart data for user message distribution
   const pieChartData = useMemo(() => {
-    console.log('[Frontend Dashboard] Computing pieChartData...')
-
-    if (!dashboardData) {
-      console.log('[Frontend Dashboard] No dashboardData for pie chart')
+    if (!dashboardData?.userStats || dashboardData.userStats.length === 0) {
       return []
     }
 
-    // Use userStats if available (new format)
-    if (dashboardData.userStats && dashboardData.userStats.length > 0) {
-      console.log(
-        '[Frontend Dashboard] Using userStats data for pie chart',
-        dashboardData.userStats.length,
-      )
-      const result = dashboardData.userStats.map((user: UserStatsData) => ({
+    return dashboardData.userStats
+      .map((user: UserStatsData) => ({
         label: user.username || 'Unknown',
         value: user.messageCount || 0,
       }))
-      console.log(
-        '[Frontend Dashboard] Final pieChartData from userStats:',
-        result.slice(0, 3),
-      )
-      return result
-    }
-
-    console.log(
-      '[Frontend Dashboard] No userStats available, returning empty pie chart',
-    )
-    return []
+      .sort((a, b) => b.value - a.value)
   }, [dashboardData])
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range)
+    setSelectedPreset('') // Clear preset when manually changing date
+  }
+
+  const handlePresetClick = (preset: string) => {
+    const range = getDateRangePreset(preset)
+    setDateRange(range)
+    setSelectedPreset(preset)
   }
 
   if (isError) {
@@ -221,6 +172,42 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
 
           {/* Controls */}
           <div className="flex flex-col sm:flex-row gap-3">
+            {/* Date Range Presets */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handlePresetClick('lastWeek')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  selectedPreset === 'lastWeek'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Last Week
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePresetClick('last4Weeks')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  selectedPreset === 'last4Weeks'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Last 4 Weeks
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePresetClick('last3Months')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  selectedPreset === 'last3Months'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+              >
+                Last 3 Months
+              </button>
+            </div>
             <DateRangePicker
               value={dateRange}
               onChange={handleDateRangeChange}
@@ -279,7 +266,8 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
             <div className="mt-4 text-sm text-muted-foreground">
               <div className="flex flex-wrap gap-4">
                 <span>
-                  Total messages: {dashboardData.messageDataList?.length || 0}
+                  Total messages:{' '}
+                  {dashboardData.activityMetadata?.totalMessages || 0}
                 </span>
                 <span>
                   Active days:{' '}
@@ -297,35 +285,8 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
           )}
         </div>
 
-        {/* Raw Data Debug Section */}
-        {dashboardData?.messageDataList && (
-          <div className="bg-card rounded-lg border border-border p-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  Raw Message Data (Debug)
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Raw query results showing platform, role, username, timestamp
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                Total messages: {dashboardData.messageDataList.length}
-              </div>
-              <textarea
-                readOnly
-                value={JSON.stringify(dashboardData.messageDataList, null, 2)}
-                className="w-full h-96 p-4 bg-muted rounded-md font-mono text-xs border resize-vertical"
-              />
-            </div>
-          </div>
-        )}
-
         {/* User Message Distribution */}
-        {(dashboardData?.userStats || dashboardData?.messageDataList) && (
+        {dashboardData?.userStats && (
           <div className="bg-card rounded-lg border border-border p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
@@ -333,45 +294,82 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                   User Message Distribution
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Top contributors by message count
+                  Top contributors by user message count (excluding agent/system
+                  messages)
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-8">
-              <PieChart
-                data={pieChartData}
-                width={300}
-                height={300}
-                showLabels={true}
-                showValues={true}
-                className="flex-shrink-0"
-              />
+            <div className="flex flex-col lg:flex-row items-start gap-8">
+              <div className="flex-shrink-0">
+                <PieChart
+                  data={pieChartData}
+                  width={300}
+                  height={300}
+                  showLabels={false}
+                  showValues={false}
+                  className="mx-auto"
+                />
+              </div>
 
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-medium mb-4">Top Contributors</h3>
-                <div className="space-y-2">
-                  {pieChartData
-                    .slice(0, 5)
-                    .map(
-                      (
-                        user: { label: string; value: number },
-                        index: number,
-                      ) => (
+              <div className="flex-1 min-w-0 lg:min-h-[300px]">
+                <h3 className="text-lg font-medium mb-4">Contributors</h3>
+                <div className="max-h-[250px] overflow-y-auto pr-2 space-y-2">
+                  {pieChartData.map(
+                    (user: { label: string; value: number }, index: number) => {
+                      const total = pieChartData.reduce(
+                        (sum, item) => sum + item.value,
+                        0,
+                      )
+                      const percentage =
+                        total > 0
+                          ? ((user.value / total) * 100).toFixed(1)
+                          : '0.0'
+
+                      return (
                         <div
                           key={user.label}
-                          className="flex items-center justify-between"
+                          className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                         >
-                          <span className="text-sm font-medium">
-                            #{index + 1} {user.label}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {user.value} messages
-                          </span>
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div
+                              className="w-3 h-3 rounded-sm flex-shrink-0"
+                              style={{
+                                backgroundColor: [
+                                  '#3b82f6',
+                                  '#ef4444',
+                                  '#22c55e',
+                                  '#f59e0b',
+                                  '#8b5cf6',
+                                  '#ec4899',
+                                  '#06b6d4',
+                                  '#84cc16',
+                                  '#f97316',
+                                  '#6366f1',
+                                ][index % 10],
+                              }}
+                            />
+                            <span className="text-sm font-medium truncate">
+                              {user.label}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground flex-shrink-0">
+                            <span>{user.value} messages</span>
+                            <span className="text-xs bg-background px-2 py-1 rounded">
+                              {percentage}%
+                            </span>
+                          </div>
                         </div>
-                      ),
-                    )}
+                      )
+                    },
+                  )}
                 </div>
+                {pieChartData.length > 10 && (
+                  <div className="mt-3 text-xs text-muted-foreground text-center">
+                    Showing all {pieChartData.length} contributors • Scroll to
+                    see more
+                  </div>
+                )}
               </div>
             </div>
           </div>
