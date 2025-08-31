@@ -18,16 +18,26 @@ interface PieChartProps {
 }
 
 const DEFAULT_COLORS = [
-  '#3b82f6', // blue-500
-  '#ef4444', // red-500
-  '#22c55e', // green-500
-  '#f59e0b', // amber-500
-  '#8b5cf6', // violet-500
-  '#ec4899', // pink-500
-  '#06b6d4', // cyan-500
-  '#84cc16', // lime-500
-  '#f97316', // orange-500
-  '#6366f1', // indigo-500
+  '#1f77b4b3', // blue with 70% transparency
+  '#ff7f0eb3', // orange with 70% transparency
+  '#2ca02cb3', // green with 70% transparency
+  '#d62728b3', // red with 70% transparency
+  '#9467bdb3', // purple with 70% transparency
+  '#8c564bb3', // brown with 70% transparency
+  '#e377c2b3', // pink with 70% transparency
+  '#7f7f7fb3', // gray with 70% transparency
+  '#bcbd22b3', // olive with 70% transparency
+  '#17becfb3', // cyan with 70% transparency
+  '#aec7e8b3', // light blue with 70% transparency
+  '#ffbb78b3', // light orange with 70% transparency
+  '#98df8ab3', // light green with 70% transparency
+  '#ff9896b3', // light red with 70% transparency
+  '#c5b0d5b3', // light purple with 70% transparency
+  '#c49c94b3', // light brown with 70% transparency
+  '#f7b6d3b3', // light pink with 70% transparency
+  '#c7c7c7b3', // light gray with 70% transparency
+  '#dbdb8db3', // light olive with 70% transparency
+  '#9edae5b3', // light cyan with 70% transparency
 ]
 
 const PieChart: FC<PieChartProps> = ({
@@ -133,7 +143,7 @@ const PieChart: FC<PieChartProps> = ({
               d={item.pathData}
               fill={item.color}
               stroke="white"
-              strokeWidth={2}
+              strokeWidth={0.5}
               className="transition-all duration-200 hover:opacity-80 cursor-pointer"
               onMouseMove={e => handleMouseMove(e, index)}
               onMouseLeave={handleMouseLeave}

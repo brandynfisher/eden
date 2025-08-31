@@ -314,17 +314,27 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                               className="w-3 h-3 rounded-sm flex-shrink-0"
                               style={{
                                 backgroundColor: [
-                                  '#3b82f6',
-                                  '#ef4444',
-                                  '#22c55e',
-                                  '#f59e0b',
-                                  '#8b5cf6',
-                                  '#ec4899',
-                                  '#06b6d4',
-                                  '#84cc16',
-                                  '#f97316',
-                                  '#6366f1',
-                                ][index % 10],
+                                  '#1f77b4b3',
+                                  '#ff7f0eb3',
+                                  '#2ca02cb3',
+                                  '#d62728b3',
+                                  '#9467bdb3',
+                                  '#8c564bb3',
+                                  '#e377c2b3',
+                                  '#7f7f7fb3',
+                                  '#bcbd22b3',
+                                  '#17becfb3',
+                                  '#aec7e8b3',
+                                  '#ffbb78b3',
+                                  '#98df8ab3',
+                                  '#ff9896b3',
+                                  '#c5b0d5b3',
+                                  '#c49c94b3',
+                                  '#f7b6d3b3',
+                                  '#c7c7c7b3',
+                                  '#dbdb8db3',
+                                  '#9edae5b3',
+                                ][index % 20],
                               }}
                             />
                             <span className="text-sm font-medium truncate">
