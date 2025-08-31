@@ -224,7 +224,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                 Message Activity
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Messages by actual send date across all conversations
+                Messages across all conversations
               </p>
             </div>
 
@@ -260,28 +260,6 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
               showPlatformColors={showPlatformColors}
               className="w-full"
             />
-          )}
-
-          {dashboardData && (
-            <div className="mt-4 text-sm text-muted-foreground">
-              <div className="flex flex-wrap gap-4">
-                <span>
-                  Total messages:{' '}
-                  {dashboardData.activityMetadata?.totalMessages || 0}
-                </span>
-                <span>
-                  Active days:{' '}
-                  {
-                    chartData.filter(
-                      (item: { value: number }) => item.value > 0,
-                    ).length
-                  }
-                </span>
-                <span>
-                  Platforms: {dashboardData.platforms?.join(', ') || 'N/A'}
-                </span>
-              </div>
-            </div>
           )}
         </div>
 
