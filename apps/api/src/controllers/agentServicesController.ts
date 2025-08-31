@@ -847,9 +847,17 @@ export const getDashboardData = async (
 
     // Default date range: last 30 days
     const now = new Date()
-    const defaultStartDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-    const start = startDate ? new Date(startDate) : defaultStartDate
-    const end = endDate ? new Date(endDate) : now
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const end = endDate
+      ? (() => {
+          const endDateObj = new Date(endDate)
+          // Set to end of day to include all messages from that day
+          endDateObj.setHours(23, 59, 59, 999)
+          return endDateObj
+        })()
+      : now
 
     // Convert agentId to ObjectId for query
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
