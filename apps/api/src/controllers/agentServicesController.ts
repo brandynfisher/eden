@@ -915,11 +915,11 @@ export const getDashboardData = async (
     console.log(
       '[Backend Dashboard] Step 5: Query 1 - Getting sessions for agent',
     )
-    // Query 1: Get all sessions containing this agent
+    // Query 1: Get all sessions containing this agent (remove date filter from session query)
     const sessions = await Session.find({
       agents: agentObjectId,
       $or: [{ deleted: { $exists: false } }, { deleted: false }],
-    }).select('_id platform messages')
+    }).select('_id platform messages createdAt')
 
     console.log(
       `[Backend Dashboard] Found ${sessions.length} sessions for agent`,
@@ -967,7 +967,31 @@ export const getDashboardData = async (
       `[Backend Dashboard] Collected ${allMessageIds.length} message IDs from sessions`,
     )
 
+    if (allMessageIds.length === 0) {
+      console.log(
+        '[Backend Dashboard] No message IDs found in sessions, returning empty data',
+      )
+      return reply.status(200).send({
+        messageActivity: [],
+        userStats: [],
+        sessionActivity: [],
+        messageDataList: [],
+        dateRange: {
+          start: start.toISOString().split('T')[0],
+          end: end.toISOString().split('T')[0],
+        },
+        platforms: ['web'],
+        roles: [],
+      })
+    }
+
     // Query messages collection with the collected message IDs, filtered by date range
+    console.log('[Backend Dashboard] Querying messages with date filter:', {
+      start: start.toISOString(),
+      end: end.toISOString(),
+      messageIds: allMessageIds.length,
+    })
+
     const messages = await Message.find({
       _id: { $in: allMessageIds },
       createdAt: { $gte: start, $lte: end },
@@ -976,6 +1000,24 @@ export const getDashboardData = async (
     console.log(
       `[Backend Dashboard] Found ${messages.length} messages in date range`,
     )
+
+    if (messages.length === 0) {
+      console.log(
+        '[Backend Dashboard] No messages found in date range, checking without date filter...',
+      )
+
+      // Try without date filter to see if there are messages at all
+      const allMessages = await Message.find({
+        _id: { $in: allMessageIds.slice(0, 5) }, // Just check first 5
+      }).select('_id createdAt')
+
+      console.log(
+        `[Backend Dashboard] Sample messages without date filter: ${allMessages.length}`,
+      )
+      allMessages.forEach(msg => {
+        console.log(`[Backend Dashboard] Sample message date: ${msg.createdAt}`)
+      })
+    }
 
     // Process messages and collect unique sender IDs
     const uniqueSenderIds = new Set()

@@ -6,7 +6,7 @@ import DateRangePicker from '@/components/ui/date-range-picker'
 import PieChart from '@/components/ui/pie-chart'
 import {
   MessageActivityData,
-  MessageDataItem,
+  SessionActivityData,
   UserStatsData,
   useAgentDashboardQuery,
 } from '@/hooks/query/use-agent-dashboard-query'
@@ -31,10 +31,6 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
     to: defaultEndDate,
   })
   const [showPlatformColors, setShowPlatformColors] = useState(true)
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([
-    'user',
-    'assistant',
-  ])
 
   const startDate = dateRange?.from?.toISOString().split('T')[0]
   const endDate = dateRange?.to?.toISOString().split('T')[0]
@@ -62,24 +58,29 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
 
     if (dashboardData) {
       console.log('[Frontend Dashboard] Received dashboardData:', {
-        messageActivity: dashboardData.messageActivity.length || 0,
-        userStats: dashboardData.userStats.length || 0,
-        messageDataList: dashboardData.messageDataList.length || 0,
+        messageActivity: dashboardData.messageActivity?.length || 0,
+        userStats: dashboardData.userStats?.length || 0,
+        messageDataList: dashboardData.messageDataList?.length || 0,
         platforms: dashboardData.platforms,
         roles: dashboardData.roles,
       })
       console.log(
         '[Frontend Dashboard] Sample messageDataList:',
-        dashboardData.messageDataList.slice(0, 3),
+        dashboardData.messageDataList?.slice(0, 3),
       )
       console.log(
         '[Frontend Dashboard] Sample messageActivity:',
-        dashboardData.messageActivity.slice(0, 3),
+        dashboardData.messageActivity?.slice(0, 3),
       )
       console.log(
         '[Frontend Dashboard] Sample userStats:',
-        dashboardData.userStats.slice(0, 3),
+        dashboardData.userStats?.slice(0, 3),
       )
+      console.log(
+        '[Frontend Dashboard] Full response keys:',
+        Object.keys(dashboardData),
+      )
+      console.log('[Frontend Dashboard] Full response:', dashboardData)
     } else {
       console.log('[Frontend Dashboard] dashboardData is null/undefined')
     }
@@ -88,145 +89,100 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
   // Chart data for bar chart (use messageActivity from backend)
   const chartData = useMemo(() => {
     console.log('[Frontend Dashboard] Computing chartData...')
-    console.log(
-      '[Frontend Dashboard] dashboardData?.messageActivity length:',
-      dashboardData?.messageActivity.length,
-    )
-    console.log(
-      '[Frontend Dashboard] dashboardData?.messageDataList length:',
-      dashboardData?.messageDataList.length,
-    )
-    console.log('[Frontend Dashboard] selectedRoles:', selectedRoles)
+    console.log('[Frontend Dashboard] dashboardData:', dashboardData)
 
-    // Use messageActivity if available (new format), fallback to messageDataList processing
-    if (dashboardData?.messageActivity) {
-      console.log('[Frontend Dashboard] Using messageActivity data')
+    if (!dashboardData) {
+      console.log(
+        '[Frontend Dashboard] No dashboardData, returning empty array',
+      )
+      return []
+    }
+
+    // Use messageActivity if available (new format)
+    if (
+      dashboardData.messageActivity &&
+      dashboardData.messageActivity.length > 0
+    ) {
+      console.log(
+        '[Frontend Dashboard] Using messageActivity data',
+        dashboardData.messageActivity.length,
+      )
       const result = dashboardData.messageActivity.map(
         (item: MessageActivityData) => ({
           date: item.date,
           platform: item.platform,
-          value: item.messageCount,
-          label: `${item.messageCount} messages`,
+          value: item.messageCount || 0,
+          label: `${item.messageCount || 0} messages`,
         }),
       )
       console.log(
         '[Frontend Dashboard] Final chartData from messageActivity:',
-        result.slice(0, 5),
+        result.slice(0, 3),
       )
       return result
     }
 
-    // Fallback to messageDataList processing (if messageActivity not available)
-    if (!dashboardData?.messageDataList) {
+    // Fallback to sessionActivity (backward compatibility)
+    if (
+      dashboardData.sessionActivity &&
+      dashboardData.sessionActivity.length > 0
+    ) {
       console.log(
-        '[Frontend Dashboard] No messageActivity or messageDataList, returning empty chartData',
+        '[Frontend Dashboard] Using sessionActivity fallback',
+        dashboardData.sessionActivity.length,
       )
-      return []
+      const result = dashboardData.sessionActivity.map(
+        (item: SessionActivityData) => ({
+          date: item.date,
+          platform: item.platform,
+          value: item.totalUserMessages || 0,
+          label: `${item.totalUserMessages || 0} messages`,
+        }),
+      )
+      console.log(
+        '[Frontend Dashboard] Final chartData from sessionActivity:',
+        result.slice(0, 3),
+      )
+      return result
     }
 
     console.log(
-      '[Frontend Dashboard] Fallback: using messageDataList processing',
+      '[Frontend Dashboard] No valid data found, returning empty array',
     )
-    const filtered = dashboardData.messageDataList.filter(
-      (msg: MessageDataItem) => selectedRoles.includes(msg.role),
-    )
-    console.log(
-      '[Frontend Dashboard] Filtered messages count:',
-      filtered.length,
-    )
-
-    // Group by date and platform
-    const grouped = new Map()
-    filtered.forEach((msg: MessageDataItem) => {
-      const key = `${msg.date}-${msg.platform}`
-      if (!grouped.has(key)) {
-        grouped.set(key, { date: msg.date, platform: msg.platform, count: 0 })
-      }
-      grouped.get(key).count += 1
-    })
-
-    const result = Array.from(grouped.values()).map(
-      (item: { date: string; platform: string; count: number }) => ({
-        date: item.date,
-        platform: item.platform,
-        value: item.count,
-        label: `${item.count} messages`,
-      }),
-    )
-
-    console.log(
-      '[Frontend Dashboard] Final chartData from messageDataList:',
-      result.slice(0, 5),
-    )
-    return result
-  }, [dashboardData, selectedRoles])
+    return []
+  }, [dashboardData])
 
   // Pie chart data for user message distribution
   const pieChartData = useMemo(() => {
     console.log('[Frontend Dashboard] Computing pieChartData...')
-    console.log(
-      '[Frontend Dashboard] dashboardData?.userStats length:',
-      dashboardData?.userStats.length,
-    )
+
+    if (!dashboardData) {
+      console.log('[Frontend Dashboard] No dashboardData for pie chart')
+      return []
+    }
 
     // Use userStats if available (new format)
-    if (dashboardData?.userStats && dashboardData.userStats.length > 0) {
-      console.log('[Frontend Dashboard] Using userStats data for pie chart')
+    if (dashboardData.userStats && dashboardData.userStats.length > 0) {
+      console.log(
+        '[Frontend Dashboard] Using userStats data for pie chart',
+        dashboardData.userStats.length,
+      )
       const result = dashboardData.userStats.map((user: UserStatsData) => ({
-        label: user.username,
-        value: user.messageCount,
+        label: user.username || 'Unknown',
+        value: user.messageCount || 0,
       }))
       console.log(
         '[Frontend Dashboard] Final pieChartData from userStats:',
-        result,
+        result.slice(0, 3),
       )
       return result
     }
 
-    // Fallback to messageDataList processing
-    if (!dashboardData?.messageDataList) {
-      console.log(
-        '[Frontend Dashboard] No userStats or messageDataList for pie chart',
-      )
-      return []
-    }
-
     console.log(
-      '[Frontend Dashboard] Fallback: using messageDataList for pie chart',
+      '[Frontend Dashboard] No userStats available, returning empty pie chart',
     )
-    const filtered = dashboardData.messageDataList.filter(
-      (msg: MessageDataItem) => selectedRoles.includes(msg.role),
-    )
-    console.log(
-      '[Frontend Dashboard] Pie chart filtered messages:',
-      filtered.length,
-    )
-
-    const userCounts = new Map()
-    filtered.forEach((msg: MessageDataItem) => {
-      userCounts.set(msg.username, (userCounts.get(msg.username) || 0) + 1)
-    })
-
-    const result = Array.from(userCounts.entries())
-      .map(([username, count]: [string, number]) => ({
-        label: username,
-        value: count,
-      }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 10) // Top 10 users
-
-    console.log(
-      '[Frontend Dashboard] Final pieChartData from messageDataList:',
-      result,
-    )
-    return result
-  }, [dashboardData, selectedRoles])
-
-  const handleRoleToggle = (role: string) => {
-    setSelectedRoles(prev =>
-      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role],
-    )
-  }
+    return []
+  }, [dashboardData])
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range)
@@ -303,30 +259,6 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
             </div>
           </div>
 
-          {/* Role filters */}
-          {dashboardData?.roles && dashboardData.roles.length > 0 && (
-            <div className="mb-4 p-3 bg-muted/50 rounded-md">
-              <p className="text-sm font-medium mb-2">Filter by Role:</p>
-              <div className="flex flex-wrap gap-2">
-                {dashboardData.roles.map((role: string) => (
-                  <div key={role} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`role-${role}`}
-                      checked={selectedRoles.includes(role)}
-                      onCheckedChange={() => handleRoleToggle(role)}
-                    />
-                    <label
-                      htmlFor={`role-${role}`}
-                      className="text-sm capitalize cursor-pointer"
-                    >
-                      {role}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -347,10 +279,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
             <div className="mt-4 text-sm text-muted-foreground">
               <div className="flex flex-wrap gap-4">
                 <span>
-                  Total messages:{' '}
-                  {dashboardData.messageDataList.filter(
-                    (msg: MessageDataItem) => selectedRoles.includes(msg.role),
-                  ).length || 0}
+                  Total messages: {dashboardData.messageDataList?.length || 0}
                 </span>
                 <span>
                   Active days:{' '}
@@ -360,11 +289,40 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                     ).length
                   }
                 </span>
-                <span>Platforms: {dashboardData.platforms.join(', ')}</span>
+                <span>
+                  Platforms: {dashboardData.platforms?.join(', ') || 'N/A'}
+                </span>
               </div>
             </div>
           )}
         </div>
+
+        {/* Raw Data Debug Section */}
+        {dashboardData?.messageDataList && (
+          <div className="bg-card rounded-lg border border-border p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">
+                  Raw Message Data (Debug)
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Raw query results showing platform, role, username, timestamp
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                Total messages: {dashboardData.messageDataList.length}
+              </div>
+              <textarea
+                readOnly
+                value={JSON.stringify(dashboardData.messageDataList, null, 2)}
+                className="w-full h-96 p-4 bg-muted rounded-md font-mono text-xs border resize-vertical"
+              />
+            </div>
+          </div>
+        )}
 
         {/* User Message Distribution */}
         {(dashboardData?.userStats || dashboardData?.messageDataList) && (
