@@ -217,7 +217,6 @@ export class EdenClient extends Methods {
     const requestConfig = configFn(options)
     requestConfig.headers = headers
     requestConfig.signal = AbortSignal.timeout(50 * 60 * 1000)
-    // requestConfig.baseURL = this.edenApiUrl
 
     const response = await this.makeRequest(requestConfig)
     const result = await this.buildResult(response)

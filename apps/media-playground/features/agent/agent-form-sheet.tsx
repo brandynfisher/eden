@@ -88,6 +88,14 @@ export const agentSchema = z.object({
     )
     .optional(),
   tools: z.object({}).passthrough().optional(),
+  llm_settings: z
+    .object({
+      model_profile: z.enum(['low', 'medium', 'high']).optional(),
+      thinking_policy: z.enum(['auto', 'off', 'always']).optional(),
+      thinking_effort_cap: z.enum(['low', 'medium', 'high']).optional(),
+      thinking_effort_instructions: z.string().optional(),
+    })
+    .optional(),
 })
 
 type AgentFormDto = z.infer<typeof agentSchema>
@@ -139,6 +147,15 @@ const AgentFormSheet = () => {
       models: agentQuery.agent?.models || [],
       suggestions: agentQuery.agent?.suggestions || [],
       tools: agentQuery.agent?.tools || {},
+      llm_settings: {
+        model_profile: agentQuery.agent?.llm_settings?.model_profile || 'low',
+        thinking_policy:
+          agentQuery.agent?.llm_settings?.thinking_policy || 'auto',
+        thinking_effort_cap:
+          agentQuery.agent?.llm_settings?.thinking_effort_cap || 'medium',
+        thinking_effort_instructions:
+          agentQuery.agent?.llm_settings?.thinking_effort_instructions || '',
+      },
     },
   })
 
@@ -162,6 +179,15 @@ const AgentFormSheet = () => {
         models: agentQuery.agent.models || [],
         suggestions: agentQuery.agent.suggestions || [],
         tools: agentQuery.agent.tools || {},
+        llm_settings: {
+          model_profile: agentQuery.agent.llm_settings?.model_profile || 'low',
+          thinking_policy:
+            agentQuery.agent.llm_settings?.thinking_policy || 'auto',
+          thinking_effort_cap:
+            agentQuery.agent.llm_settings?.thinking_effort_cap || 'medium',
+          thinking_effort_instructions:
+            agentQuery.agent.llm_settings?.thinking_effort_instructions || '',
+        },
       })
     } else {
       form.reset({
@@ -177,6 +203,12 @@ const AgentFormSheet = () => {
         models: [],
         suggestions: [],
         tools: {},
+        llm_settings: {
+          model_profile: 'low',
+          thinking_policy: 'auto',
+          thinking_effort_cap: 'medium',
+          thinking_effort_instructions: '',
+        },
       })
     }
   }, [agentQuery.agent, form])
@@ -251,6 +283,12 @@ const AgentFormSheet = () => {
         models: [],
         suggestions: [],
         tools: {},
+        llm_settings: {
+          model_profile: 'low',
+          thinking_policy: 'auto',
+          thinking_effort_cap: 'medium',
+          thinking_effort_instructions: '',
+        },
       })
     }
   }

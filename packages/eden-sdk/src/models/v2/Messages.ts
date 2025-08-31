@@ -27,6 +27,13 @@ export type EdenMessageData = {
   agents?: EdenMessageAgentData[]
 }
 
+export type Thought = {
+  type: 'thinking'
+  title?: string
+  thinking: string
+  signature: string
+}
+
 export type Message = {
   _id: string
   session: SessionV2
@@ -38,10 +45,10 @@ export type Message = {
   tool_call_id?: string
   channel?: Channel
   reply_to?: Message
-  sender_name?: string
   reactions?: MessageReaction
   attachments?: string[]
   tool_calls?: ToolCall[]
+  thought?: Thought[]
   createdAt: Date
   updatedAt: Date
 }

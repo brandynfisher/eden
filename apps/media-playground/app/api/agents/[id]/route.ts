@@ -82,6 +82,7 @@ export async function PATCH(
     models,
     owner_pays,
     agent_extras,
+    llm_settings,
   } = requestJson as AgentsUpdateArguments
 
   try {
@@ -107,6 +108,7 @@ export async function PATCH(
       voice,
       owner_pays,
       agent_extras,
+      llm_settings,
     })
 
     if (!res) {

@@ -8,6 +8,7 @@ import {
   deployAgent,
   executeAgentTrigger,
   getAgent,
+  getAgentCreations,
   getAgentDeployments,
   getAgentMemory,
   getAgentPermissions,
@@ -96,6 +97,32 @@ const agentRoutes: FastifyPluginAsync = async server => {
           ),
         ),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+        llm_settings: Type.Optional(
+          Type.Object({
+            model_profile: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_policy: Type.Optional(
+              Type.Union([
+                Type.Literal('auto'),
+                Type.Literal('off'),
+                Type.Literal('always'),
+              ]),
+            ),
+            thinking_effort_cap: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_effort_instructions: Type.Optional(Type.String()),
+          }),
+        ),
       }),
       response: {
         200: {
@@ -148,6 +175,32 @@ const agentRoutes: FastifyPluginAsync = async server => {
         ),
         owner_pays: Type.Optional(Type.Boolean()),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
+        llm_settings: Type.Optional(
+          Type.Object({
+            model_profile: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_policy: Type.Optional(
+              Type.Union([
+                Type.Literal('auto'),
+                Type.Literal('off'),
+                Type.Literal('always'),
+              ]),
+            ),
+            thinking_effort_cap: Type.Optional(
+              Type.Union([
+                Type.Literal('low'),
+                Type.Literal('medium'),
+                Type.Literal('high'),
+              ]),
+            ),
+            thinking_effort_instructions: Type.Optional(Type.String()),
+          }),
+        ),
       }),
       response: {
         200: Type.Object({
@@ -676,6 +729,42 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getDashboardData(server, request, reply),
+  })
+
+  // Agent creations
+  server.get('/v2/agents/:agentId/creations', {
+    schema: {
+      tags: ['Agents'],
+      description:
+        "List an agent's creations: union of auth user's creations and public creations by others",
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: { agentId: Type.String() },
+      querystring: {
+        type: 'object',
+        properties: {
+          limit: { type: 'number' },
+          cursor: { type: 'string' },
+        },
+      },
+      response: {
+        200: Type.Object({
+          docs: Type.Array(Type.Any()),
+          nextCursor: Type.Optional(Type.String()),
+          totalDocs: Type.Number(),
+        }),
+        400: Type.Object({ message: Type.String() }),
+        401: Type.Object({ message: Type.String() }),
+        403: Type.Object({ message: Type.String() }),
+        404: Type.Object({ message: Type.String() }),
+        500: Type.Object({ message: Type.String() }),
+      },
+    },
+    preHandler: [request => maybeAuth(server, request)],
+    handler: (request, reply) => getAgentCreations(server, request, reply),
   })
 
   // Permissions routes

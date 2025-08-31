@@ -16,14 +16,20 @@ export const createThread = async () => {
   }
 }
 
-export const getThread = async (threadId: string) => {
-  console.log('getThread', threadId)
+export const getSession = async (sessionId: string) => {
+  const response = await axios.get(`/api/sessions/${sessionId}`)
 
+  if (!response || !response.data.session) {
+    throw new Error('Session not found')
+  }
+
+  return response.data.session
+}
+
+export const getThread = async (threadId: string) => {
   const response: AxiosResponse<ThreadsGetResponse> = await axios.get(
     `/api/threads/${threadId}`,
   )
-
-  console.log('getThread response:', response.data)
 
   if (!response || !response.data.thread) {
     throw new Error('Thread not found')

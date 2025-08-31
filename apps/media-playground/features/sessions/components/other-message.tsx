@@ -4,6 +4,7 @@ import { MessageAttachment } from './message-attachment'
 import ToolResultActionBar from './tool-result-action-bar'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { ThoughtBlock } from '@/features/chat/components/thought-block'
 import TypingIndicator from '@/features/chat/components/typing-indicator'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { getCloudfrontUrl } from '@/lib/media'
@@ -30,6 +31,13 @@ export const OtherMessage = ({
   const [optimisticallyCancelled, setOptimisticallyCancelled] = useState<
     Set<string>
   >(new Set())
+  const [expanded, setExpanded] = useState(false)
+  const contentLen = message.content?.length ?? 0
+  const isHuge = contentLen > 40000 // character threshold
+  const previewLimit = 8000 // render a safe preview chunk
+  const preview = isHuge
+    ? message.content!.slice(0, previewLimit)
+    : message.content
 
   // Clean up optimistic state when backend confirms cancellation
   useEffect(() => {
@@ -154,6 +162,19 @@ export const OtherMessage = ({
         </div>
       </div>
       <div className="aui-assistant-message-content mt-3 md:mt-1.5 md:pl-3 pr-2 max-w-full">
+        {/* Show thought for assistant messages */}
+        {(() => {
+          const shouldShowThought =
+            message.role === 'assistant' &&
+            message.thought &&
+            message.thought.length > 0
+
+          if (shouldShowThought) {
+            return <ThoughtBlock thought={message.thought!} className="mb-4" />
+          }
+          return null
+        })()}
+
         {hasAttachments && (
           <LightboxGallery galleryKey={message._id}>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -167,7 +188,35 @@ export const OtherMessage = ({
             </div>
           </LightboxGallery>
         )}
-        {!isEmpty && <MarkdownText>{message.content}</MarkdownText>}
+
+        {!isEmpty && (
+          <>
+            {/* Preview */}
+            {!expanded && (
+              <div className="whitespace-pre-wrap break-words break-all overflow-x-auto relative">
+                <MarkdownText>{preview!}</MarkdownText>
+                {isHuge && (
+                  <div className="mt-2 flex">
+                    <button
+                      type="button"
+                      className="text-xs underline text-muted-foreground hover:text-foreground"
+                      onClick={() => setExpanded(true)}
+                    >
+                      Show full message ({contentLen.toLocaleString()}{' '}
+                      characters)
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Full (own scroll) */}
+            {expanded && (
+              <div className="whitespace-pre-wrap break-words break-all overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
+                <MarkdownText>{message.content!}</MarkdownText>
+              </div>
+            )}
+          </>
+        )}
         {message.tool_calls &&
           message.tool_calls.length > 0 &&
           message.tool_calls.map(toolCall => {

@@ -88,6 +88,14 @@ const AgentEditView: FC<{
       voice: agent?.voice || '',
       models: agent?.models || [],
       tools: agent.tools || {},
+      llm_settings: {
+        model_profile: agent?.llm_settings?.model_profile || 'low',
+        thinking_policy: agent?.llm_settings?.thinking_policy || 'auto',
+        thinking_effort_cap:
+          agent?.llm_settings?.thinking_effort_cap || 'medium',
+        thinking_effort_instructions:
+          agent?.llm_settings?.thinking_effort_instructions || '',
+      },
     },
   })
 
@@ -125,6 +133,14 @@ const AgentEditView: FC<{
         voice: agent.voice || '',
         models: agent.models || [],
         tools: agent.tools || {},
+        llm_settings: {
+          model_profile: agent.llm_settings?.model_profile || 'low',
+          thinking_policy: agent.llm_settings?.thinking_policy || 'auto',
+          thinking_effort_cap:
+            agent.llm_settings?.thinking_effort_cap || 'medium',
+          thinking_effort_instructions:
+            agent.llm_settings?.thinking_effort_instructions || '',
+        },
       })
     }
   }, [agent, form])
@@ -330,6 +346,7 @@ const AgentEditView: FC<{
                       deploymentsQuery.deployments &&
                       deploymentsQuery.deployments.length > 0
                     }
+                    user={user}
                   />
                 )}
                 {activeTab === 'integrations' &&

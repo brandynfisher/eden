@@ -454,7 +454,7 @@ const Session = ({
     <>
       <div
         className={cn(
-          'flex-1 pb-4',
+          'flex-1 min-h-0 overflow-y-auto pb-4',
           messageGroups.length === 0 &&
             'flex flex-col justify-center items-center',
         )}
@@ -729,9 +729,11 @@ const Session = ({
           <MessageInput
             sessionId={currentSessionId as string}
             enableLiveAudio={true}
-            onStreamingMessage={(content, attachments) => {
+            onStreamingMessage={(content, attachments, thinking) => {
               clearErrors()
               setCancelledNotice(false)
+
+              console.log('[Session] Received message with thinking:', thinking)
 
               // Parse mentions to get agent IDs
               const mentions = parseMentions(content)
@@ -751,7 +753,10 @@ const Session = ({
 
               if (sessionConfig.useStreaming) {
                 streamingState.initializeStreaming()
-                streamingState.sendMessage(content, attachments)
+                streamingState.sendMessage(content, attachments, {
+                  agent_ids: agentIds,
+                  thinking,
+                })
 
                 // Add optimistic messages
                 streamingOptimisticMessages.current = [
@@ -807,9 +812,10 @@ const Session = ({
                   userMessage,
                 ])
 
-                // Pass agent_ids in options
+                // Pass agent_ids and thinking in options
                 nonStreamingState.sendMessage(content, attachments, {
                   agent_ids: agentIds,
+                  thinking,
                 })
                 setTimeout(scrollToBottom, 100)
               }
