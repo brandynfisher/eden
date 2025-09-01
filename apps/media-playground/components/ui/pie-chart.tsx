@@ -9,12 +9,14 @@ interface PieChartProps {
     label: string
     value: number
     color?: string
+    formattedValue?: string
   }>
   width?: number
   height?: number
   className?: string
   showLabels?: boolean
   showValues?: boolean
+  valueLabel?: string // e.g., 'messages' or 'tokens'
 }
 
 const DEFAULT_COLORS = [
@@ -47,6 +49,7 @@ const PieChart: FC<PieChartProps> = ({
   className,
   showLabels = true,
   showValues = true,
+  valueLabel = 'items',
 }) => {
   console.log('[PieChart] Received data:', data)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
@@ -180,7 +183,7 @@ const PieChart: FC<PieChartProps> = ({
                 {item.label}
               </span>
               <span className="text-muted-foreground ml-auto">
-                {item.value}
+                {item.formattedValue || item.value}
               </span>
             </div>
           ))}
@@ -210,8 +213,9 @@ const PieChart: FC<PieChartProps> = ({
             </span>
           </div>
           <div className="text-muted-foreground">
-            {processedData[hoveredIndex].value} messages (
-            {Math.round(processedData[hoveredIndex].percentage)}%)
+            {processedData[hoveredIndex].formattedValue ||
+              processedData[hoveredIndex].value}{' '}
+            {valueLabel} ({Math.round(processedData[hoveredIndex].percentage)}%)
           </div>
         </div>
       )}

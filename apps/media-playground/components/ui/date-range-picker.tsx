@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { CalendarIcon } from 'lucide-react'
-import { FC, useState } from 'react'
+import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { DateRange } from 'react-day-picker'
 
 interface DateRangePickerProps {
@@ -17,6 +17,12 @@ interface DateRangePickerProps {
   onChange?: (range: DateRange | undefined) => void
   className?: string
   placeholder?: string
+}
+
+function endOfToday() {
+  const d = new Date()
+  d.setHours(23, 59, 59, 999)
+  return d
 }
 
 const DateRangePicker: FC<DateRangePickerProps> = ({
@@ -27,77 +33,82 @@ const DateRangePicker: FC<DateRangePickerProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const formatDateRange = (range?: DateRange) => {
+  // Internal selection state drives the calendar.
+  // We still sync with external `value`—but we can suppress a single sync
+  // when we purposely clear on open to avoid the "first click sets end" bug.
+  const [range, setRange] = useState<DateRange | undefined>(value)
+  const suppressNextExternalSync = useRef(false)
+
+  useEffect(() => {
+    if (suppressNextExternalSync.current) {
+      suppressNextExternalSync.current = false
+      return
+    }
+    setRange(value)
+  }, [value])
+
+  const label = useMemo(() => {
     if (!range?.from) return placeholder
+    const fmt = (d: Date) =>
+      d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    return range.to ? `${fmt(range.from)} - ${fmt(range.to)}` : fmt(range.from)
+  }, [range, placeholder])
 
-    const from = range.from.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-
-    if (!range.to) return from
-
-    const to = range.to.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    })
-
-    return `${from} - ${to}`
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open)
+    if (open) {
+      // Start fresh so the first click sets `from`, not `to`.
+      setRange(undefined)
+      // Suppress an immediate resync from a stale parent `value`.
+      suppressNextExternalSync.current = true
+      // Notify parent so controlled parents can clear too.
+      onChange?.(undefined)
+    }
   }
 
-  const handleSelect = (range: DateRange | undefined) => {
-    if (!range?.from) {
-      // Clear selection
-      onChange?.(undefined)
-      return
-    }
+  const handleSelect = (next: DateRange | undefined) => {
+    // Accept DayPicker's semantics:
+    // - first click sets `from`
+    // - second click sets `to`
+    // - clicking again after a full range starts a new range with only `from`
+    setRange(next)
+    onChange?.(next)
 
-    // First click: clear current selection and set start date
-    if (!value?.from || (value?.from && value?.to)) {
-      onChange?.({ from: range.from, to: undefined })
-      return
-    }
-
-    // Second click: set end date and close modal
-    if (value?.from && !value?.to && range?.to) {
-      // Ensure end date is not before start date
-      if (range.to >= value.from) {
-        onChange?.({ from: value.from, to: range.to })
-      } else {
-        // If clicked date is before start date, swap them
-        onChange?.({ from: range.to, to: value.from })
-      }
+    if (next?.from && next?.to) {
       setIsOpen(false)
     }
   }
 
   return (
     <div className={cn('grid gap-2', className)}>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             id="date"
             variant="outline"
             className={cn(
-              'justify-start text-left font-normal',
-              !value && 'text-muted-foreground',
+              'justify-start text-left font-normal h-12',
+              !range && 'text-muted-foreground',
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {formatDateRange(value)}
+            {label}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={value?.from}
-            selected={value}
-            onSelect={handleSelect}
             numberOfMonths={2}
-            disabled={date => date > new Date()}
+            selected={range}
+            onSelect={handleSelect}
+            defaultMonth={range?.from}
+            // Avoid time-of-day edge cases for "today"
+            disabled={d => d > endOfToday()}
           />
         </PopoverContent>
       </Popover>

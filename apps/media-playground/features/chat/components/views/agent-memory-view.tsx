@@ -30,7 +30,6 @@ import {
 } from '@/components/ui/tooltip'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
@@ -379,19 +378,19 @@ const AgentMemoryView: FC<{
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0">
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 bg-border rounded-full"></div>
-                {/* Memory Type Toggle - A/B style buttons */}
+                {/* Memory Type Toggle - Switch style buttons */}
                 {collectiveMemoryAccess.showTab ? (
-                  <div className="flex items-center border border-border rounded-lg overflow-hidden">
+                  <div className="relative inline-flex items-center bg-muted rounded-lg p-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
+                          type="button"
                           onClick={() => setMemoryTab('user')}
-                          className={cn(
-                            'flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32',
+                          className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 cursor-help w-32 ${
                             memoryTab === 'user'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-                          )}
+                              ? 'bg-background text-foreground shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
                         >
                           User
                         </button>
@@ -406,17 +405,16 @@ const AgentMemoryView: FC<{
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                    <div className="w-px bg-border h-8"></div>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <button
+                          type="button"
                           onClick={() => setMemoryTab('collective')}
-                          className={cn(
-                            'flex items-center justify-center px-4 py-2 text-sm font-medium transition-colors cursor-help w-32',
+                          className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 cursor-help w-32 ${
                             memoryTab === 'collective'
-                              ? 'bg-primary text-primary-foreground'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-                          )}
+                              ? 'bg-background text-foreground shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
                         >
                           Collective
                         </button>

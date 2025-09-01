@@ -707,6 +707,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
                 date: Type.String(),
                 platform: Type.String(),
                 messageCount: Type.Number(),
+                tokenCount: Type.Optional(Type.Number()),
               }),
             ),
           ),
@@ -715,6 +716,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
               Type.Object({
                 username: Type.String(),
                 messageCount: Type.Number(),
+                tokenCount: Type.Optional(Type.Number()),
               }),
             ),
           ),
