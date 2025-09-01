@@ -848,7 +848,12 @@ export const getDashboardData = async (
     // Default date range: last 30 days
     const now = new Date()
     const start = startDate
-      ? new Date(startDate)
+      ? (() => {
+          const startDateObj = new Date(startDate)
+          // Set to start of day to include all messages from that day
+          startDateObj.setHours(0, 0, 0, 0)
+          return startDateObj
+        })()
       : new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const end = endDate
       ? (() => {
@@ -893,6 +898,7 @@ export const getDashboardData = async (
                 role: 1,
                 name: 1,
                 createdAt: 1,
+                content: 1,
               },
             },
           ],
@@ -922,7 +928,7 @@ export const getDashboardData = async (
           as: 'senderData',
         },
       },
-      // Stage 5: Project final structure
+      // Stage 5: Project final structure with character count calculation
       {
         $project: {
           _id: '$sessionMessages._id',
@@ -945,6 +951,18 @@ export const getDashboardData = async (
             },
           },
           sender: '$sessionMessages.sender',
+          charCount: {
+            $cond: {
+              if: {
+                $and: [
+                  { $ne: ['$sessionMessages.content', null] },
+                  { $ne: ['$sessionMessages.content', ''] },
+                ],
+              },
+              then: { $strLenCP: '$sessionMessages.content' },
+              else: 0,
+            },
+          },
         },
       },
     ])
@@ -970,6 +988,7 @@ export const getDashboardData = async (
       timestamp: result.timestamp || new Date(),
       date: result.date,
       sender: result.sender.toString(),
+      charCount: result.charCount || 0,
     }))
 
     // Calculate activity metadata for smart date range selection
@@ -985,29 +1004,40 @@ export const getDashboardData = async (
     // Process data for bar chart (messages by date and platform)
     const messagesByDatePlatform = new Map()
     const userMessageCounts = new Map()
+    const userTokenCounts = new Map()
     const platforms = new Set() // Don't pre-populate, let data drive platform detection
     const roles = new Set()
 
     messageDataList.forEach(message => {
-      const { date, platform, role, username } = message
+      const { date, platform, role, username, charCount } = message
 
       // Track platforms and roles
       platforms.add(platform)
       roles.add(role)
 
-      // Count messages by date and platform
+      // Count messages and tokens by date and platform
       const key = `${date}-${platform}`
       if (!messagesByDatePlatform.has(key)) {
-        messagesByDatePlatform.set(key, { date, platform, count: 0 })
+        messagesByDatePlatform.set(key, {
+          date,
+          platform,
+          count: 0,
+          tokenCount: 0,
+        })
       }
-      messagesByDatePlatform.get(key).count++
+      const entry = messagesByDatePlatform.get(key)
+      entry.count++
+      const tokensForMessage = Math.ceil(charCount / 4.5)
+      entry.tokenCount += tokensForMessage
 
-      // Count messages by username for pie chart (only user messages)
+      // Count messages and tokens by username for pie chart (only user messages)
       if (role === 'user') {
-        userMessageCounts.set(
-          username,
-          (userMessageCounts.get(username) || 0) + 1,
-        )
+        const currentUserMessages = userMessageCounts.get(username) || 0
+        const currentUserTokens = userTokenCounts.get(username) || 0
+        const tokensForUserMessage = Math.ceil(charCount / 4.5)
+
+        userMessageCounts.set(username, currentUserMessages + 1)
+        userTokenCounts.set(username, currentUserTokens + tokensForUserMessage)
       }
     })
 
@@ -1038,13 +1068,18 @@ export const getDashboardData = async (
           date,
           platform,
           messageCount: existing?.count || 0,
+          tokenCount: existing?.tokenCount || 0,
         })
       }
     }
 
     // Convert user message counts to array format for pie chart
     const userStats = Array.from(userMessageCounts.entries())
-      .map(([username, count]) => ({ username, messageCount: count }))
+      .map(([username, messageCount]) => ({
+        username,
+        messageCount,
+        tokenCount: userTokenCounts.get(username) || 0,
+      }))
       .sort((a, b) => b.messageCount - a.messageCount) // Sort by message count descending
 
     // For backward compatibility, also create sessionActivity with the old format

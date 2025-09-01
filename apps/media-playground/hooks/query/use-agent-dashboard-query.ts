@@ -12,11 +12,13 @@ export interface MessageActivityData {
   date: string
   platform: string
   messageCount: number
+  tokenCount?: number
 }
 
 export interface UserStatsData {
   username: string
   messageCount: number
+  tokenCount?: number
 }
 
 export interface MessageDataItem {
@@ -70,21 +72,22 @@ export const useAgentDashboardQuery = ({
     queryParams.toString() ? `?${queryParams.toString()}` : ''
   }`
 
-  console.log('[useAgentDashboardQuery] URL:', url)
-  console.log('[useAgentDashboardQuery] Query params:', {
-    agentId,
-    startDate,
-    endDate,
-  })
-  console.log('[useAgentDashboardQuery] Query enabled:', enabled && !!agentId)
-
   return useQuery<DashboardData>({
     queryKey: ['agents', agentId, 'dashboard', startDate, endDate],
     queryFn: async (): Promise<DashboardData> => {
-      console.log('[useAgentDashboardQuery] Fetching data from:', url)
-      const result = await fetcher(url)
-      console.log('[useAgentDashboardQuery] Received result:', result)
-      return result as DashboardData
+      const result = (await fetcher(url)) as DashboardData
+
+      // DEBUG: Check token data structure
+      console.log(
+        '[TOKEN DEBUG] First messageActivity:',
+        JSON.stringify(result.messageActivity?.[0], null, 2),
+      )
+      console.log(
+        '[TOKEN DEBUG] First userStats:',
+        JSON.stringify(result.userStats?.[0], null, 2),
+      )
+
+      return result
     },
     enabled: enabled && !!agentId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes

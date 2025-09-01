@@ -21,24 +21,51 @@ interface AgentDashboardViewProps {
 
 const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
   const [showPlatformColors, setShowPlatformColors] = useState(true)
+  const [globalMetric, setGlobalMetric] = useState<'messages' | 'tokens'>(
+    'messages',
+  )
 
-  // Date range presets
+  // Date range presets - work in local timezone
   const getDateRangePreset = (preset: string) => {
-    const endDate = new Date()
+    const now = new Date()
+
+    // End date is always end of today in local timezone
+    const endDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      23,
+      59,
+      59,
+      999,
+    )
+
     let startDate: Date
 
     switch (preset) {
       case 'lastWeek':
-        startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000)
+        // Last 7 days: 6 days ago through today (inclusive)
+        startDate = new Date(now)
+        startDate.setDate(now.getDate() - 6)
+        startDate.setHours(0, 0, 0, 0)
         break
       case 'last4Weeks':
-        startDate = new Date(endDate.getTime() - 28 * 24 * 60 * 60 * 1000)
+        // Last 28 days: 27 days ago through today (inclusive)
+        startDate = new Date(now)
+        startDate.setDate(now.getDate() - 27)
+        startDate.setHours(0, 0, 0, 0)
         break
       case 'last3Months':
-        startDate = new Date(endDate.getTime() - 90 * 24 * 60 * 60 * 1000)
+        // Last 90 days: 89 days ago through today (inclusive)
+        startDate = new Date(now)
+        startDate.setDate(now.getDate() - 89)
+        startDate.setHours(0, 0, 0, 0)
         break
       default:
-        startDate = new Date(endDate.getTime() - 28 * 24 * 60 * 60 * 1000)
+        // Default to last 4 weeks
+        startDate = new Date(now)
+        startDate.setDate(now.getDate() - 27)
+        startDate.setHours(0, 0, 0, 0)
     }
 
     return { from: startDate, to: endDate }
@@ -50,8 +77,20 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
   )
   const [selectedPreset, setSelectedPreset] = useState<string>('last4Weeks')
 
-  const startDate = dateRange?.from?.toISOString().split('T')[0]
-  const endDate = dateRange?.to?.toISOString().split('T')[0]
+  // Convert local timezone dates to YYYY-MM-DD format for API
+  const formatDateForAPI = (date: Date) => {
+    // Format the local date as YYYY-MM-DD without timezone conversion
+    // This preserves the user-selected date regardless of timezone
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const startDate = dateRange?.from
+    ? formatDateForAPI(dateRange.from)
+    : undefined
+  const endDate = dateRange?.to ? formatDateForAPI(dateRange.to) : undefined
 
   const {
     data: dashboardData,
@@ -79,6 +118,19 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
     }
   }, [dashboardData?.activityMetadata, selectedPreset])
 
+  // Helper function to format numbers with k/M suffixes
+  const formatValue = (value: number, applyFormatting = false) => {
+    if (!applyFormatting) return value.toString()
+
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`
+    }
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}k`
+    }
+    return value.toString()
+  }
+
   // Chart data for bar chart (use messageActivity from backend)
   const chartData = useMemo(() => {
     if (!dashboardData) {
@@ -90,12 +142,24 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
       dashboardData.messageActivity &&
       dashboardData.messageActivity.length > 0
     ) {
-      return dashboardData.messageActivity.map((item: MessageActivityData) => ({
-        date: item.date,
-        platform: item.platform,
-        value: item.messageCount || 0,
-        label: `${item.messageCount || 0} messages`,
-      }))
+      const result = dashboardData.messageActivity.map(
+        (item: MessageActivityData) => {
+          const value =
+            globalMetric === 'tokens'
+              ? item.tokenCount || 0
+              : item.messageCount || 0
+          const unit = globalMetric === 'tokens' ? 'tokens' : 'messages'
+          const formattedValue = formatValue(value, true) // Apply k/M formatting to both messages and tokens
+          return {
+            date: item.date,
+            platform: item.platform,
+            value,
+            label: `${formattedValue} ${unit}`,
+          }
+        },
+      )
+
+      return result
     }
 
     // Fallback to sessionActivity (backward compatibility)
@@ -112,7 +176,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
     }
 
     return []
-  }, [dashboardData])
+  }, [dashboardData, globalMetric])
 
   // Pie chart data for user message distribution
   const pieChartData = useMemo(() => {
@@ -120,13 +184,22 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
       return []
     }
 
-    return dashboardData.userStats
-      .map((user: UserStatsData) => ({
-        label: user.username || 'Unknown',
-        value: user.messageCount || 0,
-      }))
+    const result = dashboardData.userStats
+      .map((user: UserStatsData) => {
+        const value =
+          globalMetric === 'tokens'
+            ? user.tokenCount || 0
+            : user.messageCount || 0
+        return {
+          label: user.username || 'Unknown',
+          value,
+          formattedValue: formatValue(value, true), // Apply k/M formatting to both
+        }
+      })
       .sort((a, b) => b.value - a.value)
-  }, [dashboardData])
+
+    return result
+  }, [dashboardData, globalMetric])
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range)
@@ -165,9 +238,6 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
             <h1 className="text-3xl font-bold text-foreground">
               {agent.name} Dashboard
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Activity overview and performance metrics
-            </p>
           </div>
 
           {/* Controls */}
@@ -177,7 +247,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
               <button
                 type="button"
                 onClick={() => handlePresetClick('lastWeek')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                className={`h-12 px-3 py-2 text-xs rounded-md transition-colors ${
                   selectedPreset === 'lastWeek'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -188,7 +258,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
               <button
                 type="button"
                 onClick={() => handlePresetClick('last4Weeks')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                className={`h-12 px-3 py-2 text-xs rounded-md transition-colors ${
                   selectedPreset === 'last4Weeks'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -199,7 +269,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
               <button
                 type="button"
                 onClick={() => handlePresetClick('last3Months')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                className={`h-12 px-3 py-2 text-xs rounded-md transition-colors ${
                   selectedPreset === 'last3Months'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -221,28 +291,63 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl font-semibold text-foreground">
-                Message Activity
+                {globalMetric === 'tokens'
+                  ? 'Token Activity'
+                  : 'Message Activity'}
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Messages across all conversations
+                {globalMetric === 'tokens'
+                  ? 'Tokens across all conversations'
+                  : 'Messages across all conversations'}
               </p>
             </div>
 
-            {/* Platform colors toggle */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="platform-colors"
-                checked={showPlatformColors}
-                onCheckedChange={checked =>
-                  setShowPlatformColors(checked as boolean)
-                }
-              />
-              <label
-                htmlFor="platform-colors"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Color by platform
-              </label>
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Metric toggle for bar chart */}
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium">Show:</span>
+                <div className="relative inline-flex items-center bg-muted rounded-lg p-1">
+                  <button
+                    type="button"
+                    onClick={() => setGlobalMetric('messages')}
+                    className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
+                      globalMetric === 'messages'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Messages
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGlobalMetric('tokens')}
+                    className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
+                      globalMetric === 'tokens'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Tokens
+                  </button>
+                </div>
+              </div>
+
+              {/* Platform colors toggle */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="platform-colors"
+                  checked={showPlatformColors}
+                  onCheckedChange={checked =>
+                    setShowPlatformColors(checked as boolean)
+                  }
+                />
+                <label
+                  htmlFor="platform-colors"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Color by platform
+                </label>
+              </div>
             </div>
           </div>
 
@@ -269,12 +374,43 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-semibold text-foreground">
-                  User Message Distribution
+                  User {globalMetric === 'tokens' ? 'Token' : 'Message'}{' '}
+                  Distribution
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Top contributors by user message count (excluding agent/system
-                  messages)
+                  Top contributors by user{' '}
+                  {globalMetric === 'tokens' ? 'token' : 'message'} count
+                  (excluding agent/system messages)
                 </p>
+              </div>
+
+              {/* Metric toggle for pie chart */}
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium">Show:</span>
+                <div className="relative inline-flex items-center bg-muted rounded-lg p-1">
+                  <button
+                    type="button"
+                    onClick={() => setGlobalMetric('messages')}
+                    className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
+                      globalMetric === 'messages'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Messages
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGlobalMetric('tokens')}
+                    className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
+                      globalMetric === 'tokens'
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Tokens
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -286,6 +422,7 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                   height={300}
                   showLabels={false}
                   showValues={false}
+                  valueLabel={globalMetric === 'tokens' ? 'tokens' : 'messages'}
                   className="mx-auto"
                 />
               </div>
@@ -294,7 +431,14 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                 <h3 className="text-lg font-medium mb-4">Contributors</h3>
                 <div className="max-h-[250px] overflow-y-auto pr-2 space-y-2">
                   {pieChartData.map(
-                    (user: { label: string; value: number }, index: number) => {
+                    (
+                      user: {
+                        label: string
+                        value: number
+                        formattedValue?: string
+                      },
+                      index: number,
+                    ) => {
                       const total = pieChartData.reduce(
                         (sum, item) => sum + item.value,
                         0,
@@ -314,17 +458,27 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                               className="w-3 h-3 rounded-sm flex-shrink-0"
                               style={{
                                 backgroundColor: [
-                                  '#3b82f6',
-                                  '#ef4444',
-                                  '#22c55e',
-                                  '#f59e0b',
-                                  '#8b5cf6',
-                                  '#ec4899',
-                                  '#06b6d4',
-                                  '#84cc16',
-                                  '#f97316',
-                                  '#6366f1',
-                                ][index % 10],
+                                  '#1f77b4b3',
+                                  '#ff7f0eb3',
+                                  '#2ca02cb3',
+                                  '#d62728b3',
+                                  '#9467bdb3',
+                                  '#8c564bb3',
+                                  '#e377c2b3',
+                                  '#7f7f7fb3',
+                                  '#bcbd22b3',
+                                  '#17becfb3',
+                                  '#aec7e8b3',
+                                  '#ffbb78b3',
+                                  '#98df8ab3',
+                                  '#ff9896b3',
+                                  '#c5b0d5b3',
+                                  '#c49c94b3',
+                                  '#f7b6d3b3',
+                                  '#c7c7c7b3',
+                                  '#dbdb8db3',
+                                  '#9edae5b3',
+                                ][index % 20],
                               }}
                             />
                             <span className="text-sm font-medium truncate">
@@ -332,7 +486,13 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                             </span>
                           </div>
                           <div className="flex items-center gap-3 text-sm text-muted-foreground flex-shrink-0">
-                            <span>{user.value} messages</span>
+                            <span>
+                              {user.formattedValue ||
+                                formatValue(user.value, true)}{' '}
+                              {globalMetric === 'tokens'
+                                ? 'tokens'
+                                : 'messages'}
+                            </span>
                             <span className="text-xs bg-background px-2 py-1 rounded">
                               {percentage}%
                             </span>
