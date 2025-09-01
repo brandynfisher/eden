@@ -32,16 +32,10 @@ const ProfileTabs = () => {
   const { user: meUser } = useMe({ isAuthenticated: !!isSignedIn })
   const pathname = usePathname()
   const creationsFeedRef = useRef<CreationsFeedHandle>(null)
+  // NOTE: We intentionally place all hooks (useEffect/useCallback/etc.) before
+  // any conditional returns to avoid changing the number/order of hooks between renders.
 
-  if (!creator || (isSignedIn && !user)) {
-    return null
-  }
-
-  const baseQuery = {
-    user: creator._id,
-  }
-
-  const isOwnProfile = user?._id === creator._id
+  const isOwnProfile = creator ? user?._id === creator._id : false
   const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
   const router = useRouter()
 
@@ -85,6 +79,15 @@ const ProfileTabs = () => {
     [router],
   )
 
+  // Safe early return AFTER all hooks have executed to keep hook order stable.
+  if (!creator || (isSignedIn && !user)) {
+    return null
+  }
+
+  // Use agent-based filtering for creations if this profile represents an agent.
+  const baseQuery =
+    creator.type === 'agent' ? { agent: creator._id } : { user: creator._id }
+
   const tabs: RouterTab[] = [
     {
       key: 'creations',
@@ -95,6 +98,8 @@ const ProfileTabs = () => {
       filterMenu: ProfileCreationsFilter,
       content: (
         <CreationsFeed
+          // For agent profiles we passed agent id in baseQuery.
+          // Other feeds below still rely on user id semantics.
           query={baseQuery}
           maxCols={7}
           multiselect={isOwnProfile}
@@ -117,7 +122,9 @@ const ProfileTabs = () => {
       // sortMenu: props => (
       //   <SortMenu {...props} variant="model" initialSort="createdAt;-1" />
       // ),
-      content: <ModelsFeed query={baseQuery} minCols={1} maxCols={4} />,
+      content: (
+        <ModelsFeed query={{ user: creator._id }} minCols={1} maxCols={4} />
+      ),
       actionButton: isOwnProfile ? (
         <Button asChild size="lg" className="gap-2">
           <Link href="/train/flux_trainer">
@@ -131,7 +138,7 @@ const ProfileTabs = () => {
       key: 'collections',
       title: 'Collections',
       filterMenu: ProfileCollectionsFilter,
-      content: <CollectionsFeed query={baseQuery} />,
+      content: <CollectionsFeed query={{ user: creator._id }} />,
     },
     {
       key: 'agents',
@@ -149,7 +156,7 @@ const ProfileTabs = () => {
       ) : undefined,
       content: (
         <AgentsFeed
-          query={baseQuery}
+          query={{ user: creator._id }}
           minCols={1}
           maxCols={5}
           hideCreateButton={true}
