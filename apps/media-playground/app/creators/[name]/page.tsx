@@ -52,9 +52,9 @@ const getUser = async (name: string) => {
           updatedAt: agent.updatedAt
             ? new Date(agent.updatedAt).toISOString()
             : new Date().toISOString(),
-          followerCount: 0,
-          followingCount: 0,
-          creationCount: 0,
+          followerCount: agent.followerCount || 0,
+          followingCount: agent.followingCount || 0,
+          creationCount: agent.creationCount || 0,
           instagramHandle: undefined,
           twitterHandle: undefined,
           type: 'agent',
