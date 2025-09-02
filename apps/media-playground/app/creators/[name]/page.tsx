@@ -39,21 +39,26 @@ const getUser = async (name: string) => {
     ).catch(() => undefined)
 
     if (agentResponse?.agent) {
-      const agent = agentResponse.agent as any
+      const agent = agentResponse.agent
       const adapted: CreatorsGetResponse = {
         creator: {
           _id: agent._id,
-          userId: agent.username || agent.userId,
+          userId: agent.username || agent.userId || '',
           username: agent.username || name,
           userImage: agent.userImage || '',
-          createdAt: agent.createdAt || new Date().toISOString(),
-          followerCount: agent.followerCount || 0,
-          followingCount: agent.followingCount || 0,
-          creationCount: agent.creationCount || 0,
+          createdAt: agent.createdAt
+            ? new Date(agent.createdAt).toISOString()
+            : new Date().toISOString(),
+          updatedAt: agent.updatedAt
+            ? new Date(agent.updatedAt).toISOString()
+            : new Date().toISOString(),
+          followerCount: 0,
+          followingCount: 0,
+          creationCount: 0,
           instagramHandle: undefined,
           twitterHandle: undefined,
           type: 'agent',
-        } as any,
+        },
       }
       return adapted
     }
