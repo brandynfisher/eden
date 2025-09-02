@@ -476,7 +476,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     try {
       setIsSubmitting(true)
       await axios.post(`/api/agents/${agent._id}/collective-memory`, {
-        guide_name: data.guide_name,
+        shard_name: data.guide_name,
         extraction_prompt: data.extraction_prompt,
       })
 
@@ -561,7 +561,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           </Button>
         </div>
 
-        {/* New Guide Creation Modal */}
+        {/* New Memory Creation Modal */}
         <Dialog
           open={isNewGuideModalOpen}
           onOpenChange={setIsNewGuideModalOpen}
@@ -584,10 +584,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   name="guide_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Guide name</FormLabel>
+                      <FormLabel>Memory shard name</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="A simple name to remember the purpose of this Guide"
+                          placeholder="A simple name to remember the purpose of this Memory"
                           {...field}
                         />
                       </FormControl>
@@ -658,7 +658,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     {isSubmitting ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      'Create Guide'
+                      'Create Memory'
                     )}
                   </Button>
                 </DialogFooter>
@@ -989,7 +989,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
             <DialogDescription>
               {editingField === 'content'
                 ? 'Edit the main collective memory content'
-                : 'Memory guides instruct your agent what they should pay attention to and what kind of memories to form'}
+                : 'Memory instructions tell your agent what they should pay attention to and what kind of memories to form'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
