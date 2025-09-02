@@ -31,19 +31,8 @@ const ProfileTabs = () => {
   const { creator } = useCreatorQuery({ key: params?.name })
   const { user: meUser } = useMe({ isAuthenticated: !!isSignedIn })
   const pathname = usePathname()
-  const creationsFeedRef = useRef<CreationsFeedHandle>(null)
-
-  if (!creator || (isSignedIn && !user)) {
-    return null
-  }
-
-  const baseQuery = {
-    user: creator._id,
-  }
-
-  const isOwnProfile = user?._id === creator._id
-  const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
   const router = useRouter()
+  const creationsFeedRef = useRef<CreationsFeedHandle>(null)
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -77,6 +66,7 @@ const ProfileTabs = () => {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [pathname, router])
+
   const handleCreationNavigation = useCallback(
     (creationId: string) => {
       // This could be used for programmatic navigation if needed
@@ -84,6 +74,17 @@ const ProfileTabs = () => {
     },
     [router],
   )
+
+  if (!creator || (isSignedIn && !user)) {
+    return null
+  }
+
+  const baseQuery = {
+    user: creator._id,
+  }
+
+  const isOwnProfile = user?._id === creator._id
+  const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
 
   const tabs: RouterTab[] = [
     {

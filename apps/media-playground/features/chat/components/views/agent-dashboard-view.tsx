@@ -481,9 +481,14 @@ const AgentDashboardView: FC<AgentDashboardViewProps> = ({ agent }) => {
                                 ][index % 20],
                               }}
                             />
-                            <span className="text-sm font-medium truncate">
+                            <a
+                              href={`/creators/${user.label}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium truncate text-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+                            >
                               {user.label}
-                            </span>
+                            </a>
                           </div>
                           <div className="flex items-center gap-3 text-sm text-muted-foreground flex-shrink-0">
                             <span>

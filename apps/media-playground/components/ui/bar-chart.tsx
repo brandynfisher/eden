@@ -143,8 +143,13 @@ const BarChart: FC<BarChartProps> = ({
         style={{ height }}
       >
         {processedData.map(dayData => {
+          // Improved scaling for better resolution
+          const minHeightPixels = 4 // Minimum bar height in pixels for visibility
+          const minHeightPercentage = (minHeightPixels / height) * 100
           const barHeight =
-            dayData.totalValue > 0 ? Math.max(dayData.percentage, 15) : 0
+            dayData.totalValue > 0
+              ? Math.max(dayData.percentage, minHeightPercentage)
+              : 0
           return (
             <div
               key={dayData.date}
