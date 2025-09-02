@@ -2,7 +2,7 @@ import LoadingIndicator from '@/components/loading-indicator'
 import ProfileHeader from '@/features/profile/profile-header'
 import ProfileTabs from '@/features/profile/profile-tabs'
 import { fetcher } from '@/lib/fetcher'
-import { CreatorsGetResponse } from '@edenlabs/eden-sdk'
+import { Agent, CreatorsGetResponse } from '@edenlabs/eden-sdk'
 import { Metadata, ResolvingMetadata } from 'next'
 import { OpenGraph } from 'next/dist/lib/metadata/types/opengraph-types'
 import { cookies } from 'next/headers'
@@ -15,18 +15,57 @@ type Props = {
   }
 }
 
+// Fetch a creator (user). If not found, attempt agent fetch and adapt agent to creator shape.
 const getUser = async (name: string) => {
   try {
-    const response = await fetcher<CreatorsGetResponse>(
+    // Attempt user fetch (suppress individual fetch errors)
+    const userResponse = await fetcher<CreatorsGetResponse>(
       `${process.env.NEXT_PUBLIC_HOST}/api/users/${name}`,
       {
         credentials: 'include',
         headers: { Cookie: cookies().toString() },
       },
-    )
-    return response
-  } catch (e) {
-    return
+    ).catch(() => undefined)
+
+    if (userResponse?.creator) return userResponse
+
+    // Attempt agent fetch (suppress individual fetch errors)
+    const agentResponse = await fetcher<{ agent: Agent }>(
+      `${process.env.NEXT_PUBLIC_HOST}/api/agents/${name}`,
+      {
+        credentials: 'include',
+        headers: { Cookie: cookies().toString() },
+      },
+    ).catch(() => undefined)
+
+    if (agentResponse?.agent) {
+      const agent = agentResponse.agent
+      const adapted: CreatorsGetResponse = {
+        creator: {
+          _id: agent._id,
+          userId: agent.username || agent.userId || '',
+          username: agent.username || name,
+          userImage: agent.userImage || '',
+          createdAt: agent.createdAt
+            ? new Date(agent.createdAt).toISOString()
+            : new Date().toISOString(),
+          updatedAt: agent.updatedAt
+            ? new Date(agent.updatedAt).toISOString()
+            : new Date().toISOString(),
+          followerCount: agent.followerCount || 0,
+          followingCount: agent.followingCount || 0,
+          creationCount: agent.creationCount || 0,
+          instagramHandle: undefined,
+          twitterHandle: undefined,
+          type: 'agent',
+        },
+      }
+      return adapted
+    }
+
+    return undefined
+  } catch (_) {
+    return undefined
   }
 }
 

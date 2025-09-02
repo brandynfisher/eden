@@ -8,13 +8,47 @@ export interface SessionActivityData {
   sessionCount: number
 }
 
+export interface MessageActivityData {
+  date: string
+  platform: string
+  messageCount: number
+  tokenCount?: number
+}
+
+export interface UserStatsData {
+  username: string
+  messageCount: number
+  tokenCount?: number
+}
+
+export interface MessageDataItem {
+  _id: string
+  platform: string
+  role: string
+  username: string
+  timestamp: string
+  date: string
+  sender: string
+}
+
 export interface DashboardData {
+  // Backward compatibility
   sessionActivity: SessionActivityData[]
+  // New enhanced data
+  messageActivity: MessageActivityData[]
+  userStats: UserStatsData[]
   dateRange: {
     start: string
     end: string
   }
   platforms: string[]
+  roles: string[]
+  activityMetadata?: {
+    oldestMessageDate?: string
+    newestMessageDate?: string
+    totalMessages: number
+    hasRecentActivityOnly: boolean
+  }
 }
 
 export interface UseAgentDashboardQueryOptions {
@@ -40,7 +74,21 @@ export const useAgentDashboardQuery = ({
 
   return useQuery<DashboardData>({
     queryKey: ['agents', agentId, 'dashboard', startDate, endDate],
-    queryFn: () => fetcher(url),
+    queryFn: async (): Promise<DashboardData> => {
+      const result = (await fetcher(url)) as DashboardData
+
+      // DEBUG: Check token data structure
+      console.log(
+        '[TOKEN DEBUG] First messageActivity:',
+        JSON.stringify(result.messageActivity?.[0], null, 2),
+      )
+      console.log(
+        '[TOKEN DEBUG] First userStats:',
+        JSON.stringify(result.userStats?.[0], null, 2),
+      )
+
+      return result
+    },
     enabled: enabled && !!agentId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   })

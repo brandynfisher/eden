@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
@@ -15,8 +15,25 @@ import { AlertCircle, Loader2 } from 'lucide-react'
 import { FC, useState } from 'react'
 import { toast } from 'sonner'
 
+type OwnerPaysOption = 'off' | 'deployments' | 'full'
+
 export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
-  const [ownerPays, setOwnerPays] = useState(agent.owner_pays || false)
+  // Convert legacy boolean values to new string format
+  const getInitialValue = (): OwnerPaysOption => {
+    if (typeof agent.owner_pays === 'boolean') {
+      return agent.owner_pays ? 'full' : 'off'
+    }
+    if (
+      agent.owner_pays === 'off' ||
+      agent.owner_pays === 'deployments' ||
+      agent.owner_pays === 'full'
+    ) {
+      return agent.owner_pays
+    }
+    return 'off'
+  }
+
+  const [ownerPays, setOwnerPays] = useState<OwnerPaysOption>(getInitialValue())
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSave = async () => {
@@ -43,15 +60,49 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
 
   return (
     <div className="space-y-4">
-      <div className="bg-background border p-4 rounded-lg flex items-center justify-between gap-2">
-        <div className="flex flex-col gap-2">
+      <div className="bg-background border p-4 rounded-lg">
+        <div className="flex flex-col gap-3">
           <label className="text-sm font-medium">Cover Usage Costs</label>
-          <p className="text-sm text-muted-foreground">
-            When enabled, you (the agent owner) will cover all usage costs. When
-            disabled, users will pay for their own usage.
-          </p>
+          <div className="space-y-2">
+            <ToggleGroup
+              type="single"
+              value={ownerPays}
+              onValueChange={value =>
+                value && setOwnerPays(value as OwnerPaysOption)
+              }
+              className="flex flex-col items-stretch gap-2"
+            >
+              <ToggleGroupItem
+                value="off"
+                className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
+              >
+                <div className="font-medium text-sm">Off</div>
+                <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
+                  Users pay for their own usage.
+                </div>
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="deployments"
+                className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
+              >
+                <div className="font-medium text-sm">Deployments only</div>
+                <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
+                  Agent owner covers all usage costs on social platforms and
+                  deployments only.
+                </div>
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="full"
+                className="flex flex-col items-start justify-start h-auto p-2.5 border border-border/50 rounded-md data-[state=on]:bg-primary/20 data-[state=on]:border-primary data-[state=on]:text-primary-foreground hover:bg-accent/50 transition-colors"
+              >
+                <div className="font-medium text-sm">Full</div>
+                <div className="text-xs text-muted-foreground data-[state=on]:text-primary-foreground/80 mt-0.5">
+                  Agent owner covers all costs, including the main Eden app.
+                </div>
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </div>
-        <Switch checked={ownerPays} onCheckedChange={setOwnerPays} />
       </div>
 
       <div className="flex justify-end">
@@ -96,8 +147,7 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
       <div className="flex items-center justify-center gap-2 mt-10">
         <AlertCircle className="size-4 text-destructive" />
         <p className="text-destructive">
-          We were unable to fetch your deployments. Please
-          try again later.
+          We were unable to fetch your deployments. Please try again later.
         </p>
       </div>
     )
@@ -168,9 +218,7 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
 
         {/* Integration Settings - Inline version to avoid form nesting */}
         <div className="mt-8 space-y-4 rounded-lg">
-          <h2 className="text-lg font-medium">
-            Integration Settings
-          </h2>
+          <h2 className="text-lg font-medium">Integration Settings</h2>
           <DeploymentSettingsInline agent={agent} />
         </div>
       </div>

@@ -87,7 +87,7 @@ export type Agent = Omit<
   public?: boolean
   likeCount?: number
   isLiked?: boolean
-  owner_pays?: boolean
+  owner_pays?: 'off' | 'deployments' | 'full' | boolean // boolean for backward compatibility
   stats?: AgentStats
   agent_extras?: {
     permissions?: {
@@ -154,7 +154,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
     use_when?: string
   }>
   llm_settings?: LLMSettings
-  owner_pays?: boolean
+  owner_pays?: 'off' | 'deployments' | 'full' | boolean // boolean for backward compatibility
   agent_extras?: {
     permissions?: {
       editors?: Creator[]

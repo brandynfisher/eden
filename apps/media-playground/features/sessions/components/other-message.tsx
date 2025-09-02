@@ -193,7 +193,7 @@ export const OtherMessage = ({
           <>
             {/* Preview */}
             {!expanded && (
-              <div className="whitespace-pre-wrap break-words break-all overflow-x-auto relative">
+              <div className="relative">
                 <MarkdownText>{preview!}</MarkdownText>
                 {isHuge && (
                   <div className="mt-2 flex">
@@ -211,7 +211,7 @@ export const OtherMessage = ({
             )}
             {/* Full (own scroll) */}
             {expanded && (
-              <div className="whitespace-pre-wrap break-words break-all overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
+              <div className="max-h-[60vh] overflow-y-auto rounded-md border p-3">
                 <MarkdownText>{message.content!}</MarkdownText>
               </div>
             )}
