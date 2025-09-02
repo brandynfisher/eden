@@ -173,7 +173,14 @@ const agentRoutes: FastifyPluginAsync = async server => {
             }),
           ),
         ),
-        owner_pays: Type.Optional(Type.Boolean()),
+        owner_pays: Type.Optional(
+          Type.Union([
+            Type.Literal('off'),
+            Type.Literal('deployments'),
+            Type.Literal('full'),
+            Type.Boolean(), // backward compatibility
+          ]),
+        ),
         tools: Type.Optional(Type.Record(Type.String(), Type.Boolean())),
         llm_settings: Type.Optional(
           Type.Object({

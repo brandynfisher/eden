@@ -35,7 +35,7 @@ export interface AgentSchema extends BaseUserSchema {
   stats?: AgentStats
   likeCount?: number
   isLiked?: boolean
-  owner_pays?: boolean
+  owner_pays?: 'off' | 'deployments' | 'full' | boolean // boolean for backward compatibility
   // Permissions are now stored in AgentPermission collection
   agent_extras?: {
     permissions?: {
@@ -171,8 +171,9 @@ const AgentSchema = new Schema<AgentDocument>(
       type: Boolean,
     },
     owner_pays: {
-      type: Boolean,
-      default: false,
+      type: Schema.Types.Mixed,
+      enum: ['off', 'deployments', 'full', true, false], // support boolean for backward compatibility
+      default: 'off',
     },
     user_memory_enabled: {
       type: Boolean,
