@@ -1,3 +1,4 @@
+import { paginatedResponse, paginationProperties } from '..'
 import {
   createAgent,
   createAgentTrigger,
@@ -18,6 +19,7 @@ import {
   getDashboardData,
   getSharedAgents,
   likeAgent,
+  listAgents,
   removeMemoryFromAgent,
   removeUnabsorbedMemory,
   retrieveMemoryAgent,
@@ -39,6 +41,33 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync, FastifyRequest } from 'fastify'
 
 const agentRoutes: FastifyPluginAsync = async server => {
+  server.get('/v2/agents', {
+    schema: {
+      tags: ['Agents'],
+      description: 'List agents',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      querystring: {
+        type: 'object',
+        properties: {
+          userId: { type: ['string', 'array'] },
+          username: { type: ['string', 'array'] },
+          name: { type: 'string' },
+          ...paginationProperties(),
+        },
+        required: [],
+      },
+      response: {
+        200: paginatedResponse(Type.Any()),
+      },
+    },
+    preHandler: [request => maybeAuth(server, request)],
+    handler: (request, reply) => listAgents(request, reply),
+  })
+
   server.get('/v2/agents/:agentId', {
     schema: {
       tags: ['Agents'],

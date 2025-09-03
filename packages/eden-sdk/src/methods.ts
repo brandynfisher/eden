@@ -25,6 +25,8 @@ import {
   AgentsGetPermissionsResponse,
   AgentsGetSharedArguments,
   AgentsGetSharedResponse,
+  AgentsListArguments,
+  AgentsListResponse,
   AgentsUpdateArguments,
   AgentsUpdatePermissionsArguments,
   AgentsUpdatePermissionsResponse,
@@ -155,6 +157,7 @@ import {
   agentsDeleteRequestConfig,
   agentsGetAllDeploymentsRequestConfig,
   agentsGetAllTriggersRequestConfig,
+  agentsListRequestConfig,
   agentsUpdateRequestConfig,
   apiKeysCreateRequestConfig,
   apiKeysDeleteRequestConfig,
@@ -689,6 +692,10 @@ export abstract class Methods {
   }
 
   public readonly agents = {
+    list: bindApiCall<AgentsListArguments, AgentsListResponse>(
+      this,
+      agentsListRequestConfig,
+    ),
     get: bindApiCall<AgentGetArguments, AgentGetResponse>(
       this,
       agentGetRequestConfig,
@@ -741,10 +748,10 @@ export abstract class Methods {
       AgentsUpdatePermissionsArguments,
       AgentsUpdatePermissionsResponse
     >(this, agentsUpdatePermissionsRequestConfig),
-    getShared: bindApiCall<
-      AgentsGetSharedArguments,
-      AgentsGetSharedResponse
-    >(this, agentsGetSharedRequestConfig),
+    getShared: bindApiCall<AgentsGetSharedArguments, AgentsGetSharedResponse>(
+      this,
+      agentsGetSharedRequestConfig,
+    ),
     triggers: {
       getAll: bindApiCall<
         AgentsGetTriggersArguments,
