@@ -18,6 +18,7 @@ const AgentCreationsView: FC<{
   const router = useRouter()
   const pathname = usePathname()
   const creationsFeedRef = useRef<CreationsFeedHandle>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // Construct the query for RecentCreationsFeed based on filterMode
   const recentCreationsQuery = useMemo(() => {
@@ -72,7 +73,7 @@ const AgentCreationsView: FC<{
   const showFilterTabs = !!user
 
   return (
-    <div className="flex-1 overflow-auto bg-accent">
+    <div ref={scrollContainerRef} className="flex-1 overflow-auto bg-accent">
       <div className="w-full px-2 py-6">
         <div className="flex text-lg items-center gap-2 justify-center mb-6 pt-4">
           {`Creations with ${agent.name}`}
@@ -109,9 +110,11 @@ const AgentCreationsView: FC<{
         {/* Use CreationsFeed directly with our custom breakpoints */}
         <div className="w-full">
           <CreationsFeed
+            ref={creationsFeedRef}
             query={recentCreationsQuery}
             minCols={1}
             maxCols={8}
+            scrollRef={scrollContainerRef}
             showSkeleton
             onNavigate={handleCreationNavigation}
           />

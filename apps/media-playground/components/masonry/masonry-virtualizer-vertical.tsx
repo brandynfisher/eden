@@ -536,29 +536,19 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
 
     const virtualItems = virtualizer.getVirtualItems()
     const lastItem = virtualItems[virtualItems.length - 1]
-    const virtualItemsStringified = JSON.stringify(
-      virtualizer.getVirtualItems(),
-    )
 
     useEffect(() => {
-      if (!lastItem || hasNextPage === undefined) {
-        return
-      }
+      if (!lastItem || hasNextPage === undefined || isFetchingNextPage) return
 
-      if (
-        lastItem.index >= allRows.length - DEFAULT_PAGE_LIMIT &&
-        hasNextPage &&
-        !isFetchingNextPage
-      ) {
+      if (lastItem.index >= allRows.length - 20) {
         fetchNextPage()
       }
     }, [
-      hasNextPage,
-      fetchNextPage,
-      allRows.length,
-      isFetchingNextPage,
-      virtualItemsStringified,
       lastItem,
+      allRows.length,
+      hasNextPage,
+      isFetchingNextPage,
+      fetchNextPage,
     ])
 
     const renderItem = useCallback(
@@ -596,14 +586,7 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
           </div>
         )
       },
-      [
-        onUpdate,
-        render,
-        allRows,
-        hasNextPage,
-        virtualizer,
-        columnWidth,
-      ],
+      [onUpdate, render, allRows, hasNextPage, virtualizer, columnWidth],
     )
 
     return (
