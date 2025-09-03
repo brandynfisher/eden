@@ -84,11 +84,11 @@ const AgentMemoryView: FC<{
     useState<MemoryFormDto | null>(null)
   const [userMemoryEnabled, setUserMemoryEnabled] = useState<boolean>(true)
 
-  // Collective Memory Access Logic - Four Scenarios:
+  // Collective Memory Access Logic - Three Scenarios:
   // 1. Not editor/owner: no tab visible (handled by hasEditAccess check)
-  // 2. Editor/owner but no preview flag: show "coming soon" message
-  // 3. Editor/owner with preview flag: show full functionality (regardless of subscription tier)
-  // 4. Editor/owner with pro tier but no preview flag: show "coming soon" message
+  // 2. Editor/owner with Preview flag: full functionality (bypasses subscription checks)
+  // 3. Editor/owner with Pro+ tier: full functionality
+  // 4. Editor/owner with lower tier: show upgrade prompt
   const collectiveMemoryAccess = useMemo(() => {
     if (!hasEditAccess) {
       return { showTab: false, hasAccess: false, needsPreview: false }
@@ -96,18 +96,24 @@ const AgentMemoryView: FC<{
 
     // User has edit access - always show tab
     if (!authUser) {
-      return { showTab: true, hasAccess: false, needsPreview: true }
+      return { showTab: true, hasAccess: false, needsPreview: false }
     }
 
     const hasPreviewFlag = authUser?.featureFlags?.includes(FeatureFlag.Preview)
+    const hasProTier = (authUser?.subscriptionTier ?? 0) >= 2 // Pro tier or higher
 
     // Preview feature flag gives access regardless of subscription tier
     if (hasPreviewFlag) {
       return { showTab: true, hasAccess: true, needsPreview: false }
     }
 
-    // No preview flag means no access, even with pro tier
-    return { showTab: true, hasAccess: false, needsPreview: true }
+    // Pro tier users get access
+    if (hasProTier) {
+      return { showTab: true, hasAccess: true, needsPreview: false }
+    }
+
+    // Lower tier users see upgrade prompt
+    return { showTab: true, hasAccess: false, needsPreview: false }
   }, [hasEditAccess, authUser?.subscriptionTier, authUser?.featureFlags])
 
   const form = useForm<MemoryFormDto>({
@@ -560,7 +566,6 @@ const AgentMemoryView: FC<{
             <CollectiveMemory
               agent={agent}
               hasAccess={collectiveMemoryAccess.hasAccess}
-              needsPreview={collectiveMemoryAccess.needsPreview}
               onTabChange={setMemoryTab}
               showTabToggle={false}
             />

@@ -109,7 +109,6 @@ interface CollectiveGuide {
 interface CollectiveMemoryProps {
   agent: Agent
   hasAccess: boolean
-  needsPreview?: boolean
   onTabChange?: (tab: 'user' | 'collective') => void
   showTabToggle?: boolean
 }
@@ -154,7 +153,6 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
 const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   agent,
   hasAccess,
-  needsPreview = false,
   onTabChange,
   showTabToggle = false,
 }) => {
@@ -504,28 +502,18 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   if (!hasAccess) {
     return (
       <div className="text-center py-16">
-        <div className="inline-flex items-center gap-3 px-6 py-4 rounded-lg bg-muted border border-border">
+        <div className="inline-flex items-center gap-3 px-6 py-4 rounded-lg bg-orange-500/20 border border-orange-700/40">
           <span className="text-muted-foreground font-medium">
-            {needsPreview ? (
-              <>
-                🚀 Collective Memory is coming soon...
-                <br />
-                This feature is currently in preview and will be available to
-                pro tier users soon.
-              </>
-            ) : (
-              <>
-                🌐 Collective memory is only available to &gt;pro tier users.
-                <br />
-                <a
-                  href="/settings/subscription"
-                  className="underline hover:text-foreground transition-colors"
-                >
-                  Upgrade your subscription
-                </a>{' '}
-                to enable Collective Memory for {agent.name}
-              </>
-            )}
+            🌐 Collective memory (enabling your agent to learn from
+            conversations with all users) is only available to Pro+ tier users.
+            <br />
+            <a
+              href="/settings/subscription"
+              className="underline hover:text-foreground transition-colors"
+            >
+              Upgrade your subscription
+            </a>{' '}
+            to enable Collective Memory for {agent.name}
           </span>
         </div>
       </div>
