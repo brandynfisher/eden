@@ -2,7 +2,6 @@ import ErrorBoundary from '@/components/error-boundary'
 import CreationsFeed, {
   CreationsFeedHandle,
 } from '@/features/feed/creations-feed'
-import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { usePathname } from 'next/navigation'
 import React, {
@@ -83,7 +82,6 @@ export default function RecentCreationsFeed({
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               setShouldLoadCreations(true)
-              observer.disconnect()
             }
           })
         },
@@ -113,28 +111,21 @@ export default function RecentCreationsFeed({
         ref={observedRef}
         className="lg:max-w-[80%] 2xl:max-w-[70%] mx-auto pb-12"
       >
-        <div className="relative min-h-[400px]">
-          <div
-            className={cn(
-              'w-full transition-opacity duration-300 absolute inset-0',
-              !shouldLoadCreations && 'opacity-0 pointer-events-none',
-            )}
-          >
-            <Suspense fallback={null}>
-              <ErrorBoundary>
-                <CreationsFeed
-                  query={query}
-                  maxCols={5}
-                  scrollRef={scrollRef}
-                  initialScrollIndex={initialScrollIndex}
-                  onScrollRestored={onScrollRestored}
-                  showSkeleton
-                  onNavigate={handleCreationNavigation}
-                />
-              </ErrorBoundary>
-            </Suspense>
-          </div>
-        </div>
+        {shouldLoadCreations && (
+          <Suspense fallback={null}>
+            <ErrorBoundary>
+              <CreationsFeed
+                query={query}
+                maxCols={5}
+                scrollRef={scrollRef}
+                initialScrollIndex={initialScrollIndex}
+                onScrollRestored={onScrollRestored}
+                showSkeleton
+                onNavigate={handleCreationNavigation}
+              />
+            </ErrorBoundary>
+          </Suspense>
+        )}
       </div>
     </div>
   )

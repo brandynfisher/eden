@@ -5,6 +5,7 @@ import {
   AgentGetResponse,
   AgentStats,
   AgentSuggestion,
+  ModelV2,
 } from '@edenlabs/eden-sdk'
 import { cookies } from 'next/headers'
 import { cache } from 'react'
@@ -39,7 +40,10 @@ export interface AgentBasicInfo {
   persona?: string
   greeting?: string
   knowledge?: string
-  model?: string
+  model?: Array<{
+    lora: ModelV2
+    use_when?: string
+  }>
   suggestions?: AgentSuggestion[]
   stats?: AgentStats
 }

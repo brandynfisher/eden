@@ -217,9 +217,9 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
 
             <RecentCreationsFeed
               query={recentCreationsQuery}
-              scrollRef={scrollRef}
               initialScrollIndex={initialScrollIndex}
               onScrollRestored={clearScrollIndexState}
+              scrollRef={scrollRef}
             />
           </div>
         </>

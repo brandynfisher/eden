@@ -43,12 +43,13 @@ import {
   AgentGetArguments,
   AgentsCreateArguments,
   AgentsDeleteArguments,
+  AgentsListArguments,
   AgentsUpdateArguments,
   FeatureFlag,
   SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { UpdateResult } from 'mongodb'
+import { ObjectId, UpdateResult } from 'mongodb'
 import { UpdateQuery } from 'mongoose'
 
 // Re-export functions from agentServicesController
@@ -104,6 +105,107 @@ const hasOwnerPermissions = async (
   })
 
   return !!permission
+}
+
+export const listAgents = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId, username, name, limit, page, sort } =
+    request.query as AgentsListArguments
+  const agentRepository = new AgentRepository(Agent)
+
+  // Get authenticated user if available
+  const currentUserId = request.user ? request.user.userId : undefined
+  let currentUserObjectId: ObjectId | undefined
+
+  if (currentUserId) {
+    const currentUser = await User.findById(currentUserId).select('_id')
+    currentUserObjectId = currentUser?._id
+  }
+  // Build query
+  const query: any = {}
+  let ownerIds: ObjectId[] = []
+
+  // Filter by userId if provided
+  if (userId) {
+    // Handle single userId or array of userIds
+    const userIds = Array.isArray(userId) ? userId : [userId]
+    const users = await User.find({
+      userId: { $in: userIds },
+    }).select('_id')
+    if (users.length > 0) {
+      ownerIds = users.map(u => u._id)
+    }
+  }
+
+  // Filter by username if provided
+  if (username) {
+    // Handle single username or array of usernames
+    const usernames = Array.isArray(username) ? username : [username]
+    const users = await User.find({
+      username: { $in: usernames },
+    }).select('_id')
+    if (users.length > 0) {
+      // If we already have owner IDs from userId, find intersection
+      if (ownerIds.length > 0) {
+        const ownerIdSet = new Set(ownerIds.map(id => id.toString()))
+        const usernameIds = users.map(u => u._id)
+        ownerIds = usernameIds.filter(id => ownerIdSet.has(id.toString()))
+      } else {
+        ownerIds = users.map(u => u._id)
+      }
+    }
+  }
+
+  // Set owner filter if we have specific owners to query
+  if (ownerIds.length > 0) {
+    query.owner = { $in: ownerIds }
+  }
+
+  // Add text search if name is provided
+  if (name) {
+    query.$text = { $search: name }
+  }
+
+  // Check if the authenticated user is querying for their own agents
+  const isQueryingOwnAgents =
+    currentUserObjectId &&
+    ownerIds.length > 0 &&
+    ownerIds.some(id => id.toString() === currentUserObjectId.toString())
+
+  // Simple privacy logic:
+  // 1. If querying for your own agents specifically - no public filter needed
+  // 2. Otherwise - only show public agents
+  if (!isQueryingOwnAgents) {
+    query.public = { $ne: false }
+  }
+
+  // Query with pagination
+  const agents = await agentRepository.query(query, {
+    limit,
+    page,
+    sort,
+    populate: 'owner',
+  })
+
+  // Add public names and format the response
+  const agentsWithPublicName = await Promise.all(
+    agents.docs.map(async doc => {
+      const publicName = `${doc.owner?.username}:${doc.name}`
+      return {
+        ...doc.toObject(),
+        publicName,
+      }
+    }),
+  )
+
+  const response = {
+    ...agents,
+    docs: agentsWithPublicName,
+  }
+
+  return reply.status(200).send(response)
 }
 
 export const getAgent = async (

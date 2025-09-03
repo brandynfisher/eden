@@ -51,7 +51,7 @@ type Props = {
 // Define filter types within AgentDetail
 type FilterMode = 'all' | 'mine'
 
-const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
+const AgentDetail = ({ id, agentSSRData }: Props) => {
   const { user, isSignedIn } = useAuthState()
   const dispatch = useAppDispatch()
   const router = useRouter()
@@ -417,7 +417,6 @@ const AgentDetail = ({ id, agentSSRData, scrollRef }: Props) => {
             {/* Recent Creations Feed Component */}
             <RecentCreationsFeed
               query={recentCreationsQuery}
-              scrollRef={scrollRef}
               initialScrollIndex={initialScrollIndex}
               onScrollRestored={clearScrollIndexState}
             />

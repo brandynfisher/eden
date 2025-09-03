@@ -1,10 +1,16 @@
+import {
+  ListQueryParams,
+  PaginatedResponse,
+  WebAPICallOptions,
+  WebAPICallResult,
+  transformArgsIntoURLParams,
+} from '../../types'
 import { AllowlistItem } from './Deployments'
 import { AxiosRequestConfig } from 'axios'
 import { Creator } from 'src/models/Creators'
 import { ModelV2 } from 'src/models/v2'
 import { Deployment } from 'src/models/v2/Deployments'
 import { CronSchedule, Trigger } from 'src/models/v2/Trigger'
-import { WebAPICallOptions, WebAPICallResult } from 'src/types'
 
 export type AgentSuggestion = {
   label: string
@@ -110,6 +116,14 @@ export type AgentDeployCredentials = {
 }
 
 // Arguments
+export interface AgentsListArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  userId?: string | string[]
+  username?: string | string[]
+  name?: string
+}
+
 export interface AgentGetArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -342,6 +356,17 @@ export interface AgentsUnlikeArguments extends WebAPICallOptions {
 }
 
 // Requests
+export const agentsListRequestConfig = (
+  args: AgentsListArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'v2/agents',
+    params,
+  }
+}
+
 export const agentGetRequestConfig = (
   args: AgentGetArguments,
 ): AxiosRequestConfig => {
@@ -510,6 +535,11 @@ export const agentsUnlikeRequestConfig = (
 }
 
 // Responses
+export type AgentsListResponse = WebAPICallResult &
+  PaginatedResponse<Agent> & {
+    error?: string
+  }
+
 export type AgentsGetDeploymentsResponse = WebAPICallResult & {
   deployments: Deployment[]
   error?: string

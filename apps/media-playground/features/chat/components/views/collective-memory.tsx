@@ -109,7 +109,6 @@ interface CollectiveGuide {
 interface CollectiveMemoryProps {
   agent: Agent
   hasAccess: boolean
-  needsPreview?: boolean
   onTabChange?: (tab: 'user' | 'collective') => void
   showTabToggle?: boolean
 }
@@ -154,7 +153,6 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
 const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   agent,
   hasAccess,
-  needsPreview = false,
   onTabChange,
   showTabToggle = false,
 }) => {
@@ -476,7 +474,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
     try {
       setIsSubmitting(true)
       await axios.post(`/api/agents/${agent._id}/collective-memory`, {
-        guide_name: data.guide_name,
+        shard_name: data.guide_name,
         extraction_prompt: data.extraction_prompt,
       })
 
@@ -504,28 +502,18 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
   if (!hasAccess) {
     return (
       <div className="text-center py-16">
-        <div className="inline-flex items-center gap-3 px-6 py-4 rounded-lg bg-muted border border-border">
+        <div className="inline-flex items-center gap-3 px-6 py-4 rounded-lg bg-orange-500/20 border border-orange-700/40">
           <span className="text-muted-foreground font-medium">
-            {needsPreview ? (
-              <>
-                🚀 Collective Memory is coming soon...
-                <br />
-                This feature is currently in preview and will be available to
-                pro tier users soon.
-              </>
-            ) : (
-              <>
-                🌐 Collective memory is only available to &gt;pro tier users.
-                <br />
-                <a
-                  href="/settings/subscription"
-                  className="underline hover:text-foreground transition-colors"
-                >
-                  Upgrade your subscription
-                </a>{' '}
-                to enable Collective Memory for {agent.name}
-              </>
-            )}
+            🌐 Collective memory (enabling your agent to learn from
+            conversations with all users) is only available to Pro+ tier users.
+            <br />
+            <a
+              href="/settings/subscription"
+              className="underline hover:text-foreground transition-colors"
+            >
+              Upgrade your subscription
+            </a>{' '}
+            to enable Collective Memory for {agent.name}
           </span>
         </div>
       </div>
@@ -561,7 +549,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
           </Button>
         </div>
 
-        {/* New Guide Creation Modal */}
+        {/* New Memory Creation Modal */}
         <Dialog
           open={isNewGuideModalOpen}
           onOpenChange={setIsNewGuideModalOpen}
@@ -584,10 +572,10 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                   name="guide_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Guide name</FormLabel>
+                      <FormLabel>Memory shard name</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="A simple name to remember the purpose of this Guide"
+                          placeholder="A simple name to remember the purpose of this Memory"
                           {...field}
                         />
                       </FormControl>
@@ -658,7 +646,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                     {isSubmitting ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      'Create Guide'
+                      'Create Memory'
                     )}
                   </Button>
                 </DialogFooter>
@@ -989,7 +977,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
             <DialogDescription>
               {editingField === 'content'
                 ? 'Edit the main collective memory content'
-                : 'Memory guides instruct your agent what they should pay attention to and what kind of memories to form'}
+                : 'Memory instructions tell your agent what they should pay attention to and what kind of memories to form'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>

@@ -31,13 +31,11 @@ const ProfileTabs = () => {
   const { creator } = useCreatorQuery({ key: params?.name })
   const { user: meUser } = useMe({ isAuthenticated: !!isSignedIn })
   const pathname = usePathname()
+  const router = useRouter()
   const creationsFeedRef = useRef<CreationsFeedHandle>(null)
+
   // NOTE: We intentionally place all hooks (useEffect/useCallback/etc.) before
   // any conditional returns to avoid changing the number/order of hooks between renders.
-
-  const isOwnProfile = creator ? user?._id === creator._id : false
-  const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
-  const router = useRouter()
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -71,6 +69,7 @@ const ProfileTabs = () => {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [pathname, router])
+
   const handleCreationNavigation = useCallback(
     (creationId: string) => {
       // This could be used for programmatic navigation if needed
@@ -78,6 +77,9 @@ const ProfileTabs = () => {
     },
     [router],
   )
+
+  const isOwnProfile = creator ? user?._id === creator._id : false
+  const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
 
   // Safe early return AFTER all hooks have executed to keep hook order stable.
   if (!creator || (isSignedIn && !user)) {
@@ -98,6 +100,7 @@ const ProfileTabs = () => {
       filterMenu: ProfileCreationsFilter,
       content: (
         <CreationsFeed
+          ref={creationsFeedRef}
           // For agent profiles we passed agent id in baseQuery.
           // Other feeds below still rely on user id semantics.
           query={baseQuery}
