@@ -25,6 +25,86 @@ type SocialMessage = {
   replies?: number
 }
 
+// Utility functions
+const PLATFORM_NAMES = {
+  discord: 'Discord',
+  twitter: 'Twitter',
+  farcaster: 'Farcaster',
+} as const
+
+const CONTENT_TYPE_LABELS = {
+  search: 'Search Results',
+  mentions: 'Mentions',
+  trends: 'Trends',
+} as const
+
+const formatTimestamp = (
+  dateValue: string | undefined,
+  format: 'time' | 'date' | 'full',
+): string => {
+  if (!dateValue) return ''
+  const date = new Date(dateValue)
+
+  switch (format) {
+    case 'time':
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    case 'date':
+      return date.toLocaleDateString()
+    case 'full':
+      return date.toLocaleString()
+    default:
+      return ''
+  }
+}
+
+const getContentText = (item: SocialMessage): string => {
+  return item.content || item.text || ''
+}
+
+const getTimestamp = (item: SocialMessage): string | undefined => {
+  return item.created_at || item.timestamp
+}
+
+// Reusable components
+const MessageMetrics: React.FC<{ item: SocialMessage }> = ({ item }) => {
+  const hasMetrics = item.likes || item.retweets || item.replies
+
+  if (!hasMetrics) return null
+
+  return (
+    <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+      {item.likes && <span>❤️ {item.likes}</span>}
+      {item.retweets && <span>🔄 {item.retweets}</span>}
+      {item.replies && <span>💬 {item.replies}</span>}
+    </div>
+  )
+}
+
+const AuthorInfo: React.FC<{ item: SocialMessage }> = ({ item }) => {
+  if (!item.author) return null
+
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+      <User size={12} />
+      <span>@{item.author}</span>
+      {item.author_name && item.author_name !== item.author && (
+        <span>({item.author_name})</span>
+      )}
+    </div>
+  )
+}
+
+const MessageContent: React.FC<{ item: SocialMessage; className?: string }> = ({
+  item,
+  className = 'text-sm mb-2',
+}) => {
+  const content = getContentText(item)
+
+  if (!content) return null
+
+  return <div className={className}>{content}</div>
+}
+
 export type SocialContentEmbedProps = {
   results: TaskV2Result[]
   platform: 'discord' | 'twitter' | 'farcaster'
@@ -39,23 +119,8 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
   // State for expand/collapse - moved to top to avoid conditional hook call
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const platformName =
-    platform === 'discord'
-      ? 'Discord'
-      : platform === 'twitter'
-      ? 'Twitter'
-      : platform === 'farcaster'
-      ? 'Farcaster'
-      : platform
-
-  const contentTypeLabel =
-    contentType === 'search'
-      ? 'Search Results'
-      : contentType === 'mentions'
-      ? 'Mentions'
-      : contentType === 'trends'
-      ? 'Trends'
-      : contentType
+  const platformName = PLATFORM_NAMES[platform] || platform
+  const contentTypeLabel = CONTENT_TYPE_LABELS[contentType] || contentType
 
   // Handle case where results might not have the expected structure
   if (!results || !Array.isArray(results) || results.length === 0) {
@@ -77,7 +142,7 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
     let messageDate = ''
 
     results.forEach(result => {
-      if (result && result.output && Array.isArray(result.output)) {
+      if (result?.output && Array.isArray(result.output)) {
         result.output.forEach(item => {
           const typedItem = item as SocialMessage
           allMessages.push(typedItem)
@@ -89,11 +154,10 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
             discordUrl = typedItem.url
           }
           // Get date from first message for header
-          if (!messageDate && (typedItem.created_at || typedItem.timestamp)) {
-            const dateValue = typedItem.created_at || typedItem.timestamp
-            if (dateValue) {
-              const date = new Date(dateValue)
-              messageDate = date.toLocaleDateString()
+          if (!messageDate) {
+            const timestamp = getTimestamp(typedItem)
+            if (timestamp) {
+              messageDate = formatTimestamp(timestamp, 'date')
             }
           }
         })
@@ -151,57 +215,28 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
           {isExpanded && (
             <div className="px-3 pb-3 border-t border-secondary/50">
               <div className="space-y-2 mt-3">
-                {allMessages.map((item, index) => {
-                  const typedItem = item as SocialMessage
-                  return (
-                    <div key={index} className="text-sm">
-                      {/* Discord-style message: username with time, content indented below */}
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          {typedItem.author && (
-                            <span className="font-medium text-foreground">
-                              @{typedItem.author}:
-                            </span>
-                          )}
-                          {(typedItem.created_at || typedItem.timestamp) && (
-                            <span className="text-xs text-muted-foreground">
-                              {(() => {
-                                const dateValue =
-                                  typedItem.created_at || typedItem.timestamp
-                                return dateValue
-                                  ? new Date(dateValue).toLocaleTimeString([], {
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })
-                                  : ''
-                              })()}
-                            </span>
-                          )}
-                        </div>
-                        {(typedItem.content || typedItem.text) && (
-                          <div className="text-foreground/90 pl-4">
-                            {typedItem.content || typedItem.text}
-                          </div>
+                {allMessages.map((item, index) => (
+                  <div key={index} className="text-sm">
+                    {/* Discord-style message: username with time, content indented below */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        {item.author && (
+                          <span className="font-medium text-foreground">
+                            @{item.author}:
+                          </span>
                         )}
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimestamp(getTimestamp(item), 'time')}
+                        </span>
                       </div>
-
-                      {/* Metrics on separate line if present */}
-                      {(typedItem.likes ||
-                        typedItem.retweets ||
-                        typedItem.replies) && (
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                          {typedItem.likes && <span>❤️ {typedItem.likes}</span>}
-                          {typedItem.retweets && (
-                            <span>🔄 {typedItem.retweets}</span>
-                          )}
-                          {typedItem.replies && (
-                            <span>💬 {typedItem.replies}</span>
-                          )}
-                        </div>
-                      )}
+                      <MessageContent
+                        item={item}
+                        className="text-foreground/90 pl-4"
+                      />
                     </div>
-                  )
-                })}
+                    <MessageMetrics item={item} />
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -224,7 +259,7 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
 
       {results.map((result, index) => (
         <div key={index} className="space-y-2">
-          {result && result.output && Array.isArray(result.output) ? (
+          {result?.output && Array.isArray(result.output) ? (
             <div className="space-y-2">
               {result.output.map((item, itemIndex) => {
                 const typedItem = item as SocialMessage
@@ -233,24 +268,8 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
                     key={itemIndex}
                     className="p-3 bg-accent/50 rounded-md border border-secondary hover:bg-accent/70 transition-colors"
                   >
-                    {/* Content text */}
-                    {(typedItem.content || typedItem.text) && (
-                      <div className="text-sm mb-2">
-                        {typedItem.content || typedItem.text}
-                      </div>
-                    )}
-
-                    {/* Author info */}
-                    {typedItem.author && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                        <User size={12} />
-                        <span>@{typedItem.author}</span>
-                        {typedItem.author_name &&
-                          typedItem.author_name !== typedItem.author && (
-                            <span>({typedItem.author_name})</span>
-                          )}
-                      </div>
-                    )}
+                    <MessageContent item={typedItem} />
+                    <AuthorInfo item={typedItem} />
 
                     {/* Discord specific fields */}
                     {typedItem.channel_name && (
@@ -260,17 +279,9 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
                     )}
 
                     {/* Timestamp */}
-                    {(typedItem.created_at || typedItem.timestamp) && (
-                      <div className="text-xs text-muted-foreground mb-2">
-                        {(() => {
-                          const dateValue =
-                            typedItem.created_at || typedItem.timestamp
-                          return dateValue
-                            ? new Date(dateValue).toLocaleString()
-                            : ''
-                        })()}
-                      </div>
-                    )}
+                    <div className="text-xs text-muted-foreground mb-2">
+                      {formatTimestamp(getTimestamp(typedItem), 'full')}
+                    </div>
 
                     {/* URL link */}
                     {typedItem.url && (
@@ -287,19 +298,12 @@ export const SocialContentEmbed: React.FC<SocialContentEmbedProps> = ({
                       </div>
                     )}
 
-                    {/* Metrics */}
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
-                      {typedItem.likes && <span>❤️ {typedItem.likes}</span>}
-                      {typedItem.retweets && (
-                        <span>🔄 {typedItem.retweets}</span>
-                      )}
-                      {typedItem.replies && <span>💬 {typedItem.replies}</span>}
-                    </div>
+                    <MessageMetrics item={typedItem} />
                   </div>
                 )
               })}
             </div>
-          ) : result && result.output && typeof result.output === 'string' ? (
+          ) : result?.output && typeof result.output === 'string' ? (
             <div className="p-3 bg-accent/50 rounded-md border border-secondary">
               <div className="text-sm">{result.output}</div>
             </div>
