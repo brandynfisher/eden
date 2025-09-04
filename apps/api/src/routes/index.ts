@@ -40,7 +40,6 @@ const basePaginationProperties = {
   orderBy: { type: 'string' },
   direction: { type: 'number' },
   limit: { type: 'number' },
-  sort: { type: 'object' },
 }
 
 const baseCursorPaginationProperties = {
