@@ -99,7 +99,7 @@ const CollectionSelectionDialog = () => {
     } catch (error) {
       toast.error('Collection creation failed', {
         description:
-          // @ts-ignore
+          // @ts-expect-error: AxiosError type not properly recognized
           (error as AxiosError).response?.data?.message ||
           'Unknown Error has occurred',
         richColors: true,

@@ -27,7 +27,6 @@ async function fetchShare(shareId: string): Promise<ShareResponse | undefined> {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
     })
-    // @ts-ignore SDK dynamic method
     const res: ShareResponse = await eden.sessions.v2.share.get({
       share_id: shareId,
     })
@@ -42,7 +41,20 @@ async function fetchShare(shareId: string): Promise<ShareResponse | undefined> {
 function pickLastImage(messages: Message[] | undefined): string | undefined {
   if (!messages || messages.length === 0) return undefined
   for (let i = messages.length - 1; i >= 0; i--) {
-    const m: any = messages[i]
+    const m = messages[i] as Message & {
+      attachments?: string[]
+      tool_calls?: Array<{
+        result?: Array<{
+          output?:
+            | string
+            | Array<{
+                filename?: string
+                url?: string
+                mediaAttributes?: { mimeType?: string }
+              }>
+        }>
+      }>
+    }
 
     // 1. Direct attachments (strings)
     if (Array.isArray(m.attachments) && m.attachments.length) {
@@ -60,7 +72,17 @@ function pickLastImage(messages: Message[] | undefined): string | undefined {
         if (Array.isArray(results)) {
           for (let r = results.length - 1; r >= 0; r--) {
             const result = results[r]
-            const outputArr = (result as any)?.output
+            const outputArr = (
+              result as {
+                output?:
+                  | string
+                  | Array<{
+                      filename?: string
+                      url?: string
+                      mediaAttributes?: { mimeType?: string }
+                    }>
+              }
+            )?.output
             if (Array.isArray(outputArr)) {
               for (let o = outputArr.length - 1; o >= 0; o--) {
                 const out = outputArr[o]
@@ -124,19 +146,23 @@ export async function generateMetadata(
     title,
     description,
     openGraph: {
-      ...(previousOg as any),
+      ...previousOg,
       title,
       description,
       url,
       type: 'article',
-      images: imageUrl ? [imageUrl] : (previousOg as any).images,
+      images: imageUrl
+        ? [imageUrl]
+        : (previousOg as { images?: string[] })?.images || [],
     },
     twitter: {
-      ...(previousTwitter as any),
+      ...previousTwitter,
       card: 'summary_large_image',
       title,
       description,
-      images: imageUrl ? [imageUrl] : (previousTwitter as any).images,
+      images: imageUrl
+        ? [imageUrl]
+        : (previousTwitter as { images?: string[] })?.images || [],
     },
   }
 }

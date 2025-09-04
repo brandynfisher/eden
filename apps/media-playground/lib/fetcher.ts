@@ -238,14 +238,14 @@ export const createCursorPaginationRoute = (
   let queryStringArray: string[] = []
 
   for (let key in params) {
-    // @ts-ignore
+    // @ts-expect-error: Dynamic property access on params object
     if (Array.isArray(params[key])) {
-      // @ts-ignore
+      // @ts-expect-error: Dynamic property access on params object
       params[key].forEach((value: string | number) => {
         queryStringArray.push(`${key}=${value}`)
       })
     } else {
-      // @ts-ignore
+      // @ts-expect-error: Dynamic property access on params object
       queryStringArray.push(`${key}=${params[key]}`)
     }
   }
