@@ -279,6 +279,9 @@ export const tiktokOAuth = async (
       })
     }
 
+    console.log('client key', server.config.TIKTOK_CLIENT_KEY)
+    console.log('client secret', server.config.TIKTOK_CLIENT_SECRET)
+
     // Exchange code for access token
     const tokenResponse = await axios.post(
       'https://open.tiktokapis.com/v2/oauth/token/',
