@@ -31,6 +31,14 @@ const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
     allAccordionValues,
   )
 
+  // Ensure Model Trainers (lora) is always open by default
+  const ensureLoraOpen = (values: string[]) => {
+    if (output_type.includes('lora') && !values.includes('lora')) {
+      return [...values, 'lora']
+    }
+    return values
+  }
+
   const handleAccordionChange = (value: string[]) => {
     setAccordionState(value)
   }
@@ -49,7 +57,9 @@ const ToolsAccordion = ({ output_type, showFeatured }: ToolsGridProps) => {
         type="multiple"
         defaultValue={defaultAccordionValue}
         value={
-          accordionStateQuery.isLoading ? undefined : accordionStateQuery.data
+          accordionStateQuery.isLoading
+            ? undefined
+            : ensureLoraOpen(accordionStateQuery.data || [])
         }
         onValueChange={handleAccordionChange}
         className="rounded-md overflow-hidden"
