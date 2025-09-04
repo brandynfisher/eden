@@ -89,7 +89,7 @@ const AgentEditView: FC<{
       models: agent?.models || [],
       tools: agent.tools || {},
       llm_settings: {
-        model_profile: agent?.llm_settings?.model_profile || 'low',
+        model_profile: agent?.llm_settings?.model_profile || 'medium',
         thinking_policy: agent?.llm_settings?.thinking_policy || 'auto',
         thinking_effort_cap:
           agent?.llm_settings?.thinking_effort_cap || 'medium',
@@ -134,7 +134,7 @@ const AgentEditView: FC<{
         models: agent.models || [],
         tools: agent.tools || {},
         llm_settings: {
-          model_profile: agent.llm_settings?.model_profile || 'low',
+          model_profile: agent.llm_settings?.model_profile || 'medium',
           thinking_policy: agent.llm_settings?.thinking_policy || 'auto',
           thinking_effort_cap:
             agent.llm_settings?.thinking_effort_cap || 'medium',
