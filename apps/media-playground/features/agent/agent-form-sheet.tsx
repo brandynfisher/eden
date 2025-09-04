@@ -148,7 +148,7 @@ const AgentFormSheet = () => {
       suggestions: agentQuery.agent?.suggestions || [],
       tools: agentQuery.agent?.tools || {},
       llm_settings: {
-        model_profile: agentQuery.agent?.llm_settings?.model_profile || 'low',
+        model_profile: agentQuery.agent?.llm_settings?.model_profile || 'medium',
         thinking_policy:
           agentQuery.agent?.llm_settings?.thinking_policy || 'auto',
         thinking_effort_cap:
@@ -180,7 +180,7 @@ const AgentFormSheet = () => {
         suggestions: agentQuery.agent.suggestions || [],
         tools: agentQuery.agent.tools || {},
         llm_settings: {
-          model_profile: agentQuery.agent.llm_settings?.model_profile || 'low',
+          model_profile: agentQuery.agent.llm_settings?.model_profile || 'medium',
           thinking_policy:
             agentQuery.agent.llm_settings?.thinking_policy || 'auto',
           thinking_effort_cap:
@@ -204,7 +204,7 @@ const AgentFormSheet = () => {
         suggestions: [],
         tools: {},
         llm_settings: {
-          model_profile: 'low',
+          model_profile: 'medium',
           thinking_policy: 'auto',
           thinking_effort_cap: 'medium',
           thinking_effort_instructions: '',
@@ -284,7 +284,7 @@ const AgentFormSheet = () => {
         suggestions: [],
         tools: {},
         llm_settings: {
-          model_profile: 'low',
+          model_profile: 'medium',
           thinking_policy: 'auto',
           thinking_effort_cap: 'medium',
           thinking_effort_instructions: '',
