@@ -160,43 +160,62 @@ export const DiscordDeploymentForm = ({
             />
 
             {/* OAuth URL Section */}
-            {deployment?.config?.discord?.oauth_url && isDeployed && (
-              <div className="flex flex-col gap-2 mt-2 p-4 borderrounded-m">
-                <div className="flex flex-col">
-                  <h3 className="text-sm font-medium">Invite Bot to Server</h3>
-                  <p className="text-sm">
-                    Use this link to add your bot to a Discord server:
-                  </p>
-                </div>
-                <div className="flex items-center justify-between mt-1">
-                  <div className="text-sm text-gray-600 truncate max-w-[70%] overflow-hidden">
-                    {deployment?.config?.discord?.oauth_url}
+            {isDeployed &&
+              (deployment?.config?.discord?.oauth_url ||
+                deployment?.config?.discord?.oauth_client_id ||
+                deployment?.secrets?.discord?.application_id) && (
+                <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-lg">
+                  <div className="flex flex-col gap-1">
+                    <h3 className="text-sm font-semibold">
+                      Invite Bot to Server
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Add your bot to a Discord server using this invite link
+                    </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={e => {
-                      e.preventDefault()
+                  <div className="flex flex-col gap-2">
+                    <div className="p-3 bg-background/60 border border-border/50 rounded-md overflow-hidden">
+                      <code className="text-xs text-muted-foreground block truncate">
+                        {deployment?.config?.discord?.oauth_url ||
+                          `https://discord.com/oauth2/authorize?client_id=${deployment?.secrets?.discord?.application_id}&permissions=274877958144&integration_type=0&scope=bot`}
+                      </code>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={e => {
+                          e.preventDefault()
+                          const oauthUrl =
+                            deployment?.config?.discord?.oauth_url ||
+                            `https://discord.com/oauth2/authorize?client_id=${deployment?.secrets?.discord?.application_id}&permissions=274877958144&integration_type=0&scope=bot`
 
-                      if (deployment?.config?.discord?.oauth_url) {
-                        navigator.clipboard.writeText(
-                          deployment?.config?.discord?.oauth_url,
-                        )
-                        toast.success('Copied to clipboard', {
-                          description:
-                            'Discord OAuth URL has been copied to clipboard',
-                          dismissible: true,
-                        })
-                      }
-                    }}
-                    className="flex items-center gap-1"
-                  >
-                    <span>Copy</span>
-                    <Copy size={14} />
-                  </Button>
+                          navigator.clipboard.writeText(oauthUrl)
+                          toast.success('Copied to clipboard')
+                        }}
+                        className="flex-1"
+                      >
+                        <Copy className="w-3.5 h-3.5 mr-1.5" />
+                        Copy Link
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={e => {
+                          e.preventDefault()
+                          const oauthUrl =
+                            deployment?.config?.discord?.oauth_url ||
+                            `https://discord.com/oauth2/authorize?client_id=${deployment?.secrets?.discord?.application_id}&permissions=274877958144&integration_type=0&scope=bot`
+                          window.open(oauthUrl, '_blank')
+                        }}
+                        className="flex-1"
+                      >
+                        Open Invite Link
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <DeploymentFormFooter
               agentId={agentId}

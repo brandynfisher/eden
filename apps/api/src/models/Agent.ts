@@ -183,7 +183,7 @@ const AgentSchema = new Schema<AgentDocument>(
       model_profile: {
         type: String,
         enum: ['low', 'medium', 'high'],
-        default: 'low',
+        default: 'medium',
       },
       thinking_policy: {
         type: String,

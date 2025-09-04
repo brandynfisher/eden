@@ -26,7 +26,7 @@ const InstagramHandleInput = () => {
       await invalidate()
     } catch (error) {
       toast.error(
-        // @ts-ignore
+        // @ts-expect-error: AxiosError type not properly recognized
         (error as AxiosError).response?.data?.message ||
           `Failed to save @${handle} as your Instagram username`,
         {

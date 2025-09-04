@@ -99,7 +99,7 @@ const agentSchema = z.object({
   }),
   llm_settings: z
     .object({
-      model_profile: z.enum(['low', 'medium', 'high']).default('low'),
+      model_profile: z.enum(['low', 'medium', 'high']).default('medium'),
       thinking_policy: z.enum(['auto', 'off', 'always']).default('auto'),
       thinking_effort_cap: z.enum(['low', 'medium', 'high']).default('medium'),
       thinking_effort_instructions: z.string().default(''),
@@ -145,7 +145,7 @@ const CreateAgentView = () => {
         social_media_tools: false,
       },
       llm_settings: {
-        model_profile: 'low',
+        model_profile: 'medium',
         thinking_policy: 'auto',
         thinking_effort_cap: 'medium',
         thinking_effort_instructions: '',
@@ -573,7 +573,7 @@ const CreateAgentView = () => {
                                     </FormDescription>
                                     <FormControl>
                                       <Select
-                                        value={field.value || 'low'}
+                                        value={field.value || 'medium'}
                                         onValueChange={field.onChange}
                                       >
                                         <SelectTrigger>

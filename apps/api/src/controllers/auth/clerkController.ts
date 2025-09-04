@@ -1,3 +1,4 @@
+import { BaseUser } from '../../models/BaseUser'
 import { User, UserDocument } from '../../models/User'
 import { sendWelcomeEmail } from '../../utils/mailchimp'
 import { createNewUser } from './authController'
@@ -124,10 +125,48 @@ export const receiveUserUpdate = async (
           .send('Webhook Error: Blacklisted E-Mail address')
       }
 
-      // Create new user
+      // Check for username conflicts and create a unique username if needed
+      let finalUsername = evt.data.username
+
+      // Check if username already exists (could be user or agent)
+      let existingUserWithUsername = await BaseUser.findOne({
+        username: finalUsername,
+      })
+      let counter = 1
+
+      while (existingUserWithUsername) {
+        // Add a number suffix to make the username unique
+        finalUsername = `${evt.data.username}${counter}`
+        existingUserWithUsername = await BaseUser.findOne({
+          username: finalUsername,
+        })
+        counter++
+
+        // Safety check to prevent infinite loop
+        if (counter > 100) {
+          server.log.error({
+            reason: 'Could not generate unique username after 100 attempts',
+            originalUsername: evt.data.username,
+          })
+          await server.clerk?.users.deleteUser(evt.data.id)
+          return reply
+            .status(500)
+            .send('Webhook Error: Could not generate unique username')
+        }
+      }
+
+      if (finalUsername !== evt.data.username) {
+        server.log.info({
+          reason: 'Username conflict resolved',
+          originalUsername: evt.data.username,
+          finalUsername: finalUsername,
+        })
+      }
+
+      // Create new user with the unique username
       await createNewUser(server, {
         userId: evt.data.id,
-        username: evt.data.username,
+        username: finalUsername,
         userImage: evt.data.image_url,
         email: email,
         normalizedEmail: normalizedEmail,
@@ -135,9 +174,9 @@ export const receiveUserUpdate = async (
         isAdmin: false,
       })
 
-      // Send welcome email to the new user
+      // Send welcome email to the new user with their final username
       try {
-        await sendWelcomeEmail(server, email, evt.data.username)
+        await sendWelcomeEmail(server, email, finalUsername)
       } catch (error) {
         server.log.error({
           reason: 'Failed to send welcome email',
@@ -156,7 +195,53 @@ export const receiveUserUpdate = async (
       if (!user) {
         return reply.status(400).send('Webhook Error: User not found')
       }
-      user.username = evt.data.username || user.username
+
+      // Handle username update with conflict resolution
+      if (evt.data.username && evt.data.username !== user.username) {
+        let finalUsername = evt.data.username
+
+        // Check if new username already exists (could be user or agent)
+        let existingUserWithUsername = await BaseUser.findOne({
+          username: finalUsername,
+          _id: { $ne: user._id }, // Exclude current user
+        })
+        let counter = 1
+
+        while (existingUserWithUsername) {
+          // Add a number suffix to make the username unique
+          finalUsername = `${evt.data.username}${counter}`
+          existingUserWithUsername = await BaseUser.findOne({
+            username: finalUsername,
+            _id: { $ne: user._id }, // Exclude current user
+          })
+          counter++
+
+          // Safety check to prevent infinite loop
+          if (counter > 100) {
+            server.log.error({
+              reason:
+                'Could not generate unique username after 100 attempts during update',
+              originalUsername: evt.data.username,
+              userId: evt.data.id,
+            })
+            return reply
+              .status(400)
+              .send('Webhook Error: Could not generate unique username')
+          }
+        }
+
+        if (finalUsername !== evt.data.username) {
+          server.log.info({
+            reason: 'Username conflict resolved during update',
+            originalUsername: evt.data.username,
+            finalUsername: finalUsername,
+            userId: evt.data.id,
+          })
+        }
+
+        user.username = finalUsername
+      }
+
       user.userImage = evt.data.image_url || user.userImage
       await user.save()
       return reply.status(200).send({})
