@@ -7,6 +7,7 @@ import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
 import { createIdOrSlugQuery } from '../../utils/mongoUtils'
 import {
+  FeatureFlag,
   SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
   SessionsV2GetArguments,
@@ -600,7 +601,7 @@ export const getSession = async (
   request: FastifyRequest<{ Params: SessionsV2GetArguments }>,
   reply: FastifyReply,
 ) => {
-  const { userId } = request.user || {}
+  const { userId, featureFlags } = request.user || {}
   if (!userId) {
     return reply.status(400).send({
       message: 'User missing from request',
@@ -647,10 +648,12 @@ export const getSession = async (
     const isSessionUser = session.users?.some(
       (user: any) => user.toString() === getSessionUserIdStr,
     )
+    const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
 
-    if (!isSessionOwner && !isSessionUser) {
+    if (!isSessionOwner && !isSessionUser && !isEdenTeamMember) {
       return reply.status(403).send({
-        message: 'You do not have access to this session',
+        message:
+          'You do not have access to this session. If you believe this is an error, ask the session owner to create a share link.',
       })
     }
 

@@ -24,6 +24,7 @@ import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Message } from '@edenlabs/eden-sdk'
+import axios from 'axios'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -428,12 +429,60 @@ const Session = ({
   }
 
   if (sessionError) {
+    // Parse the error to determine the type
+    let errorTitle = 'Session Load Error'
+    let errorMessage = "We couldn't load this session. Please try again later."
+
+    if (axios.isAxiosError(sessionError)) {
+      const status = sessionError.response?.status
+      const apiMessage =
+        sessionError.response?.data?.message ||
+        sessionError.response?.data?.error
+
+      if (status === 404) {
+        errorTitle = 'Session Not Found'
+        errorMessage =
+          apiMessage || "This session doesn't exist or may have been deleted."
+      } else if (status === 403) {
+        errorTitle = 'Access Denied'
+        errorMessage =
+          apiMessage ||
+          "You don't have permission to view this session. It may be private or belong to another user."
+      } else if (status === 401) {
+        errorTitle = 'Authentication Required'
+        errorMessage = 'Please sign in to view this session.'
+      } else if (status && status >= 500) {
+        errorTitle = 'Server Error'
+        errorMessage =
+          apiMessage ||
+          'There was a problem loading the session. Please try again later.'
+      } else {
+        // Handle other status codes
+        errorTitle = `Error (${status || 'Unknown'})`
+        errorMessage =
+          apiMessage ||
+          sessionError.message ||
+          'An unexpected error occurred while loading the session.'
+      }
+    } else {
+      // Non-axios errors (e.g., network errors, parsing errors, or custom errors from useSessionQuery)
+      if (sessionError?.message === 'Session not found') {
+        errorTitle = 'Session Not Found'
+        errorMessage = "This session doesn't exist or may have been deleted."
+      } else {
+        errorMessage =
+          sessionError?.message ||
+          "We couldn't load this session. Please check your connection and try again."
+      }
+    }
+
     return (
       <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
         <AlertDestructive>
           <AlertDescription>
-            We couldn't load this session. Please try again later. If the
-            problem persists, please contact support.
+            <strong>{errorTitle}</strong>
+            <br />
+            {errorMessage}
           </AlertDescription>
         </AlertDestructive>
       </div>
@@ -465,15 +514,6 @@ const Session = ({
             <div className="space-y-4">
               <MessageSkeleton />
               <MessageSkeleton />
-            </div>
-          ) : sessionError ? (
-            <div className="flex mx-auto py-16 md:w-1/2 w-[calc(100%-2rem)]">
-              <AlertDestructive>
-                <AlertDescription>
-                  We couldn't load this session. Please try again later. If the
-                  problem persists, please contact support.
-                </AlertDescription>
-              </AlertDestructive>
             </div>
           ) : (
             (() => {
@@ -732,8 +772,6 @@ const Session = ({
             onStreamingMessage={(content, attachments, thinking) => {
               clearErrors()
               setCancelledNotice(false)
-
-              console.log('[Session] Received message with thinking:', thinking)
 
               // Parse mentions to get agent IDs
               const mentions = parseMentions(content)
