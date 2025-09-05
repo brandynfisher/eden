@@ -27,9 +27,9 @@ import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
-import { ProfileImageUploader } from '@/features/chat/components/profile-image-uploader'
-import TaskFormModal from '@/features/chat/components/task-form-modal'
-import { AGENT_FIELD_LIMITS } from '@/features/chat/components/views/agent-constants'
+import TaskFormModal from '@/features/sessions/components/task-form-modal'
+import { ProfileImageUploader } from '@/features/sessions/profile-image-uploader'
+import { AGENT_FIELD_LIMITS } from '@/features/sessions/views/agent-constants'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
@@ -148,7 +148,8 @@ const AgentFormSheet = () => {
       suggestions: agentQuery.agent?.suggestions || [],
       tools: agentQuery.agent?.tools || {},
       llm_settings: {
-        model_profile: agentQuery.agent?.llm_settings?.model_profile || 'medium',
+        model_profile:
+          agentQuery.agent?.llm_settings?.model_profile || 'medium',
         thinking_policy:
           agentQuery.agent?.llm_settings?.thinking_policy || 'auto',
         thinking_effort_cap:
@@ -180,7 +181,8 @@ const AgentFormSheet = () => {
         suggestions: agentQuery.agent.suggestions || [],
         tools: agentQuery.agent.tools || {},
         llm_settings: {
-          model_profile: agentQuery.agent.llm_settings?.model_profile || 'medium',
+          model_profile:
+            agentQuery.agent.llm_settings?.model_profile || 'medium',
           thinking_policy:
             agentQuery.agent.llm_settings?.thinking_policy || 'auto',
           thinking_effort_cap:

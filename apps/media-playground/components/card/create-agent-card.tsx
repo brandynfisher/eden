@@ -1,6 +1,6 @@
 import { Button } from '../ui/button'
 import { Card } from '@/components/ui/card'
-import { AuthClickGuard } from '@/features/chat/components/auth-click-guard'
+import { AuthClickGuard } from '@/features/sessions/components/auth-click-guard'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { ChevronRightIcon, PlusCircle } from 'lucide-react'

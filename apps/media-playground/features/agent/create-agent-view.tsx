@@ -31,11 +31,11 @@ import {
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
-import { ProfileImageUploader } from '@/features/chat/components/profile-image-uploader'
+import { ProfileImageUploader } from '@/features/sessions/profile-image-uploader'
 import {
   AGENT_FIELD_GUIDANCE,
   AGENT_FIELD_LIMITS,
-} from '@/features/chat/components/views/agent-constants'
+} from '@/features/sessions/views/agent-constants'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'

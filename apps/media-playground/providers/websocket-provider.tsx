@@ -1,6 +1,6 @@
 'use client'
 
-import { EdenMessage } from '@/features/chat/eden-message-converter'
+import { EdenMessage } from '@/features/sessions/components/eden-message-converter'
 import {
   ReadyState,
   useSharedWebSocketWorker,

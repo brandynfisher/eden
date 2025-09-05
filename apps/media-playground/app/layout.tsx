@@ -15,7 +15,6 @@ import { TailwindIndicator } from '@/components/tailwind-indicator'
 import { Toaster } from '@/components/ui/sonner'
 import AgentDeploymentSheet from '@/features/agent/agent-deployment-sheet'
 import AgentFormSheet from '@/features/agent/agent-form-sheet'
-import { AgentTriggerFormSheet } from '@/features/agent/agent-trigger-sheet'
 import { env } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { GoogleTagManager } from '@next/third-parties/google'
@@ -127,7 +126,6 @@ export default function RootLayout({
             <DeleteConfirmationDialog />
             <AgentFormSheet />
             <AgentDeploymentSheet />
-            <AgentTriggerFormSheet />
             <SubscriptionGateModal />
 
             <div id="modal-root" />
