@@ -22,6 +22,7 @@ const apiKeyVerify = async (
   }
 
   const user = await User.findById(apiKey.user)
+  console.log('API Key access detected:', apiKey.apiKey, user?.username)
 
   if (!user) {
     throw new Error('User not found')
