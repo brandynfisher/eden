@@ -1,9 +1,13 @@
 import userAllowList from '../allowList'
-import { hasMinimumSubscriptionTier } from '../middleware/authMiddleware'
+import {
+  hasFeatureFlag,
+  hasMinimumSubscriptionTier,
+} from '../middleware/authMiddleware'
 import {
   CharactersUpdateArguments,
   ConceptsUpdateArguments,
   CreationsUpdateArguments,
+  FeatureFlag,
   SubscriptionTier,
   TasksCreateArguments,
 } from '@edenlabs/eden-sdk'
@@ -13,12 +17,11 @@ export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const subscriber = hasMinimumSubscriptionTier(request, SubscriptionTier.Pro)
+  const subscriber = hasFeatureFlag(request, reply, FeatureFlag.EdenAdmin)
   if (!subscriber) {
     return reply.status(401).send({
       statusCode: 401,
-      message:
-        'Only pro+ subscribers can create API keys. Please upgrade your subscription.',
+      message: 'Only admins can create API keys.',
     })
   }
 }
