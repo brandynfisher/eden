@@ -233,25 +233,29 @@ const AgentTasksView: FC<{
       return true
     })
 
-    // Sort both arrays by updatedAt in descending order (most recent first)
-    const sortByUpdatedAt = (a: TriggerWithLastRun, b: TriggerWithLastRun) => {
-      // Sort by last_run_time first (most recent first), then by updatedAt/createdAt
-      const aLastRun = a.last_run_time ? new Date(a.last_run_time).getTime() : 0
-      const bLastRun = b.last_run_time ? new Date(b.last_run_time).getTime() : 0
-
-      if (aLastRun !== bLastRun) {
-        return bLastRun - aLastRun // Most recent last_run_time first
+    // Sort both arrays by next_scheduled_run (earliest first)
+    const sortByNextRun = (a: TriggerWithLastRun, b: TriggerWithLastRun) => {
+      // If neither has next_scheduled_run, fall back to updatedAt/createdAt
+      if (!a.next_scheduled_run && !b.next_scheduled_run) {
+        const aDate = new Date(a.updatedAt || a.createdAt)
+        const bDate = new Date(b.updatedAt || b.createdAt)
+        return bDate.getTime() - aDate.getTime()
       }
 
-      // If last_run_time is the same (or both null), fall back to updatedAt/createdAt
-      const aDate = new Date(a.updatedAt || a.createdAt)
-      const bDate = new Date(b.updatedAt || b.createdAt)
-      return bDate.getTime() - aDate.getTime()
+      // If only a has no next_scheduled_run, put it last
+      if (!a.next_scheduled_run) return 1
+      // If only b has no next_scheduled_run, put it last
+      if (!b.next_scheduled_run) return -1
+
+      // Both have next_scheduled_run, sort by earliest first (ascending)
+      const aNextRun = new Date(a.next_scheduled_run).getTime()
+      const bNextRun = new Date(b.next_scheduled_run).getTime()
+      return aNextRun - bNextRun
     }
 
     return {
-      activeTriggers: active.sort(sortByUpdatedAt),
-      finishedTriggers: finished.sort(sortByUpdatedAt),
+      activeTriggers: active.sort(sortByNextRun),
+      finishedTriggers: finished.sort(sortByNextRun),
     }
   }, [triggersQuery.triggers])
 

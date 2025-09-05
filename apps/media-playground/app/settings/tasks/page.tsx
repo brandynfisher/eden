@@ -102,19 +102,24 @@ const TasksPage = () => {
       return matchesSearch && matchesStatus && matchesAgent
     })
 
-    // Sort by last_run_time first (most recent first), then by createdAt
+    // Sort by next_scheduled_run (most recent/earliest first)
     return filtered.sort((a, b) => {
-      const aLastRun = a.last_run_time ? new Date(a.last_run_time).getTime() : 0
-      const bLastRun = b.last_run_time ? new Date(b.last_run_time).getTime() : 0
-
-      if (aLastRun !== bLastRun) {
-        return bLastRun - aLastRun // Most recent last_run_time first
+      // If neither has next_scheduled_run, fall back to createdAt
+      if (!a.next_scheduled_run && !b.next_scheduled_run) {
+        const aDate = new Date(a.createdAt)
+        const bDate = new Date(b.createdAt)
+        return bDate.getTime() - aDate.getTime()
       }
 
-      // If last_run_time is the same (or both null), fall back to createdAt
-      const aDate = new Date(a.createdAt)
-      const bDate = new Date(b.createdAt)
-      return bDate.getTime() - aDate.getTime()
+      // If only a has no next_scheduled_run, put it last
+      if (!a.next_scheduled_run) return 1
+      // If only b has no next_scheduled_run, put it last
+      if (!b.next_scheduled_run) return -1
+
+      // Both have next_scheduled_run, sort by earliest first (ascending)
+      const aNextRun = new Date(a.next_scheduled_run).getTime()
+      const bNextRun = new Date(b.next_scheduled_run).getTime()
+      return aNextRun - bNextRun
     })
   }, [triggers, searchTerm, statusFilter, agentFilter])
 
