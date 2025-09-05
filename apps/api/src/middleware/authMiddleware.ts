@@ -37,6 +37,7 @@ const apiKeyVerify = async (
     subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
     featureFlags: user.featureFlags || [],
     isAdmin: user.isAdmin || false,
+    apiKeyId: apiKey._id,
   }
 }
 

@@ -23,6 +23,7 @@ export interface TaskV2Schema {
   progress?: number
   handler_id?: string
   performance?: { [key: string]: number }
+  apiKey?: ObjectId
   createdAt: Date
   updatedAt: Date
 }
@@ -40,6 +41,7 @@ export interface TaskV2Input {
   error?: string
   handler_id?: string
   progress?: number
+  apiKey?: ObjectId
 }
 
 export interface TaskV2Document extends TaskV2Schema, Document {}
@@ -91,6 +93,11 @@ export const taskSchema = new Schema<TaskV2Document>(
     result: {
       type: [],
       default: null,
+    },
+    apiKey: {
+      type: Schema.Types.ObjectId,
+      ref: 'apikeys',
+      required: false,
     },
   },
   {

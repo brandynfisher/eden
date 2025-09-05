@@ -113,6 +113,7 @@ export type Task = {
   samples?: any[]
   concept?: string
   attributes?: TaskAttributes
+  apiKey?: string
   createdAt: string
   updatedAt: string
 }
