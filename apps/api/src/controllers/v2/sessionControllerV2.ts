@@ -196,7 +196,7 @@ export const createSession = async (
     const sessionData: any = {
       owner: userId,
       agents: validAgentIds,
-      messages: [],
+      messages: [], // Keep empty array for backward compatibility
       title,
     }
 
@@ -222,12 +222,9 @@ export const createSession = async (
     const session = new Session(sessionData)
 
     // Create an eden message for agent additions
-    const edenMessage = await createEdenMessage(
-      session._id,
-      'agent_add',
-      existingAgents,
-    )
-    session.messages.push(edenMessage.id)
+    await createEdenMessage(session._id, 'agent_add', existingAgents)
+    // No longer storing message IDs on session to avoid race conditions
+    // session.messages.push(edenMessage.id)
     await session.save()
 
     // Populate the session with agent and owner data
@@ -343,7 +340,7 @@ export const createSessionMessage = async (
     const sessionData: any = {
       owner: userId,
       agents: validAgentIds,
-      messages: [],
+      messages: [], // Keep empty array for backward compatibility
       title,
     }
 
@@ -369,12 +366,9 @@ export const createSessionMessage = async (
     session = new Session(sessionData)
 
     // Create an eden message for agent additions
-    const edenMessage = await createEdenMessage(
-      session._id,
-      'agent_add',
-      existingAgents,
-    )
-    session.messages.push(edenMessage.id)
+    await createEdenMessage(session._id, 'agent_add', existingAgents)
+    // No longer storing message IDs on session to avoid race conditions
+    // session.messages.push(edenMessage.id)
     await session.save()
 
     sessionId = session._id.toString()
@@ -626,15 +620,6 @@ export const getSession = async (
         path: 'agents',
         select: '_id username userImage',
       })
-      .populate({
-        path: 'messages',
-        select:
-          '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
-        populate: {
-          path: 'sender',
-          select: '_id username userImage',
-        },
-      })
 
     if (!session) {
       return reply.status(404).send({
@@ -656,6 +641,22 @@ export const getSession = async (
           'You do not have access to this session. If you believe this is an error, ask the session owner to create a share link.',
       })
     }
+
+    // Fetch messages directly from the messages collection
+    const messages = await Message.find({
+      session: session._id,
+    })
+      .populate({
+        path: 'sender',
+        select: '_id username userImage',
+      })
+      .sort({ createdAt: 1 })
+      .select(
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
+      )
+
+    // Add messages to the session object for backward compatibility
+    session.messages = messages
 
     return reply.status(200).send({ session })
   } catch (e) {
