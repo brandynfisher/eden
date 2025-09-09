@@ -13,6 +13,7 @@ declare module '@fastify/jwt' {
       featureFlags: FeatureFlag[]
       subscriptionTier: SubscriptionTier
       isAdmin: boolean
+      apiKeyId?: ObjectId
     }
   }
 }

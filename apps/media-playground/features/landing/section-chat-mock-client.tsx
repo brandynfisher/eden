@@ -1,7 +1,7 @@
 'use client'
 
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { ChatMockWidget } from '@/features/chat/chat-mock-widget'
+import { ChatMockWidget } from '@/features/sessions/components/chat-mock-widget'
 import { AgentBasicInfo } from '@/lib/actions/agent'
 import React from 'react'
 

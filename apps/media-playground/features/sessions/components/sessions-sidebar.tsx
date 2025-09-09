@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ViewMode } from '@/features/chat/types'
+import { ViewMode } from '@/features/sessions/components/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'

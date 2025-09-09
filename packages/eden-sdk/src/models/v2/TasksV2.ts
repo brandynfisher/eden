@@ -238,6 +238,7 @@ export type TaskV2 = {
     waitTime?: number
     runTime?: number
   }
+  apiKey?: string
   createdAt: Date
   updatedAt: Date
 }

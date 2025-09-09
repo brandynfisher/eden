@@ -33,6 +33,7 @@ export interface TaskSchema {
   samples?: CreationDocument[]
   intermediateOutputs?: any[]
   attributes?: TaskAttributes
+  apiKey?: ObjectId
   createdAt?: Date
   updatedAt?: Date
 }
@@ -46,6 +47,7 @@ export interface TaskInput {
   config?: Record<string, any>
   attributes?: Record<string, any>
   webhooks?: string[]
+  apiKey?: ObjectId
 }
 
 export interface TaskDocument extends TaskSchema, Document {}
@@ -127,6 +129,11 @@ const task = new Schema<TaskDocument>(
     },
     attributes: {
       type: Schema.Types.Mixed,
+    },
+    apiKey: {
+      type: Schema.Types.ObjectId,
+      ref: 'apikeys',
+      required: false,
     },
   },
   {

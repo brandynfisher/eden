@@ -1,4 +1,4 @@
-import { getThread } from '@/features/chat/chat-api'
+import { getThread } from '@/features/sessions/components/chat-api'
 import { Thread } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 

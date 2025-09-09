@@ -113,13 +113,6 @@ export const createTask = async (
       })
     }
 
-    console.log({
-      tool,
-      args,
-      public: makePublic,
-      user_id: userId,
-    })
-
     const modalRequest = {
       endpoint: `${server.config.EDEN_COMPUTE_API_URL}/create`,
       data: {
@@ -165,6 +158,14 @@ export const createTask = async (
     }
 
     const task = modalResponse.data as TaskV2
+
+    // If the request was authenticated with an API key, update the task to include it
+    const apiKeyId = request.user?.apiKeyId
+    if (apiKeyId && task._id) {
+      await TaskV2Model.findByIdAndUpdate(task._id, { apiKey: apiKeyId })
+      // Add the apiKey to the task object for the response
+      task.apiKey = apiKeyId.toString()
+    }
 
     const taskWithUrls =
       task && task.result

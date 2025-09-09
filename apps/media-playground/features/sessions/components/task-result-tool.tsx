@@ -3,11 +3,11 @@
 import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
-import { CollectionAddedEmbed } from '@/features/chat/components/tools/collection-added-embed'
-import { SocialContentEmbed } from '@/features/chat/components/tools/social-content-embed'
-import { SocialPostEmbed } from '@/features/chat/components/tools/social-post-embed'
-import { ToolFallback } from '@/features/chat/components/tools/tool-fallback'
-import { WebSearchCitations } from '@/features/chat/components/tools/web-search-citations'
+import { CollectionAddedEmbed } from '@/features/sessions/tools/collection-added-embed'
+import { SocialContentEmbed } from '@/features/sessions/tools/social-content-embed'
+import { SocialPostEmbed } from '@/features/sessions/tools/social-post-embed'
+import { ToolFallback } from '@/features/sessions/tools/tool-fallback'
+import { WebSearchCitations } from '@/features/sessions/tools/web-search-citations'
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -255,11 +255,18 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
                         <div className=" px-4 p-2 bg-accent rounded-md border border-secondary text-sm">
                           <TextClampMore
                             text={
-                              <ReactMarkdown>
-                                {(
-                                  (result?.output as unknown as string) || ''
-                                ).replace(/\n/g, '  \n')}
-                              </ReactMarkdown>
+                              typeof result?.output === 'string' ? (
+                                <ReactMarkdown>
+                                  {(result.output as string).replace(
+                                    /\n/g,
+                                    '  \n',
+                                  )}
+                                </ReactMarkdown>
+                              ) : (
+                                <pre className="whitespace-pre-wrap font-mono text-xs">
+                                  {JSON.stringify(result?.output, null, 2)}
+                                </pre>
+                              )
                             }
                             lines={3}
                           />

@@ -16,6 +16,7 @@ const SettingsNavLinks = () => {
   })
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const isEdenAdmin = user?.featureFlags?.includes(FeatureFlag.EdenAdmin)
 
   const isActive = (path: string) => pathname === path
 
@@ -45,25 +46,30 @@ const SettingsNavLinks = () => {
         </Link>
       </div>
 
-      <div className="flex flex-col gap-2 text-foreground/90">
-        <div className="text-muted-foreground font-bold text-xs">
-          Developers
+      {isEdenAdmin && (
+        <div className="flex flex-col gap-2 text-foreground/90">
+          <div className="text-muted-foreground font-bold text-xs">
+            Developers
+          </div>
+          <Link
+            href="/settings/api"
+            className={cn(
+              'px-2 py-1.5 rounded-md',
+              isActive('/settings/api') && 'bg-muted/50 text-foreground',
+              '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
+            )}
+          >
+            API Keys
+          </Link>
         </div>
-        <Link
-          href="/settings/api"
-          className={cn(
-            'px-2 py-1.5 rounded-md',
-            isActive('/settings/api') && 'bg-muted/50 text-foreground',
-            '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
-          )}
-        >
-          API Keys
-        </Link>
-      </div>
+      )}
 
       <div className="flex flex-col gap-2 text-foreground/90">
         {isPreviewUser && (
           <>
+            <div className="text-muted-foreground font-bold text-xs">
+              Agents
+            </div>
             <Link
               href="/settings/tasks"
               className={cn(
