@@ -44,7 +44,7 @@ const ProfileHeader = ({ name, creatorSSRData }: Props) => {
   }
 
   const onConnectSocials = () => {
-    router.push(`/settings/integrations`)
+    router.push(`/settings/connections`)
   }
 
   return (

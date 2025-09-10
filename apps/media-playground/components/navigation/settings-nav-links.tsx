@@ -44,6 +44,16 @@ const SettingsNavLinks = () => {
         >
           Subscription
         </Link>
+        <Link
+          href="/settings/connections"
+          className={cn(
+            'px-2 py-1.5 rounded-md',
+            isActive('/settings/connections') && 'bg-muted/50 text-foreground',
+            '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
+          )}
+        >
+          Connections
+        </Link>
       </div>
 
       {isEdenAdmin && (
