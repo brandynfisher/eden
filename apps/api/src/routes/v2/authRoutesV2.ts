@@ -1,8 +1,10 @@
 import {
   disconnectTikTok,
   disconnectTwitter,
+  disconnectTwitterIntegration,
   discordOAuth,
   tiktokOAuth,
+  twitterIntegrationOAuth,
   twitterOAuth,
 } from '../../controllers/auth/v2/authControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
@@ -67,6 +69,32 @@ const authRoutes: FastifyPluginAsync = async server => {
       }),
     },
     handler: (request, reply) => disconnectTikTok(request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.get('/v2/auth/integrations/twitter/callback', {
+    schema: {
+      tags: ['Auth'],
+      description: 'Twitter OAuth callback for agent integrations',
+      hide: true,
+      querystring: Type.Object({
+        code: Type.String(),
+        state: Type.String(),
+      }),
+    },
+    handler: (request, reply) =>
+      twitterIntegrationOAuth(server, request, reply),
+  })
+
+  server.delete('/v2/auth/integrations/twitter/disconnect', {
+    schema: {
+      tags: ['Auth'],
+      description: 'Disconnect Twitter integration for agent',
+      querystring: Type.Object({
+        agentId: Type.String(),
+      }),
+    },
+    handler: (request, reply) => disconnectTwitterIntegration(request, reply),
     preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 }
