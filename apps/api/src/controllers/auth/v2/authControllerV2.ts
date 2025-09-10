@@ -259,16 +259,33 @@ export const tiktokOAuth = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { code, state } = request.query as { code: string; state: string }
-
-  if (!code || !state) {
-    return reply.status(400).send({
-      message: 'Missing code or state',
-    })
+  const { code, state, error } = request.query as {
+    code?: string
+    state: string
+    error?: string
   }
 
   // State contains the agentId
   const agentId = state
+
+  // Check if user cancelled the OAuth flow
+  if (error || !code) {
+    // Get agent to redirect back to their settings
+    const agent = await Agent.findById(agentId)
+    if (agent) {
+      const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
+      return reply.redirect(redirectUrl)
+    }
+    return reply.status(400).send({
+      message: 'OAuth cancelled or failed',
+    })
+  }
+
+  if (!state) {
+    return reply.status(400).send({
+      message: 'Missing state parameter',
+    })
+  }
 
   try {
     // Get agent to find the owner
@@ -410,16 +427,33 @@ export const twitterIntegrationOAuth = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const { code, state } = request.query as { code: string; state: string }
-
-  if (!code || !state) {
-    return reply.status(400).send({
-      message: 'Missing code or state',
-    })
+  const { code, state, error } = request.query as {
+    code?: string
+    state: string
+    error?: string
   }
 
   // State contains the agentId
   const agentId = state
+
+  // Check if user cancelled the OAuth flow
+  if (error || !code) {
+    // Get agent to redirect back to their settings
+    const agent = await Agent.findById(agentId)
+    if (agent) {
+      const redirectUrl = `${server.config.EDEN2_FRONTEND_URL}/chat/${agent.username}?page=settings&tab=integrations`
+      return reply.redirect(redirectUrl)
+    }
+    return reply.status(400).send({
+      message: 'OAuth cancelled or failed',
+    })
+  }
+
+  if (!state) {
+    return reply.status(400).send({
+      message: 'Missing state parameter',
+    })
+  }
 
   try {
     // Get agent to find the owner

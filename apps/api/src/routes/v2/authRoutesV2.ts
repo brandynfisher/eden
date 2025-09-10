@@ -53,8 +53,10 @@ const authRoutes: FastifyPluginAsync = async server => {
       description: 'TikTok OAuth callback for v2',
       hide: true,
       querystring: Type.Object({
-        code: Type.String(),
+        code: Type.Optional(Type.String()),
         state: Type.String(),
+        error: Type.Optional(Type.String()),
+        error_description: Type.Optional(Type.String()),
       }),
     },
     handler: (request, reply) => tiktokOAuth(server, request, reply),
@@ -78,8 +80,10 @@ const authRoutes: FastifyPluginAsync = async server => {
       description: 'Twitter OAuth callback for agent integrations',
       hide: true,
       querystring: Type.Object({
-        code: Type.String(),
+        code: Type.Optional(Type.String()),
         state: Type.String(),
+        error: Type.Optional(Type.String()),
+        error_description: Type.Optional(Type.String()),
       }),
     },
     handler: (request, reply) =>

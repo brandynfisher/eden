@@ -2,11 +2,23 @@
 
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
+import { Form } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
+import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
-import { Twitter } from 'lucide-react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import axios from 'axios'
+import { CheckCircle } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
+
+const schema = z.object({})
+
+type DeploymentFormDto = z.infer<typeof schema>
 
 interface TwitterDeploymentFormProps {
   agentId: Agent['_id']
@@ -18,16 +30,21 @@ export const TwitterDeploymentForm = ({
   deployment,
 }: TwitterDeploymentFormProps) => {
   const [isOpen, setIsOpen] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(false)
+
+  const form = useForm<DeploymentFormDto>({
+    resolver: zodResolver(schema),
+    defaultValues: {},
+  })
 
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
 
-  const handleConnect = () => {
-    setIsConnecting(true)
+  // Check if Twitter is connected by looking at deployment secrets
+  const isConnected = deployment?.secrets?.twitter?.access_token ? true : false
+  const twitterUsername = deployment?.config?.twitter?.username
 
-    // OAuth 2.0 flow for Twitter
+  const handleConnect = async () => {
     const clientId = process.env.NEXT_PUBLIC_TWITTER_INTEGRATIONS_CLIENT_ID
     const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/integrations/twitter/callback`
     const state = agentId // Pass agent ID as state
@@ -51,23 +68,12 @@ export const TwitterDeploymentForm = ({
 
   const handleDisconnect = async () => {
     try {
-      const response = await fetch(
-        `/api/v2/auth/integrations/twitter/disconnect?agentId=${agentId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      )
-
-      if (response.ok) {
-        window.location.reload()
-      } else {
-        console.error('Failed to disconnect Twitter')
-      }
+      await axios.delete(`/api/auth/integrations/twitter?agentId=${agentId}`)
+      toast.success('Twitter account disconnected successfully')
+      // Refresh the page to update deployment status
+      window.location.reload()
     } catch (error) {
-      console.error('Error disconnecting Twitter:', error)
+      toast.error('Failed to disconnect Twitter account')
     }
   }
 
@@ -89,52 +95,65 @@ export const TwitterDeploymentForm = ({
           deployment?.valid === false ? 'border-destructive' : '',
         ])}
       >
-        <div className="flex flex-col w-full space-y-4 p-4">
-          {!isDeployed ? (
-            <>
-              <div className="text-sm text-muted-foreground">
-                Connect your Twitter account to enable your agent to post
-                tweets, search Twitter, and interact with mentions.
-              </div>
-              <Button
-                onClick={handleConnect}
-                disabled={isConnecting}
-                className="w-full"
-              >
-                <Twitter className="mr-2 h-4 w-4" />
-                {isConnecting ? 'Connecting...' : 'Connect Twitter Account'}
-              </Button>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Twitter className="h-5 w-5" />
-                  <div>
-                    <div className="font-medium">Twitter Connected</div>
-                    {deployment?.config?.twitter?.username && (
-                      <div className="text-sm text-muted-foreground">
-                        @{deployment?.config.twitter.username}
-                      </div>
-                    )}
+        <Form {...form}>
+          <form className="flex flex-col w-full space-y-4 p-4">
+            <div className="space-y-4">
+              {isConnected && (
+                <div className="space-y-2">
+                  <Label>Connection Status</Label>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">
+                      Connected{' '}
+                      {twitterUsername ? `as @${twitterUsername}` : ''}
+                    </span>
                   </div>
                 </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDisconnect}
-                >
-                  Disconnect
-                </Button>
-              </div>
-              {deployment?.valid === false && (
-                <div className="text-sm text-destructive">
-                  Twitter connection is invalid. Please reconnect your account.
-                </div>
               )}
-            </>
-          )}
-        </div>
+
+              {!isConnected ? (
+                <>
+                  <div className="text-sm text-muted-foreground">
+                    Connect your Twitter account to enable your agent to post
+                    tweets, search Twitter, and interact with mentions.
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleConnect}
+                    className="w-full"
+                    title="Twitter will use your currently logged-in account. To switch accounts, first log out at twitter.com/logout"
+                  >
+                    Connect Twitter Account
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {!isDeployed && (
+                    <Button
+                      type="button"
+                      onClick={handleDisconnect}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Disconnect Twitter Account
+                    </Button>
+                  )}
+                </>
+              )}
+
+              {isConnected && (
+                <DeploymentFormFooter
+                  agentId={agentId}
+                  platform="twitter"
+                  form={form}
+                  isDeployed={isDeployed}
+                  valid={deployment?.valid}
+                  guideUrl="https://docs.eden.art/docs/guides/twitter/"
+                />
+              )}
+            </div>
+          </form>
+        </Form>
       </CollapsibleContent>
     </Collapsible>
   )
