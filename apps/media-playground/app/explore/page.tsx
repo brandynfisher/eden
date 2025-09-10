@@ -368,9 +368,9 @@ const ExplorePage = () => {
           </div>
         </div>
 
-        {/* Content - Show based on selected type with stable rendering */}
+        {/* Content - Render only the active content type */}
         <div className="mt-6 min-h-[400px]">
-          <div className={contentType === 'agents' ? 'block' : 'hidden'}>
+          {contentType === 'agents' && (
             <AgentsFeed
               query={agentsQuery}
               minCols={1}
@@ -388,9 +388,9 @@ const ExplorePage = () => {
                 { minWidth: 0, columns: 1 },
               ]}
             />
-          </div>
+          )}
 
-          <div className={contentType === 'creations' ? 'block' : 'hidden'}>
+          {contentType === 'creations' && (
             <CreationsFeed
               ref={creationsFeedRef}
               query={creationsQuery}
@@ -398,20 +398,20 @@ const ExplorePage = () => {
               maxCols={8}
               onNavigate={handleCreationNavigation}
             />
-          </div>
+          )}
 
-          <div className={contentType === 'models' ? 'block' : 'hidden'}>
+          {contentType === 'models' && (
             <ModelsFeed
               query={modelsQuery}
               minCols={1}
               maxCols={5}
               variant="creation-page"
             />
-          </div>
+          )}
 
-          <div className={contentType === 'tools' ? 'block' : 'hidden'}>
+          {contentType === 'tools' && (
             <ToolsFeed category={toolsCategory} searchQuery={searchQuery} />
-          </div>
+          )}
         </div>
       </div>
     </div>
