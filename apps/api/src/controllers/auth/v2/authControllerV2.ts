@@ -109,7 +109,7 @@ export const discordOAuth = async (
     )
 
     return reply.redirect(
-      `${server.config.EDEN2_FRONTEND_URL}/settings/integrations`,
+      `${server.config.EDEN2_FRONTEND_URL}/settings/connections`,
     )
   } catch (error) {
     console.error(error)
@@ -213,7 +213,7 @@ export const twitterOAuth = async (
     await user.save()
 
     return reply.redirect(
-      `${server.config.EDEN2_FRONTEND_URL}/settings/integrations`,
+      `${server.config.EDEN2_FRONTEND_URL}/settings/connections`,
     )
   } catch (error) {
     console.error(
