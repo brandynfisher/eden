@@ -489,12 +489,28 @@ const Session = ({
     )
   }
 
-  // Only show the main loading indicator if we're not coming from a direct navigation
-  // (i.e., when sessionId is 'new' or when explicitly loading a session from scratch)
-  if (isSessionLoading && !session && sessionId === 'new') {
+  // Show loading indicator if:
+  // 1. We're on a 'new' session and still loading
+  // 2. We're on a real session that's loading and has no messages yet (coming from session-chat)
+  if (
+    (isSessionLoading && !session && sessionId === 'new') ||
+    (isSessionLoading && !session) ||
+    (session && session.messages && session.messages.length === 0)
+  ) {
     return (
-      <div className="flex mx-auto py-16">
-        <LoadingIndicator />
+      <div className="flex-1 flex justify-center items-center">
+        <LoadingIndicator className="w-10 h-10 text-purple-600" />
+      </div>
+    )
+  }
+
+  // Also show loading if we have a session but no user messages yet (waiting for first user message)
+  const userMessages =
+    session?.messages?.filter((m: Message) => m.role === 'user') || []
+  if (session && userMessages.length === 0 && sessionId !== 'new') {
+    return (
+      <div className="flex-1 flex justify-center items-center">
+        <LoadingIndicator className="w-10 h-10 text-purple-600" />
       </div>
     )
   }
