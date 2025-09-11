@@ -17,7 +17,7 @@ import {
   MessageCircleIcon,
   SettingsIcon,
 } from 'lucide-react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 type ChatHeaderProps = {
   agent: Agent | null | undefined
@@ -41,6 +41,7 @@ const ChatHeader = ({
   onBackToChat,
 }: ChatHeaderProps) => {
   const params = useParams()
+  const router = useRouter()
   const { user } = useAuthState()
   const sessionId = params?.id as string
 
@@ -262,7 +263,7 @@ const ChatHeader = ({
                 size="icon"
                 onClick={() => {
                   // Navigate to new chat for this agent
-                  window.location.href = `/chat/${params?.agentId || 'eve'}`
+                  router.push(`/chat/${params?.agentId || 'eve'}`)
                 }}
                 className="h-9 w-9 hover:bg-muted/20 transition-colors"
               >

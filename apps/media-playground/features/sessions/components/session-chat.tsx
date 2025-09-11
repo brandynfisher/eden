@@ -28,8 +28,6 @@ const SessionChat: FC = () => {
     async (content: string, attachments?: string[], thinking?: boolean) => {
       if (!user || !agent) return
 
-      console.log('[SessionChat] Handling message with thinking:', thinking)
-
       // Show loading state immediately
       setIsCreating(true)
 
@@ -41,8 +39,6 @@ const SessionChat: FC = () => {
           agent_ids: [agent._id],
           thinking, // Pass thinking state to API
         }
-        console.log('[SessionChat] Sending to /api/sessions/prompt:', payload)
-
         const response = await fetch('/api/sessions/prompt', {
           method: 'POST',
           headers: {
@@ -57,7 +53,8 @@ const SessionChat: FC = () => {
 
         const result = await response.json()
         if (result.session_id) {
-          // Go directly to the real session
+          // Go directly to the real session but keep loading state
+          // The Session component will handle dropping the loader when first user message appears
           router.push(`/chat/${agentId}/${result.session_id}`)
         }
       } catch (error) {

@@ -19,6 +19,7 @@ import {
   CircleUserIcon,
   CreditCardIcon,
   KeyIcon,
+  LinkIcon,
   ListIcon,
   RadioIcon,
 } from 'lucide-react'
@@ -48,6 +49,8 @@ const SettingsNav = () => {
         return 'Tasks'
       case '/settings/integrations':
         return 'Integrations'
+      case '/settings/connections':
+        return 'Connections'
       default:
         return 'Settings'
     }
@@ -62,6 +65,11 @@ const SettingsNav = () => {
           href: '/settings/subscription',
           label: 'Subscription',
           icon: CreditCardIcon,
+        },
+        {
+          href: '/settings/connections',
+          label: 'Connections',
+          icon: LinkIcon,
         },
       ],
     },

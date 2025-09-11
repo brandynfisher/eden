@@ -1,35 +1,22 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import { Form } from '@/components/ui/form'
+import { Label } from '@/components/ui/label'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
-import { TokenField } from '@/features/agent/deployment-sheet/token-field'
 import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
+import axios from 'axios'
+import { CheckCircle } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
-const schema = z.object({
-  userId: z.string(),
-  username: z.string(),
-  bearerToken: z.string(),
-  consumerKey: z.string(),
-  consumerSecret: z.string(),
-  accessToken: z.string(),
-  accessTokenSecret: z.string(),
-})
+const schema = z.object({})
 
 type DeploymentFormDto = z.infer<typeof schema>
 
@@ -46,20 +33,49 @@ export const TwitterDeploymentForm = ({
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      userId: '',
-      username: '',
-      bearerToken: '',
-      consumerKey: '',
-      consumerSecret: '',
-      accessToken: '',
-      accessTokenSecret: '',
-    },
+    defaultValues: {},
   })
 
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
+
+  // Check if Twitter is connected by looking at deployment secrets
+  const isConnected = deployment?.secrets?.twitter?.access_token ? true : false
+  const twitterUsername = deployment?.config?.twitter?.username
+
+  const handleConnect = async () => {
+    const clientId = process.env.NEXT_PUBLIC_TWITTER_INTEGRATIONS_CLIENT_ID
+    const redirectUri = `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/auth/integrations/twitter/callback`
+    const state = agentId // Pass agent ID as state
+
+    // Twitter OAuth 2.0 authorization URL
+    const authUrl = new URL('https://twitter.com/i/oauth2/authorize')
+    authUrl.searchParams.append('response_type', 'code')
+    authUrl.searchParams.append('client_id', clientId!)
+    authUrl.searchParams.append('redirect_uri', redirectUri)
+    authUrl.searchParams.append(
+      'scope',
+      'tweet.read tweet.write users.read offline.access',
+    )
+    authUrl.searchParams.append('state', state)
+    authUrl.searchParams.append('code_challenge', 'challenge')
+    authUrl.searchParams.append('code_challenge_method', 'plain')
+
+    // Redirect to Twitter OAuth
+    window.location.href = authUrl.toString()
+  }
+
+  const handleDisconnect = async () => {
+    try {
+      await axios.delete(`/api/auth/integrations/twitter?agentId=${agentId}`)
+      toast.success('Twitter account disconnected successfully')
+      // Refresh the page to update deployment status
+      window.location.reload()
+    } catch (error) {
+      toast.error('Failed to disconnect Twitter account')
+    }
+  }
 
   return (
     <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
@@ -81,90 +97,61 @@ export const TwitterDeploymentForm = ({
       >
         <Form {...form}>
           <form className="flex flex-col w-full space-y-4 p-4">
-            <FormField
-              control={form.control}
-              name="userId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>User ID</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Your Twitter user ID"
-                      disabled={form.formState.isSubmitting}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>Your Twitter user ID.</FormDescription>
-                  <FormMessage />
-                </FormItem>
+            <div className="space-y-4">
+              {isConnected && (
+                <div className="space-y-2">
+                  <Label>Connection Status</Label>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">
+                      Connected{' '}
+                      {twitterUsername ? `as @${twitterUsername}` : ''}
+                    </span>
+                  </div>
+                </div>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Your Twitter username"
-                      disabled={form.formState.isSubmitting}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>Your Twitter username.</FormDescription>
-                  <FormMessage />
-                </FormItem>
+
+              {!isConnected ? (
+                <>
+                  <div className="text-sm text-muted-foreground">
+                    Connect your Twitter account to enable your agent to post
+                    tweets, search Twitter, and interact with mentions.
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleConnect}
+                    className="w-full"
+                    title="Twitter will use your currently logged-in account. To switch accounts, first log out at twitter.com/logout"
+                  >
+                    Connect Twitter Account
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {!isDeployed && (
+                    <Button
+                      type="button"
+                      onClick={handleDisconnect}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Disconnect Twitter Account
+                    </Button>
+                  )}
+                </>
               )}
-            />
-            <TokenField
-              form={form}
-              name="bearerToken"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="Bearer Token"
-              description="Your Twitter bearer token."
-            />
-            <TokenField
-              form={form}
-              name="consumerKey"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="API Key"
-              description="Your Twitter API key."
-            />
-            <TokenField
-              form={form}
-              name="consumerSecret"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="API Secret Key"
-              description="Your Twitter API secret key."
-            />
-            <TokenField
-              form={form}
-              name="accessToken"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="Access Token"
-              description="Your Twitter access token."
-            />
-            <TokenField
-              form={form}
-              name="accessTokenSecret"
-              isDeployed={isDeployed}
-              isSubmitting={form.formState.isSubmitting}
-              label="Access Token Secret"
-              description="Your Twitter access token secret."
-            />
-            <DeploymentFormFooter
-              agentId={agentId}
-              platform="twitter"
-              form={form}
-              isDeployed={isDeployed}
-              valid={deployment?.valid}
-              guideUrl="https://docs.eden.art/docs/guides/twitter/"
-            />
+
+              {isConnected && (
+                <DeploymentFormFooter
+                  agentId={agentId}
+                  platform="twitter"
+                  form={form}
+                  isDeployed={isDeployed}
+                  valid={deployment?.valid}
+                  guideUrl="https://docs.eden.art/docs/guides/twitter/"
+                />
+              )}
+            </div>
           </form>
         </Form>
       </CollapsibleContent>

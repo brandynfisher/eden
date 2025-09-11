@@ -129,6 +129,17 @@ export const MessageInput = ({
   const activeAgent = propAgent || fullAgent
   const hasReasoningAgent = activeAgent?.llm_settings?.model_profile === 'high'
 
+  // Auto-focus the textarea when starting a new chat
+  useEffect(() => {
+    if (sessionId === 'new' && textareaRef.current?.textArea) {
+      // Small delay to ensure the component is fully rendered
+      const timer = setTimeout(() => {
+        textareaRef.current?.textArea?.focus()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [sessionId])
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {

@@ -111,10 +111,39 @@ const createFeedStore = () =>
 // Store map to hold scoped stores
 const feedStores: Record<string, ReturnType<typeof createFeedStore>> = {}
 
+// Track store usage to implement cleanup
+const storeUsageCount: Record<string, number> = {}
+const storeLastAccessed: Record<string, number> = {}
+
 export const useFeedStore = (feedId: string) => {
   if (!feedStores[feedId]) {
     feedStores[feedId] = createFeedStore()
     feedStores[feedId].setState({ feedId })
   }
+
+  // Track usage
+  storeUsageCount[feedId] = (storeUsageCount[feedId] || 0) + 1
+  storeLastAccessed[feedId] = Date.now()
+
   return feedStores[feedId]()
+}
+
+// Cleanup function to remove unused stores
+export const cleanupFeedStores = () => {
+  const now = Date.now()
+  const CLEANUP_THRESHOLD = 5 * 60 * 1000 // 5 minutes
+
+  Object.keys(feedStores).forEach(feedId => {
+    const lastAccessed = storeLastAccessed[feedId] || 0
+    if (now - lastAccessed > CLEANUP_THRESHOLD) {
+      delete feedStores[feedId]
+      delete storeUsageCount[feedId]
+      delete storeLastAccessed[feedId]
+    }
+  })
+}
+
+// Auto cleanup every 2 minutes
+if (typeof window !== 'undefined') {
+  setInterval(cleanupFeedStores, 2 * 60 * 1000)
 }

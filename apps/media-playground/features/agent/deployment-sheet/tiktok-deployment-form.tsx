@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { AlertCircle, CheckCircle } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -88,34 +88,32 @@ export const TiktokDeploymentForm = ({
         <Form {...form}>
           <form className="flex flex-col w-full space-y-4 p-4">
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Connection Status</Label>
-                <div className="flex items-center gap-2">
-                  {isConnected ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-sm">
-                        Connected{' '}
-                        {tiktokUsername ? `as @${tiktokUsername}` : ''}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm">Not connected</span>
-                    </>
-                  )}
+              {isConnected && (
+                <div className="space-y-2">
+                  <Label>Connection Status</Label>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-sm">
+                      Connected {tiktokUsername ? `as @${tiktokUsername}` : ''}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {!isConnected ? (
-                <Button
-                  type="button"
-                  onClick={handleConnect}
-                  className="w-full"
-                >
-                  Connect TikTok Account
-                </Button>
+                <>
+                  <div className="text-sm text-muted-foreground">
+                    Connect your TikTok account to enable your agent to post
+                    videos and interact with your TikTok audience.
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleConnect}
+                    className="w-full"
+                  >
+                    Connect TikTok Account
+                  </Button>
+                </>
               ) : (
                 <>
                   {!isDeployed && (
