@@ -50,13 +50,9 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      [
-        'profile',
-        'concepts',
-        'integrations',
-        'permissions',
-        'dashboard',
-      ].includes(tabFromUrl)
+      ['profile', 'tools', 'integrations', 'permissions', 'dashboard'].includes(
+        tabFromUrl,
+      )
     ) {
       return tabFromUrl
     }
@@ -104,13 +100,9 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      [
-        'profile',
-        'concepts',
-        'integrations',
-        'permissions',
-        'dashboard',
-      ].includes(tabFromUrl)
+      ['profile', 'tools', 'integrations', 'permissions', 'dashboard'].includes(
+        tabFromUrl,
+      )
     ) {
       setActiveTab(tabFromUrl)
     }
@@ -205,7 +197,7 @@ const AgentEditView: FC<{
 
     // Only owners can see tools, integrations, and permissions
     if (hasOwnerAccess) {
-      tabs.push({ key: 'concepts', label: 'Tools', icon: WrenchIcon })
+      tabs.push({ key: 'tools', label: 'Tools', icon: WrenchIcon })
 
       if (isPreviewUser) {
         tabs.push({
@@ -339,7 +331,7 @@ const AgentEditView: FC<{
                   <ProfileTab form={form} agent={agent} />
                 )}
 
-                {activeTab === 'concepts' && hasOwnerAccess && (
+                {activeTab === 'tools' && hasOwnerAccess && (
                   <ToolsTab
                     form={form}
                     hasDeployments={
