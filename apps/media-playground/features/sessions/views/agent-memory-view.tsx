@@ -148,7 +148,7 @@ const AgentMemoryView: FC<{
         const isUserMemoryEnabled =
           agent.user_memory_enabled !== undefined
             ? agent.user_memory_enabled
-            : true
+            : false
         setUserMemoryEnabled(isUserMemoryEnabled)
 
         // 2. If enabled, fetch memory data; if disabled, clear display
