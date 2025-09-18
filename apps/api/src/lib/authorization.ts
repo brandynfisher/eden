@@ -17,7 +17,7 @@ export const apiKeyCreatePreHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  const subscriber = hasFeatureFlag(request, reply, FeatureFlag.EdenAdmin)
+  const subscriber = hasFeatureFlag(request, reply, FeatureFlag.Preview)
   if (!subscriber) {
     return reply.status(401).send({
       statusCode: 401,
