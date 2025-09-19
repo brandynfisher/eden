@@ -138,7 +138,7 @@ export const hasFeatureFlag = (
 ) => {
   try {
     checkUserFlags(request.user.featureFlags, featureFlag)
-    return // Signal successful completion
+    return true
   } catch (error) {
     return reply.status(403).send({
       statusCode: 403,

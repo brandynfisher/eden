@@ -33,6 +33,7 @@ export const createApiKey = async (
   }
   //
   const { apiKey, apiSecret } = generateApiKey()
+  console.log('createApiKey', apiKey, apiSecret)
 
   const input: ApiKeyInput = {
     user: userId,
