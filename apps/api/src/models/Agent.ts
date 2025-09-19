@@ -177,7 +177,7 @@ const AgentSchema = new Schema<AgentDocument>(
     },
     user_memory_enabled: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     llm_settings: {
       model_profile: {

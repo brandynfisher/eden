@@ -16,7 +16,6 @@ const SettingsNavLinks = () => {
   })
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
-  const isEdenAdmin = user?.featureFlags?.includes(FeatureFlag.EdenAdmin)
 
   const isActive = (path: string) => pathname === path
 
@@ -56,7 +55,7 @@ const SettingsNavLinks = () => {
         </Link>
       </div>
 
-      {isEdenAdmin && (
+      {isPreviewUser && (
         <div className="flex flex-col gap-2 text-foreground/90">
           <div className="text-muted-foreground font-bold text-xs">
             Developers

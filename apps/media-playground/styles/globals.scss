@@ -4,6 +4,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* PWA-specific adjustments for iOS fullscreen mode */
+@media (display-mode: standalone) {
+  /* Remove fixed positioning that breaks iOS fullscreen */
+  .pwa-chat-layout {
+    position: relative !important;
+    top: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important; /* Dynamic viewport height for iOS */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Adjust header positioning in PWA mode */
+  .pwa-chat-header {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Remove body overflow manipulation in PWA */
+  body.pwa-mode {
+    overflow: auto !important;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -10,6 +10,7 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import {
   ChevronRightIcon,
@@ -28,6 +29,7 @@ type ChatHeaderProps = {
   onSidebarToggle?: () => void
   viewMode?: string
   onBackToChat?: () => void
+  className?: string
 }
 
 const ChatHeader = ({
@@ -39,6 +41,7 @@ const ChatHeader = ({
   onSidebarToggle,
   viewMode,
   onBackToChat,
+  className,
 }: ChatHeaderProps) => {
   const params = useParams()
   const router = useRouter()
@@ -75,7 +78,12 @@ const ChatHeader = ({
   return (
     <>
       {/* Mobile: Single navbar layout - Hamburger + Agent + Session title + HeaderActions */}
-      <div className="md:hidden sticky z-50 top-0 bg-background border-b">
+      <div
+        className={cn(
+          'md:hidden sticky z-50 top-0 bg-background border-b',
+          className,
+        )}
+      >
         <header className="flex h-14 items-center gap-2 px-2">
           {/* Left section - Hamburger + Agent info */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -153,7 +161,7 @@ const ChatHeader = ({
       </div>
 
       {/* Desktop: Two navbar design */}
-      <div className="hidden md:block">
+      <div className={cn('hidden md:block', className)}>
         {/* Top navbar - Eden logo + navigation links + profile/manna/notifications */}
         <header className="sticky z-50 top-0 flex h-14 items-center gap-4 border-b bg-background px-4">
           {/* Left section - Logo and navigation */}

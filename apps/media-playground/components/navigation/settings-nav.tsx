@@ -34,7 +34,6 @@ const SettingsNav = () => {
   })
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
-  const isEdenAdmin = user?.featureFlags?.includes(FeatureFlag.EdenAdmin)
 
   // Get the current page name for the dropdown button
   const getCurrentPageName = () => {
@@ -73,7 +72,7 @@ const SettingsNav = () => {
         },
       ],
     },
-    ...(isEdenAdmin
+    ...(isPreviewUser
       ? [
           {
             section: 'Developers',

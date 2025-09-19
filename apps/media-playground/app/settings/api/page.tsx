@@ -12,7 +12,7 @@ const SettingsAPIPage = () => {
     isAuthenticated: !!isSignedIn,
   })
 
-  const isEdenAdmin = user?.featureFlags?.includes(FeatureFlag.EdenAdmin)
+  const isEdenAdmin = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   if (!isEdenAdmin) {
     return <div>You are not authorized to access this feature.</div>

@@ -86,6 +86,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   const agentId = params?.agentId as string
   const sessionId = params?.id as string
   const [isMounted, setIsMounted] = useState(false)
+  const [isPWA, setIsPWA] = useState(false)
   const [resetKey, setResetKey] = useState<number>(0)
   const [viewMode, setViewMode] = useState<ViewMode>('chat')
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
@@ -101,9 +102,24 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     if (typeof window === 'undefined') return
     setIsMounted(true)
-    document.body.classList.add('overflow-hidden')
+
+    // Check if running as PWA
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone ||
+      document.referrer.includes('android-app://')
+    setIsPWA(isStandalone)
+
+    // Only add overflow-hidden for non-PWA mode
+    if (!isStandalone) {
+      document.body.classList.add('overflow-hidden')
+    } else {
+      document.body.classList.add('pwa-mode')
+    }
+
     return () => {
       document.body.classList.remove('overflow-hidden')
+      document.body.classList.remove('pwa-mode')
     }
   }, [])
 
@@ -220,6 +236,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     <LiveAudioProvider>
       {/* Chat-specific header that replaces the main header */}
       <ChatHeader
+        className={isPWA ? 'pwa-chat-header' : ''}
         agent={agent}
         onChatClick={handleChatClick}
         onAgentSelect={() => setIsAgentSelectorOpen(true)}
@@ -230,7 +247,12 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         onBackToChat={handleBackToChat}
       />
 
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[104px]">
+      <div
+        className={cn(
+          'flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[104px]',
+          isPWA && 'pwa-chat-layout',
+        )}
+      >
         {/* AGENT SELECTOR MODAL */}
         <SingleAgentSelectorModal
           open={isAgentSelectorOpen}
