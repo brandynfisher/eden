@@ -19,7 +19,9 @@ const feedRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Feed'],
-      description: 'Get creations feed',
+      summary: 'Get Creations Feed',
+      description:
+        'Get a paginated feed of creations with filtering options and user interaction data.',
       security: [
         {
           apiKey: [],
@@ -73,7 +75,9 @@ const feedRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Feed'],
-      description: 'Get creations feed',
+      summary: 'Get Creations Feed',
+      description:
+        'Get a paginated feed of creations with filtering options and user interaction data.',
       security: [
         {
           apiKey: [],
@@ -165,7 +169,9 @@ const feedRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Feed'],
-      description: 'Get concepts feed',
+      summary: 'Get Concepts Feed',
+      description:
+        'Get a paginated feed of trained concepts with filtering options and user interaction data.',
       security: [
         {
           apiKey: [],
@@ -213,6 +219,15 @@ const feedRoutes: FastifyPluginAsync = async server => {
   server.get('/feed/characters', {
     schema: {
       hide: true,
+      tags: ['Feed'],
+      summary: 'Get Characters Feed',
+      description:
+        'Get a paginated feed of characters with filtering options and user interaction data.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -251,6 +266,15 @@ const feedRoutes: FastifyPluginAsync = async server => {
   server.get('/feed/creators', {
     schema: {
       hide: true,
+      tags: ['Feed'],
+      summary: 'Get Creators Feed',
+      description:
+        'Get a paginated feed of creators with optional name filtering.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {

@@ -31,7 +31,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Characters'],
-      description: 'Create a character',
+      summary: 'Create New Character',
+      description:
+        'Create a new AI character with personality, traits, and configuration settings.',
       body: Type.Object({
         name: Type.String(),
         image: Type.Optional(Type.String()),
@@ -69,7 +71,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Characters'],
-      description: 'Update a character',
+      summary: 'Update Character',
+      description:
+        "Update an existing character's name, image, voice, dialogue, or other properties.",
       security: [
         {
           apiKey: [],
@@ -107,7 +111,8 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Characters'],
-      description: 'Delete a character',
+      summary: 'Delete Character',
+      description: 'Permanently delete a character and all associated data.',
       security: [
         {
           apiKey: [],
@@ -129,7 +134,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Characters'],
-      description: 'Get a character',
+      summary: 'Get Character Details',
+      description:
+        'Retrieve detailed information about a specific character including personality and configuration.',
       security: [
         {
           apiKey: [],
@@ -176,7 +183,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Characters'],
-      description: 'List characters',
+      summary: 'List Characters',
+      description:
+        'Get a paginated list of characters with optional filtering by user ID.',
       security: [
         {
           apiKey: [],
@@ -228,7 +237,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Characters'],
-      description: 'Test a character',
+      summary: 'Test Character Response',
+      description:
+        "Test a character's response to a message without creating a persistent conversation session.",
       body: Type.Object({
         name: Type.String(),
         identity: Type.String(),
@@ -252,7 +263,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Characters'],
-      description: 'Interact with a character',
+      summary: 'Interact with Character',
+      description:
+        'Send a message to a character and receive a response within an ongoing conversation session.',
       body: {
         character_id: Type.String(),
         session_id: Type.String(),
@@ -274,7 +287,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Characters'],
-      description: 'Create a task as character',
+      summary: 'Create Character Task',
+      description:
+        'Create a new task with the character as the acting user, allowing character-initiated operations.',
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),

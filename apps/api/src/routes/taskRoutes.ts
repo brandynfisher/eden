@@ -17,7 +17,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Tasks'],
-      description: 'Get task cost',
+      summary: 'Calculate Task Cost',
+      description:
+        'Calculate the manna cost for running a task with the specified generator and configuration.',
       security: [
         {
           apiKey: [],
@@ -42,7 +44,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Tasks'],
-      description: 'Create a task',
+      summary: 'Create New Task',
+      description:
+        'Create and execute a new AI generation task with the specified generator and configuration.',
       security: [
         {
           apiKey: [],
@@ -83,7 +87,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Tasks'],
-      description: 'List tasks',
+      summary: 'List Tasks',
+      description:
+        'Get a paginated list of tasks with optional filtering by status, task ID, or type.',
       security: [
         {
           apiKey: [],
@@ -111,7 +117,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Tasks'],
-      description: 'Get a task',
+      summary: 'Get Task Details',
+      description:
+        'Retrieve detailed information about a specific task including status and results.',
       security: [
         {
           apiKey: [],
@@ -133,7 +141,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Tasks'],
-      description: 'Update a task',
+      summary: 'Update Task Status',
+      description:
+        'Webhook endpoint to receive task status updates from the execution service.',
       querystring: {
         secret: Type.String(),
       },
@@ -145,7 +155,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Tasks'],
-      description: 'Get task events',
+      summary: 'Subscribe to Task Events',
+      description:
+        'Subscribe to real-time task status updates via Server-Sent Events (SSE).',
       security: [
         {
           apiKey: [],

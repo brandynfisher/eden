@@ -34,7 +34,9 @@ const testRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Tasks'],
-      description: 'Trigger task update websocket event',
+      summary: 'Test Task Update Event',
+      description:
+        'Trigger a test task update websocket event for debugging and testing purposes.',
       security: [
         {
           apiKey: [],

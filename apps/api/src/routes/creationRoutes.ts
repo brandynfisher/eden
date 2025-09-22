@@ -18,7 +18,9 @@ const creationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creations'],
-      description: 'List creations',
+      summary: 'List Creations',
+      description:
+        'Retrieve a paginated list of creations with optional filtering by user ID or name.',
       security: [
         {
           apiKey: [],
@@ -45,7 +47,9 @@ const creationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creations'],
-      description: 'Get a creation',
+      summary: 'Get Creation Details',
+      description:
+        'Retrieve detailed information about a specific creation by its ID.',
       security: [
         {
           apiKey: [],
@@ -85,7 +89,9 @@ const creationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creations'],
-      description: 'Update a creation',
+      summary: 'Update Creation',
+      description:
+        'Update creation properties such as privacy settings or soft delete status.',
       security: [
         {
           apiKey: [],
@@ -113,7 +119,9 @@ const creationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creations'],
-      description: 'Delete a creation',
+      summary: 'Delete Creation',
+      description:
+        'Permanently delete a creation. This action cannot be undone.',
       security: [
         {
           apiKey: [],
@@ -137,7 +145,9 @@ const creationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creations'],
-      description: 'Rate a creation',
+      summary: 'Rate Creation',
+      description:
+        'Submit a rating for a creation. Ratings help improve content quality and recommendations.',
       body: Type.Object({
         creationId: Type.String(),
         rating: Type.Strict(Type.Number()),
@@ -156,7 +166,9 @@ const creationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creations'],
-      description: 'React to a creation',
+      summary: 'Add Reaction',
+      description:
+        'Add a reaction (like, love, etc.) to a creation to express appreciation or feedback.',
       security: [
         {
           apiKey: [],
@@ -181,7 +193,8 @@ const creationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creations'],
-      description: 'Unreact to a creation',
+      summary: 'Remove Reaction',
+      description: 'Remove a previously added reaction from a creation.',
       security: [
         {
           apiKey: [],

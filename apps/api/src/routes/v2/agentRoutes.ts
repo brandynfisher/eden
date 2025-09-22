@@ -44,7 +44,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents', {
     schema: {
       tags: ['Agents'],
-      description: 'List agents',
+      summary: 'List Agents',
+      description:
+        'Retrieve a paginated list of agents, optionally filtered by user ID, username, or name.',
       security: [
         {
           apiKey: [],
@@ -71,7 +73,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId', {
     schema: {
       tags: ['Agents'],
-      description: 'Get an agent',
+      summary: 'Get Agent Details',
+      description:
+        'Retrieve detailed information about a specific agent by its ID.',
       security: [
         {
           apiKey: [],
@@ -93,7 +97,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/agents', {
     schema: {
       tags: ['Agents'],
-      description: 'Create an agent',
+      summary: 'Create New Agent',
+      description:
+        'Create a new AI agent with specified configuration, models, persona, and capabilities.',
       security: [
         {
           apiKey: [],
@@ -166,7 +172,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.patch('/v2/agents/:agentId', {
     schema: {
       tags: ['Agents'],
-      description: 'Update an agent',
+      summary: 'Update Agent',
+      description:
+        'Update the configuration, settings, or properties of an existing agent.',
       security: [
         {
           apiKey: [],
@@ -251,7 +259,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId/triggers', {
     schema: {
       tags: ['Agents'],
-      description: 'Get agent triggers',
+      summary: 'Get Agent Triggers',
+      description:
+        'Retrieve all automated triggers configured for a specific agent.',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getAgentTriggers(request, reply),
@@ -260,7 +270,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/agents/:agentId/triggers', {
     schema: {
       tags: ['Agents'],
-      description: 'Create an agent trigger',
+      summary: 'Create Agent Trigger',
+      description:
+        'Create a new automated trigger that activates the agent under specific conditions.',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createAgentTrigger(server, request, reply),
@@ -269,7 +281,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.patch('/v2/agents/:agentId/triggers/:triggerId', {
     schema: {
       tags: ['Agents'],
-      description: 'Update an agent trigger',
+      summary: 'Update Agent Trigger',
+      description:
+        'Modify the configuration or conditions of an existing agent trigger.',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateAgentTrigger(request, reply),
@@ -278,7 +292,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/agents/:agentId/triggers/:triggerId', {
     schema: {
       tags: ['Agents'],
-      description: 'Delete an agent trigger',
+      summary: 'Delete Agent Trigger',
+      description:
+        'Remove an automated trigger from an agent, stopping its activation.',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteAgentTrigger(server, request, reply),
@@ -287,7 +303,10 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/triggers/run', {
     schema: {
       tags: ['Triggers'],
-      description: 'Execute a trigger immediately',
+      summary: 'Execute Trigger Now',
+      description:
+        'Manually execute an agent trigger immediately, bypassing its normal activation conditions.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -323,7 +342,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId/deployments', {
     schema: {
       tags: ['Agents'],
-      description: 'Get agent deployments',
+      summary: 'Get Agent Deployments',
+      description:
+        'Retrieve all platform deployments (Discord, Twitter, etc.) for a specific agent.',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getAgentDeployments(request, reply),
@@ -332,7 +353,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/agents/:agentId/deployments', {
     schema: {
       tags: ['Agents'],
-      description: 'Deploys or updates an agent deployment',
+      summary: 'Deploy Agent',
+      description:
+        'Deploy an agent to a platform or update an existing deployment configuration.',
       security: [
         {
           apiKey: [],
@@ -354,7 +377,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.patch('/v2/agents/:agentId/deployments', {
     schema: {
       tags: ['Agents'],
-      description: 'Update an agent deployment',
+      summary: 'Update Agent Deployment',
+      description:
+        'Modify the configuration or settings of an existing agent deployment.',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateAgentDeployment(server, request, reply),
@@ -363,7 +388,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/agents/:agentId/deployments/:platform', {
     schema: {
       tags: ['Agents'],
-      description: 'Delete an agent deployment',
+      summary: 'Delete Agent Deployment',
+      description:
+        'Remove an agent deployment from a specific platform, stopping its operation there.',
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => deleteAgentDeployment(server, request, reply),
@@ -372,7 +399,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/agents/:agentId', {
     schema: {
       tags: ['Agents'],
-      description: 'Delete an agent',
+      summary: 'Delete Agent',
+      description:
+        'Permanently delete an agent and all its associated data, deployments, and configurations.',
       security: [
         {
           apiKey: [],
@@ -392,7 +421,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/agents/:agentId/like', {
     schema: {
       tags: ['Agents'],
-      description: 'Like an agent',
+      summary: 'Like Agent',
+      description:
+        'Add a like to an agent, showing appreciation and potentially boosting its visibility.',
       security: [
         {
           apiKey: [],
@@ -423,7 +454,8 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/agents/:agentId/like', {
     schema: {
       tags: ['Agents'],
-      description: 'Unlike an agent',
+      summary: 'Unlike Agent',
+      description: 'Remove a previously given like from an agent.',
       security: [
         {
           apiKey: [],
@@ -454,7 +486,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/triggers', {
     schema: {
       tags: ['Agents'],
-      description: 'Get all triggers for user agents',
+      summary: 'Get User Triggers',
+      description:
+        'Retrieve all triggers across all agents owned by the authenticated user.',
       security: [
         {
           apiKey: [],
@@ -473,7 +507,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/deployments', {
     schema: {
       tags: ['Agents'],
-      description: 'Get all deployments for user agents',
+      summary: 'Get User Deployments',
+      description:
+        'Retrieve all deployments across all agents owned by the authenticated user.',
       security: [
         {
           apiKey: [],
@@ -492,7 +528,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId/memory', {
     schema: {
       tags: ['Agents'],
-      description: 'Get user memory for an agent',
+      summary: 'Get Agent Memory',
+      description:
+        'Retrieve the personalized memory content and unabsorbed directives for a specific agent.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       response: {
@@ -515,7 +553,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/agents/:agentId/memory', {
     schema: {
       tags: ['Agents'],
-      description: 'Save user memory for an agent',
+      summary: 'Save Agent Memory',
+      description:
+        'Store or update personalized memory content for an agent to improve future interactions.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       body: Type.Object({ content: Type.String() }),
@@ -529,7 +569,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId/memory-user', {
     schema: {
       tags: ['Agents'],
-      description: 'Get full memory_user document',
+      summary: 'Get Memory User',
+      description:
+        'Retrieve the complete memory_user document containing all user-specific data for an agent.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
     },
@@ -540,7 +582,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.patch('/v2/agents/:agentId/memory-user', {
     schema: {
       tags: ['Agents'],
-      description: 'Update memory_user document',
+      summary: 'Update Memory User',
+      description:
+        'Modify the memory_user document with updated user-specific information for an agent.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       body: Type.Record(Type.String(), Type.Any()),
@@ -553,7 +597,8 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.patch('/v2/agents/:agentId/user-memory-enabled', {
     schema: {
       tags: ['Agents'],
-      description: 'Update user_memory_enabled field for an agent',
+      summary: 'Toggle Memory Setting',
+      description: 'Enable or disable the user memory feature for an agent.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       body: Type.Object({
@@ -574,7 +619,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/memory-sessions/:memoryId', {
     schema: {
       tags: ['Agents'],
-      description: 'Get memory_session document',
+      summary: 'Get Memory Session',
+      description:
+        'Retrieve a specific memory_session document containing session-specific memory data.',
       security: [{ apiKey: [] }],
       params: { memoryId: Type.String() },
     },
@@ -585,7 +632,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.patch('/v2/memory-sessions/:memoryId', {
     schema: {
       tags: ['Agents'],
-      description: 'Update memory_session document',
+      summary: 'Update Memory Session',
+      description:
+        'Modify a memory_session document with updated session-specific information.',
       security: [{ apiKey: [] }],
       params: { memoryId: Type.String() },
       body: Type.Record(Type.String(), Type.Any()),
@@ -598,7 +647,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/agents/:agentId/memory/:memoryId', {
     schema: {
       tags: ['Agents'],
-      description: 'Remove unabsorbed memory from memory_user',
+      summary: 'Remove Unabsorbed Memory',
+      description:
+        'Delete specific unabsorbed memory items from the user memory for an agent.',
       security: [{ apiKey: [] }],
       params: {
         agentId: Type.String(),
@@ -614,7 +665,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId/memory-agent', {
     schema: {
       tags: ['Agents'],
-      description: 'Get collective memory (memory_agent documents)',
+      summary: 'Get Collective Memory',
+      description:
+        'Retrieve all collective memory shards and their facts for an agent.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       response: {
@@ -654,7 +707,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/agents/:agentId/memory-agent', {
     schema: {
       tags: ['Agents'],
-      description: 'Create new collective memory shard',
+      summary: 'Create Memory Shard',
+      description:
+        'Create a new collective memory shard with a specific extraction prompt for organizing agent knowledge.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       body: Type.Object({
@@ -676,7 +731,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.patch('/v2/agents/:agentId/memory-agent/:memoryAgentId', {
     schema: {
       tags: ['Agents'],
-      description: 'Update memory_agent document',
+      summary: 'Update Memory Agent',
+      description:
+        'Modify a memory_agent document containing collective memory data.',
       security: [{ apiKey: [] }],
       params: {
         agentId: Type.String(),
@@ -694,8 +751,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
     {
       schema: {
         tags: ['Agents'],
+        summary: 'Remove Agent Memory',
         description:
-          'Remove memory from memory_agent arrays (facts or unabsorbed_memory_ids)',
+          'Remove specific memory items from agent collective memory arrays (facts or unabsorbed memory).',
         security: [{ apiKey: [] }],
         params: {
           agentId: Type.String(),
@@ -720,7 +778,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId/dashboard', {
     schema: {
       tags: ['Agents'],
-      description: 'Get dashboard data for an agent',
+      summary: 'Get Agent Dashboard',
+      description:
+        'Retrieve analytics and activity data for an agent within a specified date range.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       querystring: {
@@ -773,8 +833,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId/creations', {
     schema: {
       tags: ['Agents'],
+      summary: 'Get Agent Creations',
       description:
-        "List an agent's creations: union of auth user's creations and public creations by others",
+        "Retrieve a list of the agent's creations, including both the user's own creations and public creations by others.",
       security: [
         {
           apiKey: [],
@@ -809,7 +870,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/:agentId/permissions', {
     schema: {
       tags: ['Agents'],
-      description: 'Get agent permissions',
+      summary: 'Get Agent Permissions',
+      description:
+        'Retrieve the list of users who have access permissions to an agent and their permission levels.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       response: {
@@ -838,7 +901,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.put('/v2/agents/:agentId/permissions', {
     schema: {
       tags: ['Agents'],
-      description: 'Update agent permissions',
+      summary: 'Update Agent Permissions',
+      description:
+        'Grant or modify access permissions for users to collaborate on an agent.',
       security: [{ apiKey: [] }],
       params: { agentId: Type.String() },
       body: Type.Object({
@@ -860,7 +925,9 @@ const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents/shared', {
     schema: {
       tags: ['Agents'],
-      description: 'Get agents shared with the current user',
+      summary: 'Get Shared Agents',
+      description:
+        'Retrieve all agents that have been shared with the current user by other users.',
       security: [{ apiKey: [] }],
       response: {
         200: {

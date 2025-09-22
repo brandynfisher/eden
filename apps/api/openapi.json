@@ -6,27 +6,10 @@
     "version": "8.14.0"
   },
   "paths": {
-    "/health": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/ws/updates": {
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
     "/manna/balance": {
       "get": {
-        "description": "Get manna balance",
+        "summary": "Get Manna Balance",
+        "description": "Retrieve the authenticated user's current manna balance and subscription balance.",
         "tags": ["Manna"],
         "security": [
           {
@@ -58,7 +41,8 @@
     },
     "/manna/vouchers/redeem": {
       "post": {
-        "description": "Redeem a manna voucher",
+        "summary": "Redeem Manna Voucher",
+        "description": "Redeem a manna voucher code to add manna to the authenticated user's account.",
         "tags": ["Manna"],
         "requestBody": {
           "content": {
@@ -315,448 +299,10 @@
         }
       }
     },
-    "/collections": {
-      "get": {
-        "description": "List collections",
-        "tags": ["Collections"],
-        "parameters": [
-          {
-            "required": false,
-            "in": "query",
-            "name": "userId",
-            "schema": {
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "array",
-                  "items": {}
-                }
-              ]
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "creationId",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "orderBy",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "direction",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "docs": {
-                      "type": "array",
-                      "items": {}
-                    },
-                    "total": {
-                      "type": "number"
-                    },
-                    "limit": {
-                      "type": "number"
-                    },
-                    "pages": {
-                      "type": "number"
-                    },
-                    "page": {
-                      "type": "number"
-                    },
-                    "pagingCounter": {
-                      "type": "number"
-                    },
-                    "hasPrevPage": {
-                      "type": "boolean"
-                    },
-                    "hasNextPage": {
-                      "type": "boolean"
-                    },
-                    "prevPage": {
-                      "type": "number"
-                    },
-                    "nextPage": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "docs",
-                    "total",
-                    "limit",
-                    "pages",
-                    "page",
-                    "pagingCounter",
-                    "hasPrevPage",
-                    "hasNextPage"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/collections/{collectionId}": {
-      "get": {
-        "description": "Get a collection",
-        "tags": ["Collections"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "collectionId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "collection": {}
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "description": "Update a collection",
-        "tags": ["Collections"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "collectionId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "isPrivate": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "description": "Delete a collection",
-        "tags": ["Collections"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "conceptId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/collections/creations/add": {
-      "post": {
-        "description": "Add creations to a collection",
-        "tags": ["Collections"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collectionId": {
-                    "type": "string"
-                  },
-                  "creationIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "required": ["creationIds"]
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/collections/creations/remove": {
-      "post": {
-        "description": "Remove creations from a collection",
-        "tags": ["Collections"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "collectionId": {
-                    "type": "string"
-                  },
-                  "creationIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "required": ["creationIds"]
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/collections/create": {
-      "post": {
-        "description": "Create a collection",
-        "tags": ["Collections"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
-                  "creationIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "required": ["name"]
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "collectionId": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v2/auth/twitter/disconnect": {
-      "delete": {
-        "description": "Disconnect Twitter",
-        "tags": ["Auth"],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/v2/auth/tiktok/disconnect": {
-      "delete": {
-        "description": "Disconnect TikTok",
-        "tags": ["Auth"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "query",
-            "name": "agentId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
-    "/v2/auth/integrations/twitter/disconnect": {
-      "delete": {
-        "description": "Disconnect Twitter integration for agent",
-        "tags": ["Auth"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "query",
-            "name": "agentId",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response"
-          }
-        }
-      }
-    },
     "/v2/creators": {
       "get": {
-        "description": "List creators",
+        "summary": "List Creators",
+        "description": "Retrieve a paginated list of creators, optionally filtered by user ID or Discord ID.",
         "tags": ["Creators"],
         "parameters": [
           {
@@ -888,7 +434,8 @@
     },
     "/v2/creators/me": {
       "get": {
-        "description": "Get your own info",
+        "summary": "Get Authenticated Creator Profile",
+        "description": "Retrieve your own creator profile information including balances and subscription details.",
         "tags": ["Creators"],
         "security": [
           {
@@ -928,7 +475,8 @@
     },
     "/v2/creators/{userId}": {
       "get": {
-        "description": "Get a creator",
+        "summary": "Get Creator Details",
+        "description": "Retrieve detailed information about a specific creator by their user ID.",
         "tags": ["Creators"],
         "security": [
           {
@@ -964,7 +512,8 @@
     },
     "/v2/creators/update": {
       "post": {
-        "description": "Update a creator",
+        "summary": "Update Creator Profile",
+        "description": "Update your creator profile settings including username, image, and preferences.",
         "tags": ["Creators"],
         "security": [
           {
@@ -990,7 +539,8 @@
     },
     "/v2/tools/{toolKey}": {
       "get": {
-        "description": "Get a Tool",
+        "summary": "Get Tool Details",
+        "description": "Retrieve detailed information about a specific tool including its parameters and configuration.",
         "tags": ["Tools"],
         "parameters": [
           {
@@ -1069,7 +619,8 @@
     },
     "/v2/tools": {
       "get": {
-        "description": "List Tools",
+        "summary": "List Available Tools",
+        "description": "Retrieve a list of all available tools with their metadata and configuration options.",
         "tags": ["Tools"],
         "parameters": [
           {
@@ -1151,7 +702,8 @@
     },
     "/v2/tasks/cost": {
       "post": {
-        "description": "Get task cost",
+        "summary": "Calculate Task Cost",
+        "description": "Calculate the estimated cost in manna for executing a task with specified tool and arguments.",
         "tags": ["Tasks"],
         "requestBody": {
           "content": {
@@ -1200,7 +752,8 @@
     },
     "/v2/tasks/create": {
       "post": {
-        "description": "Create a task",
+        "summary": "Create New Task",
+        "description": "Create and execute a new task using a specified tool with optional arguments and visibility settings.",
         "tags": ["Tasks"],
         "requestBody": {
           "content": {
@@ -1310,7 +863,8 @@
     },
     "/v2/tasks": {
       "get": {
-        "description": "List tasks",
+        "summary": "List User Tasks",
+        "description": "Retrieve a paginated list of tasks for the authenticated user with optional filtering by status, type, or tool.",
         "tags": ["Tasks"],
         "parameters": [
           {
@@ -1524,7 +1078,8 @@
     },
     "/v2/tasks/{taskId}": {
       "get": {
-        "description": "Get a task",
+        "summary": "Get Task Details",
+        "description": "Retrieve detailed information about a specific task including its status and output.",
         "tags": ["Tasks"],
         "parameters": [
           {
@@ -1614,7 +1169,8 @@
     },
     "/v2/tasks/events": {
       "get": {
-        "description": "Get task events",
+        "summary": "Subscribe Task Events",
+        "description": "Subscribe to real-time task update events via Server-Sent Events (SSE).",
         "tags": ["Tasks"],
         "parameters": [
           {
@@ -1640,7 +1196,8 @@
     },
     "/v2/tasks/cancel": {
       "post": {
-        "description": "Cancel a task in progress",
+        "summary": "Cancel Running Task",
+        "description": "Cancel a task that is currently in progress or queued for execution.",
         "tags": ["Tasks"],
         "requestBody": {
           "content": {
@@ -1683,7 +1240,8 @@
     },
     "/v2/models/{modelId}": {
       "get": {
-        "description": "Get a Model",
+        "summary": "Get Model Details",
+        "description": "Retrieve detailed information about a specific AI model by its ID.",
         "tags": ["Models"],
         "parameters": [
           {
@@ -1777,7 +1335,8 @@
         }
       },
       "patch": {
-        "description": "Update a model",
+        "summary": "Update Model",
+        "description": "Update the visibility or deletion status of a specific model.",
         "tags": ["Models"],
         "parameters": [
           {
@@ -1830,7 +1389,8 @@
     },
     "/v2/models/{modelId}/like": {
       "post": {
-        "description": "Like a model",
+        "summary": "Like Model",
+        "description": "Add a like to a model, showing appreciation and boosting its visibility.",
         "tags": ["Models"],
         "parameters": [
           {
@@ -1911,7 +1471,8 @@
         }
       },
       "delete": {
-        "description": "Unlike a model",
+        "summary": "Unlike Model",
+        "description": "Remove a previously given like from a model.",
         "tags": ["Models"],
         "parameters": [
           {
@@ -1994,7 +1555,8 @@
     },
     "/v2/creations": {
       "get": {
-        "description": "List creations",
+        "summary": "List Creations",
+        "description": "Retrieve a paginated list of creations, optionally filtered by user ID or name.",
         "tags": ["Creations"],
         "parameters": [
           {
@@ -2118,7 +1680,8 @@
     },
     "/v2/creations/{creationId}": {
       "get": {
-        "description": "Get a creation",
+        "summary": "Get Creation Details",
+        "description": "Retrieve detailed information about a specific creation by its ID.",
         "tags": ["Creations"],
         "parameters": [
           {
@@ -2212,7 +1775,8 @@
         }
       },
       "patch": {
-        "description": "Update a creation",
+        "summary": "Update Creation",
+        "description": "Update the visibility or deletion status of a specific creation.",
         "tags": ["Creations"],
         "parameters": [
           {
@@ -2265,7 +1829,8 @@
     },
     "/v2/creations/bulk": {
       "patch": {
-        "description": "Bulk update creations",
+        "summary": "Bulk Update Creations",
+        "description": "Update the visibility or deletion status of multiple creations at once.",
         "tags": ["Creations"],
         "requestBody": {
           "content": {
@@ -2331,7 +1896,8 @@
     },
     "/v2/creations/{creationId}/like": {
       "post": {
-        "description": "Like a creation",
+        "summary": "Like Creation",
+        "description": "Add a like to a creation, showing appreciation and boosting its visibility.",
         "tags": ["Creations"],
         "parameters": [
           {
@@ -2412,7 +1978,8 @@
         }
       },
       "delete": {
-        "description": "Unlike a creation",
+        "summary": "Unlike Creation",
+        "description": "Remove a previously given like from a creation.",
         "tags": ["Creations"],
         "parameters": [
           {
@@ -2495,7 +2062,8 @@
     },
     "/v2/collections/light": {
       "get": {
-        "description": "Get current user collections, light version",
+        "summary": "Get User Collections Light",
+        "description": "Retrieve a lightweight list of collections owned by the current user with basic information.",
         "tags": ["Collections"],
         "security": [
           {
@@ -2524,7 +2092,8 @@
     },
     "/v2/collections/{collectionId}": {
       "get": {
-        "description": "Get a collection",
+        "summary": "Get Collection Details",
+        "description": "Retrieve detailed information about a specific collection by its ID.",
         "tags": ["Collections"],
         "parameters": [
           {
@@ -2558,7 +2127,8 @@
         }
       },
       "patch": {
-        "description": "Update a collection",
+        "summary": "Update Collection",
+        "description": "Modify the name, description, or visibility settings of an existing collection.",
         "tags": ["Collections"],
         "parameters": [
           {
@@ -2615,7 +2185,8 @@
         }
       },
       "delete": {
-        "description": "Delete a collection",
+        "summary": "Delete Collection",
+        "description": "Permanently delete a collection and remove all creation associations.",
         "tags": ["Collections"],
         "parameters": [
           {
@@ -2649,7 +2220,8 @@
     },
     "/v2/collections/{collectionId}/creations": {
       "get": {
-        "description": "Get creations of a collection",
+        "summary": "Get Collection Creations",
+        "description": "Retrieve all creations that belong to a specific collection.",
         "tags": ["Collections"],
         "parameters": [
           {
@@ -2688,7 +2260,8 @@
     },
     "/v2/collections": {
       "post": {
-        "description": "Create a collection",
+        "summary": "Create New Collection",
+        "description": "Create a new collection to organize and group related creations together.",
         "tags": ["Collections"],
         "requestBody": {
           "content": {
@@ -2743,7 +2316,8 @@
     },
     "/v2/collections/{collectionId}/download": {
       "post": {
-        "description": "Download a collection",
+        "summary": "Download Collection",
+        "description": "Generate and download a ZIP file containing all creations in the collection.",
         "tags": ["Collections"],
         "parameters": [
           {
@@ -2769,7 +2343,8 @@
     },
     "/v2/collections/{collectionId}/creations/add": {
       "patch": {
-        "description": "Add creations to a collection",
+        "summary": "Add Creations",
+        "description": "Add one or more creations to an existing collection.",
         "tags": ["Collections"],
         "parameters": [
           {
@@ -2826,7 +2401,8 @@
     },
     "/v2/collections/{collectionId}/creations/remove": {
       "patch": {
-        "description": "Remove creations from a collection",
+        "summary": "Remove Creations",
+        "description": "Remove one or more creations from an existing collection.",
         "tags": ["Collections"],
         "parameters": [
           {
@@ -2881,710 +2457,10 @@
         }
       }
     },
-    "/v2/threads": {
-      "post": {
-        "description": "Add a thread message ",
-        "tags": ["Threads"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "thread_id": {
-                    "type": "string"
-                  },
-                  "agent_id": {
-                    "type": "string"
-                  },
-                  "content": {
-                    "type": "string"
-                  },
-                  "attachments": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "thread_id": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["thread_id"]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {},
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "description": "List threads",
-        "tags": ["Threads"],
-        "parameters": [
-          {
-            "required": false,
-            "in": "query",
-            "name": "agent_id",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "orderBy",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "direction",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "docs": {
-                      "type": "array",
-                      "items": {}
-                    },
-                    "total": {
-                      "type": "number"
-                    },
-                    "limit": {
-                      "type": "number"
-                    },
-                    "pages": {
-                      "type": "number"
-                    },
-                    "page": {
-                      "type": "number"
-                    },
-                    "pagingCounter": {
-                      "type": "number"
-                    },
-                    "hasPrevPage": {
-                      "type": "boolean"
-                    },
-                    "hasNextPage": {
-                      "type": "boolean"
-                    },
-                    "prevPage": {
-                      "type": "number"
-                    },
-                    "nextPage": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "docs",
-                    "total",
-                    "limit",
-                    "pages",
-                    "page",
-                    "pagingCounter",
-                    "hasPrevPage",
-                    "hasNextPage"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v2/threads/react": {
-      "post": {
-        "description": "Add a reaction to a thread message ",
-        "tags": ["Threads"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message_id": {
-                    "type": "string"
-                  },
-                  "reaction": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {},
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v2/threads/pin": {
-      "post": {
-        "description": "Pin a thread message ",
-        "tags": ["Threads"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message_id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {},
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v2/threads/unpin": {
-      "post": {
-        "description": "Unpin a thread message ",
-        "tags": ["Threads"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message_id": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {}
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {},
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v2/threads/{thread_id}": {
-      "get": {
-        "description": "Get a thread",
-        "tags": ["Threads"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "thread_id",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "thread": {}
-                  },
-                  "required": ["thread"]
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "description": "Rename a thread",
-        "tags": ["Threads"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "thread_id",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "title": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": ["success"]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "description": "Delete a thread",
-        "tags": ["Threads"],
-        "parameters": [
-          {
-            "required": true,
-            "in": "path",
-            "name": "thread_id",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    }
-                  },
-                  "required": ["success"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v2/agents": {
       "get": {
-        "description": "List agents",
+        "summary": "List Agents",
+        "description": "Retrieve a paginated list of agents, optionally filtered by user ID, username, or name.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -3722,7 +2598,8 @@
         }
       },
       "post": {
-        "description": "Create an agent",
+        "summary": "Create New Agent",
+        "description": "Create a new AI agent with specified configuration, models, persona, and capabilities.",
         "tags": ["Agents"],
         "requestBody": {
           "content": {
@@ -3881,7 +2758,8 @@
     },
     "/v2/agents/{agentId}": {
       "get": {
-        "description": "Get an agent",
+        "summary": "Get Agent Details",
+        "description": "Retrieve detailed information about a specific agent by its ID.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -3915,7 +2793,8 @@
         }
       },
       "patch": {
-        "description": "Update an agent",
+        "summary": "Update Agent",
+        "description": "Update the configuration, settings, or properties of an existing agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4104,7 +2983,8 @@
         }
       },
       "delete": {
-        "description": "Delete an agent",
+        "summary": "Delete Agent",
+        "description": "Permanently delete an agent and all its associated data, deployments, and configurations.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4138,7 +3018,8 @@
     },
     "/v2/agents/{agentId}/triggers": {
       "get": {
-        "description": "Get agent triggers",
+        "summary": "Get Agent Triggers",
+        "description": "Retrieve all automated triggers configured for a specific agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4157,7 +3038,8 @@
         }
       },
       "post": {
-        "description": "Create an agent trigger",
+        "summary": "Create Agent Trigger",
+        "description": "Create a new automated trigger that activates the agent under specific conditions.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4178,7 +3060,8 @@
     },
     "/v2/agents/{agentId}/triggers/{triggerId}": {
       "patch": {
-        "description": "Update an agent trigger",
+        "summary": "Update Agent Trigger",
+        "description": "Modify the configuration or conditions of an existing agent trigger.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4205,7 +3088,8 @@
         }
       },
       "delete": {
-        "description": "Delete an agent trigger",
+        "summary": "Delete Agent Trigger",
+        "description": "Remove an automated trigger from an agent, stopping its activation.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4232,121 +3116,10 @@
         }
       }
     },
-    "/v2/triggers/run": {
-      "post": {
-        "description": "Execute a trigger immediately",
-        "tags": ["Triggers"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "trigger_id": {
-                    "type": "string"
-                  }
-                },
-                "required": ["trigger_id"]
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "trigger_id": {
-                      "type": "string"
-                    },
-                    "executed": {
-                      "type": "boolean"
-                    },
-                    "chat_response": {}
-                  },
-                  "required": ["trigger_id", "executed"]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["message"]
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["message"]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["message"]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["message"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v2/agents/{agentId}/deployments": {
       "get": {
-        "description": "Get agent deployments",
+        "summary": "Get Agent Deployments",
+        "description": "Retrieve all platform deployments (Discord, Twitter, etc.) for a specific agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4365,7 +3138,8 @@
         }
       },
       "post": {
-        "description": "Deploys or updates an agent deployment",
+        "summary": "Deploy Agent",
+        "description": "Deploy an agent to a platform or update an existing deployment configuration.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4402,7 +3176,8 @@
         }
       },
       "patch": {
-        "description": "Update an agent deployment",
+        "summary": "Update Agent Deployment",
+        "description": "Modify the configuration or settings of an existing agent deployment.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4423,7 +3198,8 @@
     },
     "/v2/agents/{agentId}/deployments/{platform}": {
       "delete": {
-        "description": "Delete an agent deployment",
+        "summary": "Delete Agent Deployment",
+        "description": "Remove an agent deployment from a specific platform, stopping its operation there.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4452,7 +3228,8 @@
     },
     "/v2/agents/{agentId}/like": {
       "post": {
-        "description": "Like an agent",
+        "summary": "Like Agent",
+        "description": "Add a like to an agent, showing appreciation and potentially boosting its visibility.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4533,7 +3310,8 @@
         }
       },
       "delete": {
-        "description": "Unlike an agent",
+        "summary": "Unlike Agent",
+        "description": "Remove a previously given like from an agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4616,7 +3394,8 @@
     },
     "/v2/agents/triggers": {
       "get": {
-        "description": "Get all triggers for user agents",
+        "summary": "Get User Triggers",
+        "description": "Retrieve all triggers across all agents owned by the authenticated user.",
         "tags": ["Agents"],
         "security": [
           {
@@ -4645,7 +3424,8 @@
     },
     "/v2/agents/deployments": {
       "get": {
-        "description": "Get all deployments for user agents",
+        "summary": "Get User Deployments",
+        "description": "Retrieve all deployments across all agents owned by the authenticated user.",
         "tags": ["Agents"],
         "security": [
           {
@@ -4674,7 +3454,8 @@
     },
     "/v2/agents/{agentId}/memory": {
       "get": {
-        "description": "Get user memory for an agent",
+        "summary": "Get Agent Memory",
+        "description": "Retrieve the personalized memory content and unabsorbed directives for a specific agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4728,7 +3509,8 @@
         }
       },
       "post": {
-        "description": "Save user memory for an agent",
+        "summary": "Save Agent Memory",
+        "description": "Store or update personalized memory content for an agent to improve future interactions.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4781,7 +3563,8 @@
     },
     "/v2/agents/{agentId}/memory-user": {
       "get": {
-        "description": "Get full memory_user document",
+        "summary": "Get Memory User",
+        "description": "Retrieve the complete memory_user document containing all user-specific data for an agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4805,7 +3588,8 @@
         }
       },
       "patch": {
-        "description": "Update memory_user document",
+        "summary": "Update Memory User",
+        "description": "Modify the memory_user document with updated user-specific information for an agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4855,7 +3639,8 @@
     },
     "/v2/agents/{agentId}/user-memory-enabled": {
       "patch": {
-        "description": "Update user_memory_enabled field for an agent",
+        "summary": "Toggle Memory Setting",
+        "description": "Enable or disable the user memory feature for an agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4908,7 +3693,8 @@
     },
     "/v2/memory-sessions/{memoryId}": {
       "get": {
-        "description": "Get memory_session document",
+        "summary": "Get Memory Session",
+        "description": "Retrieve a specific memory_session document containing session-specific memory data.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4932,7 +3718,8 @@
         }
       },
       "patch": {
-        "description": "Update memory_session document",
+        "summary": "Update Memory Session",
+        "description": "Modify a memory_session document with updated session-specific information.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -4982,7 +3769,8 @@
     },
     "/v2/agents/{agentId}/memory/{memoryId}": {
       "delete": {
-        "description": "Remove unabsorbed memory from memory_user",
+        "summary": "Remove Unabsorbed Memory",
+        "description": "Delete specific unabsorbed memory items from the user memory for an agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5028,7 +3816,8 @@
     },
     "/v2/agents/{agentId}/memory-agent": {
       "get": {
-        "description": "Get collective memory (memory_agent documents)",
+        "summary": "Get Collective Memory",
+        "description": "Retrieve all collective memory shards and their facts for an agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5130,7 +3919,8 @@
         }
       },
       "post": {
-        "description": "Create new collective memory shard",
+        "summary": "Create Memory Shard",
+        "description": "Create a new collective memory shard with a specific extraction prompt for organizing agent knowledge.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5196,7 +3986,8 @@
     },
     "/v2/agents/{agentId}/memory-agent/{memoryAgentId}": {
       "patch": {
-        "description": "Update memory_agent document",
+        "summary": "Update Memory Agent",
+        "description": "Modify a memory_agent document containing collective memory data.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5254,7 +4045,8 @@
     },
     "/v2/agents/{agentId}/memory-agent/{memoryAgentId}/memory/{memoryId}": {
       "delete": {
-        "description": "Remove memory from memory_agent arrays (facts or unabsorbed_memory_ids)",
+        "summary": "Remove Agent Memory",
+        "description": "Remove specific memory items from agent collective memory arrays (facts or unabsorbed memory).",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5332,7 +4124,8 @@
     },
     "/v2/agents/{agentId}/dashboard": {
       "get": {
-        "description": "Get dashboard data for an agent",
+        "summary": "Get Agent Dashboard",
+        "description": "Retrieve analytics and activity data for an agent within a specified date range.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5472,7 +4265,8 @@
     },
     "/v2/agents/{agentId}/creations": {
       "get": {
-        "description": "List an agent's creations: union of auth user's creations and public creations by others",
+        "summary": "Get Agent Creations",
+        "description": "Retrieve a list of the agent's creations, including both the user's own creations and public creations by others.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5614,7 +4408,8 @@
     },
     "/v2/agents/{agentId}/permissions": {
       "get": {
-        "description": "Get agent permissions",
+        "summary": "Get Agent Permissions",
+        "description": "Retrieve the list of users who have access permissions to an agent and their permission levels.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5692,7 +4487,8 @@
         }
       },
       "put": {
-        "description": "Update agent permissions",
+        "summary": "Update Agent Permissions",
+        "description": "Grant or modify access permissions for users to collaborate on an agent.",
         "tags": ["Agents"],
         "parameters": [
           {
@@ -5766,7 +4562,8 @@
     },
     "/v2/agents/shared": {
       "get": {
-        "description": "Get agents shared with the current user",
+        "summary": "Get Shared Agents",
+        "description": "Retrieve all agents that have been shared with the current user by other users.",
         "tags": ["Agents"],
         "security": [
           {
@@ -5805,103 +4602,10 @@
         }
       }
     },
-    "/v2/user/transactions": {
-      "get": {
-        "tags": ["User"],
-        "parameters": [
-          {
-            "required": false,
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "orderBy",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "direction",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "docs": {
-                      "type": "array",
-                      "items": {}
-                    },
-                    "total": {
-                      "type": "number"
-                    },
-                    "limit": {
-                      "type": "number"
-                    },
-                    "pages": {
-                      "type": "number"
-                    },
-                    "page": {
-                      "type": "number"
-                    },
-                    "pagingCounter": {
-                      "type": "number"
-                    },
-                    "hasPrevPage": {
-                      "type": "boolean"
-                    },
-                    "hasNextPage": {
-                      "type": "boolean"
-                    },
-                    "prevPage": {
-                      "type": "number"
-                    },
-                    "nextPage": {
-                      "type": "number"
-                    }
-                  },
-                  "required": [
-                    "docs",
-                    "total",
-                    "limit",
-                    "pages",
-                    "page",
-                    "pagingCounter",
-                    "hasPrevPage",
-                    "hasNextPage"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/v2/sessions/create": {
       "post": {
-        "description": "Create a new session",
+        "summary": "Create New Session",
+        "description": "Create a new conversation session with one or more agents, including budget and autonomy settings.",
         "tags": ["Sessions"],
         "requestBody": {
           "content": {
@@ -6068,7 +4772,8 @@
     },
     "/v2/sessions": {
       "post": {
-        "description": "Interact with a session",
+        "summary": "Interact with Session",
+        "description": "Send a message to an existing session or create a new session with the first message.",
         "tags": ["Sessions"],
         "requestBody": {
           "content": {
@@ -6249,7 +4954,8 @@
         }
       },
       "get": {
-        "description": "List sessions",
+        "summary": "List User Sessions",
+        "description": "Retrieve a paginated list of sessions for the authenticated user, optionally filtered by agent.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -6357,7 +5063,8 @@
     },
     "/v2/sessions/react": {
       "post": {
-        "description": "Add a reaction to a session message",
+        "summary": "React to Message",
+        "description": "Add an emoji reaction to a specific message within a session.",
         "tags": ["Sessions"],
         "requestBody": {
           "content": {
@@ -6465,7 +5172,8 @@
     },
     "/v2/sessions/{session_id}": {
       "get": {
-        "description": "Get a session",
+        "summary": "Get Session Details",
+        "description": "Retrieve detailed information about a specific session including all messages and participants.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -6500,7 +5208,8 @@
         }
       },
       "patch": {
-        "description": "Modify a session",
+        "summary": "Update Session",
+        "description": "Update session properties such as title or pinned status.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -6610,7 +5319,8 @@
         }
       },
       "delete": {
-        "description": "Delete a session",
+        "summary": "Delete Session",
+        "description": "Permanently delete a session and all its associated messages and data.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -6703,7 +5413,8 @@
     },
     "/v2/sessions/{session_id}/cancel": {
       "post": {
-        "description": "Cancel a running session",
+        "summary": "Cancel Session",
+        "description": "Cancel a currently running session and stop any ongoing tool executions.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -6816,7 +5527,8 @@
     },
     "/v2/sessions/{session_id}/share": {
       "post": {
-        "description": "Create a share point for a session",
+        "summary": "Share Session",
+        "description": "Create a shareable public link for a session up to a specific message point.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -6939,7 +5651,8 @@
     },
     "/v2/sessions/share/{share_id}": {
       "get": {
-        "description": "Get a shared session (public)",
+        "summary": "Get Shared Session",
+        "description": "Retrieve a publicly shared session using its share ID (no authentication required).",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -7025,7 +5738,8 @@
         }
       },
       "delete": {
-        "description": "Delete a session share",
+        "summary": "Delete Session Share",
+        "description": "Delete a session share link, making it no longer accessible publicly.",
         "tags": ["Sessions"],
         "parameters": [
           {

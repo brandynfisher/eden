@@ -7,7 +7,9 @@ const mannaRoutes: FastifyPluginAsync = async server => {
   server.get('/manna/balance', {
     schema: {
       tags: ['Manna'],
-      description: 'Get manna balance',
+      summary: 'Get Manna Balance',
+      description:
+        "Retrieve the authenticated user's current manna balance and subscription balance.",
       security: [
         {
           apiKey: [],
@@ -27,7 +29,9 @@ const mannaRoutes: FastifyPluginAsync = async server => {
   server.post('/manna/vouchers/redeem', {
     schema: {
       tags: ['Manna'],
-      description: 'Redeem a manna voucher',
+      summary: 'Redeem Manna Voucher',
+      description:
+        "Redeem a manna voucher code to add manna to the authenticated user's account.",
       security: [
         {
           apiKey: [],

@@ -13,7 +13,9 @@ const paymentRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Payments'],
-      description: 'Create a payment',
+      summary: 'Create Payment Session',
+      description:
+        'Create a new payment checkout session for purchasing credits or subscriptions.',
       security: [
         {
           apiKey: [],
@@ -42,7 +44,9 @@ const paymentRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Payments'],
-      description: 'Handle a payment event',
+      summary: 'Handle Payment Webhook',
+      description:
+        'Webhook endpoint to receive payment status updates from the payment processor.',
       security: [
         {
           apiKey: [],
@@ -61,7 +65,9 @@ const paymentRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Payments'],
-      description: 'Get products',
+      summary: 'Get Available Products',
+      description:
+        'Retrieve available products and subscription plans for purchase.',
       security: [
         {
           apiKey: [],
@@ -81,7 +87,9 @@ const paymentRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Payments'],
-      description: 'Create a subscription',
+      summary: 'Create Subscription Session',
+      description:
+        'Create a subscription management session for existing customers.',
       security: [
         {
           apiKey: [],

@@ -19,7 +19,9 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Sessions'],
-      description: 'Create a session',
+      summary: 'Create New Session',
+      description:
+        'Create a new conversation session for interacting with characters.',
       security: [
         {
           apiKey: [],
@@ -40,7 +42,9 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Sessions'],
-      description: 'Delete a session',
+      summary: 'Delete Session',
+      description:
+        'Permanently delete a conversation session and all associated messages.',
       security: [
         {
           apiKey: [],
@@ -62,7 +66,9 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Sessions'],
-      description: 'Add users to a session',
+      summary: 'Add Users to Session',
+      description:
+        'Add additional users to an existing conversation session (admin only).',
       security: [
         {
           apiKey: [],
@@ -85,7 +91,9 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Sessions'],
-      description: 'Add characters to a session',
+      summary: 'Add Characters to Session',
+      description:
+        'Add characters to an existing conversation session for multi-character interactions (admin only).',
       security: [
         {
           apiKey: [],
@@ -108,7 +116,9 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Sessions'],
-      description: 'Interact with a session',
+      summary: 'Interact with Session',
+      description:
+        'Send a message in a conversation session and receive character responses (admin only).',
       security: [
         {
           apiKey: [],
@@ -136,7 +146,9 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Sessions'],
-      description: 'List sessions',
+      summary: 'List Sessions',
+      description:
+        'Get a paginated list of conversation sessions with optional filtering by user ID.',
       security: [
         {
           apiKey: [],
@@ -163,7 +175,9 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Sessions'],
-      description: 'Get a session',
+      summary: 'Get Session Details',
+      description:
+        'Retrieve detailed information about a specific conversation session.',
       security: [
         {
           apiKey: [],
@@ -187,7 +201,9 @@ const sessionRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Sessions'],
-      description: 'Get session events',
+      summary: 'Get Session Events',
+      description:
+        'Get a paginated list of events (messages, actions) from a conversation session.',
       security: [
         {
           apiKey: [],

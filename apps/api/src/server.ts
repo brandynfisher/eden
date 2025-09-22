@@ -182,7 +182,16 @@ const createServer = async (
 
   // Register Routes 1
   // websocket route before all others
-  server.get('/ws/updates', { websocket: true }, subscribeWebSocketUpdates)
+  server.get(
+    '/ws/updates',
+    {
+      websocket: true,
+      schema: {
+        hide: true,
+      },
+    },
+    subscribeWebSocketUpdates,
+  )
 
   // all other routes
   routes.map(async route => {

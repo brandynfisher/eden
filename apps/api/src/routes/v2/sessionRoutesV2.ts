@@ -39,7 +39,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/create', {
     schema: {
       tags: ['Sessions'],
-      description: 'Create a new session',
+      summary: 'Create New Session',
+      description:
+        'Create a new conversation session with one or more agents, including budget and autonomy settings.',
       security: [
         {
           apiKey: [],
@@ -118,7 +120,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions', {
     schema: {
       tags: ['Sessions'],
-      description: 'Interact with a session',
+      summary: 'Interact with Session',
+      description:
+        'Send a message to an existing session or create a new session with the first message.',
       security: [
         {
           apiKey: [],
@@ -185,7 +189,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/react', {
     schema: {
       tags: ['Sessions'],
-      description: 'Add a reaction to a session message',
+      summary: 'React to Message',
+      description:
+        'Add an emoji reaction to a specific message within a session.',
       security: [
         {
           apiKey: [],
@@ -224,7 +230,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions', {
     schema: {
       tags: ['Sessions'],
-      description: 'List sessions',
+      summary: 'List User Sessions',
+      description:
+        'Retrieve a paginated list of sessions for the authenticated user, optionally filtered by agent.',
       security: [
         {
           apiKey: [],
@@ -251,7 +259,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
-      description: 'Get a session',
+      summary: 'Get Session Details',
+      description:
+        'Retrieve detailed information about a specific session including all messages and participants.',
       security: [
         {
           apiKey: [],
@@ -276,7 +286,8 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
-      description: 'Modify a session',
+      summary: 'Update Session',
+      description: 'Update session properties such as title or pinned status.',
       security: [
         {
           apiKey: [],
@@ -316,7 +327,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
-      description: 'Delete a session',
+      summary: 'Delete Session',
+      description:
+        'Permanently delete a session and all its associated messages and data.',
       security: [
         {
           apiKey: [],
@@ -356,7 +369,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/:session_id/cancel', {
     schema: {
       tags: ['Sessions'],
-      description: 'Cancel a running session',
+      summary: 'Cancel Session',
+      description:
+        'Cancel a currently running session and stop any ongoing tool executions.',
       security: [
         {
           apiKey: [],
@@ -399,7 +414,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/:session_id/share', {
     schema: {
       tags: ['Sessions'],
-      description: 'Create a share point for a session',
+      summary: 'Share Session',
+      description:
+        'Create a shareable public link for a session up to a specific message point.',
       security: [
         {
           apiKey: [],
@@ -441,7 +458,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/share/:share_id', {
     schema: {
       tags: ['Sessions'],
-      description: 'Get a shared session (public)',
+      summary: 'Get Shared Session',
+      description:
+        'Retrieve a publicly shared session using its share ID (no authentication required).',
       params: {
         share_id: Type.String(),
       },
@@ -473,7 +492,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   }>('/v2/sessions/share/:share_id', {
     schema: {
       tags: ['Sessions'],
-      description: 'Delete a session share',
+      summary: 'Delete Session Share',
+      description:
+        'Delete a session share link, making it no longer accessible publicly.',
       security: [
         {
           apiKey: [],

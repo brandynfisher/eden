@@ -18,7 +18,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creators'],
-      description: 'List creators',
+      summary: 'List Creators',
+      description:
+        'Get a paginated list of creators with optional filtering by user ID or Discord ID.',
       security: [
         {
           apiKey: [],
@@ -45,7 +47,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creators'],
-      description: 'List creator followers',
+      summary: 'List Creator Followers',
+      description:
+        'Get a paginated list of users following a specific creator.',
       security: [
         {
           apiKey: [],
@@ -71,7 +75,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creators'],
-      description: 'List creator following',
+      summary: 'List Creator Following',
+      description:
+        'Get a paginated list of creators that a specific user is following.',
       security: [
         {
           apiKey: [],
@@ -97,7 +103,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creators'],
-      description: 'Get a creator',
+      summary: 'Get Creator Profile',
+      description:
+        "Retrieve detailed information about a specific creator's profile and statistics.",
       security: [
         {
           apiKey: [],
@@ -118,7 +126,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creators'],
-      description: 'Update a creator',
+      summary: 'Update Creator Profile',
+      description:
+        "Update the authenticated creator's profile information such as username, image, or social handles.",
       security: [
         {
           apiKey: [],
@@ -146,7 +156,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creators'],
-      description: 'Follow a creator',
+      summary: 'Follow Creator',
+      description:
+        'Follow a creator to receive updates about their content and creations.',
       security: [
         {
           apiKey: [],
@@ -170,7 +182,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creators'],
-      description: 'Unfollow a creator',
+      summary: 'Unfollow Creator',
+      description:
+        'Stop following a creator and cease receiving updates about their content.',
       security: [
         {
           apiKey: [],
@@ -194,7 +208,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Creators'],
-      description: 'Get your own info',
+      summary: 'Get My Creator Profile',
+      description:
+        "Retrieve the authenticated user's creator profile, balance information, and account details.",
       security: [
         {
           apiKey: [],

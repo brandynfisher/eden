@@ -17,7 +17,9 @@ const conceptRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Concepts'],
-      description: 'List concepts',
+      summary: 'List Concepts',
+      description:
+        'Get a paginated list of trained concepts with optional filtering by user ID or name.',
       security: [
         {
           apiKey: [],
@@ -44,7 +46,9 @@ const conceptRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Concepts'],
-      description: 'Get a concept',
+      summary: 'Get Concept Details',
+      description:
+        'Retrieve detailed information about a specific trained concept including training status and metadata.',
       security: [
         {
           apiKey: [],
@@ -84,7 +88,9 @@ const conceptRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Concepts'],
-      description: 'Update a concept',
+      summary: 'Update Concept',
+      description:
+        "Update an existing concept's privacy settings or description.",
       security: [
         {
           apiKey: [],
@@ -112,7 +118,9 @@ const conceptRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Concepts'],
-      description: 'Delete a concept',
+      summary: 'Delete Concept',
+      description:
+        'Permanently delete a trained concept and all associated training data.',
       security: [
         {
           apiKey: [],
@@ -136,7 +144,8 @@ const conceptRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Concepts'],
-      description: 'React to a concept',
+      summary: 'React to Concept',
+      description: 'Add a reaction (like, dislike, etc.) to a concept.',
       security: [
         {
           apiKey: [],
@@ -161,7 +170,8 @@ const conceptRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Concepts'],
-      description: 'Unreact to a concept',
+      summary: 'Remove Concept Reaction',
+      description: 'Remove a previously added reaction from a concept.',
       security: [
         {
           apiKey: [],

@@ -15,7 +15,9 @@ const notificationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Notifications'],
-      description: 'Create a notification',
+      summary: 'Create Notification',
+      description:
+        'Create a new notification for a specific user with customizable type, priority, and delivery channels (admin only).',
       security: [
         {
           apiKey: [],
@@ -77,7 +79,9 @@ const notificationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Notifications'],
-      description: 'Get notifications for current user',
+      summary: 'Get User Notifications',
+      description:
+        'Retrieve notifications for the current user with optional filtering by read status, type, and priority.',
       security: [
         {
           apiKey: [],
@@ -129,7 +133,9 @@ const notificationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Notifications'],
-      description: 'Mark notifications as read',
+      summary: 'Mark Notifications Read',
+      description:
+        'Mark specific notifications or all notifications as read for the current user.',
       security: [
         {
           apiKey: [],
@@ -154,7 +160,9 @@ const notificationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Notifications'],
-      description: 'Get notification count for current user',
+      summary: 'Get Notification Count',
+      description:
+        'Get the total count of notifications for the current user, optionally filtered by read status.',
       security: [
         {
           apiKey: [],
@@ -178,7 +186,9 @@ const notificationRoutes: FastifyPluginAsync = async server => {
     schema: {
       hide: true,
       tags: ['Notifications'],
-      description: 'Archive notifications (soft delete)',
+      summary: 'Archive Notifications',
+      description:
+        'Archive (soft delete) specific notifications for the current user.',
       security: [
         {
           apiKey: [],

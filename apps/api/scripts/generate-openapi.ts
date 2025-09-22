@@ -107,8 +107,21 @@ async function generateOpenAPISpec() {
     //   ],
     // }
 
+    // Filter out unwanted endpoints (health check, etc.)
+    const filteredPaths = Object.fromEntries(
+      Object.entries(openapi.paths || {}).filter(([path]) => {
+        // Remove health check endpoint
+        if (path === '/health') return false
+        // Remove any other unwanted endpoints here
+        return true
+      }),
+    )
+
     // For full API, use this instead:
-    const filteredOpenapi = openapi
+    const filteredOpenapi = {
+      ...openapi,
+      paths: filteredPaths,
+    }
 
     console.log('✅ Converted to OpenAPI 3.0')
 
