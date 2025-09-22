@@ -15,6 +15,7 @@ import { FastifyPluginAsync } from 'fastify'
 const taskRoutes: FastifyPluginAsync = async server => {
   server.post('/tasks/cost', {
     schema: {
+      hide: true,
       tags: ['Tasks'],
       description: 'Get task cost',
       security: [
@@ -39,6 +40,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.post('/tasks/create', {
     schema: {
+      hide: true,
       tags: ['Tasks'],
       description: 'Create a task',
       security: [
@@ -79,6 +81,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.get('/tasks', {
     schema: {
+      hide: true,
       tags: ['Tasks'],
       description: 'List tasks',
       security: [
@@ -106,6 +109,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.get('/tasks/:taskId', {
     schema: {
+      hide: true,
       tags: ['Tasks'],
       description: 'Get a task',
       security: [
@@ -127,9 +131,9 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.post('/tasks/update', {
     schema: {
+      hide: true,
       tags: ['Tasks'],
       description: 'Update a task',
-      hide: true,
       querystring: {
         secret: Type.String(),
       },
@@ -139,6 +143,7 @@ const taskRoutes: FastifyPluginAsync = async server => {
 
   server.get('/tasks/events', {
     schema: {
+      hide: true,
       tags: ['Tasks'],
       description: 'Get task events',
       security: [

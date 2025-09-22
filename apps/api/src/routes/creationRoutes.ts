@@ -16,6 +16,7 @@ import { FastifyPluginAsync } from 'fastify'
 const creationRoutes: FastifyPluginAsync = async server => {
   server.get('/creations', {
     schema: {
+      hide: true,
       tags: ['Creations'],
       description: 'List creations',
       security: [
@@ -42,6 +43,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creations/:creationId', {
     schema: {
+      hide: true,
       tags: ['Creations'],
       description: 'Get a creation',
       security: [
@@ -81,6 +83,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/creations/:creationId', {
     schema: {
+      hide: true,
       tags: ['Creations'],
       description: 'Update a creation',
       security: [
@@ -108,6 +111,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.delete('/creations/:creationId', {
     schema: {
+      hide: true,
       tags: ['Creations'],
       description: 'Delete a creation',
       security: [
@@ -131,9 +135,9 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creations/rate', {
     schema: {
+      hide: true,
       tags: ['Creations'],
       description: 'Rate a creation',
-      hide: true,
       body: Type.Object({
         creationId: Type.String(),
         rating: Type.Strict(Type.Number()),
@@ -150,6 +154,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creations/reactions/add', {
     schema: {
+      hide: true,
       tags: ['Creations'],
       description: 'React to a creation',
       security: [
@@ -174,6 +179,7 @@ const creationRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creations/reactions/remove', {
     schema: {
+      hide: true,
       tags: ['Creations'],
       description: 'Unreact to a creation',
       security: [

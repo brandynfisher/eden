@@ -10,6 +10,7 @@ import { FastifyPluginAsync } from 'fastify'
 const generatorRoutes: FastifyPluginAsync = async server => {
   server.get('/generators', {
     schema: {
+      hide: true,
       tags: ['Generators'],
       description: 'List generators',
       security: [
@@ -51,6 +52,7 @@ const generatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/generators/:generatorName', {
     schema: {
+      hide: true,
       tags: ['Generators'],
       description: 'Get a generator',
       security: [

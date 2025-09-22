@@ -17,9 +17,9 @@ import { FastifyPluginAsync } from 'fastify'
 const feedRoutes: FastifyPluginAsync = async server => {
   server.get('/feed/creations', {
     schema: {
+      hide: true,
       tags: ['Feed'],
       description: 'Get creations feed',
-      hide: true,
       security: [
         {
           apiKey: [],
@@ -71,9 +71,9 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed-cursor/creations', {
     schema: {
+      hide: true,
       tags: ['Feed'],
       description: 'Get creations feed',
-      hide: true,
       security: [
         {
           apiKey: [],
@@ -163,9 +163,9 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed/concepts', {
     schema: {
+      hide: true,
       tags: ['Feed'],
       description: 'Get concepts feed',
-      hide: true,
       security: [
         {
           apiKey: [],
@@ -212,6 +212,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed/characters', {
     schema: {
+      hide: true,
       querystring: {
         type: 'object',
         properties: {
@@ -249,6 +250,7 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed/creators', {
     schema: {
+      hide: true,
       querystring: {
         type: 'object',
         properties: {

@@ -16,6 +16,7 @@ import { FastifyPluginAsync } from 'fastify'
 const creatorRoutes: FastifyPluginAsync = async server => {
   server.get('/creators', {
     schema: {
+      hide: true,
       tags: ['Creators'],
       description: 'List creators',
       security: [
@@ -42,6 +43,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creators/:userId/followers', {
     schema: {
+      hide: true,
       tags: ['Creators'],
       description: 'List creator followers',
       security: [
@@ -67,6 +69,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creators/:userId/following', {
     schema: {
+      hide: true,
       tags: ['Creators'],
       description: 'List creator following',
       security: [
@@ -92,6 +95,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creators/:userId', {
     schema: {
+      hide: true,
       tags: ['Creators'],
       description: 'Get a creator',
       security: [
@@ -112,6 +116,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creators/update', {
     schema: {
+      hide: true,
       tags: ['Creators'],
       description: 'Update a creator',
       security: [
@@ -139,6 +144,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creators/follow', {
     schema: {
+      hide: true,
       tags: ['Creators'],
       description: 'Follow a creator',
       security: [
@@ -162,6 +168,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.post('/creators/unfollow', {
     schema: {
+      hide: true,
       tags: ['Creators'],
       description: 'Unfollow a creator',
       security: [
@@ -185,6 +192,7 @@ const creatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/creators/me', {
     schema: {
+      hide: true,
       tags: ['Creators'],
       description: 'Get your own info',
       security: [

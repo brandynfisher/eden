@@ -17,6 +17,7 @@ import { FastifyPluginAsync } from 'fastify'
 const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/create', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
       description: 'Create a session',
       security: [
@@ -37,6 +38,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/delete', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
       description: 'Delete a session',
       security: [
@@ -58,6 +60,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/users/add', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
       description: 'Add users to a session',
       security: [
@@ -66,7 +69,6 @@ const sessionRoutes: FastifyPluginAsync = async server => {
           // apiSecret: [],
         },
       ],
-      hide: true,
       body: Type.Object({
         sessionId: Type.String(),
         userIds: Type.Array(Type.String()),
@@ -81,6 +83,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/characters/add', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
       description: 'Add characters to a session',
       security: [
@@ -89,7 +92,6 @@ const sessionRoutes: FastifyPluginAsync = async server => {
           // apiSecret: [],
         },
       ],
-      hide: true,
       body: Type.Object({
         sessionId: Type.String(),
         characterIds: Type.Array(Type.String()),
@@ -104,6 +106,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/interact', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
       description: 'Interact with a session',
       security: [
@@ -112,7 +115,6 @@ const sessionRoutes: FastifyPluginAsync = async server => {
           // apiSecret: [],
         },
       ],
-      hide: true,
       body: Type.Object({
         character_id: Type.String(),
         session_id: Type.String(),
@@ -132,6 +134,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
       description: 'List sessions',
       security: [
@@ -158,6 +161,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions/:sessionId', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
       description: 'Get a session',
       security: [
@@ -181,6 +185,7 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions/:sessionId/events', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
       description: 'Get session events',
       security: [

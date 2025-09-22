@@ -13,6 +13,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
   // Create notification (admin only)
   server.post('/v2/notifications', {
     schema: {
+      hide: true,
       tags: ['Notifications'],
       description: 'Create a notification',
       security: [
@@ -74,6 +75,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
   // Get notifications for current user
   server.get('/v2/notifications', {
     schema: {
+      hide: true,
       tags: ['Notifications'],
       description: 'Get notifications for current user',
       security: [
@@ -125,6 +127,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
   // Mark notifications as read
   server.patch('/v2/notifications/read', {
     schema: {
+      hide: true,
       tags: ['Notifications'],
       description: 'Mark notifications as read',
       security: [
@@ -149,6 +152,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
   // Get notification count
   server.get('/v2/notifications/count', {
     schema: {
+      hide: true,
       tags: ['Notifications'],
       description: 'Get notification count for current user',
       security: [
@@ -172,6 +176,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
   // Archive notifications
   server.patch('/v2/notifications/archive', {
     schema: {
+      hide: true,
       tags: ['Notifications'],
       description: 'Archive notifications (soft delete)',
       security: [

@@ -15,6 +15,7 @@ import { FastifyPluginAsync } from 'fastify'
 const conceptRoutes: FastifyPluginAsync = async server => {
   server.get('/concepts', {
     schema: {
+      hide: true,
       tags: ['Concepts'],
       description: 'List concepts',
       security: [
@@ -41,6 +42,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.get('/concepts/:conceptId', {
     schema: {
+      hide: true,
       tags: ['Concepts'],
       description: 'Get a concept',
       security: [
@@ -80,6 +82,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/concepts/:conceptId', {
     schema: {
+      hide: true,
       tags: ['Concepts'],
       description: 'Update a concept',
       security: [
@@ -107,6 +110,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.delete('/concepts/:conceptId', {
     schema: {
+      hide: true,
       tags: ['Concepts'],
       description: 'Delete a concept',
       security: [
@@ -130,6 +134,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.post('/concepts/reactions/add', {
     schema: {
+      hide: true,
       tags: ['Concepts'],
       description: 'React to a concept',
       security: [
@@ -154,6 +159,7 @@ const conceptRoutes: FastifyPluginAsync = async server => {
 
   server.post('/concepts/reactions/remove', {
     schema: {
+      hide: true,
       tags: ['Concepts'],
       description: 'Unreact to a concept',
       security: [

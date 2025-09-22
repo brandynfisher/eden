@@ -13,6 +13,7 @@ import { FastifyPluginAsync } from 'fastify'
 const mediaRoutes: FastifyPluginAsync = async server => {
   server.post('/media/upload', {
     schema: {
+      hide: true,
       tags: ['Media'],
       description: 'Upload media',
       security: [
@@ -32,6 +33,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.post('/media/upload/request', {
     schema: {
+      hide: true,
       tags: ['Media'],
       description: 'Upload media request',
       security: [
@@ -55,6 +57,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.get('/media/upload/sign-request', {
     schema: {
+      hide: true,
       tags: ['Media'],
       description: 'Upload media request - Cloudinary',
       security: [
@@ -80,6 +83,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.get('/media/download', {
     schema: {
+      hide: true,
       tags: ['Media'],
       description: 'Get media download url',
       security: [
@@ -105,6 +109,7 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.post('/media/download/bulk', {
     schema: {
+      hide: true,
       tags: ['Media'],
       description: 'Bulk download media as zip file',
       security: [
@@ -128,9 +133,9 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.post('/media/update/transcode', {
     schema: {
+      hide: true,
       tags: ['Tasks'],
       description: 'Update a task',
-      hide: true,
       querystring: {
         secret: Type.String(),
       },

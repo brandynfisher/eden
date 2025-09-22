@@ -29,6 +29,7 @@ const logosType = Type.Optional(
 const characterRoutes: FastifyPluginAsync = async server => {
   server.post('/characters', {
     schema: {
+      hide: true,
       tags: ['Characters'],
       description: 'Create a character',
       body: Type.Object({
@@ -66,6 +67,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/characters/:characterId', {
     schema: {
+      hide: true,
       tags: ['Characters'],
       description: 'Update a character',
       security: [
@@ -103,6 +105,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.post('/characters/delete', {
     schema: {
+      hide: true,
       tags: ['Characters'],
       description: 'Delete a character',
       security: [
@@ -124,6 +127,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.get('/characters/:characterId', {
     schema: {
+      hide: true,
       tags: ['Characters'],
       description: 'Get a character',
       security: [
@@ -170,6 +174,7 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.get('/characters', {
     schema: {
+      hide: true,
       tags: ['Characters'],
       description: 'List characters',
       security: [
@@ -221,9 +226,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.post('/characters/test', {
     schema: {
+      hide: true,
       tags: ['Characters'],
       description: 'Test a character',
-      hide: true,
       body: Type.Object({
         name: Type.String(),
         identity: Type.String(),
@@ -245,9 +250,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.post('/characters/interact', {
     schema: {
+      hide: true,
       tags: ['Characters'],
       description: 'Interact with a character',
-      hide: true,
       body: {
         character_id: Type.String(),
         session_id: Type.String(),
@@ -267,9 +272,9 @@ const characterRoutes: FastifyPluginAsync = async server => {
 
   server.post('/characters/tasks/create', {
     schema: {
+      hide: true,
       tags: ['Characters'],
       description: 'Create a task as character',
-      hide: true,
       body: {
         generatorName: Type.String(),
         versionId: Type.Optional(Type.String()),

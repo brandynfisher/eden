@@ -11,9 +11,9 @@ import { FastifyPluginAsync } from 'fastify'
 const paymentRoutes: FastifyPluginAsync = async server => {
   server.post('/payments/create', {
     schema: {
+      hide: true,
       tags: ['Payments'],
       description: 'Create a payment',
-      hide: true,
       security: [
         {
           apiKey: [],
@@ -40,9 +40,9 @@ const paymentRoutes: FastifyPluginAsync = async server => {
       rawBody: true,
     },
     schema: {
+      hide: true,
       tags: ['Payments'],
       description: 'Handle a payment event',
-      hide: true,
       security: [
         {
           apiKey: [],
@@ -59,9 +59,9 @@ const paymentRoutes: FastifyPluginAsync = async server => {
 
   server.get('/payments/products', {
     schema: {
+      hide: true,
       tags: ['Payments'],
       description: 'Get products',
-      hide: true,
       security: [
         {
           apiKey: [],
@@ -79,9 +79,9 @@ const paymentRoutes: FastifyPluginAsync = async server => {
 
   server.post('/payments/subscription', {
     schema: {
+      hide: true,
       tags: ['Payments'],
       description: 'Create a subscription',
-      hide: true,
       security: [
         {
           apiKey: [],
