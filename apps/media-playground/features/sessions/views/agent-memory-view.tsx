@@ -488,7 +488,7 @@ const AgentMemoryView: FC<{
                       <span className="text-muted-foreground italic">
                         {!userMemoryEnabled
                           ? '💭 User specific memories for this agent are currently disabled by the agent owner.\n(Collective Memory could still be active but is only visible to agent owners)'
-                          : `💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here.`}
+                          : `💭 No user memories stored yet. Just interact with ${agent.name} and custom instructions you give to the agent will automatically appear here. You can also manually add memories here.`}
                       </span>
                     )}
                   </div>
@@ -510,7 +510,7 @@ const AgentMemoryView: FC<{
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <h2 className="text-lg font-semibold text-foreground cursor-help">
-                          Recent Context
+                          Recent Memory Context
                         </h2>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-md">
