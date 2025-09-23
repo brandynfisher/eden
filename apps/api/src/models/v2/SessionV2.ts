@@ -19,6 +19,7 @@ export interface SessionSchema {
   channel?: string
   scenario?: string
   messages: MessageDocument[]
+  platform?: 'web' | 'discord' | 'telegram' | 'twitter' | 'farcaster'
   budget?: {
     token_budget?: number
     manna_budget?: number
@@ -80,6 +81,10 @@ export const sessionSchema = new Schema<SessionDocument>(
         ref: 'messages',
       },
     ],
+    platform: {
+      type: Schema.Types.String,
+      enum: ['web', 'discord', 'telegram', 'twitter', 'farcaster'],
+    },
     budget: {
       token_budget: {
         type: Schema.Types.Number,
