@@ -13,12 +13,13 @@ type Props = {
   page?: number
   limit?: number
   agent_id?: string
+  disableInterval?: boolean
 }
 
 export const useSessionListQuery = (props?: Props) => {
   const queryKey = ['sessions', 'list', props?.agent_id]
 
-  const { enabled, limit = 50, agent_id } = props || {}
+  const { enabled, limit = 50, agent_id, disableInterval = false } = props || {}
 
   const queryClient = useQueryClient()
 
@@ -59,7 +60,7 @@ export const useSessionListQuery = (props?: Props) => {
       return response
     },
     refetchOnWindowFocus: true,
-    refetchInterval: 5000, // Refetch every 5 seconds to pick up newly titled sessions
+    refetchInterval: disableInterval ? false : 5000, // Refetch every 5 seconds to pick up newly titled sessions, unless disabled
   })
 
   const sessions = data?.pages.flatMap(page => page.docs) ?? []

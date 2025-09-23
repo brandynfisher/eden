@@ -36,6 +36,7 @@ import {
   updateMemoryUser,
   updateUserMemoryEnabled,
 } from '../../controllers/agentController'
+import { MEMORY_LIMITS } from '../../lib/constants'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync, FastifyRequest } from 'fastify'
@@ -659,7 +660,10 @@ const agentRoutes: FastifyPluginAsync = async server => {
       params: { agentId: Type.String() },
       body: Type.Object({
         shard_name: Type.String({ minLength: 1, maxLength: 50 }),
-        extraction_prompt: Type.String({ minLength: 1, maxLength: 2000 }),
+        extraction_prompt: Type.String({
+          minLength: MEMORY_LIMITS.EXTRACTION_PROMPT_MIN_CHARS,
+          maxLength: MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS,
+        }),
       }),
       response: {
         200: {

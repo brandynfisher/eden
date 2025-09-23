@@ -261,6 +261,7 @@ const TaskFormModal: FC<{
 
   const { sessions, isLoading: isLoadingSessions } = useSessionListQuery({
     enabled: open, // Only fetch when modal is open
+    disableInterval: !!editingTask, // Disable interval when editing to prevent form resets
   })
 
   const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone

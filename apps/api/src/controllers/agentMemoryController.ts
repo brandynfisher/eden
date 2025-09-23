@@ -1,3 +1,4 @@
+import { MEMORY_LIMITS } from '../lib/constants'
 import { Agent } from '../models/Agent'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -703,10 +704,12 @@ export const createMemoryAgent = async (
       .send({ error: 'Shard name cannot exceed 50 characters' })
   }
 
-  if (extraction_prompt.length > 2000) {
+  if (extraction_prompt.length > MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS) {
     return reply
       .status(400)
-      .send({ error: 'Extraction prompt cannot exceed 2000 characters' })
+      .send({
+        error: `Extraction prompt cannot exceed ${MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS} characters`,
+      })
   }
 
   try {
