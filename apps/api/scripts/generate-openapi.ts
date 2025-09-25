@@ -117,10 +117,61 @@ async function generateOpenAPISpec() {
       }),
     )
 
+    // Extract all unique tags from the paths and sort them alphabetically
+    const uniqueTags = new Set<string>()
+    Object.values(filteredPaths).forEach((pathItem: any) => {
+      Object.values(pathItem).forEach((operation: any) => {
+        if (operation.tags && Array.isArray(operation.tags)) {
+          operation.tags.forEach((tag: string) => uniqueTags.add(tag))
+        }
+      })
+    })
+
+    // Create sorted tags array with descriptions
+    const sortedTags = Array.from(uniqueTags)
+      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+      .map(tag => ({
+        name: tag,
+        description: `Operations related to ${tag.toLowerCase()}`,
+      }))
+
+    // Group paths by their primary tag
+    const pathsByTag: Record<string, Record<string, any>> = {}
+    Object.entries(filteredPaths).forEach(([path, pathItem]) => {
+      // Find the first tag from any operation in this path
+      let primaryTag: string | null = null
+      Object.values(pathItem as any).forEach((operation: any) => {
+        if (!primaryTag && operation.tags && operation.tags[0]) {
+          primaryTag = operation.tags[0]
+        }
+      })
+
+      if (primaryTag) {
+        if (!pathsByTag[primaryTag]) {
+          pathsByTag[primaryTag] = {}
+        }
+        pathsByTag[primaryTag][path] = pathItem
+      }
+    })
+
+    // Rebuild paths object with sorted tag groups
+    const sortedPaths: Record<string, any> = {}
+    sortedTags.forEach(tagObj => {
+      const tagName = tagObj.name
+      if (pathsByTag[tagName]) {
+        // Sort paths within each tag group alphabetically
+        const sortedTagPaths = Object.keys(pathsByTag[tagName]).sort()
+        sortedTagPaths.forEach(path => {
+          sortedPaths[path] = pathsByTag[tagName][path]
+        })
+      }
+    })
+
     // For full API, use this instead:
     const filteredOpenapi = {
       ...openapi,
-      paths: filteredPaths,
+      paths: sortedPaths,
+      tags: sortedTags,
     }
 
     console.log('✅ Converted to OpenAPI 3.0')

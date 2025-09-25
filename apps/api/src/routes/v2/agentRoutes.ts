@@ -258,7 +258,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.get('/v2/agents/:agentId/triggers', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Triggers'],
       summary: 'Get Agent Triggers',
       description:
         'Retrieve all automated triggers configured for a specific agent.',
@@ -269,7 +269,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.post('/v2/agents/:agentId/triggers', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Triggers'],
       summary: 'Create Agent Trigger',
       description:
         'Create a new automated trigger that activates the agent under specific conditions.',
@@ -280,7 +280,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/v2/agents/:agentId/triggers/:triggerId', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Triggers'],
       summary: 'Update Agent Trigger',
       description:
         'Modify the configuration or conditions of an existing agent trigger.',
@@ -291,7 +291,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.delete('/v2/agents/:agentId/triggers/:triggerId', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Triggers'],
       summary: 'Delete Agent Trigger',
       description:
         'Remove an automated trigger from an agent, stopping its activation.',
@@ -341,7 +341,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.get('/v2/agents/:agentId/deployments', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Deployments'],
       summary: 'Get Agent Deployments',
       description:
         'Retrieve all platform deployments (Discord, Twitter, etc.) for a specific agent.',
@@ -352,7 +352,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.post('/v2/agents/:agentId/deployments', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Deployments'],
       summary: 'Deploy Agent',
       description:
         'Deploy an agent to a platform or update an existing deployment configuration.',
@@ -376,7 +376,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/v2/agents/:agentId/deployments', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Deployments'],
       summary: 'Update Agent Deployment',
       description:
         'Modify the configuration or settings of an existing agent deployment.',
@@ -387,7 +387,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.delete('/v2/agents/:agentId/deployments/:platform', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Deployments'],
       summary: 'Delete Agent Deployment',
       description:
         'Remove an agent deployment from a specific platform, stopping its operation there.',
@@ -485,7 +485,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.get('/v2/agents/triggers', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Triggers'],
       summary: 'Get User Triggers',
       description:
         'Retrieve all triggers across all agents owned by the authenticated user.',
@@ -506,7 +506,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.get('/v2/agents/deployments', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Deployments'],
       summary: 'Get User Deployments',
       description:
         'Retrieve all deployments across all agents owned by the authenticated user.',
@@ -527,7 +527,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.get('/v2/agents/:agentId/memory', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Get Agent Memory',
       description:
         'Retrieve the personalized memory content and unabsorbed directives for a specific agent.',
@@ -552,7 +552,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.post('/v2/agents/:agentId/memory', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Save Agent Memory',
       description:
         'Store or update personalized memory content for an agent to improve future interactions.',
@@ -568,7 +568,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
   // New routes for memory operations
   server.get('/v2/agents/:agentId/memory-user', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Get Memory User',
       description:
         'Retrieve the complete memory_user document containing all user-specific data for an agent.',
@@ -581,7 +581,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/v2/agents/:agentId/memory-user', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Update Memory User',
       description:
         'Modify the memory_user document with updated user-specific information for an agent.',
@@ -618,7 +618,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.get('/v2/memory-sessions/:memoryId', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Get Memory Session',
       description:
         'Retrieve a specific memory_session document containing session-specific memory data.',
@@ -631,7 +631,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/v2/memory-sessions/:memoryId', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Update Memory Session',
       description:
         'Modify a memory_session document with updated session-specific information.',
@@ -646,7 +646,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.delete('/v2/agents/:agentId/memory/:memoryId', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Remove Unabsorbed Memory',
       description:
         'Delete specific unabsorbed memory items from the user memory for an agent.',
@@ -664,7 +664,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
   // Collective Memory routes
   server.get('/v2/agents/:agentId/memory-agent', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Get Collective Memory',
       description:
         'Retrieve all collective memory shards and their facts for an agent.',
@@ -706,7 +706,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.post('/v2/agents/:agentId/memory-agent', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Create Memory Shard',
       description:
         'Create a new collective memory shard with a specific extraction prompt for organizing agent knowledge.',
@@ -730,7 +730,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
 
   server.patch('/v2/agents/:agentId/memory-agent/:memoryAgentId', {
     schema: {
-      tags: ['Agents'],
+      tags: ['Agents - Memory'],
       summary: 'Update Memory Agent',
       description:
         'Modify a memory_agent document containing collective memory data.',
@@ -750,7 +750,7 @@ const agentRoutes: FastifyPluginAsync = async server => {
     '/v2/agents/:agentId/memory-agent/:memoryAgentId/memory/:memoryId',
     {
       schema: {
-        tags: ['Agents'],
+        tags: ['Agents - Memory'],
         summary: 'Remove Agent Memory',
         description:
           'Remove specific memory items from agent collective memory arrays (facts or unabsorbed memory).',
