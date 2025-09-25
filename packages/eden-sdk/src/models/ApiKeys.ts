@@ -39,7 +39,7 @@ export const apiKeysCreateRequestConfig = (
 ): AxiosRequestConfig => {
   return {
     method: 'POST',
-    url: 'apikeys/create',
+    url: 'apikeys',
     data: {
       note: args.note,
     },
