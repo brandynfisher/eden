@@ -10,8 +10,11 @@ import { FastifyPluginAsync } from 'fastify'
 const generatorRoutes: FastifyPluginAsync = async server => {
   server.get('/generators', {
     schema: {
+      hide: true,
       tags: ['Generators'],
-      description: 'List generators',
+      summary: 'List Generators',
+      description:
+        'Get a paginated list of available AI generators with their configurations and parameters.',
       security: [
         {
           apiKey: [],
@@ -51,8 +54,11 @@ const generatorRoutes: FastifyPluginAsync = async server => {
 
   server.get('/generators/:generatorName', {
     schema: {
+      hide: true,
       tags: ['Generators'],
-      description: 'Get a generator',
+      summary: 'Get Generator Details',
+      description:
+        'Retrieve detailed information about a specific AI generator including available versions and parameters.',
       security: [
         {
           apiKey: [],

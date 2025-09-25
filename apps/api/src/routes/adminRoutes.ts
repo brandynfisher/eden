@@ -21,7 +21,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/manna/modify', {
     schema: {
       tags: ['Admin'],
-      description: 'Modify manna for a user',
+      summary: 'Modify User Manna Balance',
+      description:
+        'Adjust the manna balance for a specific user account. This allows administrators to add or subtract manna from user accounts.',
       hide: true,
       request: {
         body: Type.Object({
@@ -49,7 +51,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/manna/vouchers/create', {
     schema: {
       tags: ['Admin'],
-      description: 'Create manna vouchers',
+      summary: 'Create Manna Vouchers',
+      description:
+        'Generate redeemable manna voucher codes with configurable restrictions such as allowed users, usage limits, and associated actions.',
       hide: true,
       request: {
         body: Type.Object({
@@ -73,7 +77,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/media/upload', {
     schema: {
       tags: ['Admin'],
-      description: 'Upload media',
+      summary: 'Upload Media Files',
+      description:
+        'Upload media files (images, videos, etc.) to the server with administrative privileges.',
       hide: true,
       response: {
         200: Type.Object({
@@ -88,7 +94,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/tasks/create', {
     schema: {
       tags: ['Admin'],
-      description: 'Create a task as admin',
+      summary: 'Create Task',
+      description:
+        'Create a new task with administrative privileges, including generator configuration and webhook settings.',
       hide: true,
       body: {
         generatorName: Type.String(),
@@ -115,7 +123,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/concepts/export/hf', {
     schema: {
       tags: ['Admin'],
-      description: 'Export a concept to HuggingFace',
+      summary: 'Export Concept to HuggingFace',
+      description:
+        'Export a trained concept or LoRA model to HuggingFace model repository for public sharing and distribution.',
       security: [
         {
           apiKey: [],
@@ -139,7 +149,9 @@ const adminRoutes: FastifyPluginAsync = async server => {
   server.post('/admin/concepts/remove/hf', {
     schema: {
       tags: ['Admin'],
-      description: 'Remove a concept from HuggingFace',
+      summary: 'Remove Concept from HuggingFace',
+      description:
+        'Delete a previously exported concept or LoRA model from HuggingFace model repository.',
       security: [
         {
           apiKey: [],
@@ -163,8 +175,10 @@ const adminRoutes: FastifyPluginAsync = async server => {
 
   server.get('/admin/apikeys', {
     schema: {
-      tags: ['API Keys'],
-      description: 'List API keys',
+      tags: ['Admin'],
+      summary: 'List All API Keys',
+      description:
+        'Retrieve a paginated list of all API keys in the system with optional filtering by character.',
       hide: true,
       querystring: {
         type: 'object',

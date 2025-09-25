@@ -8,6 +8,10 @@ const userRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/user/transactions', {
     schema: {
       tags: ['User'],
+      summary: 'List User Transactions',
+      description:
+        'Retrieve a paginated list of transactions for the authenticated user.',
+      hide: true,
       querystring: {
         type: 'object',
         properties: {

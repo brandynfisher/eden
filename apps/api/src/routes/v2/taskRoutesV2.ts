@@ -16,7 +16,9 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
   server.post('/v2/tasks/cost', {
     schema: {
       tags: ['Tasks'],
-      description: 'Get task cost',
+      summary: 'Calculate Task Cost',
+      description:
+        'Calculate the estimated cost in manna for executing a task with specified tool and arguments.',
       security: [
         {
           apiKey: [],
@@ -39,7 +41,9 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
   server.post('/v2/tasks/create', {
     schema: {
       tags: ['Tasks'],
-      description: 'Create a task',
+      summary: 'Create New Task',
+      description:
+        'Create and execute a new task using a specified tool with optional arguments and visibility settings.',
       security: [
         {
           apiKey: [],
@@ -79,7 +83,9 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/tasks', {
     schema: {
       tags: ['Tasks'],
-      description: 'List tasks',
+      summary: 'List User Tasks',
+      description:
+        'Retrieve a paginated list of tasks for the authenticated user with optional filtering by status, type, or tool.',
       security: [
         {
           apiKey: [],
@@ -110,7 +116,9 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/tasks/:taskId', {
     schema: {
       tags: ['Tasks'],
-      description: 'Get a task',
+      summary: 'Get Task Details',
+      description:
+        'Retrieve detailed information about a specific task including its status and output.',
       security: [
         {
           apiKey: [],
@@ -132,7 +140,9 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/tasks/events', {
     schema: {
       tags: ['Tasks'],
-      description: 'Get task events',
+      summary: 'Subscribe Task Events',
+      description:
+        'Subscribe to real-time task update events via Server-Sent Events (SSE).',
       security: [
         {
           apiKey: [],
@@ -149,7 +159,9 @@ const taskRoutesV2: FastifyPluginAsync = async server => {
   server.post('/v2/tasks/cancel', {
     schema: {
       tags: ['Tasks'],
-      description: 'Cancel a task in progress',
+      summary: 'Cancel Running Task',
+      description:
+        'Cancel a task that is currently in progress or queued for execution.',
       security: [
         {
           apiKey: [],

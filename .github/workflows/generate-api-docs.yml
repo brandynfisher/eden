@@ -1,0 +1,67 @@
+name: Generate API Documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/api/src/routes/**'
+      - 'apps/api/scripts/generate-openapi.ts'
+
+jobs:
+  generate-and-deploy-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Eden repository
+        uses: actions/checkout@v4
+        with:
+          path: eden
+
+      - name: Checkout mintlify-docs repository
+        uses: actions/checkout@v4
+        with:
+          repository: edenartlab/mintlify-docs
+          token: ${{ secrets.MINTLIFY_DOCS_TOKEN }}
+          path: mintlify-docs
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: eden/package-lock.json
+
+      - name: Install dependencies
+        working-directory: eden
+        run: npm ci
+
+      - name: Generate OpenAPI specification
+        working-directory: eden/apps/api
+        run: npm run generate:openapi
+        env:
+          DOTENV_PATH: .env.example
+
+      - name: Copy OpenAPI spec to mintlify-docs
+        run: |
+          cp eden/apps/api/openapi.json mintlify-docs/openapi.json
+
+      - name: Commit and push to mintlify-docs
+        working-directory: mintlify-docs
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+          # Check if there are changes
+          if git diff --quiet openapi.json; then
+            echo "No changes to OpenAPI spec"
+            exit 0
+          fi
+
+          git add openapi.json
+          git commit -m "Update API documentation from eden repo
+
+          Generated from: ${{ github.repository }}@${{ github.sha }}
+          Triggered by: ${{ github.event.head_commit.message }}"
+
+          git push origin main

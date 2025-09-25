@@ -12,7 +12,9 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/models/:modelId', {
     schema: {
       tags: ['Models'],
-      description: 'Get a Model',
+      summary: 'Get Model Details',
+      description:
+        'Retrieve detailed information about a specific AI model by its ID.',
       security: [
         {
           apiKey: [],
@@ -50,7 +52,9 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
   server.patch('/v2/models/:modelId', {
     schema: {
       tags: ['Models'],
-      description: 'Update a model',
+      summary: 'Update Model',
+      description:
+        'Update the visibility or deletion status of a specific model.',
       security: [
         {
           apiKey: [],
@@ -76,7 +80,9 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
   server.post('/v2/models/:modelId/like', {
     schema: {
       tags: ['Models'],
-      description: 'Like a model',
+      summary: 'Like Model',
+      description:
+        'Add a like to a model, showing appreciation and boosting its visibility.',
       security: [
         {
           apiKey: [],
@@ -107,7 +113,8 @@ const modelRoutesV2: FastifyPluginAsync = async server => {
   server.delete('/v2/models/:modelId/like', {
     schema: {
       tags: ['Models'],
-      description: 'Unlike a model',
+      summary: 'Unlike Model',
+      description: 'Remove a previously given like from a model.',
       security: [
         {
           apiKey: [],

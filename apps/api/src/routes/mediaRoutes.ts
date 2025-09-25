@@ -13,8 +13,11 @@ import { FastifyPluginAsync } from 'fastify'
 const mediaRoutes: FastifyPluginAsync = async server => {
   server.post('/media/upload', {
     schema: {
+      hide: true,
       tags: ['Media'],
-      description: 'Upload media',
+      summary: 'Upload Media File',
+      description:
+        'Upload a media file (image, video, audio) to the server for use in creations.',
       security: [
         {
           apiKey: [],
@@ -32,8 +35,11 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.post('/media/upload/request', {
     schema: {
+      hide: true,
       tags: ['Media'],
-      description: 'Upload media request',
+      summary: 'Request Media Upload URL',
+      description:
+        'Get a signed URL for uploading media files directly to cloud storage.',
       security: [
         {
           apiKey: [],
@@ -55,8 +61,11 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.get('/media/upload/sign-request', {
     schema: {
+      hide: true,
       tags: ['Media'],
-      description: 'Upload media request - Cloudinary',
+      summary: 'Get Cloudinary Upload Signature',
+      description:
+        'Get a signed request for uploading media files directly to Cloudinary.',
       security: [
         {
           apiKey: [],
@@ -80,8 +89,11 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.get('/media/download', {
     schema: {
+      hide: true,
       tags: ['Media'],
-      description: 'Get media download url',
+      summary: 'Get Media Download URL',
+      description:
+        'Generate a signed URL for downloading a specific media file.',
       security: [
         {
           apiKey: [],
@@ -105,8 +117,11 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.post('/media/download/bulk', {
     schema: {
+      hide: true,
       tags: ['Media'],
-      description: 'Bulk download media as zip file',
+      summary: 'Bulk Download Media',
+      description:
+        'Download multiple media files packaged together as a ZIP archive.',
       security: [
         {
           apiKey: [],
@@ -128,9 +143,11 @@ const mediaRoutes: FastifyPluginAsync = async server => {
 
   server.post('/media/update/transcode', {
     schema: {
-      tags: ['Tasks'],
-      description: 'Update a task',
       hide: true,
+      tags: ['Tasks'],
+      summary: 'Update Media Transcode Status',
+      description:
+        'Webhook endpoint to receive media transcoding completion notifications.',
       querystring: {
         secret: Type.String(),
       },

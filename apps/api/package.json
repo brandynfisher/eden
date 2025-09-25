@@ -11,7 +11,8 @@
     "start": "node --experimental-specifier-resolution=node build/src",
     "pretest": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "generate:openapi": "DOTENV_PATH=.env.eden tsx scripts/generate-openapi.ts"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -84,6 +85,7 @@
     "@types/mongoose-aggregate-paginate-v2": "^1.0.9",
     "@types/mongoose-delete": "^0.5.9",
     "@types/node": "^20",
+    "@types/swagger2openapi": "^7",
     "@types/tar": "^6.1.10",
     "@types/tmp": "^0.2.4",
     "@types/uuid": "^9.0.1",
@@ -93,6 +95,7 @@
     "mongodb": "^4.16.0",
     "mongodb-memory-server": "^8.12.2",
     "pino-pretty": "^8.1.0",
+    "swagger2openapi": "^7.0.8",
     "tsx": "^3.12.7",
     "typescript": "^5",
     "vite": "^4.3.5"
