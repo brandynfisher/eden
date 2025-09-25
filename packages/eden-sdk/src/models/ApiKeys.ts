@@ -50,8 +50,8 @@ export const apiKeysDeleteRequestConfig = (
   args: ApiKeysDeleteArguments,
 ): AxiosRequestConfig => {
   return {
-    method: 'POST',
-    url: 'apikeys/delete',
+    method: 'DELETE',
+    url: 'apikeys',
     data: {
       ...args,
     },
