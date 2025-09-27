@@ -310,6 +310,7 @@ export interface AgentsGetTriggersArguments extends WebAPICallOptions {
 
 export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
   agentId: string
+  name: string
   context: string
   trigger_prompt: string
   session_type: 'new' | 'another'
@@ -326,6 +327,7 @@ export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
 export interface AgentsUpdateTriggerArguments extends WebAPICallOptions {
   agentId: string
   triggerId: string
+  name?: string
   context?: string
   trigger_prompt?: string
   session_type?: 'new' | 'another'

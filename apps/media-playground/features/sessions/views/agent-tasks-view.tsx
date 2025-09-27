@@ -20,7 +20,6 @@ import {
   Loader2,
   PlayIcon,
   PlusIcon,
-  TrashIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { FC, useMemo, useState } from 'react'
@@ -37,25 +36,25 @@ const TaskItem: FC<{
   onEdit: (trigger: TriggerWithLastRun) => void
   onDelete: (triggerId: string) => void
   isFinished?: boolean
-}> = ({ trigger, agentId, onEdit, onDelete, isFinished = false }) => {
-  const [isDeleting, setIsDeleting] = useState(false)
+}> = ({ trigger, onEdit, isFinished = false }) => {
+  // const [isDeleting, setIsDeleting] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)
   const router = useRouter()
 
   const formattedSchedule = formatCronSchedule(trigger.schedule)
 
-  const handleDelete = async () => {
-    setIsDeleting(true)
-    try {
-      await axios.delete(`/api/agents/${agentId}/triggers/${trigger._id}`)
-      onDelete(trigger._id)
-      toast.success('Task deleted successfully')
-    } catch (error) {
-      toast.error('Failed to delete task')
-    } finally {
-      setIsDeleting(false)
-    }
-  }
+  // const handleDelete = async () => {
+  //   setIsDeleting(true)
+  //   try {
+  //     await axios.delete(`/api/agents/${agentId}/triggers/${trigger._id}`)
+  //     onDelete(trigger._id)
+  //     toast.success('Task deleted successfully')
+  //   } catch (error) {
+  //     toast.error('Failed to delete task')
+  //   } finally {
+  //     setIsDeleting(false)
+  //   }
+  // }
 
   const handleExecuteNow = async () => {
     setIsExecuting(true)
@@ -110,7 +109,7 @@ const TaskItem: FC<{
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="flex-1 min-w-0">
           <div className="font-medium text-sm truncate">
-            {trigger.trigger_prompt}
+            {trigger.name || trigger.trigger_prompt}
           </div>
           <div className="text-xs text-muted-foreground mt-1">
             {formattedSchedule}
@@ -164,19 +163,6 @@ const TaskItem: FC<{
               className="h-8 w-8 p-0"
             >
               <EditIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-            >
-              {isDeleting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <TrashIcon className="h-4 w-4" />
-              )}
             </Button>
           </>
         )}
