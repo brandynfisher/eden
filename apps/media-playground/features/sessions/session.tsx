@@ -146,11 +146,23 @@ const Session = ({
             } else if (data.type === 'assistant_message' && data.message) {
               const message = data.message as Message
 
-              // Only add if it has tool calls OR if we didn't create a streaming message
+              // If we have a streaming message and this message has tool calls, merge them
               if (
+                currentStreamingMessageId &&
+                message.tool_calls &&
+                message.tool_calls.length > 0
+              ) {
+                const mergedMessage: Message = {
+                  ...message,
+                  _id: currentStreamingMessageId,
+                  content: accumulatedTokens, // Keep the streamed content
+                }
+                addOrUpdateMessage(mergedMessage)
+              } else if (
                 (message.tool_calls && message.tool_calls.length > 0) ||
                 !currentStreamingMessageId
               ) {
+                // Only add if it has tool calls OR if we didn't create a streaming message
                 addOrUpdateMessage(message)
               }
 

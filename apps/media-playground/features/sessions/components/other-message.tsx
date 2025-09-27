@@ -6,7 +6,6 @@ import { LightboxGallery } from '@/components/media/lightbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { TaskResultTool } from '@/features/sessions/components/task-result-tool'
 import { ThoughtBlock } from '@/features/sessions/components/thought-block'
-import TypingIndicator from '@/features/sessions/components/typing-indicator'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Message, TaskV2Result, TasksV2ResultOutput } from '@edenlabs/eden-sdk'
@@ -268,13 +267,6 @@ export const OtherMessage = ({
               />
             )
           })}
-
-        {/* Show typing indicator when streaming tokens and no content yet */}
-        {isStreamingTokens && isEmpty && !message.tool_calls && (
-          <div className="py-2">
-            <TypingIndicator />
-          </div>
-        )}
 
         {!isStreamingTokens && (
           <div
