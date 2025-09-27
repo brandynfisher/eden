@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag, SessionV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
+  BrainIcon,
   CheckIcon,
   ChevronRightIcon,
   ClockIcon,
@@ -671,7 +672,7 @@ const NavigationButtons: FC<{
             : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
         )}
       >
-        <ClockIcon className="size-4" />
+        <BrainIcon className="size-4" />
         <span>Memories</span>
       </Button>
     </div>

@@ -17,12 +17,12 @@ export type CronSchedule = {
 
 export type Trigger = {
   _id: string
-  trigger_id: string
   user: Creator
   agent: Agent
   session_type: 'new' | 'another'
   session?: string | null
   schedule: CronSchedule
+  name: string
   context: string
   trigger_prompt: string
   update_config?: any
