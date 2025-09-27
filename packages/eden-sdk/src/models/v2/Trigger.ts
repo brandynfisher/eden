@@ -23,7 +23,8 @@ export type Trigger = {
   session_type: 'new' | 'another'
   session?: string | null
   schedule: CronSchedule
-  instruction: string
+  context: string
+  trigger_prompt: string
   update_config?: any
   status?: 'active' | 'paused' | 'finished'
   posting_instructions?: {
@@ -31,7 +32,7 @@ export type Trigger = {
     session_id?: string | null
     channel_id?: string | null
     custom_instructions?: string
-  }
+  }[]
   deleted?: boolean
   last_run_time?: Date
   next_scheduled_run?: Date

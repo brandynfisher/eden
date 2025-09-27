@@ -160,7 +160,8 @@ export const createAgentTrigger = async (
 ) => {
   const {
     agentId,
-    instruction,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
@@ -186,7 +187,8 @@ export const createAgentTrigger = async (
   const updateData = {
     agent: agentId,
     user: currentUserId,
-    instruction,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
@@ -224,14 +226,16 @@ export const updateAgentTrigger = async (
     triggerId: string
   }
   const {
-    instruction,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
     status,
     posting_instructions,
   } = request.body as {
-    instruction?: string
+    context?: string
+    trigger_prompt?: any
     session_type?: 'new' | 'another'
     session?: string | null
     schedule?: any
@@ -290,7 +294,8 @@ export const updateAgentTrigger = async (
   // Build update data - only include fields that are provided
   const updateData: any = {}
 
-  if (instruction !== undefined) updateData.instruction = instruction
+  if (context !== undefined) updateData.context = context
+  if (trigger_prompt !== undefined) updateData.trigger_prompt = trigger_prompt
   if (session_type !== undefined) updateData.session_type = session_type
   if (session !== undefined) updateData.session = session
   if (schedule !== undefined) {

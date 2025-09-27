@@ -262,6 +262,12 @@ import {
   CollectionsV2RemoveCreationsResponse,
   CollectionsV2UpdateArguments,
   CollectionsV2UpdateResponse,
+  ConceptCreateArguments,
+  ConceptCreateResponse,
+  ConceptDeleteArguments,
+  ConceptDeleteResponse,
+  ConceptUpdateArguments,
+  ConceptUpdateResponse,
   CreationsV2BulkPatchArguments,
   CreationsV2BulkPatchResponse,
   CreationsV2GetArguments,
@@ -346,6 +352,8 @@ import {
   ToolsGetResponseV2,
   ToolsListArgumentsV2,
   ToolsListResponseV2,
+  UserConceptsGetArguments,
+  UserConceptsListResponse,
   agentsCreateTriggerRequestConfig,
   agentsDeleteDeploymentRequestConfig,
   agentsDeleteTriggerRequestConfig,
@@ -368,6 +376,9 @@ import {
   collectionsV2GetRequestConfig,
   collectionsV2RemoveCreationsRequestConfig,
   collectionsV2UpdateRequestConfig,
+  conceptCreateRequestConfig,
+  conceptDeleteRequestConfig,
+  conceptUpdateRequestConfig,
   creationsV2BulkPatchRequestConfig,
   creationsV2GetRequestConfig,
   creationsV2LikeRequestConfig,
@@ -411,6 +422,7 @@ import {
   threadsUnpinMessageRequestConfig,
   toolsGetRequestConfigV2,
   toolsListRequestConfigV2,
+  userConceptsListRequestConfig,
 } from './models/v2'
 import { WebAPICallOptions, WebAPICallResult } from './types'
 import { AxiosRequestConfig } from 'axios'
@@ -666,6 +678,25 @@ export abstract class Methods {
     //   this,
     //   conceptsUnreactRequestConfig,
     // ),
+  }
+
+  public readonly conceptsV2 = {
+    list: bindApiCall<UserConceptsGetArguments, UserConceptsListResponse>(
+      this,
+      userConceptsListRequestConfig,
+    ),
+    create: bindApiCall<ConceptCreateArguments, ConceptCreateResponse>(
+      this,
+      conceptCreateRequestConfig,
+    ),
+    update: bindApiCall<ConceptUpdateArguments, ConceptUpdateResponse>(
+      this,
+      conceptUpdateRequestConfig,
+    ),
+    delete: bindApiCall<ConceptDeleteArguments, ConceptDeleteResponse>(
+      this,
+      conceptDeleteRequestConfig,
+    ),
   }
 
   public readonly notifications = {
