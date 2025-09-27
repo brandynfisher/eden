@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import ConceptCard from '@/features/concepts/components/concept-card'
 import CreateConceptView from '@/features/concepts/create-concept-view'
+import EditConceptView from '@/features/concepts/edit-concept-view'
 import { Agent, Concept2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { Plus, XIcon } from 'lucide-react'
@@ -35,6 +36,7 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
   const [concepts, setConcepts] = useState<Concept2[]>([])
   const [loading, setLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [editingConceptId, setEditingConceptId] = useState<string | null>(null)
 
   const models = useFieldArray({
     control: form.control,
@@ -48,8 +50,6 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
         const response = await axios.get<{ concepts: Concept2[] }>(
           '/api/v2/concepts',
         )
-        console.log('All concepts:', response.data.concepts)
-        console.log('Current agent._id:', agent._id)
 
         // Filter concepts by agent
         const agentConcepts = (response.data.concepts || []).filter(concept => {
@@ -59,16 +59,10 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
           const conceptAgentId =
             typeof concept.agent === 'string'
               ? concept.agent
-              : (concept.agent as Agent)?._id
+              : concept.agent && typeof concept.agent === 'object'
+              ? (concept.agent as Agent)._id
+              : undefined
 
-          console.log(
-            'Concept:',
-            concept.name,
-            'Agent ID:',
-            conceptAgentId,
-            'Match:',
-            conceptAgentId === agent._id,
-          )
           return conceptAgentId === agent._id
         })
         setConcepts(agentConcepts)
@@ -84,35 +78,41 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
   }, [agent._id])
 
   const handleEditConcept = (conceptId: string) => {
-    // Navigate to edit page
-    window.open(`/concepts/${conceptId}/edit`, '_blank')
+    setEditingConceptId(conceptId)
   }
 
   const handleCreateSuccess = () => {
     setIsCreateModalOpen(false)
-    // Refresh concepts
-    const fetchConcepts = async () => {
-      try {
-        const response = await axios.get<{ concepts: Concept2[] }>(
-          '/api/v2/concepts',
-        )
-        const agentConcepts = (response.data.concepts || []).filter(concept => {
-          if (concept.deleted) return false
+    refreshConcepts()
+  }
 
-          // Handle both populated agent object and agent ID string
-          const conceptAgentId =
-            typeof concept.agent === 'string'
-              ? concept.agent
-              : (concept.agent as Agent)?._id
+  const handleEditSuccess = () => {
+    setEditingConceptId(null)
+    refreshConcepts()
+  }
 
-          return conceptAgentId === agent._id
-        })
-        setConcepts(agentConcepts)
-      } catch (error) {
-        console.error('Error fetching concepts:', error)
-      }
+  const refreshConcepts = async () => {
+    try {
+      const response = await axios.get<{ concepts: Concept2[] }>(
+        '/api/v2/concepts',
+      )
+      const agentConcepts = (response.data.concepts || []).filter(concept => {
+        if (concept.deleted) return false
+
+        // Handle both populated agent object and agent ID string
+        const conceptAgentId =
+          typeof concept.agent === 'string'
+            ? concept.agent
+            : concept.agent && typeof concept.agent === 'object'
+            ? (concept.agent as Agent)._id
+            : undefined
+
+        return conceptAgentId === agent._id
+      })
+      setConcepts(agentConcepts)
+    } catch (error) {
+      console.error('Error fetching concepts:', error)
     }
-    fetchConcepts()
   }
 
   return (
@@ -201,10 +201,10 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
                   trigger={
                     <Button
                       type="button"
-                      variant="outline"
                       disabled={models.fields.length >= 10}
                       className="w-full"
                     >
+                      <Plus className="w-4 h-4 mr-2" />
                       Add LoRA Model
                     </Button>
                   }
@@ -268,13 +268,26 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
 
       {/* Create Concept Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-0">
-          <div className="p-6">
-            <CreateConceptView
-              onSuccess={handleCreateSuccess}
-              preselectedAgent={agent}
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-4">
+          <CreateConceptView
+            onSuccess={handleCreateSuccess}
+            preselectedAgent={agent}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Concept Modal */}
+      <Dialog
+        open={!!editingConceptId}
+        onOpenChange={open => !open && setEditingConceptId(null)}
+      >
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-4">
+          {editingConceptId && (
+            <EditConceptView
+              conceptId={editingConceptId}
+              onSuccess={handleEditSuccess}
             />
-          </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

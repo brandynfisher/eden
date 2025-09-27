@@ -47,9 +47,10 @@ type ConceptFormDto = z.infer<typeof conceptSchema>
 
 interface EditConceptViewProps {
   conceptId: string
+  onSuccess?: () => void
 }
 
-const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
+const EditConceptView = ({ conceptId, onSuccess }: EditConceptViewProps) => {
   const router = useRouter()
   const [concept, setConcept] = useState<Concept2 | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
@@ -149,12 +150,17 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
 
       await axios.patch(`/api/v2/concepts/${conceptId}`, payload)
 
-      router.push('/concepts')
       toast.success('Concept updated successfully', {
         description: `"${data.name}" has been updated successfully`,
         richColors: true,
         dismissible: true,
       })
+
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        router.push('/concepts')
+      }
     } catch (error) {
       const errorMessage =
         (error as AxiosError<{ message?: string }>).response?.data?.message ||
