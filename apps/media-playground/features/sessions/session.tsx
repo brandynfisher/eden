@@ -19,7 +19,6 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
-import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -55,12 +54,9 @@ const Session = ({
     data: session,
     isLoading: isSessionLoading,
     error: sessionError,
+    addOrUpdateMessage,
+    refetch: refetchSession,
   } = useSessionQuery({
-    sessionId: sessionId as string,
-    enabled: !!sessionId && sessionId !== 'new',
-  })
-
-  useSessionWebSocket({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
   })
@@ -69,6 +65,8 @@ const Session = ({
     if (!sessionId || sessionId === 'new') return
 
     let eventSource: EventSource | null = null
+    let currentStreamingMessageId: string | null = null
+    let accumulatedTokens = ''
 
     const connectToStream = () => {
       try {
@@ -83,6 +81,55 @@ const Session = ({
           try {
             const data = JSON.parse(event.data)
             console.log('[Session Stream] Update received:', data)
+
+            // Handle session updates from SSE
+            if (data.type === 'start_prompt') {
+              // Reset streaming state for new prompt
+              currentStreamingMessageId = `streaming-${Date.now()}`
+              accumulatedTokens = ''
+            } else if (data.type === 'assistant_token') {
+              // Accumulate tokens
+              accumulatedTokens += data.text
+
+              // Create/update streaming message
+              if (currentStreamingMessageId) {
+                const streamingMessage: Message = {
+                  _id: currentStreamingMessageId,
+                  session: sessionId,
+                  role: 'assistant',
+                  content: accumulatedTokens,
+                  sender: data.agent,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                  attachments: [],
+                  reactions: {},
+                }
+                addOrUpdateMessage(streamingMessage)
+              }
+            } else if (data.type === 'assistant_message' && data.message) {
+              // Only add the final message if we weren't streaming tokens
+              if (!currentStreamingMessageId) {
+                console.log(
+                  '[Session Stream] Adding final message to cache:',
+                  data.message,
+                )
+                const message = data.message as Message
+                addOrUpdateMessage(message)
+              } else {
+                console.log(
+                  '[Session Stream] Ignoring final message (already streamed tokens)',
+                )
+                currentStreamingMessageId = null
+                accumulatedTokens = ''
+              }
+            } else if (
+              data.type === 'tool_complete' ||
+              data.type === 'tool_cancelled'
+            ) {
+              // Tool updates - refetch to get updated data from DB
+              console.log('[Session Stream] Tool update received, refetching')
+              refetchSession()
+            }
           } catch (error) {
             console.error('[Session Stream] Failed to parse message:', error)
           }
@@ -105,7 +152,7 @@ const Session = ({
         eventSource.close()
       }
     }
-  }, [sessionId])
+  }, [sessionId, session, addOrUpdateMessage, refetchSession])
 
   // State management for streaming and non-streaming modes
   const streamingState = useStreamingState({

@@ -58,8 +58,6 @@ export const getCreation = async (
     creation.isLiked = !!userLike
   }
 
-  console.log({ creation })
-
   // if (!creation.public) {
   //   if (creation.user._id.toString() !== request.user?.userId.toString()) {
   //     console.error('User not authorized to view this')

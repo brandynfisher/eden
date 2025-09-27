@@ -64,7 +64,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
       'change',
       async (data: ChangeStreamDocument<ThreadDocument>) => {
         // fastify.log.info(`Change stream onChange: ${WATCHED_COLLECTION}`)
-        // console.log(data.operationType, data)
         try {
           if (data.operationType === 'insert') {
             const cachedDoc = data.fullDocument
@@ -144,7 +143,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
                 const messageIndex = parseInt(index, 10)
                 const existingMessage = cachedDoc?.messages[messageIndex] || {}
                 const fullUpdatedMessage = _.merge(existingMessage, updates)
-                // console.log('fullUpdatedMessage', fullUpdatedMessage)
                 // populate fullUpdatedMessage.tool_calls.result.output.creation
 
                 updatedMessages.push(fullUpdatedMessage)
@@ -152,7 +150,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             )
 
             if (!updatedMessages.length) {
-              // console.log('update: No messages updated')
               return
             }
 
@@ -161,7 +158,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             })
 
             if (!filteredModifiedMessages.length) {
-              // console.log('update: No non-user messages updated')
               return
             }
 
@@ -172,7 +168,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
             )
           }
         } catch (err) {
-          console.log('err', err)
           fastify.log.error(
             'Failed to handle change stream onChange: Eden2Tasks',
             { err },

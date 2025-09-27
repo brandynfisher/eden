@@ -232,6 +232,42 @@ export function useSessionQuery({
     [queryClient, sessionId],
   )
 
+  const updateToolCall = useCallback(
+    (toolName: string, toolIndex: number, result: unknown) => {
+      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+        if (!oldData) return oldData
+
+        const updatedMessages = oldData.messages.map((msg: Message) => {
+          // Find the assistant message with tool_calls
+          if (msg.role === 'assistant' && msg.tool_calls) {
+            const updatedToolCalls = msg.tool_calls.map((tc, idx) => {
+              // Match by tool name and index
+              if (tc.function?.name === toolName && idx === toolIndex) {
+                return {
+                  ...tc,
+                  result: result,
+                }
+              }
+              return tc
+            })
+
+            return {
+              ...msg,
+              tool_calls: updatedToolCalls,
+            }
+          }
+          return msg
+        })
+
+        return {
+          ...oldData,
+          messages: updatedMessages,
+        }
+      })
+    },
+    [queryClient, sessionId],
+  )
+
   return {
     ...query,
     updateReaction,
@@ -239,5 +275,6 @@ export function useSessionQuery({
     removeOptimisticMessage,
     confirmOptimisticMessage,
     addOrUpdateMessage,
+    updateToolCall,
   }
 }
