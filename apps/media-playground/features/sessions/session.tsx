@@ -49,6 +49,11 @@ const Session = ({
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
 
+  // Track which agents are currently waiting to respond (show loader)
+  const [agentsWaitingToRespond, setAgentsWaitingToRespond] = useState<
+    Set<string>
+  >(new Set())
+
   const {
     data: session,
     isLoading: isSessionLoading,
@@ -84,15 +89,31 @@ const Session = ({
 
             // Handle session updates from SSE
             if (data.type === 'start_prompt') {
-              // Use a consistent streaming ID based on session
-              currentStreamingMessageId = `streaming-${sessionId}`
-              accumulatedTokens = ''
               currentAgent = data.agent
+              const agentId = currentAgent?._id
+              const runId = data.session_run_id
+              currentStreamingMessageId = `streaming-${sessionId}-${runId}`
+              accumulatedTokens = ''
+
+              // Mark this agent as waiting (shows loader)
+              if (agentId) {
+                setAgentsWaitingToRespond(prev => new Set(prev).add(agentId))
+              }
             } else if (data.type === 'assistant_token') {
               // If we don't have a streaming message ID, create one (mid-stream reconnect)
-              if (!currentStreamingMessageId) {
-                currentStreamingMessageId = `streaming-${sessionId}`
-                accumulatedTokens = ''
+              if (!currentStreamingMessageId || !currentAgent) {
+                return
+              }
+
+              const agentId = currentAgent._id
+
+              // First token received - remove loader for this agent
+              if (agentId && accumulatedTokens === '') {
+                setAgentsWaitingToRespond(prev => {
+                  const next = new Set(prev)
+                  next.delete(agentId)
+                  return next
+                })
               }
 
               // Accumulate tokens
@@ -112,10 +133,29 @@ const Session = ({
               }
               addOrUpdateMessage(streamingMessage)
             } else if (data.type === 'assistant_message' && data.message) {
-              // Ignore the final message - we already have all tokens from streaming
+              const message = data.message as Message
+
+              // Only add if it has tool calls OR if we didn't create a streaming message
+              if (
+                (message.tool_calls && message.tool_calls.length > 0) ||
+                !currentStreamingMessageId
+              ) {
+                addOrUpdateMessage(message)
+              }
+
               if (currentStreamingMessageId) {
                 currentStreamingMessageId = null
                 accumulatedTokens = ''
+                currentAgent = null
+              }
+            } else if (data.type === 'end_prompt') {
+              // Make sure agent loader is removed
+              if (currentAgent && currentAgent._id) {
+                setAgentsWaitingToRespond(prev => {
+                  const next = new Set(prev)
+                  next.delete(currentAgent?._id || '')
+                  return next
+                })
               }
             } else if (
               data.type === 'tool_complete' ||
@@ -675,10 +715,49 @@ const Session = ({
                                   key={message._id}
                                   message={message}
                                   showAvatar={true}
+                                  isStreamingTokens={false}
                                 />
                               ))}
                       </div>
                     ))}
+
+                    {/* Render standalone loaders for agents waiting to respond */}
+                    {Array.from(agentsWaitingToRespond).map(agentId => {
+                      const agent = session?.agents?.find(
+                        a => a._id === agentId,
+                      )
+                      if (!agent) return null
+
+                      return (
+                        <div key={`loader-${agentId}`} className="mb-4">
+                          <OtherMessage
+                            sessionId={sessionId as string}
+                            message={
+                              {
+                                _id: `loader-${agentId}`,
+                                content: '',
+                                sender: {
+                                  _id: agent._id,
+                                  username: agent.username,
+                                  name: agent.name,
+                                  userImage: agent.userImage?.startsWith(
+                                    'https://',
+                                  )
+                                    ? agent.userImage
+                                    : getCloudfrontUrl(agent.userImage),
+                                },
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
+                                session: sessionId,
+                                role: 'assistant',
+                              } as Message
+                            }
+                            showAvatar={true}
+                            isStreamingTokens={true}
+                          />
+                        </div>
+                      )
+                    })}
 
                     {/* Show agent typing indicator only if appropriate */}
                     {shouldShowLoader && (
@@ -698,10 +777,10 @@ const Session = ({
                               updatedAt: new Date(),
                               session: sessionId,
                               role: 'assistant',
-                            } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                            } as Message
                           }
                           showAvatar={true}
-                          isStreamingTokens={true} // This will show the typing indicator
+                          isStreamingTokens={true}
                         />
                       </div>
                     )}
@@ -731,10 +810,10 @@ const Session = ({
                             updatedAt: new Date(),
                             session: sessionId,
                             role: 'assistant',
-                          } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                          } as Message
                         }
                         showAvatar={true}
-                        isStreamingTokens={true} // This will show the typing indicator
+                        isStreamingTokens={true}
                       />
                     </div>
                   )
@@ -760,7 +839,7 @@ const Session = ({
                             updatedAt: new Date(),
                             session: sessionId,
                             role: 'assistant',
-                          } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                          } as Message
                         }
                         showAvatar={true}
                         isStreamingTokens={
@@ -809,10 +888,47 @@ const Session = ({
                                 key={message._id}
                                 message={message}
                                 showAvatar={true}
+                                isStreamingTokens={false}
                               />
                             ))}
                     </div>
                   ))}
+
+                  {/* Render standalone loaders for agents waiting to respond */}
+                  {Array.from(agentsWaitingToRespond).map(agentId => {
+                    const agent = session?.agents?.find(a => a._id === agentId)
+                    if (!agent) return null
+
+                    return (
+                      <div key={`loader-${agentId}`} className="mb-4">
+                        <OtherMessage
+                          sessionId={sessionId as string}
+                          message={
+                            {
+                              _id: `loader-${agentId}`,
+                              content: '',
+                              sender: {
+                                _id: agent._id,
+                                username: agent.username,
+                                name: agent.name,
+                                userImage: agent.userImage?.startsWith(
+                                  'https://',
+                                )
+                                  ? agent.userImage
+                                  : getCloudfrontUrl(agent.userImage),
+                              },
+                              createdAt: new Date(),
+                              updatedAt: new Date(),
+                              session: sessionId,
+                              role: 'assistant',
+                            } as Message
+                          }
+                          showAvatar={true}
+                          isStreamingTokens={true}
+                        />
+                      </div>
+                    )
+                  })}
                 </>
               )
             })()
@@ -874,13 +990,18 @@ const Session = ({
               // This will still create the user message but won't trigger any agent responses
 
               if (sessionConfig.useStreaming) {
+                // Show optimistic loaders for responding agents
+                agentIds.forEach(agentId => {
+                  setAgentsWaitingToRespond(prev => new Set(prev).add(agentId))
+                })
+
                 streamingState.initializeStreaming()
                 streamingState.sendMessage(content, attachments, {
                   agent_ids: agentIds,
                   thinking,
                 })
 
-                // Add optimistic messages
+                // Add optimistic user message only (agents show as loaders)
                 streamingOptimisticMessages.current = [
                   ...streamingOptimisticMessages.current,
                   {
@@ -896,16 +1017,6 @@ const Session = ({
                     updatedAt: new Date(),
                     session: sessionId,
                     role: 'user',
-                  } as Message,
-                  {
-                    _id: `optimistic-agent-${Date.now()}`,
-                    content: '',
-                    sender: getRespondingAgent(),
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    session: sessionId,
-                    role: 'assistant',
-                    __optimistic: true,
                   } as Message,
                 ]
 
