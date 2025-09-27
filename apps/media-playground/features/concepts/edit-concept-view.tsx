@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Agent, Concept2, ConceptUpdateArguments } from '@edenlabs/eden-sdk'
+import { Agent, Concept2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
@@ -86,9 +86,15 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
         setConcept(conceptData)
 
         // Populate form with existing data
+        const agentId = conceptData.agent
+          ? typeof conceptData.agent === 'string'
+            ? conceptData.agent
+            : (conceptData.agent as Agent)._id
+          : null
+
         form.reset({
           name: conceptData.name,
-          agent: conceptData.agent ? { _id: conceptData.agent } : null,
+          agent: agentId ? { _id: agentId } : null,
           usage_instructions: conceptData.usage_instructions || '',
           images:
             conceptData.images.length > 0
@@ -130,15 +136,19 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
   }
 
   const handleSubmit = async (data: ConceptFormDto) => {
+    console.log('handleSubmit called with data:', data)
+    console.log('conceptId:', conceptId)
+    console.log('selectedAgent:', selectedAgent)
+
     try {
-      const payload: ConceptUpdateArguments = {
-        conceptId,
+      const payload = {
         name: data.name,
-        agent: selectedAgent?._id,
+        agent: selectedAgent ? selectedAgent._id : null,
         usage_instructions: data.usage_instructions || undefined,
         images: data.images,
       }
 
+      console.log('Sending payload:', payload)
       await axios.patch(`/api/v2/concepts/${conceptId}`, payload)
 
       router.push('/concepts')
@@ -241,7 +251,9 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit)}
+            onSubmit={form.handleSubmit(handleSubmit, errors => {
+              console.log('Form validation errors:', errors)
+            })}
             className="space-y-8"
           >
             {/* Basic Information Section */}

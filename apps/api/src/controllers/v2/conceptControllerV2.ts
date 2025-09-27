@@ -2,8 +2,9 @@ import { User } from '../../models/User'
 import { ConceptV2 } from '../../models/v2/ConceptV2'
 // import { s3Url } from '../../plugins/s3Plugin' // Not needed for now
 import ConceptV2Repository from '../../repositories/ConceptV2Repository'
+import axios from 'axios'
 // interface UserConceptsGetArguments {} // Not needed
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { Types } from 'mongoose'
 
 // Local type definitions to avoid circular dependencies
@@ -85,6 +86,7 @@ export const listUserConcepts = async (
 }
 
 export const createConcept = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -136,6 +138,27 @@ export const createConcept = async (
       },
     ])
 
+    // Make admin API call to Eve Admin API
+    try {
+      await axios.post(
+        `${server.config.EDEN_COMPUTE_API_URL}/concepts/create`,
+        {
+          concept: concept._id.toString(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+          },
+        },
+      )
+    } catch (error) {
+      server.log.error(
+        'Failed to notify Eve Admin API about concept creation:',
+        error,
+      )
+      // Continue even if admin API call fails
+    }
+
     return reply.status(201).send({ concept })
   } catch (error) {
     console.error('Error creating concept:', error)
@@ -146,6 +169,7 @@ export const createConcept = async (
 }
 
 export const updateConcept = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -209,6 +233,27 @@ export const updateConcept = async (
       select: '_id userId username userImage',
     },
   ])
+
+  // Make admin API call to Eve Admin API
+  try {
+    await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/concepts/update`,
+      {
+        concept: concept._id.toString(),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+  } catch (error) {
+    server.log.error(
+      'Failed to notify Eve Admin API about concept update:',
+      error,
+    )
+    // Continue even if admin API call fails
+  }
 
   return reply.status(200).send({
     concept,

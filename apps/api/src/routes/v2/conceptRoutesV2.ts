@@ -100,7 +100,7 @@ const conceptRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => createConcept(request, reply),
+    handler: (request, reply) => createConcept(server, request, reply),
   })
 
   server.patch('/v2/concepts/:conceptId', {
@@ -146,7 +146,7 @@ const conceptRoutesV2: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => updateConcept(request, reply),
+    handler: (request, reply) => updateConcept(server, request, reply),
   })
 
   server.delete('/v2/concepts/:conceptId', {
