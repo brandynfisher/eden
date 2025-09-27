@@ -1,4 +1,5 @@
 export { ProfileTab } from './ProfileTab'
 export { ToolsTab } from './ToolsTab'
+export { ConceptsTab } from './ConceptsTab'
 export { IntegrationsTab } from './IntegrationsTab'
 export { PermissionsTab } from './PermissionsTab'

@@ -44,9 +44,19 @@ const conceptSchema = z.object({
 
 type ConceptFormDto = z.infer<typeof conceptSchema>
 
-const CreateConceptView = () => {
+interface CreateConceptViewProps {
+  onSuccess?: () => void
+  preselectedAgent?: Agent | null
+}
+
+const CreateConceptView = ({
+  onSuccess,
+  preselectedAgent,
+}: CreateConceptViewProps = {}) => {
   const router = useRouter()
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(
+    preselectedAgent || null,
+  )
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     open: boolean
     index: number
@@ -57,7 +67,7 @@ const CreateConceptView = () => {
     resolver: zodResolver(conceptSchema),
     defaultValues: {
       name: '',
-      agent: null,
+      agent: preselectedAgent ? { _id: preselectedAgent._id } : null,
       usage_instructions: '',
       images: [{ image: '', usage_instructions: '' }],
     },
@@ -79,12 +89,17 @@ const CreateConceptView = () => {
 
       await axios.post('/api/v2/concepts', payload)
 
-      router.push('/concepts')
       toast.success('Concept created successfully', {
         description: `"${data.name}" has been created successfully`,
         richColors: true,
         dismissible: true,
       })
+
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        router.push('/concepts')
+      }
     } catch (error) {
       const errorMessage =
         (error as AxiosError<{ message?: string }>).response?.data?.message ||
@@ -187,7 +202,8 @@ const CreateConceptView = () => {
                   setSelectedAgent(agent)
                   form.setValue('agent', agent ? { _id: agent._id } : null)
                 }}
-                label="Associated Agent (Optional)"
+                label="Agent"
+                description="If no agent is selected, concept will be available to all of your agents"
               />
 
               {/* Usage Instructions Field */}
@@ -197,11 +213,11 @@ const CreateConceptView = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-foreground">
-                      General Usage Instructions
+                      Description
                     </FormLabel>
                     <FormControl>
                       <AutosizeTextarea
-                        placeholder="Provide general instructions on how this concept should be used (optional)"
+                        placeholder="Briefly describe how your agent should use this concept"
                         {...field}
                         className="min-h-[100px] text-base leading-relaxed"
                       />
@@ -219,9 +235,7 @@ const CreateConceptView = () => {
                   Reference Images
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Upload up to 25 reference images with descriptions to train
-                  your concept. Each image helps the AI understand your concept
-                  better.
+                  Upload up to 25 reference images to train your concept.
                 </p>
                 <div className="mt-3">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
@@ -291,7 +305,7 @@ const CreateConceptView = () => {
                               </div>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder="Describe this image and when it should be used. Be specific about visual elements, style, context, or use cases."
+                                  placeholder="Briefly describe the image or how it should be used."
                                   {...field}
                                   className="min-h-[120px] text-base leading-relaxed"
                                 />

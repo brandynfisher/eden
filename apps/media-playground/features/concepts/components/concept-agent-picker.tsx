@@ -13,6 +13,7 @@ interface ConceptAgentPickerProps {
   selectedAgent?: Agent | null
   onAgentSelect: (agent: Agent | null) => void
   label?: string
+  description?: string
   className?: string
 }
 
@@ -20,6 +21,7 @@ const ConceptAgentPicker = ({
   selectedAgent,
   onAgentSelect,
   label = 'Agent',
+  description,
   className,
 }: ConceptAgentPickerProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -37,6 +39,9 @@ const ConceptAgentPicker = ({
   return (
     <div className={className}>
       <Label className="text-base font-medium">{label}</Label>
+      {description && (
+        <p className="text-sm text-muted-foreground mt-1">{description}</p>
+      )}
       <div className="mt-2">
         {selectedAgent ? (
           <div className="relative inline-block">

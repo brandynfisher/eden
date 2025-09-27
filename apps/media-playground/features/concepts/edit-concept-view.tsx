@@ -1,6 +1,7 @@
 'use client'
 
 import ConceptAgentPicker from './components/concept-agent-picker'
+import ConceptDeleteConfirmationDialog from './components/concept-delete-confirmation-dialog'
 import ImageDeleteConfirmationDialog from './components/image-delete-confirmation-dialog'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
@@ -59,6 +60,8 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
     index: number
     hasContent: boolean
   }>({ open: false, index: -1, hasContent: false })
+  const [conceptDeleteConfirmation, setConceptDeleteConfirmation] =
+    useState(false)
 
   const form = useForm<ConceptFormDto>({
     resolver: zodResolver(conceptSchema),
@@ -136,10 +139,6 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
   }
 
   const handleSubmit = async (data: ConceptFormDto) => {
-    console.log('handleSubmit called with data:', data)
-    console.log('conceptId:', conceptId)
-    console.log('selectedAgent:', selectedAgent)
-
     try {
       const payload = {
         name: data.name,
@@ -148,7 +147,6 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
         images: data.images,
       }
 
-      console.log('Sending payload:', payload)
       await axios.patch(`/api/v2/concepts/${conceptId}`, payload)
 
       router.push('/concepts')
@@ -171,10 +169,15 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
     }
   }
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
+    setConceptDeleteConfirmation(true)
+  }
+
+  const handleConfirmDelete = async () => {
     if (!concept) return
 
     setIsDeleting(true)
+    setConceptDeleteConfirmation(false)
     try {
       await axios.delete(`/api/v2/concepts/${conceptId}`)
 
@@ -251,9 +254,7 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit, errors => {
-              console.log('Form validation errors:', errors)
-            })}
+            onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-8"
           >
             {/* Basic Information Section */}
@@ -296,7 +297,8 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
                   setSelectedAgent(agent)
                   form.setValue('agent', agent ? { _id: agent._id } : null)
                 }}
-                label="Associated Agent (Optional)"
+                label="Agent"
+                description="If no agent is selected, concept will be available to all of your agents"
               />
 
               {/* Usage Instructions Field */}
@@ -328,9 +330,7 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
                   Reference Images
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Upload up to 25 reference images with descriptions to train
-                  your concept. Each image helps the AI understand your concept
-                  better.
+                  Upload up to 25 reference images to train your concept.
                 </p>
                 <div className="mt-3">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
@@ -430,48 +430,6 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
               </div>
             </div>
 
-            {/* Danger Zone */}
-            <div className="bg-card border border-destructive/20 rounded-lg p-6 space-y-4">
-              <div className="border-b border-destructive/20 pb-4">
-                <h2 className="text-xl font-semibold text-destructive">
-                  Danger Zone
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Permanently delete this concept. This action cannot be undone.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex-1">
-                  <h3 className="font-medium text-foreground mb-1">
-                    Delete Concept
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Once you delete this concept, there is no going back. All
-                    associated data will be permanently removed.
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="sm:ml-4 h-10 px-6"
-                >
-                  {isDeleting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Concept
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-border">
               <Button
@@ -500,6 +458,39 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
           </form>
         </Form>
 
+        {/* Danger Zone - moved to bottom with extra spacing */}
+        <div className="mt-16 bg-card border border-destructive/20 rounded-lg p-6 space-y-4">
+          <div className="border-b border-destructive/20 pb-4">
+            <h2 className="text-xl font-semibold text-destructive">
+              Danger Zone
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Permanently delete this concept. This action cannot be undone.
+            </p>
+          </div>
+          <div className="flex justify-center pt-2">
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteClick}
+              disabled={isDeleting}
+              className="h-10 px-6"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Concept
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
         <ImageDeleteConfirmationDialog
           open={deleteConfirmation.open}
           onOpenChange={open =>
@@ -507,6 +498,13 @@ const EditConceptView = ({ conceptId }: EditConceptViewProps) => {
           }
           onConfirm={confirmDeleteImage}
           hasContent={deleteConfirmation.hasContent}
+        />
+
+        <ConceptDeleteConfirmationDialog
+          open={conceptDeleteConfirmation}
+          onOpenChange={setConceptDeleteConfirmation}
+          onConfirm={handleConfirmDelete}
+          concept={concept}
         />
       </div>
     </div>
