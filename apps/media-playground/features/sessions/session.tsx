@@ -65,24 +65,19 @@ const Session = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
-  // Debug: Log session structure to understand what's happening
-  console.log('Session debug:', {
-    sessionId,
-    isSessionLoading,
-    hasSession: !!session,
-    sessionAgents: session?.agents?.length || 0,
-    sessionMessages: session?.messages?.length || 0,
-    sessionError: sessionError?.message,
-    sessionStructure: session ? Object.keys(session) : 'no session',
-  })
-
   useEffect(() => {
     if (!sessionId || sessionId === 'new') return
 
     let eventSource: EventSource | null = null
-    let currentStreamingMessageId: string | null = null
-    let accumulatedTokens = ''
-    let currentAgent: Agent | null = null
+    // Track multiple concurrent streams
+    const streamingMessages = new Map<
+      string,
+      {
+        accumulatedTokens: string
+        agent: Agent
+        messageId: string
+      }
+    >()
 
     const connectToStream = () => {
       try {
@@ -100,26 +95,34 @@ const Session = ({
 
             // Handle session updates from SSE
             if (data.type === 'start_prompt') {
-              currentAgent = data.agent
-              const agentId = currentAgent?._id
+              const agent = data.agent
+              const agentId = agent?._id
               const runId = data.session_run_id
-              currentStreamingMessageId = `streaming-${sessionId}-${runId}`
-              accumulatedTokens = ''
+              const messageId = `streaming-${sessionId}-${runId}`
+
+              // Initialize streaming state for this run
+              streamingMessages.set(runId, {
+                accumulatedTokens: '',
+                agent: agent,
+                messageId: messageId,
+              })
 
               // Mark this agent as waiting (shows loader)
               if (agentId) {
                 setAgentsWaitingToRespond(prev => new Set(prev).add(agentId))
               }
             } else if (data.type === 'assistant_token') {
-              // If we don't have a streaming message ID, create one (mid-stream reconnect)
-              if (!currentStreamingMessageId || !currentAgent) {
-                return
+              const runId = data.session_run_id
+              const streamState = streamingMessages.get(runId)
+
+              if (!streamState) {
+                return // No streaming state for this run
               }
 
-              const agentId = currentAgent._id
+              const agentId = streamState.agent._id
 
               // First token received - remove loader for this agent
-              if (agentId && accumulatedTokens === '') {
+              if (agentId && streamState.accumulatedTokens === '') {
                 setAgentsWaitingToRespond(prev => {
                   const next = new Set(prev)
                   next.delete(agentId)
@@ -127,16 +130,16 @@ const Session = ({
                 })
               }
 
-              // Accumulate tokens
-              accumulatedTokens += data.text
+              // Accumulate tokens for this specific stream
+              streamState.accumulatedTokens += data.text
 
               // Create/update streaming message
               const streamingMessage: Message = {
-                _id: currentStreamingMessageId,
+                _id: streamState.messageId,
                 session: sessionId,
                 role: 'assistant',
-                content: accumulatedTokens,
-                sender: currentAgent,
+                content: streamState.accumulatedTokens,
+                sender: streamState.agent,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 attachments: [],
@@ -145,40 +148,62 @@ const Session = ({
               addOrUpdateMessage(streamingMessage)
             } else if (data.type === 'assistant_message' && data.message) {
               const message = data.message as Message
+              const runId = data.session_run_id
+              const streamState = streamingMessages.get(runId)
 
-              // If we have a streaming message and this message has tool calls, merge them
+              console.log('[Session Stream] Assistant message received:', {
+                runId,
+                hasStreamState: !!streamState,
+                hasToolCalls: !!(
+                  message.tool_calls && message.tool_calls.length > 0
+                ),
+                messageContent: message.content?.substring(0, 50) + '...',
+                accumulatedContent:
+                  streamState?.accumulatedTokens.substring(0, 50) + '...',
+              })
+
+              // If we have a streaming state and this message has tool calls, merge them
               if (
-                currentStreamingMessageId &&
+                streamState &&
                 message.tool_calls &&
                 message.tool_calls.length > 0
               ) {
                 const mergedMessage: Message = {
                   ...message,
-                  _id: currentStreamingMessageId,
-                  content: accumulatedTokens, // Keep the streamed content
+                  _id: streamState.messageId,
+                  content: streamState.accumulatedTokens, // Keep the streamed content
                 }
                 addOrUpdateMessage(mergedMessage)
-              } else if (
-                (message.tool_calls && message.tool_calls.length > 0) ||
-                !currentStreamingMessageId
-              ) {
-                // Only add if it has tool calls OR if we didn't create a streaming message
+                // Reset accumulated tokens for potential post-tool streaming
+                streamState.accumulatedTokens = ''
+              } else if (message.tool_calls && message.tool_calls.length > 0) {
+                // Add tool call messages immediately
+                addOrUpdateMessage(message)
+              } else if (!streamState) {
+                // If we didn't create a streaming message (shouldn't happen in streaming mode)
+                console.log(
+                  '[Session Stream] Adding assistant message without streaming state',
+                )
                 addOrUpdateMessage(message)
               }
-
-              if (currentStreamingMessageId) {
-                currentStreamingMessageId = null
-                accumulatedTokens = ''
-                currentAgent = null
-              }
+              // If we have streamState but no tool calls, ignore this message
+              // because it should have been streamed already
             } else if (data.type === 'end_prompt') {
-              // Make sure agent loader is removed
-              if (currentAgent && currentAgent._id) {
+              const runId = data.session_run_id
+              const streamState = streamingMessages.get(runId)
+
+              // Make sure agent loader is removed before clearing state
+              if (streamState && streamState.agent._id) {
                 setAgentsWaitingToRespond(prev => {
                   const next = new Set(prev)
-                  next.delete(currentAgent?._id || '')
+                  next.delete(streamState.agent._id)
                   return next
                 })
+              }
+
+              // Clear streaming state for this specific run
+              if (runId) {
+                streamingMessages.delete(runId)
               }
             } else if (
               data.type === 'tool_complete' ||
