@@ -88,7 +88,9 @@ const TasksPage = () => {
   const filteredTriggers = useMemo(() => {
     const filtered = triggers.filter(trigger => {
       const matchesSearch =
-        trigger.instruction.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        trigger.trigger_prompt
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
         trigger.agent.name.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus =
         !statusFilter ||
@@ -283,7 +285,7 @@ const TasksPage = () => {
                       <TableCell className="p-4">
                         <div className="max-w-[250px]">
                           <div className="font-medium text-sm truncate">
-                            {trigger.instruction}
+                            {trigger.trigger_prompt}
                           </div>
                         </div>
                       </TableCell>

@@ -6,7 +6,6 @@ import { TelegramIcon } from '@/components/icons/telegram'
 import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Command,
   CommandEmpty,
@@ -103,7 +102,8 @@ export const extendedTriggerRepeatOptions: {
 // Task schema for the simplified tasks interface
 export const taskSchema = z
   .object({
-    instructions: z.string().min(1, 'Instructions are required'),
+    context: z.string().min(1, 'Context is required'),
+    triggerPrompt: z.string().min(1, 'Trigger prompt is required'),
     // Session targeting (moved from posting instructions)
     sessionType: z.enum(['new', 'another']).default('new'),
     sessionId: z.string().optional(),
@@ -115,27 +115,30 @@ export const taskSchema = z
     month: z.string().optional(), // For annually
     endDate: z.date().optional(),
     timezone: z.string(),
-    // Posting instructions
-    enablePosting: z.boolean().default(false),
-    postTo: z
-      .enum(['same', 'another', 'discord', 'telegram', 'x', 'farcaster'])
-      .default('same'),
-    postToSessionId: z.string().optional(), // Different from sessionId above
-    channelId: z.string().optional(),
-    customInstructions: z.string().optional(),
+    // Posting instructions array
+    postingInstructions: z
+      .array(
+        z.object({
+          postTo: z
+            .enum(['same', 'another', 'discord', 'telegram', 'x', 'farcaster'])
+            .default('same'),
+          postToSessionId: z.string().optional(),
+          channelId: z.string().optional(),
+          customInstructions: z.string().optional(),
+        }),
+      )
+      .default([]),
   })
   .refine(data => {
     // If sessionType is "another", sessionId must be provided
     if (data.sessionType === 'another' && !data.sessionId) {
       return false
     }
-    // If enablePosting and postTo is "another", postToSessionId must be provided
-    if (
-      data.enablePosting &&
-      data.postTo === 'another' &&
-      !data.postToSessionId
-    ) {
-      return false
+    // Validate posting instructions
+    for (const instruction of data.postingInstructions) {
+      if (instruction.postTo === 'another' && !instruction.postToSessionId) {
+        return false
+      }
     }
     return true
   })
@@ -148,17 +151,16 @@ export const taskSchema = z
         path: ['sessionId'],
       })
     }
-    if (
-      data.enablePosting &&
-      data.postTo === 'another' &&
-      !data.postToSessionId
-    ) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Please select a session to post to',
-        path: ['postToSessionId'],
-      })
-    }
+    // Validate each posting instruction
+    data.postingInstructions.forEach((instruction, index) => {
+      if (instruction.postTo === 'another' && !instruction.postToSessionId) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Please select a session to post to',
+          path: ['postingInstructions', index, 'postToSessionId'],
+        })
+      }
+    })
 
     // Validate that tasks are scheduled at least 3 minutes in the future
     if (
@@ -270,7 +272,8 @@ const TaskFormModal: FC<{
   // Create a schema for editing with full validation
   const editingTaskSchema = z
     .object({
-      instructions: z.string().min(1, 'Instructions are required'),
+      context: z.string().min(1, 'Context is required'),
+      triggerPrompt: z.string().min(1, 'Trigger prompt is required'),
       // Session fields for editing - same validation as creating
       sessionType: z.enum(['new', 'another']),
       sessionId: z.string().optional(),
@@ -283,32 +286,37 @@ const TaskFormModal: FC<{
       month: z.string().optional(),
       endDate: z.date().optional(),
       timezone: z.string().optional(),
-      // Posting fields for editing - same validation as creating
-      enablePosting: z.boolean(),
-      postTo: z.enum([
-        'same',
-        'another',
-        'discord',
-        'telegram',
-        'x',
-        'farcaster',
-      ]),
-      postToSessionId: z.string().optional(),
-      channelId: z.string().optional(),
-      customInstructions: z.string().optional(),
+      // Posting instructions array for editing
+      postingInstructions: z
+        .array(
+          z.object({
+            postTo: z
+              .enum([
+                'same',
+                'another',
+                'discord',
+                'telegram',
+                'x',
+                'farcaster',
+              ])
+              .default('same'),
+            postToSessionId: z.string().optional(),
+            channelId: z.string().optional(),
+            customInstructions: z.string().optional(),
+          }),
+        )
+        .default([]),
     })
     .refine(data => {
       // If sessionType is "another", sessionId must be provided
       if (data.sessionType === 'another' && !data.sessionId) {
         return false
       }
-      // If enablePosting and postTo is "another", postToSessionId must be provided
-      if (
-        data.enablePosting &&
-        data.postTo === 'another' &&
-        !data.postToSessionId
-      ) {
-        return false
+      // Validate posting instructions
+      for (const instruction of data.postingInstructions) {
+        if (instruction.postTo === 'another' && !instruction.postToSessionId) {
+          return false
+        }
       }
       return true
     })
@@ -321,18 +329,16 @@ const TaskFormModal: FC<{
           path: ['sessionId'],
         })
       }
-      // Custom validation for posting session
-      if (
-        data.enablePosting &&
-        data.postTo === 'another' &&
-        !data.postToSessionId
-      ) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Please select a session to post to',
-          path: ['postToSessionId'],
-        })
-      }
+      // Validate each posting instruction
+      data.postingInstructions.forEach((instruction, index) => {
+        if (instruction.postTo === 'another' && !instruction.postToSessionId) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Please select a session to post to',
+            path: ['postingInstructions', index, 'postToSessionId'],
+          })
+        }
+      })
       // Validate that edited schedule is at least 2 minutes in the future
       if (
         data.repeat === ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT &&
@@ -363,7 +369,8 @@ const TaskFormModal: FC<{
   const form = useForm<TaskFormDto>({
     resolver: zodResolver(editingTask ? editingTaskSchema : taskSchema),
     defaultValues: {
-      instructions: '',
+      context: '',
+      triggerPrompt: '',
       sessionType: 'new',
       sessionId: undefined,
       startDate: addMinutes(new Date(), 3),
@@ -373,13 +380,8 @@ const TaskFormModal: FC<{
       dayOfMonth: undefined,
       month: undefined,
       timezone: defaultTimezone,
-      // Posting instructions
-      enablePosting: false,
-      postTo: 'same',
-      postToSessionId: undefined,
-      channelId: undefined,
-      customInstructions:
-        "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
+      // Posting instructions array
+      postingInstructions: [],
     },
   })
 
@@ -402,7 +404,8 @@ const TaskFormModal: FC<{
 
       // Reset form with the editing task data
       const formData = {
-        instructions: editingTask.instruction,
+        context: editingTask.context || '',
+        triggerPrompt: editingTask.trigger_prompt || '',
         sessionType: (editingTask.session_type as 'new' | 'another') || 'new',
         sessionId: editingTask.session || undefined,
         startDate: editingTask.schedule.start_date
@@ -424,22 +427,17 @@ const TaskFormModal: FC<{
         dayOfMonth: editingTask.schedule.day?.toString() || undefined,
         month: editingTask.schedule.month?.toString() || undefined,
         timezone: editingTask.schedule.timezone || defaultTimezone,
-        // Posting instructions
-        enablePosting: !!editingTask.posting_instructions,
-        postTo:
-          (editingTask.posting_instructions?.post_to as
-            | 'same'
-            | 'another'
-            | 'discord'
-            | 'telegram'
-            | 'x'
-            | 'farcaster') || 'same',
-        postToSessionId:
-          editingTask.posting_instructions?.session_id || undefined,
-        channelId: editingTask.posting_instructions?.channel_id || undefined,
-        customInstructions:
-          editingTask.posting_instructions?.custom_instructions ||
-          "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
+        // Posting instructions array
+        postingInstructions: editingTask.posting_instructions
+          ? editingTask.posting_instructions.map(instruction => ({
+              postTo: instruction.post_to,
+              postToSessionId: instruction.session_id || undefined,
+              channelId: instruction.channel_id || undefined,
+              customInstructions:
+                instruction.custom_instructions ||
+                "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
+            }))
+          : [],
       }
 
       form.reset(formData)
@@ -451,7 +449,8 @@ const TaskFormModal: FC<{
     if (!open) {
       const minimumDateTime = addMinutes(new Date(), 3)
       form.reset({
-        instructions: '',
+        context: '',
+        triggerPrompt: '',
         sessionType: 'new',
         sessionId: undefined,
         startDate: minimumDateTime,
@@ -461,12 +460,7 @@ const TaskFormModal: FC<{
         dayOfMonth: undefined,
         month: undefined,
         timezone: defaultTimezone,
-        postTo: 'same',
-        postToSessionId: undefined,
-        channelId: undefined,
-        customInstructions:
-          "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
-        enablePosting: false,
+        postingInstructions: [],
       })
     }
   }, [open, form, defaultTimezone])
@@ -531,56 +525,36 @@ const TaskFormModal: FC<{
         }
       }
 
-      // Build posting instructions only if posting is enabled
-      let posting_instructions = null
-      if (values.enablePosting) {
-        posting_instructions = {
-          post_to: values.postTo,
-          session_id: null as string | null,
-          channel_id: null as string | null,
-          custom_instructions: undefined as string | undefined,
-        }
-
-        // Only add session_id if posting to another session
-        if (values.postTo === 'another' && values.postToSessionId) {
-          posting_instructions.session_id = values.postToSessionId
-        }
-
-        if (
-          (values.postTo === 'discord' || values.postTo === 'telegram') &&
-          values.channelId
-        ) {
-          posting_instructions.channel_id = values.channelId
-        }
-
-        if (values.customInstructions) {
-          posting_instructions.custom_instructions = values.customInstructions
-        }
-      }
+      // Build posting instructions array
+      const posting_instructions = values.postingInstructions.map(
+        instruction => {
+          const post_instruction = {
+            post_to: instruction.postTo,
+            session_id:
+              instruction.postTo === 'another'
+                ? instruction.postToSessionId
+                : null,
+            channel_id:
+              instruction.postTo === 'discord' ||
+              instruction.postTo === 'telegram'
+                ? instruction.channelId
+                : null,
+            custom_instructions: instruction.customInstructions,
+          }
+          return post_instruction
+        },
+      )
 
       if (editingTask) {
-        // Update existing task - allow instruction, session, posting, and schedule changes
+        // Update existing task - allow context, trigger_prompt, session, posting, and schedule changes
         const updateData: Partial<Trigger> = {
-          instruction: values.instructions,
+          context: values.context,
+          trigger_prompt: values.triggerPrompt,
           session_type: values.sessionType,
           session: values.sessionType === 'another' ? values.sessionId : null,
           schedule,
-        }
-
-        // Add posting instructions if enabled
-        if (values.enablePosting) {
-          updateData.posting_instructions = {
-            post_to: values.postTo,
-            session_id:
-              values.postTo === 'another' ? values.postToSessionId : null,
-            channel_id:
-              values.postTo === 'discord' || values.postTo === 'telegram'
-                ? values.channelId
-                : null,
-            custom_instructions: values.customInstructions,
-          }
-        } else {
-          updateData.posting_instructions = undefined
+          posting_instructions:
+            posting_instructions.length > 0 ? posting_instructions : undefined,
         }
 
         await axios.patch(
@@ -591,11 +565,13 @@ const TaskFormModal: FC<{
       } else {
         // Create new task
         const requestData = {
-          instruction: values.instructions,
+          context: values.context,
+          trigger_prompt: values.triggerPrompt,
           session_type: values.sessionType,
           session: values.sessionType === 'another' ? values.sessionId : null,
           schedule,
-          posting_instructions,
+          posting_instructions:
+            posting_instructions.length > 0 ? posting_instructions : undefined,
         }
         await axios.post(`/api/agents/${agent._id}/triggers`, requestData)
         toast.success('Task created successfully')
@@ -628,20 +604,41 @@ const TaskFormModal: FC<{
             })}
             className="space-y-8"
           >
-            {/* Task Instructions */}
+            {/* Context and Recurring Prompt */}
             <div className="space-y-4">
               <FormField
                 control={form.control}
-                name="instructions"
+                name="context"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-lg font-semibold">
-                      Task Instructions
+                      Context
                       <span className="text-destructive ml-1">*</span>
                     </FormLabel>
                     <FormControl>
                       <AutosizeTextarea
-                        placeholder="Describe what this task should do..."
+                        placeholder="Anything you want to permanently give the agent knowledge of, e.g. long instructions and common workflows, rules of games, its mission, etc..."
+                        className="resize-none min-h-[120px] text-base"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="triggerPrompt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg font-semibold">
+                      Trigger Prompt
+                      <span className="text-destructive ml-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <AutosizeTextarea
+                        placeholder="The immediate instructions to carry out each time this trigger runs..."
                         className="resize-none min-h-[120px] text-base"
                         {...field}
                       />
@@ -768,58 +765,65 @@ const TaskFormModal: FC<{
               )}
             </div>
 
-            {/* Posting Instructions Section - show for both creating and editing */}
+            {/* Posts Section - show for both creating and editing */}
             <div className="space-y-6 border-t pt-6">
               <div className="space-y-4">
-                {/* Toggle for posting summary */}
-                <FormField
-                  control={form.control}
-                  name="enablePosting"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-lg font-semibold cursor-pointer">
-                          Post a summary of the results
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                <h3 className="text-lg font-semibold">Posts</h3>
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={() => {
+                    const currentInstructions = form.getValues(
+                      'postingInstructions',
+                    )
+                    form.setValue('postingInstructions', [
+                      ...currentInstructions,
+                      {
+                        postTo: 'same' as const,
+                        postToSessionId: undefined,
+                        channelId: undefined,
+                        customInstructions:
+                          "Summarize everything you just did in markdown. Include only the requested media, don't include any intermediary results which the user didn't ask for",
+                      },
+                    ])
+                  }}
+                >
+                  Add Posting
+                </Button>
+              </div>
 
-                {/* Conditional posting options - only shown if enablePosting is true */}
-                {form.watch('enablePosting') && (
-                  <div className="space-y-4 ml-6 border-l-2 border-muted pl-4">
-                    {/* Custom posting instructions */}
-                    <FormField
-                      control={form.control}
-                      name="customInstructions"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-base font-medium">
-                            Posting instructions
-                          </FormLabel>
-                          <FormControl>
-                            <AutosizeTextarea
-                              placeholder="Describe what should be included in the results summary..."
-                              className="resize-none min-h-[80px] text-base"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <div className="space-y-4">
+                {form.watch('postingInstructions').map((_, index) => (
+                  <div
+                    key={index}
+                    className="space-y-4 p-4 border rounded-lg relative"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-base font-medium">
+                        Post {index + 1}
+                      </h4>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const currentInstructions = form.getValues(
+                            'postingInstructions',
+                          )
+                          form.setValue(
+                            'postingInstructions',
+                            currentInstructions.filter((_, i) => i !== index),
+                          )
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
 
                     {/* Post To */}
                     <FormField
                       control={form.control}
-                      name="postTo"
+                      name={`postingInstructions.${index}.postTo`}
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-base font-medium">
@@ -880,10 +884,11 @@ const TaskFormModal: FC<{
                     />
 
                     {/* Session Dropdown for posting - only shown if "Another Session" is selected */}
-                    {form.watch('postTo') === 'another' && (
+                    {form.watch(`postingInstructions.${index}.postTo`) ===
+                      'another' && (
                       <FormField
                         control={form.control}
-                        name="postToSessionId"
+                        name={`postingInstructions.${index}.postToSessionId`}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -940,11 +945,12 @@ const TaskFormModal: FC<{
                     )}
 
                     {/* Discord Channel Dropdown */}
-                    {form.watch('postTo') === 'discord' &&
+                    {form.watch(`postingInstructions.${index}.postTo`) ===
+                      'discord' &&
                       getChannelOptions.discordChannels.length > 0 && (
                         <FormField
                           control={form.control}
-                          name="channelId"
+                          name={`postingInstructions.${index}.channelId`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-base font-medium">
@@ -981,11 +987,12 @@ const TaskFormModal: FC<{
                       )}
 
                     {/* Telegram Channel Dropdown */}
-                    {form.watch('postTo') === 'telegram' &&
+                    {form.watch(`postingInstructions.${index}.postTo`) ===
+                      'telegram' &&
                       getChannelOptions.telegramChannels.length > 0 && (
                         <FormField
                           control={form.control}
-                          name="channelId"
+                          name={`postingInstructions.${index}.channelId`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className="text-base font-medium">
@@ -1022,24 +1029,28 @@ const TaskFormModal: FC<{
                       )}
 
                     {/* Fallback input for Discord/Telegram when no channels configured */}
-                    {((form.watch('postTo') === 'discord' &&
+                    {((form.watch(`postingInstructions.${index}.postTo`) ===
+                      'discord' &&
                       getChannelOptions.discordChannels.length === 0) ||
-                      (form.watch('postTo') === 'telegram' &&
+                      (form.watch(`postingInstructions.${index}.postTo`) ===
+                        'telegram' &&
                         getChannelOptions.telegramChannels.length === 0)) && (
                       <FormField
                         control={form.control}
-                        name="channelId"
+                        name={`postingInstructions.${index}.channelId`}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-base font-medium">
-                              {form.watch('postTo') === 'discord'
+                              {form.watch(
+                                `postingInstructions.${index}.postTo`,
+                              ) === 'discord'
                                 ? 'Discord Channel ID'
                                 : 'Telegram Channel ID'}
                             </FormLabel>
                             <FormControl>
                               <Input
                                 placeholder={`Enter ${form.watch(
-                                  'postTo',
+                                  `postingInstructions.${index}.postTo`,
                                 )} channel ID`}
                                 className="h-12"
                                 {...field}
@@ -1050,8 +1061,29 @@ const TaskFormModal: FC<{
                         )}
                       />
                     )}
+
+                    {/* Custom posting instructions */}
+                    <FormField
+                      control={form.control}
+                      name={`postingInstructions.${index}.customInstructions`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-medium">
+                            Posting instructions
+                          </FormLabel>
+                          <FormControl>
+                            <AutosizeTextarea
+                              placeholder="Describe what should be included in the results summary..."
+                              className="resize-none min-h-[80px] text-base"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                )}
+                ))}
               </div>
             </div>
 

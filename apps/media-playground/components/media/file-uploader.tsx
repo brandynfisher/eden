@@ -1,7 +1,6 @@
 'use client'
 
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
-import { Button } from '@/components/ui/button'
 import {
   Sortable,
   SortableDragHandle,
@@ -9,11 +8,7 @@ import {
 } from '@/components/ui/custom/sortable'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
-import {
-  convertBytes,
-  getFileTypeByMimeType,
-  uploadFileToS3,
-} from '@/lib/files'
+import { getFileTypeByMimeType, uploadFileToS3 } from '@/lib/files'
 import { cn } from '@/lib/utils'
 import { FileType, MimeType } from '@/types/Media'
 import { arrayMove } from '@dnd-kit/sortable'
@@ -21,18 +16,15 @@ import axios, { AxiosError, AxiosProgressEvent, CancelTokenSource } from 'axios'
 import exifr from 'exifr'
 import {
   AudioWaveform,
-  BanIcon,
   FileImage,
   FolderArchive,
   GripVerticalIcon,
-  Trash2Icon,
   UploadCloudIcon,
   Video,
   X,
 } from 'lucide-react'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import Truncate from 'react-truncate-inside/es'
 import { toast } from 'sonner'
 
 const MAX_IMAGE_PIXELS = 6000000 // 6MP
@@ -174,6 +166,7 @@ type Props = {
   allowMultiple?: boolean
   className?: string
   enableDropFromTimeline?: boolean
+  draggable?: boolean // New prop to control drag reordering
 }
 
 const FileUploader = ({
@@ -184,6 +177,7 @@ const FileUploader = ({
   enableDropFromTimeline = true,
   onChange,
   className,
+  draggable = false, // Default to no drag reordering
 }: Props) => {
   // Separate existing file URLs into an array
   const existingUrls = useMemo(
@@ -193,6 +187,7 @@ const FileUploader = ({
 
   const [existingFiles, setExistingFiles] = useState<FileWithPreview[]>([])
   const [filesToUpload, setFilesToUpload] = useState<FileUploadProgress[]>([])
+  const [showMaxError, setShowMaxError] = useState(false)
 
   // Initialize existingFiles based on value prop
   useEffect(() => {
@@ -459,10 +454,12 @@ const FileUploader = ({
     onChange(maxFiles === 1 ? updatedUrls[0] : updatedUrls)
   }
 
-  const clearFiles = () => {
-    setFilesToUpload([])
-    setExistingFiles([])
-    onChange(maxFiles === 1 ? '' : [])
+  const cancelUpload = (file: File) => {
+    const fileProgress = filesToUpload.find(item => item.File === file)
+    if (fileProgress?.source) {
+      fileProgress.source.cancel('Upload cancelled')
+    }
+    setFilesToUpload(prev => prev.filter(item => item.File !== file))
   }
 
   const verifyFileTypes = (acceptedFiles: File[]) => {
@@ -499,11 +496,8 @@ const FileUploader = ({
         existingFiles.length + filesToUpload.length + acceptedFiles.length >
         maxFiles
       ) {
-        toast.error(`Too many files!`, {
-          description: `Maximum for this field is ${maxFiles} files`,
-          dismissible: true,
-          richColors: true,
-        })
+        setShowMaxError(true)
+        setTimeout(() => setShowMaxError(false), 3000) // Hide error after 3 seconds
         return
       }
 
@@ -594,7 +588,7 @@ const FileUploader = ({
       )
   }, [allowedFileTypes])
 
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: allowMultiple,
     maxFiles: allowMultiple ? maxFiles : 1,
@@ -629,288 +623,209 @@ const FileUploader = ({
     onChange(maxFiles === 1 ? url : [...existingFiles.map(f => f.url), url])
   }
 
-  const gradientClasses = useMemo(() => {
-    if (!allowedFileTypes?.length) return ''
-
-    const colors: string[] = []
-    if (allowedFileTypes.includes('image')) {
-      colors.push(ImageColor.bgColor)
-    }
-    if (allowedFileTypes.includes('video')) {
-      colors.push(VideoColor.bgColor)
-    }
-    if (allowedFileTypes.includes('zip')) {
-      colors.push(ArchiveColor.bgColor)
-    }
-    if (allowedFileTypes.includes('audio')) {
-      colors.push(AudioColor.bgColor)
-    }
-
-    if (colors.length === 0) return ''
-
-    if (colors.length === 1) {
-      return `bg-${colors[0]}`
-    }
-
-    // Generate a gradient if there are multiple colors
-    const gradientClasses = ['bg-gradient-to-r']
-    colors.forEach((color, i) => {
-      if (i === 0) gradientClasses.push(`from-${color}`)
-      else if (i === colors.length - 1) gradientClasses.push(`to-${color}`)
-      else gradientClasses.push(`via-${color}`)
-    })
-
-    return gradientClasses.join(' ')
-  }, [allowedFileTypes])
-
   return (
-    <div
-      {...getRootProps()}
-      onDrop={e => {
-        e.preventDefault()
-        if (e.dataTransfer.getData('text/plain')) {
-          handleDropFromTimeline(e)
-        } else {
-          const files = Array.from(e.dataTransfer.files)
-          if (!verifyFileTypes(files)) return
-          onDrop(files)
-        }
-      }}
-      className={cn(['flex flex-col flex-grow gap-2', className])}
-    >
-      <div>
-        {existingFiles.length + filesToUpload.length < (maxFiles || 1) ? (
-          <label className="relative flex flex-col items-center justify-center w-full cursor-pointer hover:brightness-110">
-            <div
-              className={cn(
-                'absolute w-[calc(100%+2px)] h-[calc(100%+2px)] rounded-lg',
-                gradientClasses,
-              )}
-            ></div>
-            <div className="text-center z-10 bg-card w-full h-full p-2 rounded-lg">
-              <div className="flex items-center justify-center">
-                <UploadCloudIcon className="mr-2 h-4 w-4" />
-                <div className="text-sm text-muted-foreground font-semibold">
-                  Upload {maxFiles && maxFiles > 1 ? `up to ${maxFiles}` : ''}{' '}
-                  {allowedFileTypes
-                    ?.map(type =>
-                      maxFiles && maxFiles > 1 ? `${type}s` : type,
-                    )
-                    .join(' or ')}
-                </div>
-              </div>
-              <div className="text-xs text-muted-foreground hidden md:block">
-                Click here or drop files to upload
-              </div>
-            </div>
-          </label>
-        ) : null}
-
-        <Input
-          {...getInputProps()}
-          id="dropzone-file"
-          accept={supportedFileTypes
-            .filter(type => allowedFileTypes?.includes(type.type))
-            .flatMap(type => type.allowedMimeTypes)
-            .join(', ')}
-          type="file"
-          className="hidden"
-        />
-      </div>
-
-      {filesToUpload.length || existingFiles.length ? (
+    <div className={cn(['flex flex-col gap-3', className])}>
+      {/* Drag & Drop Area - only show when under limit */}
+      {existingFiles.length + filesToUpload.length < (maxFiles || 1) && (
         <div
-          className="bg-card p-2 rounded-lg"
-          onClick={e => {
-            e.stopPropagation()
+          {...getRootProps()}
+          onDrop={e => {
+            e.preventDefault()
+            if (e.dataTransfer.getData('text/plain')) {
+              handleDropFromTimeline(e)
+            } else {
+              const files = Array.from(e.dataTransfer.files)
+              if (!verifyFileTypes(files)) return
+              onDrop(files)
+            }
           }}
+          className={cn([
+            'border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer transition-colors',
+            'hover:border-primary/50 hover:bg-accent/50',
+            isDragActive && 'border-primary bg-accent',
+          ])}
         >
-          <div className="font-medium mb-2 text-muted-foreground text-sm flex gap-2 flex-wrap justify-between">
-            <div>
-              Uploaded {existingFiles.length + filesToUpload.length}{' '}
-              {allowedFileTypes?.length > 1 ? ' file' : allowedFileTypes[0]}
-            </div>
-            <div>(max. {maxFiles})</div>
+          <UploadCloudIcon className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+          <div className="text-sm font-medium text-foreground mb-1">
+            {maxFiles === 1 ? 'Upload an' : `Upload up to ${maxFiles}`}{' '}
+            {allowedFileTypes?.join(' or ')}
+            {maxFiles === 1 ? '' : 's'}
           </div>
-          <div className="space-y-2">
+          <div className="text-xs text-muted-foreground">
+            Click here or drag and drop files
+          </div>
+
+          <Input
+            {...getInputProps()}
+            id="dropzone-file"
+            accept={supportedFileTypes
+              .filter(type => allowedFileTypes?.includes(type.type))
+              .flatMap(type => type.allowedMimeTypes)
+              .join(', ')}
+            type="file"
+            className="hidden"
+          />
+        </div>
+      )}
+
+      {/* Error message for too many files */}
+      {showMaxError && (
+        <div className="text-center text-sm text-red-500">
+          Maximum {maxFiles} files allowed
+        </div>
+      )}
+
+      {/* Thumbnails Grid */}
+      {(existingFiles.length > 0 || filesToUpload.length > 0) && (
+        <div className="flex flex-wrap gap-2">
+          {/* Existing Files */}
+          {draggable && existingFiles.length > 1 ? (
             <Sortable
-              value={existingFiles.map(file => ({
-                id: file.url, // unique identifier
-              }))}
+              value={existingFiles.map(file => ({ id: file.url }))}
               onMove={({ activeIndex, overIndex }) =>
                 handleMove(activeIndex, overIndex)
               }
             >
-              <LightboxGallery>
-                {existingFiles.map((file, index) => (
-                  <SortableItem key={index} value={file.url} asChild>
-                    <div className="relative flex justify-between gap-2 rounded-lg overflow-hidden border border-border group">
-                      <div className="flex items-center pl-2 h-20">
-                        {allowMultiple && (
-                          <SortableDragHandle
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="size-8 shrink-0 mr-4"
-                          >
-                            <GripVerticalIcon aria-hidden="true" />
-                          </SortableDragHandle>
-                        )}
-                        <div className="relative text-white rounded-lg overflow-hidden shrink-0 mr-2">
-                          {file.type === 'image' || file.type === 'video' ? (
-                            <LightboxTrigger
-                              className="hover:brightness-105 h-16 w-auto cursor-zoom-in"
-                              slide={{
-                                url: file.url,
-                                thumbnail: file.url,
-                              }}
-                              startIndex={index}
-                              imageProps={{
-                                unoptimized: true,
-                                className:
-                                  'relative rounded-lg hover:brightness-105 h-16 w-auto',
-                              }}
-                              videoProps={{
-                                className:
-                                  'object-contain h-16 w-auto hover:brightness-105',
-                                controls: false,
-                                onLoad: () => URL.revokeObjectURL(file.url),
-                              }}
-                            />
-                          ) : (
-                            <div
-                              className={`text-${
-                                getFileIconAndColor(
-                                  getFileTypeByMimeType(file.type),
-                                ).color
-                              } flex justify-center mr-2`}
-                            >
-                              {
-                                getFileIconAndColor(
-                                  getFileTypeByMimeType(file.type),
-                                ).icon
-                              }
-                            </div>
-                          )}
-                        </div>
-                        <div className="space-y-1 max-w-[96px] md:max-w-[110px] lg:max-w-[200px] overflow-hidden">
-                          <div className="text-sm text-muted-foreground">
-                            <Truncate text={file.name} />
-                          </div>
-                          <div className="text-xs text-muted-foreground/70">
-                            {file.dimensions && (
-                              <div>
-                                {file.dimensions.width} x{' '}
-                                {file.dimensions.height}
-                              </div>
-                            )}
-                            {file.size && (
-                              <div>
-                                {convertBytes(file.size, {
-                                  useBinaryUnits: false,
-                                  decimals: 2,
-                                })}
-                              </div>
-                            )}
-                            {file.duration && (
-                              <div>{file.duration.toFixed(2)} s</div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={e => {
-                          e.stopPropagation()
-                          removeFile(file.url)
-                        }}
-                        className="border-l text-primary/40 hover:bg-destructive hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
-                      >
-                        <X size={20} />
-                      </button>
-                    </div>
-                  </SortableItem>
-                ))}
-              </LightboxGallery>
-            </Sortable>
-
-            {filesToUpload.map((fileUploadProgress, index) => (
-              <div
-                key={index}
-                className="flex justify-between gap-2 rounded-lg overflow-hidden border border-border group h-20"
-              >
-                <div className="flex items-center w-full pr-2">
-                  <div
-                    className={`text-${
-                      getFileIconAndColor(
-                        getFileTypeByMimeType(
-                          fileUploadProgress.File.type as MimeType,
-                        ),
-                      ).color
-                    } flex justify-center mr-2`}
-                  >
-                    {
-                      getFileIconAndColor(
-                        getFileTypeByMimeType(
-                          fileUploadProgress.File.type as MimeType,
-                        ),
-                      ).icon
-                    }
-                  </div>
-                  <div className="w-full space-y-1">
-                    <div className="text-xs flex items-center justify-between">
-                      <div className="text-sm text-muted-foreground max-w-[96px] md:max-w-[110px]">
-                        <Truncate text={fileUploadProgress.File.name} />
-                      </div>
-                      <span>{fileUploadProgress.progress}%</span>
-                    </div>
-                    <Progress
-                      value={fileUploadProgress.progress}
-                      className={`bg-${
-                        getFileIconAndColor(
-                          getFileTypeByMimeType(
-                            fileUploadProgress.File.type as MimeType,
-                          ),
-                        ).color
-                      }`}
+              {existingFiles.map(file => (
+                <SortableItem key={file.url} value={file.url} asChild>
+                  <div className="relative">
+                    <FileCard
+                      file={file}
+                      onRemove={() => removeFile(file.url)}
+                      showDragHandle={draggable}
                     />
                   </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (fileUploadProgress.source) {
-                      fileUploadProgress.source.cancel('Upload cancelled')
-                    }
-                    // Remove from filesToUpload
-                    setFilesToUpload(prev =>
-                      prev.filter(
-                        item => item.File !== fileUploadProgress.File,
-                      ),
-                    )
-                  }}
-                  className="border-l text-primary/40 hover:bg-warning hover:text-destructive-foreground items-center justify-center cursor-pointer px-2 group-hover:flex"
-                >
-                  <BanIcon size={20} />
-                </button>
-              </div>
-            ))}
+                </SortableItem>
+              ))}
+            </Sortable>
+          ) : (
+            <LightboxGallery>
+              {existingFiles.map(file => (
+                <FileCard
+                  key={file.url}
+                  file={file}
+                  onRemove={() => removeFile(file.url)}
+                  showDragHandle={false}
+                />
+              ))}
+            </LightboxGallery>
+          )}
 
-            <div className="flex justify-end">
-              <Button
-                className="hover:bg-destructive hover:text-destructive-foreground"
-                size="sm"
-                variant="ghost"
-                type="button"
-                onClick={clearFiles}
-              >
-                <Trash2Icon className="mr-2 h-4 w-4" />
-                Clear all uploads
-              </Button>
-            </div>
+          {/* Uploading Files */}
+          {filesToUpload.map((fileProgress, index) => (
+            <UploadingFileCard
+              key={index}
+              fileProgress={fileProgress}
+              onCancel={() => cancelUpload(fileProgress.File)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// FileCard Component
+const FileCard = ({
+  file,
+  onRemove,
+  showDragHandle,
+}: {
+  file: FileWithPreview
+  onRemove: () => void
+  showDragHandle: boolean
+}) => {
+  return (
+    <div className="relative w-32 h-32 bg-card border rounded-lg overflow-hidden group hover:shadow-md transition-shadow">
+      {/* Drag Handle */}
+      {showDragHandle && (
+        <SortableDragHandle className="absolute top-1 left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+          <GripVerticalIcon className="h-3 w-3" />
+        </SortableDragHandle>
+      )}
+
+      {/* Remove Button */}
+      <button
+        onClick={e => {
+          e.stopPropagation()
+          onRemove()
+        }}
+        className="absolute top-1 right-1 z-10 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/90"
+      >
+        <X className="h-3 w-3" />
+      </button>
+
+      {/* File Preview */}
+      {file.type === 'image' ? (
+        <LightboxTrigger
+          slide={{ url: file.url, thumbnail: file.url }}
+          className="w-full h-full cursor-zoom-in block"
+        />
+      ) : file.type === 'video' ? (
+        <LightboxTrigger
+          slide={{ url: file.url, thumbnail: file.url }}
+          className="w-full h-full cursor-zoom-in block"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <div
+            className={`text-${
+              getFileIconAndColor(getFileTypeByMimeType(file.type)).color
+            }`}
+          >
+            {getFileIconAndColor(getFileTypeByMimeType(file.type)).icon}
           </div>
         </div>
-      ) : null}
+      )}
+    </div>
+  )
+}
+
+// UploadingFileCard Component
+const UploadingFileCard = ({
+  fileProgress,
+  onCancel,
+}: {
+  fileProgress: FileUploadProgress
+  onCancel: () => void
+}) => {
+  return (
+    <div className="relative w-32 h-32 bg-card border rounded-lg overflow-hidden">
+      {/* Cancel Button */}
+      <button
+        onClick={e => {
+          e.stopPropagation()
+          onCancel()
+        }}
+        className="absolute top-1 right-1 z-10 bg-destructive text-destructive-foreground rounded-full p-0.5 hover:bg-destructive/90"
+      >
+        <X className="h-3 w-3" />
+      </button>
+
+      {/* File Preview or Icon */}
+      <div className="w-full h-full flex items-center justify-center bg-muted">
+        <div
+          className={`text-${
+            getFileIconAndColor(
+              getFileTypeByMimeType(fileProgress.File.type as MimeType),
+            ).color
+          }`}
+        >
+          {
+            getFileIconAndColor(
+              getFileTypeByMimeType(fileProgress.File.type as MimeType),
+            ).icon
+          }
+        </div>
+      </div>
+
+      {/* Progress Overlay */}
+      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="text-xs font-medium">{fileProgress.progress}%</div>
+          <Progress value={fileProgress.progress} className="w-12 h-1 mt-1" />
+        </div>
+      </div>
     </div>
   )
 }
