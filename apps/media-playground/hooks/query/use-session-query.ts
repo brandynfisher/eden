@@ -232,6 +232,20 @@ export function useSessionQuery({
     [queryClient, sessionId],
   )
 
+  const removeMessage = useCallback(
+    (messageId: string) => {
+      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+        if (!oldData) return oldData
+
+        return {
+          ...oldData,
+          messages: oldData.messages.filter(msg => msg._id !== messageId),
+        }
+      })
+    },
+    [queryClient, sessionId],
+  )
+
   const updateToolCall = useCallback(
     (toolName: string, toolIndex: number, result: unknown) => {
       queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
@@ -275,6 +289,7 @@ export function useSessionQuery({
     removeOptimisticMessage,
     confirmOptimisticMessage,
     addOrUpdateMessage,
+    removeMessage,
     updateToolCall,
   }
 }

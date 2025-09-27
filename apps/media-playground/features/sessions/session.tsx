@@ -4,7 +4,6 @@ import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
 import SessionWelcome from './components/session-welcome'
-import { StreamingMessageDisplay } from './components/streaming-message-display'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useStreamingState } from './hooks/use-streaming-state'
 import NewSession from './new-session'
@@ -22,7 +21,7 @@ import { useSessionErrors } from '@/hooks/use-session-errors'
 import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { Message } from '@edenlabs/eden-sdk'
+import { Agent, Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -67,6 +66,7 @@ const Session = ({
     let eventSource: EventSource | null = null
     let currentStreamingMessageId: string | null = null
     let accumulatedTokens = ''
+    let currentAgent: Agent | null = null
 
     const connectToStream = () => {
       try {
@@ -84,41 +84,36 @@ const Session = ({
 
             // Handle session updates from SSE
             if (data.type === 'start_prompt') {
-              // Reset streaming state for new prompt
-              currentStreamingMessageId = `streaming-${Date.now()}`
+              // Use a consistent streaming ID based on session
+              currentStreamingMessageId = `streaming-${sessionId}`
               accumulatedTokens = ''
+              currentAgent = data.agent
             } else if (data.type === 'assistant_token') {
+              // If we don't have a streaming message ID, create one (mid-stream reconnect)
+              if (!currentStreamingMessageId) {
+                currentStreamingMessageId = `streaming-${sessionId}`
+                accumulatedTokens = ''
+              }
+
               // Accumulate tokens
               accumulatedTokens += data.text
 
               // Create/update streaming message
-              if (currentStreamingMessageId) {
-                const streamingMessage: Message = {
-                  _id: currentStreamingMessageId,
-                  session: sessionId,
-                  role: 'assistant',
-                  content: accumulatedTokens,
-                  sender: data.agent,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  attachments: [],
-                  reactions: {},
-                }
-                addOrUpdateMessage(streamingMessage)
+              const streamingMessage: Message = {
+                _id: currentStreamingMessageId,
+                session: sessionId,
+                role: 'assistant',
+                content: accumulatedTokens,
+                sender: currentAgent,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                attachments: [],
+                reactions: {},
               }
+              addOrUpdateMessage(streamingMessage)
             } else if (data.type === 'assistant_message' && data.message) {
-              // Only add the final message if we weren't streaming tokens
-              if (!currentStreamingMessageId) {
-                console.log(
-                  '[Session Stream] Adding final message to cache:',
-                  data.message,
-                )
-                const message = data.message as Message
-                addOrUpdateMessage(message)
-              } else {
-                console.log(
-                  '[Session Stream] Ignoring final message (already streamed tokens)',
-                )
+              // Ignore the final message - we already have all tokens from streaming
+              if (currentStreamingMessageId) {
                 currentStreamingMessageId = null
                 accumulatedTokens = ''
               }
@@ -152,7 +147,7 @@ const Session = ({
         eventSource.close()
       }
     }
-  }, [sessionId, session, addOrUpdateMessage, refetchSession])
+  }, [sessionId, addOrUpdateMessage, refetchSession])
 
   // State management for streaming and non-streaming modes
   const streamingState = useStreamingState({
@@ -821,22 +816,6 @@ const Session = ({
                 </>
               )
             })()
-          )}
-
-          {/* Streaming message display */}
-          {sessionConfig.useStreaming && (
-            <StreamingMessageDisplay
-              sessionId={sessionId as string}
-              isStreamingTokens={streamingState.isStreamingTokens}
-              waitingForWebSocket={streamingState.waitingForWebSocket}
-              streamingText={streamingState.streamingText}
-              hasReceivedTokens={streamingState.hasReceivedTokens}
-              streamingAgent={streamingState.streamingAgent}
-              getRespondingAgent={getRespondingAgent}
-              filteredMessages={filteredMessages}
-              streamingMessageIdRef={streamingState.streamingMessageIdRef}
-              onStreamingComplete={streamingState.clearStreamingState}
-            />
           )}
 
           {/* Non-streaming loading indicator */}
