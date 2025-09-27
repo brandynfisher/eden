@@ -298,12 +298,6 @@ export const MessageInput = ({
     // Keep thinking mode state - don't reset after sending
 
     try {
-      // Log thinking state for debugging
-      console.log(
-        '[MessageInput] Sending message with thinking:',
-        isThinkingEnabled,
-      )
-
       // Use streaming if available, otherwise fall back to regular message
       if (onStreamingMessage) {
         // Pass thinking state along with message

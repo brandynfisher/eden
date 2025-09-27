@@ -65,6 +65,48 @@ const Session = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
+  useEffect(() => {
+    if (!sessionId || sessionId === 'new') return
+
+    let eventSource: EventSource | null = null
+
+    const connectToStream = () => {
+      try {
+        const streamUrl = `/api/sessions/${sessionId}/stream`
+        eventSource = new EventSource(streamUrl)
+
+        eventSource.onopen = () => {
+          console.log('[Session Stream] Connected to session:', sessionId)
+        }
+
+        eventSource.onmessage = event => {
+          try {
+            const data = JSON.parse(event.data)
+            console.log('[Session Stream] Update received:', data)
+          } catch (error) {
+            console.error('[Session Stream] Failed to parse message:', error)
+          }
+        }
+
+        eventSource.onerror = error => {
+          console.error('[Session Stream] Error:', error)
+          eventSource?.close()
+        }
+      } catch (error) {
+        console.error('[Session Stream] Failed to connect:', error)
+      }
+    }
+
+    connectToStream()
+
+    return () => {
+      if (eventSource) {
+        console.log('[Session Stream] Disconnecting from session:', sessionId)
+        eventSource.close()
+      }
+    }
+  }, [sessionId])
+
   // State management for streaming and non-streaming modes
   const streamingState = useStreamingState({
     sessionId: currentSessionId,

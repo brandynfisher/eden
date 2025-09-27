@@ -1138,3 +1138,115 @@ export const deleteSessionShare = async (
     })
   }
 }
+
+export const streamSession = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{ Params: { session_id: string } }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { session_id } = request.params
+
+  try {
+    const session = await Session.findOne({
+      _id: new ObjectId(session_id as string),
+    })
+
+    if (!session || session.deleted) {
+      return reply.status(404).send({
+        message: 'Session not found',
+      })
+    }
+
+    const currentUserIdStr = userId.toString()
+    const isOwner = session.owner.toString() === currentUserIdStr
+    const isAllowedUser = session.users?.some(
+      (user: any) => user.toString() === currentUserIdStr,
+    )
+
+    if (!isOwner && !isAllowedUser) {
+      return reply.status(403).send({
+        message: 'You do not have access to this session',
+      })
+    }
+
+    reply.hijack()
+    reply.raw.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    })
+
+    const streamUrl = `${server.config.EDEN_COMPUTE_API_URL}/sessions/${session_id}/stream`
+
+    server.log.info(`[Session Stream] Connecting to: ${streamUrl}`)
+
+    const response = await axios.get(streamUrl, {
+      headers: {
+        Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+      },
+      responseType: 'stream',
+    })
+
+    response.data.on('data', (chunk: Buffer) => {
+      reply.raw.write(chunk)
+    })
+
+    response.data.on('end', () => {
+      reply.raw.end()
+    })
+
+    response.data.on('error', (error: Error) => {
+      console.error('Stream error:', error)
+      if (!reply.raw.writableEnded) {
+        reply.raw.write(
+          `data: ${JSON.stringify({
+            event: 'error',
+            error: error.message,
+          })}\n\n`,
+        )
+        reply.raw.end()
+      }
+    })
+
+    request.raw.on('close', () => {
+      response.data.destroy()
+    })
+  } catch (e) {
+    const error = e as any
+    const statusCode = error?.response?.status || 500
+    const errorData = error?.response?.data
+    const errorMessage = error?.message || 'Failed to establish stream'
+
+    server.log.error({
+      message: '[Session Stream] Connection failed',
+      sessionId: session_id,
+      url: `${server.config.EDEN_COMPUTE_API_URL}/sessions/${session_id}/stream`,
+      statusCode,
+      error: errorMessage,
+      responseData: errorData,
+    })
+
+    if (!reply.sent && !reply.raw.headersSent) {
+      return reply.status(statusCode).send({
+        error: `Stream connection failed: ${errorMessage}`,
+        details: errorData,
+      })
+    } else {
+      reply.raw.write(
+        `data: ${JSON.stringify({
+          event: 'error',
+          error: `Stream connection failed: ${errorMessage}`,
+        })}\n\n`,
+      )
+      reply.raw.end()
+    }
+  }
+}
