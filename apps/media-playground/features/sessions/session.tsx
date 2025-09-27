@@ -65,6 +65,17 @@ const Session = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
+  // Debug: Log session structure to understand what's happening
+  console.log('Session debug:', {
+    sessionId,
+    isSessionLoading,
+    hasSession: !!session,
+    sessionAgents: session?.agents?.length || 0,
+    sessionMessages: session?.messages?.length || 0,
+    sessionError: sessionError?.message,
+    sessionStructure: session ? Object.keys(session) : 'no session',
+  })
+
   useEffect(() => {
     if (!sessionId || sessionId === 'new') return
 
@@ -614,24 +625,10 @@ const Session = ({
   }
 
   // Show loading indicator if:
-  // 1. We're on a 'new' session and still loading
-  // 2. We're on a real session that's loading and has no messages yet (coming from session-chat)
-  if (
-    (isSessionLoading && !session && sessionId === 'new') ||
-    (isSessionLoading && !session) ||
-    (session && session.messages && session.messages.length === 0)
-  ) {
-    return (
-      <div className="flex-1 flex justify-center items-center">
-        <LoadingIndicator className="w-10 h-10 text-purple-600" />
-      </div>
-    )
-  }
-
-  // Also show loading if we have a session but no user messages yet (waiting for first user message)
-  const userMessages =
-    session?.messages?.filter((m: Message) => m.role === 'user') || []
-  if (session && userMessages.length === 0 && sessionId !== 'new') {
+  // 1. We're loading and don't have session data yet
+  // 2. We're on a 'new' session
+  // BUT don't show loading if there's an error or if we have session data with empty messages
+  if (!sessionError && isSessionLoading && !session && sessionId !== 'new') {
     return (
       <div className="flex-1 flex justify-center items-center">
         <LoadingIndicator className="w-10 h-10 text-purple-600" />

@@ -162,8 +162,16 @@ const NewSession = () => {
         },
       }
 
+      // Set title - use provided title or generate default
       if (data.title && data.title.trim()) {
         requestBody.title = data.title
+      } else {
+        // Generate default title based on agents
+        const agentNames = data.agents.map(agent => agent.name).join(', ')
+        requestBody.title =
+          data.agents.length === 1
+            ? `Chat with ${agentNames}`
+            : `Multi-agent session with ${agentNames}`
       }
 
       if (data.scenario && data.scenario.trim()) {
@@ -204,19 +212,20 @@ const NewSession = () => {
 
       const result = await response.json()
 
-      toast({
-        title: 'Session created successfully!',
-        description: `Your session with ${data.agents.length} agent${
-          data.agents.length > 1 ? 's' : ''
-        } has been created.`,
-      })
-
       // Invalidate session list to refresh sidebar
       await invalidateSessionList()
 
-      // Redirect to the created session
+      // Redirect to the created session immediately
       if (result.session?._id) {
         router.push(`/sessions/${result.session._id}`)
+
+        // Show success toast after redirect starts
+        toast({
+          title: 'Session created successfully!',
+          description: `Your session with ${data.agents.length} agent${
+            data.agents.length > 1 ? 's' : ''
+          } has been created.`,
+        })
       }
     } catch (error) {
       console.error('Session creation error:', error)
