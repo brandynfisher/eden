@@ -91,6 +91,11 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
     refreshConcepts()
   }
 
+  const handleDeleteSuccess = () => {
+    setEditingConceptId(null)
+    refreshConcepts()
+  }
+
   const refreshConcepts = async () => {
     try {
       const response = await axios.get<{ concepts: Concept2[] }>(
@@ -268,7 +273,7 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
 
       {/* Create Concept Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-4">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-2">
           <CreateConceptView
             onSuccess={handleCreateSuccess}
             preselectedAgent={agent}
@@ -281,11 +286,13 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
         open={!!editingConceptId}
         onOpenChange={open => !open && setEditingConceptId(null)}
       >
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-4">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-2">
           {editingConceptId && (
             <EditConceptView
               conceptId={editingConceptId}
               onSuccess={handleEditSuccess}
+              onDelete={handleDeleteSuccess}
+              preselectedAgent={agent}
             />
           )}
         </DialogContent>

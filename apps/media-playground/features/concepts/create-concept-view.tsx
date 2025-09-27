@@ -169,8 +169,9 @@ const CreateConceptView = ({
                   Basic Information
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Configure the name, agent, and general usage instructions for
-                  your concept.
+                  {preselectedAgent
+                    ? 'Configure the name and general usage instructions for your concept.'
+                    : 'Configure the name, agent, and general usage instructions for your concept.'}
                 </p>
               </div>
 
@@ -196,15 +197,17 @@ const CreateConceptView = ({
               />
 
               {/* Agent Field */}
-              <ConceptAgentPicker
-                selectedAgent={selectedAgent}
-                onAgentSelect={agent => {
-                  setSelectedAgent(agent)
-                  form.setValue('agent', agent ? { _id: agent._id } : null)
-                }}
-                label="Agent"
-                description="If no agent is selected, concept will be available to all of your agents"
-              />
+              {!preselectedAgent && (
+                <ConceptAgentPicker
+                  selectedAgent={selectedAgent}
+                  onAgentSelect={agent => {
+                    setSelectedAgent(agent)
+                    form.setValue('agent', agent ? { _id: agent._id } : null)
+                  }}
+                  label="Agent"
+                  description="If no agent is selected, concept will be available to all of your agents"
+                />
+              )}
 
               {/* Usage Instructions Field */}
               <FormField

@@ -48,9 +48,16 @@ type ConceptFormDto = z.infer<typeof conceptSchema>
 interface EditConceptViewProps {
   conceptId: string
   onSuccess?: () => void
+  onDelete?: () => void
+  preselectedAgent?: Agent | null
 }
 
-const EditConceptView = ({ conceptId, onSuccess }: EditConceptViewProps) => {
+const EditConceptView = ({
+  conceptId,
+  onSuccess,
+  onDelete,
+  preselectedAgent,
+}: EditConceptViewProps) => {
   const router = useRouter()
   const [concept, setConcept] = useState<Concept2 | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
@@ -107,7 +114,10 @@ const EditConceptView = ({ conceptId, onSuccess }: EditConceptViewProps) => {
         })
 
         // Set selected agent for the picker
-        if (conceptData.agent) {
+        if (preselectedAgent) {
+          // When preselectedAgent is provided, use it and don't allow changes
+          setSelectedAgent(preselectedAgent)
+        } else if (conceptData.agent) {
           // Check if conceptData.agent is a populated object or just an ID
           if (typeof conceptData.agent === 'string') {
             // It's just an ID, fetch the full agent details
@@ -187,12 +197,17 @@ const EditConceptView = ({ conceptId, onSuccess }: EditConceptViewProps) => {
     try {
       await axios.delete(`/api/v2/concepts/${conceptId}`)
 
-      router.push('/concepts')
       toast.success('Concept deleted successfully', {
         description: `"${concept.name}" has been deleted`,
         richColors: true,
         dismissible: true,
       })
+
+      if (onDelete) {
+        onDelete()
+      } else {
+        router.push('/concepts')
+      }
     } catch (error) {
       toast.error('Failed to delete concept')
       setIsDeleting(false)
@@ -270,8 +285,9 @@ const EditConceptView = ({ conceptId, onSuccess }: EditConceptViewProps) => {
                   Basic Information
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Configure the name, agent, and general usage instructions for
-                  your concept.
+                  {preselectedAgent
+                    ? 'Configure the name and general usage instructions for your concept.'
+                    : 'Configure the name, agent, and general usage instructions for your concept.'}
                 </p>
               </div>
 
@@ -297,15 +313,17 @@ const EditConceptView = ({ conceptId, onSuccess }: EditConceptViewProps) => {
               />
 
               {/* Agent Field */}
-              <ConceptAgentPicker
-                selectedAgent={selectedAgent}
-                onAgentSelect={agent => {
-                  setSelectedAgent(agent)
-                  form.setValue('agent', agent ? { _id: agent._id } : null)
-                }}
-                label="Agent"
-                description="If no agent is selected, concept will be available to all of your agents"
-              />
+              {!preselectedAgent && (
+                <ConceptAgentPicker
+                  selectedAgent={selectedAgent}
+                  onAgentSelect={agent => {
+                    setSelectedAgent(agent)
+                    form.setValue('agent', agent ? { _id: agent._id } : null)
+                  }}
+                  label="Agent"
+                  description="If no agent is selected, concept will be available to all of your agents"
+                />
+              )}
 
               {/* Usage Instructions Field */}
               <FormField
