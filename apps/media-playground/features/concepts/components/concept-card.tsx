@@ -24,7 +24,10 @@ const ConceptCard = ({
   onClick,
   showAgent = true,
 }: ConceptCardProps) => {
-  const firstImage = concept.images?.[0]
+  // Use concept.thumbnail if it exists, otherwise use first image
+  const displayImage = concept.thumbnail
+    ? getCloudfrontOriginalUrl(concept.thumbnail)
+    : concept.images?.[0]?.image
   const imageCount = concept.images?.length || 0
   const triggerPromptPreview = concept.usage_instructions
     ? concept.usage_instructions.slice(0, 50) +
@@ -71,10 +74,10 @@ const ConceptCard = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {firstImage ? (
+          {displayImage ? (
             <div className="aspect-square relative mb-4 rounded-lg overflow-hidden bg-muted">
               <Image
-                src={firstImage.image}
+                src={displayImage}
                 alt={concept.name}
                 fill
                 className="object-cover"
