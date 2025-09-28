@@ -10,10 +10,11 @@ import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent } from '@edenlabs/eden-sdk'
 import { useParams, useRouter } from 'next/navigation'
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 
 const SessionChat: FC = () => {
-  const agentId = useParams()?.agentId as string | undefined
+  const params = useParams()
+  const agentId = params?.agentId as string | undefined
   const router = useRouter()
   const { user } = useAuthState()
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
@@ -23,6 +24,44 @@ const SessionChat: FC = () => {
     thinking?: boolean
     sessionId?: string
   } | null>(null)
+
+  // Track the current path to detect actual navigation
+  const currentPathRef = useRef<string>('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentPath = window.location.pathname
+      const previousPath = currentPathRef.current
+
+      console.log('[SessionChat Effect] Path check:', {
+        currentPath,
+        previousPath,
+        hasCreatingSession: !!creatingSession,
+        isOnWelcome: currentPath === `/chat/${agentId}`,
+      })
+
+      // If we navigate to the welcome path, clear creating session
+      if (
+        currentPath === `/chat/${agentId}` &&
+        previousPath !== currentPath &&
+        creatingSession
+      ) {
+        console.log(
+          '[SessionChat Effect] Navigated to welcome, clearing session',
+        )
+        setCreatingSession(null)
+      }
+
+      currentPathRef.current = currentPath
+    }
+  })
+
+  console.log('[SessionChat] Render:', {
+    agentId,
+    hasCreatingSession: !!creatingSession,
+    creatingSessionId: creatingSession?.sessionId,
+    pathname: typeof window !== 'undefined' ? window.location.pathname : 'SSR',
+  })
 
   const {
     agent,
@@ -78,10 +117,16 @@ const SessionChat: FC = () => {
               try {
                 const data = JSON.parse(line.slice(6))
                 if (data.event === 'session_created' && data.data?.session_id) {
-                  // Got session_id! Just store it in state, don't navigate
+                  // Got session_id! Store it in state and update URL without navigation
                   const sessionId = data.data.session_id
                   setCreatingSession(prev =>
                     prev ? { ...prev, sessionId } : null,
+                  )
+                  // Update URL bar silently without triggering Next.js navigation
+                  window.history.replaceState(
+                    null,
+                    '',
+                    `/chat/${agentId}/${sessionId}`,
                   )
                   reader.cancel()
                   foundSession = true
@@ -137,6 +182,7 @@ const SessionChat: FC = () => {
   // If we're creating a session, show Session component with pending state
   // Once we get the session_id, we'll update the URL but keep rendering Session
   if (creatingSession && agent) {
+    console.log('[SessionChat] Rendering Session component with pendingMessage')
     return (
       <Session
         optimisticSessionId={creatingSession.sessionId}
@@ -148,6 +194,8 @@ const SessionChat: FC = () => {
       />
     )
   }
+
+  console.log('[SessionChat] Rendering welcome screen')
 
   // Otherwise show the welcome screen
   return (
