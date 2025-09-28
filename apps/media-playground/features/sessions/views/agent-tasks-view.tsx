@@ -181,7 +181,7 @@ const AgentTasksView: FC<{
 
   const triggersQuery = useAgentTriggersQuery({
     key: agent._id,
-    enabled: true,
+    enabled: !isModalOpen, // Disable refetching while modal is open
   })
 
   const { activeTriggers, finishedTriggers } = useMemo(() => {

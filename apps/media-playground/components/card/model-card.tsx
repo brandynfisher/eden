@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Creator, ModelV2 } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
-import { PlayIcon, SquareMousePointerIcon } from 'lucide-react'
+import { PlayIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { CSSProperties } from 'react'
 
@@ -45,7 +45,12 @@ const ModelCard = ({
   if (isCreationPageVariant) {
     return (
       <Card
-        className="relative overflow-hidden border-0 z-10 group"
+        className={cn([
+          'relative overflow-hidden border-0 z-10 group',
+          isSelectable &&
+            !isSelected &&
+            'hover:border-2 hover:border-primary transition-all',
+        ])}
         style={style}
       >
         {!model.public ? (
@@ -53,16 +58,9 @@ const ModelCard = ({
         ) : null}
         {isSelectable && !isSelected ? (
           <div
-            className={cn([
-              'absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all',
-            ])}
+            className="absolute inset-0 cursor-pointer z-50"
             onClick={() => onClick?.(model)}
-          >
-            <>
-              <SquareMousePointerIcon className="mr-2 h-4 w-4" />
-              Select
-            </>
-          </div>
+          />
         ) : null}
         {isSelected ? (
           <div className="absolute z-50 inset-0 flex items-center justify-center w-full h-full">
@@ -139,8 +137,11 @@ const ModelCard = ({
   return (
     <Card
       className={cn([
-        'group relative overflow-hidden transition-all duration-300 hover:border-primary/50',
-        isSelectable && 'cursor-pointer',
+        'group relative overflow-hidden transition-all duration-300',
+        isSelectable &&
+          !isSelected &&
+          'cursor-pointer hover:border-2 hover:border-primary',
+        !isSelectable && 'hover:border-primary/50',
         isSelected &&
           'border-primary/50 opacity-50 cursor-not-allowed pointer-events-none',
       ])}
@@ -149,16 +150,9 @@ const ModelCard = ({
       {!model.public ? <PrivateIcon /> : null}
       {isSelectable && !isSelected ? (
         <div
-          className={cn([
-            'absolute inset-0 flex items-center justify-center w-full h-full cursor-pointer hover:ring-2 ring-offset-1 ring-primary-foreground z-50 opacity-0 bg-popover hover:opacity-50 [@media(pointer:coarse)]:opacity-50 transition-all',
-          ])}
+          className="absolute inset-0 cursor-pointer z-50"
           onClick={() => onClick?.(model)}
-        >
-          <>
-            <SquareMousePointerIcon className="mr-2 h-4 w-4" />
-            Select
-          </>
-        </div>
+        />
       ) : null}
       {isSelected ? (
         <div className="absolute z-50 inset-0 flex items-center justify-center w-full h-full">
