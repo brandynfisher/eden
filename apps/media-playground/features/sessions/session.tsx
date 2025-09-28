@@ -259,6 +259,16 @@ const Session = ({
                 message.tool_calls &&
                 message.tool_calls.length > 0
               ) {
+                // Remove loader for this agent since we got a tool call message
+                const agentId = streamState.agent._id
+                if (agentId) {
+                  setAgentsWaitingToRespond(prev => {
+                    const next = new Set(prev)
+                    next.delete(agentId)
+                    return next
+                  })
+                }
+
                 const mergedMessage: Message = {
                   ...message,
                   _id: streamState.messageId,
