@@ -21,6 +21,7 @@ const SessionChat: FC = () => {
     content: string
     attachments?: string[]
     thinking?: boolean
+    sessionId?: string
   } | null>(null)
 
   const {
@@ -56,15 +57,41 @@ const SessionChat: FC = () => {
           throw new Error('Failed to send message')
         }
 
-        const result = await response.json()
-        if (result.session_id) {
-          // Wait a bit for the SSE stream to be ready and user message to arrive
-          // This prevents showing empty session before messages appear
-          await new Promise(resolve => setTimeout(resolve, 500))
+        // Parse SSE stream to get session_id from first event
+        const reader = response.body?.getReader()
+        const decoder = new TextDecoder()
 
-          // Update URL to real session ID and clear creating state
-          router.replace(`/chat/${agentId}/${result.session_id}`)
-          setCreatingSession(null)
+        if (!reader) {
+          throw new Error('No response body')
+        }
+
+        let foundSession = false
+        while (!foundSession) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          const lines = chunk.split('\n')
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6))
+                if (data.event === 'session_created' && data.data?.session_id) {
+                  // Got session_id! Just store it in state, don't navigate
+                  const sessionId = data.data.session_id
+                  setCreatingSession(prev =>
+                    prev ? { ...prev, sessionId } : null,
+                  )
+                  reader.cancel()
+                  foundSession = true
+                  break
+                }
+              } catch (e) {
+                // Ignore parse errors
+              }
+            }
+          }
         }
       } catch (error) {
         console.error('Error creating session:', error)
@@ -108,9 +135,11 @@ const SessionChat: FC = () => {
   }
 
   // If we're creating a session, show Session component with pending state
+  // Once we get the session_id, we'll update the URL but keep rendering Session
   if (creatingSession && agent) {
     return (
       <Session
+        optimisticSessionId={creatingSession.sessionId}
         pendingMessage={{
           content: creatingSession.content,
           attachments: creatingSession.attachments,

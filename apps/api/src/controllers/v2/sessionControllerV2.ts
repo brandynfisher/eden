@@ -436,6 +436,14 @@ export const createSessionMessage = async (
         'Access-Control-Allow-Headers': 'Cache-Control',
       })
 
+      // Immediately send session_id as first SSE message
+      reply.raw.write(
+        `data: ${JSON.stringify({
+          event: 'session_created',
+          data: { session_id: sessionId },
+        })}\n\n`,
+      )
+
       const response = await axios.post(
         modalRequest.endpoint,
         modalRequest.data,

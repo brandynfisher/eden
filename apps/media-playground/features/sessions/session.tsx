@@ -23,7 +23,12 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent, Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { useParams, usePathname, useRouter } from 'next/navigation'
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const Session = ({
@@ -40,11 +45,13 @@ const Session = ({
   const params = useParams()
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const sessionId = optimisticSessionId || (params?.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
   const ischatRoute = pathname?.startsWith('/chat')
   const [cancelledNotice, setCancelledNotice] = useState(false)
+  const isPendingTransition = searchParams?.get('pending') === 'true'
 
   // Track the current session ID for live audio (handles session creation)
   const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId)
@@ -67,6 +74,9 @@ const Session = ({
     }
     return new Set()
   })
+
+  // Track streaming messages locally when using pendingMessage
+  const [streamingMessages, setStreamingMessages] = useState<Message[]>([])
 
   const {
     data: session,
@@ -111,8 +121,17 @@ const Session = ({
   const displaySession = pendingMessage ? pendingSession : session
 
   useEffect(() => {
-    // Don't connect to SSE if we have a pending message or invalid session
-    if (!sessionId || sessionId === 'new' || pendingMessage) return
+    // Don't connect to SSE if we don't have a real session ID yet
+    console.log(
+      '[SSE Effect] Running with sessionId:',
+      sessionId,
+      'pendingMessage:',
+      !!pendingMessage,
+    )
+    if (!sessionId || sessionId === 'new') {
+      console.log('[SSE Effect] Skipping - no valid sessionId')
+      return
+    }
 
     let eventSource: EventSource | null = null
     // Track multiple concurrent streams
@@ -168,10 +187,20 @@ const Session = ({
               const agentId = streamState.agent._id
 
               // First token received - remove loader for this agent
+              console.log('[First Token Check]', {
+                agentId,
+                accumulatedTokens: streamState.accumulatedTokens,
+                isFirstToken: streamState.accumulatedTokens === '',
+              })
               if (agentId && streamState.accumulatedTokens === '') {
+                console.log('[Removing loader for agent]', agentId)
                 setAgentsWaitingToRespond(prev => {
                   const next = new Set(prev)
                   next.delete(agentId)
+                  console.log(
+                    '[AgentsWaitingToRespond after delete]',
+                    Array.from(next),
+                  )
                   return next
                 })
               }
@@ -191,7 +220,23 @@ const Session = ({
                 attachments: [],
                 reactions: {},
               }
-              addOrUpdateMessage(streamingMessage)
+
+              // Use local state if query is disabled (pendingMessage mode)
+              if (pendingMessage) {
+                setStreamingMessages(prev => {
+                  const existing = prev.findIndex(
+                    m => m._id === streamingMessage._id,
+                  )
+                  if (existing >= 0) {
+                    const updated = [...prev]
+                    updated[existing] = streamingMessage
+                    return updated
+                  }
+                  return [...prev, streamingMessage]
+                })
+              } else {
+                addOrUpdateMessage(streamingMessage)
+              }
             } else if (data.type === 'assistant_message' && data.message) {
               const message = data.message as Message
               const runId = data.session_run_id
@@ -219,18 +264,40 @@ const Session = ({
                   _id: streamState.messageId,
                   content: streamState.accumulatedTokens, // Keep the streamed content
                 }
-                addOrUpdateMessage(mergedMessage)
+                if (pendingMessage) {
+                  setStreamingMessages(prev => {
+                    const existing = prev.findIndex(
+                      m => m._id === mergedMessage._id,
+                    )
+                    if (existing >= 0) {
+                      const updated = [...prev]
+                      updated[existing] = mergedMessage
+                      return updated
+                    }
+                    return [...prev, mergedMessage]
+                  })
+                } else {
+                  addOrUpdateMessage(mergedMessage)
+                }
                 // Reset accumulated tokens for potential post-tool streaming
                 streamState.accumulatedTokens = ''
               } else if (message.tool_calls && message.tool_calls.length > 0) {
                 // Add tool call messages immediately
-                addOrUpdateMessage(message)
+                if (pendingMessage) {
+                  setStreamingMessages(prev => [...prev, message])
+                } else {
+                  addOrUpdateMessage(message)
+                }
               } else if (!streamState) {
                 // If we didn't create a streaming message (shouldn't happen in streaming mode)
                 console.log(
                   '[Session Stream] Adding assistant message without streaming state',
                 )
-                addOrUpdateMessage(message)
+                if (pendingMessage) {
+                  setStreamingMessages(prev => [...prev, message])
+                } else {
+                  addOrUpdateMessage(message)
+                }
               }
               // If we have streamState but no tool calls, ignore this message
               // because it should have been streamed already
@@ -638,13 +705,20 @@ const Session = ({
             ) < 10000,
         ),
     )
-    return [...existingMessages, ...uniqueOptimisticMessages]
+
+    // Include local streaming messages when in pendingMessage mode
+    return [
+      ...existingMessages,
+      ...uniqueOptimisticMessages,
+      ...streamingMessages,
+    ]
   }, [
     displaySession?.messages,
     sessionId,
     isSessionLoading,
     optimisticMessages,
     ischatRoute,
+    streamingMessages,
   ])
 
   const messageGroups = useMemo(
@@ -731,8 +805,27 @@ const Session = ({
   // Show loading indicator if:
   // 1. We're loading and don't have session data yet
   // 2. We're on a 'new' session
-  // BUT don't show loading if there's an error or if we have session data with empty messages
-  if (!sessionError && isSessionLoading && !session && sessionId !== 'new') {
+  // BUT don't show loading if there's an error, if we have session data with empty messages,
+  // OR if we're in a pending transition from session creation OR if we have pendingMessage
+  const shouldShowLoadingSpinner =
+    !sessionError &&
+    isSessionLoading &&
+    !session &&
+    sessionId !== 'new' &&
+    !isPendingTransition &&
+    !pendingMessage
+
+  console.log('[Loading Spinner Check]', {
+    sessionError,
+    isSessionLoading,
+    hasSession: !!session,
+    sessionId,
+    isPendingTransition,
+    hasPendingMessage: !!pendingMessage,
+    shouldShowLoadingSpinner,
+  })
+
+  if (shouldShowLoadingSpinner) {
     return (
       <div className="flex-1 flex justify-center items-center">
         <LoadingIndicator className="w-10 h-10 text-purple-600" />
@@ -861,31 +954,34 @@ const Session = ({
                       )
                     })}
 
-                    {/* Show agent typing indicator only if appropriate */}
-                    {shouldShowLoader && (
-                      <div className="mb-4">
-                        <OtherMessage
-                          sessionId={sessionId as string}
-                          message={
-                            {
-                              _id: 'loading-first-response',
-                              content: '',
-                              sender:
-                                mentionedAgentIds.length > 0
-                                  ? getRespondingAgents(mentionedAgentIds)[0] ||
-                                    getRespondingAgent()
-                                  : getRespondingAgent(),
-                              createdAt: new Date(),
-                              updatedAt: new Date(),
-                              session: sessionId,
-                              role: 'assistant',
-                            } as Message
-                          }
-                          showAvatar={true}
-                          isStreamingTokens={true}
-                        />
-                      </div>
-                    )}
+                    {/* Show agent typing indicator only if SSE hasn't confirmed yet and no streaming messages */}
+                    {shouldShowLoader &&
+                      agentsWaitingToRespond.size === 0 &&
+                      streamingMessages.length === 0 && (
+                        <div className="mb-4">
+                          <OtherMessage
+                            sessionId={sessionId as string}
+                            message={
+                              {
+                                _id: 'loading-first-response',
+                                content: '',
+                                sender:
+                                  mentionedAgentIds.length > 0
+                                    ? getRespondingAgents(
+                                        mentionedAgentIds,
+                                      )[0] || getRespondingAgent()
+                                    : getRespondingAgent(),
+                                createdAt: new Date(),
+                                updatedAt: new Date(),
+                                session: sessionId,
+                                role: 'assistant',
+                              } as Message
+                            }
+                            showAvatar={true}
+                            isStreamingTokens={true}
+                          />
+                        </div>
+                      )}
                   </>
                 )
               }
