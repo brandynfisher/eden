@@ -15,6 +15,7 @@ import { FC, useCallback, useEffect, useRef, useState } from 'react'
 const SessionChat: FC = () => {
   const params = useParams()
   const agentId = params?.agentId as string | undefined
+  const sessionId = params?.id as string | undefined
   const router = useRouter()
   const { user } = useAuthState()
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
@@ -54,13 +55,6 @@ const SessionChat: FC = () => {
 
       currentPathRef.current = currentPath
     }
-  })
-
-  console.log('[SessionChat] Render:', {
-    agentId,
-    hasCreatingSession: !!creatingSession,
-    creatingSessionId: creatingSession?.sessionId,
-    pathname: typeof window !== 'undefined' ? window.location.pathname : 'SSR',
   })
 
   const {
@@ -117,17 +111,9 @@ const SessionChat: FC = () => {
               try {
                 const data = JSON.parse(line.slice(6))
                 if (data.event === 'session_created' && data.data?.session_id) {
-                  // Got session_id! Store it in state and update URL without navigation
+                  // Got session_id! Navigate properly to the session
                   const sessionId = data.data.session_id
-                  setCreatingSession(prev =>
-                    prev ? { ...prev, sessionId } : null,
-                  )
-                  // Update URL bar silently without triggering Next.js navigation
-                  window.history.replaceState(
-                    null,
-                    '',
-                    `/chat/${agentId}/${sessionId}`,
-                  )
+                  router.push(`/chat/${agentId}/${sessionId}`)
                   reader.cancel()
                   foundSession = true
                   break
@@ -145,15 +131,6 @@ const SessionChat: FC = () => {
     },
     [user, agent, agentId, router],
   )
-
-  const handleAgentSelect = (selectedAgent: {
-    _id: string
-    username: string
-    name: string
-    userImage?: string
-  }) => {
-    router.push(`/chat/${selectedAgent.username}`)
-  }
 
   // Show loading if we're waiting for agent data
   if (!agent && !agentError) {
@@ -179,10 +156,22 @@ const SessionChat: FC = () => {
     )
   }
 
+  // If we have a sessionId in the URL, render normal session
+  if (sessionId && agent) {
+    return <Session />
+  }
+
+  const handleAgentSelect = (selectedAgent: {
+    _id: string
+    username: string
+    name: string
+    userImage?: string
+  }) => {
+    router.push(`/chat/${selectedAgent.username}`)
+  }
+
   // If we're creating a session, show Session component with pending state
-  // Once we get the session_id, we'll update the URL but keep rendering Session
   if (creatingSession && agent) {
-    console.log('[SessionChat] Rendering Session component with pendingMessage')
     return (
       <Session
         optimisticSessionId={creatingSession.sessionId}

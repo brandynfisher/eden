@@ -34,6 +34,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 const Session = ({
   optimisticSessionId,
   pendingMessage,
+  onSessionLoaded,
 }: {
   optimisticSessionId?: string
   pendingMessage?: {
@@ -41,6 +42,7 @@ const Session = ({
     attachments?: string[]
     agent: Agent
   }
+  onSessionLoaded?: () => void
 } = {}) => {
   const params = useParams()
   const router = useRouter()
@@ -86,7 +88,7 @@ const Session = ({
     refetch: refetchSession,
   } = useSessionQuery({
     sessionId: sessionId as string,
-    enabled: !!sessionId && sessionId !== 'new' && !pendingMessage,
+    enabled: !!sessionId && sessionId !== 'new',
   })
 
   // Create pending session data when we have a pendingMessage
@@ -119,6 +121,20 @@ const Session = ({
 
   // Use pending session if we have one, otherwise use real session
   const displaySession = pendingMessage ? pendingSession : session
+
+  // Call onSessionLoaded when we have real session data and were previously in pending mode
+  useEffect(() => {
+    if (
+      pendingMessage &&
+      session &&
+      session.messages &&
+      session.messages.length > 0 &&
+      onSessionLoaded
+    ) {
+      console.log('[Session] Real session loaded, calling onSessionLoaded')
+      onSessionLoaded()
+    }
+  }, [pendingMessage, session, onSessionLoaded])
 
   useEffect(() => {
     // Don't connect to SSE if we don't have a real session ID yet
@@ -318,7 +334,12 @@ const Session = ({
                 '[Session Stream] User message received:',
                 userMessage,
               )
-              addOrUpdateMessage(userMessage)
+
+              if (pendingMessage) {
+                setStreamingMessages(prev => [...prev, userMessage])
+              } else {
+                addOrUpdateMessage(userMessage)
+              }
             } else if (data.type === 'end_prompt') {
               const runId = data.session_run_id
               const streamState = streamingMessages.get(runId)
@@ -825,16 +846,6 @@ const Session = ({
     !isPendingTransition &&
     !pendingMessage
 
-  console.log('[Loading Spinner Check]', {
-    sessionError,
-    isSessionLoading,
-    hasSession: !!session,
-    sessionId,
-    isPendingTransition,
-    hasPendingMessage: !!pendingMessage,
-    shouldShowLoadingSpinner,
-  })
-
   if (shouldShowLoadingSpinner) {
     return (
       <div className="flex-1 flex justify-center items-center">
@@ -1213,22 +1224,24 @@ const Session = ({
                 })
 
                 // Add optimistic user message only (agents show as loaders)
+                const optimisticUserMessage = {
+                  _id: `optimistic-user-${Date.now()}`,
+                  content: content,
+                  sender: {
+                    _id: user?._id || 'user',
+                    username: user?.username || 'User',
+                    name: user?.username || 'You',
+                    userImage: user?.userImage,
+                  },
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                  session: sessionId,
+                  role: 'user',
+                } as Message
+
                 streamingOptimisticMessages.current = [
                   ...streamingOptimisticMessages.current,
-                  {
-                    _id: `optimistic-user-${Date.now()}`,
-                    content: content,
-                    sender: {
-                      _id: user?._id || 'user',
-                      username: user?.username || 'User',
-                      name: user?.username || 'You',
-                      userImage: user?.userImage,
-                    },
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    session: sessionId,
-                    role: 'user',
-                  } as Message,
+                  optimisticUserMessage,
                 ]
 
                 setTimeout(scrollToBottom, 100)
