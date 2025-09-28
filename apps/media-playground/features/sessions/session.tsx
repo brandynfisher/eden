@@ -335,6 +335,16 @@ const Session = ({
                 userMessage,
               )
 
+              // Skip processing user messages that are from the current user
+              // to avoid duplicating optimistic messages
+              const isCurrentUser = user?._id === userMessage.sender?._id
+              if (isCurrentUser) {
+                console.log(
+                  '[Session Stream] Skipping user message from current user (already handled optimistically)',
+                )
+                return
+              }
+
               if (pendingMessage) {
                 setStreamingMessages(prev => [...prev, userMessage])
               } else {
