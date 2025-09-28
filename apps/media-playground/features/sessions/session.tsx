@@ -28,7 +28,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 const Session = ({
   optimisticSessionId,
-}: { optimisticSessionId?: string } = {}) => {
+  pendingMessage,
+}: {
+  optimisticSessionId?: string
+  pendingMessage?: {
+    content: string
+    attachments?: string[]
+    agent: Agent
+  }
+} = {}) => {
   const params = useParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -52,7 +60,13 @@ const Session = ({
   // Track which agents are currently waiting to respond (show loader)
   const [agentsWaitingToRespond, setAgentsWaitingToRespond] = useState<
     Set<string>
-  >(new Set())
+  >(() => {
+    // If we have a pending message, mark the agent as waiting
+    if (pendingMessage) {
+      return new Set([pendingMessage.agent._id])
+    }
+    return new Set()
+  })
 
   const {
     data: session,
@@ -62,11 +76,43 @@ const Session = ({
     refetch: refetchSession,
   } = useSessionQuery({
     sessionId: sessionId as string,
-    enabled: !!sessionId && sessionId !== 'new',
+    enabled: !!sessionId && sessionId !== 'new' && !pendingMessage,
   })
 
+  // Create pending session data when we have a pendingMessage
+  const pendingSession = useMemo(() => {
+    if (!pendingMessage || !user) return null
+
+    return {
+      _id: 'pending',
+      agents: [pendingMessage.agent],
+      messages: [
+        {
+          _id: `pending-user-${Date.now()}`,
+          content: pendingMessage.content,
+          attachments: pendingMessage.attachments || [],
+          sender: {
+            _id: user._id,
+            username: user.username,
+            name: user.username,
+            userImage: user.userImage,
+          },
+          role: 'user' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          session: 'pending',
+          reactions: {},
+        },
+      ],
+    }
+  }, [pendingMessage, user])
+
+  // Use pending session if we have one, otherwise use real session
+  const displaySession = pendingMessage ? pendingSession : session
+
   useEffect(() => {
-    if (!sessionId || sessionId === 'new') return
+    // Don't connect to SSE if we have a pending message or invalid session
+    if (!sessionId || sessionId === 'new' || pendingMessage) return
 
     let eventSource: EventSource | null = null
     // Track multiple concurrent streams
@@ -188,6 +234,14 @@ const Session = ({
               }
               // If we have streamState but no tool calls, ignore this message
               // because it should have been streamed already
+            } else if (data.type === 'user_message' && data.message) {
+              // Handle user messages from other users in multi-user sessions
+              const userMessage = data.message as Message
+              console.log(
+                '[Session Stream] User message received:',
+                userMessage,
+              )
+              addOrUpdateMessage(userMessage)
             } else if (data.type === 'end_prompt') {
               const runId = data.session_run_id
               const streamState = streamingMessages.get(runId)
@@ -371,8 +425,8 @@ const Session = ({
       // If streaming agent is missing userImage, try to enrich from session data
       if (!currentStreamingAgent.userImage) {
         const enrichedAgent =
-          session?.agents && session.agents.length > 0
-            ? session.agents[0]
+          displaySession?.agents && displaySession.agents.length > 0
+            ? displaySession.agents[0]
             : null
         if (enrichedAgent && enrichedAgent.userImage) {
           return {
@@ -388,8 +442,8 @@ const Session = ({
     }
 
     // Otherwise use the first agent from the session (which has complete data)
-    if (session?.agents && session.agents.length > 0) {
-      const sessionAgent = session.agents[0]
+    if (displaySession?.agents && displaySession.agents.length > 0) {
+      const sessionAgent = displaySession.agents[0]
       return {
         _id: sessionAgent._id,
         username: sessionAgent.username,
@@ -406,7 +460,7 @@ const Session = ({
       username: 'Assistant',
       name: 'Assistant',
     }
-  }, [streamingState.streamingAgent, session?.agents])
+  }, [streamingState.streamingAgent, displaySession?.agents])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -414,7 +468,7 @@ const Session = ({
 
   useEffect(() => {
     scrollToBottom()
-  }, [session?.messages, scrollToBottom])
+  }, [displaySession?.messages, scrollToBottom])
 
   // Separate effect for streaming text to avoid double scroll
   useEffect(() => {
@@ -452,17 +506,17 @@ const Session = ({
   // Get agent IDs from mentions
   const getAgentIdsFromMentions = useCallback(
     (mentions: string[]): string[] => {
-      if (!session?.agents) return []
+      if (!displaySession?.agents) return []
 
       const agentIds: string[] = []
 
       for (const mention of mentions) {
         if (mention === 'agent') {
           // @agent means all agents
-          return session.agents.map(agent => agent._id)
+          return displaySession.agents.map(agent => agent._id)
         } else {
           // Find specific agent by username
-          const agent = session.agents.find(a => a.username === mention)
+          const agent = displaySession.agents.find(a => a.username === mention)
           if (agent) {
             agentIds.push(agent._id)
           }
@@ -471,7 +525,7 @@ const Session = ({
 
       return agentIds
     },
-    [session?.agents],
+    [displaySession?.agents],
   )
 
   // Get responding agents based on mentions
@@ -484,11 +538,11 @@ const Session = ({
       name: string
       userImage?: string
     }> => {
-      if (!session?.agents || agentIds.length === 0) {
+      if (!displaySession?.agents || agentIds.length === 0) {
         // Only fallback to first agent in single-agent sessions
         // In multi-agent sessions, no mentions = no loaders
-        if (session?.agents && session.agents.length === 1) {
-          const agent = session.agents[0]
+        if (displaySession?.agents && displaySession.agents.length === 1) {
+          const agent = displaySession.agents[0]
           return [
             {
               _id: agent._id,
@@ -527,7 +581,7 @@ const Session = ({
 
   const filteredMessages = useMemo(() => {
     const existingMessages =
-      session?.messages?.filter(m => {
+      displaySession?.messages?.filter(m => {
         const hasRole =
           m.role === 'user' || m.role === 'assistant' || m.role === 'eden'
         const hasContent = m.content && m.content.trim() !== ''
@@ -571,9 +625,22 @@ const Session = ({
       return [...existingMessages, ...uniqueOptimisticMessages]
     }
 
-    return existingMessages
+    // In streaming mode, include optimistic messages but avoid duplicates
+    const uniqueOptimisticMessages = optimisticMessages.filter(
+      opt =>
+        !existingMessages.some(
+          real =>
+            real.role === opt.role &&
+            real.content === opt.content &&
+            Math.abs(
+              new Date(real.createdAt).getTime() -
+                new Date(opt.createdAt).getTime(),
+            ) < 10000,
+        ),
+    )
+    return [...existingMessages, ...uniqueOptimisticMessages]
   }, [
-    session?.messages,
+    displaySession?.messages,
     sessionId,
     isSessionLoading,
     optimisticMessages,
@@ -718,7 +785,8 @@ const Session = ({
                   : []
                 const mentionedAgentIds = getAgentIdsFromMentions(mentions)
                 const shouldShowLoader =
-                  (session?.agents && session.agents.length === 1) ||
+                  (displaySession?.agents &&
+                    displaySession.agents.length === 1) ||
                   mentionedAgentIds.length > 0
 
                 return (
@@ -757,7 +825,7 @@ const Session = ({
 
                     {/* Render standalone loaders for agents waiting to respond */}
                     {Array.from(agentsWaitingToRespond).map(agentId => {
-                      const agent = session?.agents?.find(
+                      const agent = displaySession?.agents?.find(
                         a => a._id === agentId,
                       )
                       if (!agent) return null
@@ -886,12 +954,13 @@ const Session = ({
                 }
 
                 // Otherwise show welcome screen
-                return session?.agents && session.agents.length > 0 ? (
+                return displaySession?.agents &&
+                  displaySession.agents.length > 0 ? (
                   <>
                     <SessionWelcome
                       variant="session"
-                      agents={session.agents}
-                      sessionTitle={session.title}
+                      agents={displaySession.agents}
+                      sessionTitle={''}
                     />
                   </>
                 ) : null
@@ -930,7 +999,9 @@ const Session = ({
 
                   {/* Render standalone loaders for agents waiting to respond */}
                   {Array.from(agentsWaitingToRespond).map(agentId => {
-                    const agent = session?.agents?.find(a => a._id === agentId)
+                    const agent = displaySession?.agents?.find(
+                      a => a._id === agentId,
+                    )
                     if (!agent) return null
 
                     return (
@@ -1014,10 +1085,10 @@ const Session = ({
               // If no agent IDs and it's a single agent session, use the single agent
               if (
                 agentIds.length === 0 &&
-                session?.agents &&
-                session.agents.length === 1
+                displaySession?.agents &&
+                displaySession.agents.length === 1
               ) {
-                agentIds = [session.agents[0]._id]
+                agentIds = [displaySession.agents[0]._id]
               }
 
               // For multi-agent sessions with no mentions, agentIds will remain empty array
