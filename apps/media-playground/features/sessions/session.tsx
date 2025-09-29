@@ -55,6 +55,11 @@ const Session = ({
   const [cancelledNotice, setCancelledNotice] = useState(false)
   const isPendingTransition = searchParams?.get('pending') === 'true'
 
+  // Connection state tracking
+  const [connectionState, setConnectionState] = useState<
+    'connecting' | 'connected' | 'disconnected' | 'reconnecting'
+  >('connecting')
+
   // Track the current session ID for live audio (handles session creation)
   const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId)
 
@@ -150,6 +155,18 @@ const Session = ({
     }
 
     let eventSource: EventSource | null = null
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
+    let heartbeatInterval: ReturnType<typeof setInterval> | null = null
+    let isCleaningUp = false
+    let lastMessageTime = Date.now()
+    let reconnectAttempts = 0
+    let isReconnection = false
+    const MAX_RECONNECT_ATTEMPTS = 5
+    const INITIAL_RECONNECT_DELAY = 1000
+    const MAX_RECONNECT_DELAY = 30000
+    const HEARTBEAT_INTERVAL = 30000 // Check connection every 30 seconds
+    const STALE_CONNECTION_THRESHOLD = 60000 // Consider connection stale after 60 seconds
+
     // Track multiple concurrent streams
     const streamingMessages = new Map<
       string,
@@ -161,18 +178,76 @@ const Session = ({
     >()
 
     const connectToStream = () => {
+      if (isCleaningUp) return
+
       try {
         const streamUrl = `/api/sessions/${sessionId}/stream`
+        console.log(
+          '[Session Stream] Attempting to connect to:',
+          streamUrl,
+          `(attempt ${reconnectAttempts + 1})`,
+        )
+
+        setConnectionState(
+          reconnectAttempts > 0 ? 'reconnecting' : 'connecting',
+        )
+
+        if (eventSource) {
+          eventSource.close()
+          eventSource = null
+        }
+
         eventSource = new EventSource(streamUrl)
 
         eventSource.onopen = () => {
-          console.log('[Session Stream] Connected to session:', sessionId)
+          console.log(
+            '[Session Stream] Connected to session:',
+            sessionId,
+            isReconnection ? '(reconnected)' : '(initial connection)',
+          )
+          lastMessageTime = Date.now()
+          setConnectionState('connected')
+
+          // Refetch session data to catch up on any missed messages
+          // This is especially important after reconnecting from tab switch
+          if (isReconnection) {
+            console.log(
+              '[Session Stream] Refetching session data to catch up on missed messages...',
+            )
+            refetchSession()
+          }
+
+          reconnectAttempts = 0 // Reset attempts on successful connection
+          isReconnection = true // Mark future connections as reconnections
+
+          // Start heartbeat to monitor connection health
+          if (heartbeatInterval) {
+            clearInterval(heartbeatInterval)
+          }
+
+          heartbeatInterval = setInterval(() => {
+            if (!isCleaningUp) {
+              const timeSinceLastMessage = Date.now() - lastMessageTime
+              if (timeSinceLastMessage > STALE_CONNECTION_THRESHOLD) {
+                console.log(
+                  `[Session Stream] Connection appears stale (no activity for ${timeSinceLastMessage}ms), reconnecting...`,
+                )
+                if (eventSource) {
+                  eventSource.close()
+                  eventSource = null
+                }
+                reconnectAttempts = 0
+                connectToStream()
+              }
+            }
+          }, HEARTBEAT_INTERVAL)
         }
 
         eventSource.onmessage = event => {
           try {
             const data = JSON.parse(event.data)
             console.log('[Session Stream] Update received:', data)
+            lastMessageTime = Date.now() // Update last message time
 
             // Handle session updates from SSE
             if (data.type === 'start_prompt') {
@@ -382,22 +457,123 @@ const Session = ({
 
         eventSource.onerror = error => {
           console.error('[Session Stream] Error:', error)
-          eventSource?.close()
+          setConnectionState('disconnected')
+
+          if (!isCleaningUp && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            eventSource?.close()
+            eventSource = null
+
+            // Calculate reconnect delay with exponential backoff
+            const delay = Math.min(
+              INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts),
+              MAX_RECONNECT_DELAY,
+            )
+
+            console.log(
+              `[Session Stream] Will reconnect in ${delay}ms (attempt ${
+                reconnectAttempts + 1
+              }/${MAX_RECONNECT_ATTEMPTS})`,
+            )
+            reconnectAttempts += 1
+
+            reconnectTimeout = setTimeout(() => {
+              if (!isCleaningUp) {
+                connectToStream()
+              }
+            }, delay)
+          } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+            console.error(
+              '[Session Stream] Max reconnection attempts reached. Giving up.',
+            )
+            eventSource?.close()
+            eventSource = null
+          }
         }
       } catch (error) {
         console.error('[Session Stream] Failed to connect:', error)
+
+        // Attempt reconnection on initial connection failure
+        if (!isCleaningUp && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          const delay = Math.min(
+            INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts),
+            MAX_RECONNECT_DELAY,
+          )
+          reconnectAttempts += 1
+
+          reconnectTimeout = setTimeout(() => {
+            if (!isCleaningUp) {
+              connectToStream()
+            }
+          }, delay)
+        }
+      }
+    }
+
+    // Handle visibility changes - reconnect when tab becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log(
+          '[Session Stream] Tab became visible, checking connection...',
+        )
+
+        // If we don't have an active EventSource or it's closed, reconnect
+        if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
+          console.log('[Session Stream] Connection was closed, reconnecting...')
+          reconnectAttempts = 0 // Reset attempts for visibility-based reconnection
+          connectToStream()
+        } else if (eventSource.readyState === EventSource.OPEN) {
+          // Check if we've received messages recently (within last 60 seconds)
+          const timeSinceLastMessage = Date.now() - lastMessageTime
+          if (timeSinceLastMessage > 60000) {
+            console.log(
+              '[Session Stream] Connection appears stale (no messages for 60s), reconnecting...',
+            )
+            eventSource.close()
+            eventSource = null
+            reconnectAttempts = 0
+            connectToStream()
+          }
+        }
+      }
+    }
+
+    // Handle page focus - similar to visibility but more aggressive
+    const handleFocus = () => {
+      console.log('[Session Stream] Window gained focus')
+      // Force reconnect if connection is not open
+      if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
+        console.log('[Session Stream] Reconnecting on focus...')
+        reconnectAttempts = 0
+        connectToStream()
       }
     }
 
     connectToStream()
 
+    // Add event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
+
     return () => {
+      isCleaningUp = true
+
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout)
+      }
+
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval)
+      }
+
       if (eventSource) {
         console.log('[Session Stream] Disconnecting from session:', sessionId)
         eventSource.close()
       }
+
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
     }
-  }, [sessionId, addOrUpdateMessage, refetchSession])
+  }, [sessionId, addOrUpdateMessage, refetchSession, pendingMessage, user])
 
   // State management for streaming and non-streaming modes
   const streamingState = useStreamingState({
@@ -866,6 +1042,30 @@ const Session = ({
 
   return (
     <>
+      {/* Connection status indicator - only show when not connected */}
+      {connectionState !== 'connected' && sessionId && sessionId !== 'new' && (
+        <div className="fixed top-4 right-4 z-50 bg-background/90 backdrop-blur-sm border rounded-lg px-3 py-2 flex items-center gap-2 text-sm">
+          {connectionState === 'connecting' && (
+            <>
+              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+              <span className="text-muted-foreground">Connecting...</span>
+            </>
+          )}
+          {connectionState === 'reconnecting' && (
+            <>
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+              <span className="text-muted-foreground">Reconnecting...</span>
+            </>
+          )}
+          {connectionState === 'disconnected' && (
+            <>
+              <div className="w-2 h-2 bg-red-500 rounded-full" />
+              <span className="text-muted-foreground">Disconnected</span>
+            </>
+          )}
+        </div>
+      )}
+
       <div
         className={cn(
           'flex-1 min-h-0 overflow-y-auto pb-4',
