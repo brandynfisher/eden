@@ -1,11 +1,19 @@
 import { Agent } from '../../models/Agent'
+import { Notification } from '../../models/Notification'
+import {
+  SessionPermission,
+  SessionPermissionLevel,
+} from '../../models/SessionPermission'
 import { User } from '../../models/User'
 import { Message } from '../../models/v2/Message'
 import { SessionShare } from '../../models/v2/SessionShareV2'
 import { Session } from '../../models/v2/SessionV2'
 import { QueryOptions } from '../../repositories/RestfulRepository'
 import SessionRepository from '../../repositories/SessionRepository'
-import { createIdOrSlugQuery } from '../../utils/mongoUtils'
+import {
+  createIdOrSlugQuery,
+  createMultiFieldQuery,
+} from '../../utils/mongoUtils'
 import {
   FeatureFlag,
   SessionsV2CreateArguments,
@@ -383,14 +391,18 @@ export const createSessionMessage = async (
       })
     }
 
-    // Check if user has access to the session (owner or in users list)
+    // Check if user has access to the session (owner, in users list, or has permission)
     const currentUserIdStr = userId.toString()
     const isOwner = session.owner.toString() === currentUserIdStr
     const isAllowedUser = session.users?.some(
       (user: any) => user.toString() === currentUserIdStr,
     )
+    const hasPermission = await SessionPermission.exists({
+      session: session._id,
+      user: userId,
+    })
 
-    if (!isOwner && !isAllowedUser) {
+    if (!isOwner && !isAllowedUser && !hasPermission) {
       return reply.status(403).send({
         message: 'You do not have access to this session',
       })
@@ -626,7 +638,11 @@ export const getSession = async (
       })
       .populate({
         path: 'agents',
-        select: '_id username userImage',
+        select: '_id name username userImage owner',
+        populate: {
+          path: 'owner',
+          select: '_id username userImage',
+        },
       })
 
     if (!session) {
@@ -635,15 +651,24 @@ export const getSession = async (
       })
     }
 
-    // Check if user has access to the session (owner or in users list)
+    // Check if user has access to the session (owner, in users list, or has permission)
     const getSessionUserIdStr = userId.toString()
     const isSessionOwner = session.owner._id.toString() === getSessionUserIdStr
     const isSessionUser = session.users?.some(
       (user: any) => user.toString() === getSessionUserIdStr,
     )
+    const hasPermission = await SessionPermission.exists({
+      session: session._id,
+      user: userId,
+    })
     const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
 
-    if (!isSessionOwner && !isSessionUser && !isEdenTeamMember) {
+    if (
+      !isSessionOwner &&
+      !isSessionUser &&
+      !hasPermission &&
+      !isEdenTeamMember
+    ) {
       return reply.status(403).send({
         message:
           'You do not have access to this session. If you believe this is an error, ask the session owner to create a share link.',
@@ -663,10 +688,22 @@ export const getSession = async (
         '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
       )
 
-    // Add messages to the session object for backward compatibility
-    session.messages = messages
+    // Fetch permissions for the session
+    const permissions = await SessionPermission.find({
+      session: session._id,
+    }).populate({
+      path: 'user',
+      select: '_id username userImage',
+    })
 
-    return reply.status(200).send({ session })
+    // Add messages and permissions to the session object
+    const sessionWithPermissions = {
+      ...session.toObject(),
+      messages,
+      permissions,
+    }
+
+    return reply.status(200).send({ session: sessionWithPermissions })
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Unknown Error'
@@ -732,14 +769,18 @@ export const addSessionMessageReaction = async (
     })
   }
 
-  // Check if user has access to the session (owner or in users list)
+  // Check if user has access to the session (owner, in users list, or has permission)
   const reactionUserIdStr = userId.toString()
   const isSessionOwner = session.owner.toString() === reactionUserIdStr
   const isSessionUser = session.users?.some(
     (user: any) => user.toString() === reactionUserIdStr,
   )
+  const hasPermission = await SessionPermission.exists({
+    session: session._id,
+    user: userId,
+  })
 
-  if (!isSessionOwner && !isSessionUser) {
+  if (!isSessionOwner && !isSessionUser && !hasPermission) {
     return reply.status(403).send({
       message: 'You do not have access to this session',
     })
@@ -1177,8 +1218,12 @@ export const streamSession = async (
     const isAllowedUser = session.users?.some(
       (user: any) => user.toString() === currentUserIdStr,
     )
+    const hasPermission = await SessionPermission.exists({
+      session: session._id,
+      user: userId,
+    })
 
-    if (!isOwner && !isAllowedUser) {
+    if (!isOwner && !isAllowedUser && !hasPermission) {
       return reply.status(403).send({
         message: 'You do not have access to this session',
       })
@@ -1256,5 +1301,225 @@ export const streamSession = async (
       )
       reply.raw.end()
     }
+  }
+}
+
+const hasOwnerPermissions = async (
+  sessionId: string,
+  userId: string,
+): Promise<boolean> => {
+  const session = await Session.findById(sessionId)
+  if (!session) return false
+
+  if (session.owner.toString() === userId) {
+    return true
+  }
+
+  const permission = await SessionPermission.findOne({
+    session: sessionId,
+    user: userId,
+    level: SessionPermissionLevel.Owner,
+  })
+
+  return !!permission
+}
+
+export const getSessionPermissions = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { session_id } = request.params as { session_id: string }
+  const currentUserId = request.user.userId
+
+  const session = await Session.findById(session_id)
+  if (!session) {
+    return reply.status(404).send({ error: 'Session not found' })
+  }
+
+  if (!(await hasOwnerPermissions(session_id, currentUserId.toString()))) {
+    return reply.status(401).send({
+      error: 'Only session owners can view permissions',
+    })
+  }
+
+  try {
+    const permissions = await SessionPermission.find({
+      session: session_id,
+    }).populate('user', '_id userId username userImage')
+
+    return reply.status(200).send({ permissions })
+  } catch (error) {
+    console.error('Error fetching session permissions:', error)
+    return reply.status(500).send({
+      error: 'Failed to fetch permissions',
+    })
+  }
+}
+
+export const updateSessionPermissions = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { session_id } = request.params as { session_id: string }
+  const { permissions } = request.body as {
+    permissions: Array<{ username: string; level: 'editor' | 'owner' }>
+  }
+  const currentUserId = request.user.userId
+
+  const session = await Session.findById(session_id)
+  if (!session) {
+    return reply.status(404).send({ error: 'Session not found' })
+  }
+
+  if (!(await hasOwnerPermissions(session_id, currentUserId.toString()))) {
+    return reply.status(401).send({
+      error: 'Only session owners can modify permissions',
+    })
+  }
+
+  try {
+    const existingPermissions = await SessionPermission.find({
+      session: session_id,
+    }).populate('user', 'username')
+
+    const existingUserMap = new Map(
+      existingPermissions.map(p => [(p.user as any).username, p.level]),
+    )
+
+    await SessionPermission.deleteMany({ session: session_id })
+
+    const newPermissions = []
+
+    for (const perm of permissions) {
+      const query = createMultiFieldQuery(perm.username, ['userId', 'username'])
+      const user = await User.findOne(query)
+
+      if (!user) {
+        return reply.status(404).send({
+          error: `User not found: ${perm.username}`,
+        })
+      }
+
+      const newPermission = await SessionPermission.create({
+        session: session_id,
+        user: user._id,
+        level:
+          perm.level === 'owner'
+            ? SessionPermissionLevel.Owner
+            : SessionPermissionLevel.Editor,
+        grantedBy: currentUserId,
+        grantedAt: new Date(),
+      })
+
+      newPermissions.push({
+        permission: newPermission,
+        user,
+        username: perm.username,
+        level: perm.level,
+      })
+
+      const existingLevel = existingUserMap.get(perm.username)
+      if (!existingLevel) {
+        await Notification.create({
+          user: user._id,
+          type: 'session_permission_added',
+          title: 'Session Permission Added',
+          message: `You've been granted ${perm.level} access to the session "${
+            session.title || 'Untitled Session'
+          }".`,
+          priority: 'normal',
+          action_url: `/sessions/${session_id}`,
+          channels: ['in_app'],
+        })
+      } else if (
+        existingLevel !==
+        (perm.level === 'owner'
+          ? SessionPermissionLevel.Owner
+          : SessionPermissionLevel.Editor)
+      ) {
+        await Notification.create({
+          user: user._id,
+          type: 'session_permission_added',
+          title: 'Session Permission Updated',
+          message: `Your access to the session "${
+            session.title || 'Untitled Session'
+          }" has been changed to ${perm.level}.`,
+          priority: 'normal',
+          action_url: `/sessions/${session_id}`,
+          channels: ['in_app'],
+        })
+      }
+    }
+
+    const newUserMap = new Map(newPermissions.map(p => [p.username, p.level]))
+
+    for (const [username, _] of existingUserMap) {
+      if (!newUserMap.has(username)) {
+        const removedUser = await User.findOne(
+          createMultiFieldQuery(username, ['userId', 'username']),
+        )
+        if (removedUser) {
+          await Notification.create({
+            user: removedUser._id,
+            type: 'session_permission_removed',
+            title: 'Session Permission Removed',
+            message: `Your access to the session "${
+              session.title || 'Untitled Session'
+            }" has been removed.`,
+            priority: 'normal',
+            action_url: `/sessions`,
+            channels: ['in_app'],
+          })
+        }
+      }
+    }
+
+    return reply.status(200).send({ success: true })
+  } catch (error) {
+    console.error('Error updating session permissions:', error)
+    return reply.status(500).send({
+      error: 'Failed to update permissions',
+      details: error instanceof Error ? error.message : String(error),
+    })
+  }
+}
+
+export const getSharedSessions = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+
+  try {
+    const permissions = await SessionPermission.find({
+      user: currentUserId,
+    }).populate({
+      path: 'session',
+      populate: [
+        {
+          path: 'owner',
+          select: '_id userId username userImage type',
+        },
+        {
+          path: 'agents',
+          select: '_id username name userImage type',
+        },
+      ],
+    })
+
+    const sharedSessions = permissions
+      .filter(p => p.session)
+      .map(p => ({
+        session: p.session,
+        permissionLevel: p.level,
+        grantedAt: p.grantedAt,
+      }))
+
+    return reply.status(200).send({ sharedSessions })
+  } catch (error) {
+    console.error('Error fetching shared sessions:', error)
+    return reply.status(500).send({
+      error: 'Failed to fetch shared sessions',
+    })
   }
 }

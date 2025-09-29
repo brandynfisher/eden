@@ -1,5 +1,8 @@
 import { Agent } from '../models/Agent'
-import { AgentPermission, PermissionLevel } from '../models/AgentPermission'
+import {
+  AgentPermission,
+  AgentPermissionLevel,
+} from '../models/AgentPermission'
 import { Deployment } from '../models/Deployment'
 import { Trigger } from '../models/Trigger'
 import { Message } from '../models/v2/Message'
@@ -37,7 +40,7 @@ const hasOwnerPermissions = async (
   const permission = await AgentPermission.findOne({
     agent: agentId,
     user: userId,
-    level: PermissionLevel.Owner,
+    level: AgentPermissionLevel.Owner,
   })
 
   return !!permission
@@ -834,7 +837,7 @@ export const getDashboardData = async (
     const hasPermission = await AgentPermission.findOne({
       agent: agentId,
       user: userId,
-      level: { $in: [PermissionLevel.Owner, PermissionLevel.Editor] },
+      level: { $in: [AgentPermissionLevel.Owner, AgentPermissionLevel.Editor] },
     })
 
     const hasEditAccess = isOwner || !!hasPermission

@@ -1,5 +1,8 @@
 import { Agent, AgentDocument } from '../models/Agent'
-import { AgentPermission, PermissionLevel } from '../models/AgentPermission'
+import {
+  AgentPermission,
+  AgentPermissionLevel,
+} from '../models/AgentPermission'
 import { Deployment } from '../models/Deployment'
 import { Notification } from '../models/Notification'
 import { User } from '../models/User'
@@ -101,7 +104,7 @@ const hasOwnerPermissions = async (
   const permission = await AgentPermission.findOne({
     agent: agentId,
     user: userId,
-    level: PermissionLevel.Owner,
+    level: AgentPermissionLevel.Owner,
   })
 
   return !!permission
@@ -914,8 +917,8 @@ export const updateAgentPermissions = async (
         user: user._id,
         level:
           perm.level === 'owner'
-            ? PermissionLevel.Owner
-            : PermissionLevel.Editor,
+            ? AgentPermissionLevel.Owner
+            : AgentPermissionLevel.Editor,
         grantedBy: currentUserId,
         grantedAt: new Date(),
       })
@@ -944,8 +947,8 @@ export const updateAgentPermissions = async (
       } else if (
         existingLevel !==
         (perm.level === 'owner'
-          ? PermissionLevel.Owner
-          : PermissionLevel.Editor)
+          ? AgentPermissionLevel.Owner
+          : AgentPermissionLevel.Editor)
       ) {
         // Permission level changed - send notification
         await Notification.create({
