@@ -44,7 +44,7 @@ export const EditSessionModal = ({
           if (data.permissions) {
             setPermissions(
               data.permissions.map((p: SessionPermission) => ({
-                username: p.user.username,
+                username: p.user?.username,
                 level: p.level,
               })),
             )
@@ -173,7 +173,7 @@ export const EditSessionModal = ({
       session.autonomy_settings?.actor_selection_method ||
       'random_exclude_last',
     permissions: permissions.map(p => ({
-      username: p.user.username,
+      username: p.user?.username,
       level: p.level,
     })),
   }
