@@ -1,27 +1,16 @@
 'use client'
 
-import ModelMiniCard from '@/components/card/model-mini-card'
-import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import ConceptCard from '@/features/concepts/components/concept-card'
 import CreateConceptView from '@/features/concepts/create-concept-view'
 import EditConceptView from '@/features/concepts/edit-concept-view'
 import { Agent, Concept2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { Plus, XIcon } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
-import { UseFormReturn, useFieldArray } from 'react-hook-form'
+import { UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -32,16 +21,11 @@ interface ConceptsTabProps {
   agent: Agent
 }
 
-export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
+export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
   const [concepts, setConcepts] = useState<Concept2[]>([])
   const [loading, setLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [editingConceptId, setEditingConceptId] = useState<string | null>(null)
-
-  const models = useFieldArray({
-    control: form.control,
-    name: 'models',
-  })
 
   // Fetch concepts for this agent
   useEffect(() => {
@@ -122,104 +106,6 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ form, agent }) => {
 
   return (
     <div className="space-y-6">
-      {/* Models Field - moved from Tools */}
-      <FormField
-        control={form.control}
-        name="models"
-        render={() => (
-          <FormItem className="p-4 bg-secondary rounded-lg">
-            <FormLabel>Custom Models</FormLabel>
-            <FormDescription>
-              Give your agent a unique aesthetic using up to 10 custom models.
-            </FormDescription>
-            <div>
-              {models.fields.map((model, index) => (
-                <div
-                  key={model.lora}
-                  className="relative mb-4 p-4 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-stretch gap-2 min-h-[82px]">
-                      <div className="flex-grow">
-                        <ModelMiniCard
-                          className="w-full h-full"
-                          modelId={model.lora}
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        className="hover:bg-destructive hover:text-destructive-foreground h-auto"
-                        size="icon"
-                        onClick={() => models.remove(index)}
-                      >
-                        <XIcon className="size-4" />
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      <FormField
-                        control={form.control}
-                        name={`models.${index}.use_when`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel className="text-sm text-muted-foreground">
-                              When to use this model
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="text"
-                                placeholder="e.g., 'when user asks for realistic images' or 'for anime style'"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div className="mt-4">
-                <ModelSelectorModal
-                  className="p-4 md:p-8 w-full"
-                  title="Select LoRA Model"
-                  description="Pick a LoRA model to add to this agent"
-                  currentValue=""
-                  selectedIds={models.fields.map(m => m.lora)}
-                  onChange={id => {
-                    const modelId = typeof id === 'string' ? id : id[0]
-                    if (!modelId) return
-
-                    // Check if model already exists
-                    if (models.fields.some(m => m.lora === modelId)) {
-                      toast.error('This model is already added')
-                      return
-                    }
-
-                    // Add new model
-                    form.setValue('models', [
-                      ...models.fields,
-                      { lora: modelId, use_when: '' },
-                    ])
-                  }}
-                  trigger={
-                    <Button
-                      type="button"
-                      disabled={models.fields.length >= 10}
-                      className="w-full"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add LoRA Model
-                    </Button>
-                  }
-                />
-              </div>
-            </div>
-          </FormItem>
-        )}
-      />
-
       {/* Concepts Section */}
       <div className="p-4 bg-secondary rounded-lg">
         <div className="flex items-center justify-between mb-4">
