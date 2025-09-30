@@ -220,21 +220,22 @@ export const createAgentTrigger = async (
 
   const response = edenComputeResponse.data as AgentsCreateTriggerResponse
 
-  // Save the trigger locally with the name field
-  const localTriggerData = {
-    agent: agentId,
-    user: currentUserId,
-    name,
-    context,
-    trigger_prompt,
-    session_type,
-    session,
-    schedule,
-    posting_instructions,
-  }
+  // NOTE: Mongo save is handled downstream in the compute API, not here
+  // // Save the trigger locally with the name field
+  // const localTriggerData = {
+  //   agent: agentId,
+  //   user: currentUserId,
+  //   name,
+  //   context,
+  //   trigger_prompt,
+  //   session_type,
+  //   session,
+  //   schedule,
+  //   posting_instructions,
+  // }
 
-  const localTrigger = new Trigger(localTriggerData)
-  await localTrigger.save()
+  // const localTrigger = new Trigger(localTriggerData)
+  // await localTrigger.save()
 
   return reply.status(200).send({
     triggerId: response.trigger_id,
