@@ -7,7 +7,9 @@ const testRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/test/discord', {
     schema: {
       tags: ['test'],
-      description: 'Test discord notification',
+      summary: 'Test Discord Notification',
+      description:
+        'Send a test notification to Discord to verify integration functionality.',
       security: [
         {
           apiKey: [],

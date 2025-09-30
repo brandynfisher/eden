@@ -15,7 +15,9 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/auth/discord/callback', {
     schema: {
       tags: ['Auth'],
-      description: 'Discord OAuth callback for v2',
+      summary: 'Discord OAuth Callback',
+      description:
+        'Handle Discord OAuth authentication callback and process authorization code.',
       hide: true,
       querystring: Type.Object({
         code: Type.String(),
@@ -28,7 +30,9 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/auth/twitter/callback', {
     schema: {
       tags: ['Auth'],
-      description: 'Twitter OAuth callback for v2',
+      summary: 'Twitter OAuth Callback',
+      description:
+        'Handle Twitter OAuth authentication callback and process authorization code.',
       hide: true,
       querystring: Type.Object({
         code: Type.String(),
@@ -41,7 +45,10 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/auth/twitter/disconnect', {
     schema: {
       tags: ['Auth'],
-      description: 'Disconnect Twitter',
+      summary: 'Disconnect Twitter',
+      description:
+        'Remove Twitter authentication and disconnect the user account from Twitter integration.',
+      hide: true,
     },
     handler: (request, reply) => disconnectTwitter(request, reply),
     preHandler: [(request, reply) => isAuth(server, request, reply)],
@@ -50,7 +57,9 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/auth/tiktok/callback', {
     schema: {
       tags: ['Auth'],
-      description: 'TikTok OAuth callback for v2',
+      summary: 'TikTok OAuth Callback',
+      description:
+        'Handle TikTok OAuth authentication callback and process authorization code or errors.',
       hide: true,
       querystring: Type.Object({
         code: Type.Optional(Type.String()),
@@ -65,7 +74,10 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/auth/tiktok/disconnect', {
     schema: {
       tags: ['Auth'],
-      description: 'Disconnect TikTok',
+      summary: 'Disconnect TikTok',
+      description:
+        'Remove TikTok authentication and disconnect the agent from TikTok integration.',
+      hide: true,
       querystring: Type.Object({
         agentId: Type.String(),
       }),
@@ -77,7 +89,9 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/auth/integrations/twitter/callback', {
     schema: {
       tags: ['Auth'],
-      description: 'Twitter OAuth callback for agent integrations',
+      summary: 'Twitter Integration Callback',
+      description:
+        'Handle Twitter OAuth callback for agent integration and process authorization for agent deployment.',
       hide: true,
       querystring: Type.Object({
         code: Type.Optional(Type.String()),
@@ -93,7 +107,10 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/auth/integrations/twitter/disconnect', {
     schema: {
       tags: ['Auth'],
-      description: 'Disconnect Twitter integration for agent',
+      summary: 'Disconnect Twitter Integration',
+      description:
+        'Remove Twitter integration from an agent and disconnect it from Twitter deployment.',
+      hide: true,
       querystring: Type.Object({
         agentId: Type.String(),
       }),

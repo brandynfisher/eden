@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  ConceptsTab,
   IntegrationsTab,
   PermissionsTab,
   ProfileTab,
@@ -20,6 +21,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
   BarChart3Icon,
+  ImageIcon,
   Loader2,
   MessageCircleIcon,
   SettingsIcon,
@@ -50,9 +52,14 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      ['profile', 'tools', 'integrations', 'permissions', 'dashboard'].includes(
-        tabFromUrl,
-      )
+      [
+        'profile',
+        'tools',
+        'concepts',
+        'integrations',
+        'permissions',
+        'dashboard',
+      ].includes(tabFromUrl)
     ) {
       return tabFromUrl
     }
@@ -100,9 +107,14 @@ const AgentEditView: FC<{
     const tabFromUrl = searchParams?.get('tab')
     if (
       tabFromUrl &&
-      ['profile', 'tools', 'integrations', 'permissions', 'dashboard'].includes(
-        tabFromUrl,
-      )
+      [
+        'profile',
+        'tools',
+        'concepts',
+        'integrations',
+        'permissions',
+        'dashboard',
+      ].includes(tabFromUrl)
     ) {
       setActiveTab(tabFromUrl)
     }
@@ -198,6 +210,7 @@ const AgentEditView: FC<{
     // Only owners can see tools, integrations, and permissions
     if (hasOwnerAccess) {
       tabs.push({ key: 'tools', label: 'Tools', icon: WrenchIcon })
+      tabs.push({ key: 'concepts', label: 'Concepts', icon: ImageIcon })
 
       if (isPreviewUser) {
         tabs.push({
@@ -341,6 +354,9 @@ const AgentEditView: FC<{
                     user={user}
                   />
                 )}
+                {activeTab === 'concepts' && hasOwnerAccess && (
+                  <ConceptsTab form={form} agent={agent} />
+                )}
                 {activeTab === 'integrations' &&
                   hasOwnerAccess &&
                   isPreviewUser && (
@@ -366,6 +382,7 @@ const AgentEditView: FC<{
             {activeTab !== 'integrations' &&
               activeTab !== 'tasks' &&
               activeTab !== 'permissions' &&
+              activeTab !== 'concepts' &&
               activeTab !== 'dashboard' && (
                 <div className="border-t border-border p-6">
                   <div className="mx-auto max-w-4xl">

@@ -32,8 +32,11 @@ const triggerEventEmitter = (
 const testRoutes: FastifyPluginAsync = async server => {
   server.get('/test/task-update', {
     schema: {
+      hide: true,
       tags: ['Tasks'],
-      description: 'Trigger task update websocket event',
+      summary: 'Test Task Update Event',
+      description:
+        'Trigger a test task update websocket event for debugging and testing purposes.',
       security: [
         {
           apiKey: [],

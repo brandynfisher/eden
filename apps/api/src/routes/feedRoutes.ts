@@ -17,9 +17,11 @@ import { FastifyPluginAsync } from 'fastify'
 const feedRoutes: FastifyPluginAsync = async server => {
   server.get('/feed/creations', {
     schema: {
-      tags: ['Feed'],
-      description: 'Get creations feed',
       hide: true,
+      tags: ['Feed'],
+      summary: 'Get Creations Feed',
+      description:
+        'Get a paginated feed of creations with filtering options and user interaction data.',
       security: [
         {
           apiKey: [],
@@ -71,9 +73,11 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed-cursor/creations', {
     schema: {
-      tags: ['Feed'],
-      description: 'Get creations feed',
       hide: true,
+      tags: ['Feed'],
+      summary: 'Get Creations Feed',
+      description:
+        'Get a paginated feed of creations with filtering options and user interaction data.',
       security: [
         {
           apiKey: [],
@@ -163,9 +167,11 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed/concepts', {
     schema: {
-      tags: ['Feed'],
-      description: 'Get concepts feed',
       hide: true,
+      tags: ['Feed'],
+      summary: 'Get Concepts Feed',
+      description:
+        'Get a paginated feed of trained concepts with filtering options and user interaction data.',
       security: [
         {
           apiKey: [],
@@ -212,6 +218,16 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed/characters', {
     schema: {
+      hide: true,
+      tags: ['Feed'],
+      summary: 'Get Characters Feed',
+      description:
+        'Get a paginated feed of characters with filtering options and user interaction data.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {
@@ -249,6 +265,16 @@ const feedRoutes: FastifyPluginAsync = async server => {
 
   server.get('/feed/creators', {
     schema: {
+      hide: true,
+      tags: ['Feed'],
+      summary: 'Get Creators Feed',
+      description:
+        'Get a paginated feed of creators with optional name filtering.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
       querystring: {
         type: 'object',
         properties: {

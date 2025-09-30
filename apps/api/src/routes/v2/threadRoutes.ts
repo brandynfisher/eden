@@ -17,7 +17,10 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/threads', {
     schema: {
       tags: ['Threads'],
-      description: 'Add a thread message ',
+      summary: 'Send Thread Message',
+      description:
+        'Send a message to an existing thread or create a new thread with the first message.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -58,7 +61,10 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/threads/react', {
     schema: {
       tags: ['Threads'],
-      description: 'Add a reaction to a thread message ',
+      summary: 'React to Thread Message',
+      description:
+        'Add an emoji reaction to a specific message within a thread.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -96,7 +102,10 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/threads/pin', {
     schema: {
       tags: ['Threads'],
-      description: 'Pin a thread message ',
+      summary: 'Pin Thread Message',
+      description:
+        'Pin an important message in a thread to make it easily accessible.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -132,7 +141,10 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/threads/unpin', {
     schema: {
       tags: ['Threads'],
-      description: 'Unpin a thread message ',
+      summary: 'Unpin Thread Message',
+      description:
+        'Remove the pinned status from a previously pinned thread message.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -168,7 +180,10 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/threads', {
     schema: {
       tags: ['Threads'],
-      description: 'List threads',
+      summary: 'List User Threads',
+      description:
+        'Retrieve a paginated list of threads for the authenticated user, optionally filtered by agent.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -193,7 +208,10 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/threads/:thread_id', {
     schema: {
       tags: ['Threads'],
-      description: 'Get a thread',
+      summary: 'Get Thread Details',
+      description:
+        'Retrieve detailed information about a specific thread including all its messages.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -215,7 +233,9 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.patch('/v2/threads/:thread_id', {
     schema: {
       tags: ['Threads'],
-      description: 'Rename a thread',
+      summary: 'Rename Thread',
+      description: 'Update the title of an existing thread.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -252,7 +272,10 @@ const threadRoutes: FastifyPluginAsync = async server => {
   server.delete('/v2/threads/:thread_id', {
     schema: {
       tags: ['Threads'],
-      description: 'Delete a thread',
+      summary: 'Delete Thread',
+      description:
+        'Permanently delete a thread and all its associated messages.',
+      hide: true,
       security: [
         {
           apiKey: [],

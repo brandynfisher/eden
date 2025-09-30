@@ -16,7 +16,10 @@ const collectionRoutes: FastifyPluginAsync = async server => {
   server.get('/collections', {
     schema: {
       tags: ['Collections'],
-      description: 'List collections',
+      summary: 'List Collections',
+      description:
+        'Get a paginated list of collections with optional filtering by user ID or creation ID.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -42,7 +45,10 @@ const collectionRoutes: FastifyPluginAsync = async server => {
   server.get('/collections/:collectionId', {
     schema: {
       tags: ['Collections'],
-      description: 'Get a collection',
+      summary: 'Get Collection Details',
+      description:
+        'Retrieve detailed information about a specific collection including its creations.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -64,7 +70,10 @@ const collectionRoutes: FastifyPluginAsync = async server => {
   server.patch('/collections/:collectionId', {
     schema: {
       tags: ['Collections'],
-      description: 'Update a collection',
+      summary: 'Update Collection',
+      description:
+        "Update an existing collection's name, description, or privacy settings.",
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -89,7 +98,9 @@ const collectionRoutes: FastifyPluginAsync = async server => {
   server.post('/collections/creations/add', {
     schema: {
       tags: ['Collections'],
-      description: 'Add creations to a collection',
+      summary: 'Add Creations to Collection',
+      description: 'Add one or more creations to an existing collection.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -110,7 +121,9 @@ const collectionRoutes: FastifyPluginAsync = async server => {
   server.post('/collections/creations/remove', {
     schema: {
       tags: ['Collections'],
-      description: 'Remove creations from a collection',
+      summary: 'Remove Creations from Collection',
+      description: 'Remove one or more creations from an existing collection.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -131,7 +144,10 @@ const collectionRoutes: FastifyPluginAsync = async server => {
   server.delete('/collections/:collectionId', {
     schema: {
       tags: ['Collections'],
-      description: 'Delete a collection',
+      summary: 'Delete Collection',
+      description:
+        'Permanently delete a collection and remove all creation associations.',
+      hide: true,
       security: [
         {
           apiKey: [],
@@ -151,7 +167,10 @@ const collectionRoutes: FastifyPluginAsync = async server => {
   server.post('/collections/create', {
     schema: {
       tags: ['Collections'],
-      description: 'Create a collection',
+      summary: 'Create New Collection',
+      description:
+        'Create a new collection to organize and group related creations.',
+      hide: true,
       security: [
         {
           apiKey: [],

@@ -10,17 +10,26 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const apiKeyRoutes: FastifyPluginAsync = async server => {
-  server.post('/apikeys/create', {
+  server.post('/apikeys', {
     schema: {
       tags: ['API Keys'],
-      description: 'Create an API key',
+      summary: 'Create API Key',
+      description:
+        'Create a new API key for authentication. You can optionally provide a note to help identify the key.',
       body: Type.Object({
-        note: Type.Optional(Type.String()),
+        note: Type.Optional(
+          Type.String({
+            description: 'Optional note to help identify this API key',
+          }),
+        ),
       }),
       response: {
         200: Type.Object({
           apiKey: Type.Object({
-            apiKey: Type.String(),
+            apiKey: Type.String({
+              description:
+                "The generated API key - store this securely as it won't be shown again",
+            }),
           }),
         }),
       },
@@ -37,12 +46,16 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
     handler: (request, reply) => createApiKey(request, reply),
   })
 
-  server.post('/apikeys/delete', {
+  server.delete('/apikeys', {
     schema: {
       tags: ['API Keys'],
-      description: 'Delete an API key',
+      summary: 'Delete API Key',
+      description:
+        'Permanently delete an API key. This action cannot be undone and the key will immediately become invalid.',
       body: Type.Object({
-        apiKey: Type.String(),
+        apiKey: Type.String({
+          description: 'The API key to delete',
+        }),
       }),
       response: {
         200: Type.Object({}),
@@ -60,7 +73,9 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
   server.get('/apikeys', {
     schema: {
       tags: ['API Keys'],
-      description: 'List API keys',
+      summary: 'List API Keys',
+      description:
+        'Retrieve a paginated list of your API keys. Only partial key values are returned for security.',
       querystring: {
         type: 'object',
         properties: {
@@ -71,9 +86,17 @@ const apiKeyRoutes: FastifyPluginAsync = async server => {
       response: {
         200: paginatedResponse(
           Type.Object({
-            apiKey: Type.String(),
-            note: Type.Optional(Type.String()),
-            createdAt: Type.String(),
+            apiKey: Type.String({
+              description: 'Partial API key for identification',
+            }),
+            note: Type.Optional(
+              Type.String({
+                description: 'Optional note associated with this API key',
+              }),
+            ),
+            createdAt: Type.String({
+              description: 'ISO timestamp when the API key was created',
+            }),
           }),
         ),
       },

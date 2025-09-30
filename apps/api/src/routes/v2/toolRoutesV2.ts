@@ -6,7 +6,9 @@ const toolRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/tools/:toolKey', {
     schema: {
       tags: ['Tools'],
-      description: 'Get a Tool',
+      summary: 'Get Tool Details',
+      description:
+        'Retrieve detailed information about a specific tool including its parameters and configuration.',
       security: [
         {
           apiKey: [],
@@ -39,7 +41,9 @@ const toolRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/tools', {
     schema: {
       tags: ['Tools'],
-      description: 'List Tools',
+      summary: 'List Available Tools',
+      description:
+        'Retrieve a list of all available tools with their metadata and configuration options.',
       security: [
         {
           apiKey: [],

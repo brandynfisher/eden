@@ -20,3 +20,11 @@ export const AUDIO_MIME_TYPES = [
   'audio/ogg',
   'audio/m4a',
 ]
+
+// Memory limits - MUST match frontend apps/media-playground/features/sessions/views/memory-constants.ts
+export const MEMORY_LIMITS = {
+  EXTRACTION_PROMPT_MIN_CHARS: 100,
+  EXTRACTION_PROMPT_MAX_CHARS: 3000,
+  SHARD_NAME_MIN_CHARS: 4,
+  SHARD_NAME_MAX_CHARS: 50,
+} as const

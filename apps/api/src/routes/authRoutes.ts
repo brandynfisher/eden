@@ -12,7 +12,9 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.post('/auth/clerk/update', {
     schema: {
       tags: ['Auth'],
-      description: 'Receive user update from Clerk',
+      summary: 'Receive Clerk User Update',
+      description:
+        'Webhook endpoint to receive user update notifications from Clerk authentication service.',
       hide: true,
     },
 
@@ -21,7 +23,9 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.get('/auth/discord/callback', {
     schema: {
       tags: ['Auth'],
-      description: 'Discord OAuth callback',
+      summary: 'Discord OAuth Callback',
+      description:
+        'Handle Discord OAuth2 authentication callback to link Discord account with user profile.',
       hide: true,
       querystring: Type.Object({
         code: Type.String(),
@@ -33,7 +37,9 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.get('/auth/discord/disconnect', {
     schema: {
       tags: ['Auth'],
-      description: 'Disconnect Discord',
+      summary: 'Disconnect Discord Account',
+      description:
+        'Unlink Discord account from the authenticated user profile.',
       hide: true,
       response: {
         200: Type.Object({}),
@@ -45,7 +51,9 @@ const authRoutes: FastifyPluginAsync = async server => {
   server.post('/auth/daily-login', {
     schema: {
       tags: ['Auth'],
-      description: 'Set daily login bonus',
+      summary: 'Claim Daily Login Bonus',
+      description:
+        'Claim daily login manna bonus for the authenticated user. Can only be claimed once per day.',
       hide: true,
       response: {
         200: Type.Object({

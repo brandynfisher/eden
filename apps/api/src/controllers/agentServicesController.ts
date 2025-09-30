@@ -2,6 +2,7 @@ import { Agent } from '../models/Agent'
 import { AgentPermission, PermissionLevel } from '../models/AgentPermission'
 import { Deployment } from '../models/Deployment'
 import { Trigger } from '../models/Trigger'
+import { Message } from '../models/v2/Message'
 import { Session } from '../models/v2/SessionV2'
 import { forceCloudfrontUrl } from '../plugins/s3Plugin'
 import { createIdOrSlugQuery } from '../utils/mongoUtils'
@@ -157,14 +158,22 @@ export const createAgentTrigger = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  console.log(
+    'createAgentTrigger received body:',
+    JSON.stringify(request.body, null, 2),
+  )
+  console.log('URL params:', request.params)
+  const { agentId } = request.params as { agentId: string }
   const {
-    agentId,
-    instruction,
+    name,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
     posting_instructions,
-  } = request.body as AgentsCreateTriggerArguments
+  } = request.body as Omit<AgentsCreateTriggerArguments, 'agentId'>
+  console.log('Extracted name field:', name)
   const currentUserId = request.user.userId
   const agent = await Agent.findById(agentId)
 
@@ -185,11 +194,13 @@ export const createAgentTrigger = async (
   const updateData = {
     agent: agentId,
     user: currentUserId,
-    instruction,
+    name,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
-    posting_instructions,
+    posting_instructions: posting_instructions || [],
   }
 
   const edenComputeRequest = {
@@ -209,6 +220,22 @@ export const createAgentTrigger = async (
 
   const response = edenComputeResponse.data as AgentsCreateTriggerResponse
 
+  // Save the trigger locally with the name field
+  const localTriggerData = {
+    agent: agentId,
+    user: currentUserId,
+    name,
+    context,
+    trigger_prompt,
+    session_type,
+    session,
+    schedule,
+    posting_instructions,
+  }
+
+  const localTrigger = new Trigger(localTriggerData)
+  await localTrigger.save()
+
   return reply.status(200).send({
     triggerId: response.trigger_id,
   })
@@ -223,14 +250,18 @@ export const updateAgentTrigger = async (
     triggerId: string
   }
   const {
-    instruction,
+    name,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
     status,
     posting_instructions,
   } = request.body as {
-    instruction?: string
+    name?: string
+    context?: string
+    trigger_prompt?: any
     session_type?: 'new' | 'another'
     session?: string | null
     schedule?: any
@@ -289,7 +320,9 @@ export const updateAgentTrigger = async (
   // Build update data - only include fields that are provided
   const updateData: any = {}
 
-  if (instruction !== undefined) updateData.instruction = instruction
+  if (name !== undefined) updateData.name = name
+  if (context !== undefined) updateData.context = context
+  if (trigger_prompt !== undefined) updateData.trigger_prompt = trigger_prompt
   if (session_type !== undefined) updateData.session_type = session_type
   if (session !== undefined) updateData.session = session
   if (schedule !== undefined) {
@@ -867,56 +900,47 @@ export const getDashboardData = async (
     // Convert agentId to ObjectId for query
     const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
 
-    // Optimized single aggregation pipeline to get all required data
-    const results = await Session.aggregate([
-      // Stage 1: Match sessions containing the agent
+    // First, get all sessions that contain this agent within the date range
+    const sessionsWithAgent = await Session.find({
+      agents: agentObjectId,
+      updatedAt: { $gte: start },
+      createdAt: { $lte: end },
+      $or: [{ deleted: { $exists: false } }, { deleted: false }],
+    }).select('_id platform')
+
+    if (sessionsWithAgent.length === 0) {
+      return reply.status(200).send({
+        messageActivity: [],
+        userStats: [],
+        dateRange: {
+          start: start.toISOString().split('T')[0],
+          end: end.toISOString().split('T')[0],
+        },
+        platforms: ['web'],
+      })
+    }
+
+    // Extract session IDs and create a platform map
+    const sessionIds = sessionsWithAgent.map(s => s._id)
+    const sessionPlatformMap = new Map()
+    sessionsWithAgent.forEach(s => {
+      sessionPlatformMap.set(s._id.toString(), s.platform || 'web')
+    })
+
+    // Now query messages collection directly by session field
+    const results = await Message.aggregate([
+      // Stage 1: Match messages from sessions containing the agent
       {
         $match: {
-          agents: agentObjectId,
-          updatedAt: { $gte: start },
-          createdAt: { $lte: end },
-          $or: [{ deleted: { $exists: false } }, { deleted: false }],
+          session: { $in: sessionIds },
+          createdAt: { $gte: start, $lte: end },
         },
       },
-      // Stage 2: Lookup messages from sessions
-      {
-        $lookup: {
-          from: 'messages',
-          localField: 'messages',
-          foreignField: '_id',
-          pipeline: [
-            {
-              $match: {
-                createdAt: { $gte: start, $lte: end },
-              },
-            },
-            {
-              $project: {
-                _id: 1,
-                session: 1,
-                sender: 1,
-                role: 1,
-                name: 1,
-                createdAt: 1,
-                content: 1,
-              },
-            },
-          ],
-          as: 'sessionMessages',
-        },
-      },
-      // Stage 3: Unwind messages for processing
-      {
-        $unwind: {
-          path: '$sessionMessages',
-          preserveNullAndEmptyArrays: false,
-        },
-      },
-      // Stage 4: Lookup usernames for message senders
+      // Stage 2: Lookup usernames for message senders
       {
         $lookup: {
           from: 'users3',
-          localField: 'sessionMessages.sender',
+          localField: 'sender',
           foreignField: '_id',
           pipeline: [
             {
@@ -928,38 +952,29 @@ export const getDashboardData = async (
           as: 'senderData',
         },
       },
-      // Stage 5: Project final structure with character count calculation
+      // Stage 3: Project final structure with character count calculation
       {
         $project: {
-          _id: '$sessionMessages._id',
-          platform: { $ifNull: ['$platform', 'web'] },
-          role: {
-            $ifNull: [
-              '$sessionMessages.role',
-              '$sessionMessages.name',
-              'unknown',
-            ],
-          },
+          _id: 1,
+          session: 1,
+          sender: 1,
+          role: { $ifNull: ['$role', '$name', 'unknown'] },
           username: {
             $ifNull: [{ $arrayElemAt: ['$senderData.username', 0] }, 'unknown'],
           },
-          timestamp: '$sessionMessages.createdAt',
+          timestamp: '$createdAt',
           date: {
             $dateToString: {
               format: '%Y-%m-%d',
-              date: '$sessionMessages.createdAt',
+              date: '$createdAt',
             },
           },
-          sender: '$sessionMessages.sender',
           charCount: {
             $cond: {
               if: {
-                $and: [
-                  { $ne: ['$sessionMessages.content', null] },
-                  { $ne: ['$sessionMessages.content', ''] },
-                ],
+                $and: [{ $ne: ['$content', null] }, { $ne: ['$content', ''] }],
               },
-              then: { $strLenCP: '$sessionMessages.content' },
+              then: { $strLenCP: '$content' },
               else: 0,
             },
           },
@@ -982,7 +997,7 @@ export const getDashboardData = async (
     // Convert aggregation results to messageDataList format
     const messageDataList = results.map(result => ({
       _id: result._id.toString(),
-      platform: result.platform,
+      platform: sessionPlatformMap.get(result.session.toString()) || 'web',
       role: result.role,
       username: result.username,
       timestamp: result.timestamp || new Date(),

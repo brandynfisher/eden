@@ -837,7 +837,7 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <h2 className="text-lg font-semibold text-foreground cursor-help">
-                      Recent Context
+                      Recent Memory Context
                     </h2>
                   </TooltipTrigger>
                   <TooltipContent className="max-w-md">

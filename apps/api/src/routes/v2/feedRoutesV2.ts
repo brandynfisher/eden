@@ -14,7 +14,9 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/feed-cursor/creations', {
     schema: {
       tags: ['Feed'],
-      description: 'Get creations feed',
+      summary: 'Get Creations Feed',
+      description:
+        'Retrieve a cursor-paginated feed of recent creations sorted by relevance and recency.',
       hide: true,
       security: [
         {
@@ -40,7 +42,9 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/feed-cursor/models', {
     schema: {
       tags: ['Feed'],
-      description: 'Get models feed',
+      summary: 'Get Models Feed',
+      description:
+        'Retrieve a cursor-paginated feed of recent models sorted by relevance and recency.',
       hide: true,
       security: [
         {
@@ -65,7 +69,9 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/feed-cursor/collections', {
     schema: {
       tags: ['Feed'],
-      description: 'Get collections feed',
+      summary: 'Get Collections Feed',
+      description:
+        'Retrieve a cursor-paginated feed of recent collections sorted by relevance and recency.',
       hide: true,
       security: [
         {
@@ -91,7 +97,9 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/feed-cursor/agents', {
     schema: {
       tags: ['Feed'],
-      description: 'Get agents feed',
+      summary: 'Get Agents Feed',
+      description:
+        'Retrieve a cursor-paginated feed of recent agents sorted by relevance and recency.',
       hide: true,
       security: [
         {
@@ -116,7 +124,9 @@ const feedRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/feed-cursor/creators', {
     schema: {
       tags: ['Feed'],
-      description: 'Get creators feed',
+      summary: 'Get Creators Feed',
+      description:
+        'Retrieve a cursor-paginated feed of creators sorted by activity and relevance.',
       hide: true,
       security: [
         {

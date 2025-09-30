@@ -15,13 +15,14 @@ export interface CronSchedule {
 }
 
 export interface TriggerSchema {
-  trigger_id: string
   user: ObjectId
   agent: ObjectId
   session_type: 'new' | 'another'
   session?: ObjectId
   schedule: CronSchedule
-  instruction: string
+  name: string
+  context: string
+  trigger_prompt: string
   update_config?: any
   status?: 'active' | 'paused' | 'finished'
   posting_instructions?: {
@@ -29,7 +30,7 @@ export interface TriggerSchema {
     session_id?: ObjectId | null
     channel_id?: string | null
     custom_instructions?: string
-  }
+  }[]
   deleted?: boolean
   last_run_time?: Date
   next_scheduled_run?: Date
@@ -39,10 +40,6 @@ export interface TriggerDocument extends TriggerSchema {}
 
 const TriggerSchema = new Schema<TriggerDocument>(
   {
-    trigger_id: {
-      type: String,
-      required: true,
-    },
     agent: {
       type: Schema.Types.ObjectId,
       ref: 'users3',
@@ -67,7 +64,15 @@ const TriggerSchema = new Schema<TriggerDocument>(
       type: Object,
       required: true,
     },
-    instruction: {
+    name: {
+      type: String,
+      required: true,
+    },
+    context: {
+      type: String,
+      required: false,
+    },
+    trigger_prompt: {
       type: String,
       required: true,
     },
@@ -81,7 +86,7 @@ const TriggerSchema = new Schema<TriggerDocument>(
       default: 'active',
     },
     posting_instructions: {
-      type: Object,
+      type: Array,
       required: false,
     },
     deleted: {

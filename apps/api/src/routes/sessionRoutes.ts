@@ -17,8 +17,11 @@ import { FastifyPluginAsync } from 'fastify'
 const sessionRoutes: FastifyPluginAsync = async server => {
   server.post('/sessions/create', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
-      description: 'Create a session',
+      summary: 'Create New Session',
+      description:
+        'Create a new conversation session for interacting with characters.',
       security: [
         {
           apiKey: [],
@@ -37,8 +40,11 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/delete', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
-      description: 'Delete a session',
+      summary: 'Delete Session',
+      description:
+        'Permanently delete a conversation session and all associated messages.',
       security: [
         {
           apiKey: [],
@@ -58,15 +64,17 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/users/add', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
-      description: 'Add users to a session',
+      summary: 'Add Users to Session',
+      description:
+        'Add additional users to an existing conversation session (admin only).',
       security: [
         {
           apiKey: [],
           // apiSecret: [],
         },
       ],
-      hide: true,
       body: Type.Object({
         sessionId: Type.String(),
         userIds: Type.Array(Type.String()),
@@ -81,15 +89,17 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/characters/add', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
-      description: 'Add characters to a session',
+      summary: 'Add Characters to Session',
+      description:
+        'Add characters to an existing conversation session for multi-character interactions (admin only).',
       security: [
         {
           apiKey: [],
           // apiSecret: [],
         },
       ],
-      hide: true,
       body: Type.Object({
         sessionId: Type.String(),
         characterIds: Type.Array(Type.String()),
@@ -104,15 +114,17 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.post('/sessions/interact', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
-      description: 'Interact with a session',
+      summary: 'Interact with Session',
+      description:
+        'Send a message in a conversation session and receive character responses (admin only).',
       security: [
         {
           apiKey: [],
           // apiSecret: [],
         },
       ],
-      hide: true,
       body: Type.Object({
         character_id: Type.String(),
         session_id: Type.String(),
@@ -132,8 +144,11 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
-      description: 'List sessions',
+      summary: 'List Sessions',
+      description:
+        'Get a paginated list of conversation sessions with optional filtering by user ID.',
       security: [
         {
           apiKey: [],
@@ -158,8 +173,11 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions/:sessionId', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
-      description: 'Get a session',
+      summary: 'Get Session Details',
+      description:
+        'Retrieve detailed information about a specific conversation session.',
       security: [
         {
           apiKey: [],
@@ -181,8 +199,11 @@ const sessionRoutes: FastifyPluginAsync = async server => {
 
   server.get('/sessions/:sessionId/events', {
     schema: {
+      hide: true,
       tags: ['Sessions'],
-      description: 'Get session events',
+      summary: 'Get Session Events',
+      description:
+        'Get a paginated list of events (messages, actions) from a conversation session.',
       security: [
         {
           apiKey: [],

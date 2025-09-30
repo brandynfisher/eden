@@ -15,7 +15,9 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/creations', {
     schema: {
       tags: ['Creations'],
-      description: 'List creations',
+      summary: 'List Creations',
+      description:
+        'Retrieve a paginated list of creations, optionally filtered by user ID or name.',
       security: [
         {
           apiKey: [],
@@ -40,7 +42,9 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
   server.get('/v2/creations/:creationId', {
     schema: {
       tags: ['Creations'],
-      description: 'Get a creation',
+      summary: 'Get Creation Details',
+      description:
+        'Retrieve detailed information about a specific creation by its ID.',
       security: [
         {
           apiKey: [],
@@ -78,7 +82,9 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
   server.patch('/v2/creations/:creationId', {
     schema: {
       tags: ['Creations'],
-      description: 'Update a creation',
+      summary: 'Update Creation',
+      description:
+        'Update the visibility or deletion status of a specific creation.',
       security: [
         {
           apiKey: [],
@@ -104,7 +110,9 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
   server.patch('/v2/creations/bulk', {
     schema: {
       tags: ['Creations'],
-      description: 'Bulk update creations',
+      summary: 'Bulk Update Creations',
+      description:
+        'Update the visibility or deletion status of multiple creations at once.',
       security: [
         {
           apiKey: [],
@@ -135,7 +143,9 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
   server.post('/v2/creations/:creationId/like', {
     schema: {
       tags: ['Creations'],
-      description: 'Like a creation',
+      summary: 'Like Creation',
+      description:
+        'Add a like to a creation, showing appreciation and boosting its visibility.',
       security: [
         {
           apiKey: [],
@@ -166,7 +176,8 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
   server.delete('/v2/creations/:creationId/like', {
     schema: {
       tags: ['Creations'],
-      description: 'Unlike a creation',
+      summary: 'Unlike Creation',
+      description: 'Remove a previously given like from a creation.',
       security: [
         {
           apiKey: [],

@@ -13,7 +13,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/creators', {
     schema: {
       tags: ['Creators'],
-      description: 'List creators',
+      summary: 'List Creators',
+      description:
+        'Retrieve a paginated list of creators, optionally filtered by user ID or Discord ID.',
       security: [
         {
           apiKey: [],
@@ -38,7 +40,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/creators/me', {
     schema: {
       tags: ['Creators'],
-      description: 'Get your own info',
+      summary: 'Get Authenticated Creator Profile',
+      description:
+        'Retrieve your own creator profile information including balances and subscription details.',
       security: [
         {
           apiKey: [],
@@ -60,7 +64,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/creators/:userId', {
     schema: {
       tags: ['Creators'],
-      description: 'Get a creator',
+      summary: 'Get Creator Details',
+      description:
+        'Retrieve detailed information about a specific creator by their user ID.',
       security: [
         {
           apiKey: [],
@@ -79,7 +85,9 @@ const creatorRoutes: FastifyPluginAsync = async server => {
   server.post('/v2/creators/update', {
     schema: {
       tags: ['Creators'],
-      description: 'Update a creator',
+      summary: 'Update Creator Profile',
+      description:
+        'Update your creator profile settings including username, image, and preferences.',
       security: [
         {
           apiKey: [],
