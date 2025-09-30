@@ -310,7 +310,9 @@ export interface AgentsGetTriggersArguments extends WebAPICallOptions {
 
 export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
   agentId: string
-  instruction: string
+  name: string
+  context: string
+  trigger_prompt: string
   session_type: 'new' | 'another'
   session?: string | null
   schedule: CronSchedule
@@ -319,13 +321,15 @@ export interface AgentsCreateTriggerArguments extends WebAPICallOptions {
     session_id?: string | null
     channel_id?: string | null
     custom_instructions?: string
-  }
+  }[]
 }
 
 export interface AgentsUpdateTriggerArguments extends WebAPICallOptions {
   agentId: string
   triggerId: string
-  instruction?: string
+  name?: string
+  context?: string
+  trigger_prompt?: string
   session_type?: 'new' | 'another'
   session?: string | null
   schedule?: CronSchedule
@@ -335,7 +339,7 @@ export interface AgentsUpdateTriggerArguments extends WebAPICallOptions {
     session_id?: string | null
     channel_id?: string | null
     custom_instructions?: string
-  }
+  }[]
 }
 
 export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {

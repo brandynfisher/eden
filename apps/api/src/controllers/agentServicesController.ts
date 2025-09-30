@@ -161,14 +161,22 @@ export const createAgentTrigger = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  console.log(
+    'createAgentTrigger received body:',
+    JSON.stringify(request.body, null, 2),
+  )
+  console.log('URL params:', request.params)
+  const { agentId } = request.params as { agentId: string }
   const {
-    agentId,
-    instruction,
+    name,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
     posting_instructions,
-  } = request.body as AgentsCreateTriggerArguments
+  } = request.body as Omit<AgentsCreateTriggerArguments, 'agentId'>
+  console.log('Extracted name field:', name)
   const currentUserId = request.user.userId
   const agent = await Agent.findById(agentId)
 
@@ -189,11 +197,13 @@ export const createAgentTrigger = async (
   const updateData = {
     agent: agentId,
     user: currentUserId,
-    instruction,
+    name,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
-    posting_instructions,
+    posting_instructions: posting_instructions || [],
   }
 
   const edenComputeRequest = {
@@ -213,6 +223,22 @@ export const createAgentTrigger = async (
 
   const response = edenComputeResponse.data as AgentsCreateTriggerResponse
 
+  // Save the trigger locally with the name field
+  const localTriggerData = {
+    agent: agentId,
+    user: currentUserId,
+    name,
+    context,
+    trigger_prompt,
+    session_type,
+    session,
+    schedule,
+    posting_instructions,
+  }
+
+  const localTrigger = new Trigger(localTriggerData)
+  await localTrigger.save()
+
   return reply.status(200).send({
     triggerId: response.trigger_id,
   })
@@ -227,14 +253,18 @@ export const updateAgentTrigger = async (
     triggerId: string
   }
   const {
-    instruction,
+    name,
+    context,
+    trigger_prompt,
     session_type,
     session,
     schedule,
     status,
     posting_instructions,
   } = request.body as {
-    instruction?: string
+    name?: string
+    context?: string
+    trigger_prompt?: any
     session_type?: 'new' | 'another'
     session?: string | null
     schedule?: any
@@ -293,7 +323,9 @@ export const updateAgentTrigger = async (
   // Build update data - only include fields that are provided
   const updateData: any = {}
 
-  if (instruction !== undefined) updateData.instruction = instruction
+  if (name !== undefined) updateData.name = name
+  if (context !== undefined) updateData.context = context
+  if (trigger_prompt !== undefined) updateData.trigger_prompt = trigger_prompt
   if (session_type !== undefined) updateData.session_type = session_type
   if (session !== undefined) updateData.session = session
   if (schedule !== undefined) {

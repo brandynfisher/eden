@@ -857,7 +857,7 @@ const AgentFormSheet = () => {
                                     <div className="flex items-center justify-between">
                                       <div>
                                         <h4 className="font-medium">
-                                          {trigger.instruction}
+                                          {trigger.trigger_prompt}
                                         </h4>
                                       </div>
                                       <Button

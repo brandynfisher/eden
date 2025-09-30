@@ -17,13 +17,14 @@ export type CronSchedule = {
 
 export type Trigger = {
   _id: string
-  trigger_id: string
   user: Creator
   agent: Agent
   session_type: 'new' | 'another'
   session?: string | null
   schedule: CronSchedule
-  instruction: string
+  name: string
+  context: string
+  trigger_prompt: string
   update_config?: any
   status?: 'active' | 'paused' | 'finished'
   posting_instructions?: {
@@ -31,7 +32,7 @@ export type Trigger = {
     session_id?: string | null
     channel_id?: string | null
     custom_instructions?: string
-  }
+  }[]
   deleted?: boolean
   last_run_time?: Date
   next_scheduled_run?: Date

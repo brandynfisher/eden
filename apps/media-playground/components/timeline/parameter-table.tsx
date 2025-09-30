@@ -95,6 +95,7 @@ const imageInputParameterNames = [
   'images',
   'preference_anchor',
   'lora_training_urls',
+  'reference_images',
 ]
 
 const videoInputParameterNames = [

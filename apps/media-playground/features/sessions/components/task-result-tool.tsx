@@ -163,94 +163,97 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
                 ? toolResults.map((result, index) => (
                     <div className="relative" key={`${index}-${tool}`}>
                       {result && Array.isArray(result?.output) ? (
-                        result.output.map((output, outputIndex) => (
-                          <div
-                            key={`${index}-${outputIndex}-${output.filename}`}
-                            className="group"
-                          >
-                            {getFileTypeByMimeType(
-                              output.mediaAttributes?.mimeType,
-                            ) === 'audio' ? (
-                              <audio
-                                controls
-                                // loop={true}
-                                className="w-full max-w-2xl pr-12"
-                              >
-                                <source
-                                  src={getCloudfrontOriginalUrl(
-                                    output.filename,
-                                  )}
-                                  type={output.mediaAttributes?.mimeType}
-                                />
-                              </audio>
-                            ) : (
-                              <div
-                                draggable
-                                onDragStart={(
-                                  e: React.DragEvent<HTMLDivElement>,
-                                ) => {
-                                  const url = getCloudfrontOriginalUrl(
-                                    output.filename,
-                                  )
-                                  e.dataTransfer.setData('text/plain', '') // Required for Firefox
-                                  e.dataTransfer.setData(
-                                    'application/json',
-                                    JSON.stringify({
-                                      fileUrl: url,
-                                      type:
-                                        output.mediaAttributes?.mimeType ||
-                                        'image/jpeg',
-                                      name: url, // Use the full URL as the name
-                                    }),
-                                  )
-                                  e.dataTransfer.effectAllowed = 'copy'
-                                }}
-                                className="relative w-full aspect-[16/9] min-h-[200px]"
-                              >
-                                <LightboxTrigger
-                                  className="absolute inset-0"
-                                  slide={{
-                                    type: 'video',
-                                    url:
-                                      getCloudfrontOriginalUrl(
-                                        output.filename,
-                                      ) ||
-                                      output.url ||
-                                      '',
-                                    thumbnail:
-                                      getCloudfrontOriginalUrl(
-                                        output.filename,
-                                      ) ||
-                                      output.url ||
-                                      '',
-                                    width: output.mediaAttributes?.width,
-                                    height: output.mediaAttributes?.height,
-                                    duration:
-                                      output.mediaAttributes?.duration ||
-                                      undefined,
-                                    description:
-                                      toolCall.args && toolCall.args.prompt
-                                        ? String(toolCall.args.prompt)
-                                        : undefined,
-                                    title:
-                                      toolCall.args && toolCall.args.prompt
-                                        ? String(toolCall.args.prompt)
-                                        : undefined,
+                        <div className="flex flex-col gap-2.5">
+                          {result.output.map((output, outputIndex) => (
+                            <div
+                              key={`${index}-${outputIndex}-${output.filename}`}
+                              className="group"
+                            >
+                              {getFileTypeByMimeType(
+                                output.mediaAttributes?.mimeType,
+                              ) === 'audio' ? (
+                                <audio
+                                  controls
+                                  // loop={true}
+                                  className="w-full max-w-2xl pr-12"
+                                >
+                                  <source
+                                    src={getCloudfrontOriginalUrl(
+                                      output.filename,
+                                    )}
+                                    type={output.mediaAttributes?.mimeType}
+                                  />
+                                </audio>
+                              ) : (
+                                <div
+                                  draggable
+                                  onDragStart={(
+                                    e: React.DragEvent<HTMLDivElement>,
+                                  ) => {
+                                    const url = getCloudfrontOriginalUrl(
+                                      output.filename,
+                                    )
+                                    e.dataTransfer.setData('text/plain', '') // Required for Firefox
+                                    e.dataTransfer.setData(
+                                      'application/json',
+                                      JSON.stringify({
+                                        fileUrl: url,
+                                        type:
+                                          output.mediaAttributes?.mimeType ||
+                                          'image/jpeg',
+                                        name: url, // Use the full URL as the name
+                                      }),
+                                    )
+                                    e.dataTransfer.effectAllowed = 'copy'
                                   }}
-                                  startIndex={index}
-                                  imageProps={{
-                                    loading: 'lazy',
-                                    blurhash: output.mediaAttributes?.blurhash,
-                                    className: 'max-h-[420px]',
-                                  }}
-                                  videoProps={{
-                                    className: 'max-h-[420px]',
-                                  }}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        ))
+                                  className="relative w-full aspect-[16/9] min-h-[200px]"
+                                >
+                                  <LightboxTrigger
+                                    className="absolute inset-0"
+                                    slide={{
+                                      type: 'video',
+                                      url:
+                                        getCloudfrontOriginalUrl(
+                                          output.filename,
+                                        ) ||
+                                        output.url ||
+                                        '',
+                                      thumbnail:
+                                        getCloudfrontOriginalUrl(
+                                          output.filename,
+                                        ) ||
+                                        output.url ||
+                                        '',
+                                      width: output.mediaAttributes?.width,
+                                      height: output.mediaAttributes?.height,
+                                      duration:
+                                        output.mediaAttributes?.duration ||
+                                        undefined,
+                                      description:
+                                        toolCall.args && toolCall.args.prompt
+                                          ? String(toolCall.args.prompt)
+                                          : undefined,
+                                      title:
+                                        toolCall.args && toolCall.args.prompt
+                                          ? String(toolCall.args.prompt)
+                                          : undefined,
+                                    }}
+                                    startIndex={index}
+                                    imageProps={{
+                                      loading: 'lazy',
+                                      blurhash:
+                                        output.mediaAttributes?.blurhash,
+                                      className: 'max-h-[420px]',
+                                    }}
+                                    videoProps={{
+                                      className: 'max-h-[420px]',
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       ) : (
                         <div className=" px-4 p-2 bg-accent rounded-md border border-secondary text-sm">
                           <TextClampMore
