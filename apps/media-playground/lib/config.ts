@@ -31,7 +31,7 @@ export const env = {
 // Session configuration
 export const sessionConfig = {
   // Whether to use streaming for session responses (true) or websocket-only updates (false)
-  useStreaming: true,
+  useStreaming: false,
 }
 
 export const siteConfig: SiteConfig = {

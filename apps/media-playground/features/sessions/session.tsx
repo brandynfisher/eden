@@ -18,6 +18,7 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
+import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
@@ -70,6 +71,12 @@ const Session = ({
 
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
+
+  // Use WebSocket for non-streaming mode
+  useSessionWebSocket({
+    sessionId: sessionId as string,
+    enabled: !sessionConfig.useStreaming && !!sessionId && sessionId !== 'new',
+  })
 
   // Track which agents are currently waiting to respond (show loader)
   const [agentsWaitingToRespond, setAgentsWaitingToRespond] = useState<
@@ -142,6 +149,11 @@ const Session = ({
   }, [pendingMessage, session, onSessionLoaded])
 
   useEffect(() => {
+    // Only connect to SSE if streaming is enabled
+    if (!sessionConfig.useStreaming) {
+      return
+    }
+
     // Don't connect to SSE if we don't have a real session ID yet
     console.log(
       '[SSE Effect] Running with sessionId:',
@@ -1042,29 +1054,32 @@ const Session = ({
 
   return (
     <>
-      {/* Connection status indicator - only show when not connected */}
-      {connectionState !== 'connected' && sessionId && sessionId !== 'new' && (
-        <div className="fixed top-4 right-4 z-50 bg-background/90 backdrop-blur-sm border rounded-lg px-3 py-2 flex items-center gap-2 text-sm">
-          {connectionState === 'connecting' && (
-            <>
-              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-              <span className="text-muted-foreground">Connecting...</span>
-            </>
-          )}
-          {connectionState === 'reconnecting' && (
-            <>
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-              <span className="text-muted-foreground">Reconnecting...</span>
-            </>
-          )}
-          {connectionState === 'disconnected' && (
-            <>
-              <div className="w-2 h-2 bg-red-500 rounded-full" />
-              <span className="text-muted-foreground">Disconnected</span>
-            </>
-          )}
-        </div>
-      )}
+      {/* Connection status indicator - only show when not connected and using SSE streaming */}
+      {sessionConfig.useStreaming &&
+        connectionState !== 'connected' &&
+        sessionId &&
+        sessionId !== 'new' && (
+          <div className="fixed top-4 right-4 z-50 bg-background/90 backdrop-blur-sm border rounded-lg px-3 py-2 flex items-center gap-2 text-sm">
+            {connectionState === 'connecting' && (
+              <>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+                <span className="text-muted-foreground">Connecting...</span>
+              </>
+            )}
+            {connectionState === 'reconnecting' && (
+              <>
+                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                <span className="text-muted-foreground">Reconnecting...</span>
+              </>
+            )}
+            {connectionState === 'disconnected' && (
+              <>
+                <div className="w-2 h-2 bg-red-500 rounded-full" />
+                <span className="text-muted-foreground">Disconnected</span>
+              </>
+            )}
+          </div>
+        )}
 
       <div
         className={cn(

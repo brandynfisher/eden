@@ -4,7 +4,6 @@ import DiscordIcon from '@/components/icons/discord'
 import { FarcasterIcon } from '@/components/icons/farcaster'
 import { TelegramIcon } from '@/components/icons/telegram'
 import TwitterIcon from '@/components/icons/twitter'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
 import { siteConfig } from '@/lib/config'
@@ -65,12 +64,6 @@ export default function SectionDeploy() {
               className="group flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#855DCD] relative opacity-60 pointer-events-none"
             >
               <FarcasterIcon size={64} className="text-[#855DCD]" />
-              <Badge
-                className="absolute -top-2 -right-2 opacity-100 bg-[#855DCD]"
-                variant="outline"
-              >
-                Soon
-              </Badge>
             </Link>
           </Button>
           <div className="text-muted-foreground font-medium">Farcaster</div>

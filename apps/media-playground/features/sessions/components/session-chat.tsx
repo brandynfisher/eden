@@ -10,7 +10,7 @@ import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent } from '@edenlabs/eden-sdk'
 import { useParams, useRouter } from 'next/navigation'
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 
 const SessionChat: FC = () => {
   const params = useParams()
@@ -19,43 +19,7 @@ const SessionChat: FC = () => {
   const router = useRouter()
   const { user } = useAuthState()
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
-  const [creatingSession, setCreatingSession] = useState<{
-    content: string
-    attachments?: string[]
-    thinking?: boolean
-    sessionId?: string
-  } | null>(null)
-
-  // Track the current path to detect actual navigation
-  const currentPathRef = useRef<string>('')
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const currentPath = window.location.pathname
-      const previousPath = currentPathRef.current
-
-      console.log('[SessionChat Effect] Path check:', {
-        currentPath,
-        previousPath,
-        hasCreatingSession: !!creatingSession,
-        isOnWelcome: currentPath === `/chat/${agentId}`,
-      })
-
-      // If we navigate to the welcome path, clear creating session
-      if (
-        currentPath === `/chat/${agentId}` &&
-        previousPath !== currentPath &&
-        creatingSession
-      ) {
-        console.log(
-          '[SessionChat Effect] Navigated to welcome, clearing session',
-        )
-        setCreatingSession(null)
-      }
-
-      currentPathRef.current = currentPath
-    }
-  })
+  const [isCreatingSession, setIsCreatingSession] = useState(false)
 
   const {
     agent,
@@ -67,8 +31,8 @@ const SessionChat: FC = () => {
     async (content: string, attachments?: string[], thinking?: boolean) => {
       if (!user || !agent) return
 
-      // Immediately transition to session view
-      setCreatingSession({ content, attachments, thinking })
+      // Show loading state
+      setIsCreatingSession(true)
 
       try {
         // Send message to create session
@@ -90,43 +54,14 @@ const SessionChat: FC = () => {
           throw new Error('Failed to send message')
         }
 
-        // Parse SSE stream to get session_id from first event
-        const reader = response.body?.getReader()
-        const decoder = new TextDecoder()
-
-        if (!reader) {
-          throw new Error('No response body')
-        }
-
-        let foundSession = false
-        while (!foundSession) {
-          const { done, value } = await reader.read()
-          if (done) break
-
-          const chunk = decoder.decode(value, { stream: true })
-          const lines = chunk.split('\n')
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6))
-                if (data.event === 'session_created' && data.data?.session_id) {
-                  // Got session_id! Navigate properly to the session
-                  const sessionId = data.data.session_id
-                  router.push(`/chat/${agentId}/${sessionId}`)
-                  reader.cancel()
-                  foundSession = true
-                  break
-                }
-              } catch (e) {
-                // Ignore parse errors
-              }
-            }
-          }
+        const result = await response.json()
+        if (result.session_id) {
+          // Navigate to the new session
+          router.push(`/chat/${agentId}/${result.session_id}`)
         }
       } catch (error) {
         console.error('Error creating session:', error)
-        setCreatingSession(null)
+        setIsCreatingSession(false)
       }
     },
     [user, agent, agentId, router],
@@ -170,21 +105,16 @@ const SessionChat: FC = () => {
     router.push(`/chat/${selectedAgent.username}`)
   }
 
-  // If we're creating a session, show Session component with pending state
-  if (creatingSession && agent) {
+  // If we're creating a session, show loading spinner
+  if (isCreatingSession) {
     return (
-      <Session
-        optimisticSessionId={creatingSession.sessionId}
-        pendingMessage={{
-          content: creatingSession.content,
-          attachments: creatingSession.attachments,
-          agent: agent,
-        }}
-      />
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 flex justify-center items-center">
+          <LoadingIndicator className="w-10 h-10 text-purple-600" />
+        </div>
+      </main>
     )
   }
-
-  console.log('[SessionChat] Rendering welcome screen')
 
   // Otherwise show the welcome screen
   return (
@@ -194,7 +124,7 @@ const SessionChat: FC = () => {
           variant="chat"
           agent={agent as Agent}
           onSendMessage={handleSendMessage}
-          isLoading={false}
+          isLoading={isCreatingSession}
           onAgentSelectorOpen={() => setIsAgentSelectorOpen(true)}
         />
       </div>
