@@ -639,6 +639,9 @@ const createPipeline = async (
 
   if (projection) {
     pipeline.push({ $project: projection })
+  } else {
+    // Always exclude embedding field from creations
+    pipeline.push({ $project: { embedding: 0 } })
   }
 
   // console.log(JSON.stringify(pipeline, null, 2))

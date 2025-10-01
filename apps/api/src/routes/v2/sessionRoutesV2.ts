@@ -12,7 +12,6 @@ import {
   getSharedSessions,
   listSessions,
   renameSession,
-  streamSession,
   updateSessionPermissions,
 } from '../../controllers/v2/sessionControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
@@ -529,40 +528,40 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     handler: (request, reply) => deleteSessionShare(server, request, reply),
   })
 
-  server.get<{
-    Params: { session_id: string }
-  }>('/v2/sessions/:session_id/stream', {
-    schema: {
-      tags: ['Sessions'],
-      summary: 'Stream Session Updates',
-      description:
-        'Establish a Server-Sent Events connection to receive real-time updates for a session.',
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      params: {
-        session_id: Type.String(),
-      },
-      response: {
-        404: {
-          error: Type.Optional(Type.String()),
-          message: Type.Optional(Type.String()),
-        },
-        400: {
-          error: Type.Optional(Type.String()),
-          message: Type.Optional(Type.String()),
-        },
-        403: {
-          error: Type.Optional(Type.String()),
-          message: Type.Optional(Type.String()),
-        },
-      },
-    },
-    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
-    handler: (request, reply) => streamSession(server, request, reply),
-  })
+  // server.get<{
+  //   Params: { session_id: string }
+  // }>('/v2/sessions/:session_id/stream', {
+  //   schema: {
+  //     tags: ['Sessions'],
+  //     summary: 'Stream Session Updates',
+  //     description:
+  //       'Establish a Server-Sent Events connection to receive real-time updates for a session.',
+  //     security: [
+  //       {
+  //         apiKey: [],
+  //       },
+  //     ],
+  //     params: {
+  //       session_id: Type.String(),
+  //     },
+  //     response: {
+  //       404: {
+  //         error: Type.Optional(Type.String()),
+  //         message: Type.Optional(Type.String()),
+  //       },
+  //       400: {
+  //         error: Type.Optional(Type.String()),
+  //         message: Type.Optional(Type.String()),
+  //       },
+  //       403: {
+  //         error: Type.Optional(Type.String()),
+  //         message: Type.Optional(Type.String()),
+  //       },
+  //     },
+  //   },
+  //   preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+  //   handler: (request, reply) => streamSession(server, request, reply),
+  // })
 
   // Session Permissions Routes
   server.get<{

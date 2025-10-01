@@ -148,7 +148,7 @@ export const TwitterDeploymentForm = ({
                   form={form}
                   isDeployed={isDeployed}
                   valid={deployment?.valid}
-                  guideUrl="https://docs.eden.art/docs/guides/twitter/"
+                  guideUrl="https://docs.eden.art/integrations/twitter"
                 />
               )}
             </div>

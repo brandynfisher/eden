@@ -6,7 +6,6 @@ import { TelegramIcon } from '@/components/icons/telegram'
 import TwitterIcon from '@/components/icons/twitter'
 import { Button } from '@/components/ui/button'
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
-import { siteConfig } from '@/lib/config'
 import Link from 'next/link'
 
 export default function SectionDeploy() {
@@ -23,7 +22,7 @@ export default function SectionDeploy() {
         <div className="flex flex-col items-center gap-2">
           <Button variant="ghost" size={'icon'} asChild>
             <Link
-              href="https://docs.eden.art/docs/guides/discord/"
+              href="https://docs.eden.art/integrations/discord"
               target="_blank"
               className="filter flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#5865F2]"
             >
@@ -35,7 +34,7 @@ export default function SectionDeploy() {
         <div className="flex flex-col items-center gap-2">
           <Button variant="ghost" size={'icon'} asChild>
             <Link
-              href={siteConfig.links.twitter}
+              href="https://docs.eden.art/integrations/twitter"
               target="_blank"
               className="group flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-black dark:hover:border-white"
             >
@@ -47,7 +46,7 @@ export default function SectionDeploy() {
         <div className="flex flex-col items-center gap-2">
           <Button variant="ghost" size={'icon'} asChild>
             <Link
-              href="https://docs.eden.art/docs/guides/telegram/"
+              href="https://docs.eden.art/integrations/telegram"
               target="_blank"
               className="group flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#26A5E4] relative opacity-60"
             >
@@ -59,7 +58,7 @@ export default function SectionDeploy() {
         <div className="flex flex-col items-center gap-2">
           <Button variant="ghost" size={'icon'} asChild disabled>
             <Link
-              href={'#'}
+              href="https://docs.eden.art/integrations/farcaster"
               target="_blank"
               className="group flex flex-col p-4 rounded-lg border border-border bg-card h-20 w-20 transition-colors hover:border-[#855DCD] relative opacity-60 pointer-events-none"
             >

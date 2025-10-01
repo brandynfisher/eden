@@ -810,6 +810,7 @@ export const getAgentCreations = async (
     const totalDocs = await CreationV2.countDocuments(match)
 
     const docs = await CreationV2.find(match)
+      .select('-embedding')
       .sort({ _id: -1 })
       .limit(parsedLimit)
       .populate({

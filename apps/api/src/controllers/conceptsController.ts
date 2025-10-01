@@ -446,8 +446,8 @@ base_model: "stabilityai/stable-diffusion-xl-base-1.0"
 
 LoRA trained on [Eden.art](https://eden.art) by [${username}](${frontendUrl}/creators/${username}) on ${num_training_images} images.
 
-* [How to train Concepts (LoRAs) on Eden](https://docs.eden.art/docs/guides/concepts)
-* [How to export LoRAs from Eden](https://docs.eden.art/docs/guides/concepts#exporting-loras-for-use-in-other-tools)
+* [How to train Concepts (LoRAs) on Eden](https://docs.eden.art/guides/concepts)
+* [How to export LoRAs from Eden](https://docs.eden.art/guides/concepts#exporting-loras-for-use-in-other-tools)
 
 ![Samples](${conceptThumbnail})`
 

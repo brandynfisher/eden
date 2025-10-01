@@ -20,7 +20,7 @@ export const Footer: FC = () => {
             <br />
             <Link
               className="text-xs hover:underline text-muted-foreground/60"
-              href={`https://docs.eden.art/docs/overview/tos`}
+              href={`https://docs.eden.art/legal/tos`}
               prefetch={false}
               target="_blank"
             >
@@ -29,7 +29,7 @@ export const Footer: FC = () => {
             <span className="text-xs mx-1">|</span>
             <Link
               className="text-xs hover:underline text-muted-foreground/60"
-              href={`https://docs.eden.art/docs/overview/privacy`}
+              href={`https://docs.eden.art/legal/privacy`}
               prefetch={false}
               target="_blank"
             >

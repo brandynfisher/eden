@@ -265,7 +265,7 @@ const AccountDropdown = () => {
           <div className="flex items-center w-full">
             <Link
               className="text-xs hover:underline text-muted-foreground"
-              href={`https://docs.eden.art/docs/overview/tos`}
+              href={`https://docs.eden.art/legal/tos`}
               prefetch={false}
             >
               <span>Terms</span>
