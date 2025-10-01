@@ -2,7 +2,7 @@ import { AgentDocument } from './Agent'
 import { UserDocument } from './User'
 import { Document, Schema, model } from 'mongoose'
 
-export enum PermissionLevel {
+export enum AgentPermissionLevel {
   Editor = 'editor',
   Owner = 'owner',
 }
@@ -10,7 +10,7 @@ export enum PermissionLevel {
 export interface AgentPermissionSchema {
   agent: AgentDocument['_id']
   user: UserDocument['_id']
-  level: PermissionLevel
+  level: AgentPermissionLevel
   grantedBy: UserDocument['_id']
   grantedAt: Date
 }
@@ -33,7 +33,7 @@ const AgentPermissionSchema = new Schema<AgentPermissionDocument>(
     },
     level: {
       type: String,
-      enum: Object.values(PermissionLevel),
+      enum: Object.values(AgentPermissionLevel),
       required: true,
     },
     grantedBy: {

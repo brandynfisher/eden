@@ -10,6 +10,8 @@ export type NotificationType =
   | 'system_alert'
   | 'agent_permission_added'
   | 'agent_permission_removed'
+  | 'session_permission_added'
+  | 'session_permission_removed'
 
 export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent'
 
@@ -58,6 +60,8 @@ const NotificationSchema = new Schema<NotificationDocument>(
         'system_alert',
         'agent_permission_added',
         'agent_permission_removed',
+        'session_permission_added',
+        'session_permission_removed',
       ],
       required: true,
     },

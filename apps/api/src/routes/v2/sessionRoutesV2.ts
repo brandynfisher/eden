@@ -7,9 +7,13 @@ import {
   deleteSession,
   deleteSessionShare,
   getSession,
+  getSessionPermissions,
   getSharedSession,
+  getSharedSessions,
   listSessions,
   renameSession,
+  streamSession,
+  updateSessionPermissions,
 } from '../../controllers/v2/sessionControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
@@ -523,6 +527,153 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => deleteSessionShare(server, request, reply),
+  })
+
+  server.get<{
+    Params: { session_id: string }
+  }>('/v2/sessions/:session_id/stream', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Stream Session Updates',
+      description:
+        'Establish a Server-Sent Events connection to receive real-time updates for a session.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        session_id: Type.String(),
+      },
+      response: {
+        404: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        400: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+        403: {
+          error: Type.Optional(Type.String()),
+          message: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => streamSession(server, request, reply),
+  })
+
+  // Session Permissions Routes
+  server.get<{
+    Params: { session_id: string }
+  }>('/v2/sessions/:session_id/permissions', {
+    schema: {
+      tags: ['Sessions - Permissions'],
+      summary: 'Get Session Permissions',
+      description:
+        'Retrieve the list of users who have been granted access to a session.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        session_id: Type.String(),
+      },
+      response: {
+        200: Type.Object({
+          permissions: Type.Array(Type.Any()),
+        }),
+        401: {
+          error: Type.Optional(Type.String()),
+        },
+        404: {
+          error: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => getSessionPermissions(request, reply),
+  })
+
+  server.put<{
+    Params: { session_id: string }
+    Body: {
+      permissions: Array<{
+        username: string
+        level: 'editor' | 'owner'
+      }>
+    }
+  }>('/v2/sessions/:session_id/permissions', {
+    schema: {
+      tags: ['Sessions - Permissions'],
+      summary: 'Update Session Permissions',
+      description:
+        'Grant or update user permissions for a session. Only the session owner can modify permissions.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        session_id: Type.String(),
+      },
+      body: {
+        permissions: Type.Array(
+          Type.Object({
+            username: Type.String(),
+            level: Type.Union([Type.Literal('editor'), Type.Literal('owner')]),
+          }),
+        ),
+      },
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+        }),
+        401: {
+          error: Type.Optional(Type.String()),
+        },
+        404: {
+          error: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => updateSessionPermissions(request, reply),
+  })
+
+  server.get('/v2/sessions/shared', {
+    schema: {
+      tags: ['Sessions - Permissions'],
+      summary: 'Get Shared Sessions',
+      description:
+        'Retrieve all sessions that have been shared with the authenticated user.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      response: {
+        200: Type.Object({
+          sharedSessions: Type.Array(Type.Any()),
+        }),
+        401: {
+          error: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => getSharedSessions(request, reply),
   })
 }
 

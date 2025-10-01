@@ -1,4 +1,6 @@
 // Sessions header for /sessions route with double navbar structure
+'use client'
+
 import AgentPopoverContent from '@/components/header/agent-popover'
 import HeaderActions from '@/components/header/header-actions'
 import HeaderLogo from '@/components/header/header-logo'
@@ -11,12 +13,18 @@ import {
 } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
+import { EditSessionModal } from '@/features/sessions/components/edit-session-modal'
 import { SessionBudget } from '@/features/sessions/components/session-budget'
 import { SessionShareButton } from '@/features/sessions/components/session-share-button'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
-import { EditIcon, MenuIcon } from 'lucide-react'
+import { EditIcon, MenuIcon, Settings2Icon } from 'lucide-react'
 import { useParams, usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
+
+// Sessions header for /sessions route with double navbar structure
+
+// Sessions header for /sessions route with double navbar structure
 
 type SessionsHeaderProps = {
   onChatClick?: () => void
@@ -32,6 +40,7 @@ const SessionsHeader = ({
   const pathname = usePathname()
   const { user } = useAuthState()
   const sessionId = params?.id as string
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Check if we're on a share route
   const isShareRoute = pathname?.includes('/sessions/share/')
@@ -122,8 +131,20 @@ const SessionsHeader = ({
           ) : null}
         </div>
 
-        {/* Right section - Budget and profile items (hide on share route) */}
+        {/* Right section - Edit, Budget and profile items (hide on share route) */}
         <div className="ml-auto flex items-center gap-2 h-10">
+          {/* Edit button - only show for session owner */}
+          {!isShareRoute && session && session.owner._id === user?._id && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditModalOpen(true)}
+              className="h-9 w-auto px-2"
+              title="Edit session"
+            >
+              <Settings2Icon className="w-4 h-4" />
+            </Button>
+          )}
           {/* Share button - hide on share route */}
           {!isShareRoute && session && session.owner._id === user?._id && (
             <SessionShareButton
@@ -245,8 +266,21 @@ const SessionsHeader = ({
               )}
             </div>
 
-            {/* Right section - Budget only (agents dropdown moved to avatars) */}
+            {/* Right section - Edit, Budget, Share buttons */}
             <div className="flex items-center gap-2">
+              {/* Edit button - only show for session owner */}
+              {session && session.owner._id === user?._id && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditModalOpen(true)}
+                  className="h-9 w-auto px-3"
+                  title="Edit session"
+                >
+                  <Settings2Icon className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+              )}
               {/* Share button */}
               {session && session.owner._id === user?._id && (
                 <SessionShareButton
@@ -265,6 +299,15 @@ const SessionsHeader = ({
           </header>
         )}
       </div>
+
+      {/* Edit Session Modal */}
+      {session && sessionId && sessionId !== 'new' && !isShareRoute && (
+        <EditSessionModal
+          sessionId={sessionId}
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+        />
+      )}
     </>
   )
 }

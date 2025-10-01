@@ -307,7 +307,11 @@ import {
   SessionsV2DeleteArguments,
   SessionsV2DeleteResponse,
   SessionsV2GetArguments,
+  SessionsV2GetPermissionsArguments,
+  SessionsV2GetPermissionsResponse,
   SessionsV2GetResponse,
+  SessionsV2GetSharedArguments,
+  SessionsV2GetSharedResponse,
   SessionsV2ListArguments,
   SessionsV2ListResponse,
   SessionsV2MessageArguments,
@@ -322,6 +326,8 @@ import {
   SessionsV2ShareDeleteResponse,
   SessionsV2ShareGetArguments,
   SessionsV2ShareGetResponse,
+  SessionsV2UpdatePermissionsArguments,
+  SessionsV2UpdatePermissionsResponse,
   TasksV2CancelArguments,
   TasksV2CancelResponse,
   TasksV2CreateArguments,
@@ -398,7 +404,9 @@ import {
   sessionsCancelRequestConfigV2,
   sessionsCreateRequestConfigV2,
   sessionsDeleteRequestConfigV2,
+  sessionsGetPermissionsRequestConfigV2,
   sessionsGetRequestConfigV2,
+  sessionsGetSharedRequestConfigV2,
   sessionsListRequestConfigV2,
   sessionsMessageReactRequestConfigV2,
   sessionsMessageRequestConfigV2,
@@ -406,6 +414,7 @@ import {
   sessionsShareCreateRequestConfigV2,
   sessionsShareDeleteRequestConfigV2,
   sessionsShareGetRequestConfigV2,
+  sessionsUpdatePermissionsRequestConfigV2,
   tasksV2CancelRequestConfig,
   tasksV2CostRequestConfig,
   tasksV2CreateRequestConfig,
@@ -1077,6 +1086,18 @@ export abstract class Methods {
           SessionsV2ShareGetResponse
         >(this, sessionsShareGetRequestConfigV2),
       },
+      getPermissions: bindApiCall<
+        SessionsV2GetPermissionsArguments,
+        SessionsV2GetPermissionsResponse
+      >(this, sessionsGetPermissionsRequestConfigV2),
+      updatePermissions: bindApiCall<
+        SessionsV2UpdatePermissionsArguments,
+        SessionsV2UpdatePermissionsResponse
+      >(this, sessionsUpdatePermissionsRequestConfigV2),
+      getShared: bindApiCall<
+        SessionsV2GetSharedArguments,
+        SessionsV2GetSharedResponse
+      >(this, sessionsGetSharedRequestConfigV2),
     },
   }
 

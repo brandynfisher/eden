@@ -298,12 +298,6 @@ export const MessageInput = ({
     // Keep thinking mode state - don't reset after sending
 
     try {
-      // Log thinking state for debugging
-      console.log(
-        '[MessageInput] Sending message with thinking:',
-        isThinkingEnabled,
-      )
-
       // Use streaming if available, otherwise fall back to regular message
       if (onStreamingMessage) {
         // Pass thinking state along with message
@@ -471,8 +465,13 @@ export const MessageInput = ({
     }
   }, [handleFilesDropped])
 
-  // Check if this is a read-only view (session belongs to another user)
-  const isReadOnly = session && user && session.owner?._id !== user._id
+  // Check if this is a read-only view (user doesn't own session and has no permissions)
+  // User has access if they own the session OR if they have any permission level
+  const hasPermission = session?.permissions?.some(
+    p => p.user?._id === user?._id,
+  )
+  const isReadOnly =
+    session && user && session.owner?._id !== user._id && !hasPermission
 
   // If read-only, show read-only indicator
   if (isReadOnly) {

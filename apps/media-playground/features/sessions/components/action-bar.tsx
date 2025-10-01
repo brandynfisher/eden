@@ -4,7 +4,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Message, TaskV2Result } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react'
+import { CheckIcon, CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import React, { useState } from 'react'
 
@@ -18,6 +18,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
   const { user } = useAuthState()
   const { updateReaction } = useSessionQuery({ sessionId, enabled: false })
   const [isLoading, setIsLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const userId = user?._id || ''
 
@@ -44,9 +45,11 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
         ),
     ) || []
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (message.content) {
-      navigator.clipboard.writeText(message.content)
+      await navigator.clipboard.writeText(message.content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
   }
 
@@ -75,10 +78,18 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
       )}
     >
       <button
-        className="aui-button aui-button-ghost aui-button-icon"
+        className={cn(
+          'aui-button aui-button-ghost aui-button-icon transition-colors',
+          copied && 'text-green-600',
+        )}
         onClick={handleCopy}
+        title={copied ? 'Copied!' : 'Copy to clipboard'}
       >
-        <CopyIcon className="w-4 h-4" />
+        {copied ? (
+          <CheckIcon className="w-4 h-4" />
+        ) : (
+          <CopyIcon className="w-4 h-4" />
+        )}
       </button>
 
       <button

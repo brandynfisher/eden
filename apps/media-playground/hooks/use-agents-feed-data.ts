@@ -1,5 +1,8 @@
 import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
-import { FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
+import {
+  AgentsListArguments,
+  FeedAgentCursorArguments,
+} from '@edenlabs/eden-sdk'
 import { useMemo } from 'react'
 
 interface UseAgentsFeedDataProps {
@@ -13,7 +16,7 @@ export const useAgentsFeedData = ({
 }: UseAgentsFeedDataProps) => {
   // Check if we're filtering for shared agents
   const isSharedFilter = useMemo(() => {
-    const filter = query.filter as any
+    const filter = query.filter as AgentsListArguments
     return filter?.ownership === 'shared'
   }, [query.filter])
 
