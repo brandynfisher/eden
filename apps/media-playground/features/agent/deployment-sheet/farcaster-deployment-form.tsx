@@ -106,7 +106,7 @@ export const FarcasterDeploymentForm = ({
               platform="farcaster"
               isDeployed={isDeployed ?? false}
               valid={deployment?.valid}
-              guideUrl="https://docs.eden.art/docs/guides/farcaster"
+              guideUrl="https://docs.eden.art/integrations/farcaster"
             />
           </form>
         </Form>

@@ -36,7 +36,7 @@ const TransitionBanner: React.FC = () => {
         <span className="font-semibold">Welcome to the new Eden!</span> For
         those used to our old app, please see our{' '}
         <a
-          href="https://docs.eden.art/docs/guides/transition"
+          href="https://docs.eden.art/guides/transition"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline underline-offset-2"

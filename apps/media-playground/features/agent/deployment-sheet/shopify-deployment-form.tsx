@@ -86,7 +86,9 @@ export const ShopifyDeploymentForm = ({
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Your Shopify store name (e.g., my-store).</FormDescription>
+                  <FormDescription>
+                    Your Shopify store name (e.g., my-store).
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -112,7 +114,9 @@ export const ShopifyDeploymentForm = ({
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Your Shopify location ID (number).</FormDescription>
+                  <FormDescription>
+                    Your Shopify location ID (number).
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -123,7 +127,7 @@ export const ShopifyDeploymentForm = ({
               form={form}
               isDeployed={isDeployed}
               valid={deployment?.valid}
-              guideUrl="https://docs.eden.art/docs/guides/shopify"
+              guideUrl="https://docs.eden.art/integrations/shopify"
             />
           </form>
         </Form>

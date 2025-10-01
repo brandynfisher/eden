@@ -92,7 +92,10 @@ export const PrintifyDeploymentForm = ({
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Your Printify shop ID. You can find this in your Printify dashboard.</FormDescription>
+                  <FormDescription>
+                    Your Printify shop ID. You can find this in your Printify
+                    dashboard.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -103,7 +106,7 @@ export const PrintifyDeploymentForm = ({
               form={form}
               isDeployed={isDeployed}
               valid={deployment?.valid}
-              guideUrl="https://docs.eden.art/docs/guides/printify"
+              guideUrl="https://docs.eden.art/integrations/printify"
             />
           </form>
         </Form>
