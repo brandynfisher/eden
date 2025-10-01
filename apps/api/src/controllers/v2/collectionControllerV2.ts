@@ -341,7 +341,7 @@ export const addCreationsToCollection = async (
 
   const creationsToAdd = await CreationV2.find({
     _id: { $in: creationIds },
-  })
+  }).select('-embedding')
 
   if (creationsToAdd.length !== creationIds.length) {
     return reply.status(404).send({
