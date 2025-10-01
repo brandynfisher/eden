@@ -1,10 +1,10 @@
 import { fetcher } from '@/lib/fetcher'
-import { Agent } from '@edenlabs/eden-sdk'
+import { Agent, AgentPermissionLevel } from '@edenlabs/eden-sdk'
 import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface SharedAgent {
   agent: Agent
-  permissionLevel: string
+  permissionLevel: AgentPermissionLevel
   grantedAt: Date
 }
 

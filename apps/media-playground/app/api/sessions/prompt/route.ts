@@ -49,8 +49,7 @@ export async function POST(request: NextRequest) {
       content: requestJson.content || '',
       attachments: requestJson.attachments || [],
       stream: sessionConfig.useStreaming,
-      thinking: requestJson.thinking || false, // Always send thinking from sessions UI
-      // Always include agent_ids for multi-agent targeting
+      thinking: requestJson.thinking || false,
       agent_ids: requestJson.agent_ids,
       // For new sessions, include creation parameters
       ...(requestJson.session_id

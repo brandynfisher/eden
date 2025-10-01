@@ -136,7 +136,7 @@ export const TiktokDeploymentForm = ({
                   form={form}
                   isDeployed={isDeployed}
                   valid={deployment?.valid}
-                  guideUrl="https://docs.eden.art/docs/guides/tiktok/"
+                  guideUrl="https://docs.eden.art/integrations/tiktok"
                 />
               )}
             </div>

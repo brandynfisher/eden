@@ -269,7 +269,7 @@ export const OtherMessage = ({
             )
           })}
 
-        {/* Show typing indicator when streaming tokens and no content yet */}
+        {/* Show typing indicator only when streaming tokens and no content yet and no tool calls */}
         {isStreamingTokens && isEmpty && !message.tool_calls && (
           <div className="py-2">
             <TypingIndicator />

@@ -123,7 +123,7 @@ export const TelegramDeploymentForm = ({
               platform="telegram"
               isDeployed={isDeployed ?? false}
               valid={deployment?.valid}
-              guideUrl="https://docs.eden.art/docs/guides/telegram/"
+              guideUrl="https://docs.eden.art/integrations/telegram"
             />
           </form>
         </Form>

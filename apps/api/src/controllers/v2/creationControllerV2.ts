@@ -24,6 +24,7 @@ export const getCreation = async (
   const creation = (await CreationV2.findOneWithDeleted({
     _id: creationId,
   })
+    .select('-embedding')
     // .populate({
     //   path: 'concept',
     //   select: '_id name user conceptName creationCount thumbnail',
@@ -57,8 +58,6 @@ export const getCreation = async (
     })
     creation.isLiked = !!userLike
   }
-
-  console.log({ creation })
 
   // if (!creation.public) {
   //   if (creation.user._id.toString() !== request.user?.userId.toString()) {
@@ -114,7 +113,7 @@ export const creationUpdate = async (
   const creation = await CreationV2.findOne({
     _id: creationId,
     user: userId,
-  })
+  }).select('-embedding')
 
   if (!creation) {
     return reply.status(404).send({
@@ -215,7 +214,7 @@ export const creationBulkUpdate = async (
       const creation = await CreationV2.findOne({
         _id: creationId,
         user: userId,
-      })
+      }).select('-embedding')
 
       if (!creation) {
         // If creation not found, record the failure
@@ -298,7 +297,7 @@ export const likeCreation = async (
       _id: creationId,
       deleted: false,
       $or: [{ public: true }, { user: userId }],
-    })
+    }).select('-embedding')
 
     if (!creation) {
       return reply.status(404).send({
@@ -368,7 +367,7 @@ export const unlikeCreation = async (
       _id: creationId,
       deleted: false,
       $or: [{ public: true }, { user: userId }],
-    })
+    }).select('-embedding')
 
     if (!creation) {
       return reply.status(404).send({

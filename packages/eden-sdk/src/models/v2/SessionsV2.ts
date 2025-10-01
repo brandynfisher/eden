@@ -225,6 +225,34 @@ export const sessionsShareDeleteRequestConfigV2 = (
   }
 }
 
+export const sessionsGetPermissionsRequestConfigV2 = (
+  args: SessionsV2GetPermissionsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/sessions/${args.session_id}/permissions`,
+  }
+}
+
+export const sessionsUpdatePermissionsRequestConfigV2 = (
+  args: SessionsV2UpdatePermissionsArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'PUT',
+    url: `v2/sessions/${args.session_id}/permissions`,
+    data: {
+      permissions: args.permissions,
+    },
+  }
+}
+
+export const sessionsGetSharedRequestConfigV2 = (): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'v2/sessions/shared',
+  }
+}
+
 // Responses
 export type SessionsV2CreateResponse = WebAPICallResult &
   (
@@ -334,6 +362,58 @@ export type SessionsV2ShareDeleteResponse = WebAPICallResult &
     | { success: boolean }
   )
 
+export enum SessionPermissionLevel {
+  Editor = 'editor',
+  Owner = 'owner',
+}
+
+export interface SessionPermission {
+  _id: string
+  session: string
+  user: {
+    _id: string
+    userId?: string
+    username: string
+    userImage?: string
+  }
+  level: SessionPermissionLevel
+  grantedAt: Date
+}
+
+export interface SessionsV2GetPermissionsArguments extends WebAPICallOptions {
+  session_id: string
+}
+
+export interface SessionsV2UpdatePermissionsArguments
+  extends WebAPICallOptions {
+  session_id: string
+  permissions: Array<{
+    username: string
+    level: 'editor' | 'owner'
+  }>
+}
+
+export interface SessionsV2GetSharedArguments extends WebAPICallOptions {}
+
+export type SessionsV2GetPermissionsResponse = WebAPICallResult & {
+  permissions: SessionPermission[]
+  error?: string
+}
+
+export type SessionsV2UpdatePermissionsResponse = WebAPICallResult & {
+  success: boolean
+  error?: string
+}
+
+export type SessionsV2GetSharedResponse = WebAPICallResult & {
+  sharedSessions: Array<{
+    session: SessionV2
+    permissionLevel: string
+    grantedAt: Date
+  }>
+  error?: string
+}
+
 export type SessionStatus = 'active' | 'archived'
 
 export type SessionV2 = {
@@ -346,6 +426,7 @@ export type SessionV2 = {
   agents: Agent[]
   status: SessionStatus
   messages: Message[]
+  permissions?: SessionPermission[]
   context?: {
     memories?: string[]
     memory_updated?: string

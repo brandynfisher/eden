@@ -5,6 +5,7 @@ import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import SessionWelcome from '@/features/sessions/components/session-welcome'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import Session from '@/features/sessions/session'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -12,11 +13,13 @@ import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useState } from 'react'
 
 const SessionChat: FC = () => {
-  const agentId = useParams()?.agentId as string | undefined
+  const params = useParams()
+  const agentId = params?.agentId as string | undefined
+  const sessionId = params?.id as string | undefined
   const router = useRouter()
   const { user } = useAuthState()
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
-  const [isCreating, setIsCreating] = useState(false)
+  const [isCreatingSession, setIsCreatingSession] = useState(false)
 
   const {
     agent,
@@ -28,16 +31,16 @@ const SessionChat: FC = () => {
     async (content: string, attachments?: string[], thinking?: boolean) => {
       if (!user || !agent) return
 
-      // Show loading state immediately
-      setIsCreating(true)
+      // Show loading state
+      setIsCreatingSession(true)
 
       try {
-        // Send message directly to create session
+        // Send message to create session
         const payload = {
           content,
           attachments,
           agent_ids: [agent._id],
-          thinking, // Pass thinking state to API
+          thinking,
         }
         const response = await fetch('/api/sessions/prompt', {
           method: 'POST',
@@ -53,26 +56,16 @@ const SessionChat: FC = () => {
 
         const result = await response.json()
         if (result.session_id) {
-          // Go directly to the real session but keep loading state
-          // The Session component will handle dropping the loader when first user message appears
+          // Navigate to the new session
           router.push(`/chat/${agentId}/${result.session_id}`)
         }
       } catch (error) {
         console.error('Error creating session:', error)
-        setIsCreating(false)
+        setIsCreatingSession(false)
       }
     },
     [user, agent, agentId, router],
   )
-
-  const handleAgentSelect = (selectedAgent: {
-    _id: string
-    username: string
-    name: string
-    userImage?: string
-  }) => {
-    router.push(`/chat/${selectedAgent.username}`)
-  }
 
   // Show loading if we're waiting for agent data
   if (!agent && !agentError) {
@@ -98,8 +91,22 @@ const SessionChat: FC = () => {
     )
   }
 
-  // If creating session, show loading spinner
-  if (isCreating) {
+  // If we have a sessionId in the URL, render normal session
+  if (sessionId && agent) {
+    return <Session />
+  }
+
+  const handleAgentSelect = (selectedAgent: {
+    _id: string
+    username: string
+    name: string
+    userImage?: string
+  }) => {
+    router.push(`/chat/${selectedAgent.username}`)
+  }
+
+  // If we're creating a session, show loading spinner
+  if (isCreatingSession) {
     return (
       <main className="flex-1 overflow-hidden flex flex-col">
         <div className="flex-1 flex justify-center items-center">
@@ -117,7 +124,7 @@ const SessionChat: FC = () => {
           variant="chat"
           agent={agent as Agent}
           onSendMessage={handleSendMessage}
-          isLoading={isCreating}
+          isLoading={isCreatingSession}
           onAgentSelectorOpen={() => setIsAgentSelectorOpen(true)}
         />
       </div>

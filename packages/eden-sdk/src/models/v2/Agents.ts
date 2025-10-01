@@ -638,7 +638,7 @@ export type AgentsUnlikeResponse = WebAPICallResult & {
 }
 
 // Permission types
-export enum PermissionLevel {
+export enum AgentPermissionLevel {
   Editor = 'editor',
   Owner = 'owner',
 }
@@ -652,7 +652,7 @@ export interface AgentPermission {
     username: string
     userImage?: string
   }
-  level: PermissionLevel
+  level: AgentPermissionLevel
   grantedAt: Date
 }
 

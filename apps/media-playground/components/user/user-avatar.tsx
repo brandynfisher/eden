@@ -24,6 +24,9 @@ const UserAvatar = ({ image, name, className }: Props) => {
           quality={100}
           width={64}
           height={64}
+          unoptimized={
+            image.includes('clerk.') || image.includes('img.clerk.com')
+          }
           className={cn(['group-hover:brightness-105', className])}
         />
       ) : (

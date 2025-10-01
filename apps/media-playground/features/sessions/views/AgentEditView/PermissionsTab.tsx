@@ -9,19 +9,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Agent, AgentPermission, PermissionLevel } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  AgentPermission,
+  AgentPermissionLevel,
+} from '@edenlabs/eden-sdk'
 import axios, { AxiosError } from 'axios'
 import { Loader2, ShieldIcon, UserIcon, XIcon } from 'lucide-react'
 import { FC, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-type PermissionLevelType = 'editor' | 'owner'
+type AgentPermissionLevelType = 'editor' | 'owner'
 
 export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
   const [permissions, setPermissions] = useState<AgentPermission[]>([])
   const [newUsername, setNewUsername] = useState('')
   const [permissionLevel, setPermissionLevel] =
-    useState<PermissionLevelType>('editor')
+    useState<AgentPermissionLevelType>('editor')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -59,7 +63,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
       const permissionsList = [
         ...permissions.map(p => ({
           username: p.user.username,
-          level: p.level as PermissionLevelType,
+          level: p.level as AgentPermissionLevelType,
         })),
         {
           username: newUsername.trim(),
@@ -108,7 +112,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
         .filter(p => p._id !== permissionToRemove._id)
         .map(p => ({
           username: p.user.username,
-          level: p.level as PermissionLevelType,
+          level: p.level as AgentPermissionLevelType,
         }))
 
       await axios.put(`/api/agents/${agent._id}/permissions`, {
@@ -119,7 +123,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
 
       toast.success(
         `${
-          permissionToRemove.level === PermissionLevel.Editor
+          permissionToRemove.level === AgentPermissionLevel.Editor
             ? 'Editor'
             : 'Owner'
         } removed successfully`,
@@ -139,8 +143,10 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
     }
   }
 
-  const owners = permissions.filter(p => p.level === PermissionLevel.Owner)
-  const editors = permissions.filter(p => p.level === PermissionLevel.Editor)
+  const owners = permissions.filter(p => p.level === AgentPermissionLevel.Owner)
+  const editors = permissions.filter(
+    p => p.level === AgentPermissionLevel.Editor,
+  )
 
   if (isLoading) {
     return (
@@ -204,7 +210,7 @@ export const PermissionsTab: FC<{ agent: Agent }> = ({ agent }) => {
                 <Select
                   value={permissionLevel}
                   onValueChange={value =>
-                    setPermissionLevel(value as PermissionLevelType)
+                    setPermissionLevel(value as AgentPermissionLevelType)
                   }
                   disabled={isSubmitting}
                 >

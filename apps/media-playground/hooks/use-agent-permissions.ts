@@ -2,8 +2,8 @@ import { fetcher } from '@/lib/fetcher'
 import {
   Agent,
   AgentPermission,
+  AgentPermissionLevel,
   AgentsGetPermissionsResponse,
-  PermissionLevel,
 } from '@edenlabs/eden-sdk'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
@@ -12,7 +12,7 @@ export interface UseAgentPermissionsResult {
   isOriginalOwner: boolean
   hasOwnerAccess: boolean
   hasEditAccess: boolean
-  permissionLevel: PermissionLevel | null
+  permissionLevel: AgentPermissionLevel | null
   isLoading: boolean
 }
 
@@ -40,7 +40,7 @@ export const useAgentPermissions = (
 
   const permissionLevel = useMemo(() => {
     if (isOriginalOwner) {
-      return PermissionLevel.Owner
+      return AgentPermissionLevel.Owner
     }
 
     if (!permissionsData?.permissions || !userId) {
@@ -57,9 +57,9 @@ export const useAgentPermissions = (
   const isLoading = !isOriginalOwner && isPermissionsLoading
 
   const hasOwnerAccess =
-    isOriginalOwner || permissionLevel === PermissionLevel.Owner
+    isOriginalOwner || permissionLevel === AgentPermissionLevel.Owner
   const hasEditAccess =
-    hasOwnerAccess || permissionLevel === PermissionLevel.Editor
+    hasOwnerAccess || permissionLevel === AgentPermissionLevel.Editor
 
   return {
     isOriginalOwner,
