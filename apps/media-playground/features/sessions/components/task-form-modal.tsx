@@ -173,6 +173,46 @@ export const taskSchema = z
       }
     })
 
+    // Validate schedule fields based on repeat type
+    if (
+      data.repeat === ExtendedTriggerRepeatOptions.WEEKLY &&
+      !data.dayOfWeek
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Please select a day of the week',
+        path: ['dayOfWeek'],
+      })
+    }
+
+    if (
+      data.repeat === ExtendedTriggerRepeatOptions.MONTHLY &&
+      !data.dayOfMonth
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Please select a day of the month',
+        path: ['dayOfMonth'],
+      })
+    }
+
+    if (data.repeat === ExtendedTriggerRepeatOptions.ANNUALLY) {
+      if (!data.month) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Please select a month',
+          path: ['month'],
+        })
+      }
+      if (!data.dayOfMonth) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Please select a day',
+          path: ['dayOfMonth'],
+        })
+      }
+    }
+
     // Validate that tasks are scheduled at least 3 minutes in the future
     if (
       data.repeat === ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT &&
@@ -354,6 +394,47 @@ const TaskFormModal: FC<{
           })
         }
       })
+
+      // Validate schedule fields based on repeat type
+      if (
+        data.repeat === ExtendedTriggerRepeatOptions.WEEKLY &&
+        !data.dayOfWeek
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Please select a day of the week',
+          path: ['dayOfWeek'],
+        })
+      }
+
+      if (
+        data.repeat === ExtendedTriggerRepeatOptions.MONTHLY &&
+        !data.dayOfMonth
+      ) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Please select a day of the month',
+          path: ['dayOfMonth'],
+        })
+      }
+
+      if (data.repeat === ExtendedTriggerRepeatOptions.ANNUALLY) {
+        if (!data.month) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Please select a month',
+            path: ['month'],
+          })
+        }
+        if (!data.dayOfMonth) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Please select a day',
+            path: ['dayOfMonth'],
+          })
+        }
+      }
+
       // Validate that edited schedule is at least 2 minutes in the future
       if (
         data.repeat === ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT &&
@@ -403,9 +484,22 @@ const TaskFormModal: FC<{
 
   const [showSessionSelect, setShowSessionSelect] = React.useState(false)
 
-  // Reset form when editingTask changes
+  // Track the initial editing task ID to prevent resets from object reference changes
+  const editingTaskIdRef = React.useRef<string | null>(null)
+
+  // Reset form when editingTask changes - but ONLY when the ID actually changes, not just the reference
   React.useEffect(() => {
-    if (editingTask) {
+    const newTaskId = editingTask?._id || null
+
+    // Only reset if:
+    // 1. The task ID actually changed (not just a reference change), OR
+    // 2. The form is not dirty (user hasn't made changes)
+    const taskIdChanged = editingTaskIdRef.current !== newTaskId
+
+    if (editingTask && (taskIdChanged || !form.formState.isDirty)) {
+      // Update the ref to track the current editing task
+      editingTaskIdRef.current = newTaskId
+
       // Determine the repeat type from the schedule
       let repeat = ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT
       if (editingTask.schedule.day_of_week === '*') {
@@ -458,12 +552,16 @@ const TaskFormModal: FC<{
       }
 
       form.reset(formData)
+    } else if (!editingTask) {
+      // Clear the ref when there's no editing task
+      editingTaskIdRef.current = null
     }
   }, [editingTask, form, currentTime, defaultTimezone])
 
   // Reset form when modal is closed
   React.useEffect(() => {
     if (!open) {
+      editingTaskIdRef.current = null
       const minimumDateTime = addMinutes(new Date(), 3)
       form.reset({
         name: '',
