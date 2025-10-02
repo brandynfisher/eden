@@ -1,7 +1,8 @@
 'use client'
 
-import { OnboardingChatLayout } from '../components/onboarding-chat-layout'
+import { OnboardingLayout } from '../../components/onboarding-layout'
 import { onboardingChatConfig } from '../config'
+import { useOnboardingStore } from '../store'
 import LoadingIndicator from '@/components/loading-indicator'
 import { LiveAudioProvider } from '@/features/sessions/live-audio/live-audio-context'
 import Session from '@/features/sessions/session'
@@ -13,6 +14,7 @@ function OnboardingChatSessionContent() {
   const router = useRouter()
   const params = useParams()
   const sessionId = params?.sessionId as string
+  const setSessionId = useOnboardingStore(state => state.setSessionId)
 
   // Use the session query to track messages
   const { data: session, isLoading } = useSessionQuery({
@@ -27,8 +29,11 @@ function OnboardingChatSessionContent() {
   const canProceed = userMessageCount >= onboardingChatConfig.min_n_turns
 
   const handleGeneratePersona = useCallback(() => {
-    router.push('/gigabrain/onboarding_knowledge')
-  }, [router])
+    if (sessionId) {
+      setSessionId(sessionId)
+    }
+    router.push('/gigabrain/onboarding/step2')
+  }, [router, sessionId, setSessionId])
 
   if (isLoading && sessionId !== 'new') {
     return (
@@ -39,31 +44,16 @@ function OnboardingChatSessionContent() {
   }
 
   return (
-    <OnboardingChatLayout
-      userMessageCount={userMessageCount}
-      headerAction={
-        <button
-          onClick={handleGeneratePersona}
-          disabled={!canProceed}
-          className={`
-            w-full md:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold text-white
-            transition-all duration-300 whitespace-nowrap shadow-lg
-            ${
-              canProceed
-                ? 'hover:scale-[1.02] hover:shadow-xl'
-                : 'cursor-not-allowed opacity-50'
-            }
-          `}
-          style={{
-            background: 'linear-gradient(135deg, #e6a825, #7c8aff)',
-          }}
-        >
-          Generate Persona →
-        </button>
-      }
+    <OnboardingLayout
+      currentStep={1}
+      totalSteps={4}
+      canContinue={canProceed}
+      previousRoute="/gigabrain"
+      nextRoute="/gigabrain/onboarding/step2"
+      onContinue={handleGeneratePersona}
     >
       <Session optimisticSessionId={sessionId} />
-    </OnboardingChatLayout>
+    </OnboardingLayout>
   )
 }
 

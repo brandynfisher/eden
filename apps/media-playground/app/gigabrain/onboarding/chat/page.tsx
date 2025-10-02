@@ -1,6 +1,6 @@
 'use client'
 
-import { OnboardingChatLayout } from './components/onboarding-chat-layout'
+import { OnboardingLayout } from '../components/onboarding-layout'
 import { onboardingChatConfig } from './config'
 import LoadingIndicator from '@/components/loading-indicator'
 import SessionWelcome from '@/features/sessions/components/session-welcome'
@@ -48,7 +48,12 @@ function OnboardingChatContent() {
   }
 
   return (
-    <OnboardingChatLayout userMessageCount={0}>
+    <OnboardingLayout
+      currentStep={1}
+      totalSteps={4}
+      canContinue={false}
+      previousRoute="/gigabrain"
+    >
       {/* Welcome Message - shown before any messages */}
       <div className="flex-1 overflow-y-auto px-6 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -95,7 +100,7 @@ function OnboardingChatContent() {
             if (response.ok) {
               const result = await response.json()
               if (result.session_id) {
-                router.push(`/gigabrain/onboarding_chat/${result.session_id}`)
+                router.push(`/gigabrain/onboarding/chat/${result.session_id}`)
               }
             } else {
               setIsCreatingSession(false)
@@ -105,7 +110,7 @@ function OnboardingChatContent() {
           }
         }}
       />
-    </OnboardingChatLayout>
+    </OnboardingLayout>
   )
 }
 

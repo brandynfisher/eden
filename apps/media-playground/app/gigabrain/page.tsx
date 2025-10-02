@@ -77,7 +77,7 @@ export default function GigabrainPage() {
               {/* CTA Button */}
               <div className="mt-12">
                 <Link
-                  href="/gigabrain/onboarding_chat"
+                  href="/gigabrain/onboarding/chat"
                   className="inline-flex items-center justify-center rounded-lg px-8 py-4 text-lg font-semibold text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                   style={{
                     background: 'linear-gradient(135deg, #e6a825, #7c8aff)',
