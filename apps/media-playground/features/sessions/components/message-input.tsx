@@ -46,6 +46,8 @@ const formSchema = z.object({
   content: z.string().trim().min(1),
 })
 
+const TEMP_MESSAGE_KEY = 'chat-temp-message'
+
 type MessageInputProps = {
   sessionId: string
   onStreamingMessage?: (
@@ -139,6 +141,35 @@ export const MessageInput = ({
       return () => clearTimeout(timer)
     }
   }, [sessionId])
+
+  // Check for stored message from homepage and auto-submit it
+  useEffect(() => {
+    if (sessionId !== 'new' || !onStreamingMessage) return
+
+    try {
+      const stored = sessionStorage.getItem(TEMP_MESSAGE_KEY)
+      if (stored) {
+        const { content, attachments, timestamp } = JSON.parse(stored)
+
+        // Only use stored message if it's recent (within 5 minutes)
+        const isRecent = Date.now() - timestamp < 5 * 60 * 1000
+
+        if (isRecent && content) {
+          // Clear the stored message immediately to prevent duplicate submissions
+          sessionStorage.removeItem(TEMP_MESSAGE_KEY)
+
+          // Submit the message
+          onStreamingMessage(content, attachments || [])
+        } else {
+          // Clean up stale message
+          sessionStorage.removeItem(TEMP_MESSAGE_KEY)
+        }
+      }
+    } catch (error) {
+      console.error('Error retrieving stored message:', error)
+      sessionStorage.removeItem(TEMP_MESSAGE_KEY)
+    }
+  }, [sessionId, onStreamingMessage])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
