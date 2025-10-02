@@ -617,7 +617,10 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
               </div>
             ) : null}
 
-            {status === 'pending' && showSkeleton ? <MasonrySkeleton /> : null}
+            {(status === 'pending' || (isFetching && allRows.length === 0)) &&
+            showSkeleton ? (
+              <MasonrySkeleton />
+            ) : null}
 
             {virtualizer
               .getVirtualItems()

@@ -23,6 +23,7 @@ const FeedTabs = () => {
       sortMenu: props => <SortMenu {...props} variant="creation" />,
       filterMenu: CreationsFilter,
       initialFilter: initialCreationsFilter,
+      canSearch: true,
     },
     {
       key: 'models',

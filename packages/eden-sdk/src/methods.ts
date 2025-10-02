@@ -276,6 +276,8 @@ import {
   CreationsV2LikeResponse,
   CreationsV2PatchArguments,
   CreationsV2PatchResponse,
+  CreationsV2SearchArguments,
+  CreationsV2SearchResponse,
   CreationsV2UnlikeArguments,
   CreationsV2UnlikeResponse,
   FeedCreationsV2CursorArguments,
@@ -389,6 +391,7 @@ import {
   creationsV2GetRequestConfig,
   creationsV2LikeRequestConfig,
   creationsV2PatchRequestConfig,
+  creationsV2SearchRequestConfig,
   creationsV2UnlikeRequestConfig,
   feedCursorCreationsV2RequestConfig,
   modelsV2GetRequestConfig,
@@ -867,6 +870,10 @@ export abstract class Methods {
       CreationsV2UnlikeArguments,
       CreationsV2UnlikeResponse
     >(this, creationsV2UnlikeRequestConfig),
+    searchV2: bindApiCall<
+      CreationsV2SearchArguments,
+      CreationsV2SearchResponse
+    >(this, creationsV2SearchRequestConfig),
   }
 
   public readonly creators = {

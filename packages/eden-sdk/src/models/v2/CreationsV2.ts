@@ -64,6 +64,15 @@ export interface CreationsV2UnlikeArguments extends WebAPICallOptions {
   creationId: string
 }
 
+export interface CreationsV2SearchArguments
+  extends WebAPICallOptions,
+    ListQueryParams {
+  query: string
+  agentId?: string
+  userId?: string
+  tool?: string
+}
+
 // Requests
 
 export const creationsV2ListRequestConfig = (
@@ -166,6 +175,17 @@ export const creationsV2UnlikeRequestConfig = (
   }
 }
 
+export const creationsV2SearchRequestConfig = (
+  args: CreationsV2SearchArguments,
+): AxiosRequestConfig => {
+  const params = transformArgsIntoURLParams(args)
+  return {
+    method: 'GET',
+    url: 'v2/creations/search',
+    params,
+  }
+}
+
 // Responses
 
 export type CreationsV2ListResponse = WebAPICallResult &
@@ -213,6 +233,11 @@ export type CreationsV2UnlikeResponse = WebAPICallResult & {
   error?: string
   success?: boolean
 }
+
+export type CreationsV2SearchResponse = WebAPICallResult &
+  PaginatedResponse<CreationV2> & {
+    error?: string
+  }
 
 // Types
 export type CreationV2 = MediaOutput & {

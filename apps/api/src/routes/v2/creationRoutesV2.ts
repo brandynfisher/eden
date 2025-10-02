@@ -5,6 +5,7 @@ import {
   creationUpdate,
   getCreation,
   likeCreation,
+  searchCreations,
   unlikeCreation,
 } from '../../controllers/v2/creationControllerV2'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
@@ -203,6 +204,36 @@ const creationRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [async (request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => unlikeCreation(server, request, reply),
+  })
+
+  server.get('/v2/creations/search', {
+    schema: {
+      tags: ['Creations'],
+      summary: 'Search Creations by Embedding',
+      description:
+        'Search for creations using semantic search with CLIP embeddings.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      querystring: {
+        type: 'object',
+        properties: {
+          query: { type: 'string' },
+          agentId: { type: 'string' },
+          userId: { type: 'string' },
+          tool: { type: 'string' },
+          ...paginationProperties(),
+        },
+        required: ['query'],
+      },
+      response: {
+        200: paginatedResponse(Type.Any()),
+      },
+    },
+    preHandler: [request => maybeAuth(server, request)],
+    handler: (request, reply) => searchCreations(server, request, reply),
   })
 }
 

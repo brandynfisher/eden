@@ -98,6 +98,7 @@ const ProfileTabs = () => {
         <SortMenu {...props} variant="creation" initialSort="createdAt;-1" />
       ),
       filterMenu: ProfileCreationsFilter,
+      canSearch: true,
       content: (
         <CreationsFeed
           ref={creationsFeedRef}
