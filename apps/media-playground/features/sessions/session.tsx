@@ -14,6 +14,7 @@ import { AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { OtherMessage } from '@/features/sessions/components/other-message'
+import { SystemMessage } from '@/features/sessions/components/system-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -879,7 +880,10 @@ const Session = ({
     const existingMessages =
       displaySession?.messages?.filter(m => {
         const hasRole =
-          m.role === 'user' || m.role === 'assistant' || m.role === 'eden'
+          m.role === 'user' ||
+          m.role === 'assistant' ||
+          m.role === 'eden' ||
+          m.role === 'system'
         const hasContent = m.content && m.content.trim() !== ''
         const hasToolCalls =
           m.role === 'assistant' && m.tool_calls && m.tool_calls.length > 0
@@ -1140,6 +1144,13 @@ const Session = ({
                                 message={message}
                               />
                             ))
+                          : group[0].role === 'system'
+                          ? group.map(message => (
+                              <SystemMessage
+                                key={message._id}
+                                message={message}
+                              />
+                            ))
                           : isOwnMessage(group[0].sender?._id)
                           ? group.map(message => (
                               <UserMessage
@@ -1316,6 +1327,13 @@ const Session = ({
                       {group[0].role === 'eden'
                         ? group.map(message => (
                             <EdenMessage key={message._id} message={message} />
+                          ))
+                        : group[0].role === 'system'
+                        ? group.map(message => (
+                            <SystemMessage
+                              key={message._id}
+                              message={message}
+                            />
                           ))
                         : isOwnMessage(group[0].sender?._id)
                         ? group.map(message => (

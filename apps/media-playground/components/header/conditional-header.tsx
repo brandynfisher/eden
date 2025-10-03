@@ -9,7 +9,11 @@ const ConditionalHeader = () => {
   const pathname = usePathname()
 
   // Don't show the main header on these routes as they have their own specialized headers
-  if (pathname?.startsWith('/chat') || pathname?.startsWith('/sessions')) {
+  if (
+    pathname?.startsWith('/chat') ||
+    pathname?.startsWith('/sessions') ||
+    pathname?.startsWith('/gigabrain')
+  ) {
     return null
   }
 

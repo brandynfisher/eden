@@ -100,6 +100,10 @@ const config = {
           from: { opacity: '0' },
           to: { opacity: 'initial' },
         },
+        'pulse-slow': {
+          '0%, 100%': { opacity: '0.5' },
+          '50%': { opacity: '0.7' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -107,6 +111,7 @@ const config = {
         'collapsible-down': 'collapsible-down 0.2s ease-out',
         'collapsible-up': 'collapsible-up 0.2s ease-out',
         'fade-in': 'fade-in 1s ease',
+        'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
       },
     },
   },
