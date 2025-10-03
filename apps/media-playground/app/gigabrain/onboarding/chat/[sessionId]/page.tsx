@@ -1,7 +1,7 @@
 'use client'
 
 import { OnboardingLayout } from '../../components/onboarding-layout'
-import { onboardingChatConfig } from '../config'
+import { onboardingChatConfig } from '../../onboarding_config'
 import { useOnboardingStore } from '../store'
 import LoadingIndicator from '@/components/loading-indicator'
 import { LiveAudioProvider } from '@/features/sessions/live-audio/live-audio-context'
@@ -48,7 +48,7 @@ function OnboardingChatSessionContent() {
   return (
     <OnboardingLayout
       currentStep={1}
-      totalSteps={4}
+      totalSteps={3}
       canContinue={canProceed}
       previousRoute="/gigabrain"
       nextRoute="/gigabrain/onboarding/identity"

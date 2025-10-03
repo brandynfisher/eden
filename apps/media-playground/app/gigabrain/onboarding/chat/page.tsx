@@ -1,6 +1,6 @@
 'use client'
 
-import { onboardingChatConfig } from './config'
+import { onboardingChatConfig } from '../onboarding_config'
 import LoadingIndicator from '@/components/loading-indicator'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'

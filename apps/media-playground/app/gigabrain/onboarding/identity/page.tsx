@@ -78,7 +78,7 @@ export default function OnboardingIdentityPage() {
   return (
     <OnboardingLayout
       currentStep={2}
-      totalSteps={4}
+      totalSteps={3}
       canContinue={canContinue}
       previousRoute={`/gigabrain/onboarding/chat/${sessionId}`}
       nextRoute="/gigabrain/onboarding/finish"

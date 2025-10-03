@@ -191,49 +191,6 @@ export default function GigabrainPage() {
                   Connect to Discord, Twitter, and other platforms
                 </p>
               </div>
-
-              {/* Arrow 3 */}
-              <div className="flex-shrink-0 text-yellow-400/60">
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </div>
-
-              {/* Step 4 */}
-              <div className="flex-1 min-w-[85vw] md:min-w-0 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative snap-center mt-4">
-                <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-black text-sm">
-                  4
-                </div>
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-400 to-purple-400/60 flex items-center justify-center mb-4">
-                  <svg
-                    className="w-6 h-6 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="font-semibold mb-2 text-yellow-400">Share</h3>
-                <p className="text-sm text-gray-300">
-                  Invite your community to connect with their collective mind
-                </p>
-              </div>
             </div>
 
             {/* Key Features */}
