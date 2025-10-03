@@ -1,9 +1,10 @@
 'use client'
 
 import { useOnboardingStore } from '../chat/store'
+import { processOnboardingLLMCalls } from '../lib/process-onboarding'
 import { env } from '@/lib/config'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const PROGRESS_STEPS = [
   { message: 'Constructing persona...', duration: 1500 },
@@ -22,6 +23,7 @@ export default function OnboardingFinishPage() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
+  const hasProcessedOnboarding = useRef(false)
 
   // TODO: This will be tied to actual agent creation later
   const isGigabrainReady = isComplete
@@ -32,6 +34,25 @@ export default function OnboardingFinishPage() {
       return
     }
   }, [sessionId, router])
+
+  // Trigger async LLM calls when component mounts
+  useEffect(() => {
+    if (!sessionId || hasProcessedOnboarding.current) return
+
+    hasProcessedOnboarding.current = true
+
+    const processOnboarding = async () => {
+      try {
+        console.log('[OnboardingFinish] Starting LLM processing...')
+        await processOnboardingLLMCalls(sessionId)
+        console.log('[OnboardingFinish] LLM processing completed successfully')
+      } catch (error) {
+        console.error('[OnboardingFinish] Error processing onboarding:', error)
+      }
+    }
+
+    processOnboarding()
+  }, [sessionId])
 
   useEffect(() => {
     if (currentStepIndex >= PROGRESS_STEPS.length - 1) {
