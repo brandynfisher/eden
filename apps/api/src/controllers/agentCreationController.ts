@@ -1,0 +1,71 @@
+import axios from 'axios'
+import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+
+interface AgentPromptsExtractionRequest {
+  session_id: string
+}
+
+export const extractAgentPrompts = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{ Body: AgentPromptsExtractionRequest }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { session_id } = request.body
+
+  if (!session_id) {
+    return reply.status(400).send({
+      message: 'session_id is required',
+    })
+  }
+
+  const modalRequest = {
+    endpoint: `${server.config.EDEN_COMPUTE_API_URL}/agent_creation/extract_prompts`,
+    data: {
+      user_id: userId,
+      session_id,
+    },
+  }
+
+  server.log.info('> modal::request::agent_creation/extract_prompts')
+  server.log.info(modalRequest)
+
+  try {
+    const modalResponse = await axios.post(
+      modalRequest.endpoint,
+      modalRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    server.log.info('< modal::response::agent_creation/extract_prompts')
+    server.log.info(modalResponse.data)
+
+    return reply.send(modalResponse.data)
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      server.log.error(
+        'modal::error::agent_creation/extract_prompts',
+        error.response?.data,
+      )
+      return reply.status(error.response?.status || 500).send({
+        message:
+          error.response?.data?.message || 'Agent prompts extraction failed',
+      })
+    }
+
+    server.log.error('modal::error::agent_creation/extract_prompts', error)
+    return reply.status(500).send({
+      message: 'Internal server error',
+    })
+  }
+}

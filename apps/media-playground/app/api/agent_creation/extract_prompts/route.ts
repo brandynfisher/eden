@@ -15,21 +15,31 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
+    console.log('[Extract Agent Prompts] Request body:', body)
 
-    const response = await fetch(`${env.NEXT_PUBLIC_EDEN_API_URL}/llm/call`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`,
+    const response = await fetch(
+      `${env.NEXT_PUBLIC_EDEN_API_URL}/agent_creation/extract_prompts`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    })
+    )
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('[LLM Call] Error:', response.status, errorText)
+      console.error(
+        '[Extract Agent Prompts] Error:',
+        response.status,
+        errorText,
+      )
       return new NextResponse(
-        JSON.stringify({ message: `LLM call failed: ${response.statusText}` }),
+        JSON.stringify({
+          message: `Agent prompts extraction failed: ${response.statusText}`,
+        }),
         {
           status: response.status,
         },
@@ -40,7 +50,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
-    console.error('[LLM Call] Exception:', errorMessage)
+    console.error('[Extract Agent Prompts] Exception:', errorMessage)
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })
