@@ -9,10 +9,19 @@ import { useEffect, useRef } from 'react'
 
 export default function OnboardingChatPage() {
   const router = useRouter()
-  const { user } = useAuthState()
+  const { user, isSignedIn, isLoading, verifyAuth } = useAuthState()
   const hasCreatedSession = useRef(false)
+  const hasTriggeredAuth = useRef(false)
 
   const { agent } = useAgentQuery({ key: onboardingChatConfig.agent_name })
+
+  // Trigger Clerk OAuth login if user is not signed in
+  useEffect(() => {
+    if (!isSignedIn && !isLoading && !hasTriggeredAuth.current) {
+      hasTriggeredAuth.current = true
+      verifyAuth()
+    }
+  }, [isSignedIn, isLoading, verifyAuth])
 
   // Automatically create session with hardcoded message
   useEffect(() => {
@@ -48,10 +57,16 @@ export default function OnboardingChatPage() {
     }
   }, [agent, user, router])
 
-  if (!user) {
+  // Show loading state while authenticating or loading user data
+  if (!user || isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Please sign in to continue</div>
+        <div className="flex flex-col items-center gap-4">
+          <LoadingIndicator className="w-10 h-10 text-yellow-400" />
+          <p className="text-gray-300">
+            {!isSignedIn ? 'Signing you in...' : 'Loading Gigabrain builder...'}
+          </p>
+        </div>
       </div>
     )
   }
