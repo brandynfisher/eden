@@ -1429,7 +1429,7 @@ const Session = ({
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-aui-background p-4 z-10">
+      <div className="sticky bottom-0 bg-aui-background p-4 z-10 border-t border-gray-800">
         <div className="max-w-[--aui-thread-max-width] mx-auto w-full">
           <MessageInput
             sessionId={currentSessionId as string}

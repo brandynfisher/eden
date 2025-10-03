@@ -54,7 +54,7 @@ export function OnboardingLayout({
       </div>
 
       {/* Navigation Header - Fixed to top */}
-      <div className="bg-black/90 border-b border-gray-800 px-4 md:px-6 py-4 flex-shrink-0">
+      <div className="bg-black/90 border-b border-gray-800 px-4 md:px-6 py-4 flex-shrink-0 sticky top-0 z-20">
         {/* Desktop: Grid layout for true centering */}
         <div className="hidden md:grid md:grid-cols-3 gap-4 items-center w-full">
           {/* Left: Back Button */}
@@ -134,71 +134,69 @@ export function OnboardingLayout({
           </div>
         </div>
 
-        {/* Mobile: Stacked layout */}
-        <div className="md:hidden">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            {previousRoute && (
-              <button
-                onClick={handleBack}
-                className="text-yellow-400 hover:text-yellow-300 transition-colors text-xs font-medium flex items-center gap-1"
+        {/* Mobile: Single row layout - no wrapping */}
+        <div className="md:hidden flex items-center justify-between gap-2">
+          {previousRoute && (
+            <button
+              onClick={handleBack}
+              className="text-yellow-400 hover:text-yellow-300 transition-colors text-xs font-medium flex items-center gap-1 flex-shrink-0"
+            >
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-                Back
-              </button>
-            )}
-            <h2 className="text-[12px] font-bold text-yellow-400/60 whitespace-nowrap">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Back
+            </button>
+          )}
+          <div className="flex items-center gap-2 flex-1 justify-center">
+            <h2 className="text-[11px] font-bold text-yellow-400/60 whitespace-nowrap">
               Step {currentStep}/{totalSteps}
             </h2>
-            {nextRoute && (
-              <button
-                onClick={handleContinue}
-                disabled={!canContinue}
-                className={`
-                  px-4 py-2 rounded-lg text-xs font-semibold text-white
-                  transition-all duration-300 whitespace-nowrap flex items-center gap-1
-                  ${canContinue ? '' : 'cursor-not-allowed opacity-50'}
-                `}
-                style={{
-                  background: canContinue
-                    ? 'linear-gradient(135deg, #e6a825, #7c8aff)'
-                    : '#374151',
-                }}
-              >
-                Continue
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            )}
-          </div>
-          {progressText && (
-            <div className="text-center">
-              <span className="text-[10px] text-gray-400 font-medium">
+            {progressText && (
+              <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">
                 {progressText}
               </span>
-            </div>
+            )}
+          </div>
+          {nextRoute && (
+            <button
+              onClick={handleContinue}
+              disabled={!canContinue}
+              className={`
+                px-3 py-1.5 rounded-lg text-xs font-semibold text-white
+                transition-all duration-300 whitespace-nowrap flex items-center gap-1 flex-shrink-0
+                ${canContinue ? '' : 'cursor-not-allowed opacity-50'}
+              `}
+              style={{
+                background: canContinue
+                  ? 'linear-gradient(135deg, #e6a825, #7c8aff)'
+                  : '#374151',
+              }}
+            >
+              Continue
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
           )}
         </div>
       </div>

@@ -11,17 +11,6 @@ export default function GigabrainPage() {
     if (videoRef.current) {
       videoRef.current.playbackRate = 0.75
     }
-
-    // Load Kumar One font
-    const link = document.createElement('link')
-    link.href =
-      'https://fonts.googleapis.com/css2?family=Kumar+One&display=swap'
-    link.rel = 'stylesheet'
-    document.head.appendChild(link)
-
-    return () => {
-      document.head.removeChild(link)
-    }
   }, [])
 
   return (
@@ -49,7 +38,7 @@ export default function GigabrainPage() {
                 className="text-6xl md:text-7xl font-bold mb-28 mt-12 leading-tight"
                 style={{
                   fontFamily:
-                    '"Kumar One", "Courier Prime", "Courier New", monospace',
+                    'var(--font-kumar-one), "Courier Prime", "Courier New", monospace',
                   color: '#f5b800',
                   textShadow: '4px 4px 10px rgba(0, 0, 0, 0.9)',
                   WebkitTextFillColor: '#f5b800',
