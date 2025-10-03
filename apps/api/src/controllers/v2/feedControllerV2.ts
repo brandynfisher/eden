@@ -859,16 +859,22 @@ export const getCreationsFeedCursorV2 = async (
       }
 
       // Build vector search stage
-      const searchLimit = limit ?? 100
+      const pageLimit = limit ?? 100
+      // Fetch more results from vector search to allow for pagination
+      // We multiply by a factor to ensure we have enough results after filtering
+      const vectorSearchLimit = Math.max(pageLimit * 20, 500)
       const vectorSearchStage: any = {
         $vectorSearch: {
           index: 'img_vec_idx',
           path: 'embedding',
           queryVector: queryVector,
-          limit: searchLimit,
-          numCandidates: Math.max(searchLimit * 10, 150), // MongoDB recommends 10-20x the limit
+          limit: vectorSearchLimit,
+          numCandidates: Math.max(vectorSearchLimit * 2, 1000), // MongoDB recommends 10-20x the limit
         },
       }
+
+      // Apply cursor-based pagination filter if cursor exists
+      const cursorFilter = cursor ? { _id: { $lt: new ObjectId(cursor) } } : {}
 
       // Vector search first, then apply filters as regular $match stages
       // This is because not all fields may be indexed as filters in the vector index
@@ -879,10 +885,14 @@ export const getCreationsFeedCursorV2 = async (
             score: { $meta: 'vectorSearchScore' },
           },
         },
-        // Apply filters after vector search as a regular match
+        // Apply cursor filter first if it exists
+        ...(cursor ? [{ $match: cursorFilter }] : []),
+        // Apply other filters after vector search
         ...(filters && Object.keys(filters).length > 0
           ? [{ $match: filters }]
           : []),
+        // Limit to requested page size after filtering
+        { $limit: pageLimit },
         {
           $project: {
             embedding: 0, // Exclude embedding from results
