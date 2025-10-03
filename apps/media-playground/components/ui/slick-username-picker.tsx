@@ -18,6 +18,7 @@ interface SlickUsernamePickerProps {
   onStatusChange?: (
     status: 'available' | 'taken' | 'invalid' | 'checking' | null,
   ) => void // NEW
+  autoGenerateOnDisplayNameChange?: boolean // NEW
 }
 
 export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
@@ -28,6 +29,7 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
   disabled,
   originalValue,
   onStatusChange,
+  autoGenerateOnDisplayNameChange = false,
 }) => {
   const [isChecking, setIsChecking] = useState(false)
   const [availability, setAvailability] = useState<
@@ -126,9 +128,11 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
   }
 
   // Auto-generate username from display name
-  const generateUsername = async () => {
+  const generateUsername = async (silent = false) => {
     if (!displayName.trim()) {
-      toast.error('Enter a name first to generate a username')
+      if (!silent) {
+        toast.error('Enter a name first to generate a username')
+      }
       return
     }
 
@@ -156,7 +160,9 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
           setAvailability('available')
           setLastCheckedValue(candidate)
           setIsChecking(false)
-          toast.success(`Generated username: ${candidate}`)
+          if (!silent) {
+            toast.success(`Generated username: ${candidate}`)
+          }
           return
         }
         candidate = `${baseUsername}-${counter}`
@@ -167,8 +173,23 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
     }
 
     setIsChecking(false)
-    toast.error('Could not generate an available username')
+    if (!silent) {
+      toast.error('Could not generate an available username')
+    }
   }
+
+  // Auto-generate effect when displayName changes
+  useEffect(() => {
+    if (!autoGenerateOnDisplayNameChange) return
+    if (!displayName.trim()) return
+    if (value.trim()) return // Only auto-generate if username is empty
+
+    const timeoutId = setTimeout(() => {
+      generateUsername(true) // Silent mode (no toasts)
+    }, 1500) // 1.5 second delay
+
+    return () => clearTimeout(timeoutId)
+  }, [displayName, value, autoGenerateOnDisplayNameChange])
 
   const getStatusIcon = () => {
     if (originalValue && value === originalValue) return null
@@ -216,7 +237,7 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
         <div className="relative flex-1">
           <Input
             type="text"
-            placeholder="Username on Eden"
+            placeholder="username in Eden url"
             value={value}
             onChange={e => {
               const newValue = e.target.value.slice(0, 42)
@@ -250,7 +271,7 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
         <Button
           type="button"
           variant="outline"
-          onClick={generateUsername}
+          onClick={() => generateUsername()}
           disabled={isChecking || disabled || !displayName.trim()}
           className="flex-shrink-0"
         >

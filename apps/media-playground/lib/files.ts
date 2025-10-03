@@ -4,9 +4,9 @@ import { downloadZip } from '@/utils/downloader.util'
 import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 import exifr from 'exifr'
 
-const MAX_IMAGE_PIXELS = 6000000 // 6MP
-const MAX_IMAGE_WIDTH = 2560
-const MAX_IMAGE_HEIGHT = 2560
+const MAX_IMAGE_PIXELS = 4000000 // 4MP
+const MAX_IMAGE_WIDTH = 1920
+const MAX_IMAGE_HEIGHT = 1920
 
 type UploadOptions = {
   file: File
@@ -174,8 +174,8 @@ export const rotateImageBasedOnExif = async (file: File): Promise<File> => {
             }
           },
           file.type,
-          0.95,
-        ) // 95% quality
+          0.85,
+        ) // 85% quality
 
         URL.revokeObjectURL(imageUrl)
       }

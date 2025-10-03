@@ -11,6 +11,7 @@ interface OnboardingLayoutProps {
   nextRoute?: string
   children: ReactNode
   onContinue?: () => void
+  progressText?: string
 }
 
 export function OnboardingLayout({
@@ -21,6 +22,7 @@ export function OnboardingLayout({
   nextRoute,
   children,
   onContinue,
+  progressText,
 }: OnboardingLayoutProps) {
   const router = useRouter()
 
@@ -88,7 +90,12 @@ export function OnboardingLayout({
           </div>
 
           {/* Right: Continue Button */}
-          <div className="flex justify-end">
+          <div className="flex justify-end items-center gap-3">
+            {progressText && (
+              <span className="text-xs text-gray-400 font-medium">
+                {progressText}
+              </span>
+            )}
             {nextRoute && (
               <button
                 onClick={handleContinue}
@@ -186,6 +193,13 @@ export function OnboardingLayout({
               </button>
             )}
           </div>
+          {progressText && (
+            <div className="text-center">
+              <span className="text-[10px] text-gray-400 font-medium">
+                {progressText}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

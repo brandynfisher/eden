@@ -28,11 +28,13 @@ function OnboardingChatSessionContent() {
 
   const canProceed = userMessageCount >= onboardingChatConfig.min_n_turns
 
+  const progressText = `${userMessageCount}/${onboardingChatConfig.min_n_turns} messages`
+
   const handleGeneratePersona = useCallback(() => {
     if (sessionId) {
       setSessionId(sessionId)
     }
-    router.push('/gigabrain/onboarding/step2')
+    router.push('/gigabrain/onboarding/identity')
   }, [router, sessionId, setSessionId])
 
   if (isLoading && sessionId !== 'new') {
@@ -49,8 +51,9 @@ function OnboardingChatSessionContent() {
       totalSteps={4}
       canContinue={canProceed}
       previousRoute="/gigabrain"
-      nextRoute="/gigabrain/onboarding/step2"
+      nextRoute="/gigabrain/onboarding/identity"
       onContinue={handleGeneratePersona}
+      progressText={progressText}
     >
       <Session optimisticSessionId={sessionId} />
     </OnboardingLayout>
