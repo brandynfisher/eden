@@ -26,10 +26,10 @@ export default function GigabrainPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Background Video */}
+      {/* Background Video - Fixed */}
       <video
         ref={videoRef}
-        className="fixed inset-0 w-full h-screen object-cover opacity-60"
+        className="fixed inset-0 w-full h-full object-cover opacity-60"
         autoPlay
         muted
         loop
@@ -46,13 +46,13 @@ export default function GigabrainPage() {
             {/* Hero Section */}
             <div className="text-center mb-32 min-h-[60vh] flex flex-col items-center justify-center">
               <h1
-                className="text-6xl md:text-7xl font-bold mb-20 leading-tight"
+                className="text-6xl md:text-7xl font-bold mb-28 mt-12 leading-tight"
                 style={{
                   fontFamily:
                     '"Kumar One", "Courier Prime", "Courier New", monospace',
-                  color: '#facc15',
-                  textShadow: '3px 3px 6px rgba(0, 0, 0, 0.7)',
-                  WebkitTextFillColor: '#facc15',
+                  color: '#f5b800',
+                  textShadow: '4px 4px 10px rgba(0, 0, 0, 0.9)',
+                  WebkitTextFillColor: '#f5b800',
                 }}
               >
                 gigabrain
@@ -91,9 +91,9 @@ export default function GigabrainPage() {
             </div>
 
             {/* Process Steps */}
-            <div className="flex items-center justify-center gap-4 mb-24">
+            <div className="flex items-center md:justify-center gap-4 mb-24 overflow-x-auto snap-x snap-mandatory md:overflow-visible px-4 md:px-0 -mx-4 md:mx-0 scrollbar-hide pt-6">
               {/* Step 1 */}
-              <div className="flex-1 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative">
+              <div className="flex-1 min-w-[85vw] md:min-w-0 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative snap-center mt-4">
                 <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-black text-sm">
                   1
                 </div>
@@ -121,7 +121,7 @@ export default function GigabrainPage() {
               </div>
 
               {/* Arrow 1 */}
-              <div className="hidden md:block text-yellow-400/60">
+              <div className="flex-shrink-0 text-yellow-400/60">
                 <svg
                   className="w-8 h-8"
                   fill="none"
@@ -138,7 +138,7 @@ export default function GigabrainPage() {
               </div>
 
               {/* Step 2 */}
-              <div className="flex-1 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative">
+              <div className="flex-1 min-w-[85vw] md:min-w-0 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative snap-center mt-4">
                 <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-black text-sm">
                   2
                 </div>
@@ -166,7 +166,7 @@ export default function GigabrainPage() {
               </div>
 
               {/* Arrow 2 */}
-              <div className="hidden md:block text-yellow-400/60">
+              <div className="flex-shrink-0 text-yellow-400/60">
                 <svg
                   className="w-8 h-8"
                   fill="none"
@@ -183,7 +183,7 @@ export default function GigabrainPage() {
               </div>
 
               {/* Step 3 */}
-              <div className="flex-1 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative">
+              <div className="flex-1 min-w-[85vw] md:min-w-0 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative snap-center mt-4">
                 <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-black text-sm">
                   3
                 </div>
@@ -209,7 +209,7 @@ export default function GigabrainPage() {
               </div>
 
               {/* Arrow 3 */}
-              <div className="hidden md:block text-yellow-400/60">
+              <div className="flex-shrink-0 text-yellow-400/60">
                 <svg
                   className="w-8 h-8"
                   fill="none"
@@ -226,7 +226,7 @@ export default function GigabrainPage() {
               </div>
 
               {/* Step 4 */}
-              <div className="flex-1 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative">
+              <div className="flex-1 min-w-[85vw] md:min-w-0 max-w-xs bg-black/60 rounded-xl p-6 border border-yellow-400/20 backdrop-blur-sm transition-all duration-300 hover:border-yellow-400/40 hover:transform hover:-translate-y-1 relative snap-center mt-4">
                 <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-black text-sm">
                   4
                 </div>
@@ -427,9 +427,8 @@ export default function GigabrainPage() {
 
             {/* Footer Note */}
             <div className="text-center mt-12 pb-12">
-              <p className="text-sm text-gray-400">
-                You own your data. Private by default. • You can stop
-                anytime—your progress is saved.
+              <p className="text-sm text-white">
+                You own your data. Private by default.
               </p>
             </div>
           </div>
