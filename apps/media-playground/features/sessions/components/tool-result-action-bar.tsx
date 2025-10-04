@@ -25,7 +25,7 @@ import {
   HeartIcon,
   Share2Icon,
 } from 'lucide-react'
-import { useTimeAgo } from 'next-timeago'
+// import { useTimeAgo } from 'next-timeago'
 import Link from 'next/link'
 import React from 'react'
 import { toast } from 'sonner'
@@ -178,7 +178,7 @@ const ToolActionButton = ({ creationId }: { creationId: string }) => {
 }
 
 const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
-  const { TimeAgo } = useTimeAgo()
+  // const { TimeAgo } = useTimeAgo()
 
   // Get completed tool calls with results that have creation IDs
   const completedToolCallsWithCreations =
@@ -229,12 +229,12 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
             result={toolCall.result}
           />
         ))}
-        <div
+        {/* <div
           className="text-xs bg-transparent"
           title={new Date(message.createdAt).toLocaleString()}
         >
           <TimeAgo date={new Date(message.createdAt)} />
-        </div>
+        </div> */}
       </div>
     </div>
   )

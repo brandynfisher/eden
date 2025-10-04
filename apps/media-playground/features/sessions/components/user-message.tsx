@@ -30,56 +30,58 @@ export const UserMessage = ({
     : message.content
 
   return (
-    <div className="flex justify-end py-2">
-      <div className="flex flex-col items-end gap-2">
-        {hasAttachments && (
-          <LightboxGallery galleryKey={message._id}>
-            <div className="flex flex-wrap gap-2 justify-end">
-              {message.attachments?.map((attachment, index) => (
-                <MessageAttachment
-                  key={attachment}
-                  url={attachment}
-                  index={index}
-                />
-              ))}
+    <div className="py-2 pl-[calc(3rem+0.75rem)]">
+      <div className="max-w-[42rem] flex flex-col items-end">
+        <div className="flex flex-col items-end gap-2 max-w-[85%]">
+          {hasAttachments && (
+            <LightboxGallery galleryKey={message._id}>
+              <div className="flex flex-wrap gap-2 justify-end">
+                {message.attachments?.map((attachment, index) => (
+                  <MessageAttachment
+                    key={attachment}
+                    url={attachment}
+                    index={index}
+                  />
+                ))}
+              </div>
+            </LightboxGallery>
+          )}
+          {hasContent && (
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
+              <div className="overflow-x-auto text-left">
+                {/* Preview */}
+                {!expanded && (
+                  <div className="overflow-x-auto relative">
+                    <MarkdownText>{preview!}</MarkdownText>
+                    {isHuge && (
+                      <div className="mt-2 flex">
+                        <button
+                          type="button"
+                          className="text-xs underline text-muted-foreground hover:text-foreground"
+                          onClick={() => setExpanded(true)}
+                        >
+                          Show full message ({contentLen.toLocaleString()}{' '}
+                          characters)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Full (own scroll) */}
+                {expanded && (
+                  <div className="overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
+                    <MarkdownText>{message.content!}</MarkdownText>
+                  </div>
+                )}
+              </div>
             </div>
-          </LightboxGallery>
-        )}
-        {hasContent && (
-          <div className="aui-user-message-content">
-            <div className="overflow-x-auto">
-              {/* Preview */}
-              {!expanded && (
-                <div className="overflow-x-auto relative">
-                  <MarkdownText>{preview!}</MarkdownText>
-                  {isHuge && (
-                    <div className="mt-2 flex">
-                      <button
-                        type="button"
-                        className="text-xs underline text-muted-foreground hover:text-foreground"
-                        onClick={() => setExpanded(true)}
-                      >
-                        Show full message ({contentLen.toLocaleString()}{' '}
-                        characters)
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-              {/* Full (own scroll) */}
-              {expanded && (
-                <div className="overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
-                  <MarkdownText>{message.content!}</MarkdownText>
-                </div>
-              )}
+          )}
+          {shouldShowTip && (
+            <div className="text-xs text-muted-foreground mt-1 italic">
+              💡 Tip: @mention an agent to have them respond
             </div>
-          </div>
-        )}
-        {shouldShowTip && (
-          <div className="text-xs text-muted-foreground mt-1 max-w-xs text-right italic">
-            💡 Tip: @mention an agent to have them respond
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

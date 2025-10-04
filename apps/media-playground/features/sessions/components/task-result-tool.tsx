@@ -285,7 +285,6 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
       {!isCompletedWithResults &&
         !(isWebSearchTool && toolCall.status === 'completed') && (
           <ToolFallback
-            type="tool-call"
             result={{
               tool: tool!,
               result: toolResults || [],
@@ -301,20 +300,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
                   : TaskV2Status.Pending,
               error: toolCall.error,
             }}
-            toolCallId={tool!}
             toolName={tool!}
             args={toolCall.args}
-            argsText={JSON.stringify(toolCall.args)}
-            status={
-              toolCall.status === 'completed'
-                ? { type: 'complete' }
-                : toolCall.status === 'failed'
-                ? { type: 'incomplete', reason: 'error' }
-                : toolCall.status === 'cancelled'
-                ? { type: 'incomplete', reason: 'cancelled' }
-                : { type: 'running' }
-            }
-            addResult={() => true}
             onCancel={onCancel}
           />
         )}
