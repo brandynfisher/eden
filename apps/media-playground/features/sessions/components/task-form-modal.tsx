@@ -70,6 +70,7 @@ import { z } from 'zod'
 // Extended repeat options for the simplified interface
 export enum ExtendedTriggerRepeatOptions {
   DOES_NOT_REPEAT = 'DOES_NOT_REPEAT',
+  HOURLY = 'hourly',
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
@@ -86,6 +87,11 @@ export const extendedTriggerRepeatOptions: {
     name: "Doesn't repeat",
     value: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
     schedule: {},
+  },
+  {
+    name: 'Hourly',
+    value: ExtendedTriggerRepeatOptions.HOURLY,
+    schedule: { hour: '*' },
   },
   {
     name: 'Daily',
@@ -121,6 +127,7 @@ export const taskSchema = z
     startDate: z.date().optional(), // Only needed for "doesn't repeat"
     repeat: z.nativeEnum(ExtendedTriggerRepeatOptions),
     time: z.string().optional(), // HH:MM format
+    minute: z.string().optional(), // For hourly
     dayOfWeek: z.string().optional(), // For weekly
     dayOfMonth: z.string().optional(), // For monthly/annually
     month: z.string().optional(), // For annually
@@ -174,6 +181,14 @@ export const taskSchema = z
     })
 
     // Validate schedule fields based on repeat type
+    if (data.repeat === ExtendedTriggerRepeatOptions.HOURLY && !data.minute) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Please select a minute',
+        path: ['minute'],
+      })
+    }
+
     if (
       data.repeat === ExtendedTriggerRepeatOptions.WEEKLY &&
       !data.dayOfWeek
@@ -336,6 +351,7 @@ const TaskFormModal: FC<{
       startDate: z.date().optional(),
       repeat: z.nativeEnum(ExtendedTriggerRepeatOptions).optional(),
       time: z.string().optional(),
+      minute: z.string().optional(),
       dayOfWeek: z.string().optional(),
       dayOfMonth: z.string().optional(),
       month: z.string().optional(),
@@ -396,6 +412,14 @@ const TaskFormModal: FC<{
       })
 
       // Validate schedule fields based on repeat type
+      if (data.repeat === ExtendedTriggerRepeatOptions.HOURLY && !data.minute) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Please select a minute',
+          path: ['minute'],
+        })
+      }
+
       if (
         data.repeat === ExtendedTriggerRepeatOptions.WEEKLY &&
         !data.dayOfWeek
@@ -473,6 +497,7 @@ const TaskFormModal: FC<{
       startDate: addMinutes(new Date(), 3),
       repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
       time: format(addMinutes(new Date(), 3), 'HH:mm'),
+      minute: undefined,
       dayOfWeek: undefined,
       dayOfMonth: undefined,
       month: undefined,
@@ -502,7 +527,9 @@ const TaskFormModal: FC<{
 
       // Determine the repeat type from the schedule
       let repeat = ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT
-      if (editingTask.schedule.day_of_week === '*') {
+      if (editingTask.schedule.hour === '*') {
+        repeat = ExtendedTriggerRepeatOptions.HOURLY
+      } else if (editingTask.schedule.day_of_week === '*') {
         repeat = ExtendedTriggerRepeatOptions.DAILY
       } else if (editingTask.schedule.day_of_week) {
         repeat = ExtendedTriggerRepeatOptions.WEEKLY
@@ -534,6 +561,7 @@ const TaskFormModal: FC<{
             : editingTask.schedule.start_date
             ? format(new Date(editingTask.schedule.start_date), 'HH:mm')
             : currentTime,
+        minute: editingTask.schedule.minute?.toString() || undefined,
         dayOfWeek: editingTask.schedule.day_of_week?.toString() || undefined,
         dayOfMonth: editingTask.schedule.day?.toString() || undefined,
         month: editingTask.schedule.month?.toString() || undefined,
@@ -572,6 +600,7 @@ const TaskFormModal: FC<{
         startDate: minimumDateTime,
         repeat: ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT,
         time: format(minimumDateTime, 'HH:mm'),
+        minute: undefined,
         dayOfWeek: undefined,
         dayOfMonth: undefined,
         month: undefined,
@@ -603,31 +632,52 @@ const TaskFormModal: FC<{
         }
       } else {
         // Recurring task - set time and schedule pattern
-        if (values.time) {
-          const [hour, minute] = values.time.split(':').map(Number)
-          schedule.hour = hour
-          schedule.minute = minute
-        }
-
         // Add schedule pattern based on repeat type
         switch (values.repeat) {
+          case ExtendedTriggerRepeatOptions.HOURLY:
+            // For hourly tasks, hour is *, minute is selected
+            schedule.hour = '*'
+            if (values.minute) {
+              schedule.minute = parseInt(values.minute, 10)
+            }
+            break
           case ExtendedTriggerRepeatOptions.DAILY:
             schedule.day_of_week = '*'
+            if (values.time) {
+              const [hour, minute] = values.time.split(':').map(Number)
+              schedule.hour = hour
+              schedule.minute = minute
+            }
             break
           case ExtendedTriggerRepeatOptions.WEEKLY:
             if (values.dayOfWeek) {
               schedule.day_of_week = values.dayOfWeek
+            }
+            if (values.time) {
+              const [hour, minute] = values.time.split(':').map(Number)
+              schedule.hour = hour
+              schedule.minute = minute
             }
             break
           case ExtendedTriggerRepeatOptions.MONTHLY:
             if (values.dayOfMonth) {
               schedule.day = values.dayOfMonth
             }
+            if (values.time) {
+              const [hour, minute] = values.time.split(':').map(Number)
+              schedule.hour = hour
+              schedule.minute = minute
+            }
             break
           case ExtendedTriggerRepeatOptions.ANNUALLY:
             if (values.month && values.dayOfMonth) {
               schedule.month = values.month
               schedule.day = values.dayOfMonth
+            }
+            if (values.time) {
+              const [hour, minute] = values.time.split(':').map(Number)
+              schedule.hour = hour
+              schedule.minute = minute
             }
             break
         }
@@ -1288,6 +1338,38 @@ const TaskFormModal: FC<{
 
                   {/* Conditional fields based on repeat selection */}
                   {form.watch('repeat') ===
+                    ExtendedTriggerRepeatOptions.HOURLY && (
+                    <FormField
+                      control={form.control}
+                      name="minute"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <SelectTrigger className="h-12">
+                                <SelectValue placeholder="Select minute of the hour" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-80">
+                                {Array.from({ length: 60 }, (_, i) => (
+                                  <SelectItem key={i} value={i.toString()}>
+                                    <div className="py-1">
+                                      :{i.toString().padStart(2, '0')}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  {form.watch('repeat') ===
                     ExtendedTriggerRepeatOptions.WEEKLY && (
                     <FormField
                       control={form.control}
@@ -1438,27 +1520,29 @@ const TaskFormModal: FC<{
                     </div>
                   )}
 
-                  {/* Time picker for all except "doesn't repeat" */}
+                  {/* Time picker for all except "doesn't repeat" and "hourly" */}
                   {form.watch('repeat') !==
-                    ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT && (
-                    <FormField
-                      control={form.control}
-                      name="time"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input
-                              type="time"
-                              value={field.value || ''}
-                              onChange={field.onChange}
-                              className="h-12"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                    ExtendedTriggerRepeatOptions.DOES_NOT_REPEAT &&
+                    form.watch('repeat') !==
+                      ExtendedTriggerRepeatOptions.HOURLY && (
+                      <FormField
+                        control={form.control}
+                        name="time"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                type="time"
+                                value={field.value || ''}
+                                onChange={field.onChange}
+                                className="h-12"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
                   {/* Start date/time for "doesn't repeat" */}
                   {form.watch('repeat') ===
