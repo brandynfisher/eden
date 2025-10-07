@@ -84,9 +84,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@assistant-ui/react-ui@npm:^0.1.8":
-  version: 0.1.8
-  resolution: "@assistant-ui/react-ui@npm:0.1.8"
+"@assistant-ui/react-ui@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@assistant-ui/react-ui@npm:0.2.0"
   dependencies:
     "@radix-ui/react-avatar": "npm:^1.1.3"
     "@radix-ui/react-dialog": "npm:^1.1.6"
@@ -108,7 +108,7 @@ __metadata:
       optional: true
     "@types/react-dom":
       optional: true
-  checksum: 10c0/32f60fa274f214b68247ba6374b69ae045b388fa751f71af8ff9d28cec9cd0efd05e0313e1280e0a25ce3cca03485b6658f0629a7a500f93b5c0312454087022
+  checksum: 10c0/20fa47b68e7619fbaea683a6e7e7f822e762a893963cfb74a1eb19877759ee461d77676404839a1270bbc7daa63746c5f1de61c1cdc78e98e26ea64327ac569b
   languageName: node
   linkType: hard
 
@@ -20197,7 +20197,7 @@ __metadata:
     "@assistant-ui/react": "npm:^0.8.2"
     "@assistant-ui/react-markdown": "npm:^0.8.0"
     "@assistant-ui/react-syntax-highlighter": "npm:^0.8.0"
-    "@assistant-ui/react-ui": "npm:^0.1.8"
+    "@assistant-ui/react-ui": "npm:^0.2.0"
     "@chromatic-com/storybook": "npm:^3.2.3"
     "@clerk/nextjs": "npm:^6.10.4"
     "@clerk/themes": "npm:^2.2.14"
