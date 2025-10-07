@@ -36,6 +36,7 @@ import {
   updateMemoryUser,
   updateUserMemoryEnabled,
 } from '../../controllers/agentController'
+import { getAgentTrigger } from '../../controllers/agentServicesController'
 import { MEMORY_LIMITS } from '../../lib/constants'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -277,6 +278,16 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => createAgentTrigger(server, request, reply),
+  })
+
+  server.get('/v2/agents/:agentId/triggers/:triggerId', {
+    schema: {
+      tags: ['Agents - Triggers'],
+      summary: 'Get Single Trigger',
+      description: 'Retrieve a specific trigger by its ID.',
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => getAgentTrigger(request, reply),
   })
 
   server.patch('/v2/agents/:agentId/triggers/:triggerId', {

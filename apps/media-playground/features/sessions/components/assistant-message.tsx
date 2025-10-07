@@ -33,12 +33,13 @@ export const AssistantMessage = ({
     Set<string>
   >(new Set())
   const [expanded, setExpanded] = useState(false)
-  const contentLen = message.content?.length ?? 0
+  const trimmedContent = message.content?.trim() ?? ''
+  const contentLen = trimmedContent.length
   const isHuge = contentLen > 40000
   const previewLimit = 8000
   const preview = isHuge
-    ? message.content!.slice(0, previewLimit)
-    : message.content
+    ? trimmedContent.slice(0, previewLimit)
+    : trimmedContent
 
   useEffect(() => {
     if (message.tool_calls) {
@@ -66,7 +67,7 @@ export const AssistantMessage = ({
   )
     return null
 
-  const isEmpty = !message.content || message.content.length === 0
+  const isEmpty = trimmedContent.length === 0
   const hasUsername = !!message.sender?.username
   const shouldMakeClickable = hasUsername
 
@@ -184,7 +185,7 @@ export const AssistantMessage = ({
                 {expanded && (
                   <div className="max-h-[60vh] overflow-y-auto rounded-md border p-3">
                     <AssistantContentRenderer>
-                      {message.content!}
+                      {trimmedContent}
                     </AssistantContentRenderer>
                   </div>
                 )}
@@ -395,7 +396,7 @@ export const AssistantMessage = ({
                 {expanded && (
                   <div className="max-h-[60vh] overflow-y-auto rounded-md border p-3">
                     <AssistantContentRenderer>
-                      {message.content!}
+                      {trimmedContent}
                     </AssistantContentRenderer>
                   </div>
                 )}
@@ -599,7 +600,7 @@ export const AssistantMessage = ({
             {expanded && (
               <div className="max-h-[60vh] overflow-y-auto rounded-md border p-3">
                 <AssistantContentRenderer>
-                  {message.content!}
+                  {trimmedContent}
                 </AssistantContentRenderer>
               </div>
             )}

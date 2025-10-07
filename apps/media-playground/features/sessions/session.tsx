@@ -104,6 +104,37 @@ const Session = ({
     enabled: !!sessionId && sessionId !== 'new',
   })
 
+  // State to store trigger data
+  const [triggerData, setTriggerData] = useState<{ context: string } | null>(
+    null,
+  )
+
+  useEffect(() => {
+    if (session?.trigger) {
+      const fetchTrigger = async () => {
+        try {
+          const agentId = session.agents?.[0]?._id
+          if (!agentId) {
+            setTriggerData(null)
+            return
+          }
+
+          const response = await axios.get(
+            `/api/agents/${agentId}/triggers/${session.trigger}`,
+          )
+
+          setTriggerData(response.data.trigger || null)
+        } catch (error) {
+          setTriggerData(null)
+        }
+      }
+
+      fetchTrigger()
+    } else {
+      setTriggerData(null)
+    }
+  }, [session])
+
   // Create pending session data when we have a pendingMessage
   const pendingSession = useMemo(() => {
     if (!pendingMessage || !user) return null
@@ -903,8 +934,27 @@ const Session = ({
         )
       }) ?? []
 
+    // Prepend trigger system message if trigger data exists
+    let messagesWithTrigger = existingMessages
+    if (triggerData && triggerData.context) {
+      const triggerSystemMessage = {
+        _id: `trigger-context-${sessionId}`,
+        session: sessionId,
+        role: 'system' as const,
+        content: triggerData.context,
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+        attachments: [],
+        reactions: {},
+        sender: { _id: 'system', username: 'system', name: 'System' },
+        trigger_context: true,
+      } as Message & { trigger_context: boolean }
+
+      messagesWithTrigger = [triggerSystemMessage, ...existingMessages]
+    }
+
     if (sessionId === 'new' && isSessionLoading) {
-      return [...existingMessages, ...optimisticMessages]
+      return [...messagesWithTrigger, ...optimisticMessages]
     }
 
     // In non-streaming mode, include optimistic messages but avoid duplicates
@@ -922,7 +972,7 @@ const Session = ({
               ) < 10000,
           ),
       )
-      return [...existingMessages, ...uniqueOptimisticMessages]
+      return [...messagesWithTrigger, ...uniqueOptimisticMessages]
     }
 
     // In streaming mode, include optimistic messages but avoid duplicates
@@ -941,7 +991,7 @@ const Session = ({
 
     // Include local streaming messages when in pendingMessage mode
     return [
-      ...existingMessages,
+      ...messagesWithTrigger,
       ...uniqueOptimisticMessages,
       ...streamingMessages,
     ]
@@ -952,6 +1002,7 @@ const Session = ({
     optimisticMessages,
     ischatRoute,
     streamingMessages,
+    triggerData,
   ])
 
   const messageGroups = useMemo(

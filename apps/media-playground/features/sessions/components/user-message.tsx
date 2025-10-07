@@ -21,12 +21,13 @@ export const UserMessage = ({
   const isMultiAgentSession = session?.agents && session.agents.length > 1
   const hasMentions = message.content && /@\S+/.test(message.content)
   const shouldShowTip = isMultiAgentSession && !hasMentions
-  const contentLen = message.content?.length ?? 0
+  const trimmedContent = message.content?.trim() ?? ''
+  const contentLen = trimmedContent.length
   const isHuge = contentLen > 40000 // character threshold
   const previewLimit = 8000 // render a safe preview chunk
   const preview = isHuge
-    ? message.content!.slice(0, previewLimit)
-    : message.content
+    ? trimmedContent.slice(0, previewLimit)
+    : trimmedContent
 
   return (
     <div className="pt-2 pb-4 pl-[calc(3rem+0.75rem)]">
@@ -72,7 +73,7 @@ export const UserMessage = ({
                 {expanded && (
                   <div className="overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
                     <pre className="whitespace-pre-wrap font-sans text-base">
-                      {message.content!}
+                      {trimmedContent}
                     </pre>
                   </div>
                 )}

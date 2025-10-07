@@ -234,6 +234,8 @@ import {
   AgentsDeployResponse,
   AgentsGetDeploymentsArguments,
   AgentsGetDeploymentsResponse,
+  AgentsGetTriggerArguments,
+  AgentsGetTriggerResponse,
   AgentsGetTriggersArguments,
   AgentsGetTriggersResponse,
   AgentsLikeArguments,
@@ -369,6 +371,7 @@ import {
   agentsGetDeploymentsRequestConfig,
   agentsGetPermissionsRequestConfig,
   agentsGetSharedRequestConfig,
+  agentsGetTriggerRequestConfig,
   agentsGetTriggersRequestConfig,
   agentsLikeRequestConfig,
   agentsStopDeploymentRequestConfig,
@@ -804,6 +807,10 @@ export abstract class Methods {
         AgentsGetAllTriggersArguments,
         AgentsGetAllTriggersResponse
       >(this, agentsGetAllTriggersRequestConfig),
+      get: bindApiCall<AgentsGetTriggerArguments, AgentsGetTriggerResponse>(
+        this,
+        agentsGetTriggerRequestConfig,
+      ),
       create: bindApiCall<
         AgentsCreateTriggerArguments,
         AgentsCreateTriggerResponse
