@@ -796,27 +796,20 @@ export const getCreationsFeedCursorV2 = async (
 ) => {
   const { query } = request
   const { userId: authUserId } = request.user || {}
-  // const currentDate = new Date()
 
   const {
     filters,
     sortOptions,
     customFilterOptions,
-    // filterMap,
     preAggregateFilterOptions,
-    // useReactionsPreAggregate,
-    // useEmbeddingsPreAggregate,
     useCollectionsPreAggregate,
     useTasksPreAggregate,
-    // useFollowingPreAggregate,
   } = await handleArguments({
     server,
     reply,
     authUserId,
     query: query as CursorPaginatedFeedQuery,
   })
-
-  // console.log(JSON.stringify(filters, null, 2))
 
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
   const { search } = customFilterOptions
@@ -828,19 +821,9 @@ export const getCreationsFeedCursorV2 = async (
     ...(authUserId ? likesLookup(new ObjectId(authUserId), 'creation') : []),
   ]
 
-  // console.log(
-  //   JSON.stringify(
-  //     { useCollectionsPreAggregate, filters, preAggregateFilterOptions },
-  //     null,
-  //     2,
-  //   ),
-  // )
-
-  // Handle embedding search if search query is present
   if (search) {
     try {
       const axios = await import('axios')
-      // Call Python API to get embedding for the query
       const embedResponse = await axios.default.post(
         `${server.config.EDEN_COMPUTE_API_URL}/embed`,
         { query: search },
@@ -858,11 +841,40 @@ export const getCreationsFeedCursorV2 = async (
         return reply.status(200).send(emptyPaginatedResponse)
       }
 
-      // Build vector search stage
       const pageLimit = limit ?? 100
-      // Fetch more results from vector search to allow for pagination
-      // We multiply by a factor to ensure we have enough results after filtering
       const vectorSearchLimit = Math.max(pageLimit * 20, 500)
+
+      const vectorSearchFilterFields = [
+        'user',
+        'agent',
+        'tool',
+        'public',
+        'deleted',
+        'createdAt',
+      ]
+      const vectorSearchFilter: any = {}
+      const postSearchFilter: any = {}
+
+      if (filters && Object.keys(filters).length > 0) {
+        for (const [key, value] of Object.entries(filters)) {
+          if (vectorSearchFilterFields.includes(key)) {
+            vectorSearchFilter[key] = value
+          } else {
+            postSearchFilter[key] = value
+          }
+        }
+      }
+
+      // Add default recency filter for searches on main feed only
+      // Only apply if no user/agent filters exist (i.e., searching all creations)
+      // This dramatically speeds up searches on large collections
+      const hasUserOrAgentFilter =
+        vectorSearchFilter.user || vectorSearchFilter.agent
+      if (!vectorSearchFilter.createdAt && !hasUserOrAgentFilter) {
+        const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+        vectorSearchFilter.createdAt = { $gte: ninetyDaysAgo }
+      }
+
       const vectorSearchStage: any = {
         $vectorSearch: {
           index: 'img_vec_idx',
@@ -870,14 +882,21 @@ export const getCreationsFeedCursorV2 = async (
           queryVector: queryVector,
           limit: vectorSearchLimit,
           numCandidates: Math.max(vectorSearchLimit * 2, 1000), // MongoDB recommends 10-20x the limit
+          ...(Object.keys(vectorSearchFilter).length > 0 && {
+            filter: vectorSearchFilter,
+          }),
         },
       }
 
       // Apply cursor-based pagination filter if cursor exists
       const cursorFilter = cursor ? { _id: { $lt: new ObjectId(cursor) } } : {}
 
-      // Vector search first, then apply filters as regular $match stages
-      // This is because not all fields may be indexed as filters in the vector index
+      // Minimum similarity score threshold (cosine similarity ranges from 0-1)
+      // CLIP embeddings typically range 0.5-0.7 for text-image search
+      // 0.6+ = good quality, 0.55-0.6 = marginal, <0.55 = poor
+      const MIN_SCORE_THRESHOLD = 0.58
+
+      // Vector search with indexed filters, then apply remaining filters as $match stages
       const vectorPipeline = [
         vectorSearchStage,
         {
@@ -885,17 +904,23 @@ export const getCreationsFeedCursorV2 = async (
             score: { $meta: 'vectorSearchScore' },
           },
         },
+        // Filter by minimum score threshold
+        {
+          $match: {
+            score: { $gte: MIN_SCORE_THRESHOLD },
+          },
+        },
         // Apply cursor filter first if it exists
         ...(cursor ? [{ $match: cursorFilter }] : []),
-        // Apply other filters after vector search
-        ...(filters && Object.keys(filters).length > 0
-          ? [{ $match: filters }]
+        // Apply remaining filters that couldn't be used in vector search
+        ...(Object.keys(postSearchFilter).length > 0
+          ? [{ $match: postSearchFilter }]
           : []),
         // Limit to requested page size after filtering
         { $limit: pageLimit },
         {
           $project: {
-            embedding: 0, // Exclude embedding from results
+            embedding: 0, // Exclude embedding from results but keep score
           },
         },
         ...lateLookupStages,
@@ -925,8 +950,6 @@ export const getCreationsFeedCursorV2 = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(pipeline, null, 2))
-
     // @ts-ignore
     results = await CollectionV2.aggregate(pipeline)
   } else if (useTasksPreAggregate) {
@@ -945,8 +968,6 @@ export const getCreationsFeedCursorV2 = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(pipeline, null, 2))
-
     // @ts-ignore
     results = await TaskV2.aggregate(pipeline)
   } else {
@@ -960,33 +981,8 @@ export const getCreationsFeedCursorV2 = async (
       cursor,
     })
 
-    // currentDate.setMinutes(0, 0, 0)
-    // const minDateDefault = new Date(currentDate)
-    // minDateDefault.setHours(currentDate.getHours() - hoursAgo)
-    // minDateDefault.setMinutes(0, 0, 0)
-    // const maxDate = filterMap
-    //   ? filterMap.filter(item => item.name === 'maxDate')[0]
-    //   : undefined
-    // const minDate = filterMap
-    //   ? filterMap.filter(item => item.name === 'minDate')[0]
-    //   : undefined
-    // const embeddingsFilter = {
-    //   ...filters,
-    //   createdAt: {
-    //     $gte: minDate ? minDate.value : minDateDefault,
-    //     $lte: maxDate ? maxDate?.value : undefined,
-    //   },
-    //   'embedding.score': {
-    //     $exists: true,
-    //   },
-    // }
-
-    // let embeddingsTransform: PipelineStage[] = []
     const creationFeedPipeline = [
-      // @ts-ignore
-      // { $match: useEmbeddingsPreAggregate ? embeddingsFilter : filters },
       { $match: filters },
-      //   ...embeddingsTransform,
       ...pipeline,
       ...lateLookupStages,
     ].filter(Boolean)
