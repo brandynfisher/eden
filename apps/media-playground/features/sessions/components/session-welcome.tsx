@@ -1,12 +1,7 @@
 import { MessageInput } from './message-input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
-import {
-  /*PlusIcon,*/
-  RotateCcwIcon,
-} from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 type Variant = 'chat' | 'session'
@@ -130,7 +125,10 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
           <div className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 tracking-wide">
             {agent.name}
           </div>
-          <div className="relative group mb-4">
+          <div
+            className="relative group mb-4 cursor-pointer"
+            onClick={onAgentSelectorOpen}
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-primary/25 to-primary/10 rounded-full scale-105 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out" />
             <Avatar className="w-24 h-24 md:w-32 md:h-32 relative z-10 ring-4 ring-primary/25 ring-offset-4 ring-offset-background transition-all duration-300 hover:ring-primary/50 hover:scale-105">
               <AvatarImage
@@ -150,7 +148,7 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
           </p>
         </div>
 
-        <div className="w-full max-w-[--aui-thread-max-width] mx-auto mb-6">
+        <div className="w-full max-w-[calc(42rem+3.75rem)] mx-auto mb-6">
           <MessageInput
             sessionId={'new'}
             onStreamingMessage={onSendMessage}
@@ -183,18 +181,6 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
             </div>
           )}
         </div>
-        {onAgentSelectorOpen && (
-          <div className="flex justify-center pt-4">
-            <Button
-              variant="outline"
-              onClick={onAgentSelectorOpen}
-              className="group relative bg-gradient-to-r from-card to-muted/60 border-border hover:border-primary/40 hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/4 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/10"
-            >
-              <RotateCcwIcon className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:rotate-180" />
-              Chat with another agent
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   )
