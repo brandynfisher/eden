@@ -11,7 +11,12 @@ import { WebSearchCitations } from '@/features/sessions/tools/web-search-citatio
 import { getFileTypeByMimeType } from '@/lib/files'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { TaskV2Result, TaskV2Status, ToolCall } from '@edenlabs/eden-sdk'
+import {
+  TaskV2Result,
+  TaskV2Status,
+  TasksV2ResultOutput,
+  ToolCall,
+} from '@edenlabs/eden-sdk'
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 
@@ -150,142 +155,281 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
             />
           </div>
         ) : (
-          <LightboxGallery
-          // galleryKey={tool}
-          >
-            <div
-              className={cn([
-                toolResults && toolResults.length > 1 && 'grid',
-                'grid-cols-2 gap-2 md:gap-4 mb-2',
-              ])}
-            >
-              {toolResults
-                ? toolResults.map((result, index) => (
-                    <div className="relative" key={`${index}-${tool}`}>
-                      {result && Array.isArray(result?.output) ? (
-                        <div className="flex flex-col gap-2.5">
-                          {result.output.map((output, outputIndex) => (
-                            <div
-                              key={`${index}-${outputIndex}-${output.filename}`}
-                              className="group"
-                            >
-                              {getFileTypeByMimeType(
-                                output.mediaAttributes?.mimeType,
-                              ) === 'audio' ? (
-                                <audio
-                                  controls
-                                  // loop={true}
-                                  className="w-full max-w-2xl pr-12"
-                                >
-                                  <source
-                                    src={getCloudfrontOriginalUrl(
-                                      output.filename,
-                                    )}
-                                    type={output.mediaAttributes?.mimeType}
-                                  />
-                                </audio>
-                              ) : (
-                                <div
-                                  draggable
-                                  onDragStart={(
-                                    e: React.DragEvent<HTMLDivElement>,
-                                  ) => {
-                                    const url = getCloudfrontOriginalUrl(
-                                      output.filename,
-                                    )
-                                    e.dataTransfer.setData('text/plain', '') // Required for Firefox
-                                    e.dataTransfer.setData(
-                                      'application/json',
-                                      JSON.stringify({
-                                        fileUrl: url,
-                                        type:
-                                          output.mediaAttributes?.mimeType ||
-                                          'image/jpeg',
-                                        name: url, // Use the full URL as the name
-                                      }),
-                                    )
-                                    e.dataTransfer.effectAllowed = 'copy'
-                                  }}
-                                  className="relative w-full aspect-[16/9] min-h-[200px]"
-                                >
-                                  <LightboxTrigger
-                                    className="absolute inset-0"
-                                    slide={{
-                                      type: 'video',
-                                      url:
-                                        getCloudfrontOriginalUrl(
-                                          output.filename,
-                                        ) ||
-                                        output.url ||
-                                        '',
-                                      thumbnail:
-                                        getCloudfrontOriginalUrl(
-                                          output.filename,
-                                        ) ||
-                                        output.url ||
-                                        '',
-                                      width: output.mediaAttributes?.width,
-                                      height: output.mediaAttributes?.height,
-                                      duration:
-                                        output.mediaAttributes?.duration ||
-                                        undefined,
-                                      description:
-                                        toolCall.args && toolCall.args.prompt
-                                          ? String(toolCall.args.prompt)
-                                          : undefined,
-                                      title:
-                                        toolCall.args && toolCall.args.prompt
-                                          ? String(toolCall.args.prompt)
-                                          : undefined,
-                                    }}
-                                    startIndex={index}
-                                    imageProps={{
-                                      loading: 'lazy',
-                                      blurhash:
-                                        output.mediaAttributes?.blurhash,
-                                      className: 'max-h-[420px]',
-                                    }}
-                                    videoProps={{
-                                      className: 'max-h-[420px]',
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className=" px-4 p-2 bg-accent rounded-md border border-secondary text-sm">
-                          <TextClampMore
-                            text={
-                              typeof result?.output === 'string' ? (
-                                <ReactMarkdown>
-                                  {(result.output as string).replace(
-                                    /\n/g,
-                                    '  \n',
-                                  )}
-                                </ReactMarkdown>
-                              ) : (
-                                <pre className="whitespace-pre-wrap font-mono text-xs">
-                                  {JSON.stringify(result?.output, null, 2)}
-                                </pre>
-                              )
-                            }
-                            lines={3}
+          (() => {
+            // Flatten all media outputs from all results
+            const allMediaOutputs =
+              toolResults?.flatMap((result, resultIndex) =>
+                Array.isArray(result?.output)
+                  ? result.output.map((output, outputIndex) => ({
+                      output,
+                      resultIndex,
+                      outputIndex,
+                    }))
+                  : [],
+              ) || []
+
+            // Separate audio from visual media
+            const audioOutputs = allMediaOutputs.filter(
+              item =>
+                getFileTypeByMimeType(item.output.mediaAttributes?.mimeType) ===
+                'audio',
+            )
+            const visualOutputs = allMediaOutputs.filter(
+              item =>
+                getFileTypeByMimeType(item.output.mediaAttributes?.mimeType) !==
+                'audio',
+            )
+
+            // Text-only results
+            const textResults =
+              toolResults?.filter(result => !Array.isArray(result?.output)) ||
+              []
+
+            // Calculate aspect ratio for an output
+            const getAspectRatio = (output: TasksV2ResultOutput) => {
+              const width = output.mediaAttributes?.width || 16
+              const height = output.mediaAttributes?.height || 9
+              return width / height
+            }
+
+            // Determine grid layout based on count and aspect ratios
+            const getGridLayout = (
+              count: number,
+              outputs: { output: TasksV2ResultOutput }[],
+            ) => {
+              if (count === 1) {
+                return {
+                  gridClass: '',
+                  itemClasses: ['aspect-video max-h-[500px] w-full'],
+                }
+              }
+
+              if (count === 2) {
+                const avgAspect =
+                  outputs.reduce(
+                    (sum, item) => sum + getAspectRatio(item.output),
+                    0,
+                  ) / count
+                // If images are very wide (> 2.5), stack vertically
+                if (avgAspect > 2.5) {
+                  return {
+                    gridClass: 'grid grid-rows-2 gap-2',
+                    itemClasses: ['aspect-video', 'aspect-video'],
+                  }
+                }
+                // Otherwise side by side
+                return {
+                  gridClass: 'grid grid-cols-2 gap-2',
+                  itemClasses: ['aspect-square', 'aspect-square'],
+                }
+              }
+
+              if (count === 3) {
+                const aspects = outputs.map(item => getAspectRatio(item.output))
+                const avgAspect = aspects.reduce((a, b) => a + b, 0) / count
+
+                // If tall images (< 0.8), use 3 columns in a single row
+                if (avgAspect < 0.8) {
+                  return {
+                    gridClass: 'grid grid-cols-3 gap-2',
+                    itemClasses: [
+                      'aspect-[3/4] h-full',
+                      'aspect-[3/4] h-full',
+                      'aspect-[3/4] h-full',
+                    ],
+                  }
+                }
+
+                // For normal/wide images: use 3 columns in a single row taking up all horizontal space
+                return {
+                  gridClass: 'grid grid-cols-3 gap-2',
+                  itemClasses: [
+                    'aspect-square h-full',
+                    'aspect-square h-full',
+                    'aspect-square h-full',
+                  ],
+                }
+              }
+
+              if (count === 4) {
+                const aspects = outputs.map(item => getAspectRatio(item.output))
+                const avgAspect = aspects.reduce((a, b) => a + b, 0) / count
+
+                // If very tall images (< 0.7), use 4 columns
+                if (avgAspect < 0.7) {
+                  return {
+                    gridClass: 'grid grid-cols-4 gap-2',
+                    itemClasses: [
+                      'aspect-[3/4]',
+                      'aspect-[3/4]',
+                      'aspect-[3/4]',
+                      'aspect-[3/4]',
+                    ],
+                  }
+                }
+
+                // If very wide images (> 2.5), use 4 rows
+                if (avgAspect > 2.5) {
+                  return {
+                    gridClass: 'grid grid-rows-4 gap-2',
+                    itemClasses: [
+                      'aspect-video',
+                      'aspect-video',
+                      'aspect-video',
+                      'aspect-video',
+                    ],
+                  }
+                }
+
+                // Default: 2x2 grid
+                return {
+                  gridClass: 'grid grid-cols-2 gap-2',
+                  itemClasses: [
+                    'aspect-square',
+                    'aspect-square',
+                    'aspect-square',
+                    'aspect-square',
+                  ],
+                }
+              }
+
+              // 5+ items: use responsive grid
+              return {
+                gridClass: 'grid grid-cols-2 md:grid-cols-3 gap-2',
+                itemClasses: Array(count).fill('aspect-square'),
+              }
+            }
+
+            const layout = getGridLayout(visualOutputs.length, visualOutputs)
+
+            return (
+              <LightboxGallery>
+                {/* Visual media grid */}
+                {visualOutputs.length > 0 && (
+                  <div className={cn('mb-2', layout.gridClass)}>
+                    {visualOutputs.map((item, index) => (
+                      <div
+                        key={`${item.resultIndex}-${item.outputIndex}-${item.output.filename}`}
+                        className="group relative overflow-hidden rounded-lg"
+                      >
+                        <div
+                          draggable
+                          onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
+                            const url = getCloudfrontOriginalUrl(
+                              item.output.filename,
+                            )
+                            e.dataTransfer.setData('text/plain', '')
+                            e.dataTransfer.setData(
+                              'application/json',
+                              JSON.stringify({
+                                fileUrl: url,
+                                type:
+                                  item.output.mediaAttributes?.mimeType ||
+                                  'image/jpeg',
+                                name: url,
+                              }),
+                            )
+                            e.dataTransfer.effectAllowed = 'copy'
+                          }}
+                          className={cn(
+                            'relative w-full',
+                            layout.itemClasses[index],
+                          )}
+                        >
+                          <LightboxTrigger
+                            className="absolute inset-0"
+                            slide={{
+                              type: 'video',
+                              url:
+                                getCloudfrontOriginalUrl(
+                                  item.output.filename,
+                                ) ||
+                                item.output.url ||
+                                '',
+                              thumbnail:
+                                getCloudfrontOriginalUrl(
+                                  item.output.filename,
+                                ) ||
+                                item.output.url ||
+                                '',
+                              width: item.output.mediaAttributes?.width,
+                              height: item.output.mediaAttributes?.height,
+                              duration:
+                                item.output.mediaAttributes?.duration ||
+                                undefined,
+                              description:
+                                toolCall.args && toolCall.args.prompt
+                                  ? String(toolCall.args.prompt)
+                                  : undefined,
+                              title:
+                                toolCall.args && toolCall.args.prompt
+                                  ? String(toolCall.args.prompt)
+                                  : undefined,
+                            }}
+                            startIndex={index}
+                            imageProps={{
+                              loading: 'lazy',
+                              blurhash: item.output.mediaAttributes?.blurhash,
+                              className: 'object-cover',
+                            }}
+                            videoProps={{
+                              className: 'object-cover',
+                            }}
                           />
                         </div>
-                      )}
-                    </div>
-                  ))
-                : null}
-            </div>
-          </LightboxGallery>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Audio outputs */}
+                {audioOutputs.length > 0 && (
+                  <div className="flex flex-col gap-2 mb-2">
+                    {audioOutputs.map(item => (
+                      <audio
+                        key={`${item.resultIndex}-${item.outputIndex}-${item.output.filename}`}
+                        controls
+                        className="w-full max-w-2xl"
+                      >
+                        <source
+                          src={getCloudfrontOriginalUrl(item.output.filename)}
+                          type={item.output.mediaAttributes?.mimeType}
+                        />
+                      </audio>
+                    ))}
+                  </div>
+                )}
+
+                {/* Text results */}
+                {textResults.map((result, index) => (
+                  <div
+                    key={`text-${index}`}
+                    className="px-4 p-2 bg-accent rounded-md border border-secondary text-sm mb-2"
+                  >
+                    <TextClampMore
+                      text={
+                        typeof result?.output === 'string' ? (
+                          <ReactMarkdown>
+                            {(result.output as string).replace(/\n/g, '  \n')}
+                          </ReactMarkdown>
+                        ) : (
+                          <pre className="whitespace-pre-wrap font-mono text-xs">
+                            {JSON.stringify(result?.output, null, 2)}
+                          </pre>
+                        )
+                      }
+                      lines={3}
+                    />
+                  </div>
+                ))}
+              </LightboxGallery>
+            )
+          })()
         )}
       </ErrorBoundary>
       {!isCompletedWithResults &&
         !(isWebSearchTool && toolCall.status === 'completed') && (
           <ToolFallback
-            type="tool-call"
             result={{
               tool: tool!,
               result: toolResults || [],
@@ -301,20 +445,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
                   : TaskV2Status.Pending,
               error: toolCall.error,
             }}
-            toolCallId={tool!}
             toolName={tool!}
             args={toolCall.args}
-            argsText={JSON.stringify(toolCall.args)}
-            status={
-              toolCall.status === 'completed'
-                ? { type: 'complete' }
-                : toolCall.status === 'failed'
-                ? { type: 'incomplete', reason: 'error' }
-                : toolCall.status === 'cancelled'
-                ? { type: 'incomplete', reason: 'cancelled' }
-                : { type: 'running' }
-            }
-            addResult={() => true}
             onCancel={onCancel}
           />
         )}

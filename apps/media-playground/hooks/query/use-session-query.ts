@@ -41,8 +41,9 @@ export function useSessionQuery({
       return response.data.session
     },
     enabled: enabled && !!sessionId,
-    staleTime: 5 * 60 * 1000, // 5 minutes - sessions don't change often
-    refetchOnWindowFocus: false,
+    staleTime: 1000, // 1 second - allow frequent refetches during active conversation
+    refetchInterval: 2000, // Poll every 2 seconds for new messages
+    refetchOnWindowFocus: true,
   })
 
   const updateReaction = useCallback(

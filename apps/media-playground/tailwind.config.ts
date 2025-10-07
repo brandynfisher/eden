@@ -147,11 +147,9 @@ const config = {
     'from-gray-400',
     'via-gray-400',
     'to-gray-400',
-    { pattern: /aui-/ }, // assistant ui classes
   ],
   plugins: [
     require('tailwindcss-animate'),
-    require('@assistant-ui/react-ui/tailwindcss'),
     plugin(({ matchUtilities, theme }) => {
       matchUtilities(
         {
