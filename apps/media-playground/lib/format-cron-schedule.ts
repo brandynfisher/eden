@@ -68,6 +68,12 @@ function scheduleToCronExpression(schedule: CronSchedule): string {
 export function formatCronSchedule(schedule: CronSchedule): string {
   const parts: string[] = []
 
+  // Handle hourly tasks (where hour is *)
+  if (schedule.hour === '*') {
+    const minute = schedule.minute?.toString().padStart(2, '0') || '00'
+    return `Every hour at :${minute}`
+  }
+
   // Handle one-time tasks (where start_date equals end_date)
   if (
     schedule.start_date &&
