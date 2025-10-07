@@ -347,6 +347,11 @@ export interface AgentsDeleteTriggerArguments extends WebAPICallOptions {
   triggerId: string
 }
 
+export interface AgentsGetTriggerArguments extends WebAPICallOptions {
+  agentId: string
+  triggerId: string
+}
+
 export interface AgentsGetAllTriggersArguments extends WebAPICallOptions {}
 
 export interface AgentsGetAllDeploymentsArguments extends WebAPICallOptions {}
@@ -499,6 +504,15 @@ export const agentsDeleteTriggerRequestConfig = (
   }
 }
 
+export const agentsGetTriggerRequestConfig = (
+  args: AgentsGetTriggerArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: `v2/agents/${args.agentId}/triggers/${args.triggerId}`,
+  }
+}
+
 export const agentsGetAllTriggersRequestConfig = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _args: AgentsGetAllTriggersArguments,
@@ -606,6 +620,11 @@ export type AgentsUpdateTriggerResponse = WebAPICallResult & {
 
 export type AgentsDeleteTriggerResponse = WebAPICallResult & {
   success: boolean
+  error?: string
+}
+
+export type AgentsGetTriggerResponse = WebAPICallResult & {
+  trigger: Trigger
   error?: string
 }
 

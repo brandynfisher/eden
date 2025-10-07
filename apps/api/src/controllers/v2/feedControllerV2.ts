@@ -819,6 +819,7 @@ export const getCreationsFeedCursorV2 = async (
   // console.log(JSON.stringify(filters, null, 2))
 
   const { cursor, nextValue, limit } = query as CursorPaginatedFeedQuery
+  const { search } = customFilterOptions
 
   let results = []
   const lateLookupStages = [
@@ -835,7 +836,80 @@ export const getCreationsFeedCursorV2 = async (
   //   ),
   // )
 
-  if (useCollectionsPreAggregate) {
+  // Handle embedding search if search query is present
+  if (search) {
+    try {
+      const axios = await import('axios')
+      // Call Python API to get embedding for the query
+      const embedResponse = await axios.default.post(
+        `${server.config.EDEN_COMPUTE_API_URL}/embed`,
+        { query: search },
+        {
+          headers: {
+            Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+          },
+        },
+      )
+
+      const queryVector = embedResponse.data.embedding
+
+      if (!queryVector || !Array.isArray(queryVector)) {
+        console.error('Failed to generate embedding from query:', search)
+        return reply.status(200).send(emptyPaginatedResponse)
+      }
+
+      // Build vector search stage
+      const pageLimit = limit ?? 100
+      // Fetch more results from vector search to allow for pagination
+      // We multiply by a factor to ensure we have enough results after filtering
+      const vectorSearchLimit = Math.max(pageLimit * 20, 500)
+      const vectorSearchStage: any = {
+        $vectorSearch: {
+          index: 'img_vec_idx',
+          path: 'embedding',
+          queryVector: queryVector,
+          limit: vectorSearchLimit,
+          numCandidates: Math.max(vectorSearchLimit * 2, 1000), // MongoDB recommends 10-20x the limit
+        },
+      }
+
+      // Apply cursor-based pagination filter if cursor exists
+      const cursorFilter = cursor ? { _id: { $lt: new ObjectId(cursor) } } : {}
+
+      // Vector search first, then apply filters as regular $match stages
+      // This is because not all fields may be indexed as filters in the vector index
+      const vectorPipeline = [
+        vectorSearchStage,
+        {
+          $addFields: {
+            score: { $meta: 'vectorSearchScore' },
+          },
+        },
+        // Apply cursor filter first if it exists
+        ...(cursor ? [{ $match: cursorFilter }] : []),
+        // Apply other filters after vector search
+        ...(filters && Object.keys(filters).length > 0
+          ? [{ $match: filters }]
+          : []),
+        // Limit to requested page size after filtering
+        { $limit: pageLimit },
+        {
+          $project: {
+            embedding: 0, // Exclude embedding from results
+          },
+        },
+        ...lateLookupStages,
+      ]
+
+      results = await CreationV2.aggregate(vectorPipeline)
+    } catch (error) {
+      console.error('Error in embedding search:', error)
+      return reply.status(500).send({
+        error: 'Failed to perform embedding search',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  } else if (useCollectionsPreAggregate) {
     const lookupPipeline = await createPipeline({
       // @ts-ignore
       filters,

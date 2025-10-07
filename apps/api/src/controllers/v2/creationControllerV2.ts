@@ -11,7 +11,9 @@ import {
   CreationsV2PatchArguments,
 } from '@edenlabs/eden-sdk'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 export const getCreation = async (
   server: FastifyInstance,
@@ -405,6 +407,244 @@ export const unlikeCreation = async (
     console.error('Error unliking creation:', error)
     return reply.status(500).send({
       message: 'Error unliking creation',
+    })
+  }
+}
+
+export const searchCreations = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  const {
+    query,
+    agentId,
+    userId: searchUserId,
+    tool,
+    page = 1,
+    limit = 20,
+  } = request.query as {
+    query: string
+    agentId?: string
+    userId?: string
+    tool?: string
+    page?: number
+    limit?: number
+  }
+
+  if (!query) {
+    return reply.status(400).send({
+      message: 'Query parameter is required',
+    })
+  }
+
+  try {
+    // Call Python API to get embedding for the query
+    const embedResponse = await axios.post(
+      `${server.config.EDEN_COMPUTE_API_URL}/embed`,
+      { query },
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const queryVector = embedResponse.data.embedding
+
+    if (!queryVector || !Array.isArray(queryVector)) {
+      return reply.status(500).send({
+        message: 'Failed to generate embedding from query',
+      })
+    }
+
+    // Build MongoDB filter
+    const filter: any = {
+      deleted: false,
+    }
+
+    if (agentId) {
+      filter.agent = new ObjectId(agentId)
+    }
+
+    if (searchUserId) {
+      filter.user = new ObjectId(searchUserId)
+    }
+
+    if (tool) {
+      filter.tool = tool
+    }
+
+    // Build the aggregation pipeline for vector search
+    const vectorSearchStage: any = {
+      $vectorSearch: {
+        index: 'img_vec_idx',
+        path: 'embedding',
+        queryVector: queryVector,
+        limit: limit,
+      },
+    }
+
+    // Add filter if present
+    if (Object.keys(filter).length > 1 || !filter.deleted) {
+      // Check if we have filters beyond just deleted:false
+      const hasFilters = Object.keys(filter).some(key => key !== 'deleted')
+      if (hasFilters) {
+        vectorSearchStage.$vectorSearch.filter = filter
+      }
+    }
+
+    const pipeline = [
+      vectorSearchStage,
+      {
+        $addFields: {
+          score: { $meta: 'vectorSearchScore' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users3',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                userId: 1,
+                username: 1,
+                userImage: 1,
+                type: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$user',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'users3',
+          localField: 'agent',
+          foreignField: '_id',
+          as: 'agent',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                username: 1,
+                name: 1,
+                userImage: 1,
+                type: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$agent',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'tasks3',
+          localField: 'task',
+          foreignField: '_id',
+          as: 'task',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                args: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$task',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          embedding: 0, // Exclude embedding from results
+        },
+      },
+    ]
+
+    const results = await CreationV2.aggregate(pipeline).exec()
+
+    // Add URLs and check likes for each creation
+    const creationsWithUrls = await Promise.all(
+      results.map(async creation => {
+        creation.url = s3Url(server, creation.filename || '')
+        creation.thumbnail = s3ThumbnailUrl(
+          server,
+          creation.filename || '',
+          1024,
+        )
+
+        // Check if user has liked this creation
+        if (userId) {
+          const userLike = await LikeV2.findOne({
+            user: userId,
+            entityType: 'creation',
+            entityId: creation._id,
+          })
+          creation.isLiked = !!userLike
+        }
+
+        // Force cloudfront URLs for user images
+        if (creation.user?.userImage) {
+          creation.user.userImage = forceCloudfrontUrl(
+            server,
+            creation.user.userImage,
+          )
+        }
+
+        if (creation.agent?.userImage) {
+          creation.agent.userImage = forceCloudfrontUrl(
+            server,
+            creation.agent.userImage,
+          )
+        }
+
+        return creation
+      }),
+    )
+
+    // Manual pagination since we're using aggregation
+    const total = creationsWithUrls.length
+    const pages = Math.ceil(total / limit)
+    const hasNextPage = page < pages
+    const hasPrevPage = page > 1
+
+    return reply.status(200).send({
+      docs: creationsWithUrls,
+      total,
+      limit,
+      pages,
+      page,
+      pagingCounter: (page - 1) * limit + 1,
+      hasPrevPage,
+      hasNextPage,
+      prevPage: hasPrevPage ? page - 1 : null,
+      nextPage: hasNextPage ? page + 1 : null,
+    })
+  } catch (error) {
+    console.error('Error searching creations:', error)
+    return reply.status(500).send({
+      message: 'Error searching creations',
+      error: error instanceof Error ? error.message : 'Unknown error',
     })
   }
 }

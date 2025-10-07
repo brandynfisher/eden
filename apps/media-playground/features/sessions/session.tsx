@@ -12,8 +12,9 @@ import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AssistantMessage } from '@/features/sessions/components/assistant-message'
 import { EdenMessage } from '@/features/sessions/components/eden-message'
-import { OtherMessage } from '@/features/sessions/components/other-message'
+import { SystemMessage } from '@/features/sessions/components/system-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -102,6 +103,37 @@ const Session = ({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
   })
+
+  // State to store trigger data
+  const [triggerData, setTriggerData] = useState<{ context: string } | null>(
+    null,
+  )
+
+  useEffect(() => {
+    if (session?.trigger) {
+      const fetchTrigger = async () => {
+        try {
+          const agentId = session.agents?.[0]?._id
+          if (!agentId) {
+            setTriggerData(null)
+            return
+          }
+
+          const response = await axios.get(
+            `/api/agents/${agentId}/triggers/${session.trigger}`,
+          )
+
+          setTriggerData(response.data.trigger || null)
+        } catch (error) {
+          setTriggerData(null)
+        }
+      }
+
+      fetchTrigger()
+    } else {
+      setTriggerData(null)
+    }
+  }, [session])
 
   // Create pending session data when we have a pendingMessage
   const pendingSession = useMemo(() => {
@@ -879,7 +911,10 @@ const Session = ({
     const existingMessages =
       displaySession?.messages?.filter(m => {
         const hasRole =
-          m.role === 'user' || m.role === 'assistant' || m.role === 'eden'
+          m.role === 'user' ||
+          m.role === 'assistant' ||
+          m.role === 'eden' ||
+          m.role === 'system'
         const hasContent = m.content && m.content.trim() !== ''
         const hasToolCalls =
           m.role === 'assistant' && m.tool_calls && m.tool_calls.length > 0
@@ -899,8 +934,27 @@ const Session = ({
         )
       }) ?? []
 
+    // Prepend trigger system message if trigger data exists
+    let messagesWithTrigger = existingMessages
+    if (triggerData && triggerData.context) {
+      const triggerSystemMessage = {
+        _id: `trigger-context-${sessionId}`,
+        session: sessionId,
+        role: 'system' as const,
+        content: triggerData.context,
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+        attachments: [],
+        reactions: {},
+        sender: { _id: 'system', username: 'system', name: 'System' },
+        trigger_context: true,
+      } as Message & { trigger_context: boolean }
+
+      messagesWithTrigger = [triggerSystemMessage, ...existingMessages]
+    }
+
     if (sessionId === 'new' && isSessionLoading) {
-      return [...existingMessages, ...optimisticMessages]
+      return [...messagesWithTrigger, ...optimisticMessages]
     }
 
     // In non-streaming mode, include optimistic messages but avoid duplicates
@@ -918,7 +972,7 @@ const Session = ({
               ) < 10000,
           ),
       )
-      return [...existingMessages, ...uniqueOptimisticMessages]
+      return [...messagesWithTrigger, ...uniqueOptimisticMessages]
     }
 
     // In streaming mode, include optimistic messages but avoid duplicates
@@ -937,7 +991,7 @@ const Session = ({
 
     // Include local streaming messages when in pendingMessage mode
     return [
-      ...existingMessages,
+      ...messagesWithTrigger,
       ...uniqueOptimisticMessages,
       ...streamingMessages,
     ]
@@ -948,6 +1002,7 @@ const Session = ({
     optimisticMessages,
     ischatRoute,
     streamingMessages,
+    triggerData,
   ])
 
   const messageGroups = useMemo(
@@ -1088,7 +1143,7 @@ const Session = ({
             'flex flex-col justify-center items-center',
         )}
       >
-        <div className="p-4 pb-8 max-w-[--aui-thread-max-width] mx-auto w-full">
+        <div className="p-4 pb-8 max-w-[calc(42rem+3.75rem)] mx-auto w-full">
           {/* Only show loading skeleton if we are on a new session */}
           {sessionId === 'new' && isSessionLoading ? (
             <div className="space-y-4">
@@ -1140,6 +1195,13 @@ const Session = ({
                                 message={message}
                               />
                             ))
+                          : group[0].role === 'system'
+                          ? group.map(message => (
+                              <SystemMessage
+                                key={message._id}
+                                message={message}
+                              />
+                            ))
                           : isOwnMessage(group[0].sender?._id)
                           ? group.map(message => (
                               <UserMessage
@@ -1151,12 +1213,13 @@ const Session = ({
                           : group
                               .filter(message => message.role !== 'tool')
                               .map(message => (
-                                <OtherMessage
+                                <AssistantMessage
                                   sessionId={sessionId as string}
                                   key={message._id}
                                   message={message}
                                   showAvatar={true}
                                   isStreamingTokens={false}
+                                  isChatRoute={ischatRoute}
                                 />
                               ))}
                       </div>
@@ -1171,7 +1234,7 @@ const Session = ({
 
                       return (
                         <div key={`loader-${agentId}`} className="mb-4">
-                          <OtherMessage
+                          <AssistantMessage
                             sessionId={sessionId as string}
                             message={
                               {
@@ -1195,6 +1258,7 @@ const Session = ({
                             }
                             showAvatar={true}
                             isStreamingTokens={true}
+                            isChatRoute={ischatRoute}
                           />
                         </div>
                       )
@@ -1205,7 +1269,7 @@ const Session = ({
                       agentsWaitingToRespond.size === 0 &&
                       streamingMessages.length === 0 && (
                         <div className="mb-4">
-                          <OtherMessage
+                          <AssistantMessage
                             sessionId={sessionId as string}
                             message={
                               {
@@ -1225,6 +1289,7 @@ const Session = ({
                             }
                             showAvatar={true}
                             isStreamingTokens={true}
+                            isChatRoute={ischatRoute}
                           />
                         </div>
                       )}
@@ -1243,7 +1308,7 @@ const Session = ({
                 ) {
                   return (
                     <div className="mb-4">
-                      <OtherMessage
+                      <AssistantMessage
                         sessionId={sessionId as string}
                         message={
                           {
@@ -1258,6 +1323,7 @@ const Session = ({
                         }
                         showAvatar={true}
                         isStreamingTokens={true}
+                        isChatRoute={ischatRoute}
                       />
                     </div>
                   )
@@ -1272,7 +1338,7 @@ const Session = ({
                 ) {
                   return (
                     <div className="mb-4">
-                      <OtherMessage
+                      <AssistantMessage
                         sessionId={sessionId as string}
                         message={
                           {
@@ -1290,6 +1356,7 @@ const Session = ({
                           streamingState.isStreamingTokens &&
                           !streamingState.hasReceivedTokens
                         }
+                        isChatRoute={ischatRoute}
                       />
                     </div>
                   )
@@ -1317,6 +1384,13 @@ const Session = ({
                         ? group.map(message => (
                             <EdenMessage key={message._id} message={message} />
                           ))
+                        : group[0].role === 'system'
+                        ? group.map(message => (
+                            <SystemMessage
+                              key={message._id}
+                              message={message}
+                            />
+                          ))
                         : isOwnMessage(group[0].sender?._id)
                         ? group.map(message => (
                             <UserMessage
@@ -1327,13 +1401,14 @@ const Session = ({
                           ))
                         : group
                             .filter(message => message.role !== 'tool')
-                            .map(message => (
-                              <OtherMessage
+                            .map((message, index) => (
+                              <AssistantMessage
                                 sessionId={sessionId as string}
                                 key={message._id}
                                 message={message}
-                                showAvatar={true}
                                 isStreamingTokens={false}
+                                showAvatar={index === 0}
+                                isChatRoute={ischatRoute}
                               />
                             ))}
                     </div>
@@ -1347,33 +1422,30 @@ const Session = ({
                     if (!agent) return null
 
                     return (
-                      <div key={`loader-${agentId}`} className="mb-4">
-                        <OtherMessage
-                          sessionId={sessionId as string}
-                          message={
-                            {
-                              _id: `loader-${agentId}`,
-                              content: '',
-                              sender: {
-                                _id: agent._id,
-                                username: agent.username,
-                                name: agent.name,
-                                userImage: agent.userImage?.startsWith(
-                                  'https://',
-                                )
-                                  ? agent.userImage
-                                  : getCloudfrontUrl(agent.userImage),
-                              },
-                              createdAt: new Date(),
-                              updatedAt: new Date(),
-                              session: sessionId,
-                              role: 'assistant',
-                            } as Message
-                          }
-                          showAvatar={true}
-                          isStreamingTokens={true}
-                        />
-                      </div>
+                      <AssistantMessage
+                        key={`loader-${agentId}`}
+                        sessionId={sessionId as string}
+                        message={
+                          {
+                            _id: `loader-${agentId}`,
+                            content: '',
+                            sender: {
+                              _id: agent._id,
+                              username: agent.username,
+                              name: agent.name,
+                              userImage: agent.userImage?.startsWith('https://')
+                                ? agent.userImage
+                                : getCloudfrontUrl(agent.userImage),
+                            },
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                            session: sessionId,
+                            role: 'assistant',
+                          } as Message
+                        }
+                        isStreamingTokens={true}
+                        isChatRoute={ischatRoute}
+                      />
                     )
                   })}
                 </>
@@ -1411,8 +1483,12 @@ const Session = ({
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-aui-background p-4 z-10">
-        <div className="max-w-[--aui-thread-max-width] mx-auto w-full">
+      <div className="sticky bottom-0 bg-background p-4 z-10 border-t border-gray-800">
+        <div
+          className={`max-w-[calc(42rem+3.75rem)] mx-auto w-full ${
+            ischatRoute ? 'sm:pl-[calc(3rem+0.75rem)]' : ''
+          }`}
+        >
           <MessageInput
             sessionId={currentSessionId as string}
             enableLiveAudio={true}

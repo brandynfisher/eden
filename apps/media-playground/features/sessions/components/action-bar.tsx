@@ -73,13 +73,13 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
   return (
     <div
       className={cn(
-        'aui-assistant-action-bar-root flex items-center gap-2 w-full z-10',
+        'aui-assistant-action-bar-root flex items-center gap-1 w-full z-10 mt-3',
         isLoading && 'opacity-50 pointer-events-none',
       )}
     >
       <button
         className={cn(
-          'aui-button aui-button-ghost aui-button-icon transition-colors',
+          'aui-button aui-button-ghost aui-button-icon transition-colors hover:bg-gray-700/50 rounded-md p-2',
           copied && 'text-green-600',
         )}
         onClick={handleCopy}
@@ -94,7 +94,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
 
       <button
         className={cn(
-          'aui-button aui-button-ghost aui-button-icon',
+          'aui-button aui-button-ghost aui-button-icon hover:bg-gray-700/50 rounded-md p-2',
           hasThumbsUp && 'text-green-600',
         )}
         onClick={() => toggleReaction('thumbs_up')}
@@ -104,7 +104,7 @@ const ActionBar = ({ sessionId, message }: ActionBarProps) => {
 
       <button
         className={cn(
-          'aui-button aui-button-ghost aui-button-icon',
+          'aui-button aui-button-ghost aui-button-icon hover:bg-gray-700/50 rounded-md p-2',
           hasThumbsDown && 'text-red-600',
         )}
         onClick={() => toggleReaction('thumbs_down')}

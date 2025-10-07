@@ -46,6 +46,8 @@ const formSchema = z.object({
   content: z.string().trim().min(1),
 })
 
+const TEMP_MESSAGE_KEY = 'chat-temp-message'
+
 type MessageInputProps = {
   sessionId: string
   onStreamingMessage?: (
@@ -94,6 +96,7 @@ export const MessageInput = ({
   agent: propAgent,
 }: MessageInputProps) => {
   const { user, verifyAuth } = useAuthState()
+  const [isMultiline, setIsMultiline] = useState(false)
   const {
     addOptimisticMessage,
     removeOptimisticMessage,
@@ -139,6 +142,35 @@ export const MessageInput = ({
       return () => clearTimeout(timer)
     }
   }, [sessionId])
+
+  // Check for stored message from homepage and auto-submit it
+  useEffect(() => {
+    if (sessionId !== 'new' || !onStreamingMessage) return
+
+    try {
+      const stored = sessionStorage.getItem(TEMP_MESSAGE_KEY)
+      if (stored) {
+        const { content, attachments, timestamp } = JSON.parse(stored)
+
+        // Only use stored message if it's recent (within 5 minutes)
+        const isRecent = Date.now() - timestamp < 5 * 60 * 1000
+
+        if (isRecent && content) {
+          // Clear the stored message immediately to prevent duplicate submissions
+          sessionStorage.removeItem(TEMP_MESSAGE_KEY)
+
+          // Submit the message
+          onStreamingMessage(content, attachments || [])
+        } else {
+          // Clean up stale message
+          sessionStorage.removeItem(TEMP_MESSAGE_KEY)
+        }
+      }
+    } catch (error) {
+      console.error('Error retrieving stored message:', error)
+      sessionStorage.removeItem(TEMP_MESSAGE_KEY)
+    }
+  }, [sessionId, onStreamingMessage])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -385,6 +417,25 @@ export const MessageInput = ({
     const value = e.target.value
     const cursorPosition = e.target.selectionStart
 
+    // Check if textarea has multiple lines (wrapped or newline)
+    const shouldBeMultiline = e.target.scrollHeight > 40 // ~40px is roughly 2rem height
+
+    // Only update isMultiline state if it actually changed to prevent unnecessary re-renders
+    if (shouldBeMultiline !== isMultiline) {
+      setIsMultiline(shouldBeMultiline)
+
+      // Refocus the textarea after state change to maintain cursor position
+      setTimeout(() => {
+        if (textareaRef.current?.textArea) {
+          textareaRef.current.textArea.focus()
+          textareaRef.current.textArea.setSelectionRange(
+            cursorPosition,
+            cursorPosition,
+          )
+        }
+      }, 0)
+    }
+
     // Check if we just typed an @ symbol
     if (!showMention && value[cursorPosition - 1] === '@') {
       // Check if it's at the start or preceded by a space/newline
@@ -521,14 +572,9 @@ export const MessageInput = ({
               'relative z-[51] border border-aui-border bg-accent-foreground/5 rounded-lg focus-within:border-aui-ring/20 transition-all duration-300 flex flex-col',
             )}
           >
-            {/* Top section - full width text input */}
-            <div
-              className={cn(
-                'flex-1',
-                isRecording ? 'p-2.5 pb-0' : 'px-2.5 pt-2.5',
-              )}
-            >
-              {attachments.length > 0 && (
+            {/* Attachments section - shown above everything when present */}
+            {attachments.length > 0 && (
+              <div className="px-2.5 pt-2.5">
                 <LightboxGallery>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {attachments.map((attachment, index) => (
@@ -541,176 +587,364 @@ export const MessageInput = ({
                     ))}
                   </div>
                 </LightboxGallery>
-              )}
+              </div>
+            )}
 
-              <div className="relative">
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <AutosizeTextarea
-                          {...field}
-                          ref={textareaRef}
-                          placeholder="Write a message..."
-                          className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-1 pr-4 resize-none min-h-[1.5rem]"
-                          disabled={isSubmitting}
-                          onKeyDown={e => {
-                            const mentionHandled = handleKeyDown(e)
-                            // Only submit on Enter if mention dropdown didn't handle it
-                            if (
-                              !mentionHandled &&
-                              e.key === 'Enter' &&
-                              !e.shiftKey
-                            ) {
-                              e.preventDefault()
-                              form.handleSubmit(onSubmit)()
-                            }
-                          }}
-                          onChange={e => {
-                            field.onChange(e)
-                            handleTextChange(e)
-                          }}
+            {/* Conditional layout based on text wrapping */}
+            {!isRecording && (
+              <div className="px-2.5 py-2">
+                {/* Multi-line layout: text on top, buttons on bottom */}
+                {isMultiline ? (
+                  <>
+                    {/* Full-width textarea above */}
+                    <div className="relative mb-2">
+                      <FormField
+                        control={form.control}
+                        name="content"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <AutosizeTextarea
+                                {...field}
+                                ref={textareaRef}
+                                placeholder="Write a message..."
+                                className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-0 resize-none min-h-[2rem] max-h-[200px] w-full"
+                                disabled={isSubmitting}
+                                onKeyDown={e => {
+                                  const mentionHandled = handleKeyDown(e)
+                                  if (
+                                    !mentionHandled &&
+                                    e.key === 'Enter' &&
+                                    !e.shiftKey
+                                  ) {
+                                    e.preventDefault()
+                                    form.handleSubmit(onSubmit)()
+                                  }
+                                }}
+                                onChange={e => {
+                                  field.onChange(e)
+                                  handleTextChange(e)
+                                }}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      {showMention && session?.agents && (
+                        <div className="absolute bottom-full mb-2">
+                          <MentionInput
+                            ref={mentionInputRef}
+                            agents={session.agents}
+                            onSelect={handleMentionSelect}
+                            onClose={() => setShowMention(false)}
+                            searchFilter={mentionTrigger}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Buttons row below */}
+                    <div className="flex items-center justify-between">
+                      {/* Left side buttons */}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Input
+                          ref={fileInputRef}
+                          type="file"
+                          accept={accept}
+                          onChange={handleFileSelect}
+                          className="hidden"
+                          multiple
                         />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                {showMention && session?.agents && (
-                  <div className="absolute bottom-full mb-2">
-                    <MentionInput
-                      ref={mentionInputRef}
-                      agents={session.agents}
-                      onSelect={handleMentionSelect}
-                      onClose={() => setShowMention(false)}
-                      searchFilter={mentionTrigger}
-                    />
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isSubmitting}
+                              >
+                                <PaperclipIcon className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Add attachments</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        {/* Think toggle - only show for reasoning agents */}
+                        {hasReasoningAgent && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant={
+                                    isThinkingEnabled ? 'default' : 'ghost'
+                                  }
+                                  className={cn(
+                                    'h-8 px-2 transition-all flex items-center gap-1',
+                                    isThinkingEnabled &&
+                                      'bg-purple-600 hover:bg-purple-700 text-white shadow-md',
+                                  )}
+                                  onClick={() => {
+                                    const newValue = !isThinkingEnabled
+                                    console.log(
+                                      '[MessageInput] Think button clicked - old:',
+                                      isThinkingEnabled,
+                                      'new:',
+                                      newValue,
+                                    )
+                                    setIsThinkingEnabled(newValue)
+                                  }}
+                                  disabled={isSubmitting}
+                                >
+                                  <ClockIcon className="w-4 h-4" />
+                                  <span className="text-xs font-medium">
+                                    Think
+                                  </span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  {isThinkingEnabled
+                                    ? 'Thinking enabled'
+                                    : 'Enable thinking'}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </div>
+
+                      {/* Right side buttons */}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {shouldShowLiveAudio && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  className={cn(
+                                    'h-8 w-8',
+                                    isProcessing && 'text-blue-500',
+                                  )}
+                                  onClick={handleRecordToggle}
+                                  disabled={isSubmitting || isProcessing}
+                                >
+                                  <MicIcon
+                                    className={cn(
+                                      'w-4 h-4',
+                                      isProcessing && 'animate-spin',
+                                    )}
+                                  />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Start audio session</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        <Button
+                          type="submit"
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8"
+                          disabled={
+                            !form.formState.isValid ||
+                            attachments.some(a => a.status === 'uploading') ||
+                            isSubmitting
+                          }
+                        >
+                          <SendIcon
+                            className={cn(
+                              'w-4 h-4',
+                              isSubmitting && 'animate-pulse',
+                            )}
+                          />
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* Single row layout: textarea inline between buttons */
+                  <div className="flex items-center gap-2">
+                    {/* Left side buttons */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Input
+                        ref={fileInputRef}
+                        type="file"
+                        accept={accept}
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        multiple
+                      />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={isSubmitting}
+                            >
+                              <PaperclipIcon className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Add attachments</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      {/* Think toggle */}
+                      {hasReasoningAgent && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={
+                                  isThinkingEnabled ? 'default' : 'ghost'
+                                }
+                                className={cn(
+                                  'h-8 px-2 transition-all flex items-center gap-1',
+                                  isThinkingEnabled &&
+                                    'bg-purple-600 hover:bg-purple-700 text-white shadow-md',
+                                )}
+                                onClick={() => {
+                                  const newValue = !isThinkingEnabled
+                                  setIsThinkingEnabled(newValue)
+                                }}
+                                disabled={isSubmitting}
+                              >
+                                <ClockIcon className="w-4 h-4" />
+                                <span className="text-xs font-medium">
+                                  Think
+                                </span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                {isThinkingEnabled
+                                  ? 'Thinking enabled'
+                                  : 'Enable thinking'}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+
+                    {/* Inline textarea */}
+                    <div className="relative flex-1 min-w-0">
+                      <FormField
+                        control={form.control}
+                        name="content"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <AutosizeTextarea
+                                {...field}
+                                ref={textareaRef}
+                                placeholder="Write a message..."
+                                className="focus-visible:ring-0 border-none bg-transparent rounded-none focus-visible:ring-offset-0 py-0 px-2 resize-none min-h-[2rem] max-h-[2rem]"
+                                disabled={isSubmitting}
+                                onKeyDown={e => {
+                                  const mentionHandled = handleKeyDown(e)
+                                  if (
+                                    !mentionHandled &&
+                                    e.key === 'Enter' &&
+                                    !e.shiftKey
+                                  ) {
+                                    e.preventDefault()
+                                    form.handleSubmit(onSubmit)()
+                                  }
+                                }}
+                                onChange={e => {
+                                  field.onChange(e)
+                                  handleTextChange(e)
+                                }}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      {showMention && session?.agents && (
+                        <div className="absolute bottom-full mb-2">
+                          <MentionInput
+                            ref={mentionInputRef}
+                            agents={session.agents}
+                            onSelect={handleMentionSelect}
+                            onClose={() => setShowMention(false)}
+                            searchFilter={mentionTrigger}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right side buttons */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {shouldShowLiveAudio && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className={cn(
+                                  'h-8 w-8',
+                                  isProcessing && 'text-blue-500',
+                                )}
+                                onClick={handleRecordToggle}
+                                disabled={isSubmitting || isProcessing}
+                              >
+                                <MicIcon
+                                  className={cn(
+                                    'w-4 h-4',
+                                    isProcessing && 'animate-spin',
+                                  )}
+                                />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Start audio session</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      <Button
+                        type="submit"
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8"
+                        disabled={
+                          !form.formState.isValid ||
+                          attachments.some(a => a.status === 'uploading') ||
+                          isSubmitting
+                        }
+                      >
+                        <SendIcon
+                          className={cn(
+                            'w-4 h-4',
+                            isSubmitting && 'animate-pulse',
+                          )}
+                        />
+                      </Button>
+                    </div>
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Bottom row - attachment (left) + voice/send (right) */}
-            {!isRecording && (
-              <div className="flex items-center justify-between px-2.5 pb-2.5 pt-1">
-                <div className="flex items-center gap-1">
-                  <Input
-                    ref={fileInputRef}
-                    type="file"
-                    accept={accept}
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    multiple
-                  />
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={isSubmitting}
-                        >
-                          <PaperclipIcon className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Add attachments</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-
-                  {/* Think toggle - only show for reasoning agents */}
-                  {hasReasoningAgent && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant={isThinkingEnabled ? 'default' : 'ghost'}
-                            className={cn(
-                              'h-8 px-2 transition-all flex items-center gap-1',
-                              isThinkingEnabled &&
-                                'bg-purple-600 hover:bg-purple-700 text-white shadow-md',
-                            )}
-                            onClick={() => {
-                              const newValue = !isThinkingEnabled
-                              console.log(
-                                '[MessageInput] Think button clicked - old:',
-                                isThinkingEnabled,
-                                'new:',
-                                newValue,
-                              )
-                              setIsThinkingEnabled(newValue)
-                            }}
-                            disabled={isSubmitting}
-                          >
-                            <ClockIcon className="w-4 h-4" />
-                            <span className="text-xs font-medium">Think</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            {isThinkingEnabled
-                              ? 'Thinking enabled'
-                              : 'Enable thinking'}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-1">
-                  {shouldShowLiveAudio && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className={cn(
-                              'h-8 w-8',
-                              isProcessing && 'text-blue-500',
-                            )}
-                            onClick={handleRecordToggle}
-                            disabled={isSubmitting || isProcessing}
-                          >
-                            <MicIcon
-                              className={cn(
-                                'w-4 h-4',
-                                isProcessing && 'animate-spin',
-                              )}
-                            />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Start audio session</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                  <Button
-                    type="submit"
-                    size="icon"
-                    variant="outline"
-                    className="h-8 w-8"
-                    disabled={
-                      !form.formState.isValid ||
-                      attachments.some(a => a.status === 'uploading') ||
-                      isSubmitting
-                    }
-                  >
-                    <SendIcon
-                      className={cn('w-4 h-4', isSubmitting && 'animate-pulse')}
-                    />
-                  </Button>
-                </div>
               </div>
             )}
 

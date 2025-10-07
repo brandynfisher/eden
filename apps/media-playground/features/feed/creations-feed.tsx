@@ -47,7 +47,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
       scrollRef,
       initialScrollIndex,
       onScrollRestored,
-      showSkeleton = false,
+      showSkeleton = true,
     }: Props,
     ref,
   ) => {

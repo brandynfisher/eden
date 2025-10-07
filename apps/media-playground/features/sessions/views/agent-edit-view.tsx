@@ -245,7 +245,7 @@ const AgentEditView: FC<{
     return (
       <div className="sticky top-0 z-10 border-b border-border bg-background">
         <div className="px-6">
-          {/* Desktop and mobile horizontal tabs */}
+          {/* Desktop horizontal tabs */}
           <div className="hidden sm:flex space-x-8 overflow-x-auto">
             <div className="flex space-x-8 overflow-x-auto flex-1">
               {availableTabs.map(tab => (
@@ -263,21 +263,6 @@ const AgentEditView: FC<{
                 </button>
               ))}
             </div>
-
-            {/* New Chat icon - always show when in settings */}
-            {onNewChat && (
-              <div className="flex items-center py-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onNewChat}
-                  className="px-3"
-                  aria-label="New Chat"
-                >
-                  <MessageCircleIcon className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
           </div>
 
           {/* Mobile horizontal tabs */}

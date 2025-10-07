@@ -336,6 +336,11 @@ const CreateAgentView = () => {
                           <div className="flex flex-col lg:flex-row gap-6">
                             {/* Profile Image */}
                             <div className="flex-shrink-0">
+                              <div className="text-center mb-2">
+                                <h3 className="text-sm font-medium">
+                                  Profile picture
+                                </h3>
+                              </div>
                               <FormField
                                 control={form.control}
                                 name="image"
@@ -365,6 +370,38 @@ const CreateAgentView = () => {
 
                             {/* Username and Display Name */}
                             <div className="flex-1 space-y-4">
+                              {/* Display Name Field */}
+                              <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-base font-medium">
+                                      Name
+                                      <span className="text-red-500 ml-1">
+                                        *
+                                      </span>
+                                    </FormLabel>
+                                    <FormControl>
+                                      <Input
+                                        type="text"
+                                        placeholder="Agent display name"
+                                        {...field}
+                                        onChange={e => {
+                                          field.onChange(
+                                            e.target.value.slice(
+                                              0,
+                                              AGENT_FIELD_LIMITS.NAME_MAX_CHARS,
+                                            ),
+                                          )
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
                               {/* Username Field */}
                               <FormField
                                 control={form.control}
@@ -384,38 +421,7 @@ const CreateAgentView = () => {
                                         displayName={form.watch('name')}
                                         onBlur={field.onBlur}
                                         disabled={form.formState.isSubmitting}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              {/* Display Name Field */}
-                              <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-base font-medium">
-                                      Name
-                                      <span className="text-red-500 ml-1">
-                                        *
-                                      </span>
-                                    </FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        type="text"
-                                        placeholder="Display name"
-                                        {...field}
-                                        onChange={e => {
-                                          field.onChange(
-                                            e.target.value.slice(
-                                              0,
-                                              AGENT_FIELD_LIMITS.NAME_MAX_CHARS,
-                                            ),
-                                          )
-                                        }}
+                                        autoGenerateOnDisplayNameChange={true}
                                       />
                                     </FormControl>
                                     <FormMessage />

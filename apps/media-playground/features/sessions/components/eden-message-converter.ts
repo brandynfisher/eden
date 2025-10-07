@@ -1,9 +1,5 @@
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import {
-  CompleteAttachment,
-  ThreadMessageLike,
-  ToolCallContentPart,
-} from '@assistant-ui/react'
+import { CompleteAttachment, ThreadMessageLike } from '@assistant-ui/react'
 import {
   BaseThreadMessage,
   Thought,
@@ -11,6 +7,16 @@ import {
   ThreadSystemMessage,
   ThreadUserMessage,
 } from '@edenlabs/eden-sdk'
+
+// Define ToolCallContentPart type since it's not exported from @assistant-ui/react
+type ToolCallContentPart = {
+  type: 'tool-call'
+  toolCallId: string
+  toolName: string
+  args: Record<string, unknown>
+  argsText: string
+  result?: unknown
+}
 
 export interface ToolCall {
   id: string
@@ -100,7 +106,6 @@ export function convertEdenMessage(msg: EdenMessage): ThreadMessageLike {
               type: 'tool-call',
               toolCallId: chunk.id,
               toolName: 'task_result',
-              //@ts-expect-error args is not typed
               args: chunk.args,
               argsText: JSON.stringify(chunk.args, null, 2),
               result: {

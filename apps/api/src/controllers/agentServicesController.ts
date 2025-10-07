@@ -156,6 +156,48 @@ export const getAgentTriggers = async (
   })
 }
 
+export const getAgentTrigger = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId, triggerId } = request.params as {
+    agentId: string
+    triggerId: string
+  }
+  const currentUserId = request.user.userId
+  const agent = await Agent.findById(agentId)
+
+  if (!agent) {
+    return reply.status(404).send({
+      error: 'Agent not found',
+    })
+  }
+
+  if (
+    !(await hasOwnerPermissions(agent._id.toString(), currentUserId.toString()))
+  ) {
+    return reply.status(401).send({
+      error: 'User not authorized to view triggers for this agent',
+    })
+  }
+
+  const trigger = await Trigger.findOne({
+    _id: triggerId,
+    agent: agentId,
+    $or: [{ deleted: { $exists: false } }, { deleted: false }],
+  })
+
+  if (!trigger) {
+    return reply.status(404).send({
+      error: 'Trigger not found',
+    })
+  }
+
+  return reply.status(200).send({
+    trigger,
+  })
+}
+
 export const createAgentTrigger = async (
   server: FastifyInstance,
   request: FastifyRequest,

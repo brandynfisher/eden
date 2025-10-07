@@ -1,4 +1,5 @@
 import adminRoutes from './adminRoutes'
+import agentCreationRoutes from './agentCreationRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
 import characterRoutes from './characterRoutes'
@@ -77,5 +78,6 @@ export const routes = [
   feedRoutes,
   sessionRoutes,
   paymentRoutes,
+  agentCreationRoutes,
   testRoutes,
 ]

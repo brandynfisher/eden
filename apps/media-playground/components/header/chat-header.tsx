@@ -252,7 +252,7 @@ const ChatHeader = ({
             )}
           </div>
 
-          {/* Right section - New Chat icon (when sidebar collapsed) and Settings icon */}
+          {/* Right section - New Chat icon (when sidebar collapsed) and Settings/Chat toggle icon */}
           <div className="ml-auto flex items-center gap-2">
             {/* Share button */}
             {session && session.owner._id === user?._id && (
@@ -280,16 +280,25 @@ const ChatHeader = ({
               </Button>
             )}
 
-            {/* Settings icon */}
+            {/* Settings/Chat toggle icon - show settings when in chat, chat when in settings */}
             {showSettingsIcon && (
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={onSettingsClick}
+                onClick={viewMode === 'chat' ? onSettingsClick : onBackToChat}
                 className="h-9 w-9 hover:bg-muted/20 transition-colors"
               >
-                <SettingsIcon className="size-4" />
-                <span className="sr-only">Agent Settings</span>
+                {viewMode === 'chat' ? (
+                  <>
+                    <SettingsIcon className="size-4" />
+                    <span className="sr-only">Agent Settings</span>
+                  </>
+                ) : (
+                  <>
+                    <MessageCircleIcon className="size-4" />
+                    <span className="sr-only">Back to Chat</span>
+                  </>
+                )}
               </Button>
             )}
           </div>

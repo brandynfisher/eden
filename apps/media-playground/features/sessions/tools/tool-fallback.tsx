@@ -10,7 +10,6 @@ import { TooltipIconButton } from '@/components/ui/assistant-ui/tooltip-icon-but
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { cn } from '@/lib/utils'
-import { ToolCallContentPartComponent } from '@assistant-ui/react'
 import { TaskV2Result, TaskV2Status, ToolV2 } from '@edenlabs/eden-sdk'
 import {
   ChevronDownIcon,
@@ -21,6 +20,13 @@ import {
   XIcon, // HourglassIcon,
 } from 'lucide-react'
 import React, { Suspense, useState } from 'react'
+
+// Define ToolCallContentPartComponent type since it's not exported from @assistant-ui/react
+type ToolCallContentPartComponent = React.FC<{
+  toolName: string
+  args: Record<string, unknown>
+  result?: unknown
+}>
 
 type TaskResultToolArgs = {
   // result: {

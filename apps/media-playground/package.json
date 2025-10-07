@@ -14,10 +14,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@assistant-ui/react": "^0.8.2",
-    "@assistant-ui/react-markdown": "^0.8.0",
-    "@assistant-ui/react-syntax-highlighter": "^0.8.0",
-    "@assistant-ui/react-ui": "^0.1.8",
+    "@assistant-ui/react": "^0.11.28",
+    "@assistant-ui/react-markdown": "^0.11.1",
+    "@assistant-ui/react-syntax-highlighter": "^0.11.1",
     "@clerk/nextjs": "^6.10.4",
     "@clerk/themes": "^2.2.14",
     "@dnd-kit/core": "^6.1.0",
