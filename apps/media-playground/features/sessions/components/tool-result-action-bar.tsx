@@ -106,73 +106,77 @@ const ToolActionButton = ({ creationId }: { creationId: string }) => {
 
   return (
     <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link
-            href={`/creations/${creationId}`}
-            className="aui-button aui-button-ghost aui-button-icon"
-          >
-            <ExternalLinkIcon className="w-4 h-4" />
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent>Open creation page</TooltipContent>
-      </Tooltip>
+      <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity inline-flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              href={`/creations/${creationId}`}
+              className="aui-button aui-button-ghost aui-button-icon"
+            >
+              <ExternalLinkIcon className="w-4 h-4" />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>Open creation page</TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            className="aui-button aui-button-ghost aui-button-icon"
-            onClick={handleShareClick}
-          >
-            <Share2Icon className="w-4 h-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Share</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className="aui-button aui-button-ghost aui-button-icon"
+              onClick={handleShareClick}
+            >
+              <Share2Icon className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Share</TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            className={cn(
-              'aui-button aui-button-ghost aui-button-icon',
-              creation.isLiked && 'text-red-500',
-            )}
-            onClick={handleLikeClick}
-            disabled={!isSignedIn || isPending}
-          >
-            <HeartIcon
-              className="w-4 h-4"
-              fill={creation.isLiked ? 'currentColor' : 'none'}
-            />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>{creation.isLiked ? 'Unlike' : 'Like'}</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className={cn(
+                'aui-button aui-button-ghost aui-button-icon',
+                creation.isLiked && 'text-red-500',
+              )}
+              onClick={handleLikeClick}
+              disabled={!isSignedIn || isPending}
+            >
+              <HeartIcon
+                className="w-4 h-4"
+                fill={creation.isLiked ? 'currentColor' : 'none'}
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {creation.isLiked ? 'Unlike' : 'Like'}
+          </TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            className="aui-button aui-button-ghost aui-button-icon"
-            onClick={handleAddToCollectionClick}
-            disabled={!isSignedIn}
-          >
-            <BookmarkPlusIcon className="w-4 h-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Add to collection</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className="aui-button aui-button-ghost aui-button-icon"
+              onClick={handleAddToCollectionClick}
+              disabled={!isSignedIn}
+            >
+              <BookmarkPlusIcon className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Add to collection</TooltipContent>
+        </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            className="aui-button aui-button-ghost aui-button-icon"
-            onClick={handleDownloadClick}
-          >
-            <DownloadIcon className="w-4 h-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Download</TooltipContent>
-      </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className="aui-button aui-button-ghost aui-button-icon"
+              onClick={handleDownloadClick}
+            >
+              <DownloadIcon className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>Download</TooltipContent>
+        </Tooltip>
+      </div>
     </TooltipProvider>
   )
 }

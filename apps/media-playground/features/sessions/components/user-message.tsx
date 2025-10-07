@@ -1,6 +1,5 @@
 import { MessageAttachment } from './message-attachment'
 import { LightboxGallery } from '@/components/media/lightbox'
-import { MarkdownText } from '@/features/sessions/components/markdown-text'
 import { Message, SessionV2 } from '@edenlabs/eden-sdk'
 import { useState } from 'react'
 
@@ -30,7 +29,7 @@ export const UserMessage = ({
     : message.content
 
   return (
-    <div className="py-2 pl-[calc(3rem+0.75rem)]">
+    <div className="pt-2 pb-4 pl-[calc(3rem+0.75rem)]">
       <div className="max-w-[42rem] flex flex-col items-end">
         <div className="flex flex-col items-end gap-2 max-w-[85%]">
           {hasAttachments && (
@@ -47,12 +46,14 @@ export const UserMessage = ({
             </LightboxGallery>
           )}
           {hasContent && (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3">
+            <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3">
               <div className="overflow-x-auto text-left">
                 {/* Preview */}
                 {!expanded && (
                   <div className="overflow-x-auto relative">
-                    <MarkdownText>{preview!}</MarkdownText>
+                    <pre className="whitespace-pre-wrap font-sans text-base">
+                      {preview!}
+                    </pre>
                     {isHuge && (
                       <div className="mt-2 flex">
                         <button
@@ -70,7 +71,9 @@ export const UserMessage = ({
                 {/* Full (own scroll) */}
                 {expanded && (
                   <div className="overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
-                    <MarkdownText>{message.content!}</MarkdownText>
+                    <pre className="whitespace-pre-wrap font-sans text-base">
+                      {message.content!}
+                    </pre>
                   </div>
                 )}
               </div>

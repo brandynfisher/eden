@@ -1168,6 +1168,7 @@ const Session = ({
                                   message={message}
                                   showAvatar={true}
                                   isStreamingTokens={false}
+                                  isChatRoute={ischatRoute}
                                 />
                               ))}
                       </div>
@@ -1206,6 +1207,7 @@ const Session = ({
                             }
                             showAvatar={true}
                             isStreamingTokens={true}
+                            isChatRoute={ischatRoute}
                           />
                         </div>
                       )
@@ -1236,6 +1238,7 @@ const Session = ({
                             }
                             showAvatar={true}
                             isStreamingTokens={true}
+                            isChatRoute={ischatRoute}
                           />
                         </div>
                       )}
@@ -1269,6 +1272,7 @@ const Session = ({
                         }
                         showAvatar={true}
                         isStreamingTokens={true}
+                        isChatRoute={ischatRoute}
                       />
                     </div>
                   )
@@ -1301,6 +1305,7 @@ const Session = ({
                           streamingState.isStreamingTokens &&
                           !streamingState.hasReceivedTokens
                         }
+                        isChatRoute={ischatRoute}
                       />
                     </div>
                   )
@@ -1352,6 +1357,7 @@ const Session = ({
                                 message={message}
                                 isStreamingTokens={false}
                                 showAvatar={index === 0}
+                                isChatRoute={ischatRoute}
                               />
                             ))}
                     </div>
@@ -1387,6 +1393,7 @@ const Session = ({
                           } as Message
                         }
                         isStreamingTokens={true}
+                        isChatRoute={ischatRoute}
                       />
                     )
                   })}
@@ -1426,7 +1433,11 @@ const Session = ({
       </div>
 
       <div className="sticky bottom-0 bg-background p-4 z-10 border-t border-gray-800">
-        <div className="max-w-[calc(42rem+3.75rem)] mx-auto w-full pl-[calc(3rem+0.75rem)]">
+        <div
+          className={`max-w-[calc(42rem+3.75rem)] mx-auto w-full ${
+            ischatRoute ? 'sm:pl-[calc(3rem+0.75rem)]' : ''
+          }`}
+        >
           <MessageInput
             sessionId={currentSessionId as string}
             enableLiveAudio={true}
