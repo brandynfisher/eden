@@ -26,8 +26,8 @@ const agentCreationRoutes: FastifyPluginAsync = async server => {
         }),
         response: {
           200: Type.Object({
-            persona: Type.String(),
-            description: Type.String(),
+            agent_instructions: Type.String(),
+            agent_description: Type.String(),
             memory_instructions: Type.String(),
             cost: Type.Number(),
           }),

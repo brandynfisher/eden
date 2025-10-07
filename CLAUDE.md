@@ -94,6 +94,11 @@ TypeScript SDK wrapping the Eden API:
 
 ## Important Patterns
 
+The website communicates with the backend like this:
+frontend => next api => fastify api => python api (backend running on Modal)
+/api/agents is a next api route
+api.eden.art/v2/agents/* is the fastify api route
+
 ### Task Handler Pattern
 The API uses a plugin-based task handler system. Task handlers implement:
 - `submitTask`: Dispatch work to external services

@@ -1,14 +1,16 @@
+import { useOnboardingStore } from '../chat/store'
+
 interface AgentPromptsExtractionResponse {
-  persona: string
-  description: string
+  agent_instructions: string
+  agent_description: string
   memory_instructions: string
   cost: number
 }
 
 interface AgentArgs {
-  persona: string
-  description: string
-  memory_instructions: string
+  agentInstructions: string
+  agentDescription: string
+  memoryInstructions: string
 }
 
 /**
@@ -18,11 +20,15 @@ interface AgentArgs {
  * 1. Fetches all messages from the session
  * 2. Uses LLM to extract persona, description, and memory instructions
  * 3. Returns the extracted data
+ * 4. Stores the data in Zustand state
  */
 export async function processOnboardingLLMCalls(
   sessionId: string,
+  userId: string,
 ): Promise<AgentArgs> {
-  console.log(`[processOnboardingLLMCalls] Starting for session: ${sessionId}`)
+  console.log(
+    `[processOnboardingLLMCalls] Starting for session: ${sessionId}, user: ${userId}`,
+  )
 
   const response = await fetch(`/api/agent_creation/extract_prompts`, {
     method: 'POST',
@@ -31,47 +37,173 @@ export async function processOnboardingLLMCalls(
     },
     body: JSON.stringify({
       session_id: sessionId,
+      user_id: userId,
     }),
   })
 
   if (!response.ok) {
     const errorText = await response.text()
     console.error(
-      '[processOnboardingLLMCalls] Error:',
+      '[processOnboardingLLMCalls] Error response:',
       response.status,
-      errorText,
+      response.statusText,
     )
+    console.error('[processOnboardingLLMCalls] Error body:', errorText)
+
+    try {
+      const errorJson = JSON.parse(errorText)
+      console.error('[processOnboardingLLMCalls] Error JSON:', errorJson)
+    } catch (e) {
+      // Not JSON, already logged as text
+    }
+
     throw new Error(`Agent prompts extraction failed: ${response.statusText}`)
   }
 
   const data: AgentPromptsExtractionResponse = await response.json()
+  console.log('[processOnboardingLLMCalls] Received data:', data)
 
   console.log('[processOnboardingLLMCalls] Extraction completed:')
   console.log(`  - Cost: ${data.cost} manna`)
-  console.log(`  - Persona length: ${data.persona.length} chars`)
-  console.log(`  - Description length: ${data.description.length} chars`)
+  console.log(
+    `  - Agent instructions length: ${data.agent_instructions.length} chars`,
+  )
+  console.log(
+    `  - Agent description length: ${data.agent_description.length} chars`,
+  )
   console.log(
     `  - Memory instructions length: ${data.memory_instructions.length} chars`,
   )
 
   const agentArgs: AgentArgs = {
-    persona: data.persona,
-    description: data.description,
-    memory_instructions: data.memory_instructions,
+    agentInstructions: data.agent_instructions,
+    agentDescription: data.agent_description,
+    memoryInstructions: data.memory_instructions,
   }
 
-  console.log('[processOnboardingLLMCalls] Agent args prepared:', agentArgs)
+  // Store the extracted data in Zustand
+  const store = useOnboardingStore.getState()
+  store.setAgentInstructions(data.agent_instructions)
+  store.setAgentDescription(data.agent_description)
+  store.setMemoryInstructions(data.memory_instructions)
 
-  // Call the agent creation function
-  await createAgentFromArgs(agentArgs)
+  console.log(
+    '[processOnboardingLLMCalls] Agent args stored in Zustand:',
+    agentArgs,
+  )
 
   return agentArgs
 }
 
 /**
- * Creates a new agent in the database (stub for now)
+ * Creates a new agent in the database using the full onboarding state
+ *
+ * This will call the agent creation API endpoint with all the collected data:
+ * - name, username, profileImageUrl, referenceImages
+ * - agentInstructions, agentDescription, memoryInstructions
  */
-async function createAgentFromArgs(agentArgs: AgentArgs): Promise<void> {
-  console.log('[createAgentFromArgs] TODO: Implement agent creation')
-  console.log('[createAgentFromArgs] Agent args:', agentArgs)
+export async function createAgentFromOnboardingState(): Promise<string> {
+  const state = useOnboardingStore.getState()
+
+  console.log('[createAgentFromOnboardingState] Creating agent with state:', {
+    name: state.name,
+    username: state.username,
+    profileImageUrl: state.profileImageUrl,
+    referenceImages: state.referenceImages,
+    agentInstructions: state.agentInstructions,
+    agentDescription: state.agentDescription,
+    memoryInstructions: state.memoryInstructions,
+  })
+
+  // Validate required fields
+  if (!state.name || !state.username) {
+    throw new Error('Missing required fields: name and username are required')
+  }
+
+  if (!state.agentInstructions || !state.agentDescription) {
+    throw new Error(
+      'Missing LLM-extracted fields: agentInstructions and agentDescription are required. Ensure processOnboardingLLMCalls completed successfully.',
+    )
+  }
+
+  const response = await fetch('/api/agents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: state.name,
+      key: state.username,
+      description: state.agentDescription,
+      image: state.profileImageUrl,
+      persona: state.agentInstructions,
+      public: false,
+    }),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error(
+      '[createAgentFromOnboardingState] Error:',
+      response.status,
+      errorText,
+    )
+    throw new Error(`Agent creation failed: ${response.statusText}`)
+  }
+
+  const data = await response.json()
+  const agentId = data.agentId
+
+  console.log(
+    '[createAgentFromOnboardingState] Agent created successfully:',
+    agentId,
+  )
+
+  // Create a concept with reference images if they exist
+  if (state.referenceImages && state.referenceImages.length > 0) {
+    console.log(
+      '[createAgentFromOnboardingState] Creating Visual Knowledge concept with',
+      state.referenceImages.length,
+      'reference images',
+    )
+
+    try {
+      const conceptResponse = await fetch('/api/v2/concepts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Visual Knowledge',
+          agent: agentId,
+          usage_instructions:
+            'Use these images as reference images whenever relevant in the context',
+          images: state.referenceImages.map(ref => ({
+            image: ref.imageUrl,
+            usage_instructions: ref.description,
+          })),
+        }),
+      })
+
+      if (!conceptResponse.ok) {
+        const errorText = await conceptResponse.text()
+        console.error(
+          '[createAgentFromOnboardingState] Concept creation error:',
+          conceptResponse.status,
+          errorText,
+        )
+        // Don't throw - agent was created successfully, concept creation is supplementary
+      } else {
+        const conceptData = await conceptResponse.json()
+        console.log(
+          '[createAgentFromOnboardingState] Visual Knowledge concept created:',
+          conceptData.concept?._id,
+        )
+      }
+    } catch (error) {
+      console.error(
+        '[createAgentFromOnboardingState] Failed to create concept:',
+        error,
+      )
+      // Don't throw - agent was created successfully, concept creation is supplementary
+    }
+  }
+
+  return agentId
 }

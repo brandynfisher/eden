@@ -48,7 +48,6 @@ import {
   AgentsDeleteArguments,
   AgentsListArguments,
   AgentsUpdateArguments,
-  FeatureFlag,
   SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
@@ -286,6 +285,7 @@ export const createAgent = async (
     key,
     description,
     image,
+    public: isPublic,
     models,
     persona,
     isPersonaPublic,
@@ -327,10 +327,10 @@ export const createAgent = async (
     knowledge,
     suggestions,
     voice,
+    public: isPublic,
     models: models || [],
     tools,
     llm_settings: llm_settings,
-    featureFlags: [FeatureFlag.FreeTools],
   })
 
   try {
