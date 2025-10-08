@@ -1,0 +1,70 @@
+import { FastifyPluginAsync } from 'fastify'
+import fastifyPlugin from 'fastify-plugin'
+import Redis from 'ioredis'
+import type { Redis as RedisClient } from 'ioredis'
+
+interface RedisPluginOptions {
+  url?: string
+}
+
+const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
+  fastify,
+  options,
+) => {
+  const redisUrl = options.url || process.env.REDIS_URL
+
+  if (redisUrl) {
+    try {
+      const client = new Redis(redisUrl, {
+        maxRetriesPerRequest: 3,
+        enableReadyCheck: true,
+        retryStrategy: times => {
+          const delay = Math.min(times * 50, 2000)
+          return delay
+        },
+      })
+
+      client.on('error', err => {
+        console.error('Redis connection error:', err)
+        fastify.log.error('Redis connection error:', err)
+      })
+
+      client.on('ready', () => {
+        fastify.log.info('Redis client connected successfully')
+      })
+
+      fastify.decorate('redis', client)
+
+      // Cleanup on close
+      fastify.addHook('onClose', async () => {
+        await client.quit()
+        fastify.log.info('Redis connection closed')
+      })
+    } catch (error) {
+      fastify.log.error('Failed to initialize Redis client:', error)
+      fastify.decorate('redis', null)
+    }
+  } else {
+    fastify.log.warn(
+      '⚠️  REDIS_URL not set - session tracking disabled (notifications will be created for all messages)',
+    )
+    fastify.decorate('redis', null)
+  }
+}
+
+export const registerRedis: FastifyPluginAsync = async (fastify, options) => {
+  try {
+    await fastify.register(fastifyPlugin(redisPlugin, options))
+    fastify.log.info('Successfully registered plugin: Redis')
+  } catch (err) {
+    fastify.log.error('Failed to register plugin: Redis', { err })
+  }
+}
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    redis: RedisClient | null
+  }
+}
+
+export default fastifyPlugin(redisPlugin)
