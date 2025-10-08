@@ -17,6 +17,42 @@ export const ProfileImageUploader: FC<{
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const convertToWebP = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+
+      img.onload = () => {
+        canvas.width = img.width
+        canvas.height = img.height
+        ctx?.drawImage(img, 0, 0)
+
+        canvas.toBlob(
+          blob => {
+            if (blob) {
+              const webpFile = new File(
+                [blob],
+                file.name.replace(/\.[^.]+$/, '.webp'),
+                {
+                  type: 'image/webp',
+                },
+              )
+              resolve(webpFile)
+            } else {
+              reject(new Error('Failed to convert image to WebP'))
+            }
+          },
+          'image/webp',
+          0.9, // Quality: 0-1
+        )
+      }
+
+      img.onerror = () => reject(new Error('Failed to load image'))
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   const handleFileChange = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file')
@@ -26,16 +62,18 @@ export const ProfileImageUploader: FC<{
     setIsUploading(true)
 
     try {
+      // Convert to WebP before uploading
+      const webpFile = await convertToWebP(file)
+
       // Use the same upload mechanism as FileUploader
       const cancelSource = axios.CancelToken.source()
       const uploadedFile = await uploadFileToS3({
-        file,
+        file: webpFile,
         onUploadProgress: () => {}, // We could add progress here if needed
         cancelSource,
       })
 
       if (uploadedFile && uploadedFile.fileUrl) {
-        console.log('Upload successful, URL:', uploadedFile.fileUrl)
         onChange(uploadedFile.fileUrl)
         toast.success('Profile image uploaded successfully')
       } else {
