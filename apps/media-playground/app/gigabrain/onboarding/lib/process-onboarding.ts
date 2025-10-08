@@ -27,14 +27,9 @@ interface AgentArgs {
 export async function processOnboardingLLMCalls(
   sessionId: string,
 ): Promise<AgentArgs> {
-  console.log(`[processOnboardingLLMCalls] Starting for session: ${sessionId}`)
-
   // Get agent name from Zustand store to pass to LLM
   const state = useOnboardingStore.getState()
   const agentName = state.name || '<agent-name>'
-
-  console.log('[processOnboardingLLMCalls] Full Zustand state:', state)
-  console.log('[processOnboardingLLMCalls] Agent name from store:', agentName)
 
   const response = await fetch(`/api/agent_creation/extract_prompts`, {
     method: 'POST',
@@ -49,37 +44,12 @@ export async function processOnboardingLLMCalls(
 
   if (!response.ok) {
     const errorText = await response.text()
-    console.error(
-      '[processOnboardingLLMCalls] Error response:',
-      response.status,
-      response.statusText,
+    throw new Error(
+      `Agent prompts extraction failed: ${response.statusText} - ${errorText}`,
     )
-    console.error('[processOnboardingLLMCalls] Error body:', errorText)
-
-    try {
-      const errorJson = JSON.parse(errorText)
-      console.error('[processOnboardingLLMCalls] Error JSON:', errorJson)
-    } catch (e) {
-      // Not JSON, already logged as text
-    }
-
-    throw new Error(`Agent prompts extraction failed: ${response.statusText}`)
   }
 
   const data: AgentPromptsExtractionResponse = await response.json()
-  console.log('[processOnboardingLLMCalls] Received data:', data)
-
-  console.log('[processOnboardingLLMCalls] Extraction completed:')
-  console.log(`  - Cost: ${data.cost} manna`)
-  console.log(
-    `  - Agent instructions length: ${data.agent_instructions.length} chars`,
-  )
-  console.log(
-    `  - Agent description length: ${data.agent_description.length} chars`,
-  )
-  console.log(
-    `  - Memory instructions length: ${data.memory_instructions.length} chars`,
-  )
 
   const agentArgs: AgentArgs = {
     agentInstructions: data.agent_instructions,
@@ -93,11 +63,6 @@ export async function processOnboardingLLMCalls(
   store.setAgentDescription(data.agent_description)
   store.setMemoryInstructions(data.memory_instructions)
 
-  console.log(
-    '[processOnboardingLLMCalls] Agent args stored in Zustand:',
-    agentArgs,
-  )
-
   return agentArgs
 }
 
@@ -110,16 +75,6 @@ export async function processOnboardingLLMCalls(
  */
 export async function createAgentFromOnboardingState(): Promise<string> {
   const state = useOnboardingStore.getState()
-
-  console.log('[createAgentFromOnboardingState] Creating agent with state:', {
-    name: state.name,
-    username: state.username,
-    profileImageUrl: state.profileImageUrl,
-    referenceImages: state.referenceImages,
-    agentInstructions: state.agentInstructions,
-    agentDescription: state.agentDescription,
-    memoryInstructions: state.memoryInstructions,
-  })
 
   // Validate required fields
   if (!state.name || !state.username) {
@@ -151,28 +106,16 @@ export async function createAgentFromOnboardingState(): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text()
-    console.error(
-      '[createAgentFromOnboardingState] Error:',
-      response.status,
-      errorText,
+    throw new Error(
+      `Agent creation failed: ${response.statusText} - ${errorText}`,
     )
-    throw new Error(`Agent creation failed: ${response.statusText}`)
   }
 
   const data = await response.json()
   const agentId = data.agentId
 
-  console.log(
-    '[createAgentFromOnboardingState] Agent created successfully:',
-    agentId,
-  )
-
   // Create collective memory with memory_instructions if they exist
   if (state.memoryInstructions) {
-    console.log(
-      '[createAgentFromOnboardingState] Creating Collective Memory with memory instructions',
-    )
-
     try {
       // Truncate memory instructions to 3000 chars max, pad to 300 chars min
       let truncatedMemoryInstructions = state.memoryInstructions.slice(0, 3000)
@@ -196,37 +139,15 @@ export async function createAgentFromOnboardingState(): Promise<string> {
       )
 
       if (!collectiveMemoryResponse.ok) {
-        const errorText = await collectiveMemoryResponse.text()
-        console.error(
-          '[createAgentFromOnboardingState] Collective memory creation error:',
-          collectiveMemoryResponse.status,
-          errorText,
-        )
         // Don't throw - agent was created successfully, collective memory is supplementary
-      } else {
-        const collectiveMemoryData = await collectiveMemoryResponse.json()
-        console.log(
-          '[createAgentFromOnboardingState] Collective Memory created successfully:',
-          collectiveMemoryData,
-        )
       }
     } catch (error) {
-      console.error(
-        '[createAgentFromOnboardingState] Failed to create collective memory:',
-        error,
-      )
       // Don't throw - agent was created successfully, collective memory is supplementary
     }
   }
 
   // Create a concept with reference images if they exist
   if (state.referenceImages && state.referenceImages.length > 0) {
-    console.log(
-      '[createAgentFromOnboardingState] Creating Visual Knowledge concept with',
-      state.referenceImages.length,
-      'reference images',
-    )
-
     try {
       const conceptResponse = await fetch('/api/v2/concepts', {
         method: 'POST',
@@ -244,25 +165,9 @@ export async function createAgentFromOnboardingState(): Promise<string> {
       })
 
       if (!conceptResponse.ok) {
-        const errorText = await conceptResponse.text()
-        console.error(
-          '[createAgentFromOnboardingState] Concept creation error:',
-          conceptResponse.status,
-          errorText,
-        )
         // Don't throw - agent was created successfully, concept creation is supplementary
-      } else {
-        const conceptData = await conceptResponse.json()
-        console.log(
-          '[createAgentFromOnboardingState] Visual Knowledge concept created:',
-          conceptData.concept?._id,
-        )
       }
     } catch (error) {
-      console.error(
-        '[createAgentFromOnboardingState] Failed to create concept:',
-        error,
-      )
       // Don't throw - agent was created successfully, concept creation is supplementary
     }
   }

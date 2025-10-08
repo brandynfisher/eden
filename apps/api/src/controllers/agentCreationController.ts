@@ -35,9 +35,6 @@ export const extractAgentPrompts = async (
     },
   }
 
-  server.log.info('> modal::request::agent_creation/extract_prompts')
-  server.log.info(modalRequest)
-
   try {
     const modalResponse = await axios.post(
       modalRequest.endpoint,
@@ -48,9 +45,6 @@ export const extractAgentPrompts = async (
         },
       },
     )
-
-    server.log.info('< modal::response::agent_creation/extract_prompts')
-    server.log.info(modalResponse.data)
 
     return reply.send(modalResponse.data)
   } catch (error) {
