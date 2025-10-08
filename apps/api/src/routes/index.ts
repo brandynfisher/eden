@@ -2,17 +2,9 @@ import adminRoutes from './adminRoutes'
 import agentCreationRoutes from './agentCreationRoutes'
 import apiKeyRoutes from './apiKeyRoutes'
 import authRoutes from './authRoutes'
-import characterRoutes from './characterRoutes'
-import collectionRoutes from './collectionRoutes'
-import conceptRoutes from './conceptRoutes'
-import creatorRoutes from './creatorRoutes'
-import feedRoutes from './feedRoutes'
-import generatorRoutes from './generatorRoutes'
 import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
 import paymentRoutes from './paymentRoutes'
-import sessionRoutes from './sessionRoutes'
-import testRoutes from './testRoutes'
 import { TSchema, Type } from '@sinclair/typebox'
 
 export const paginatedResponse = (docs: TSchema) => {
@@ -66,18 +58,10 @@ export const cursorPaginationProperties = () => {
 
 export const routes = [
   adminRoutes,
-  characterRoutes,
   authRoutes,
   mannaRoutes,
   apiKeyRoutes,
   mediaRoutes,
-  creatorRoutes,
-  collectionRoutes,
-  generatorRoutes,
-  conceptRoutes,
-  feedRoutes,
-  sessionRoutes,
   paymentRoutes,
   agentCreationRoutes,
-  testRoutes,
 ]

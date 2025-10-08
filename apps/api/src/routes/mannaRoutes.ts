@@ -1,31 +1,9 @@
-import { getBalance, redeemMannaVoucher } from '../controllers/mannaController'
+import { redeemMannaVoucher } from '../controllers/mannaController'
 import { isAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const mannaRoutes: FastifyPluginAsync = async server => {
-  server.get('/manna/balance', {
-    schema: {
-      tags: ['Manna'],
-      summary: 'Get Manna Balance',
-      description:
-        "Retrieve the authenticated user's current manna balance and subscription balance.",
-      security: [
-        {
-          apiKey: [],
-        },
-      ],
-      response: {
-        200: Type.Object({
-          balance: Type.Number(),
-          subscriptionBalance: Type.Number(),
-        }),
-      },
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => getBalance(request, reply),
-  })
-
   server.post('/manna/vouchers/redeem', {
     schema: {
       tags: ['Manna'],
