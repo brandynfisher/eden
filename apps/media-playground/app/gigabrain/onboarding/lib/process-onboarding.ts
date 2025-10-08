@@ -31,7 +31,10 @@ export async function processOnboardingLLMCalls(
 
   // Get agent name from Zustand store to pass to LLM
   const state = useOnboardingStore.getState()
-  const agentName = state.name || 'your agent'
+  const agentName = state.name || '<agent-name>'
+
+  console.log('[processOnboardingLLMCalls] Full Zustand state:', state)
+  console.log('[processOnboardingLLMCalls] Agent name from store:', agentName)
 
   const response = await fetch(`/api/agent_creation/extract_prompts`, {
     method: 'POST',

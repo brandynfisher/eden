@@ -3,6 +3,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 interface AgentPromptsExtractionRequest {
   session_id: string
+  agent_name?: string
 }
 
 export const extractAgentPrompts = async (
@@ -17,7 +18,7 @@ export const extractAgentPrompts = async (
     })
   }
 
-  const { session_id } = request.body
+  const { session_id, agent_name } = request.body
 
   if (!session_id) {
     return reply.status(400).send({
@@ -30,6 +31,7 @@ export const extractAgentPrompts = async (
     data: {
       user_id: userId,
       session_id,
+      agent_name,
     },
   }
 

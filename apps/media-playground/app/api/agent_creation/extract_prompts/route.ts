@@ -15,6 +15,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('[Extract Agent Prompts] Request body:', body)
+    console.log('[Extract Agent Prompts] agent_name value:', body.agent_name)
+    console.log(
+      '[Extract Agent Prompts] agent_name type:',
+      typeof body.agent_name,
+    )
 
     const targetUrl = `${env.NEXT_PUBLIC_EDEN_API_URL}/agent_creation/extract_prompts`
     console.log('[Extract Agent Prompts] Target URL:', targetUrl)
