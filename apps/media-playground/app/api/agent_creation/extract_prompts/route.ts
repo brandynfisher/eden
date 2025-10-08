@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
         session_id: body.session_id,
         agent_name: body.agent_name,
       }),
-      // Increase timeout to 2 minutes for LLM processing
-      signal: AbortSignal.timeout(120000),
+      // Increase timeout to 3 minutes for LLM processing
+      signal: AbortSignal.timeout(180000),
       keepalive: true,
     } as RequestInit)
 
