@@ -21,14 +21,17 @@ interface AgentArgs {
  * 2. Uses LLM to extract persona, description, and memory instructions
  * 3. Returns the extracted data
  * 4. Stores the data in Zustand state
+ *
+ * Note: user_id is automatically extracted from the auth token by the backend
  */
 export async function processOnboardingLLMCalls(
   sessionId: string,
-  userId: string,
 ): Promise<AgentArgs> {
-  console.log(
-    `[processOnboardingLLMCalls] Starting for session: ${sessionId}, user: ${userId}`,
-  )
+  console.log(`[processOnboardingLLMCalls] Starting for session: ${sessionId}`)
+
+  // Get agent name from Zustand store to pass to LLM
+  const state = useOnboardingStore.getState()
+  const agentName = state.name || 'your agent'
 
   const response = await fetch(`/api/agent_creation/extract_prompts`, {
     method: 'POST',
@@ -37,7 +40,7 @@ export async function processOnboardingLLMCalls(
     },
     body: JSON.stringify({
       session_id: sessionId,
-      user_id: userId,
+      agent_name: agentName,
     }),
   })
 
@@ -135,7 +138,11 @@ export async function createAgentFromOnboardingState(): Promise<string> {
       description: state.agentDescription,
       image: state.profileImageUrl,
       persona: state.agentInstructions,
-      public: false,
+      public: true,
+      owner_pays: 'deployments',
+      tools: {
+        create_image: true,
+      },
     }),
   })
 
@@ -156,6 +163,58 @@ export async function createAgentFromOnboardingState(): Promise<string> {
     '[createAgentFromOnboardingState] Agent created successfully:',
     agentId,
   )
+
+  // Create collective memory with memory_instructions if they exist
+  if (state.memoryInstructions) {
+    console.log(
+      '[createAgentFromOnboardingState] Creating Collective Memory with memory instructions',
+    )
+
+    try {
+      // Truncate memory instructions to 3000 chars max, pad to 300 chars min
+      let truncatedMemoryInstructions = state.memoryInstructions.slice(0, 3000)
+      if (truncatedMemoryInstructions.length < 300) {
+        truncatedMemoryInstructions = truncatedMemoryInstructions.padEnd(
+          300,
+          ' ',
+        )
+      }
+
+      const collectiveMemoryResponse = await fetch(
+        `/api/agents/${agentId}/collective-memory`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shard_name: 'Collective Memory',
+            extraction_prompt: truncatedMemoryInstructions,
+          }),
+        },
+      )
+
+      if (!collectiveMemoryResponse.ok) {
+        const errorText = await collectiveMemoryResponse.text()
+        console.error(
+          '[createAgentFromOnboardingState] Collective memory creation error:',
+          collectiveMemoryResponse.status,
+          errorText,
+        )
+        // Don't throw - agent was created successfully, collective memory is supplementary
+      } else {
+        const collectiveMemoryData = await collectiveMemoryResponse.json()
+        console.log(
+          '[createAgentFromOnboardingState] Collective Memory created successfully:',
+          collectiveMemoryData,
+        )
+      }
+    } catch (error) {
+      console.error(
+        '[createAgentFromOnboardingState] Failed to create collective memory:',
+        error,
+      )
+      // Don't throw - agent was created successfully, collective memory is supplementary
+    }
+  }
 
   // Create a concept with reference images if they exist
   if (state.referenceImages && state.referenceImages.length > 0) {

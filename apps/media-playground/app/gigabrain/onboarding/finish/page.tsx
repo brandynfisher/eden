@@ -11,12 +11,12 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 const PROGRESS_STEPS = [
-  { message: 'Constructing persona...', duration: 5000 },
-  { message: 'Integrating knowledge...', duration: 5000 },
-  { message: 'Setting up visual identity...', duration: 5000 },
-  { message: 'Setting up memory...', duration: 0 }, // Waits for LLM call to complete
-  { message: 'Finalizing your Gigabrain...', duration: 0 }, // Waits for agent creation
-  { message: 'Your Gigabrain is ready!', duration: 0 },
+  { message: 'Analyzing conversation...', duration: 5000, progressEnd: 20 },
+  { message: 'Constructing persona...', duration: 5000, progressEnd: 40 },
+  { message: 'Setting up visual identity...', duration: 5000, progressEnd: 60 },
+  { message: 'Building Memory system...', progressEnd: 80 }, // Waits for LLM completion
+  { message: 'Finalizing your Gigabrain...', progressEnd: 100 }, // Waits for agent creation
+  { message: 'Your Gigabrain is ready!', progressEnd: 100 },
 ]
 
 export default function OnboardingFinishPage() {
@@ -28,12 +28,12 @@ export default function OnboardingFinishPage() {
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [isComplete, setIsComplete] = useState(false)
   const [llmCallComplete, setLlmCallComplete] = useState(false)
   const [agentCreationComplete, setAgentCreationComplete] = useState(false)
   const hasProcessedOnboarding = useRef(false)
 
-  const isGigabrainReady = isComplete && agentCreationComplete
+  const isComplete = currentStepIndex >= PROGRESS_STEPS.length - 1
+  const isGigabrainReady = isComplete
 
   useEffect(() => {
     if (!sessionId) {
@@ -42,174 +42,85 @@ export default function OnboardingFinishPage() {
     }
   }, [sessionId, router])
 
-  // Trigger async LLM calls when component mounts
+  // Start async operations immediately when component mounts
   useEffect(() => {
-    console.log(
-      '[OnboardingFinish] useEffect triggered - sessionId:',
-      sessionId,
-      'user?.userId:',
-      user?.userId,
-      'hasProcessed:',
-      hasProcessedOnboarding.current,
-    )
-
     if (!sessionId || !user?.userId || hasProcessedOnboarding.current) {
-      console.log(
-        '[OnboardingFinish] Skipping processing - missing requirements or already processed',
-      )
       return
     }
 
     hasProcessedOnboarding.current = true
-    console.log(
-      '[OnboardingFinish] Starting onboarding processing flow with userId:',
-      user.userId,
-    )
 
     const processOnboarding = async () => {
       try {
-        console.log(
-          '[OnboardingFinish] === STEP 1: Starting LLM processing ===',
-        )
-        await processOnboardingLLMCalls(sessionId, user.userId)
-        console.log(
-          '[OnboardingFinish] === STEP 1 COMPLETE: LLM processing succeeded ===',
-        )
-        console.log('[OnboardingFinish] Setting llmCallComplete to TRUE')
+        // Step 1: LLM processing (5-25s)
+        await processOnboardingLLMCalls(sessionId)
         setLlmCallComplete(true)
 
-        // Now create the agent in MongoDB
-        console.log(
-          '[OnboardingFinish] === STEP 2: Creating agent in database ===',
-        )
+        // Step 2: Agent creation (starts immediately after LLM, ~5s)
         await createAgentFromOnboardingState()
-        console.log(
-          '[OnboardingFinish] === STEP 2 COMPLETE: Agent creation succeeded ===',
-        )
-        console.log('[OnboardingFinish] Setting agentCreationComplete to TRUE')
         setAgentCreationComplete(true)
       } catch (error) {
-        console.error(
-          '[OnboardingFinish] ❌ ERROR processing onboarding:',
-          error,
-        )
-        console.error(
-          '[OnboardingFinish] Error details:',
-          error instanceof Error ? error.message : String(error),
-        )
+        console.error('[OnboardingFinish] Error:', error)
       }
     }
 
     processOnboarding()
   }, [sessionId, user])
 
-  // Progress bar animation logic
+  // Progress animation: auto-advance through timed steps, then wait for async operations
   useEffect(() => {
-    console.log(
-      '[ProgressBar] Animation effect triggered - currentStepIndex:',
-      currentStepIndex,
-      'PROGRESS_STEPS.length:',
-      PROGRESS_STEPS.length,
-    )
+    const currentStep = PROGRESS_STEPS[currentStepIndex]
+    const startProgress =
+      currentStepIndex > 0
+        ? PROGRESS_STEPS[currentStepIndex - 1].progressEnd
+        : 0
+    const endProgress = currentStep.progressEnd
 
-    if (currentStepIndex >= PROGRESS_STEPS.length - 1) {
-      console.log('[ProgressBar] Reached final step, setting complete')
-      setIsComplete(true)
+    // Step 3: Wait for LLM completion
+    if (currentStepIndex === 3) {
+      setProgress(endProgress) // Set to 80%
+      if (llmCallComplete) {
+        setCurrentStepIndex(4)
+      }
+      return
+    }
+
+    // Step 4: Wait for agent creation completion
+    if (currentStepIndex === 4) {
+      setProgress(endProgress) // Set to 100%
+      if (agentCreationComplete) {
+        setCurrentStepIndex(5)
+      }
+      return
+    }
+
+    // Step 5: Final step, stay here
+    if (currentStepIndex >= 5) {
       setProgress(100)
       return
     }
 
-    const currentStep = PROGRESS_STEPS[currentStepIndex]
-    const stepProgress = 100 / (PROGRESS_STEPS.length - 1)
-    const startProgress = currentStepIndex * stepProgress
-
-    console.log(
-      '[ProgressBar] Current step:',
-      currentStep.message,
-      'duration:',
-      currentStep.duration,
-      'startProgress:',
-      startProgress,
-    )
-
-    // For steps with duration, animate progress
-    if (currentStep.duration > 0) {
-      console.log(
-        '[ProgressBar] Starting timed animation for step',
-        currentStepIndex,
-      )
+    // Steps 0-2: Auto-advance with timed animation
+    if (currentStep.duration) {
+      setProgress(startProgress) // Immediately set to start progress
       const startTime = Date.now()
-      const animationInterval = setInterval(() => {
+      const interval = setInterval(() => {
         const elapsed = Date.now() - startTime
-        const stepPercentage = Math.min(elapsed / currentStep.duration, 1)
-        setProgress(startProgress + stepPercentage * stepProgress)
+        const percentage = Math.min(elapsed / currentStep.duration, 1)
+        const newProgress =
+          startProgress + percentage * (endProgress - startProgress)
+        setProgress(newProgress)
 
         if (elapsed >= currentStep.duration) {
-          console.log(
-            '[ProgressBar] Step',
-            currentStepIndex,
-            'duration complete, advancing to next step',
-          )
-          clearInterval(animationInterval)
+          clearInterval(interval)
+          setProgress(endProgress)
           setCurrentStepIndex(prev => prev + 1)
         }
-      }, 16) // ~60fps
+      }, 16)
 
-      return () => clearInterval(animationInterval)
-    } else {
-      console.log(
-        '[ProgressBar] Step',
-        currentStepIndex,
-        'has no duration, waiting for external trigger',
-      )
+      return () => clearInterval(interval)
     }
-  }, [currentStepIndex])
-
-  // Handle waiting for LLM call completion (step 3)
-  useEffect(() => {
-    console.log(
-      '[LLMWait] Effect triggered - currentStepIndex:',
-      currentStepIndex,
-      'llmCallComplete:',
-      llmCallComplete,
-    )
-
-    if (currentStepIndex === 3 && llmCallComplete) {
-      console.log(
-        '[LLMWait] ✅ LLM complete AND on step 3, advancing to step 4',
-      )
-      const stepProgress = 100 / (PROGRESS_STEPS.length - 1)
-      const startProgress = currentStepIndex * stepProgress
-      setProgress(startProgress + stepProgress)
-      setCurrentStepIndex(prev => prev + 1)
-    } else if (currentStepIndex === 3) {
-      console.log('[LLMWait] ⏳ On step 3 but waiting for llmCallComplete...')
-    }
-  }, [currentStepIndex, llmCallComplete])
-
-  // Handle waiting for agent creation completion (step 4)
-  useEffect(() => {
-    console.log(
-      '[AgentCreationWait] Effect triggered - currentStepIndex:',
-      currentStepIndex,
-      'agentCreationComplete:',
-      agentCreationComplete,
-    )
-
-    if (currentStepIndex === 4 && agentCreationComplete) {
-      console.log(
-        '[AgentCreationWait] ✅ Agent creation complete AND on step 4, advancing to step 5',
-      )
-      const stepProgress = 100 / (PROGRESS_STEPS.length - 1)
-      const startProgress = currentStepIndex * stepProgress
-      setProgress(startProgress + stepProgress)
-      setCurrentStepIndex(prev => prev + 1)
-    } else if (currentStepIndex === 4) {
-      console.log(
-        '[AgentCreationWait] ⏳ On step 4 but waiting for agentCreationComplete...',
-      )
-    }
-  }, [currentStepIndex, agentCreationComplete])
+  }, [currentStepIndex, llmCallComplete, agentCreationComplete])
 
   if (!sessionId) {
     return null
@@ -241,15 +152,18 @@ export default function OnboardingFinishPage() {
       >
         <div className="w-full max-w-2xl space-y-8">
           {/* Progress Bar */}
-          <div className="relative">
-            <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
+          <div className="relative w-full">
+            <div className="h-3 w-full bg-gray-800 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-300 ${
+                className={`h-full ${
                   isComplete
                     ? 'bg-gradient-to-r from-yellow-400 to-purple-400'
-                    : 'bg-gradient-to-r from-yellow-400/60 to-purple-400/60'
+                    : 'bg-gradient-to-r from-yellow-400 to-purple-400'
                 }`}
-                style={{ width: `${progress}%` }}
+                style={{
+                  width: `${progress}%`,
+                  minWidth: progress > 0 ? '2px' : '0',
+                }}
               />
             </div>
             {/* Progress percentage */}

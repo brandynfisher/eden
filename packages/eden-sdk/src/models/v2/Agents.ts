@@ -133,6 +133,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   key: string
   description?: string
   persona?: string
+  public?: boolean
   isPersonaPublic?: boolean
   greeting?: string
   knowledge?: string
@@ -146,6 +147,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
     use_when?: string
   }>
   llm_settings?: LLMSettings
+  owner_pays?: 'off' | 'deployments' | 'full' | boolean // boolean for backward compatibility
 }
 
 export interface AgentsUpdateArguments extends WebAPICallOptions {

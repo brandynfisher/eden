@@ -1,5 +1,4 @@
 import { env } from '@/lib/config'
-import { handleAxiosServerError } from '@/lib/fetcher'
 import { getAuth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -16,22 +15,35 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('[Extract Agent Prompts] Request body:', body)
+
+    const targetUrl = `${env.NEXT_PUBLIC_EDEN_API_URL}/agent_creation/extract_prompts`
+    console.log('[Extract Agent Prompts] Target URL:', targetUrl)
     console.log(
-      '[Extract Agent Prompts] Target URL:',
-      `${env.NEXT_PUBLIC_EDEN_API_URL}/agent_creation/extract_prompts`,
+      '[Extract Agent Prompts] EDEN_API_URL:',
+      env.NEXT_PUBLIC_EDEN_API_URL,
     )
 
-    const response = await fetch(
-      `${env.NEXT_PUBLIC_EDEN_API_URL}/agent_creation/extract_prompts`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify(body),
+    if (!env.NEXT_PUBLIC_EDEN_API_URL) {
+      throw new Error('NEXT_PUBLIC_EDEN_API_URL is not configured')
+    }
+
+    // Backend expects session_id and agent_name in body, user_id comes from auth token
+    // Use keepalive and extended timeout for large LLM responses
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
+        Connection: 'keep-alive',
       },
-    )
+      body: JSON.stringify({
+        session_id: body.session_id,
+        agent_name: body.agent_name,
+      }),
+      // Increase timeout to 2 minutes for LLM processing
+      signal: AbortSignal.timeout(120000),
+      keepalive: true,
+    } as RequestInit)
 
     console.log('[Extract Agent Prompts] Response status:', response.status)
 
@@ -54,10 +66,21 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
+    console.log('[Extract Agent Prompts] Success response:', data)
     return NextResponse.json(data)
   } catch (error) {
-    const errorMessage = handleAxiosServerError(error)
-    console.error('[Extract Agent Prompts] Exception:', errorMessage)
+    console.error('[Extract Agent Prompts] Exception caught:', error)
+    console.error(
+      '[Extract Agent Prompts] Error type:',
+      error?.constructor?.name,
+    )
+    console.error(
+      '[Extract Agent Prompts] Error message:',
+      error instanceof Error ? error.message : String(error),
+    )
+
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred'
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })
