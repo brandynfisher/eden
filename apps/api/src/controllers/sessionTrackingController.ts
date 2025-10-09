@@ -34,7 +34,7 @@ export const trackSessionView = async (
   }
 
   try {
-    const key = `active_sessions:${userId}`
+    const key = `${server.redisEnvPrefix}:active_sessions:${userId}`
     await server.redis.sadd(key, session_id)
     await server.redis.expire(key, SESSION_TTL)
 
@@ -83,7 +83,7 @@ export const untrackSessionView = async (
   }
 
   try {
-    const key = `active_sessions:${userId}`
+    const key = `${server.redisEnvPrefix}:active_sessions:${userId}`
     await server.redis.srem(key, session_id)
 
     // Log remaining active sessions for this user
@@ -132,7 +132,7 @@ export const isSessionActive = async (
   }
 
   try {
-    const key = `active_sessions:${user_id}`
+    const key = `${server.redisEnvPrefix}:active_sessions:${user_id}`
     const isActive = await server.redis.sismember(key, session_id)
 
     server.log.info(

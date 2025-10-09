@@ -11,7 +11,8 @@ const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
   fastify,
   options,
 ) => {
-  const redisUrl = options.url || process.env.REDIS_URL
+  const redisUrl = options.url || fastify.config.REDIS_URL
+  const envPrefix = process.env.NODE_ENV === 'production' ? 'prod' : 'staging'
 
   if (redisUrl) {
     try {
@@ -34,6 +35,7 @@ const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
       })
 
       fastify.decorate('redis', client)
+      fastify.decorate('redisEnvPrefix', envPrefix)
 
       // Cleanup on close
       fastify.addHook('onClose', async () => {
@@ -49,6 +51,7 @@ const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
       '⚠️  REDIS_URL not set - session tracking disabled (notifications will be created for all messages)',
     )
     fastify.decorate('redis', null)
+    fastify.decorate('redisEnvPrefix', envPrefix)
   }
 }
 
@@ -64,6 +67,7 @@ export const registerRedis: FastifyPluginAsync = async (fastify, options) => {
 declare module 'fastify' {
   interface FastifyInstance {
     redis: RedisClient | null
+    redisEnvPrefix: string
   }
 }
 
