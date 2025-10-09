@@ -36,14 +36,15 @@ export async function GET(request: NextRequest) {
       token: authToken || undefined,
     })
 
-    // Check if username exists in users table
+    // Check if username exists by trying to get an agent with that username
+    // This uses the same query as the working /v2/agents/:agentId endpoint
     try {
-      const res = await eden.creators.get({
-        userId: username,
+      const res = await eden.agents.get({
+        agentId: username,
       })
 
       // If we get a response, the username is taken
-      if (res?.user) {
+      if (res?.agent) {
         return NextResponse.json({
           available: false,
           message: 'Username is already taken',
