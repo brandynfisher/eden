@@ -12,7 +12,7 @@ import { useFeedStore } from '@/zustand/feed-store'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { PlusIcon } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { RefObject, useMemo } from 'react'
 
 type Props = {
@@ -69,13 +69,13 @@ const AgentsFeed = ({
   const { setItems, setFetchNextPage } = useFeedStore(feedId)
 
   // Check URL params directly for ownership filter
-  const searchParams = new URLSearchParams(window.location.search)
+  const searchParams = useSearchParams()
   const ownershipFilter = searchParams.get('ownership')
   const isSharedFilter = ownershipFilter === 'shared'
-  
+
   // Use shared agents query when filtering for shared agents
-  const { sharedAgents, isLoading: isSharedLoading } = useSharedAgentsQuery({ 
-    enabled: isSharedFilter 
+  const { sharedAgents, isLoading: isSharedLoading } = useSharedAgentsQuery({
+    enabled: isSharedFilter,
   })
 
   const handleItemsLoaded = (newItems: RowItem[]) => {
@@ -126,9 +126,7 @@ const AgentsFeed = ({
                 agent={agent}
                 queryKey={queryKey}
                 onClick={isSelectable ? onClick : undefined}
-                isSelected={
-                  isSelectable && selectedIds.includes(agent._id)
-                }
+                isSelected={isSelectable && selectedIds.includes(agent._id)}
                 className={
                   isSelectable && selectedIds.includes(agent._id)
                     ? 'ring-2 ring-primary ring-offset-2'

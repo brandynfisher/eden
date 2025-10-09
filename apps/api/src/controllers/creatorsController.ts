@@ -1,3 +1,4 @@
+import { BaseUser } from '../models/BaseUser'
 import { Creation } from '../models/Creation'
 import { Follow, FollowDocument } from '../models/Follow'
 import { Manna } from '../models/Manna'
@@ -572,4 +573,28 @@ export const getCreatorMe = async (
     subscriptionBalance,
     foreverBalance: balance,
   }
+}
+
+export const checkUsernameAvailability = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { username } = request.query as { username: string }
+
+  if (!username) {
+    return reply.status(400).send({
+      available: false,
+      message: 'Username is required',
+    })
+  }
+
+  // Check if username exists (case-insensitive, exact match) across all types (user and agent) in users3 collection
+  const existingUser = await BaseUser.findOne({
+    username: { $regex: `^${username}$`, $options: 'i' },
+  })
+
+  return reply.status(200).send({
+    available: !existingUser,
+    username,
+  })
 }

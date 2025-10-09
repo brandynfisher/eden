@@ -52,7 +52,12 @@ export default function GigabrainPage() {
               >
                 <FlippingText
                   baseText="A collective mind for your community."
-                  words={['organisation.', 'community.', 'neighbourhood.']}
+                  words={[
+                    'organisation.',
+                    'discord server.',
+                    'community.',
+                    'neighbourhood.',
+                  ]}
                   interval={2500}
                   className="text-2xl md:text-3xl text-white leading-relaxed"
                 />

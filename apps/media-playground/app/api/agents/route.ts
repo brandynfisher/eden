@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     models,
     tools,
     llm_settings,
+    owner_pays,
   } = requestJson as AgentsCreateArguments
 
   const isPublic = requestJson.public
@@ -48,6 +49,7 @@ export async function POST(request: NextRequest) {
       description,
       image,
       persona,
+      public: isPublic,
       isPersonaPublic: isPublic,
       greeting,
       suggestions,
@@ -57,6 +59,7 @@ export async function POST(request: NextRequest) {
       models,
       tools,
       llm_settings,
+      owner_pays: owner_pays || 'off', // Default to 'off' if not provided
     })
 
     if (!res) {

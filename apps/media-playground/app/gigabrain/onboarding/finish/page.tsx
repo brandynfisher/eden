@@ -1,31 +1,38 @@
 'use client'
 
 import { useOnboardingStore } from '../chat/store'
-import { processOnboardingLLMCalls } from '../lib/process-onboarding'
+import {
+  createAgentFromOnboardingState,
+  processOnboardingLLMCalls,
+} from '../lib/process-onboarding'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 const PROGRESS_STEPS = [
-  { message: 'Constructing persona...', duration: 1500 },
-  { message: 'Integrating knowledge...', duration: 1500 },
-  { message: 'Setting up visual identity...', duration: 1500 },
-  { message: 'Initiating memory system...', duration: 1500 },
-  { message: 'Your Gigabrain is ready!', duration: 0 },
+  { message: 'Analyzing conversation...', duration: 5000, progressEnd: 20 },
+  { message: 'Constructing persona...', duration: 5000, progressEnd: 40 },
+  { message: 'Setting up visual identity...', duration: 5000, progressEnd: 60 },
+  { message: 'Building Memory system...', progressEnd: 80 }, // Waits for LLM completion
+  { message: 'Finalizing your Gigabrain...', progressEnd: 100 }, // Waits for agent creation
+  { message: 'Your Gigabrain is ready!', progressEnd: 100 },
 ]
 
 export default function OnboardingFinishPage() {
   const router = useRouter()
+  const { user } = useAuthState()
   const sessionId = useOnboardingStore(state => state.sessionId)
   const name = useOnboardingStore(state => state.name)
   const username = useOnboardingStore(state => state.username)
 
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [progress, setProgress] = useState(0)
-  const [isComplete, setIsComplete] = useState(false)
+  const [llmCallComplete, setLlmCallComplete] = useState(false)
+  const [agentCreationComplete, setAgentCreationComplete] = useState(false)
   const hasProcessedOnboarding = useRef(false)
 
-  // TODO: This will be tied to actual agent creation later
+  const isComplete = currentStepIndex >= PROGRESS_STEPS.length - 1
   const isGigabrainReady = isComplete
 
   useEffect(() => {
@@ -35,51 +42,85 @@ export default function OnboardingFinishPage() {
     }
   }, [sessionId, router])
 
-  // Trigger async LLM calls when component mounts
+  // Start async operations immediately when component mounts
   useEffect(() => {
-    if (!sessionId || hasProcessedOnboarding.current) return
+    if (!sessionId || !user?.userId || hasProcessedOnboarding.current) {
+      return
+    }
 
     hasProcessedOnboarding.current = true
 
     const processOnboarding = async () => {
       try {
-        console.log('[OnboardingFinish] Starting LLM processing...')
+        // Step 1: LLM processing (5-25s)
         await processOnboardingLLMCalls(sessionId)
-        console.log('[OnboardingFinish] LLM processing completed successfully')
+        setLlmCallComplete(true)
+
+        // Step 2: Agent creation (starts immediately after LLM, ~5s)
+        await createAgentFromOnboardingState()
+        setAgentCreationComplete(true)
       } catch (error) {
-        console.error('[OnboardingFinish] Error processing onboarding:', error)
+        console.error('[OnboardingFinish] Error:', error)
       }
     }
 
     processOnboarding()
-  }, [sessionId])
+  }, [sessionId, user])
 
+  // Progress animation: auto-advance through timed steps, then wait for async operations
   useEffect(() => {
-    if (currentStepIndex >= PROGRESS_STEPS.length - 1) {
-      setIsComplete(true)
+    const currentStep = PROGRESS_STEPS[currentStepIndex]
+    const startProgress =
+      currentStepIndex > 0
+        ? PROGRESS_STEPS[currentStepIndex - 1].progressEnd
+        : 0
+    const endProgress = currentStep.progressEnd
+
+    // Step 3: Wait for LLM completion
+    if (currentStepIndex === 3) {
+      setProgress(endProgress) // Set to 80%
+      if (llmCallComplete) {
+        setCurrentStepIndex(4)
+      }
+      return
+    }
+
+    // Step 4: Wait for agent creation completion
+    if (currentStepIndex === 4) {
+      setProgress(endProgress) // Set to 100%
+      if (agentCreationComplete) {
+        setCurrentStepIndex(5)
+      }
+      return
+    }
+
+    // Step 5: Final step, stay here
+    if (currentStepIndex >= 5) {
       setProgress(100)
       return
     }
 
-    const currentStep = PROGRESS_STEPS[currentStepIndex]
-    const stepProgress = 100 / (PROGRESS_STEPS.length - 1)
-    const startProgress = currentStepIndex * stepProgress
+    // Steps 0-2: Auto-advance with timed animation
+    if (currentStep.duration) {
+      setProgress(startProgress) // Immediately set to start progress
+      const startTime = Date.now()
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime
+        const percentage = Math.min(elapsed / currentStep.duration, 1)
+        const newProgress =
+          startProgress + percentage * (endProgress - startProgress)
+        setProgress(newProgress)
 
-    // Animate progress over the duration
-    const startTime = Date.now()
-    const animationInterval = setInterval(() => {
-      const elapsed = Date.now() - startTime
-      const stepPercentage = Math.min(elapsed / currentStep.duration, 1)
-      setProgress(startProgress + stepPercentage * stepProgress)
+        if (elapsed >= currentStep.duration) {
+          clearInterval(interval)
+          setProgress(endProgress)
+          setCurrentStepIndex(prev => prev + 1)
+        }
+      }, 16)
 
-      if (elapsed >= currentStep.duration) {
-        clearInterval(animationInterval)
-        setCurrentStepIndex(prev => prev + 1)
-      }
-    }, 16) // ~60fps
-
-    return () => clearInterval(animationInterval)
-  }, [currentStepIndex])
+      return () => clearInterval(interval)
+    }
+  }, [currentStepIndex, llmCallComplete, agentCreationComplete])
 
   if (!sessionId) {
     return null
@@ -111,15 +152,18 @@ export default function OnboardingFinishPage() {
       >
         <div className="w-full max-w-2xl space-y-8">
           {/* Progress Bar */}
-          <div className="relative">
-            <div className="h-3 bg-gray-800 rounded-full overflow-hidden">
+          <div className="relative w-full">
+            <div className="h-3 w-full bg-gray-800 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-300 ${
+                className={`h-full ${
                   isComplete
                     ? 'bg-gradient-to-r from-yellow-400 to-purple-400'
-                    : 'bg-gradient-to-r from-yellow-400/60 to-purple-400/60'
+                    : 'bg-gradient-to-r from-yellow-400 to-purple-400'
                 }`}
-                style={{ width: `${progress}%` }}
+                style={{
+                  width: `${progress}%`,
+                  minWidth: progress > 0 ? '2px' : '0',
+                }}
               />
             </div>
             {/* Progress percentage */}

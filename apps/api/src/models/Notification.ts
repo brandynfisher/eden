@@ -6,6 +6,7 @@ export type NotificationType =
   | 'trigger_started'
   | 'session_complete'
   | 'session_failed'
+  | 'session_message'
   | 'agent_mentioned'
   | 'system_alert'
   | 'agent_permission_added'
@@ -60,6 +61,7 @@ const NotificationSchema = new Schema<NotificationDocument>(
         'system_alert',
         'agent_permission_added',
         'agent_permission_removed',
+        'session_message',
         'session_permission_added',
         'session_permission_removed',
       ],

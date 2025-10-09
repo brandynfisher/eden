@@ -78,6 +78,7 @@ const ConfigSchema = Type.Strict(
     TWITTER_INTEGRATIONS_CLIENT_SECRET: Type.Optional(Type.String()),
     TIKTOK_CLIENT_KEY: Type.Optional(Type.String()),
     TIKTOK_CLIENT_SECRET: Type.Optional(Type.String()),
+    REDIS_URL: Type.Optional(Type.String()),
   }),
 )
 

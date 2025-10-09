@@ -62,6 +62,24 @@ const calculateNextScheduledRun = (schedule: any): Date | null => {
     }
   }
 
+  // For hourly tasks (hour is '*')
+  if (schedule.hour === '*' && schedule.minute !== undefined) {
+    const nextRun = new Date()
+    const targetMinute = parseInt(schedule.minute.toString(), 10)
+
+    // Set to the target minute in the current hour
+    nextRun.setMinutes(targetMinute)
+    nextRun.setSeconds(0)
+    nextRun.setMilliseconds(0)
+
+    // If that time has already passed in this hour, move to the next hour
+    if (nextRun <= now) {
+      nextRun.setHours(nextRun.getHours() + 1)
+    }
+
+    return nextRun
+  }
+
   // For recurring tasks, calculate next run based on current time
   if (schedule.hour !== undefined && schedule.minute !== undefined) {
     const nextRun = new Date()

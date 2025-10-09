@@ -483,23 +483,27 @@ export const searchCreations = async (
         path: 'embedding',
         queryVector: queryVector,
         limit: limit,
+        numCandidates: Math.max(limit * 10, 200),
+        filter: filter,
       },
     }
 
-    // Add filter if present
-    if (Object.keys(filter).length > 1 || !filter.deleted) {
-      // Check if we have filters beyond just deleted:false
-      const hasFilters = Object.keys(filter).some(key => key !== 'deleted')
-      if (hasFilters) {
-        vectorSearchStage.$vectorSearch.filter = filter
-      }
-    }
+    // Minimum similarity score threshold for CLIP embeddings
+    // CLIP text-image search typically ranges 0.5-0.7
+    // 0.6+ = good quality, 0.55-0.6 = marginal, <0.55 = poor
+    const MIN_SCORE_THRESHOLD = 0.57
 
     const pipeline = [
       vectorSearchStage,
       {
         $addFields: {
           score: { $meta: 'vectorSearchScore' },
+        },
+      },
+      // Filter by minimum score threshold
+      {
+        $match: {
+          score: { $gte: MIN_SCORE_THRESHOLD },
         },
       },
       {

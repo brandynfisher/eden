@@ -97,6 +97,7 @@ export default function OnboardingIdentityPage() {
                 <div className="text-center mb-3">
                   <h4 className="text-sm font-medium text-gray-300">
                     Profile picture
+                    <span className="text-yellow-400 ml-1">*</span>
                   </h4>
                 </div>
                 <ProfileImageUploader
@@ -346,7 +347,12 @@ function ReferenceImageCard({
             const newValue = e.target.value.slice(0, 200)
             onDescriptionChange(newValue)
           }}
-          className="bg-black/40 border-yellow-400/30 text-white placeholder:text-gray-500 focus:border-yellow-400 focus:ring-yellow-400/20 min-h-[80px]"
+          className={cn(
+            'border-yellow-400/30 text-white placeholder:text-gray-500 focus:border-yellow-400 focus:ring-yellow-400/20 min-h-[80px]',
+            !imageUrl
+              ? 'bg-gray-800/40 opacity-50 cursor-not-allowed'
+              : 'bg-black/40',
+          )}
           disabled={!imageUrl}
         />
       </div>

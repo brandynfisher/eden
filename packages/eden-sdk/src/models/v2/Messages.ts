@@ -5,7 +5,7 @@ export type MessageReaction = {
   [key: string]: (string | number | boolean | Date | null)[]
 }
 
-type ChannelType = 'eden' | 'discord' | 'telegram' | 'twitter'
+type ChannelType = 'eden' | 'discord' | 'telegram' | 'twitter' | 'farcaster'
 
 export type Channel = {
   type: ChannelType
