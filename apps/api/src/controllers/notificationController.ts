@@ -13,6 +13,7 @@ import {
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 export const createNotification = async (
+  server: FastifyInstance,
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
@@ -31,9 +32,14 @@ export const createNotification = async (
     expires_at,
   } = request.body as NotificationsCreateArguments
 
+  request.log.info(
+    `[NOTIFICATIONS] Create request: type=${type}, user=${user_id}, session=${session_id}`,
+  )
+
   // Verify user exists
   const user = await User.findById(user_id)
   if (!user) {
+    request.log.warn(`[NOTIFICATIONS] ⚠️  User not found: ${user_id}`)
     return reply.status(404).send({
       error: 'User not found',
     })
@@ -43,6 +49,7 @@ export const createNotification = async (
   if (trigger_id) {
     const trigger = await Trigger.findById(trigger_id)
     if (!trigger) {
+      request.log.warn(`[NOTIFICATIONS] ⚠️  Trigger not found: ${trigger_id}`)
       return reply.status(404).send({
         error: 'Trigger not found',
       })
@@ -52,6 +59,7 @@ export const createNotification = async (
   if (agent_id) {
     const agent = await Agent.findById(agent_id)
     if (!agent) {
+      request.log.warn(`[NOTIFICATIONS] ⚠️  Agent not found: ${agent_id}`)
       return reply.status(404).send({
         error: 'Agent not found',
       })
@@ -82,14 +90,48 @@ export const createNotification = async (
       await notification.save()
     }
 
+    request.log.info(
+      `[NOTIFICATIONS] ✓ Created notification: ${notification._id.toString()}`,
+    )
+
+    // Broadcast WebSocket event for new notification
+    try {
+      if (server.internalMessages && session_id) {
+        request.log.info(
+          `[NOTIFICATIONS] Broadcasting notification event for new notification`,
+        )
+        server.internalMessages.publish('notifications', {
+          event: 'notification-created',
+          data: {
+            session_id,
+            user_id,
+            notification_id: notification._id.toString(),
+            type,
+          },
+        })
+      }
+    } catch (broadcastError) {
+      request.log.error(
+        '[NOTIFICATIONS] Failed to broadcast notification-created event:',
+        broadcastError,
+      )
+      // Don't fail the request if broadcast fails
+    }
+
     return reply.status(200).send({
       id: notification._id.toString(),
       message: 'Notification created successfully',
     })
   } catch (error) {
-    console.error('Error creating notification:', error)
+    request.log.error('[NOTIFICATIONS] ❌ Error creating notification:', error)
+    // Log the full error details
+    if (error instanceof Error) {
+      request.log.error(`[NOTIFICATIONS] Error message: ${error.message}`)
+      request.log.error(`[NOTIFICATIONS] Error stack: ${error.stack}`)
+    }
     return reply.status(500).send({
       error: 'An error occurred while creating the notification',
+      details: error instanceof Error ? error.message : String(error),
     })
   }
 }
@@ -347,6 +389,85 @@ export const archiveNotifications = async (
     console.error('Error archiving notifications:', error)
     return reply.status(500).send({
       error: 'Failed to archive notifications',
+    })
+  }
+}
+
+export const markSessionNotificationsRead = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const currentUserId = request.user.userId
+  const { session_id } = request.params as { session_id: string }
+
+  server.log.info(
+    `[NOTIFICATIONS] Mark read request: user=${currentUserId}, session=${session_id}`,
+  )
+
+  try {
+    // Mark all unread session_message notifications for this session as read
+    const updateResult = await Notification.updateMany(
+      {
+        user: currentUserId,
+        session: session_id,
+        type: 'session_message',
+        read: false,
+      },
+      {
+        $set: {
+          read: true,
+          read_at: new Date(),
+        },
+      },
+    )
+
+    server.log.info(
+      `[NOTIFICATIONS] ✓ Marked ${updateResult.modifiedCount} notifications as read`,
+    )
+
+    // Broadcast update via WebSocket (non-blocking)
+    if (updateResult.modifiedCount > 0) {
+      try {
+        server.log.info(
+          `[NOTIFICATIONS] Broadcasting notification-cleared event`,
+        )
+        if (server.internalMessages) {
+          server.internalMessages.publish('notifications', {
+            event: 'notification-cleared',
+            data: { session_id, user_id: currentUserId },
+          })
+        } else {
+          server.log.warn('[NOTIFICATIONS] internalMessages not available')
+        }
+      } catch (broadcastError) {
+        server.log.error(
+          '[NOTIFICATIONS] Failed to broadcast WebSocket event:',
+          broadcastError,
+        )
+        // Don't fail the request if broadcast fails
+      }
+    }
+
+    return reply.status(200).send({
+      success: true,
+      marked_count: updateResult.modifiedCount || 0,
+      message: `Marked ${
+        updateResult.modifiedCount || 0
+      } session notifications as read`,
+    })
+  } catch (error) {
+    server.log.error(
+      '[NOTIFICATIONS] ❌ Error marking session notifications as read:',
+      error,
+    )
+    if (error instanceof Error) {
+      server.log.error(`[NOTIFICATIONS] Error details: ${error.message}`)
+      server.log.error(`[NOTIFICATIONS] Stack: ${error.stack}`)
+    }
+    return reply.status(500).send({
+      error: 'Failed to mark session notifications as read',
+      details: error instanceof Error ? error.message : String(error),
     })
   }
 }

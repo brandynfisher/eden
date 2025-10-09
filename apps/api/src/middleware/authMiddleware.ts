@@ -9,6 +9,7 @@ const apiKeyVerify = async (
   server: FastifyInstance,
   request: FastifyRequest,
 ) => {
+  console.log('API Key access detected:', request.headers['x-api-key'])
   if (!request.headers['x-api-key']) {
     throw new Error('Missing API key')
   }

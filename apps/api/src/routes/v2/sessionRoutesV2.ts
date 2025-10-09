@@ -1,4 +1,9 @@
 import {
+  isSessionActive,
+  trackSessionView,
+  untrackSessionView,
+} from '../../controllers/sessionTrackingController'
+import {
   addSessionMessageReaction,
   cancelSession,
   createSession,
@@ -14,7 +19,7 @@ import {
   renameSession,
   updateSessionPermissions,
 } from '../../controllers/v2/sessionControllerV2'
-import { isAuth } from '../../middleware/authMiddleware'
+import { isAdmin, isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import {
   SessionsV2CreateArguments,
@@ -673,6 +678,97 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => getSharedSessions(request, reply),
+  })
+
+  // Session Tracking Routes (for notification system)
+  server.post('/v2/sessions/track-view', {
+    schema: {
+      hide: true,
+      tags: ['Sessions - Tracking'],
+      summary: 'Track Session View',
+      description:
+        'Mark a session as actively being viewed by the current user (used for notification system).',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          tracked: Type.Boolean(),
+          reason: Type.Optional(Type.String()),
+        }),
+        500: Type.Object({
+          tracked: Type.Boolean(),
+          reason: Type.Optional(Type.String()),
+          error: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => trackSessionView(server, request, reply),
+  })
+
+  server.post('/v2/sessions/untrack-view', {
+    schema: {
+      hide: true,
+      tags: ['Sessions - Tracking'],
+      summary: 'Untrack Session View',
+      description:
+        'Mark a session as no longer being viewed by the current user.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          tracked: Type.Boolean(),
+          reason: Type.Optional(Type.String()),
+        }),
+        500: Type.Object({
+          tracked: Type.Boolean(),
+          reason: Type.Optional(Type.String()),
+          error: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => untrackSessionView(server, request, reply),
+  })
+
+  server.get('/v2/sessions/is-active', {
+    schema: {
+      hide: true,
+      tags: ['Sessions - Tracking'],
+      summary: 'Check if Session is Active',
+      description:
+        'Check if a user is actively viewing a session (admin only - used by backend).',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      querystring: Type.Object({
+        user_id: Type.String(),
+        session_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          is_active: Type.Boolean(),
+          redis_available: Type.Boolean(),
+          error: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => isSessionActive(server, request, reply),
   })
 }
 

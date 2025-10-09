@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ViewMode } from '@/features/sessions/components/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
+import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { isAgentOwner } from '@/lib/utils'
@@ -57,6 +58,7 @@ interface SessionListItemProps {
   }>
   isPinned?: boolean
   onPinToggle?: (sessionId: string, pinned: boolean) => Promise<void>
+  unreadCount?: number
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -70,6 +72,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   agents = [],
   isPinned = false,
   onPinToggle,
+  unreadCount = 0,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -278,8 +281,15 @@ const SessionListItem: FC<SessionListItemProps> = ({
               <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             )}
             <div className="min-w-0 flex-1">
-              <div className="overflow-hidden whitespace-nowrap text-ellipsis">
-                {optimisticTitle || 'Untitled'}
+              <div className="overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-2">
+                <span className="truncate">
+                  {optimisticTitle || 'Untitled'}
+                </span>
+                {unreadCount > 0 && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground shrink-0">
+                    {unreadCount}
+                  </span>
+                )}
               </div>
               {(agents.length > 2 || isFromTrigger) && (
                 <div className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-1">
@@ -756,6 +766,9 @@ const MainLeft = ({
     agent_id: agentId,
   })
 
+  // Get unread notification counts for sessions
+  const { data: unreadCounts } = useSessionNotificationsQuery()
+
   const handlePinToggle = async (sessionId: string, pinned: boolean) => {
     try {
       // Optimistically update the UI
@@ -832,7 +845,20 @@ const MainLeft = ({
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     )
 
-  const unpinnedSessions = filteredSessions.filter(session => !session.pinned)
+  const unpinnedSessions = filteredSessions
+    .filter(session => !session.pinned)
+    .sort((a, b) => {
+      const aUnread = unreadCounts?.get(a._id) || 0
+      const bUnread = unreadCounts?.get(b._id) || 0
+
+      // Sort by unread first (unread sessions on top)
+      if (aUnread !== bUnread) {
+        return bUnread - aUnread
+      }
+
+      // Then sort by updatedAt
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    })
 
   return (
     <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-1">
@@ -872,6 +898,7 @@ const MainLeft = ({
                         agents={session.agents}
                         isPinned={true}
                         onPinToggle={handlePinToggle}
+                        unreadCount={unreadCounts?.get(session._id) || 0}
                         onItemClick={() => {
                           onItemClick?.()
                           if (isChat && agentId) {
@@ -911,6 +938,7 @@ const MainLeft = ({
                     agents={session.agents}
                     isPinned={false}
                     onPinToggle={handlePinToggle}
+                    unreadCount={unreadCounts?.get(session._id) || 0}
                     onItemClick={() => {
                       onItemClick?.()
                       if (isChat && agentId) {
