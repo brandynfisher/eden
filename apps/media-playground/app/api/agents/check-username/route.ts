@@ -1,11 +1,6 @@
-import { getAuthToken } from '@/lib/auth'
-import { EdenClient } from '@edenlabs/eden-sdk'
-import { AxiosError } from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const authToken = await getAuthToken(request)
-
   const searchParams = request.nextUrl.searchParams
   const username = searchParams.get('username')
 
@@ -31,42 +26,34 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const eden = new EdenClient({
-      edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-      token: authToken || undefined,
-    })
+    // Call the new Fastify endpoint directly
+    const response = await fetch(
+      `${
+        process.env.NEXT_PUBLIC_EDEN_API_URL
+      }/v2/creators/check-username?username=${encodeURIComponent(username)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    )
 
-    // Check if username exists in users table
-    try {
-      const res = await eden.creators.get({
-        userId: username,
-      })
-
-      // If we get a response, the username is taken
-      if (res?.user) {
-        return NextResponse.json({
+    if (!response.ok) {
+      const errorData = await response.json()
+      return NextResponse.json(
+        {
           available: false,
-          message: 'Username is already taken',
-        })
-      }
-    } catch (error) {
-      // If we get a 404 error, that means the username is available
-      const axiosError = error as AxiosError
-      if (axiosError?.response?.status === 404) {
-        return NextResponse.json({
-          available: true,
-          message: 'Username is available',
-        })
-      }
-
-      // If it's any other error, we should handle it
-      throw error
+          message: errorData.message || 'Error checking username',
+        },
+        { status: response.status },
+      )
     }
 
-    // This shouldn't happen but just in case
+    const data = await response.json()
     return NextResponse.json({
-      available: false,
-      message: 'Unable to determine availability',
+      available: data.available,
+      username: data.username,
     })
   } catch (error) {
     return new NextResponse(

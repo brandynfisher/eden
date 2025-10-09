@@ -19,6 +19,7 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
+import { useSessionTracking } from '@/hooks/use-session-tracking'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
@@ -57,6 +58,9 @@ const Session = ({
   const [cancelledNotice, setCancelledNotice] = useState(false)
   const isPendingTransition = searchParams?.get('pending') === 'true'
 
+  // Track session viewing for notifications
+  useSessionTracking(sessionId)
+
   // Connection state tracking
   const [connectionState, setConnectionState] = useState<
     'connecting' | 'connected' | 'disconnected' | 'reconnecting'
@@ -68,6 +72,17 @@ const Session = ({
   // Update currentSessionId when sessionId prop changes
   useEffect(() => {
     setCurrentSessionId(sessionId)
+  }, [sessionId])
+
+  // Mark notifications as read when session is loaded
+  useEffect(() => {
+    if (sessionId && sessionId !== 'new') {
+      axios
+        .patch(`/api/sessions/${sessionId}/mark-read`)
+        .catch(err =>
+          console.error('Failed to mark notifications as read:', err),
+        )
+    }
   }, [sessionId])
 
   // Error handling

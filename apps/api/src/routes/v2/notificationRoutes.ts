@@ -4,6 +4,7 @@ import {
   getNotificationCount,
   getNotifications,
   markNotificationsRead,
+  markSessionNotificationsRead,
 } from '../../controllers/notificationController'
 import { isAdmin, isAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -31,6 +32,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
           Type.Literal('trigger_started'),
           Type.Literal('session_complete'),
           Type.Literal('session_failed'),
+          Type.Literal('session_message'),
           Type.Literal('agent_mentioned'),
           Type.Literal('system_alert'),
           Type.Literal('agent_permission_added'),
@@ -71,7 +73,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
       },
     },
     preHandler: [(request, reply) => isAdmin(server, request, reply)],
-    handler: (request, reply) => createNotification(request, reply),
+    handler: (request, reply) => createNotification(server, request, reply),
   })
 
   // Get notifications for current user
@@ -96,6 +98,7 @@ const notificationRoutes: FastifyPluginAsync = async server => {
             Type.Literal('trigger_started'),
             Type.Literal('session_complete'),
             Type.Literal('session_failed'),
+            Type.Literal('session_message'),
             Type.Literal('agent_mentioned'),
             Type.Literal('system_alert'),
             Type.Literal('agent_permission_added'),
@@ -206,6 +209,38 @@ const notificationRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => archiveNotifications(request, reply),
+  })
+
+  // Mark session notifications as read
+  server.patch('/v2/sessions/:session_id/mark-read', {
+    schema: {
+      hide: true,
+      tags: ['Notifications'],
+      summary: 'Mark Session Notifications Read',
+      description:
+        'Mark all unread session_message notifications for a specific session as read.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: Type.Object({
+        session_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          marked_count: Type.Integer(),
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          error: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) =>
+      markSessionNotificationsRead(server, request, reply),
   })
 }
 

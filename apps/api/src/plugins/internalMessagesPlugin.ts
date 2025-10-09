@@ -14,6 +14,7 @@ export interface InternalMessagesOptions {
       | 'task-updates-v2'
       | 'thread-updates'
       | 'session-updates'
+      | 'notifications'
     onMessage: (msg: unknown) => Promise<void>
   }[]
 }
@@ -25,7 +26,8 @@ interface InternalMessagesPlugin {
       | 'task-updates'
       | 'task-updates-v2'
       | 'thread-updates'
-      | 'session-updates',
+      | 'session-updates'
+      | 'notifications',
     message: unknown,
   ) => void
 }
@@ -86,6 +88,21 @@ export const registerInternalMessages: FastifyPluginAsync = async fastify => {
           onMessage: async _message => {
             fastify.log.info('session-updates: Internal message received ', {
               _message,
+            })
+          },
+        },
+        {
+          topic: 'notifications',
+          onMessage: async message => {
+            fastify.log.info('notifications: Internal message received ', {
+              message,
+            })
+            // Broadcast to WebSocket clients
+            const sockets = fastify.websocketServer.clients
+            sockets.forEach(socket => {
+              if (socket.readyState === 1) {
+                socket.send(JSON.stringify(message))
+              }
             })
           },
         },

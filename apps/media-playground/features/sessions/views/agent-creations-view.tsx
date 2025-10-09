@@ -1,5 +1,6 @@
 'use client'
 
+import FeedSearchForm from '@/components/filter/feed-search-form'
 import CreationsFeed, {
   CreationsFeedHandle,
 } from '@/features/feed/creations-feed'
@@ -15,6 +16,7 @@ const AgentCreationsView: FC<{
   user?: Creator
 }> = ({ agent, user }) => {
   const [filterMode, setFilterMode] = useState<'mine' | 'all'>('mine')
+  const [search, setSearch] = useState('')
   const router = useRouter()
   const pathname = usePathname()
   const creationsFeedRef = useRef<CreationsFeedHandle>(null)
@@ -23,12 +25,12 @@ const AgentCreationsView: FC<{
   // Construct the query for RecentCreationsFeed based on filterMode
   const recentCreationsQuery = useMemo(() => {
     if (!agent) return {}
-    const baseAgentQuery = { agent: agent._id }
+    const baseAgentQuery = { agent: agent._id, search }
     if (filterMode === 'mine' && user?._id) {
       return { ...baseAgentQuery, user: user._id }
     }
     return baseAgentQuery
-  }, [agent, filterMode, user?._id])
+  }, [agent, filterMode, user?._id, search])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -106,6 +108,11 @@ const AgentCreationsView: FC<{
             </div>
           </div>
         )}
+
+        {/* Search Form */}
+        <div className="flex justify-center mb-6">
+          <FeedSearchForm handleSearch={setSearch} className="max-w-md" />
+        </div>
 
         {/* Use CreationsFeed directly with our custom breakpoints */}
         <div className="w-full">

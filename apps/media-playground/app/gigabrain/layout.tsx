@@ -1,11 +1,11 @@
-import { Kumar_One } from 'next/font/google'
+import localFont from 'next/font/local'
 import { ReactNode } from 'react'
 
-const kumarOne = Kumar_One({
-  weight: '400',
-  subsets: ['latin'],
+const kumarOne = localFont({
+  src: '../fonts/kumar-one.ttf',
   variable: '--font-kumar-one',
   display: 'swap',
+  weight: '400',
 })
 
 export default function GigabrainLayout({ children }: { children: ReactNode }) {

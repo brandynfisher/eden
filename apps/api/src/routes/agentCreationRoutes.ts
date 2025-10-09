@@ -5,6 +5,7 @@ import { FastifyPluginAsync } from 'fastify'
 
 interface AgentPromptsExtractionRequest {
   session_id: string
+  agent_name?: string
 }
 
 const agentCreationRoutes: FastifyPluginAsync = async server => {
@@ -23,6 +24,7 @@ const agentCreationRoutes: FastifyPluginAsync = async server => {
         ],
         body: Type.Object({
           session_id: Type.String(),
+          agent_name: Type.Optional(Type.String()),
         }),
         response: {
           200: Type.Object({
