@@ -53,10 +53,14 @@ const Session = ({
   const searchParams = useSearchParams()
   const sessionId = optimisticSessionId || (params?.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
   const ischatRoute = pathname?.startsWith('/chat')
   const [cancelledNotice, setCancelledNotice] = useState(false)
   const isPendingTransition = searchParams?.get('pending') === 'true'
+  const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false)
+  const [hasTriggeredInitialScroll, setHasTriggeredInitialScroll] =
+    useState(false)
 
   // Track session viewing for notifications
   useSessionTracking(sessionId)
@@ -114,6 +118,8 @@ const Session = ({
     error: sessionError,
     addOrUpdateMessage,
     refetch: refetchSession,
+    fetchOlderMessages,
+    getPaginationData,
   } = useSessionQuery({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
@@ -809,9 +815,114 @@ const Session = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
+  // Track previous message count to detect new messages vs older messages
+  const previousMessageCountRef = useRef<number>(0)
+
+  // Scroll to bottom on initial load and new messages (but not when loading older messages)
   useEffect(() => {
-    scrollToBottom()
-  }, [displaySession?.messages, scrollToBottom])
+    const currentMessageCount = displaySession?.messages?.length || 0
+    const previousMessageCount = previousMessageCountRef.current
+
+    if (
+      !hasTriggeredInitialScroll &&
+      displaySession?.messages &&
+      currentMessageCount > 0
+    ) {
+      setHasTriggeredInitialScroll(true)
+      // Delay to ensure DOM has rendered
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+      }, 100)
+      previousMessageCountRef.current = currentMessageCount
+    } else if (
+      hasTriggeredInitialScroll &&
+      currentMessageCount > previousMessageCount &&
+      !isLoadingOlderMessages
+    ) {
+      // Only scroll if message count increased AND we're not loading older messages
+      // Check if we're near the bottom already (user is viewing recent messages)
+      const container = messagesContainerRef.current
+      if (container) {
+        const hasScrollbar = container.scrollHeight > container.clientHeight
+        const distanceFromBottom =
+          container.scrollHeight - container.scrollTop - container.clientHeight
+        const isNearBottom = hasScrollbar && distanceFromBottom < 200
+
+        if (isNearBottom) {
+          scrollToBottom()
+        }
+      }
+      previousMessageCountRef.current = currentMessageCount
+    } else {
+      // Update count even if we didn't scroll
+      previousMessageCountRef.current = currentMessageCount
+    }
+  }, [
+    displaySession?.messages,
+    scrollToBottom,
+    hasTriggeredInitialScroll,
+    isLoadingOlderMessages,
+  ])
+
+  // Handle scroll to detect when user scrolls near top for reverse pagination
+  useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container || !sessionId || sessionId === 'new') {
+      return
+    }
+
+    const handleScroll = async () => {
+      const scrollTop = container.scrollTop
+      const clientHeight = container.clientHeight
+
+      // Trigger when we're within 2 viewports from the top (aggressive pre-loading)
+      const scrollThreshold = clientHeight * 2
+
+      if (scrollTop < scrollThreshold && !isLoadingOlderMessages) {
+        const paginationData = getPaginationData()
+
+        if (paginationData?.hasMore) {
+          setIsLoadingOlderMessages(true)
+
+          // Store current scroll position
+          const previousScrollHeight = container.scrollHeight
+          const previousScrollTop = container.scrollTop
+          try {
+            const result = await fetchOlderMessages()
+
+            if (result.messages.length > 0) {
+              // Wait for DOM to update
+              setTimeout(() => {
+                // Restore scroll position
+                const newScrollHeight = container.scrollHeight
+                const scrollDiff = newScrollHeight - previousScrollHeight
+                container.scrollTop = previousScrollTop + scrollDiff
+              }, 0)
+            }
+          } catch (error) {
+            console.error(
+              '[Message Pagination] Failed to load older messages:',
+              error,
+            )
+          } finally {
+            setIsLoadingOlderMessages(false)
+          }
+        }
+      }
+    }
+
+    container.addEventListener('scroll', handleScroll)
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll)
+    }
+  }, [
+    sessionId,
+    isLoadingOlderMessages,
+    fetchOlderMessages,
+    getPaginationData,
+    displaySession,
+  ])
 
   // Separate effect for streaming text to avoid double scroll
   useEffect(() => {
@@ -1123,7 +1234,7 @@ const Session = ({
   }
 
   return (
-    <>
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Connection status indicator - only show when not connected and using SSE streaming */}
       {sessionConfig.useStreaming &&
         connectionState !== 'connected' &&
@@ -1152,6 +1263,7 @@ const Session = ({
         )}
 
       <div
+        ref={messagesContainerRef}
         className={cn(
           'flex-1 min-h-0 overflow-y-auto pb-4',
           messageGroups.length === 0 &&
@@ -1159,6 +1271,60 @@ const Session = ({
         )}
       >
         <div className="p-4 pb-8 max-w-[calc(42rem+3.75rem)] mx-auto w-full">
+          {/* Load more button for older messages */}
+          {!isLoadingOlderMessages && getPaginationData()?.hasMore && (
+            <div className="flex justify-center py-4">
+              <button
+                onClick={async () => {
+                  setIsLoadingOlderMessages(true)
+
+                  const container = messagesContainerRef.current
+                  if (!container) return
+
+                  // Store current scroll position before loading
+                  const previousScrollHeight = container.scrollHeight
+                  const previousScrollTop = container.scrollTop
+
+                  try {
+                    const result = await fetchOlderMessages()
+
+                    if (result.messages.length > 0) {
+                      // Wait for DOM to update with new messages
+                      setTimeout(() => {
+                        const newScrollHeight = container.scrollHeight
+                        const scrollDiff =
+                          newScrollHeight - previousScrollHeight
+
+                        // Position at roughly 20% from top (in the trigger zone for next load)
+                        const newScrollableHeight =
+                          newScrollHeight - container.clientHeight
+                        const targetScrollTop = Math.min(
+                          previousScrollTop + scrollDiff,
+                          newScrollableHeight * 0.2,
+                        )
+                        container.scrollTop = targetScrollTop
+                      }, 150)
+                    }
+
+                    // Keep loading state true for a bit longer to let React update
+                    setTimeout(() => setIsLoadingOlderMessages(false), 200)
+                  } catch (error) {
+                    setIsLoadingOlderMessages(false)
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-accent transition-colors"
+              >
+                Load earlier messages
+              </button>
+            </div>
+          )}
+
+          {/* Loading indicator for older messages */}
+          {isLoadingOlderMessages && (
+            <div className="flex justify-center py-4">
+              <LoadingIndicator className="w-6 h-6 text-purple-600" />
+            </div>
+          )}
           {/* Only show loading skeleton if we are on a new session */}
           {sessionId === 'new' && isSessionLoading ? (
             <div className="space-y-4">
@@ -1596,7 +1762,7 @@ const Session = ({
           />
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

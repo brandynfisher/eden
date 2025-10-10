@@ -6,6 +6,68 @@
     "version": "8.14.0"
   },
   "paths": {
+    "/agent_creation/extract_prompts": {
+      "post": {
+        "summary": "Extract Agent Prompts",
+        "description": "Extract agent persona, description, and memory instructions from a conversation session",
+        "tags": ["Agent Creation"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string"
+                  },
+                  "agent_name": {
+                    "type": "string"
+                  }
+                },
+                "required": ["session_id"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agent_instructions": {
+                      "type": "string"
+                    },
+                    "agent_description": {
+                      "type": "string"
+                    },
+                    "memory_instructions": {
+                      "type": "string"
+                    },
+                    "cost": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "agent_instructions",
+                    "agent_description",
+                    "memory_instructions",
+                    "cost"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/agents": {
       "get": {
         "summary": "List Agents",
@@ -167,6 +229,9 @@
                   },
                   "image": {
                     "type": "string"
+                  },
+                  "public": {
+                    "type": "boolean"
                   },
                   "models": {
                     "type": "array",
@@ -1644,8 +1709,8 @@
                     "type": "string"
                   },
                   "extraction_prompt": {
-                    "minLength": 1,
-                    "maxLength": 2000,
+                    "minLength": 100,
+                    "maxLength": 3000,
                     "type": "string"
                   }
                 },
@@ -2094,6 +2159,34 @@
       }
     },
     "/v2/agents/{agentId}/triggers/{triggerId}": {
+      "get": {
+        "summary": "Get Single Trigger",
+        "description": "Retrieve a specific trigger by its ID.",
+        "tags": ["Agents - Triggers"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": true,
+            "in": "path",
+            "name": "triggerId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      },
       "patch": {
         "summary": "Update Agent Trigger",
         "description": "Modify the configuration or conditions of an existing agent trigger.",
@@ -2755,6 +2848,410 @@
         }
       }
     },
+    "/v2/concepts": {
+      "get": {
+        "summary": "List User Concepts",
+        "description": "Get all concepts for the current user.",
+        "tags": ["Concepts V2"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "concepts": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create Concept",
+        "description": "Create a new concept with images and usage instructions.",
+        "tags": ["Concepts V2"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "agent": {
+                    "type": "string"
+                  },
+                  "usage_instructions": {
+                    "type": "string"
+                  },
+                  "images": {
+                    "minItems": 1,
+                    "maxItems": 25,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "image": {
+                          "type": "string"
+                        },
+                        "usage_instructions": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["image", "usage_instructions"]
+                    }
+                  }
+                },
+                "required": ["name", "images"]
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "concept": {}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/concepts/{conceptId}": {
+      "get": {
+        "summary": "Get Concept",
+        "description": "Get a specific concept by ID.",
+        "tags": ["Concepts V2"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "conceptId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "concept": {}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Concept",
+        "description": "Update an existing concept.",
+        "tags": ["Concepts V2"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "conceptId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "agent": {
+                    "type": "string"
+                  },
+                  "usage_instructions": {
+                    "type": "string"
+                  },
+                  "images": {
+                    "minItems": 1,
+                    "maxItems": 25,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "image": {
+                          "type": "string"
+                        },
+                        "usage_instructions": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["image", "usage_instructions"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "concept": {}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Concept",
+        "description": "Delete a concept (soft delete).",
+        "tags": ["Concepts V2"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "conceptId",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/creations": {
       "get": {
         "summary": "List Creations",
@@ -2940,6 +3437,139 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/creations/search": {
+      "get": {
+        "summary": "Search Creations by Embedding",
+        "description": "Search for creations using semantic search with CLIP embeddings.",
+        "tags": ["Creations"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "query",
+            "name": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "agentId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "tool",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "orderBy",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "docs": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "limit": {
+                      "type": "number"
+                    },
+                    "pages": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pagingCounter": {
+                      "type": "number"
+                    },
+                    "hasPrevPage": {
+                      "type": "boolean"
+                    },
+                    "hasNextPage": {
+                      "type": "boolean"
+                    },
+                    "prevPage": {
+                      "type": "number"
+                    },
+                    "nextPage": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "docs",
+                    "total",
+                    "limit",
+                    "pages",
+                    "page",
+                    "pagingCounter",
+                    "hasPrevPage",
+                    "hasNextPage"
+                  ]
                 }
               }
             }
@@ -3388,6 +4018,64 @@
                     "hasPrevPage",
                     "hasNextPage"
                   ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/creators/check-username": {
+      "get": {
+        "summary": "Check Username Availability",
+        "description": "Check if a username is available for use. Performs case-insensitive lookup across all users.",
+        "tags": ["Creators"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "query",
+            "name": "username",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["available", "username"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["available", "message"]
                 }
               }
             }
@@ -5135,6 +5823,271 @@
         }
       }
     },
+    "/v2/sessions/shared": {
+      "get": {
+        "summary": "Get Shared Sessions",
+        "description": "Retrieve all sessions that have been shared with the authenticated user.",
+        "tags": ["Sessions - Permissions"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sharedSessions": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": ["sharedSessions"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/sessions/{session_id}/permissions": {
+      "get": {
+        "summary": "Get Session Permissions",
+        "description": "Retrieve the list of users who have been granted access to a session.",
+        "tags": ["Sessions - Permissions"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "session_id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "permissions": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": ["permissions"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Session Permissions",
+        "description": "Grant or update user permissions for a session. Only the session owner can modify permissions.",
+        "tags": ["Sessions - Permissions"],
+        "parameters": [
+          {
+            "required": true,
+            "in": "path",
+            "name": "session_id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "permissions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "username": {
+                          "type": "string"
+                        },
+                        "level": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": ["editor"]
+                            },
+                            {
+                              "type": "string",
+                              "enum": ["owner"]
+                            }
+                          ]
+                        }
+                      },
+                      "required": ["username", "level"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["success"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/tasks": {
       "get": {
         "summary": "List User Tasks",
@@ -5862,6 +6815,10 @@
   },
   "tags": [
     {
+      "name": "Agent Creation",
+      "description": "Operations related to agent creation"
+    },
+    {
       "name": "Agents",
       "description": "Operations related to agents"
     },
@@ -5886,6 +6843,10 @@
       "description": "Operations related to collections"
     },
     {
+      "name": "Concepts V2",
+      "description": "Operations related to concepts v2"
+    },
+    {
       "name": "Creations",
       "description": "Operations related to creations"
     },
@@ -5904,6 +6865,10 @@
     {
       "name": "Sessions",
       "description": "Operations related to sessions"
+    },
+    {
+      "name": "Sessions - Permissions",
+      "description": "Operations related to sessions - permissions"
     },
     {
       "name": "Tasks",

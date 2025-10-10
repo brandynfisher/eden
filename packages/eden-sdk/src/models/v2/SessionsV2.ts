@@ -61,6 +61,8 @@ export interface SessionsV2ListArguments
 
 export interface SessionsV2GetArguments extends WebAPICallOptions {
   session_id: string
+  cursor?: string
+  limit?: number
 }
 
 export interface SessionsV2DeleteArguments extends WebAPICallOptions {
@@ -253,6 +255,23 @@ export const sessionsGetSharedRequestConfigV2 = (): AxiosRequestConfig => {
   }
 }
 
+export const sessionsGetMessagesRequestConfigV2 = (
+  args: SessionsV2GetMessagesArguments,
+): AxiosRequestConfig => {
+  const params: any = {}
+  if (args.cursor) {
+    params.cursor = args.cursor
+  }
+  if (args.limit) {
+    params.limit = args.limit.toString()
+  }
+  return {
+    method: 'GET',
+    url: `v2/sessions/${args.session_id}/messages`,
+    params,
+  }
+}
+
 // Responses
 export type SessionsV2CreateResponse = WebAPICallResult &
   (
@@ -296,6 +315,8 @@ export type SessionsV2ListResponse = WebAPICallResult &
 export type SessionsV2GetResponse = WebAPICallResult & {
   error?: string
   session?: SessionV2
+  nextCursor?: string
+  hasMore?: boolean
 }
 
 export type SessionsV2DeleteResponse = WebAPICallResult &
@@ -395,6 +416,12 @@ export interface SessionsV2UpdatePermissionsArguments
 
 export interface SessionsV2GetSharedArguments extends WebAPICallOptions {}
 
+export interface SessionsV2GetMessagesArguments extends WebAPICallOptions {
+  session_id: string
+  cursor?: string
+  limit?: number
+}
+
 export type SessionsV2GetPermissionsResponse = WebAPICallResult & {
   permissions: SessionPermission[]
   error?: string
@@ -411,6 +438,13 @@ export type SessionsV2GetSharedResponse = WebAPICallResult & {
     permissionLevel: string
     grantedAt: Date
   }>
+  error?: string
+}
+
+export type SessionsV2GetMessagesResponse = WebAPICallResult & {
+  messages: Message[]
+  hasMore: boolean
+  nextCursor?: string
   error?: string
 }
 
