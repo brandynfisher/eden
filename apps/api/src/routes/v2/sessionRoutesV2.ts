@@ -12,6 +12,7 @@ import {
   deleteSession,
   deleteSessionShare,
   getSession,
+  getSessionMessages,
   getSessionPermissions,
   getSharedSession,
   getSharedSessions,
@@ -24,7 +25,6 @@ import { paginatedResponse, paginationProperties } from '../index'
 import {
   SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
-  SessionsV2GetArguments,
   SessionsV2ListArguments,
   SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
@@ -263,13 +263,13 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   })
 
   server.get<{
-    Params: SessionsV2GetArguments
+    Params: { session_id: string }
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
       summary: 'Get Session Details',
       description:
-        'Retrieve detailed information about a specific session including all messages and participants.',
+        'Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination.',
       security: [
         {
           apiKey: [],
@@ -281,11 +281,58 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           session: Type.Any(),
+          hasMore: Type.Optional(Type.Boolean()),
+          nextCursor: Type.Optional(Type.String()),
         }),
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => getSession(server, request, reply),
+  })
+
+  server.get<{
+    Params: { session_id: string }
+    Querystring: { cursor?: string; limit?: string }
+  }>('/v2/sessions/:session_id/messages', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Get Session Messages (Paginated)',
+      description:
+        'Fetch messages for a session with cursor-based pagination. Returns messages in chronological order (oldest first).',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        session_id: Type.String(),
+      },
+      querystring: {
+        cursor: Type.Optional(Type.String()),
+        limit: Type.Optional(Type.String()),
+      },
+      response: {
+        200: Type.Object({
+          messages: Type.Array(Type.Any()),
+          hasMore: Type.Boolean(),
+          nextCursor: Type.Optional(Type.String()),
+        }),
+        400: {
+          message: Type.Optional(Type.String()),
+        },
+        403: {
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => getSessionMessages(server, request, reply),
   })
 
   server.patch<{

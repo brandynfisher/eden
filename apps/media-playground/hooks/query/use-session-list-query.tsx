@@ -19,7 +19,7 @@ type Props = {
 export const useSessionListQuery = (props?: Props) => {
   const queryKey = ['sessions', 'list', props?.agent_id]
 
-  const { enabled, limit = 50, agent_id, disableInterval = false } = props || {}
+  const { enabled, limit = 25, agent_id, disableInterval = false } = props || {}
 
   const queryClient = useQueryClient()
 

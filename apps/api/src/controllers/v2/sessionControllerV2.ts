@@ -18,7 +18,6 @@ import {
   FeatureFlag,
   SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
-  SessionsV2GetArguments,
   SessionsV2ListArguments,
   SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
@@ -612,7 +611,9 @@ export const listSessions = async (
 
 export const getSession = async (
   server: FastifyInstance,
-  request: FastifyRequest<{ Params: SessionsV2GetArguments }>,
+  request: FastifyRequest<{
+    Params: { session_id: string }
+  }>,
   reply: FastifyReply,
 ) => {
   const { userId, featureFlags } = request.user || {}
@@ -623,6 +624,7 @@ export const getSession = async (
   }
 
   const { session_id } = request.params
+  const limit = 25 // Fixed limit for initial session load
 
   try {
     const session = await Session.findOne({
@@ -675,18 +677,33 @@ export const getSession = async (
       })
     }
 
-    // Fetch messages directly from the messages collection
-    const messages = await Message.find({
-      session: session._id,
-    })
+    // Fetch latest messages (no pagination on initial session fetch)
+    const messages = await Message.find({ session: session._id })
       .populate({
         path: 'sender',
         select: '_id username userImage',
       })
-      .sort({ createdAt: 1 })
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(limit)
       .select(
         '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
       )
+
+    // Check if there are more messages
+    const totalCount = await Message.countDocuments({ session: session._id })
+    const hasMore = totalCount > limit
+
+    // Reverse messages to show in chronological order (oldest first)
+    const paginatedMessages = messages.reverse()
+
+    // Generate cursor for fetching older messages if there are more
+    let nextCursor: string | undefined
+    if (hasMore && paginatedMessages.length > 0) {
+      const oldestMessage = paginatedMessages[0]
+      const createdAt = oldestMessage.createdAt || new Date()
+      const cursorString = `${createdAt.toISOString()}_${oldestMessage._id}`
+      nextCursor = Buffer.from(cursorString).toString('base64')
+    }
 
     // Fetch permissions for the session
     const permissions = await SessionPermission.find({
@@ -699,17 +716,140 @@ export const getSession = async (
     // Add messages and permissions to the session object
     const sessionWithPermissions = {
       ...session.toObject(),
-      messages,
+      messages: paginatedMessages,
       permissions,
     }
 
-    return reply.status(200).send({ session: sessionWithPermissions })
+    return reply.status(200).send({
+      session: sessionWithPermissions,
+      nextCursor,
+      hasMore,
+    })
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Unknown Error'
 
     server.log.error({
       message: 'Failed to get session',
+      error: errorMessage,
+    })
+    return reply.status(500).send({ error: errorMessage })
+  }
+}
+
+export const getSessionMessages = async (
+  server: FastifyInstance,
+  request: FastifyRequest<{
+    Params: { session_id: string }
+    Querystring: { cursor?: string; limit?: string }
+  }>,
+  reply: FastifyReply,
+) => {
+  const { userId, featureFlags } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { session_id } = request.params
+  const { cursor, limit: limitStr } = request.query
+  const limit = limitStr ? parseInt(limitStr, 10) : 25
+
+  try {
+    // Verify session exists and user has access
+    const session = await Session.findOne({
+      _id: new ObjectId(session_id as string),
+    })
+
+    if (!session) {
+      return reply.status(404).send({
+        message: 'Session not found',
+      })
+    }
+
+    // Check access
+    const userIdStr = userId.toString()
+    const isOwner = session.owner.toString() === userIdStr
+    const isUser = session.users?.some(
+      (user: any) => user.toString() === userIdStr,
+    )
+    const hasPermission = await SessionPermission.exists({
+      session: session._id,
+      user: userId,
+    })
+    const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
+
+    if (!isOwner && !isUser && !hasPermission && !isEdenTeamMember) {
+      return reply.status(403).send({
+        message: 'You do not have access to this session',
+      })
+    }
+
+    // Build query for cursor-based pagination
+    const messageQuery: any = {
+      session: session._id,
+    }
+
+    if (cursor) {
+      try {
+        const decodedCursor = Buffer.from(cursor, 'base64').toString('utf-8')
+        const [cursorCreatedAt, cursorId] = decodedCursor.split('_')
+
+        // Find messages older than the cursor
+        messageQuery.$or = [
+          { createdAt: { $lt: new Date(cursorCreatedAt) } },
+          {
+            createdAt: new Date(cursorCreatedAt),
+            _id: { $lt: new ObjectId(cursorId) },
+          },
+        ]
+      } catch (error) {
+        return reply.status(400).send({
+          message: 'Invalid cursor format',
+        })
+      }
+    }
+
+    // Fetch messages older than cursor (or latest if no cursor)
+    const fetchLimit = limit + 1
+    const messages = await Message.find(messageQuery)
+      .populate({
+        path: 'sender',
+        select: '_id username userImage',
+      })
+      .sort({ createdAt: -1, _id: -1 })
+      .limit(fetchLimit)
+      .select(
+        '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
+      )
+
+    // Check if there are more messages
+    const hasMore = messages.length > limit
+    const paginatedMessages = hasMore
+      ? messages.slice(0, limit).reverse()
+      : messages.reverse()
+
+    // Generate next cursor if there are more
+    let nextCursor: string | undefined
+    if (hasMore && paginatedMessages.length > 0) {
+      const oldestMessage = paginatedMessages[0]
+      const createdAt = oldestMessage.createdAt || new Date()
+      const cursorString = `${createdAt.toISOString()}_${oldestMessage._id}`
+      nextCursor = Buffer.from(cursorString).toString('base64')
+    }
+
+    return reply.status(200).send({
+      messages: paginatedMessages,
+      hasMore,
+      nextCursor,
+    })
+  } catch (e) {
+    const error = e as { response?: { data?: string } }
+    const errorMessage = error?.response?.data || 'Unknown Error'
+
+    server.log.error({
+      message: 'Failed to get session messages',
       error: errorMessage,
     })
     return reply.status(500).send({ error: errorMessage })

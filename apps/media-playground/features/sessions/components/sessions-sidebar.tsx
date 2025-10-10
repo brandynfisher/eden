@@ -812,8 +812,9 @@ const MainLeft = ({
         }
       },
       {
-        threshold: 1.0,
-        rootMargin: '10px',
+        root: container,
+        threshold: 0,
+        rootMargin: '100px',
       },
     )
 
@@ -822,18 +823,34 @@ const MainLeft = ({
     return () => {
       observer.disconnect()
     }
-  }, [hasMore, isFetchingNextPage, fetchNextPage])
+  }, [hasMore, isFetchingNextPage, fetchNextPage, sessions.length])
+
+  // Auto-fetch more sessions if container doesn't have scroll after filtering
+  useEffect(() => {
+    if (isLoading || isFetchingNextPage || !hasMore) {
+      return
+    }
+
+    const container = document.querySelector(
+      'nav.flex.flex-col.items-stretch.gap-1.overflow-y-auto.flex-1',
+    ) as HTMLElement
+    if (!container) {
+      return
+    }
+
+    // Check if container has scroll
+    const hasScroll = container.scrollHeight > container.clientHeight
+
+    if (!hasScroll && hasMore) {
+      // No scroll and more data available - fetch next page
+      fetchNextPage()
+    }
+  }, [isLoading, isFetchingNextPage, hasMore, fetchNextPage, sessions.length])
 
   // Separate pinned and unpinned sessions
   const filteredSessions = sessions.filter(
     (session): session is NonNullable<typeof session> =>
       session != null &&
-      // Include sessions with valid titles
-      ((session.title != null &&
-        session.title !== '' &&
-        session.title !== 'Untitled') ||
-        // Include trigger sessions even without titles
-        !!session.trigger) &&
       // For chat mode, only show sessions with one agent or less
       (!isChat || !session.agents || session.agents.length <= 1),
   )

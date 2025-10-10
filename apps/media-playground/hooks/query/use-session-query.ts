@@ -38,6 +38,32 @@ export function useSessionQuery({
         throw new Error('Session not found')
       }
 
+      // Store pagination metadata in query data
+      queryClient.setQueryData(['session-pagination', sessionId], {
+        nextCursor: response.data.nextCursor,
+        hasMore: response.data.hasMore,
+      })
+
+      // Merge with existing older messages if they exist
+      const existingSession = queryClient.getQueryData([
+        'session',
+        sessionId,
+      ]) as SessionV2 | undefined
+      if (existingSession?.messages) {
+        const newMessageIds = new Set(
+          response.data.session.messages.map(m => m._id),
+        )
+        const olderMessages = existingSession.messages.filter(
+          m => !newMessageIds.has(m._id),
+        )
+
+        // Prepend older messages to the new session data
+        return {
+          ...response.data.session,
+          messages: [...olderMessages, ...response.data.session.messages],
+        }
+      }
+
       return response.data.session
     },
     enabled: enabled && !!sessionId,
@@ -283,6 +309,76 @@ export function useSessionQuery({
     [queryClient, sessionId],
   )
 
+  const fetchOlderMessages = useCallback(async () => {
+    const paginationData = queryClient.getQueryData([
+      'session-pagination',
+      sessionId,
+    ]) as { nextCursor?: string; hasMore?: boolean } | undefined
+
+    if (!paginationData?.hasMore || !paginationData?.nextCursor) {
+      return { hasMore: false, messages: [] }
+    }
+
+    try {
+      const response = await axios.get(`/api/sessions/${sessionId}/messages`, {
+        params: {
+          cursor: paginationData.nextCursor,
+          limit: 25,
+        },
+      })
+
+      if (!response || !response.data.messages) {
+        // Mark as no more messages to prevent infinite loop
+        queryClient.setQueryData(['session-pagination', sessionId], {
+          nextCursor: undefined,
+          hasMore: false,
+        })
+        throw new Error('Failed to fetch older messages')
+      }
+
+      const olderMessages = response.data.messages
+
+      // Update pagination metadata
+      queryClient.setQueryData(['session-pagination', sessionId], {
+        nextCursor: response.data.nextCursor,
+        hasMore: response.data.hasMore,
+      })
+
+      // Prepend older messages to existing messages (deduplicate by _id)
+      queryClient.setQueryData(['session', sessionId], (oldData: SessionV2) => {
+        if (!oldData) return oldData
+
+        const existingIds = new Set(oldData.messages.map(m => m._id))
+        // @ts-ignore
+        const newMessages = olderMessages.filter(m => !existingIds.has(m._id))
+
+        return {
+          ...oldData,
+          messages: [...newMessages, ...oldData.messages],
+        }
+      })
+
+      return {
+        hasMore: response.data.hasMore || false,
+        messages: olderMessages,
+      }
+    } catch (error) {
+      console.error('Failed to fetch older messages:', error)
+      // Mark as no more messages to prevent infinite loop
+      queryClient.setQueryData(['session-pagination', sessionId], {
+        nextCursor: undefined,
+        hasMore: false,
+      })
+      return { hasMore: false, messages: [] }
+    }
+  }, [queryClient, sessionId])
+
+  const getPaginationData = useCallback(() => {
+    return queryClient.getQueryData(['session-pagination', sessionId]) as
+      | { nextCursor?: string; hasMore?: boolean }
+      | undefined
+  }, [queryClient, sessionId])
+
   return {
     ...query,
     updateReaction,
@@ -292,5 +388,7 @@ export function useSessionQuery({
     addOrUpdateMessage,
     removeMessage,
     updateToolCall,
+    fetchOlderMessages,
+    getPaginationData,
   }
 }
