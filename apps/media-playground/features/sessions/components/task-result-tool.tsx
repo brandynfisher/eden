@@ -43,6 +43,8 @@ const SOCIAL_TOOLS = {
   SESSION_POST_TOOLS: {
     session_post: {},
     abraham_publish: {},
+    abraham_daily: {},
+    abraham_covenant: {},
   },
 
   // Collection tools - use CollectionAddedEmbed
@@ -148,7 +150,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
             />
           </div>
         ) : isSessionPost ? (
-          // Handle session post results (abraham_publish, session_post)
+          // Handle session post results (abraham_publish, session_post, abraham_daily, abraham_covenant)
           <div className="mb-2 relative group">
             <SessionPostEmbed results={toolResults || []} />
           </div>
