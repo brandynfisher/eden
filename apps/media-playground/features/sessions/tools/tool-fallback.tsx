@@ -66,10 +66,17 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
       ? args || {}
       : subtoolCalls[selectedArgsIndex - 1]?.args || {}
 
+  // Safely check if currentArgs is a valid object
+  const safeCurrentArgs =
+    currentArgs && typeof currentArgs === 'object' ? currentArgs : {}
+
   // Filter out lora/lora2 from args if they exist (since we show them as ModelMiniCards)
-  const filteredArgs = { ...currentArgs }
-  if (currentArgs.lora) delete filteredArgs.lora
-  if (currentArgs.lora2) delete filteredArgs.lora2
+  const filteredArgs = { ...safeCurrentArgs }
+  if (safeCurrentArgs.lora) delete filteredArgs.lora
+  if (safeCurrentArgs.lora2) delete filteredArgs.lora2
+
+  // Check if we have any args to display
+  const hasArgsToDisplay = Object.keys(filteredArgs).length > 0
 
   return (
     <div className="mt-2 mb-2 flex w-full flex-col">
@@ -169,30 +176,38 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
               </ToggleGroup>
             </div>
           )}
-          <ParameterTable
-            // cost={filteredArgs.cost}
-            args={filteredArgs}
-            hideHeader={true}
-            className="w-auto"
-          />
+          {hasArgsToDisplay ? (
+            <ParameterTable
+              // cost={filteredArgs.cost}
+              args={filteredArgs}
+              hideHeader={true}
+              className="w-auto"
+            />
+          ) : (
+            <div className="px-4 py-2 text-sm text-muted-foreground">
+              No parameters
+            </div>
+          )}
 
-          {(currentArgs.lora || currentArgs.lora2) && (
+          {(safeCurrentArgs.lora || safeCurrentArgs.lora2) && (
             <div className="mt-4">
               <div className="text-sm font-medium text-muted-foreground mb-2 px-1">
-                {currentArgs.lora && currentArgs.lora2 ? 'Loras' : 'Lora'}
+                {safeCurrentArgs.lora && safeCurrentArgs.lora2
+                  ? 'Loras'
+                  : 'Lora'}
               </div>
-              {currentArgs.lora ? (
+              {safeCurrentArgs.lora ? (
                 <Suspense fallback={<LoadingIndicator />}>
                   <ModelMiniCard
-                    modelId={currentArgs.lora}
+                    modelId={safeCurrentArgs.lora}
                     className="bg-popover mb-2"
                   />
                 </Suspense>
               ) : null}
-              {currentArgs.lora2 ? (
+              {safeCurrentArgs.lora2 ? (
                 <Suspense fallback={<LoadingIndicator />}>
                   <ModelMiniCard
-                    modelId={currentArgs.lora2}
+                    modelId={safeCurrentArgs.lora2}
                     className="bg-popover"
                   />
                 </Suspense>

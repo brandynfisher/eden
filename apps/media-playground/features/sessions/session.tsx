@@ -1234,7 +1234,7 @@ const Session = ({
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Connection status indicator - only show when not connected and using SSE streaming */}
       {sessionConfig.useStreaming &&
         connectionState !== 'connected' &&
@@ -1664,7 +1664,7 @@ const Session = ({
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-background p-4 z-10 border-t border-gray-800">
+      <div className="flex-shrink-0 bg-background p-4 z-10 border-t border-gray-800">
         <div
           className={`max-w-[calc(42rem+3.75rem)] mx-auto w-full ${
             ischatRoute ? 'sm:pl-[calc(3rem+0.75rem)]' : ''
