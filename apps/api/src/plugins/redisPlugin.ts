@@ -19,13 +19,13 @@ const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
       const client = new Redis(redisUrl, {
         maxRetriesPerRequest: 3,
         enableReadyCheck: true,
-        retryStrategy: times => {
+        retryStrategy: (times: number) => {
           const delay = Math.min(times * 50, 2000)
           return delay
         },
       })
 
-      client.on('error', err => {
+      client.on('error', (err: Error) => {
         console.error('Redis connection error:', err)
         fastify.log.error('Redis connection error:', err)
       })
