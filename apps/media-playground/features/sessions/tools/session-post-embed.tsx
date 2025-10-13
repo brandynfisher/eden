@@ -108,12 +108,23 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   // Get agent IDs from current session to hide them in the posted session card
   const currentAgentIds = currentSession?.agents?.map(agent => agent._id) || []
 
+  // Construct chat link path: /chat/{agent_username}/{session_id}
+  // Use the first agent's username if available
+  const firstAgent = session.agents?.[0]
+  const chatLinkPath = firstAgent?.username
+    ? `/chat/${firstAgent.username}/${session._id}`
+    : `/sessions/${session._id}` // fallback to sessions if no agent
+
   return (
     <div className="space-y-2">
       <div className="text-sm text-muted-foreground mb-2">
         Posted to session:
       </div>
-      <SessionCard session={session} hideAgentIds={currentAgentIds} />
+      <SessionCard
+        session={session}
+        hideAgentIds={currentAgentIds}
+        linkPath={chatLinkPath}
+      />
     </div>
   )
 }
