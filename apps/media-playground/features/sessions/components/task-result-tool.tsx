@@ -4,6 +4,7 @@ import ErrorBoundary from '@/components/error-boundary'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { CollectionAddedEmbed } from '@/features/sessions/tools/collection-added-embed'
+import { CovenantEmbed } from '@/features/sessions/tools/covenant-embed'
 import { SessionPostEmbed } from '@/features/sessions/tools/session-post-embed'
 import { SocialContentEmbed } from '@/features/sessions/tools/social-content-embed'
 import { SocialPostEmbed } from '@/features/sessions/tools/social-post-embed'
@@ -43,6 +44,12 @@ const SOCIAL_TOOLS = {
   SESSION_POST_TOOLS: {
     session_post: {},
     abraham_publish: {},
+    abraham_daily: {},
+  },
+
+  // Covenant tools - use CovenantEmbed
+  COVENANT_TOOLS: {
+    abraham_covenant: {},
   },
 
   // Collection tools - use CollectionAddedEmbed
@@ -105,6 +112,10 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     SOCIAL_TOOLS.SESSION_POST_TOOLS[
       tool as keyof typeof SOCIAL_TOOLS.SESSION_POST_TOOLS
     ]
+  const covenantToolConfig =
+    SOCIAL_TOOLS.COVENANT_TOOLS[
+      tool as keyof typeof SOCIAL_TOOLS.COVENANT_TOOLS
+    ]
   const contentToolConfig =
     SOCIAL_TOOLS.CONTENT_TOOLS[tool as keyof typeof SOCIAL_TOOLS.CONTENT_TOOLS]
   const collectionToolConfig =
@@ -118,6 +129,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
 
   const isSocialPost = !!postToolConfig
   const isSessionPost = !!sessionPostToolConfig
+  const isCovenantTool = !!covenantToolConfig
   const isSocialContent = !!contentToolConfig
   const isCollectionTool = !!collectionToolConfig
   const isWebSearchTool = !!webSearchToolConfig
@@ -148,9 +160,14 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
             />
           </div>
         ) : isSessionPost ? (
-          // Handle session post results (abraham_publish, session_post)
+          // Handle session post results (abraham_publish, session_post, abraham_daily)
           <div className="mb-2 relative group">
             <SessionPostEmbed results={toolResults || []} />
+          </div>
+        ) : isCovenantTool ? (
+          // Handle covenant results (abraham_covenant)
+          <div className="mb-2 relative group">
+            <CovenantEmbed results={toolResults || []} />
           </div>
         ) : isCollectionTool ? (
           // Handle collection tool results

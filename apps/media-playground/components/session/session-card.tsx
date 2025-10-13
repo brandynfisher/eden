@@ -25,9 +25,14 @@ interface SessionCardProps {
     messageCount?: number
   }
   hideAgentIds?: string[]
+  linkPath?: string
 }
 
-const SessionCard = ({ session, hideAgentIds = [] }: SessionCardProps) => {
+const SessionCard = ({
+  session,
+  hideAgentIds = [],
+  linkPath,
+}: SessionCardProps) => {
   const displayTitle =
     session.title || (session.trigger ? 'Scheduled Task' : 'Untitled Session')
   const lastActivity = session.updatedAt || session.createdAt
@@ -43,8 +48,11 @@ const SessionCard = ({ session, hideAgentIds = [] }: SessionCardProps) => {
         !!agent.userImage && !hideAgentIds.includes(agent._id),
     ) || []
 
+  // Use custom linkPath if provided, otherwise default to /sessions/{id}
+  const href = linkPath || `/sessions/${session._id}`
+
   return (
-    <Link href={`/sessions/${session._id}`}>
+    <Link href={href}>
       <div className="group relative bg-card hover:bg-card/80 border border-border hover:border-primary/40 rounded-lg p-4 transition-all duration-200 hover:shadow-md cursor-pointer">
         {/* Header with agent avatars, title, and timestamp */}
         <div className="flex items-start gap-3 mb-2">
