@@ -36,10 +36,24 @@ export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
       ? args
       : subtoolCalls[selectedArgsIndex - 1]?.args || {}
 
+  // Safely check if currentArgs is a valid object
+  const safeCurrentArgs =
+    currentArgs && typeof currentArgs === 'object' ? currentArgs : {}
+
   // Filter out lora/lora2 from args if they exist (since we show them as ModelMiniCards)
-  const filteredArgs = { ...currentArgs }
-  if (currentArgs.lora) delete filteredArgs.lora
-  if (currentArgs.lora2) delete filteredArgs.lora2
+  const filteredArgs = { ...safeCurrentArgs }
+  if (safeCurrentArgs.lora) delete filteredArgs.lora
+  if (safeCurrentArgs.lora2) delete filteredArgs.lora2
+
+  // Check if we have any args to display
+  const hasArgsToDisplay = Object.keys(filteredArgs).length > 0
+
+  // Don't render the dropdown at all if there are no args and no subtools
+  const hasContentToShow = hasArgsToDisplay || hasSubtools
+
+  if (!hasContentToShow) {
+    return null
+  }
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -101,31 +115,35 @@ export const ToolHoverMenu = ({ toolName, args, className, result }: Props) => {
             </div>
           )}
 
-          <Suspense fallback={<LoadingIndicator />}>
-            <ParameterTable
-              args={filteredArgs}
-              hideHeader={true}
-              className="w-auto"
-            />
-          </Suspense>
+          {hasArgsToDisplay && (
+            <Suspense fallback={<LoadingIndicator />}>
+              <ParameterTable
+                args={filteredArgs}
+                hideHeader={true}
+                className="w-auto"
+              />
+            </Suspense>
+          )}
 
-          {(currentArgs.lora || currentArgs.lora2) && (
+          {(safeCurrentArgs.lora || safeCurrentArgs.lora2) && (
             <div className="mt-4">
               <div className="text-sm font-medium text-muted-foreground mb-2 px-1">
-                {currentArgs.lora && currentArgs.lora2 ? 'Loras' : 'Lora'}
+                {safeCurrentArgs.lora && safeCurrentArgs.lora2
+                  ? 'Loras'
+                  : 'Lora'}
               </div>
-              {currentArgs.lora ? (
+              {safeCurrentArgs.lora ? (
                 <Suspense fallback={<LoadingIndicator />}>
                   <ModelMiniCard
-                    modelId={currentArgs.lora}
+                    modelId={safeCurrentArgs.lora}
                     className="bg-popover mb-2"
                   />
                 </Suspense>
               ) : null}
-              {currentArgs.lora2 ? (
+              {safeCurrentArgs.lora2 ? (
                 <Suspense fallback={<LoadingIndicator />}>
                   <ModelMiniCard
-                    modelId={currentArgs.lora2}
+                    modelId={safeCurrentArgs.lora2}
                     className="bg-popover"
                   />
                 </Suspense>

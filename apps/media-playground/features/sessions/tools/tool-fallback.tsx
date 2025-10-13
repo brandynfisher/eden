@@ -78,14 +78,18 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
   // Check if we have any args to display
   const hasArgsToDisplay = Object.keys(filteredArgs).length > 0
 
+  // Don't render expand/collapse UI if there are no args and no subtools
+  const hasContentToShow = hasArgsToDisplay || hasSubtools
+
   return (
     <div className="mt-2 mb-2 flex w-full flex-col">
       <div
         className={cn([
-          'bg-muted-darker cursor-pointer py-2 flex items-center gap-2 px-4 rounded-md border',
-          !isCollapsed ? 'rounded-b-none' : '',
+          'bg-muted-darker py-2 flex items-center gap-2 px-4 rounded-md border',
+          hasContentToShow && 'cursor-pointer',
+          !isCollapsed && hasContentToShow ? 'rounded-b-none' : '',
         ])}
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={() => hasContentToShow && setIsCollapsed(!isCollapsed)}
       >
         <WrenchIcon className="size-4" />
         <div className="flex items-center gap-2">
@@ -134,12 +138,14 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
               Cancel
             </Button>
           )}
-        <TooltipIconButton tooltip={isCollapsed ? 'Expand' : 'Collapse'}>
-          {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
-        </TooltipIconButton>
+        {hasContentToShow && (
+          <TooltipIconButton tooltip={isCollapsed ? 'Expand' : 'Collapse'}>
+            {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          </TooltipIconButton>
+        )}
       </div>
 
-      {!isCollapsed && (
+      {!isCollapsed && hasContentToShow && (
         <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none bg-popover/30">
           {hasSubtools && (
             <div className="px-4 py-2 border-b border-border/20">
@@ -176,17 +182,13 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
               </ToggleGroup>
             </div>
           )}
-          {hasArgsToDisplay ? (
+          {hasArgsToDisplay && (
             <ParameterTable
               // cost={filteredArgs.cost}
               args={filteredArgs}
               hideHeader={true}
               className="w-auto"
             />
-          ) : (
-            <div className="px-4 py-2 text-sm text-muted-foreground">
-              No parameters
-            </div>
           )}
 
           {(safeCurrentArgs.lora || safeCurrentArgs.lora2) && (
