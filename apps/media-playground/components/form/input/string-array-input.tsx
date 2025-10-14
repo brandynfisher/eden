@@ -28,7 +28,6 @@ function StringArrayInput({
     setFields(value)
   }, [value])
 
-  // console.log({ fields, value, initialFields })
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement>,
     index: number,

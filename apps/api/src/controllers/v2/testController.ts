@@ -19,8 +19,6 @@ export const testDiscordNotification = async (
 
   const user = await User.findById(userId)
 
-  console.log(user, user?._id)
-
   // @ts-ignore
   sendDiscordNotification(server, {
     _id: user?._id,

@@ -248,7 +248,6 @@ const handleArguments = async ({
   const usesLikedFilter = filterMap
     ? filterMap.filter(item => item.name === 'likedBy').length > 0
     : undefined
-  // console.log({usesLikedFilter})
 
   // if using "likedBy me" filter: remove default privacy filter as we'll need to handle that conditionally based on creation.user
   if (usesLikedFilter) {
@@ -275,8 +274,6 @@ const handleArguments = async ({
     filterUserIds && filterUserIds.length === 1 && authUserId
       ? authUserId.toString() === filterUserIds[0].toString()
       : false
-  // console.log({ filterMap })
-  // console.log({ authUserId, filterUserIds, isUserRequestingOwnProfileFeed })
 
   let useReactionsPreAggregate = false
   let useEmbeddingsPreAggregate = false
@@ -352,7 +349,6 @@ const handleArguments = async ({
     ? (Object.fromEntries(
         (Array.isArray(filter) ? filter : [filter]).map(filterOption => {
           const [field, value] = filterOption.split(';')
-          // console.log({filterOption, field, value})
 
           if (field === 'search') {
             customFilterOptions['search'] = value
@@ -367,7 +363,6 @@ const handleArguments = async ({
             field === 'collection' ||
             field === 'agent'
           ) {
-            // console.log(field, value)
             if (field === 'collection') {
               useCollectionsPreAggregate = true
               preAggregateFilterOptions['_id'] = new ObjectId(value)
@@ -480,8 +475,6 @@ const handleArguments = async ({
       ) as Filters)
     : undefined
 
-  // console.log({ filterOptions, sortOptions })
-
   if (customFilterOptions.creation) {
     const embeddingDoc = (await Embedding.findOne({
       creation: new ObjectId(customFilterOptions.creation),
@@ -501,7 +494,6 @@ const handleArguments = async ({
         return reply.status(200).send(emptyPaginatedResponse)
       }
     } catch (e) {
-      console.log('Error fetching chroma embeddings', e)
       return reply.status(200).send(emptyPaginatedResponse)
     }
   }
@@ -556,8 +548,6 @@ const handleArguments = async ({
       // @ts-ignore
       customFilterMap['$or'] = fieldValues
     }
-
-    // console.log({fieldName, fieldValues})
   }
 
   const collectionFilter = filterMap?.filter(
@@ -590,8 +580,6 @@ const handleArguments = async ({
     ...customFilterMap,
     ...filterOptions,
   }
-
-  // console.log('feedCursorController', JSON.stringify(filters))
 
   return {
     filters: filters || {},
@@ -643,8 +631,6 @@ const createPipeline = async (
     // Always exclude embedding field from creations
     pipeline.push({ $project: { embedding: 0 } })
   }
-
-  // console.log(JSON.stringify(pipeline, null, 2))
 
   return pipeline
 }
@@ -1027,8 +1013,6 @@ export const getModelsFeedCursorV2 = async (
   const { userId: authUserId } = request.user || {}
   // const currentDate = new Date()
 
-  // console.log({ query, authUserId })
-
   const {
     filters,
     sortOptions,
@@ -1148,8 +1132,6 @@ export const getModelsFeedCursorV2 = async (
 
   feedPipeline.push({ $match: filters }, ...pipeline, ...lateLookupStages)
 
-  // console.log(JSON.stringify(feedPipeline, null, 2))
-
   results = await ModelV2.aggregate(feedPipeline)
 
   const feed: FeedResponse<ModelV2Document[]> = {
@@ -1255,8 +1237,6 @@ export const getCollectionsFeedCursorV2 = async (
     ...pipeline,
     ...lateLookupStages,
   ].filter(Boolean)
-
-  // console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await CollectionV2.aggregate(feedPipeline)
 
@@ -1392,8 +1372,6 @@ export const getAgentsFeedCursor = async (
 
   feedPipeline.push({ $match: filters }, ...pipeline, ...lateLookupStages)
 
-  // console.log(JSON.stringify(feedPipeline, null, 2))
-
   results = await Agent.aggregate(feedPipeline)
 
   const feed: FeedAgentCursorResponse = {
@@ -1498,8 +1476,6 @@ export const getCreatorsFeedCursor = async (
     { $match: { ...filters, userId: { $ne: null } } },
     ...pipeline,
   )
-
-  // console.log(JSON.stringify(feedPipeline, null, 2))
 
   results = await User.aggregate(feedPipeline)
 

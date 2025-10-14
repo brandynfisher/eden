@@ -163,7 +163,6 @@ async function generateUniqueSlug(
 character.pre<CharacterDocument>('save', async function (next) {
   this.updatedAt = new Date()
   if (this.isModified('name')) {
-    console.log('name changed', this.name)
     const baseSlug = getSlug(this.name, { lang: 'en' })
     this.slug = await generateUniqueSlug(this.name, baseSlug)
   }

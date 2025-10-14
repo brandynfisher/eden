@@ -26,8 +26,6 @@ export const useTaskListQuery = ({ enabled = true }: Props) => {
       fetcher<TasksV2ListResponse>(`/api/tasks/list?limit=100&minDate=true`),
   })
 
-  // console.log({ data })
-
   const queryClient = useQueryClient()
 
   return {

@@ -31,9 +31,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response.data)
   } catch (error) {
-    // console.log(error)
     const errorMessage = handleAxiosServerError(error)
-    // console.error(errorMessage)
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })

@@ -196,7 +196,6 @@ const Session = ({
       session.messages.length > 0 &&
       onSessionLoaded
     ) {
-      console.log('[Session] Real session loaded, calling onSessionLoaded')
       onSessionLoaded()
     }
   }, [pendingMessage, session, onSessionLoaded])
@@ -208,14 +207,7 @@ const Session = ({
     }
 
     // Don't connect to SSE if we don't have a real session ID yet
-    console.log(
-      '[SSE Effect] Running with sessionId:',
-      sessionId,
-      'pendingMessage:',
-      !!pendingMessage,
-    )
     if (!sessionId || sessionId === 'new') {
-      console.log('[SSE Effect] Skipping - no valid sessionId')
       return
     }
 
@@ -247,11 +239,6 @@ const Session = ({
 
       try {
         const streamUrl = `/api/sessions/${sessionId}/stream`
-        console.log(
-          '[Session Stream] Attempting to connect to:',
-          streamUrl,
-          `(attempt ${reconnectAttempts + 1})`,
-        )
 
         setConnectionState(
           reconnectAttempts > 0 ? 'reconnecting' : 'connecting',
@@ -265,20 +252,12 @@ const Session = ({
         eventSource = new EventSource(streamUrl)
 
         eventSource.onopen = () => {
-          console.log(
-            '[Session Stream] Connected to session:',
-            sessionId,
-            isReconnection ? '(reconnected)' : '(initial connection)',
-          )
           lastMessageTime = Date.now()
           setConnectionState('connected')
 
           // Refetch session data to catch up on any missed messages
           // This is especially important after reconnecting from tab switch
           if (isReconnection) {
-            console.log(
-              '[Session Stream] Refetching session data to catch up on missed messages...',
-            )
             refetchSession()
           }
 
@@ -294,9 +273,6 @@ const Session = ({
             if (!isCleaningUp) {
               const timeSinceLastMessage = Date.now() - lastMessageTime
               if (timeSinceLastMessage > STALE_CONNECTION_THRESHOLD) {
-                console.log(
-                  `[Session Stream] Connection appears stale (no activity for ${timeSinceLastMessage}ms), reconnecting...`,
-                )
                 if (eventSource) {
                   eventSource.close()
                   eventSource = null
@@ -311,7 +287,6 @@ const Session = ({
         eventSource.onmessage = event => {
           try {
             const data = JSON.parse(event.data)
-            console.log('[Session Stream] Update received:', data)
             lastMessageTime = Date.now() // Update last message time
 
             // Handle session updates from SSE
@@ -343,20 +318,10 @@ const Session = ({
               const agentId = streamState.agent._id
 
               // First token received - remove loader for this agent
-              console.log('[First Token Check]', {
-                agentId,
-                accumulatedTokens: streamState.accumulatedTokens,
-                isFirstToken: streamState.accumulatedTokens === '',
-              })
               if (agentId && streamState.accumulatedTokens === '') {
-                console.log('[Removing loader for agent]', agentId)
                 setAgentsWaitingToRespond(prev => {
                   const next = new Set(prev)
                   next.delete(agentId)
-                  console.log(
-                    '[AgentsWaitingToRespond after delete]',
-                    Array.from(next),
-                  )
                   return next
                 })
               }
@@ -397,17 +362,6 @@ const Session = ({
               const message = data.message as Message
               const runId = data.session_run_id
               const streamState = streamingMessages.get(runId)
-
-              console.log('[Session Stream] Assistant message received:', {
-                runId,
-                hasStreamState: !!streamState,
-                hasToolCalls: !!(
-                  message.tool_calls && message.tool_calls.length > 0
-                ),
-                messageContent: message.content?.substring(0, 50) + '...',
-                accumulatedContent:
-                  streamState?.accumulatedTokens.substring(0, 50) + '...',
-              })
 
               // If we have a streaming state and this message has tool calls, merge them
               if (
@@ -456,9 +410,7 @@ const Session = ({
                 }
               } else if (!streamState) {
                 // If we didn't create a streaming message (shouldn't happen in streaming mode)
-                console.log(
-                  '[Session Stream] Adding assistant message without streaming state',
-                )
+                // This should never happen in streaming mode
                 if (pendingMessage) {
                   setStreamingMessages(prev => [...prev, message])
                 } else {
@@ -470,18 +422,11 @@ const Session = ({
             } else if (data.type === 'user_message' && data.message) {
               // Handle user messages from other users in multi-user sessions
               const userMessage = data.message as Message
-              console.log(
-                '[Session Stream] User message received:',
-                userMessage,
-              )
 
               // Skip processing user messages that are from the current user
               // to avoid duplicating optimistic messages
               const isCurrentUser = user?._id === userMessage.sender?._id
               if (isCurrentUser) {
-                console.log(
-                  '[Session Stream] Skipping user message from current user (already handled optimistically)',
-                )
                 return
               }
 
@@ -512,7 +457,6 @@ const Session = ({
               data.type === 'tool_cancelled'
             ) {
               // Tool updates - refetch to get updated data from DB
-              console.log('[Session Stream] Tool update received, refetching')
               refetchSession()
             }
           } catch (error) {
@@ -520,8 +464,7 @@ const Session = ({
           }
         }
 
-        eventSource.onerror = error => {
-          console.error('[Session Stream] Error:', error)
+        eventSource.onerror = () => {
           setConnectionState('disconnected')
 
           if (!isCleaningUp && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
@@ -534,11 +477,6 @@ const Session = ({
               MAX_RECONNECT_DELAY,
             )
 
-            console.log(
-              `[Session Stream] Will reconnect in ${delay}ms (attempt ${
-                reconnectAttempts + 1
-              }/${MAX_RECONNECT_ATTEMPTS})`,
-            )
             reconnectAttempts += 1
 
             reconnectTimeout = setTimeout(() => {
@@ -547,16 +485,11 @@ const Session = ({
               }
             }, delay)
           } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            console.error(
-              '[Session Stream] Max reconnection attempts reached. Giving up.',
-            )
             eventSource?.close()
             eventSource = null
           }
         }
       } catch (error) {
-        console.error('[Session Stream] Failed to connect:', error)
-
         // Attempt reconnection on initial connection failure
         if (!isCleaningUp && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
           const delay = Math.min(
@@ -577,22 +510,14 @@ const Session = ({
     // Handle visibility changes - reconnect when tab becomes visible
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log(
-          '[Session Stream] Tab became visible, checking connection...',
-        )
-
         // If we don't have an active EventSource or it's closed, reconnect
         if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
-          console.log('[Session Stream] Connection was closed, reconnecting...')
           reconnectAttempts = 0 // Reset attempts for visibility-based reconnection
           connectToStream()
         } else if (eventSource.readyState === EventSource.OPEN) {
           // Check if we've received messages recently (within last 60 seconds)
           const timeSinceLastMessage = Date.now() - lastMessageTime
           if (timeSinceLastMessage > 60000) {
-            console.log(
-              '[Session Stream] Connection appears stale (no messages for 60s), reconnecting...',
-            )
             eventSource.close()
             eventSource = null
             reconnectAttempts = 0
@@ -604,10 +529,8 @@ const Session = ({
 
     // Handle page focus - similar to visibility but more aggressive
     const handleFocus = () => {
-      console.log('[Session Stream] Window gained focus')
       // Force reconnect if connection is not open
       if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
-        console.log('[Session Stream] Reconnecting on focus...')
         reconnectAttempts = 0
         connectToStream()
       }
@@ -631,7 +554,6 @@ const Session = ({
       }
 
       if (eventSource) {
-        console.log('[Session Stream] Disconnecting from session:', sessionId)
         eventSource.close()
       }
 
@@ -690,8 +612,6 @@ const Session = ({
   // Error handling function
   const handleError = useCallback(
     (error: string) => {
-      console.error('Error:', error)
-
       // Clear appropriate state based on mode
       if (sessionConfig.useStreaming) {
         streamingState.clearStreamingState()

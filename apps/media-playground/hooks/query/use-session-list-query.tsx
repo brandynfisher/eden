@@ -44,7 +44,6 @@ export const useSessionListQuery = (props?: Props) => {
       return lastPage.nextPage === 0 ? undefined : lastPage.nextPage
     },
     queryFn: async ({ pageParam = 1 }) => {
-      // console.log('queryFn', pageParam)
       const params = new URLSearchParams({
         page: pageParam.toString(),
         limit: limit.toString(),

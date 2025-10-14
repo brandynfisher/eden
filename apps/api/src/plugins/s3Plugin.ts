@@ -247,8 +247,7 @@ export const getS3SignedDownloadUrl = (
           }),
         )
       })
-      .catch(function (err) {
-        console.log('Generating Url Failed', err)
+      .catch(function () {
         reject('Generating Url Failed: file does not exist')
       })
   })

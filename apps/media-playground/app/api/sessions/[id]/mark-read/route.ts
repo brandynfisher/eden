@@ -16,8 +16,6 @@ export async function PATCH(
   const { getToken } = getAuth(request)
   const authToken = await getToken()
 
-  console.log(`[MARK SESSION READ] PATCH request for session: ${id}`)
-
   try {
     const response = await axios.patch(
       `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions/${id}/mark-read`,
@@ -29,8 +27,6 @@ export async function PATCH(
         },
       },
     )
-
-    console.log(`[MARK SESSION READ] Success:`, response.data)
 
     return NextResponse.json(response.data)
   } catch (error) {

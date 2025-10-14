@@ -151,7 +151,6 @@ export const createTask = async (
     timing.modalEnd = performance.now()
 
     if (!modalResponse || !modalResponse.data) {
-      console.log('malformed response', modalResponse)
       return reply.status(500).send({
         message: `Empty / Unexpected response from compute api`,
       })
@@ -431,7 +430,6 @@ const injectResultUrls = (
     result.intermediate_outputs = Object.fromEntries(
       Object.entries(result.intermediate_outputs).map(
         ([key, partialResults]) => {
-          // console.log(key, partialResults)
           if (Array.isArray(partialResults)) {
             return [
               key,
@@ -445,8 +443,6 @@ const injectResultUrls = (
       ),
     )
   }
-
-  // console.log(JSON.stringify(result, null, 2))
 
   return result
 }
@@ -509,8 +505,6 @@ export const getTask = async (
       model: 'users3',
       select: '_id username userId userImage',
     })
-
-  // console.log(task)
 
   if (!task) {
     return reply.status(404).send({
@@ -594,7 +588,6 @@ export const subscribeTaskUpdates = async (
 
   // keep the connection alive.
   const keepAliveTimer = setInterval(() => {
-    // console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
     reply.sse({
       event: 'keep-alive',
       data: JSON.stringify({
@@ -619,24 +612,6 @@ export const subscribeTaskUpdates = async (
           'SSE-task-update-v2',
         )) {
           const taskUpdate = event as TaskV2
-          // server.log.info({
-          //   taskUpdate,
-          //   userId,
-          //   taskId,
-          // })
-
-          // if (taskId === 'all') {
-          //   console.log(
-          //     'YIELDING ALL TASK UPDATES',
-          //     taskUpdate.user,
-          //     taskUpdate._id,
-          //     taskUpdate.status,
-          //   )
-          //   yield {
-          //     event: 'task-update',
-          //     data: JSON.stringify(taskUpdate),
-          //   }
-          // } else {
           if (
             taskUpdate.user.toString() === userId.toString() &&
             (!taskId || taskUpdate._id.toString() === taskId.toString())
@@ -661,8 +636,6 @@ export const subscribeTaskUpdates = async (
   )
 
   request.socket.on('close', () => {
-    // console.log('request socket close')`
-    // console.log('CLEARING keepAliveTimer')
     clearInterval(keepAliveTimer)
     reply.raw.end()
     server.internalMessages.connection.off(
@@ -691,8 +664,6 @@ export const subscribeWebSocketUpdates = function wsHandler(
     const internalEmitterEventHandlerTaskUpdates = async (
       task: TaskV2Document,
     ) => {
-      // console.log('internalEmitterEventHandler', metaData, task)
-
       if (!metaData.userId) {
         // this.log.error(`User not authenticated/not found - ${task.user}`)
         return
@@ -832,9 +803,6 @@ export const subscribeWebSocketUpdates = function wsHandler(
         // this.log.error(`User not authenticated/not found - ${thread.user}`)
         return
       }
-
-      // console.log(metaData)
-      // const threadsRepository = new ThreadRepository(ThreadModel)
 
       if (!thread.user) {
         this.log.error(
@@ -1013,12 +981,6 @@ export const subscribeWebSocketUpdates = function wsHandler(
           msgJson.data.userId &&
           msgJson.data.token
         ) {
-          // console.log(
-          //   'WS:',
-          //   metaData.connectionId,
-          //   '[ Received auth event ]',
-          //   msgJson.data?.userId,
-          // )
           const tokenClaims = await verifyToken(msgJson.data.token, {
             authorizedParties: [
               this.config.FRONTEND_URL,
@@ -1062,12 +1024,6 @@ export const subscribeWebSocketUpdates = function wsHandler(
           metaData.isAuthenticated = true
           metaData.userId = msgJson.data.userId
           metaData._id = userDocument._id
-          // console.log(
-          //   'WS:',
-          //   metaData.connectionId,
-          //   '[ Authenticated ]',
-          //   metaData.userId,
-          // )
           socket.send(
             JSON.stringify({
               event: ServerEventName.AuthInfo,
@@ -1091,12 +1047,6 @@ export const subscribeWebSocketUpdates = function wsHandler(
           )
           return
         }
-
-        // assume authenticated socket from here on
-        // console.log('onMessage', msgJson)
-        // socket.send(
-        //   `server echo: ${message.toString()} ${JSON.stringify(metaData)}`,
-        // )
       } catch (e) {
         console.error('Caught error in websocket onMessage handler', e)
         socket.send(
@@ -1124,7 +1074,7 @@ export const subscribeWebSocketUpdates = function wsHandler(
       )
     })
   } catch (e) {
-    console.log('Caught error subscribeWebSocketTaskUpdates', e)
+    console.error('Caught error subscribeWebSocketTaskUpdates', e)
   }
 }
 
@@ -1184,7 +1134,6 @@ export const cancelTask = async (
     server.log.info(modalResponse.data)
 
     if (!modalResponse || !modalResponse.data) {
-      console.log('malformed response', modalResponse)
       return reply.status(500).send({
         message: `Empty / Unexpected response from compute api`,
       })

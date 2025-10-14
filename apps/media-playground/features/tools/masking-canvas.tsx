@@ -504,7 +504,7 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     try {
       const uploadedFile = await uploadFileToS3({
         file,
-        onUploadProgress: progressEvent => console.log(progressEvent),
+        onUploadProgress: () => {},
         cancelSource,
       })
 

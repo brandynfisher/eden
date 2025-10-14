@@ -77,16 +77,6 @@ export const useAgentDashboardQuery = ({
     queryFn: async (): Promise<DashboardData> => {
       const result = (await fetcher(url)) as DashboardData
 
-      // DEBUG: Check token data structure
-      console.log(
-        '[TOKEN DEBUG] First messageActivity:',
-        JSON.stringify(result.messageActivity?.[0], null, 2),
-      )
-      console.log(
-        '[TOKEN DEBUG] First userStats:',
-        JSON.stringify(result.userStats?.[0], null, 2),
-      )
-
       return result
     },
     enabled: enabled && !!agentId,

@@ -49,7 +49,6 @@ const TimelineItem = ({ item, queryKey }: Props) => {
         richColors: true,
       })
     } catch (err) {
-      console.log(err)
       const errorMessage = axios.isAxiosError(err)
         ? JSON.parse((err as AxiosError).request.responseText)?.message
         : 'Unknown Error'

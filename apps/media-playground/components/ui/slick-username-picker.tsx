@@ -93,15 +93,9 @@ export const SlickUsernamePicker: FC<SlickUsernamePickerProps> = ({
         const response = await axios.get(
           `/api/agents/check-username?username=${encodeURIComponent(value)}`,
         )
-        console.log('Username check response:', response.data)
         setAvailability(response.data.available ? 'available' : 'taken')
       } catch (error) {
         const axiosError = error as AxiosError
-        console.log(
-          'Username check error:',
-          axiosError?.response?.status,
-          axiosError?.response?.data,
-        )
         if (axiosError?.response?.status === 400) {
           setAvailability('invalid')
         } else if (axiosError?.response?.status === 409) {

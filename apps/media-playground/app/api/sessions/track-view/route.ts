@@ -22,8 +22,6 @@ export async function POST(request: NextRequest) {
 
   const { session_id } = body
 
-  console.log(`[TRACK VIEW] POST request for session: ${session_id}`)
-
   try {
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_EDEN_API_URL}/v2/sessions/track-view`,
@@ -35,8 +33,6 @@ export async function POST(request: NextRequest) {
         },
       },
     )
-
-    console.log(`[TRACK VIEW] Success:`, response.data)
 
     return NextResponse.json(response.data)
   } catch (error) {

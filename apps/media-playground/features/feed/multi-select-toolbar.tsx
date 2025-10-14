@@ -26,8 +26,6 @@ const MultiSelectToolbar = ({ queryKey }: Props) => {
 
   const handleDownload = async () => {
     // Implement download functionality
-    console.log('Download items:', selectedItems)
-
     setIsPreparingDownload(true)
 
     const files: DownloadFile[] = selectedItems.map(item => {

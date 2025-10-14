@@ -10,7 +10,6 @@ const cancelTask = async (taskId: TaskV2['_id'], eden: EdenClient) => {
       taskId,
     })
     .then(response => {
-      // console.log({ 'cancel response': response })
       if (!response || response.message) {
         return new NextResponse(
           JSON.stringify({
@@ -38,7 +37,6 @@ const cancelTask = async (taskId: TaskV2['_id'], eden: EdenClient) => {
       return NextResponse.json({ status: response.taskStatus })
     })
     .catch(error => {
-      // console.log(error.response.data)
       return new NextResponse(
         JSON.stringify({
           message: error?.response?.data

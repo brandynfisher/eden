@@ -424,7 +424,6 @@ const handleRenewal = async (
   const { customerId, renewalPriceId, eventId, eventType, eventData } =
     stripeEventData
 
-  console.log('Handling renewal')
   if (!server.stripe) {
     return reply.status(500).send({
       message: 'Stripe is not configured',
@@ -481,13 +480,9 @@ const handleRenewal = async (
     manna: product.metadata.manna,
   }
 
-  console.log('Metadata', metadata)
-
   const user = await User.findOne({
     stripeCustomerId: customerId,
   })
-
-  console.log(user)
 
   if (!user) {
     return reply.status(400).send({
@@ -499,8 +494,6 @@ const handleRenewal = async (
   user.subscriptionTier = subscriptionTier
   user.highestMonthlySubscriptionTier = subscriptionTier
   await user.save()
-
-  console.log('User', user)
 
   const manna = await Manna.findOne({
     user: user._id,
@@ -521,11 +514,8 @@ const handleRenewal = async (
     })
   }
 
-  console.log('Manna amount', mannaAmountInt)
-
   const newAmount = Math.max(manna.subscriptionBalance || 0, mannaAmountInt)
 
-  console.log('New amount', newAmount)
   if (newAmount > 0) {
     manna.subscriptionBalance = newAmount
 
@@ -885,7 +875,6 @@ export const handlePaymentEvent = async (
       await handleSubscriptionDeleted(server, reply, stripeDataObject)
       return
     default:
-      console.log(`Stripe: Unhandled event type ${event.type}`)
       return reply
         .status(200)
         .send({ message: `unhandled event - ${event.type}` })

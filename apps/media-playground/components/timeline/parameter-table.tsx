@@ -130,7 +130,7 @@ const ParameterTable = ({
   hideHeader,
   className,
 }: Props) => {
-  const [copiedText, copy] = useCopyToClipboard()
+  const [, copy] = useCopyToClipboard()
   const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
       .then(() => {
@@ -140,7 +140,6 @@ const ParameterTable = ({
           dismissible: true,
           richColors: true,
         })
-        console.log('Copied!', { copiedText })
       })
       .catch(error => {
         toast.error(`Failed to copy!`, {

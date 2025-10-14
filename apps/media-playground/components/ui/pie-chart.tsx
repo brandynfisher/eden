@@ -51,7 +51,6 @@ const PieChart: FC<PieChartProps> = ({
   showValues = true,
   valueLabel = 'items',
 }) => {
-  console.log('[PieChart] Received data:', data)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 

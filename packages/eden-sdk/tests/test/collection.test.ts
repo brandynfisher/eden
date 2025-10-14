@@ -1,6 +1,5 @@
-import { describe, expect, test } from 'vitest'
-
 import { EdenClient } from '../../src'
+import { describe, expect, test } from 'vitest'
 
 const getCollectionId = async (client: EdenClient) => {
   const response = await client.collections.list()
@@ -25,7 +24,6 @@ describe('Collection Methods', () => {
   test('should be able to get all collections', async context => {
     const { client } = context
     const result = await client.collections.list()
-    console.log(result)
     expect(result).toBeDefined()
     expect(result.docs).toBeDefined()
   })

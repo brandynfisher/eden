@@ -514,7 +514,6 @@ export const createSessionMessage = async (
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Unknown Error'
-    console.log(e)
 
     if (stream) {
       reply.raw.write(
@@ -596,8 +595,6 @@ export const listSessions = async (
 
     return reply.status(200).send(paginatedResponse)
   } catch (e) {
-    console.log(e)
-
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Unknown Error'
 
@@ -1121,7 +1118,6 @@ export const cancelSession = async (
   } catch (e) {
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Failed to cancel session'
-    console.log(e)
     return reply.status(500).send({ error: errorMessage })
   }
 }

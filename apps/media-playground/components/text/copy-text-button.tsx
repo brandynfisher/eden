@@ -11,7 +11,7 @@ type Props = {
 }
 
 const CopyTextButton = ({ title, text, copyContent }: Props) => {
-  const [copiedText, copy] = useCopyToClipboard()
+  const [, copy] = useCopyToClipboard()
   const [hasCopied, setHasCopied] = useState(false)
 
   const handleCopyString = (text: string, title?: string) => () => {
@@ -25,7 +25,6 @@ const CopyTextButton = ({ title, text, copyContent }: Props) => {
           richColors: true,
         })
         setTimeout(() => setHasCopied(false), 2000)
-        console.log('Copied!', { copiedText })
       })
       .catch(error => {
         toast.error(`Failed to copy!`, {

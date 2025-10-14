@@ -48,7 +48,7 @@ export async function sendLoraTrainingCompletedEmail(
       message,
     })
   } catch (error) {
-    console.log('Failed to send Lora training completion email', error)
+    server.log.error('Failed to send Lora training completion email', error)
     throw error
   }
 }
@@ -91,7 +91,7 @@ export async function sendWelcomeEmail(
       message,
     })
   } catch (error) {
-    console.log('Failed to send welcome email', error)
+    server.log.error('Failed to send welcome email', error)
     throw error
   }
 }
@@ -135,7 +135,7 @@ export async function sendOutOfMannaEmail(
       message,
     })
   } catch (error) {
-    console.log('Failed to send out of manna email', error)
+    server.log.error('Failed to send out of manna email', error)
     throw error
   }
 }

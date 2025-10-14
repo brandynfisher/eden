@@ -86,7 +86,6 @@ export const SessionShareButton = ({
       }
 
       const data = await response.json()
-      console.log('Share response:', data)
 
       if (!data.share_id) {
         throw new Error('No share ID returned from server')
