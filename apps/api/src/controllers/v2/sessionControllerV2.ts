@@ -675,23 +675,24 @@ export const getSession = async (
     }
 
     // Fetch latest messages (no pagination on initial session fetch)
+    // Fetch limit+1 to check if there are more
+    const fetchLimit = limit + 1
     const messages = await Message.find({ session: session._id })
       .populate({
         path: 'sender',
         select: '_id username userImage',
       })
       .sort({ createdAt: -1, _id: -1 })
-      .limit(limit)
+      .limit(fetchLimit)
       .select(
         '_id content sender role eden_message_data tool_calls thought attachments createdAt reactions',
       )
 
-    // Check if there are more messages
-    const totalCount = await Message.countDocuments({ session: session._id })
-    const hasMore = totalCount > limit
-
-    // Reverse messages to show in chronological order (oldest first)
-    const paginatedMessages = messages.reverse()
+    // Check if there are more messages by seeing if we got more than limit
+    const hasMore = messages.length > limit
+    const paginatedMessages = hasMore
+      ? messages.slice(0, limit).reverse()
+      : messages.reverse()
 
     // Generate cursor for fetching older messages if there are more
     let nextCursor: string | undefined

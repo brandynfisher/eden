@@ -35,13 +35,13 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     '@typescript-eslint/no-redeclare': 'error',
-    "@typescript-eslint/no-unused-vars": [
-      "error",
+    '@typescript-eslint/no-unused-vars': [
+      'error',
       {
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_"
-      }
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      },
     ],
     '@typescript-eslint/naming-convention': [
       'error',
@@ -51,7 +51,7 @@ module.exports = {
       },
     ],
     'no-console': [
-      'warn',
+      'error',
       { allow: ['warn', 'error', 'info', 'time', 'timeEnd'] },
     ],
     'no-restricted-imports': [
