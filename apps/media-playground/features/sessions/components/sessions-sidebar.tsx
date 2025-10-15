@@ -865,15 +865,7 @@ const MainLeft = ({
   const unpinnedSessions = filteredSessions
     .filter(session => !session.pinned)
     .sort((a, b) => {
-      const aUnread = unreadCounts?.get(a._id) || 0
-      const bUnread = unreadCounts?.get(b._id) || 0
-
-      // Sort by unread first (unread sessions on top)
-      if (aUnread !== bUnread) {
-        return bUnread - aUnread
-      }
-
-      // Then sort by updatedAt
+      // Sort by updatedAt only
       return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     })
 
