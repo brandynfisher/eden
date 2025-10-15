@@ -543,12 +543,6 @@ export const subscribeTaskUpdates = async (
   }
 
   const internalEmitterEventHandler = async (task: TaskV2Document) => {
-    server.log.info({
-      msg: 'subscribeTaskUpdates::internalEmitterEventHandler',
-      task,
-    })
-    // server.log.info({ userId: userId, taskUser: task.user })
-
     // @todo: Could this be done more efficiently?
     // @todo: atm we'd publish events for all connected users internally to then discard all but one
 
@@ -604,7 +598,6 @@ export const subscribeTaskUpdates = async (
       event: string
       data: string
     }> {
-      // server.log.info(`SSE V2 to user ${userId}`)
       try {
         // handle task update emits
         for await (const [event] of on(
@@ -616,11 +609,6 @@ export const subscribeTaskUpdates = async (
             taskUpdate.user.toString() === userId.toString() &&
             (!taskId || taskUpdate._id.toString() === taskId.toString())
           ) {
-            // server.log.info('sending SSE V2 task update to', {
-            //   event: 'task-update',
-            //   data: JSON.stringify(taskUpdate),
-            // })
-
             // send SSE message
             yield {
               event: 'task-update',
@@ -1117,9 +1105,6 @@ export const cancelTask = async (
       },
     }
 
-    server.log.info('> modal::request::cancel')
-    server.log.info(modalRequest)
-
     const modalResponse = await axios.post(
       modalRequest.endpoint,
       modalRequest.data,
@@ -1129,9 +1114,6 @@ export const cancelTask = async (
         },
       },
     )
-
-    server.log.info('< modal::response::cancel')
-    server.log.info(modalResponse.data)
 
     if (!modalResponse || !modalResponse.data) {
       return reply.status(500).send({

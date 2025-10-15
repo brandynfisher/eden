@@ -12,7 +12,6 @@ export const generateBlurhash = async (
 ) => {
   try {
     const IMAGE_SIZE = 384
-    server.log.info(`Fetching thumbnail from URL: ${imageUrl}`)
 
     const response = await axios.get(imageUrl, {
       responseType: 'arraybuffer',
@@ -37,8 +36,6 @@ export const generateBlurhash = async (
       4,
       4,
     )
-
-    server.log.info(`BlurHash generated successfully for result: ${imageUrl}`)
 
     return blurhash
   } catch (e) {

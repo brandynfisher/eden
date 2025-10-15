@@ -83,9 +83,6 @@ export const createThreadMessage = async (
     },
   }
 
-  server.log.info('> modal::request::chat')
-  server.log.info(modalRequest)
-
   try {
     const modalResponse = await axios.post(
       modalRequest.endpoint,
@@ -96,9 +93,6 @@ export const createThreadMessage = async (
         },
       },
     )
-
-    server.log.info('< modal::response::chat')
-    server.log.info(modalResponse.data)
 
     if (!modalResponse) {
       server.log.error('empty response', modalResponse)

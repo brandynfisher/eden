@@ -1375,8 +1375,6 @@ export const streamSession = async (
 
     const streamUrl = `${server.config.EDEN_COMPUTE_API_URL}/sessions/${session_id}/stream`
 
-    server.log.info(`[Session Stream] Connecting to: ${streamUrl}`)
-
     const response = await axios.get(streamUrl, {
       headers: {
         Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,

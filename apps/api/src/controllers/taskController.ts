@@ -421,26 +421,14 @@ export const subscribeTaskUpdates = async (
   reply.sse(
     // gather all accumulated emit calls for this tick
     (async function* source() {
-      server.log.info('REPLY SSE', userId)
       try {
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate = event as TaskUpdateEvent
-          server.log.info({
-            taskUpdate,
-            userId: userId.toString(),
-            taskId,
-            event,
-          })
           if (
             taskUpdate.userId.toString() === userId.toString() &&
             (!taskId || taskUpdate.taskId === taskId)
           ) {
-            server.log.info('sending SSE task update', {
-              event: 'task-update',
-              data: JSON.stringify(event),
-            })
-
             // send SSE message
             yield {
               event: 'task-update',

@@ -49,17 +49,12 @@ export const extractAgentPrompts = async (
     return reply.send(modalResponse.data)
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      server.log.error(
-        'modal::error::agent_creation/extract_prompts',
-        error.response?.data,
-      )
       return reply.status(error.response?.status || 500).send({
         message:
           error.response?.data?.message || 'Agent prompts extraction failed',
       })
     }
 
-    server.log.error('modal::error::agent_creation/extract_prompts', error)
     return reply.status(500).send({
       message: 'Internal server error',
     })

@@ -154,15 +154,6 @@ export const receiveUserUpdate = async (
             .send('Webhook Error: Could not generate unique username')
         }
       }
-
-      if (finalUsername !== evt.data.username) {
-        server.log.info({
-          reason: 'Username conflict resolved',
-          originalUsername: evt.data.username,
-          finalUsername: finalUsername,
-        })
-      }
-
       // Create new user with the unique username
       await createNewUser(server, {
         userId: evt.data.id,
@@ -228,15 +219,6 @@ export const receiveUserUpdate = async (
               .status(400)
               .send('Webhook Error: Could not generate unique username')
           }
-        }
-
-        if (finalUsername !== evt.data.username) {
-          server.log.info({
-            reason: 'Username conflict resolved during update',
-            originalUsername: evt.data.username,
-            finalUsername: finalUsername,
-            userId: evt.data.id,
-          })
         }
 
         user.username = finalUsername
