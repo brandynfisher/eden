@@ -45,6 +45,7 @@ const SOCIAL_TOOLS = {
   SESSION_POST_TOOLS: {
     session_post: {},
     abraham_publish: {},
+    verdelis_story: {},
     abraham_daily: {},
   },
 
