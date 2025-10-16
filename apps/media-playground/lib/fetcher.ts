@@ -110,8 +110,6 @@ export const createCursorPaginationRoute = (
 
   const filters = []
 
-  // console.log(query.userId, query.orderBy)
-
   const userIdExists = !!query.user
   const isOrderByLiked = query.orderBy === 'liked'
   const isOrderByOther = !query.orderBy || !isOrderByLiked
@@ -230,7 +228,6 @@ export const createCursorPaginationRoute = (
   // }
   // }
 
-  // console.log(query, filters, params)
   if (query.sort) {
     params.sort = query.sort
   }
@@ -254,11 +251,7 @@ export const createCursorPaginationRoute = (
     const [field, value] = Object.entries(filter)[0]
     return `filter=${field};${value}`
   })
-  // console.log(queryStringArray)
-  // console.log(filters)
   const queryString = [...queryStringArray, ...filterStringArray].join('&')
-
-  // console.log({ filters, queryString })
 
   return queryString ? `${basePath}?${queryString}` : basePath
 }

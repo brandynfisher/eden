@@ -8,7 +8,6 @@ export function useBlurDataUrl(
   width?: number,
   height?: number,
 ) {
-  // console.log(blurHash, width, height)
   const [dataUrl, setDataUrl] = useState('')
 
   useEffect(() => {

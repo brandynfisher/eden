@@ -221,11 +221,6 @@ export const createAgentTrigger = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  console.log(
-    'createAgentTrigger received body:',
-    JSON.stringify(request.body, null, 2),
-  )
-  console.log('URL params:', request.params)
   const { agentId } = request.params as { agentId: string }
   const {
     name,
@@ -236,7 +231,6 @@ export const createAgentTrigger = async (
     schedule,
     posting_instructions,
   } = request.body as Omit<AgentsCreateTriggerArguments, 'agentId'>
-  console.log('Extracted name field:', name)
   const currentUserId = request.user.userId
   const agent = await Agent.findById(agentId)
 

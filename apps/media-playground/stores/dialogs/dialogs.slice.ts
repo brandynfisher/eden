@@ -109,7 +109,6 @@ const dialogsSlice = createSlice({
       state,
       action: { payload: { isOpen: boolean; creation?: CreationV2 } },
     ) {
-      // console.log('toggleQuickAnimateModal', state, !state.quickAnimateModal.isOpen)
       state.quickAnimateModal.isOpen = action.payload.isOpen
       if (action.payload.creation) {
         state.quickAnimateModal.creation = action.payload.creation
@@ -121,7 +120,6 @@ const dialogsSlice = createSlice({
       state,
       action: { payload: { isOpen: boolean; creation?: CreationV2 } },
     ) {
-      // console.log('toggleQuickAnimateModal', state, !state.quickAnimateModal.isOpen)
       state.quickUpscaleModal.isOpen = action.payload.isOpen
       if (action.payload.creation) {
         state.quickUpscaleModal.creation = action.payload.creation
@@ -141,7 +139,6 @@ const dialogsSlice = createSlice({
       }
     },
     toggleCreateCollectionModal(state) {
-      // console.log('toggleCreateCollectionModal', state, !state.createCollectionModal.isOpen)
       state.createCollectionModal.isOpen = !state.createCollectionModal.isOpen
     },
     updateShareModal(

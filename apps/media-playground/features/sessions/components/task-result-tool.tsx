@@ -5,6 +5,7 @@ import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { CollectionAddedEmbed } from '@/features/sessions/tools/collection-added-embed'
 import { CovenantEmbed } from '@/features/sessions/tools/covenant-embed'
+import { SeedEmbed } from '@/features/sessions/tools/seed-embed'
 import { SessionPostEmbed } from '@/features/sessions/tools/session-post-embed'
 import { SocialContentEmbed } from '@/features/sessions/tools/social-content-embed'
 import { SocialPostEmbed } from '@/features/sessions/tools/social-post-embed'
@@ -44,12 +45,18 @@ const SOCIAL_TOOLS = {
   SESSION_POST_TOOLS: {
     session_post: {},
     abraham_publish: {},
+    verdelis_story: {},
     abraham_daily: {},
   },
 
   // Covenant tools - use CovenantEmbed
   COVENANT_TOOLS: {
     abraham_covenant: {},
+  },
+
+  // Seed tools - use SeedEmbed
+  SEED_TOOLS: {
+    abraham_seed: {},
   },
 
   // Collection tools - use CollectionAddedEmbed
@@ -116,6 +123,8 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
     SOCIAL_TOOLS.COVENANT_TOOLS[
       tool as keyof typeof SOCIAL_TOOLS.COVENANT_TOOLS
     ]
+  const seedToolConfig =
+    SOCIAL_TOOLS.SEED_TOOLS[tool as keyof typeof SOCIAL_TOOLS.SEED_TOOLS]
   const contentToolConfig =
     SOCIAL_TOOLS.CONTENT_TOOLS[tool as keyof typeof SOCIAL_TOOLS.CONTENT_TOOLS]
   const collectionToolConfig =
@@ -130,6 +139,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   const isSocialPost = !!postToolConfig
   const isSessionPost = !!sessionPostToolConfig
   const isCovenantTool = !!covenantToolConfig
+  const isSeedTool = !!seedToolConfig
   const isSocialContent = !!contentToolConfig
   const isCollectionTool = !!collectionToolConfig
   const isWebSearchTool = !!webSearchToolConfig
@@ -168,6 +178,11 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
           // Handle covenant results (abraham_covenant)
           <div className="mb-2 relative group">
             <CovenantEmbed results={toolResults || []} />
+          </div>
+        ) : isSeedTool ? (
+          // Handle seed results (abraham_seed)
+          <div className="mb-2 relative group">
+            <SeedEmbed results={toolResults || []} />
           </div>
         ) : isCollectionTool ? (
           // Handle collection tool results

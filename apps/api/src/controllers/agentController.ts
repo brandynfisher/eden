@@ -416,8 +416,6 @@ export const updateAgent = async (
     llm_settings: llm_settings,
   }
 
-  console.log('UPDATE AGENT - updateData:', JSON.stringify(updateData, null, 2))
-
   // Handle models array
   if (!models || models.length === 0) {
     updateData.$unset = { models: 1 }

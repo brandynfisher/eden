@@ -166,10 +166,6 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
       const result = await response.json()
 
       if (result.success && result.transcription) {
-        console.log(
-          '🎤 [LIVE-AUDIO] Transcription:',
-          result.transcription.slice(0, 50) + '...',
-        )
         onTranscriptionRef.current?.(result.transcription, result.timestamp)
       } else {
         console.error('🎤 [LIVE-AUDIO] Transcription failed:', result)
@@ -271,13 +267,14 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
         isRecordingRef.current = true
         intervalStartTimeRef.current = Date.now()
 
-        console.log('🎤 [LIVE-AUDIO] Recording started')
-
         // Set up progress tracking timer
         progressTimerRef.current = setInterval(() => {
           if (isRecordingRef.current && intervalStartTimeRef.current > 0) {
             const elapsed = Date.now() - intervalStartTimeRef.current
-            const progress = Math.min((elapsed / (settings.actionInterval * 1000)) * 100, 100)
+            const progress = Math.min(
+              (elapsed / (settings.actionInterval * 1000)) * 100,
+              100,
+            )
             setState(prev => ({
               ...prev,
               actionIntervalProgress: progress,
@@ -423,7 +420,7 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
         currentSettings: null,
         actionIntervalProgress: 0,
       }))
-      
+
       // Clear refs
       mediaRecorderRef.current = null
       onTranscriptionRef.current = null
@@ -437,18 +434,24 @@ export const LiveAudioProvider = ({ children }: LiveAudioProviderProps) => {
     ) {
       // Set up one-time event listener to ensure proper cleanup after recorder stops
       const handleRecorderStop = () => {
-        mediaRecorderRef.current?.removeEventListener('stop', handleRecorderStop)
+        mediaRecorderRef.current?.removeEventListener(
+          'stop',
+          handleRecorderStop,
+        )
         // Add small delay to ensure recorder has fully processed
         setTimeout(cleanupMicrophoneResources, 100)
       }
-      
+
       mediaRecorderRef.current.addEventListener('stop', handleRecorderStop)
       mediaRecorderRef.current.stop()
-      
+
       // Fallback cleanup in case the stop event doesn't fire
       setTimeout(() => {
         if (mediaRecorderRef.current) {
-          mediaRecorderRef.current.removeEventListener('stop', handleRecorderStop)
+          mediaRecorderRef.current.removeEventListener(
+            'stop',
+            handleRecorderStop,
+          )
           cleanupMicrophoneResources()
         }
       }, 1000)

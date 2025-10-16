@@ -20,7 +20,6 @@ export const emitAttachmentUpdate = (
   attachmentId: string,
   status: PendingAttachmentStatus,
 ) => {
-  // console.log(`Emitting attachment update event for ${attachmentId}`);
   const event = new CustomEvent(ATTACHMENT_UPDATE_EVENT, {
     detail: { attachmentId, status },
   })
@@ -104,7 +103,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
         const progress = evt.total ? evt.loaded / evt.total : 0
 
         // Log progress with more details
-        // console.log(`Upload progress for ${file.name}: ${Math.round(progress * 100)}% (${evt.loaded}/${evt.total} bytes)`);
 
         // Update the attachment's progress
         updateProgress(progress)
@@ -124,8 +122,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
 
             // Emit an event to notify the UI that the attachment has been updated
             emitAttachmentUpdate(attachment.id, attachment.status)
-
-            // console.log(`Status updated for ${file.name}: progress=${progress}, new status=`, attachment.status);
           } catch (error) {
             console.error('Error updating attachment status:', error)
           }
@@ -160,9 +156,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
             const attachmentWithExtras = attachment as PendingAttachment &
               AttachmentWithCancelSource
             attachmentWithExtras.isUploading = false
-
-            // console.log(`Cancelled upload for ${attachment.name}, status updated:`, newStatus);
-            // console.log(`Current attachment object after cancel:`, attachment);
           } catch (error) {
             console.error(
               'Error updating attachment status after cancel:',
@@ -243,8 +236,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
 
         // Emit an event to notify the UI that the attachment has been updated
         emitAttachmentUpdate(attachment.id, attachment.status)
-
-        // console.log(`Status updated to complete for ${attachment.name}`);
       })
       .catch(error => {
         if (!axios.isCancel(error)) {
@@ -257,7 +248,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
 
     // Set up the progress callback to update the attachment's status
     progressCallback = progress => {
-      // console.log('progressCallback', progress);
       try {
         // Create a new status object with the current progress
         const newStatus: PendingAttachmentStatus = {
@@ -281,7 +271,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
         emitAttachmentUpdate(attachment.id, newStatus)
 
         // Log the progress update for debugging
-        // console.log(`Progress updated for ${attachment.name}: ${Math.round(progress * 100)}%, new status=`, attachment.status);
       } catch (error) {
         console.error('Error in progress callback:', error)
       }
@@ -292,7 +281,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
   async send(attachment) {
     // For pre-uploaded files, use the fileUrl directly
     if ((attachment.file as File & { isPreUploaded?: boolean }).isPreUploaded) {
-      // console.log('Sending pre-uploaded attachment:', attachment.name);
       return {
         ...attachment,
         content: [
@@ -305,7 +293,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
       }
     }
 
-    // console.log('sending new attachment', { attachment })
     return {
       ...{
         ...attachment,
@@ -323,13 +310,10 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
     } as CompleteAttachment
   },
   async remove(attachment) {
-    // console.log(`Removing attachment: ${attachment.name} (ID: ${attachment.id})`);
-
     // Mark the attachment as not uploading
     const attachmentWithCancel =
       attachment as unknown as AttachmentWithCancelSource
     if (attachmentWithCancel.isUploading) {
-      // console.log(`Marking attachment as not uploading: ${attachment.name}`);
       attachmentWithCancel.isUploading = false
 
       try {
@@ -349,9 +333,6 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
 
         // Emit an event to notify the UI that the attachment has been updated
         emitAttachmentUpdate(attachment.id, newStatus)
-
-        // console.log(`Status updated for removed attachment: ${attachment.name}`, newStatus);
-        // console.log(`Current attachment object after remove:`, attachment);
       } catch (error) {
         console.error('Error updating attachment status in remove:', error)
       }
@@ -361,24 +342,21 @@ const edenImageAttachmentAdapter: AttachmentAdapter = {
     if (uploadsInProgress.has(attachment.id)) {
       const upload = uploadsInProgress.get(attachment.id)
       if (upload) {
-        // console.log(`Cancelling upload for attachment: ${attachment.name} (ID: ${attachment.id})`);
         upload.cancelSource.cancel('Upload cancelled by user')
 
         // Update the progress to 0 using the progress callback
         upload.updateProgress(0)
 
         uploadsInProgress.delete(attachment.id)
-        // console.log(`Removed attachment from uploads map: ${attachment.name}`);
         return
       }
     }
 
     // Also try the attachment's cancelSource as a fallback
     if (attachmentWithCancel.cancelSource) {
-      // console.log(`Cancelling upload using attachment cancelSource for: ${attachment.name}`);
       attachmentWithCancel.cancelSource.cancel('Upload cancelled by user')
     } else {
-      // console.log(`No cancelSource found for attachment: ${attachment.name}`);
+      // No cancelSource found for attachment: ${attachment.name}`);
     }
   },
 }

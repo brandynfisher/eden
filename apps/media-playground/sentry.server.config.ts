@@ -8,7 +8,7 @@ Sentry.init({
   enabled: process.env.NODE_ENV === 'production',
   environment: process.env.NEXT_PUBLIC_APP_ENV,
   // Adjust this value in production, or use tracesSampler for greater control
-  tracesSampleRate: 1,
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.0001 : 1, // 1% in prod, 100% in dev
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,

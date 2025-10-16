@@ -73,7 +73,6 @@ const SimpleGeneratorForm = ({
 
   async function onSubmit(formData: FormData) {
     const finalData = { ...defaultValues, ...formData, ...initValues }
-    // console.log('onSubmit', finalData)
 
     const { makePublic, ...args } = finalData as FormData & {
       makePublic?: boolean
@@ -85,13 +84,11 @@ const SimpleGeneratorForm = ({
 
     setIsSubmitting(true)
     try {
-      const response = await axios.post('/api/tasks/create', {
+      await axios.post('/api/tasks/create', {
         tool: tool.key,
         args: args,
         makePublic: makePublic,
       })
-
-      console.log({ response })
 
       toast.success(`Task submitted`, {
         description: (

@@ -151,11 +151,9 @@ const handleUpdate = async (
           }
 
           if (finalOutput.files[index]) {
-            console.log('uploading asset', finalOutput.files[index])
             try {
               const { uri, mediaAttributes, thumbnailUri } =
                 await server.uploadUrlAsset(server, finalOutput.files[index])
-              console.log('uploaded asset', uri, mediaAttributes)
 
               creationDocument.uri = uri
               creationDocument.mediaAttributes = mediaAttributes
@@ -445,10 +443,8 @@ const handleUpdateUniversal = async (
         }
         if (output[i]) {
           try {
-            console.log('uploading asset', output[i])
             const { uri, mediaAttributes, thumbnailUri } =
               await server.uploadUrlAsset(server, output[i])
-            console.log('uploaded asset', uri, thumbnailUri, mediaAttributes)
             creationData.uri = uri
             creationData.thumbnail = thumbnailUri || ''
             creationData.mediaAttributes = mediaAttributes
@@ -593,10 +589,6 @@ export const receiveTaskUpdate = async (
   update: any,
 ) => {
   const { id: taskId, status, output, error } = update as any
-  console.log(`Received update for task ${taskId} with status ${status}`)
-  if (output) {
-    console.log(`Output: ${JSON.stringify(output)}`)
-  }
   if (error) {
     console.error(`Error for task ${taskId}: ${error}`)
   }

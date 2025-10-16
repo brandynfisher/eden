@@ -693,12 +693,6 @@ export const MessageInput = ({
                                   )}
                                   onClick={() => {
                                     const newValue = !isThinkingEnabled
-                                    console.log(
-                                      '[MessageInput] Think button clicked - old:',
-                                      isThinkingEnabled,
-                                      'new:',
-                                      newValue,
-                                    )
                                     setIsThinkingEnabled(newValue)
                                   }}
                                   disabled={isSubmitting}

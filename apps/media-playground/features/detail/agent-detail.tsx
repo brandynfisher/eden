@@ -71,7 +71,6 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
 
   // Callback to clear state after scroll restore
   const clearScrollIndexState = useCallback(() => {
-    // console.log('[AgentDetail] Clearing initialScrollIndex')
     setInitialScrollIndex(null)
     // REMOVE URL param clearing logic
   }, []) // No dependencies needed now
@@ -81,22 +80,10 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
     // Read scrollIndex from history state
     const historyScrollIndex = window.history.state?.scrollIndex
 
-    // console.log(
-    //   `[AgentDetail] Scroll check effect: historyScrollIndex=${historyScrollIndex}`,
-    // )
-
     // If the history state exists, attempt to read and set state
     if (typeof historyScrollIndex === 'number') {
       const scrollIndex = historyScrollIndex
-      // console.log(
-      //   '[AgentDetail] Read initial scroll index from history state:',
-      //   scrollIndex,
-      // )
       setInitialScrollIndex(scrollIndex)
-      // console.log(
-      //   '[AgentDetail] Read initial scroll index from history state:',
-      //   scrollIndex,
-      // )
       setInitialScrollIndex(scrollIndex)
       // Clear the history state immediately after reading
       try {
@@ -115,7 +102,6 @@ const AgentDetail = ({ id, agentSSRData }: Props) => {
             }
           }
           window.history.replaceState(restState, '')
-          // console.log('[AgentDetail] Cleared scrollIndex from history state')
         }
       } catch (e) {
         console.error('Error clearing history state:', e)

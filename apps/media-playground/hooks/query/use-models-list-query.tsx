@@ -34,7 +34,6 @@ export const useModelsListQuery = (query?: {
         // cursor: pageParam || '',
       })
 
-      // console.log({paginationRoute})
       return fetcher<PaginatedCursorResponse<ModelV2>>(paginationRoute)
     },
   })

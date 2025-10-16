@@ -1,7 +1,9 @@
 import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import { edenHandlers } from './lib/taskHandlers/edenHandlers'
 import { TaskHandlers } from './plugins/tasks'
-import createServer from './server' //
+import createServer from './server'
+
+//
 
 const handlersMap: Record<string, TaskHandlers> = {
   development: dummyTaskHandlers,
@@ -25,7 +27,7 @@ const main = async () => {
   for (const signal of ['SIGINT', 'SIGTERM']) {
     process.on(signal, () =>
       server.close().then(err => {
-        console.log(`close application on ${signal}`)
+        console.info(`close application on ${signal}`)
         process.exit(err ? 1 : 0)
       }),
     )

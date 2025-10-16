@@ -36,11 +36,10 @@ const sendAnalyticsEvents = async (
   data: AnalyticsData,
 ) => {
   try {
-    const response = await axios.post(
+    await axios.post(
       `https://www.google-analytics.com/mp/collect?measurement_id=${server.config.GOOGLE_ANALYTICS_MEASUREMENT_ID}&api_secret=${server.config.GOOGLE_ANALYTICS_API_SECRET}`,
       data,
     )
-    console.log('sendAnalyticsEvent', response.status, data)
   } catch (e) {
     console.error(e)
   }
@@ -51,8 +50,6 @@ export const trackCheckoutComplete = async (
   analyticsClientId: string,
   checkoutData: AnalyticsCheckoutData,
 ) => {
-  console.log('Purchase tracked', analyticsClientId)
-
   const data = {
     client_id: analyticsClientId,
     events: [
@@ -70,8 +67,6 @@ export const trackCheckoutBegin = async (
   server: FastifyInstance,
   analyticsClientId: string,
 ) => {
-  console.log('Checkout Begin tracked', analyticsClientId)
-
   const data = {
     client_id: analyticsClientId,
     events: [

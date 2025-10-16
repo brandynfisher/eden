@@ -14,8 +14,6 @@ export async function GET(request: NextRequest) {
     queryParams[key] = value
   })
 
-  console.log('[NOTIFICATIONS API] GET request with params:', queryParams)
-
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
@@ -23,13 +21,6 @@ export async function GET(request: NextRequest) {
     })
 
     const res = await eden.notifications.list(queryParams)
-
-    console.log('[NOTIFICATIONS API] Response:', {
-      total_count: res.total_count,
-      unread_count: res.unread_count,
-      notifications_count: res.notifications.length,
-    })
-
     return NextResponse.json(res)
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)

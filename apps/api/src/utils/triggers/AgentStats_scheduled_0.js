@@ -330,8 +330,6 @@ exports = async function () {
     }
   )
 
-  console.log(`Updated statistics for ${agentStats.length} agents at ${new Date().toISOString()}`)
-
   return {
     agents_with_stats: agentStats.length,
   }

@@ -299,8 +299,6 @@ const CollectiveMemory: FC<CollectiveMemoryProps> = ({
       return
     }
 
-    console.log('handleFieldSubmit called', { editingField, data })
-
     // This function now only handles extraction_prompt (content is handled by separate flow)
     try {
       setIsSubmitting(true)

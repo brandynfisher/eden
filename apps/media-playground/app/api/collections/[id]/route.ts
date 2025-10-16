@@ -67,8 +67,6 @@ export async function PATCH(
       status: 401,
     })
   }
-  // console.log('auth()', id, request.url)
-
   const requestJson = await request.json()
   const {
     public: isPublic,
@@ -126,8 +124,6 @@ export async function DELETE(
       status: 401,
     })
   }
-  // console.log('auth()', id, request.url)
-
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,

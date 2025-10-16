@@ -12,27 +12,6 @@ type CopiedValue = string | null
  */
 type CopyFn = (text: string) => Promise<boolean>
 
-/**
- * Custom hook that copies text to the clipboard using the [`Clipboard API`](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API).
- * @returns {[CopiedValue, CopyFn]} An tuple containing the copied text and a function to copy text to the clipboard.
- * @public
- * @see [Documentation](https://usehooks-ts.com/react-hook/use-copy-to-clipboard)
- * @example
- * ```tsx
- * const [copiedText, copyToClipboard] = useCopyToClipboard();
- * const textToCopy = 'Hello, world!';
- *
- * // Attempt to copy text to the clipboard
- * copyToClipboard(textToCopy)
- *   .then(success => {
- *     if (success) {
- *       console.log(`Text "${textToCopy}" copied to clipboard successfully.`);
- *     } else {
- *       console.error('Failed to copy text to clipboard.');
- *     }
- *   });
- * ```
- */
 export function useCopyToClipboard(): [CopiedValue, CopyFn] {
   const [copiedText, setCopiedText] = useState<CopiedValue>(null)
 

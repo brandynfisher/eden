@@ -326,7 +326,5 @@ export const taskRateLimitCheck = async (
     }
   }
 
-  // console.log({userLimitTier, subscriptionTier, maximumTasksPerMinute, maximumTasksPerHour, maximumTasksConcurrency})
-
   return { status: 'ok' }
 }

@@ -14,7 +14,6 @@ type Props = {
 export const useThreadListQuery = (props?: Props) => {
   const queryKey = ['threads', 'list']
 
-  // console.log('useThreadListQuery', props)
   const { agentId, enabled, limit = 50 } = props || {}
   if (agentId) {
     queryKey.push(agentId)
@@ -43,7 +42,6 @@ export const useThreadListQuery = (props?: Props) => {
       return lastPage.nextPage === 0 ? undefined : lastPage.nextPage
     },
     queryFn: async ({ pageParam = 1 }) => {
-      // console.log('queryFn', pageParam)
       const response = await fetcher<ThreadsListResponse>(
         `/api/threads/list?page=${pageParam}&limit=${limit}${
           agentId ? `&agentId=${agentId}` : ''
@@ -55,8 +53,6 @@ export const useThreadListQuery = (props?: Props) => {
 
   const threads = data?.pages.flatMap(page => page.docs) ?? []
   const lastPage = data?.pages[data.pages.length - 1]
-
-  // console.log('threads', threads, lastPage, hasNextPage, isFetchingNextPage)
 
   return {
     threads,

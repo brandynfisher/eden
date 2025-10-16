@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams
-    // console.log({ searchParams })
     const route = `${
       env.NEXT_PUBLIC_EDEN_API_URL
     }/v2/feed-cursor/models?${searchParams.toString()}`

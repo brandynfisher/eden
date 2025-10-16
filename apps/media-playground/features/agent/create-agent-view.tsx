@@ -864,7 +864,7 @@ const CreateAgentView = () => {
                                     {[
                                       {
                                         key: 'create_image',
-                                        label: 'Create images',
+                                        label: 'Create images and videos',
                                       },
                                       {
                                         key: 'create_audio',

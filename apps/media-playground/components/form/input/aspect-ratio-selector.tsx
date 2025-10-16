@@ -42,7 +42,6 @@ const AspectRatioSelector = ({
 
   const widthWatch = form.watch('width')
   const heightWatch = form.watch('height')
-  // console.log({ widthWatch, heightWatch })
 
   const activeIndex = resolutions.findIndex(
     res => res.width === widthWatch && res.height === heightWatch,
@@ -82,14 +81,6 @@ const AspectRatioSelector = ({
   const portraitResolution =
     resolutions[portraitIndex !== -1 ? portraitIndex : 1]
 
-  // console.log({
-  //   activeIndex,
-  //   activeResolution,
-  //   landscapeResolution,
-  //   squareResolution,
-  //   portraitResolution,
-  // })
-
   const visibleResolutions = [
     {
       label: 'Custom',
@@ -100,8 +91,6 @@ const AspectRatioSelector = ({
     squareResolution,
     landscapeResolution,
   ]
-
-  // console.log(visibleResolutions)
 
   const updateFormValues = (resolution: Resolution) => {
     form.setValue('width', resolution.width)

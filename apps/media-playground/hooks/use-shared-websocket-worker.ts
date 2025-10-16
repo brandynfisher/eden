@@ -106,18 +106,15 @@ class DirectWebSocketConnection {
 
   connect(endpoint: string) {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      // console.log('DirectWebSocket: Already connected')
       return
     }
 
     this.endpoint = endpoint
     this.cleanup()
 
-    // console.log('DirectWebSocket: Creating new connection', { endpoint })
     this.ws = new WebSocket(endpoint)
 
     this.ws.onopen = () => {
-      // console.log('DirectWebSocket: Connection opened')
       this.onReconnectAttemptChange(false)
       this.messageHandler?.({
         type: 'status',
@@ -129,7 +126,6 @@ class DirectWebSocketConnection {
         if (this.ws?.readyState === WebSocket.OPEN) {
           this.ws.send(JSON.stringify({ event: 'ping', ts: Date.now() }))
           if (Date.now() - this.lastPongTime > 90000) {
-            // console.log('DirectWebSocket: Pong timeout, reconnecting')
             this.reconnect()
           }
         }
@@ -137,7 +133,6 @@ class DirectWebSocketConnection {
     }
 
     this.ws.onclose = () => {
-      // console.log('DirectWebSocket: Connection closed')
       this.messageHandler?.({
         type: 'status',
         readyState: WebSocket.CLOSED,
@@ -216,7 +211,6 @@ class DirectWebSocketConnection {
   }
 
   disconnect() {
-    // console.log('DirectWebSocket: Disconnecting')
     this.cleanup()
     this.ws?.close()
     this.ws = null
@@ -243,7 +237,6 @@ class DirectWebSocketConnection {
 
   private scheduleReconnect() {
     if (!this.reconnectTimeout && this.endpoint) {
-      // console.log('DirectWebSocket: Scheduling reconnect...')
       this.onReconnectAttemptChange(true)
       this.reconnectTimeout = setTimeout(() => {
         this.reconnectTimeout = null
@@ -365,7 +358,6 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
         // SharedWorker implementation
         if (!workerRef.current) {
           const workerUrl = getWorkerUrl()
-          // console.debug('Initializing SharedWorker:', workerUrl)
 
           // Attempt to terminate any existing workers first
           terminateSharedWorkers().then(() => {
@@ -384,13 +376,6 @@ export function useSharedWebSocketWorker(endpoint: string | null) {
             }
 
             worker.port.start()
-            // console.debug('SharedWorker created:', {
-            //   url: workerUrl,
-            //   options: {
-            //     name: 'websocket-worker',
-            //     type: 'classic',
-            //   },
-            // })
 
             const port = worker.port
             port.onmessage = (event: MessageEvent<WorkerMessage>) =>

@@ -109,7 +109,6 @@ export const LightboxGalleryItem = ({
               ])}
               loading={'eager'}
               onLoad={() => {
-                // console.log(event)
                 setIsLoaded(true)
               }}
             />
@@ -187,10 +186,6 @@ const LightboxGallery = ({
       }
     }
   }
-
-  // const handleOnOpen = (psInstance: PhotoSwipe) => {
-  //   console.log({ psInstance })
-  // }
 
   return (
     <Gallery

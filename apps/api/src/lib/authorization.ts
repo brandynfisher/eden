@@ -130,9 +130,6 @@ export const isAllowedAccess = (server: FastifyInstance, userId: string) => {
   }
 
   if (userAllowList[server.config.ENV_API].includes(userId)) {
-    // console.log(
-    //   `User ${userId} is whitelisted for ENV ${server.config.ENV_API}`,
-    // )
     return true
   }
 

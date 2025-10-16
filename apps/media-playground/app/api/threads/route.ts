@@ -5,14 +5,6 @@ import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
-  // console.log('route:sendMessage', args)
-  //
-  // if (!args.thread_id) {
-  //   console.log('sendMessage - no thread: should create thread')
-  // } else {
-  //   console.log('sendMessage: existing thread')
-  // }
-
   return eden.threads
     .message(args)
     .then(response => {
@@ -41,7 +33,6 @@ async function sendMessage(args: ThreadsMessageArguments, eden: EdenClient) {
       return NextResponse.json(response)
     })
     .catch(error => {
-      // console.log(error.response.data)
       return new NextResponse(
         JSON.stringify({
           message: error?.response?.data

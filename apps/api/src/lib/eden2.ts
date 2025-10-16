@@ -12,7 +12,6 @@ export const handleTaskUpdateStreamEvent = async (
   task: TaskV2Document,
   _updatedFields?: GenericUpdate,
 ) => {
-  // server.log.info({ msg: 'handleTaskUpdateStreamEvent', task })
   server.internalMessages.publish('task-updates-v2', task)
 }
 

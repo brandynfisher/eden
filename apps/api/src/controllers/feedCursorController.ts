@@ -344,8 +344,6 @@ const createPipeline = async (
     pipeline.push({ $limit: limit })
   }
 
-  // console.log(JSON.stringify(pipeline, null, 2))
-
   return pipeline
 }
 
@@ -369,7 +367,6 @@ const handleArguments = async ({
 }) => {
   const { filter, sort } = query || {}
 
-  // console.log({ filter,cursor,nextValue })
   const filterMap: FilterItem[] = []
   if (filter) {
     (Array.isArray(filter) ? filter : [filter]).map(filterGroup => {
@@ -381,7 +378,6 @@ const handleArguments = async ({
   const usesLikedFilter = filterMap
     ? filterMap.filter(item => item.name === 'likedBy').length > 0
     : undefined
-  // console.log({usesLikedFilter})
 
   // if using "likedBy me" filter: remove default privacy filter as we'll need to handle that conditionally based on creation.user
   if (usesLikedFilter) {
@@ -404,8 +400,6 @@ const handleArguments = async ({
     filterUserIds && filterUserIds.length === 1 && authUserId
       ? authUserId.toString() === filterUserIds[0].toString()
       : false
-  // console.log({ filterMap })
-  // console.log({ authUserId, filterUserIds, isUserRequestingOwnProfileFeed })
 
   let useReactionsPreAggregate = false
   let useEmbeddingsPreAggregate = false
@@ -474,7 +468,6 @@ const handleArguments = async ({
     ? (Object.fromEntries(
         (Array.isArray(filter) ? filter : [filter]).map(filterOption => {
           const [field, value] = filterOption.split(';')
-          // console.log({filterOption, field, value})
 
           if (
             field === 'user' ||
@@ -482,7 +475,6 @@ const handleArguments = async ({
             field === 'concept' ||
             field === 'collection'
           ) {
-            // console.log(field, value)
             if (field === 'collection') {
               useCollectionsPreAggregate = true
               preAggregateFilterOptions['_id'] = new ObjectId(value)
@@ -559,8 +551,6 @@ const handleArguments = async ({
       ) as Filters)
     : undefined
 
-  // console.log({ filterOptions, sortOptions })
-
   if (customFilterOptions.creation) {
     const embeddingDoc = (await Embedding.findOne({
       creation: new ObjectId(customFilterOptions.creation),
@@ -579,7 +569,6 @@ const handleArguments = async ({
         return reply.status(200).send(emptyPaginatedResponse)
       }
     } catch (e) {
-      console.log('Error fetching chroma embeddings', e)
       return reply.status(200).send(emptyPaginatedResponse)
     }
   }
@@ -624,8 +613,6 @@ const handleArguments = async ({
       // @ts-ignore
       customFilterMap['$or'] = fieldValues
     }
-
-    // console.log({fieldName, fieldValues})
   }
 
   const collectionFilter = filterMap?.filter(
@@ -659,8 +646,6 @@ const handleArguments = async ({
     ...filterOptions,
   }
 
-  // console.log('feedCursorController', JSON.stringify(filters))
-
   return {
     filters: filters || {},
     sortOptions,
@@ -681,8 +666,6 @@ export const getCreationsFeedCursor = async (
 ) => {
   const { query } = request
   const authUserId = request.user ? request.user.userId : undefined
-
-  // console.log({query})
 
   const {
     filters,
@@ -737,8 +720,6 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(pipeline, null, 2))
-
     // @ts-ignore
     results = await Collection.aggregate(pipeline)
   } else if (useFollowingPreAggregate) {
@@ -773,7 +754,6 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(pipeline, null, 2))
     // @ts-ignore
     results = await Follow.aggregate(pipeline)
   } else if (useReactionsPreAggregate) {
@@ -796,7 +776,6 @@ export const getCreationsFeedCursor = async (
       { $limit: limit ?? 100 },
       ...lateLookupStages,
     ].filter(Boolean)
-    // console.log(JSON.stringify(pipeline, null, 2))
     // @ts-ignore
     results = await Reaction.aggregate(pipeline)
   } else {
@@ -874,8 +853,6 @@ export const getCreationsFeedCursor = async (
       ...lateLookupStages,
     ].filter(Boolean)
 
-    // console.log(JSON.stringify(creationFeedPipeline, null, 2))
-
     // @ts-ignore
     results = await Creation.aggregate(creationFeedPipeline)
   }
@@ -916,134 +893,3 @@ export const getCreationsFeedCursor = async (
     reply.code(500).send({ error: 'Internal Server Error' })
   }
 }
-
-// export const getConceptsFeedCursor = async (
-//   server: FastifyInstance,
-//   request: FastifyRequest,
-//   reply: FastifyReply,
-// ) => {
-//   const { limit, cursor, nextValue, sort, filter } =
-//     request.query as FeedConceptsCursorArguments
-//   const authUserId = request.user ? request.user.userId : undefined
-//
-//   const { filters, sortOptions, customFilterOptions } = await handleArguments({
-//     server,
-//     reply,
-//     authUserId,
-//     cursor,
-//     nextValue,
-//     sort,
-//     filter,
-//   })
-//
-//   let results = []
-//
-//   const pipeline = await createPipeline({
-//     limit: limit ?? 100,
-//     sortOptions: { ...sortOptions, _id: -1 },
-//     cursor,
-//     sortCursor: nextValue ? { creationCount: { $lte: nextValue } } : undefined,
-//     //@ts-ignore
-//     filters,
-//   })
-//   const lateLookupStages = [...userLookup]
-//
-//   const conceptFeedPipeline = [
-//     // { $match: filters },
-//     ...pipeline,
-//     ...lateLookupStages,
-//   ].filter(Boolean)
-//
-//   // console.log(JSON.stringify(conceptFeedPipeline, null, 2))
-//
-//   results = await Concept.aggregate(conceptFeedPipeline)
-//
-//   try {
-//     const nextCursor =
-//       results && results.length && results[results.length - 1]._id
-//
-//     const response: { nextValue?: number; nextCursor: string; docs?: any[] } = {
-//       nextCursor,
-//       docs: results,
-//     }
-//
-//     if (customFilterOptions.creationCount) {
-//       response.nextValue =
-//         results && results.length && results[results.length - 1].creationCount
-//     }
-//     reply.send(response)
-//   } catch (error) {
-//     reply.code(500).send({ error: 'Internal Server Error' })
-//   }
-// }
-
-// export const getCreatorsFeedCursor = async (
-//   server: FastifyInstance,
-//   request: FastifyRequest,
-//   reply: FastifyReply,
-// ) => {
-//   // console.log({ routeUrl: request.routeOptions.url })
-//   const { limit, cursor, nextValue, sort, filter } =
-//     request.query as FeedCreatorsCursorArguments
-//   const authUserId = request.user ? request.user.userId : undefined
-//
-//   const { filters, sortOptions, customFilterOptions } = await handleArguments({
-//     server,
-//     reply,
-//     authUserId,
-//     cursor,
-//     nextValue,
-//     sort,
-//     filter,
-//     usesPrivacy: false,
-//   })
-//
-//   let results = []
-//
-//   const pipeline = await createPipeline({
-//     limit: limit ?? 100,
-//     sortOptions: { ...sortOptions, _id: -1 },
-//     cursor,
-//     // sortCursor: nextValue ? { creationCount: { $lte: nextValue } } : undefined,
-//     sortCursor: nextValue
-//       ? customFilterOptions.followerCount
-//         ? { followerCount: { $lte: nextValue } }
-//         : { creationCount: { $lte: nextValue } }
-//       : undefined,
-//     //@ts-ignore
-//     filters,
-//   })
-//   // const lateLookupStages = [...userLookup]
-//
-//   const feedPipeline = [
-//     // { $match: filters },
-//     ...pipeline,
-//     // ...lateLookupStages,
-//   ].filter(Boolean)
-//
-//   // console.log(JSON.stringify(feedPipeline, null, 2))
-//
-//   results = await User.aggregate(feedPipeline)
-//
-//   try {
-//     const nextCursor =
-//       results && results.length && results[results.length - 1]._id
-//
-//     const response: { nextValue?: number; nextCursor: string; docs?: any[] } = {
-//       nextCursor,
-//       docs: results,
-//     }
-//
-//     if (customFilterOptions.creationCount) {
-//       response.nextValue =
-//         results && results.length && results[results.length - 1].creationCount
-//     }
-//     if (customFilterOptions.followerCount) {
-//       response.nextValue =
-//         results && results.length && results[results.length - 1].followerCount
-//     }
-//     reply.send(response)
-//   } catch (error) {
-//     reply.code(500).send({ error: 'Internal Server Error' })
-//   }
-// }

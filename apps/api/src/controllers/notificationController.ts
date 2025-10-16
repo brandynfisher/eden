@@ -401,10 +401,6 @@ export const markSessionNotificationsRead = async (
   const currentUserId = request.user.userId
   const { session_id } = request.params as { session_id: string }
 
-  server.log.info(
-    `[NOTIFICATIONS] Mark read request: user=${currentUserId}, session=${session_id}`,
-  )
-
   try {
     // Mark all unread session_message notifications for this session as read
     const updateResult = await Notification.updateMany(
@@ -422,23 +418,14 @@ export const markSessionNotificationsRead = async (
       },
     )
 
-    server.log.info(
-      `[NOTIFICATIONS] ✓ Marked ${updateResult.modifiedCount} notifications as read`,
-    )
-
     // Broadcast update via WebSocket (non-blocking)
     if (updateResult.modifiedCount > 0) {
       try {
-        server.log.info(
-          `[NOTIFICATIONS] Broadcasting notification-cleared event`,
-        )
         if (server.internalMessages) {
           server.internalMessages.publish('notifications', {
             event: 'notification-cleared',
             data: { session_id, user_id: currentUserId },
           })
-        } else {
-          server.log.warn('[NOTIFICATIONS] internalMessages not available')
         }
       } catch (broadcastError) {
         server.log.error(

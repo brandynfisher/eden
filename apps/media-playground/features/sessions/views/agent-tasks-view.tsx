@@ -36,7 +36,7 @@ const TaskItem: FC<{
   onEdit: (trigger: TriggerWithLastRun) => void
   onDelete: (triggerId: string) => void
   isFinished?: boolean
-}> = ({ trigger, onEdit, isFinished = false }) => {
+}> = ({ trigger, agentId, onEdit, isFinished = false }) => {
   // const [isDeleting, setIsDeleting] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)
   const router = useRouter()
@@ -145,7 +145,7 @@ const TaskItem: FC<{
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push(`/sessions/${trigger.session}`)}
+            onClick={() => router.push(`/chat/${agentId}/${trigger.session}`)}
             className="h-8 w-8 p-0"
             title="View session where results are routed"
           >

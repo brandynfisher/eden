@@ -22,12 +22,10 @@ function determineSize(width: number): number {
 
 // Utility function to change extension
 function changeExtension(filename: string, format: Formats): string {
-  // console.log(filename, format)
   return filename.replace(EXTENSION_PATTERN, `.${format}`)
 }
 
 export default function customImageLoader(args: ImageLoaderProps): string {
-  // console.log(args)
   const { src, width, format, quality } = args || {}
 
   // use url as is
