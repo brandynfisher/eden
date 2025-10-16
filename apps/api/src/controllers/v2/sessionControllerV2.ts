@@ -1325,6 +1325,42 @@ export const deleteSessionShare = async (
   }
 }
 
+export const listUserShares = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      error: 'User missing from request',
+    })
+  }
+
+  try {
+    const shares = await SessionShare.find({ owner: userId })
+      .populate({
+        path: 'session',
+        select: '_id title scenario createdAt',
+      })
+      .sort({ createdAt: -1 })
+      .select('_id session title message_id createdAt')
+
+    return reply.status(200).send({
+      shares,
+    })
+  } catch (error) {
+    server.log.error({
+      message: 'Failed to list user shares',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
+    return reply.status(500).send({
+      error: 'Failed to list user shares',
+    })
+  }
+}
+
 export const streamSession = async (
   server: FastifyInstance,
   request: FastifyRequest<{ Params: { session_id: string } }>,
