@@ -54,12 +54,15 @@ export const UserMessage = ({
             </LightboxGallery>
           )}
           {hasContent && (
-            <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3">
-              <div className="overflow-x-auto text-left">
+            <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3 overflow-hidden">
+              <div className="text-left">
                 {/* Preview */}
                 {!expanded && (
-                  <div className="overflow-x-auto relative">
-                    <pre className="whitespace-pre-wrap font-sans text-base">
+                  <div className="relative">
+                    <pre
+                      className="whitespace-pre-wrap break-words font-sans text-base"
+                      style={{ overflowWrap: 'anywhere' }}
+                    >
                       {preview!}
                     </pre>
                     {isHuge && (
@@ -78,8 +81,11 @@ export const UserMessage = ({
                 )}
                 {/* Full (own scroll) */}
                 {expanded && (
-                  <div className="overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
-                    <pre className="whitespace-pre-wrap font-sans text-base">
+                  <div className="max-h-[60vh] overflow-y-auto rounded-md border p-3">
+                    <pre
+                      className="whitespace-pre-wrap break-words font-sans text-base"
+                      style={{ overflowWrap: 'anywhere' }}
+                    >
                       {trimmedContent}
                     </pre>
                   </div>
