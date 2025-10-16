@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ViewMode } from '@/features/sessions/components/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { isAgentOwner } from '@/lib/utils'
@@ -634,6 +635,7 @@ const NavigationButtons: FC<{
 }> = ({ onItemClick, agent, userId, viewMode, onViewModeChange }) => {
   const { user } = useAuthState()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const { hasEditAccess } = useAgentPermissions(agent, userId ?? undefined)
 
   const handleNavClick = (mode: ViewMode) => {
     onViewModeChange(mode)
@@ -656,7 +658,7 @@ const NavigationButtons: FC<{
         <span>Creations</span>
       </Button>
 
-      {isAgentOwner(agent, userId) && isPreviewUser && (
+      {hasEditAccess && isPreviewUser && (
         <Button
           variant={viewMode === 'tasks' ? 'outline' : 'default'}
           onClick={() => handleNavClick('tasks')}
