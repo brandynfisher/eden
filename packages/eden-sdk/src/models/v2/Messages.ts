@@ -49,6 +49,7 @@ export type Message = {
   attachments?: string[]
   tool_calls?: ToolCall[]
   thought?: Thought[]
+  apiKey?: string
   createdAt: Date
   updatedAt: Date
 }

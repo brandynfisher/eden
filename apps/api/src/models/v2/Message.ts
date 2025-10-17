@@ -26,6 +26,7 @@ export interface MessageSchema {
   attachments?: string[]
   tool_calls?: ToolCall[]
   thought?: Thought[]
+  apiKey?: string
   createdAt?: Date
   updatedAt?: Date
 }
@@ -81,6 +82,10 @@ const messageSchema = new Schema<MessageDocument>(
     reactions: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    apiKey: {
+      type: Schema.Types.ObjectId,
+      ref: 'apikeys',
     },
   },
   {

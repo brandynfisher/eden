@@ -89,6 +89,22 @@ const Session = ({
     }
   }, [sessionId])
 
+  // Mark notifications as read when page regains focus
+  useEffect(() => {
+    if (!sessionId || sessionId === 'new') return
+
+    const handleFocus = () => {
+      axios
+        .patch(`/api/sessions/${sessionId}/mark-read`)
+        .catch(err =>
+          console.error('Failed to mark notifications as read on focus:', err),
+        )
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [sessionId])
+
   // Error handling
   const { errors, addError, removeError, clearErrors } = useSessionErrors()
 

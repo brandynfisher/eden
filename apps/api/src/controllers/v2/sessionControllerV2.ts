@@ -429,6 +429,8 @@ export const createSessionMessage = async (
       ...(agent_ids && { actor_agent_ids: agent_ids }),
       // Only include thinking override if explicitly provided
       ...(thinking !== undefined && { thinking }),
+      // Include api_key_id if available
+      ...(request.user?.apiKeyId && { api_key_id: request.user.apiKeyId }),
     },
     headers: {
       'X-Client-Platform': 'web',
