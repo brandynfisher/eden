@@ -53,6 +53,16 @@ const SettingsNavLinks = () => {
         >
           Connections
         </Link>
+        <Link
+          href="/settings/shares"
+          className={cn(
+            'px-2 py-1.5 rounded-md',
+            isActive('/settings/shares') && 'bg-muted/50 text-foreground',
+            '[@media(pointer:fine)]:hover:bg-accent/75 hover:text-popover-foreground',
+          )}
+        >
+          Shares
+        </Link>
       </div>
 
       {isPreviewUser && (

@@ -95,6 +95,8 @@ export interface SessionsV2ShareDeleteArguments extends WebAPICallOptions {
   share_id: string
 }
 
+export interface SessionsV2ShareListArguments extends WebAPICallOptions {}
+
 // Requests
 export const sessionsCreateRequestConfigV2 = (
   args: SessionsV2CreateArguments,
@@ -224,6 +226,16 @@ export const sessionsShareDeleteRequestConfigV2 = (
   return {
     method: 'DELETE',
     url: `v2/sessions/share/${args.share_id}`,
+  }
+}
+
+export const sessionsShareListRequestConfigV2 = (
+  args: SessionsV2ShareListArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'v2/sessions/shares',
+    params: args,
   }
 }
 
@@ -382,6 +394,24 @@ export type SessionsV2ShareDeleteResponse = WebAPICallResult &
       }
     | { success: boolean }
   )
+
+export interface SessionShare {
+  _id: string
+  session: {
+    _id: string
+    title?: string
+    scenario?: string
+    createdAt: Date
+  }
+  title?: string
+  message_id: string
+  createdAt: Date
+}
+
+export type SessionsV2ShareListResponse = WebAPICallResult & {
+  shares: SessionShare[]
+  error?: string
+}
 
 export enum SessionPermissionLevel {
   Editor = 'editor',
