@@ -92,6 +92,7 @@ const sessionFormSchema = z.object({
   actor_selection_method: z
     .enum(['random', 'random_exclude_last'])
     .default('random_exclude_last'),
+  exclude_memory: z.boolean().default(false),
   permissions: z
     .array(
       z.object({
@@ -150,6 +151,7 @@ export const SessionForm = ({
       auto_reply: false,
       reply_interval: 0,
       actor_selection_method: 'random_exclude_last',
+      exclude_memory: false,
       permissions: [],
       ...defaultValues,
     },
@@ -602,6 +604,27 @@ export const SessionForm = ({
                 />
               </div>
             )}
+
+            <FormField
+              control={form.control}
+              name="exclude_memory"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Exclude Memory</FormLabel>
+                    <FormDescription>
+                      Disable memory injection into the system prompt
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             {mode === 'edit' && (
               <div className="space-y-4">

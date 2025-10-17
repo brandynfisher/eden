@@ -25,6 +25,7 @@ export interface SessionsV2CreateArguments extends WebAPICallOptions {
     reply_interval: number
     actor_selection_method: 'random' | 'random_exclude_last'
   }
+  extras?: SessionExtras
 }
 
 export interface SessionsV2MessageArguments extends WebAPICallOptions {
@@ -45,6 +46,7 @@ export interface SessionsV2MessageArguments extends WebAPICallOptions {
     reply_interval: number
     actor_selection_method: 'random' | 'random_exclude_last'
   }
+  extras?: SessionExtras
 }
 
 export interface SessionsV2MessageReactArguments extends WebAPICallOptions {
@@ -480,6 +482,10 @@ export type SessionsV2GetMessagesResponse = WebAPICallResult & {
 
 export type SessionStatus = 'active' | 'archived'
 
+export type SessionExtras = {
+  exclude_memory?: boolean
+}
+
 export type SessionV2 = {
   _id: string
   owner: Creator
@@ -516,6 +522,7 @@ export type SessionV2 = {
   trigger?: string
   pinned?: boolean
   active_requests?: string[]
+  extras?: SessionExtras
   createdAt: Date
   updatedAt: Date
 }

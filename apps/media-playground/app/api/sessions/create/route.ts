@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const { agent_ids, scenario, budget, title, autonomy_settings } =
+  const { agent_ids, scenario, budget, title, autonomy_settings, extras } =
     await request.json()
 
   // Validation
@@ -200,6 +200,10 @@ export async function POST(request: NextRequest) {
 
     if (autonomy_settings) {
       createArgs.autonomy_settings = autonomy_settings
+    }
+
+    if (extras) {
+      createArgs.extras = extras
     }
 
     const res = await eden.sessions.v2.create(createArgs)
