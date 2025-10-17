@@ -65,38 +65,23 @@ export const registerInternalMessages: FastifyPluginAsync = async fastify => {
       queues: [
         {
           topic: 'task-updates',
-          onMessage: async _message => {
-            // fastify.log.info('Internal message received', { message })
-          },
+          onMessage: async _message => {},
         },
         {
           topic: 'task-updates-v2',
-          onMessage: async _message => {
-            // fastify.log.info('V2!!! Internal message received', { message })
-          },
+          onMessage: async _message => {},
         },
         {
           topic: 'thread-updates',
-          onMessage: async _message => {
-            fastify.log.info('thread-updates: Internal message received ', {
-              _message,
-            })
-          },
+          onMessage: async _message => {},
         },
         {
           topic: 'session-updates',
-          onMessage: async _message => {
-            fastify.log.info('session-updates: Internal message received ', {
-              _message,
-            })
-          },
+          onMessage: async _message => {},
         },
         {
           topic: 'notifications',
           onMessage: async message => {
-            fastify.log.info('notifications: Internal message received ', {
-              message,
-            })
             // Broadcast to WebSocket clients
             const sockets = fastify.websocketServer.clients
             sockets.forEach(socket => {
