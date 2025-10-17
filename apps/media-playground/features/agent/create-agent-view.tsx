@@ -23,10 +23,19 @@ import {
 } from '@/components/ui/sheet'
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { ProfileImageUploader } from '@/features/sessions/profile-image-uploader'
-import { AGENT_FIELD_LIMITS } from '@/features/sessions/views/agent-constants'
+import {
+  AGENT_FIELD_GUIDANCE,
+  AGENT_FIELD_LIMITS,
+} from '@/features/sessions/views/agent-constants'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
@@ -398,8 +407,23 @@ const CreateAgentView = () => {
                           render={({ field }) => (
                             <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
                               <FormLabel className="text-base font-medium">
-                                Description
-                                <span className="text-red-500 ml-1">*</span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="cursor-help">
+                                        Description
+                                        <span className="text-red-500 ml-1">
+                                          *
+                                        </span>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">
+                                        {AGENT_FIELD_GUIDANCE.DESCRIPTION}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
@@ -426,8 +450,23 @@ const CreateAgentView = () => {
                           render={({ field }) => (
                             <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
                               <FormLabel className="text-base font-medium">
-                                Instructions
-                                <span className="text-red-500 ml-1">*</span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="cursor-help">
+                                        Instructions
+                                        <span className="text-red-500 ml-1">
+                                          *
+                                        </span>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs whitespace-pre-wrap">
+                                        {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
