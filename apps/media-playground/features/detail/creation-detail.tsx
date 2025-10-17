@@ -69,8 +69,8 @@ const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
         className={cn([
           `w-full flex flex-col flex-grow lg:flex-row lg:gap-4 max-h-full lg:ml-0`,
           isModal
-            ? 'lg:w-[calc(100dvw_-_160px)]'
-            : 'lg:w-[calc(100dvw_-_32px)]',
+            ? 'lg:w-[calc(100dvw_-_160px)] lg:min-h-[calc(100dvh_-_98px)]'
+            : 'lg:w-[calc(100dvw_-_32px)] lg:min-h-[calc(100dvh_-_198px)]',
         ])}
       >
         {creation ? (
@@ -91,35 +91,40 @@ const CreationDetail = ({ id, creationSSRData, isModal, scrollRef }: Props) => {
         </Suspense>
       </div>
 
-      {creation && (
-        <>
-          <div className="flex justify-center mt-4">
-            <Button
-              variant="outline"
-              size="icon"
-              className="cursor-pointer self-center animate-bounce"
-              onClick={handleScrollToCreations}
-            >
-              <ChevronDownIcon className="w-10 h-10" />
-            </Button>
-          </div>
-          <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8 px-4">
+      {/* Always render containers to prevent layout shift */}
+      <div className="flex justify-center mt-4 min-h-[56px]">
+        {creation && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="cursor-pointer self-center animate-bounce"
+            onClick={handleScrollToCreations}
+          >
+            <ChevronDownIcon className="w-10 h-10" />
+          </Button>
+        )}
+      </div>
+      <div className="flex text-sm items-center gap-2 justify-center mb-2 pt-4 pb-6 lg:pt-8 lg:pb-8 px-4 min-h-[80px] lg:min-h-[96px]">
+        {creation && (
+          <>
             Recent creations from{' '}
             <UserAvatarLink
               name={creation.user.username || creation.user._id}
               image={creation.user.userImage}
               isAgent={creation?.user?.type === 'agent'}
             />
-          </div>
+          </>
+        )}
+      </div>
 
-          <div ref={feedSectionRef} className="px-4 w-full">
-            <RecentCreationsFeed
-              query={{ user: creation.user._id }}
-              scrollRef={scrollRef}
-            />
-          </div>
-        </>
-      )}
+      <div ref={feedSectionRef} className="px-4 w-full min-h-[400px]">
+        {creation && (
+          <RecentCreationsFeed
+            query={{ user: creation.user._id }}
+            scrollRef={scrollRef}
+          />
+        )}
+      </div>
     </>
   )
 }

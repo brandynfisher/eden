@@ -8,6 +8,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import {
   RefObject,
@@ -52,6 +53,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
     ref,
   ) => {
     const { isSignedIn } = useAuthState()
+    const queryClient = useQueryClient()
     const router = useRouter()
     const virtualizerRef = useRef<MasonryVirtualizerHandle>(null)
 
@@ -82,8 +84,18 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
 
     const handleCardClick = (item: CreationV2, index: number) => {
       setActiveIndex(index)
-      addToHistory(feedId) // Add current feed to history when navigating
-      router.push(`/creations/${item._id}`) // Navigate to the creation
+      addToHistory(feedId)
+
+      // Seed cache for instant thumbnail display
+      queryClient.setQueryData(['creations', item._id], {
+        creation: item,
+      })
+
+      // Invalidate immediately so full query runs to get complete data
+      queryClient.invalidateQueries({ queryKey: ['creations', item._id] })
+
+      // Navigate to creation - modal opens via parallel route
+      router.push(`/creations/${item._id}`)
     }
 
     // Expose navigation helpers via ref
@@ -128,7 +140,6 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
             onUpdate={onUpdate}
             creation={item as CreationV2}
             creator={(item as CreationV2).user}
-            linkHref={`/creations/${item._id}`}
             multiselect={multiselect}
             isSignedIn={isSignedIn}
             onClick={() => handleCardClick(item as CreationV2, index)}
