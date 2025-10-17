@@ -22,6 +22,7 @@ import {
   LinkIcon,
   ListIcon,
   RadioIcon,
+  Share2Icon,
 } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 
@@ -50,6 +51,8 @@ const SettingsNav = () => {
         return 'Integrations'
       case '/settings/connections':
         return 'Connections'
+      case '/settings/shares':
+        return 'Shares'
       default:
         return 'Settings'
     }
@@ -69,6 +72,11 @@ const SettingsNav = () => {
           href: '/settings/connections',
           label: 'Connections',
           icon: LinkIcon,
+        },
+        {
+          href: '/settings/shares',
+          label: 'Shares',
+          icon: Share2Icon,
         },
       ],
     },

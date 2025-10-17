@@ -17,6 +17,7 @@ import {
   getSharedSession,
   getSharedSessions,
   listSessions,
+  listUserShares,
   renameSession,
   updateSessionPermissions,
 } from '../../controllers/v2/sessionControllerV2'
@@ -578,6 +579,33 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => deleteSessionShare(server, request, reply),
+  })
+
+  server.get('/v2/sessions/shares', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'List User Shares',
+      description:
+        'Retrieve all session shares created by the authenticated user.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      response: {
+        200: Type.Object({
+          shares: Type.Array(Type.Any()),
+        }),
+        400: {
+          error: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => listUserShares(server, request, reply),
   })
 
   // server.get<{
