@@ -26,7 +26,6 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
       )
 
       changeStream.on('change', async (data: ChangeStreamDocument<any>) => {
-        fastify.log.info(`Change stream onChange: ${WATCHED_COLLECTION}`)
         try {
           if (data.operationType === 'insert') {
             const messageDoc = data.fullDocument
@@ -130,7 +129,6 @@ export const registerEden2SessionUpdates: FastifyPluginAsync =
 
         if (streamClosePromise) {
           streamClosePromise.then(() => {
-            fastify.log.info('Session change stream closed')
             done()
             return
           })

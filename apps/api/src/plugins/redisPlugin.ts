@@ -30,9 +30,7 @@ const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
         fastify.log.error('Redis connection error:', err)
       })
 
-      client.on('ready', () => {
-        fastify.log.info('Redis client connected successfully')
-      })
+      client.on('ready', () => {})
 
       fastify.decorate('redis', client)
       fastify.decorate('redisEnvPrefix', envPrefix)
@@ -40,7 +38,6 @@ const redisPlugin: FastifyPluginAsync<RedisPluginOptions> = async (
       // Cleanup on close
       fastify.addHook('onClose', async () => {
         await client.quit()
-        fastify.log.info('Redis connection closed')
       })
     } catch (error) {
       fastify.log.error('Failed to initialize Redis client:', error)
