@@ -238,7 +238,6 @@ export const uploadFileToS3 = async (
 
       // Check if this is a cancellation error
       if (axios.isCancel(error)) {
-        // console.log('Upload cancelled by user')
         throw error // Re-throw cancellation errors
       }
 

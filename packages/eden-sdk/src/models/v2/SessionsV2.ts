@@ -25,6 +25,7 @@ export interface SessionsV2CreateArguments extends WebAPICallOptions {
     reply_interval: number
     actor_selection_method: 'random' | 'random_exclude_last'
   }
+  extras?: SessionExtras
 }
 
 export interface SessionsV2MessageArguments extends WebAPICallOptions {
@@ -45,6 +46,7 @@ export interface SessionsV2MessageArguments extends WebAPICallOptions {
     reply_interval: number
     actor_selection_method: 'random' | 'random_exclude_last'
   }
+  extras?: SessionExtras
 }
 
 export interface SessionsV2MessageReactArguments extends WebAPICallOptions {
@@ -61,6 +63,8 @@ export interface SessionsV2ListArguments
 
 export interface SessionsV2GetArguments extends WebAPICallOptions {
   session_id: string
+  cursor?: string
+  limit?: number
 }
 
 export interface SessionsV2DeleteArguments extends WebAPICallOptions {
@@ -92,6 +96,8 @@ export interface SessionsV2ShareGetArguments extends WebAPICallOptions {
 export interface SessionsV2ShareDeleteArguments extends WebAPICallOptions {
   share_id: string
 }
+
+export interface SessionsV2ShareListArguments extends WebAPICallOptions {}
 
 // Requests
 export const sessionsCreateRequestConfigV2 = (
@@ -225,6 +231,16 @@ export const sessionsShareDeleteRequestConfigV2 = (
   }
 }
 
+export const sessionsShareListRequestConfigV2 = (
+  args: SessionsV2ShareListArguments,
+): AxiosRequestConfig => {
+  return {
+    method: 'GET',
+    url: 'v2/sessions/shares',
+    params: args,
+  }
+}
+
 export const sessionsGetPermissionsRequestConfigV2 = (
   args: SessionsV2GetPermissionsArguments,
 ): AxiosRequestConfig => {
@@ -250,6 +266,23 @@ export const sessionsGetSharedRequestConfigV2 = (): AxiosRequestConfig => {
   return {
     method: 'GET',
     url: 'v2/sessions/shared',
+  }
+}
+
+export const sessionsGetMessagesRequestConfigV2 = (
+  args: SessionsV2GetMessagesArguments,
+): AxiosRequestConfig => {
+  const params: any = {}
+  if (args.cursor) {
+    params.cursor = args.cursor
+  }
+  if (args.limit) {
+    params.limit = args.limit.toString()
+  }
+  return {
+    method: 'GET',
+    url: `v2/sessions/${args.session_id}/messages`,
+    params,
   }
 }
 
@@ -296,6 +329,8 @@ export type SessionsV2ListResponse = WebAPICallResult &
 export type SessionsV2GetResponse = WebAPICallResult & {
   error?: string
   session?: SessionV2
+  nextCursor?: string
+  hasMore?: boolean
 }
 
 export type SessionsV2DeleteResponse = WebAPICallResult &
@@ -362,6 +397,24 @@ export type SessionsV2ShareDeleteResponse = WebAPICallResult &
     | { success: boolean }
   )
 
+export interface SessionShare {
+  _id: string
+  session: {
+    _id: string
+    title?: string
+    scenario?: string
+    createdAt: Date
+  }
+  title?: string
+  message_id: string
+  createdAt: Date
+}
+
+export type SessionsV2ShareListResponse = WebAPICallResult & {
+  shares: SessionShare[]
+  error?: string
+}
+
 export enum SessionPermissionLevel {
   Editor = 'editor',
   Owner = 'owner',
@@ -395,6 +448,12 @@ export interface SessionsV2UpdatePermissionsArguments
 
 export interface SessionsV2GetSharedArguments extends WebAPICallOptions {}
 
+export interface SessionsV2GetMessagesArguments extends WebAPICallOptions {
+  session_id: string
+  cursor?: string
+  limit?: number
+}
+
 export type SessionsV2GetPermissionsResponse = WebAPICallResult & {
   permissions: SessionPermission[]
   error?: string
@@ -414,7 +473,18 @@ export type SessionsV2GetSharedResponse = WebAPICallResult & {
   error?: string
 }
 
+export type SessionsV2GetMessagesResponse = WebAPICallResult & {
+  messages: Message[]
+  hasMore: boolean
+  nextCursor?: string
+  error?: string
+}
+
 export type SessionStatus = 'active' | 'archived'
+
+export type SessionExtras = {
+  exclude_memory?: boolean
+}
 
 export type SessionV2 = {
   _id: string
@@ -452,6 +522,7 @@ export type SessionV2 = {
   trigger?: string
   pinned?: boolean
   active_requests?: string[]
+  extras?: SessionExtras
   createdAt: Date
   updatedAt: Date
 }

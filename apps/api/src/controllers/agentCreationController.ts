@@ -3,6 +3,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 interface AgentPromptsExtractionRequest {
   session_id: string
+  agent_name?: string
 }
 
 export const extractAgentPrompts = async (
@@ -17,7 +18,7 @@ export const extractAgentPrompts = async (
     })
   }
 
-  const { session_id } = request.body
+  const { session_id, agent_name } = request.body
 
   if (!session_id) {
     return reply.status(400).send({
@@ -30,11 +31,9 @@ export const extractAgentPrompts = async (
     data: {
       user_id: userId,
       session_id,
+      agent_name,
     },
   }
-
-  server.log.info('> modal::request::agent_creation/extract_prompts')
-  server.log.info(modalRequest)
 
   try {
     const modalResponse = await axios.post(
@@ -47,23 +46,15 @@ export const extractAgentPrompts = async (
       },
     )
 
-    server.log.info('< modal::response::agent_creation/extract_prompts')
-    server.log.info(modalResponse.data)
-
     return reply.send(modalResponse.data)
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      server.log.error(
-        'modal::error::agent_creation/extract_prompts',
-        error.response?.data,
-      )
       return reply.status(error.response?.status || 500).send({
         message:
           error.response?.data?.message || 'Agent prompts extraction failed',
       })
     }
 
-    server.log.error('modal::error::agent_creation/extract_prompts', error)
     return reply.status(500).send({
       message: 'Internal server error',
     })

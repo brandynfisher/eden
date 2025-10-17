@@ -19,7 +19,7 @@ type Props = {
 export const useSessionListQuery = (props?: Props) => {
   const queryKey = ['sessions', 'list', props?.agent_id]
 
-  const { enabled, limit = 50, agent_id, disableInterval = false } = props || {}
+  const { enabled, limit = 25, agent_id, disableInterval = false } = props || {}
 
   const queryClient = useQueryClient()
 
@@ -44,7 +44,6 @@ export const useSessionListQuery = (props?: Props) => {
       return lastPage.nextPage === 0 ? undefined : lastPage.nextPage
     },
     queryFn: async ({ pageParam = 1 }) => {
-      // console.log('queryFn', pageParam)
       const params = new URLSearchParams({
         page: pageParam.toString(),
         limit: limit.toString(),

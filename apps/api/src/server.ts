@@ -14,6 +14,7 @@ import { registerInternalMessages } from './plugins/internalMessagesPlugin'
 import registerLogos from './plugins/logosPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
+import { registerRedis } from './plugins/redisPlugin'
 import registerReplicate from './plugins/replicatePlugin'
 import registerS3 from './plugins/s3Plugin'
 import registerSentry from './plugins/sentryPlugin'
@@ -28,6 +29,7 @@ import fastify, { FastifyRequest } from 'fastify'
 export interface CreateServerOpts {
   mongoUri?: string
   chromaUri?: string
+  redisUri?: string
   taskHandlers?: TaskHandlers
 }
 
@@ -49,7 +51,7 @@ const createServer = async (
     logger: {
       level: process.env.LOG_LEVEL || 'info',
     },
-    disableRequestLogging: false,
+    disableRequestLogging: true,
     pluginTimeout: 0,
     connectionTimeout: 60000, // 60 seconds
     keepAliveTimeout: 30000, // 30 seconds
@@ -96,6 +98,7 @@ const createServer = async (
 
   await registerMongo(server, opts.mongoUri)
   await registerChroma(server, opts.chromaUri)
+  await registerRedis(server, { url: opts.redisUri })
   await registerMultipart(server)
   await registerWebSocket(server, opts)
   await registerSSE(server)

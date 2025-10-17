@@ -62,6 +62,24 @@ const calculateNextScheduledRun = (schedule: any): Date | null => {
     }
   }
 
+  // For hourly tasks (hour is '*')
+  if (schedule.hour === '*' && schedule.minute !== undefined) {
+    const nextRun = new Date()
+    const targetMinute = parseInt(schedule.minute.toString(), 10)
+
+    // Set to the target minute in the current hour
+    nextRun.setMinutes(targetMinute)
+    nextRun.setSeconds(0)
+    nextRun.setMilliseconds(0)
+
+    // If that time has already passed in this hour, move to the next hour
+    if (nextRun <= now) {
+      nextRun.setHours(nextRun.getHours() + 1)
+    }
+
+    return nextRun
+  }
+
   // For recurring tasks, calculate next run based on current time
   if (schedule.hour !== undefined && schedule.minute !== undefined) {
     const nextRun = new Date()
@@ -203,11 +221,6 @@ export const createAgentTrigger = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  console.log(
-    'createAgentTrigger received body:',
-    JSON.stringify(request.body, null, 2),
-  )
-  console.log('URL params:', request.params)
   const { agentId } = request.params as { agentId: string }
   const {
     name,
@@ -218,7 +231,6 @@ export const createAgentTrigger = async (
     schedule,
     posting_instructions,
   } = request.body as Omit<AgentsCreateTriggerArguments, 'agentId'>
-  console.log('Extracted name field:', name)
   const currentUserId = request.user.userId
   const agent = await Agent.findById(agentId)
 

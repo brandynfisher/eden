@@ -336,9 +336,9 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
             defaultSize={80}
             className="relative flex flex-col bg-aui-background"
           >
-            <div className="flex flex-col overflow-y-auto h-full">
+            <div className="flex flex-col h-full">
               <div
-                className="mx-auto flex flex-col flex-1 w-full"
+                className="mx-auto flex flex-col flex-1 w-full h-full overflow-hidden"
                 key={resetKey}
               >
                 {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}

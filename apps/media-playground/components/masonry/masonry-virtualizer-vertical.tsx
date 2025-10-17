@@ -135,10 +135,6 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
     ref,
   ) => {
     // Log prop value on render - REMOVED
-    // console.log(
-    //   '[MasonryVirtualizer] Rendering. initialScrollIndex prop:',
-    //   initialScrollIndex,
-    // )
 
     const { ref: masonryWrapRef, width: masonryWrapWidth } =
       useElementSize<HTMLDivElement>()
@@ -287,12 +283,10 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
           limit: limit,
         })
 
-        // console.log({paginationRoute})
         return fetcher(paginationRoute)
       },
       staleTime: 1000,
       getNextPageParam: (lastPage: FeedV2CursorResponse) => {
-        // console.log(lastPage)
         if (
           lastPage &&
           lastPage?.docs?.length &&
@@ -307,8 +301,6 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
       },
       initialPageParam: undefined,
     })
-
-    // console.log({queryKey, query})
 
     const allRows = useMemo(() => {
       const allItems = data?.pages.flatMap(d => d.docs) || []
@@ -352,29 +344,14 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
 
     // --- Expose getTopmostVisibleIndex via ref ---
     const getTopmostVisibleIndex = useCallback(() => {
-      // console.log(
-      //   '[getTopmostVisibleIndex] Called. scrollRef.current:',
-      //   !!scrollRef?.current,
-      //   'virtualizer:',
-      //   !!virtualizer,
-      // )
       if (!scrollRef?.current || !virtualizer) {
-        // console.log(
-        //   '[getTopmostVisibleIndex] Returning null because scrollRef or virtualizer is nullish.',
-        // )
         return null
       }
 
       const scrollTop = scrollRef.current.scrollTop
       const virtualItems = virtualizer.getVirtualItems()
-      // console.log(
-      //   `[getTopmostVisibleIndex] scrollTop: ${scrollTop}, virtualItems count: ${virtualItems.length}`,
-      // )
 
       if (virtualItems.length === 0) {
-        // console.log(
-        //   '[getTopmostVisibleIndex] Returning null because virtualItems is empty.',
-        // )
         return null
       }
 
@@ -392,19 +369,12 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
         // Fallback: If no item starts before scrollTop (unlikely unless scrollTop is < first item's start),
         // default to the first item's index.
         targetIndex = virtualItems[0]?.index ?? null
-        // console.log(
-        //   `[getTopmostVisibleIndex] No item found starting <= scrollTop (${scrollTop}). Falling back to index ${targetIndex}`,
-        // )
       }
 
       if (targetIndex === null) {
-        // console.log('[getTopmostVisibleIndex] Returning null because fallback also failed.')
         return null
       }
 
-      // console.log(
-      //   `[getTopmostVisibleIndex] Found last item starting <= scrollTop. Index: ${targetIndex}`,
-      // )
       return targetIndex
     }, [scrollRef, virtualizer])
 
@@ -440,10 +410,6 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
 
     // Effect to handle INITIAL scroll restoration using INDEX
     useEffect(() => {
-      // console.log(
-      //   `[MasonryVirtualizer] Restore Effect Check: initialScrollIndex=${initialScrollIndex}, status=${status}, allRows=${allRows.length}, hasNextPage=${hasNextPage}, isFetchingNextPage=${isFetchingNextPage}, initialScrollAttempted=${initialScrollAttempted.current}`,
-      // )
-
       // Guard conditions: Only run if we have a target index, virtualizer, and haven't attempted restore yet.
       if (
         typeof initialScrollIndex !== 'number' ||
@@ -455,55 +421,33 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
 
       // Check if the target index is beyond the currently loaded data
       if (initialScrollIndex >= allRows.length) {
-        // console.log(
-        //   `[MasonryVirtualizer] Target index ${initialScrollIndex} is beyond loaded data (${allRows.length}). Checking if fetch is possible.`,
-        // )
         // If we can fetch more and aren't currently fetching, do it.
         if (hasNextPage && !isFetchingNextPage) {
-          // console.log(
-          //   '[MasonryVirtualizer] Triggering fetchNextPage to load more data for restoration.',
-          // )
           fetchNextPage()
           // Effect will re-run when data or fetching state changes.
         } else if (!hasNextPage) {
           // Cannot fetch more, restoration to this index is impossible.
-          // console.log(
-          //   `[MasonryVirtualizer] Cannot fetch more pages. Restoration to index ${initialScrollIndex} failed.`,
-          // )
           initialScrollAttempted.current = true // Mark as attempted (failed)
           onScrollRestored?.() // Signal completion (failure)
         } else {
           // Currently fetching, wait for it to complete.
-          // console.log(
-          //   '[MasonryVirtualizer] Waiting for ongoing fetchNextPage to complete for restoration.',
-          // )
         }
       } else {
         // Data is available for the target index! Attempt scroll.
-        // console.log(
-        //   `[MasonryVirtualizer] Data for index ${initialScrollIndex} is loaded. Status: ${status}, isFetchingNextPage: ${isFetchingNextPage}. Attempting scroll.`,
-        // )
 
         // Ensure the query is stable (success and not fetching more) before scrolling
         if (status === 'success' && !isFetchingNextPage) {
           // Mark as attempted *before* the async scroll logic
           initialScrollAttempted.current = true
-          // console.log('[MasonryVirtualizer] Marking scroll as attempted.')
 
           requestAnimationFrame(() => {
             setTimeout(() => {
               if (virtualizer.getVirtualItems().length > 0) {
-                // console.log(
-                //   `[MasonryVirtualizer] Attempting scrollToIndex(${initialScrollIndex})`,
-                // )
                 virtualizer.scrollToIndex(initialScrollIndex, {
                   align: 'start',
                   behavior: 'auto',
                 })
                 // Call restored callback after attempting scroll
-                // console.log(
-                //   '[MasonryVirtualizer] scrollToIndex attempted, calling onScrollRestored.',
-                // )
                 onScrollRestored?.()
               } else {
                 // console.warn(
@@ -516,9 +460,6 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
           })
         } else {
           // Query data might be sufficient, but query status is not ready for scroll.
-          // console.log(
-          //   '[MasonryVirtualizer] Data range sufficient, but query status not ready for scroll attempt. Waiting.',
-          // )
         }
       }
     }, [

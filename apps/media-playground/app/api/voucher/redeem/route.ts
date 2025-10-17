@@ -29,12 +29,9 @@ export async function POST(request: NextRequest) {
     const response = await eden.manna.vouchers.redeem({
       code: requestJson.code,
     })
-    // console.log({ response })
     return NextResponse.json(response)
   } catch (error) {
-    // console.log(error)
     const errorMessage = handleAxiosServerError(error)
-    // console.error(errorMessage)
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })

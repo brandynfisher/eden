@@ -1,6 +1,7 @@
 import { MessageAttachment } from './message-attachment'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { Message, SessionV2 } from '@edenlabs/eden-sdk'
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 export const UserMessage = ({
@@ -10,6 +11,8 @@ export const UserMessage = ({
   message: Message
   session?: SessionV2
 }) => {
+  const pathname = usePathname()
+  const isChatRoute = pathname?.startsWith('/chat')
   const [expanded, setExpanded] = useState(false)
 
   const hasAttachments = message.attachments && message.attachments.length > 0
@@ -30,7 +33,11 @@ export const UserMessage = ({
     : trimmedContent
 
   return (
-    <div className="pt-2 pb-4 pl-[calc(3rem+0.75rem)]">
+    <div
+      className={
+        isChatRoute ? 'pt-2 pb-4 pl-[calc(3rem+0.75rem)]' : 'pt-2 pb-4 sm:pl-0'
+      }
+    >
       <div className="max-w-[42rem] flex flex-col items-end">
         <div className="flex flex-col items-end gap-2 max-w-[85%]">
           {hasAttachments && (
@@ -47,12 +54,15 @@ export const UserMessage = ({
             </LightboxGallery>
           )}
           {hasContent && (
-            <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3">
-              <div className="overflow-x-auto text-left">
+            <div className="bg-purple-100 dark:bg-[#3b1660] rounded-2xl px-4 py-3 overflow-hidden">
+              <div className="text-left">
                 {/* Preview */}
                 {!expanded && (
-                  <div className="overflow-x-auto relative">
-                    <pre className="whitespace-pre-wrap font-sans text-base">
+                  <div className="relative">
+                    <pre
+                      className="whitespace-pre-wrap break-words font-sans text-base"
+                      style={{ overflowWrap: 'anywhere' }}
+                    >
                       {preview!}
                     </pre>
                     {isHuge && (
@@ -71,8 +81,11 @@ export const UserMessage = ({
                 )}
                 {/* Full (own scroll) */}
                 {expanded && (
-                  <div className="overflow-x-auto max-h-[60vh] overflow-y-auto rounded-md border p-3">
-                    <pre className="whitespace-pre-wrap font-sans text-base">
+                  <div className="max-h-[60vh] overflow-y-auto rounded-md border p-3">
+                    <pre
+                      className="whitespace-pre-wrap break-words font-sans text-base"
+                      style={{ overflowWrap: 'anywhere' }}
+                    >
                       {trimmedContent}
                     </pre>
                   </div>

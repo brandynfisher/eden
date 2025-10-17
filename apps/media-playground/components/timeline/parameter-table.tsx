@@ -130,7 +130,7 @@ const ParameterTable = ({
   hideHeader,
   className,
 }: Props) => {
-  const [copiedText, copy] = useCopyToClipboard()
+  const [, copy] = useCopyToClipboard()
   const handleCopyString = (parameterName: string, text: string) => () => {
     copy(text)
       .then(() => {
@@ -140,7 +140,6 @@ const ParameterTable = ({
           dismissible: true,
           richColors: true,
         })
-        console.log('Copied!', { copiedText })
       })
       .catch(error => {
         toast.error(`Failed to copy!`, {
@@ -164,15 +163,31 @@ const ParameterTable = ({
       })
     : Object.entries({ ...args })
 
+  const isValidImageUrl = (val: unknown): boolean => {
+    if (typeof val !== 'string') return false
+    // Check if it's a valid URL (http/https or S3-style path)
+    const urlRegex = /^(https?:\/\/|s3:\/\/|\/)/i
+    return urlRegex.test(val.trim())
+  }
+
   const renderValue = (paramName: string, value: ParameterValue) => {
     // Handle media types - always render below
     if (imageInputParameterNames.includes(paramName)) {
-      return {
-        isInline: false,
-        content: (
-          <ImageGalleryCell images={[value as string].flat().filter(Boolean)} />
-        ),
+      // Filter to only valid URLs
+      const imageUrls = [value as string]
+        .flat()
+        .filter(Boolean)
+        .filter(isValidImageUrl)
+
+      // Only render as images if we have valid URLs
+      if (imageUrls.length > 0) {
+        return {
+          isInline: false,
+          content: <ImageGalleryCell images={imageUrls} />,
+        }
       }
+
+      // Fall through to render as text if no valid URLs
     }
 
     if (videoInputParameterNames.includes(paramName)) {

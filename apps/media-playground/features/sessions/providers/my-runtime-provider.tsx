@@ -114,11 +114,6 @@ export function MyRuntimeProvider({
         createdAt: new Date(tempMessage.timestamp),
       }
 
-      // console.log('[onNew] Setting isRunning and adding temp message', {
-      //   messageId: userMessage.id,
-      //   content: userMessage.content.slice(0, 20) + '...',
-      // })
-
       // Remove the temp message immediately to prevent reprocessing
       sessionStorage.removeItem(TEMP_MESSAGE_KEY)
 
@@ -171,11 +166,6 @@ export function MyRuntimeProvider({
         createdAt: new Date(),
       }
 
-      // console.log('[onNew] Setting isRunning and adding initial message', {
-      //   messageId: userMessage.id,
-      //   content: userMessage.content.slice(0, 20) + '...',
-      // })
-
       setIsRunning(true)
       setMessages([userMessage])
       initialMessageProcessedRef.current = true
@@ -225,12 +215,6 @@ export function MyRuntimeProvider({
 
           // Determine if thread is read-only based on ownership
           setIsReadOnly(isThreadReadOnly(thread))
-
-          // console.log('[Initial Thread Load] Setting messages and isRunning', {
-          //   messageCount: thread.messages.length,
-          //   isRunning: hasActiveMessages,
-          //   active: thread.active,
-          // })
 
           // When loading a new thread, process messages based on active state
           const processedMessages = (thread.messages as EdenMessage[]).map(
@@ -330,18 +314,8 @@ export function MyRuntimeProvider({
 
     // Only process messages for the current thread
     if (thread_id !== currentThreadIdRef.current) {
-      // console.log('[WS Update] Ignoring message for different thread:', {
-      //   receivedThreadId: thread_id,
-      //   currentThreadId: currentThreadIdRef.current,
-      // })
       return
     }
-
-    // console.log('[WS Update] Processing update:', {
-    //   newMessagesCount: newMessages.length,
-    //   active,
-    //   isRunning: Boolean(active?.length),
-    // })
 
     // Update messages first
     setMessages(current => {
@@ -519,13 +493,6 @@ export function MyRuntimeProvider({
 
     // Update running state based ONLY on active array
     const newIsRunning = Boolean(active?.length)
-    // console.log(
-    //   `[WS Update] ${
-    //     newIsRunning
-    //       ? 'Setting isRunning to true - user message being processed'
-    //       : 'Setting isRunning to false - no user message being processed'
-    //   }`,
-    // )
     setIsRunning(newIsRunning)
 
     if (!active?.length) {
@@ -557,11 +524,6 @@ export function MyRuntimeProvider({
       status: undefined,
     }
 
-    // console.log('[onNew] Setting isRunning and adding user message', {
-    //   messageId,
-    //   content: message.content[0].text.slice(0, 20) + '...',
-    // })
-
     // Set running state immediately before adding the message
     setIsRunning(true)
     setMessages(current => [...current, userMessage])
@@ -587,7 +549,7 @@ export function MyRuntimeProvider({
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        // console.log('[onNew] Request aborted')
+        // Ignore abort errors
       } else {
         console.error('[onNew] Error sending message:', error)
         setIsRunning(false)
@@ -651,12 +613,7 @@ export function MyRuntimeProvider({
 
             const hasActiveMessages = Boolean(thread.active?.length)
 
-            // console.log('[onSwitchToThread] Switching thread', {
-            //   threadId,
-            //   messageCount: thread.messages.length,
-            //   isRunning: hasActiveMessages,
-            //   active: thread.active,
-            // })
+            // Switching thread
 
             // Update URL without triggering popstate
             updateUrlWithoutNavigation(threadId)
@@ -752,13 +709,11 @@ export function MyRuntimeProvider({
           }
         },
         onSwitchToNewThread: async () => {
-          // console.log('[onSwitchToNewThread] Creating new thread')
+          // Creating new thread
 
           // Guard against recursive calls
           if (!currentThreadIdRef.current) {
-            // console.log(
-            //   '[onSwitchToNewThread] Already in new thread state, skipping',
-            // )
+            // Already in new thread state, skipping
             return
           }
 
@@ -786,9 +741,7 @@ export function MyRuntimeProvider({
 
       // Guard against recursive navigation
       if (newThreadId === currentThreadIdRef.current) {
-        // console.log(
-        //   '[handlePopState] Already in correct thread state, skipping',
-        // )
+        // Already in correct thread state, skipping
         return
       }
 
@@ -819,12 +772,10 @@ export function useEdenRuntimeExtras<T>(
 ): T {
   return useThread(t => {
     const extras = t.extras as EdenExtras
-    // console.log('t', t)
-    // console.log('extras', t.metadata.id, extras)
-    // if (!extras[symbolEdenExtras])
-    //   throw new Error(
-    //     'useEdenRuntimeExtras can only be used inside a Eden runtime',
-    //   )
+    if (!extras[symbolEdenExtras])
+      throw new Error(
+        'useEdenRuntimeExtras can only be used inside a Eden runtime',
+      )
 
     return selector(extras)
   })

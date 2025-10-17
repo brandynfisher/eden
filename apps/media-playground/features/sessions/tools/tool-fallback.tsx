@@ -66,19 +66,30 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
       ? args || {}
       : subtoolCalls[selectedArgsIndex - 1]?.args || {}
 
+  // Safely check if currentArgs is a valid object
+  const safeCurrentArgs =
+    currentArgs && typeof currentArgs === 'object' ? currentArgs : {}
+
   // Filter out lora/lora2 from args if they exist (since we show them as ModelMiniCards)
-  const filteredArgs = { ...currentArgs }
-  if (currentArgs.lora) delete filteredArgs.lora
-  if (currentArgs.lora2) delete filteredArgs.lora2
+  const filteredArgs = { ...safeCurrentArgs }
+  if (safeCurrentArgs.lora) delete filteredArgs.lora
+  if (safeCurrentArgs.lora2) delete filteredArgs.lora2
+
+  // Check if we have any args to display
+  const hasArgsToDisplay = Object.keys(filteredArgs).length > 0
+
+  // Don't render expand/collapse UI if there are no args and no subtools
+  const hasContentToShow = hasArgsToDisplay || hasSubtools
 
   return (
     <div className="mt-2 mb-2 flex w-full flex-col">
       <div
         className={cn([
-          'bg-muted-darker cursor-pointer py-2 flex items-center gap-2 px-4 rounded-md border',
-          !isCollapsed ? 'rounded-b-none' : '',
+          'bg-muted-darker py-2 flex items-center gap-2 px-4 rounded-md border',
+          hasContentToShow && 'cursor-pointer',
+          !isCollapsed && hasContentToShow ? 'rounded-b-none' : '',
         ])}
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={() => hasContentToShow && setIsCollapsed(!isCollapsed)}
       >
         <WrenchIcon className="size-4" />
         <div className="flex items-center gap-2">
@@ -127,12 +138,14 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
               Cancel
             </Button>
           )}
-        <TooltipIconButton tooltip={isCollapsed ? 'Expand' : 'Collapse'}>
-          {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
-        </TooltipIconButton>
+        {hasContentToShow && (
+          <TooltipIconButton tooltip={isCollapsed ? 'Expand' : 'Collapse'}>
+            {!isCollapsed ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          </TooltipIconButton>
+        )}
       </div>
 
-      {!isCollapsed && (
+      {!isCollapsed && hasContentToShow && (
         <div className="flex flex-col gap-2 py-2 border border-t-0 rounded-md rounded-tr-none rounded-tl-none bg-popover/30">
           {hasSubtools && (
             <div className="px-4 py-2 border-b border-border/20">
@@ -169,30 +182,34 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
               </ToggleGroup>
             </div>
           )}
-          <ParameterTable
-            // cost={filteredArgs.cost}
-            args={filteredArgs}
-            hideHeader={true}
-            className="w-auto"
-          />
+          {hasArgsToDisplay && (
+            <ParameterTable
+              // cost={filteredArgs.cost}
+              args={filteredArgs}
+              hideHeader={true}
+              className="w-auto"
+            />
+          )}
 
-          {(currentArgs.lora || currentArgs.lora2) && (
+          {(safeCurrentArgs.lora || safeCurrentArgs.lora2) && (
             <div className="mt-4">
               <div className="text-sm font-medium text-muted-foreground mb-2 px-1">
-                {currentArgs.lora && currentArgs.lora2 ? 'Loras' : 'Lora'}
+                {safeCurrentArgs.lora && safeCurrentArgs.lora2
+                  ? 'Loras'
+                  : 'Lora'}
               </div>
-              {currentArgs.lora ? (
+              {safeCurrentArgs.lora ? (
                 <Suspense fallback={<LoadingIndicator />}>
                   <ModelMiniCard
-                    modelId={currentArgs.lora}
+                    modelId={safeCurrentArgs.lora}
                     className="bg-popover mb-2"
                   />
                 </Suspense>
               ) : null}
-              {currentArgs.lora2 ? (
+              {safeCurrentArgs.lora2 ? (
                 <Suspense fallback={<LoadingIndicator />}>
                   <ModelMiniCard
-                    modelId={currentArgs.lora2}
+                    modelId={safeCurrentArgs.lora2}
                     className="bg-popover"
                   />
                 </Suspense>

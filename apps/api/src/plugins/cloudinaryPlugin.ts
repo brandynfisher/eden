@@ -69,14 +69,6 @@ export const uploadCldBufferAsset = async (
         const estimatedFileSize = buffer.byteLength
 
         if (estimatedFileSize > chunkingRequiredLimit) {
-          // console.log(
-          //   'upload: file size bigger 50MB, use upload_chunked_stream',
-          //   estimatedFileSize,
-          // )
-          // console.log('upload_chunked_stream', {
-          //   chunk_size: 20000000,
-          //   ...uploadConfig,
-          // })
           server.cloudinary.uploader
             .upload_chunked_stream(
               {
@@ -85,28 +77,19 @@ export const uploadCldBufferAsset = async (
               },
               (error, uploadResponse) => {
                 if (error) {
-                  console.log('upload_chunked_stream error', error)
                   reject(new Error(error.message))
                 }
-
-                // console.log(
-                //   'upload_chunked_stream done',
-                //   uploadResponse?.secure_url,
-                // )
                 resolve(uploadResponse)
               },
             )
             .end(buffer)
         } else {
-          // console.log('upload_stream', uploadConfig)
           server.cloudinary.uploader
             .upload_stream({ ...uploadConfig }, (error, uploadResponse) => {
               if (error) {
-                console.log('upload_stream error', error)
                 reject(new Error(error.message))
               }
 
-              // console.log('upload_stream done', uploadResponse?.secure_url)
               resolve(uploadResponse)
             })
             .end(buffer)
@@ -115,7 +98,6 @@ export const uploadCldBufferAsset = async (
     )
 
     if (!uploadResult) {
-      console.log('upload failed')
       return {
         uri: '',
         thumbnailUri: '',
@@ -167,7 +149,6 @@ type UploadConfig = {
 
 const signRequest = (server: FastifyInstance, uploadConfig: UploadConfig) => {
   if (!server.config.CLOUDINARY_API_SECRET) {
-    console.log('CLOUDINARY_API_SECRET not set')
     throw new Error('CLOUDINARY_API_SECRET not set')
   }
 
@@ -203,7 +184,6 @@ export const getCldSignedDownloadUrl = (
   fileName?: string,
 ): Promise<string> => {
   return new Promise(function (resolve) {
-    // console.log(assetUrl, fileName)
     const cloudinaryUrlSegments = assetUrl.split('/')
     const versionSegment =
       cloudinaryUrlSegments[cloudinaryUrlSegments.length - 3]
@@ -217,7 +197,6 @@ export const getCldSignedDownloadUrl = (
       `${attachmentFlag}/${versionSegment}`,
     )
 
-    // console.log({signedUrl})
     resolve(signedUrl)
   })
 }

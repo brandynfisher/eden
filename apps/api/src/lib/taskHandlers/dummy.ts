@@ -79,14 +79,15 @@ export const dummySubmitTask = async (
   generatorVersion: GeneratorVersionSchema,
   config: any,
 ): Promise<string> => {
+  server.log.info(
+    `Submitting task for generator ${generator.generatorName} with version ${
+      generatorVersion.versionId
+    }
+    } with config ${JSON.stringify(config)}`,
+  )
   if (generator.generatorName === 'monologue') {
     return await submitMonologueTask(server, config)
   } else if (generator.generatorName === 'test') {
-    console.log(
-      `Submitting task for generator version ${
-        generatorVersion.versionId
-      } with config ${JSON.stringify(config)}`,
-    )
     return new Promise(resolve => resolve(uuidv4()))
   } else {
     throw new Error('Invalid generator name.')
@@ -203,13 +204,13 @@ export const dummyReceiveTaskUpdate = async (
 }
 
 export const dummyGetTransactionCost = (
-  _: FastifyInstance,
+  server: FastifyInstance,
   //@ts-ignore
   generator: GeneratorDocument,
   generatorVersion: GeneratorVersionSchema,
   config: any,
 ) => {
-  console.log(
+  server.log.info(
     `Getting transaction cost for generator, version ${
       generatorVersion.versionId
     } with config ${JSON.stringify(config)}`,

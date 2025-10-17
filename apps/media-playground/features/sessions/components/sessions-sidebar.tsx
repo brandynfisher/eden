@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ViewMode } from '@/features/sessions/components/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
+import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { isAgentOwner } from '@/lib/utils'
@@ -57,6 +59,7 @@ interface SessionListItemProps {
   }>
   isPinned?: boolean
   onPinToggle?: (sessionId: string, pinned: boolean) => Promise<void>
+  unreadCount?: number
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -70,6 +73,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   agents = [],
   isPinned = false,
   onPinToggle,
+  unreadCount = 0,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -278,8 +282,15 @@ const SessionListItem: FC<SessionListItemProps> = ({
               <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             )}
             <div className="min-w-0 flex-1">
-              <div className="overflow-hidden whitespace-nowrap text-ellipsis">
-                {optimisticTitle || 'Untitled'}
+              <div className="overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-2">
+                <span className="truncate">
+                  {optimisticTitle || 'Untitled'}
+                </span>
+                {unreadCount > 0 && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground shrink-0">
+                    {unreadCount}
+                  </span>
+                )}
               </div>
               {(agents.length > 2 || isFromTrigger) && (
                 <div className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-1">
@@ -624,6 +635,7 @@ const NavigationButtons: FC<{
 }> = ({ onItemClick, agent, userId, viewMode, onViewModeChange }) => {
   const { user } = useAuthState()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const { hasEditAccess } = useAgentPermissions(agent, userId ?? undefined)
 
   const handleNavClick = (mode: ViewMode) => {
     onViewModeChange(mode)
@@ -646,7 +658,7 @@ const NavigationButtons: FC<{
         <span>Creations</span>
       </Button>
 
-      {isAgentOwner(agent, userId) && isPreviewUser && (
+      {hasEditAccess && isPreviewUser && (
         <Button
           variant={viewMode === 'tasks' ? 'outline' : 'default'}
           onClick={() => handleNavClick('tasks')}
@@ -756,6 +768,9 @@ const MainLeft = ({
     agent_id: agentId,
   })
 
+  // Get unread notification counts for sessions
+  const { data: unreadCounts } = useSessionNotificationsQuery()
+
   const handlePinToggle = async (sessionId: string, pinned: boolean) => {
     try {
       // Optimistically update the UI
@@ -799,8 +814,9 @@ const MainLeft = ({
         }
       },
       {
-        threshold: 1.0,
-        rootMargin: '10px',
+        root: container,
+        threshold: 0,
+        rootMargin: '100px',
       },
     )
 
@@ -809,18 +825,34 @@ const MainLeft = ({
     return () => {
       observer.disconnect()
     }
-  }, [hasMore, isFetchingNextPage, fetchNextPage])
+  }, [hasMore, isFetchingNextPage, fetchNextPage, sessions.length])
+
+  // Auto-fetch more sessions if container doesn't have scroll after filtering
+  useEffect(() => {
+    if (isLoading || isFetchingNextPage || !hasMore) {
+      return
+    }
+
+    const container = document.querySelector(
+      'nav.flex.flex-col.items-stretch.gap-1.overflow-y-auto.flex-1',
+    ) as HTMLElement
+    if (!container) {
+      return
+    }
+
+    // Check if container has scroll
+    const hasScroll = container.scrollHeight > container.clientHeight
+
+    if (!hasScroll && hasMore) {
+      // No scroll and more data available - fetch next page
+      fetchNextPage()
+    }
+  }, [isLoading, isFetchingNextPage, hasMore, fetchNextPage, sessions.length])
 
   // Separate pinned and unpinned sessions
   const filteredSessions = sessions.filter(
     (session): session is NonNullable<typeof session> =>
       session != null &&
-      // Include sessions with valid titles
-      ((session.title != null &&
-        session.title !== '' &&
-        session.title !== 'Untitled') ||
-        // Include trigger sessions even without titles
-        !!session.trigger) &&
       // For chat mode, only show sessions with one agent or less
       (!isChat || !session.agents || session.agents.length <= 1),
   )
@@ -832,7 +864,12 @@ const MainLeft = ({
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
     )
 
-  const unpinnedSessions = filteredSessions.filter(session => !session.pinned)
+  const unpinnedSessions = filteredSessions
+    .filter(session => !session.pinned)
+    .sort((a, b) => {
+      // Sort by updatedAt only
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    })
 
   return (
     <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-1">
@@ -872,6 +909,7 @@ const MainLeft = ({
                         agents={session.agents}
                         isPinned={true}
                         onPinToggle={handlePinToggle}
+                        unreadCount={unreadCounts?.get(session._id) || 0}
                         onItemClick={() => {
                           onItemClick?.()
                           if (isChat && agentId) {
@@ -911,6 +949,7 @@ const MainLeft = ({
                     agents={session.agents}
                     isPinned={false}
                     onPinToggle={handlePinToggle}
+                    unreadCount={unreadCounts?.get(session._id) || 0}
                     onItemClick={() => {
                       onItemClick?.()
                       if (isChat && agentId) {

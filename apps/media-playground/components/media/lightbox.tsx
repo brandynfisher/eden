@@ -157,8 +157,6 @@ export const LightboxGallery = ({
     ...(enableDownload ? [Download] : []),
   ]
   const hasSingleSlide = slides.length <= 1
-  // console.log('slides', slides)
-
   return (
     <LightboxContext.Provider
       value={{

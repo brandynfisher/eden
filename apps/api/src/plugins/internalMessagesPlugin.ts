@@ -14,6 +14,7 @@ export interface InternalMessagesOptions {
       | 'task-updates-v2'
       | 'thread-updates'
       | 'session-updates'
+      | 'notifications'
     onMessage: (msg: unknown) => Promise<void>
   }[]
 }
@@ -25,7 +26,8 @@ interface InternalMessagesPlugin {
       | 'task-updates'
       | 'task-updates-v2'
       | 'thread-updates'
-      | 'session-updates',
+      | 'session-updates'
+      | 'notifications',
     message: unknown,
   ) => void
 }
@@ -63,29 +65,29 @@ export const registerInternalMessages: FastifyPluginAsync = async fastify => {
       queues: [
         {
           topic: 'task-updates',
-          onMessage: async _message => {
-            // fastify.log.info('Internal message received', { message })
-          },
+          onMessage: async _message => {},
         },
         {
           topic: 'task-updates-v2',
-          onMessage: async _message => {
-            // fastify.log.info('V2!!! Internal message received', { message })
-          },
+          onMessage: async _message => {},
         },
         {
           topic: 'thread-updates',
-          onMessage: async _message => {
-            fastify.log.info('thread-updates: Internal message received ', {
-              _message,
-            })
-          },
+          onMessage: async _message => {},
         },
         {
           topic: 'session-updates',
-          onMessage: async _message => {
-            fastify.log.info('session-updates: Internal message received ', {
-              _message,
+          onMessage: async _message => {},
+        },
+        {
+          topic: 'notifications',
+          onMessage: async message => {
+            // Broadcast to WebSocket clients
+            const sockets = fastify.websocketServer.clients
+            sockets.forEach(socket => {
+              if (socket.readyState === 1) {
+                socket.send(JSON.stringify(message))
+              }
             })
           },
         },

@@ -34,7 +34,6 @@ export const useAgentsListQuery = (query?: {
         // cursor: pageParam || '',
       })
 
-      // console.log({paginationRoute})
       return fetcher<PaginatedCursorResponse<Agent>>(paginationRoute)
     },
   })

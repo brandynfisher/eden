@@ -30,13 +30,9 @@ const WaitListSignupForm = () => {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-  }
-
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(() => {})} className="space-y-4">
         <FormField
           control={form.control}
           name="email"

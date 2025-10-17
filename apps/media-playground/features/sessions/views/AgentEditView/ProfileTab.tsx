@@ -83,31 +83,6 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
 
             {/* Username and Display Name */}
             <div className="flex-1 space-y-4">
-              {/* Username Field */}
-              <FormField
-                control={form.control}
-                name="key"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium">
-                      Username
-                      <span className="text-red-500 ml-1">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <SlickUsernamePicker
-                        value={field.value}
-                        onChange={field.onChange}
-                        displayName={form.watch('name')}
-                        onBlur={field.onBlur}
-                        disabled={form.formState.isSubmitting}
-                        originalValue={agent.username}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* Display Name Field */}
               <FormField
                 control={form.control}
@@ -126,6 +101,31 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
                         onChange={e => {
                           field.onChange(e.target.value.slice(0, 42))
                         }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Username Field */}
+              <FormField
+                control={form.control}
+                name="key"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium">
+                      Username
+                      <span className="text-red-500 ml-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <SlickUsernamePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        displayName={form.watch('name')}
+                        onBlur={field.onBlur}
+                        disabled={form.formState.isSubmitting}
+                        originalValue={agent.username}
                       />
                     </FormControl>
                     <FormMessage />

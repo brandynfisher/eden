@@ -29,7 +29,6 @@ export class PlayHT {
       throw new Error('Failed')
     }
     const jobId = response.data.transcriptionId
-    console.log(`Submitted job ${jobId} to PlayHT`)
     return jobId
   }
 
@@ -38,7 +37,6 @@ export class PlayHT {
     let finished = false
     while (!finished) {
       const response = await axios.get(urlFetch, { headers: this.headers })
-      console.log('response2', response.data)
       if (response.status !== 200) {
         throw new Error('Failed')
       }
@@ -46,7 +44,6 @@ export class PlayHT {
       if (data.transcriped) {
         finished = true
         const audioUrl = data.audioUrl[0]
-        console.log(`Got audio url ${audioUrl}`)
         return audioUrl
       }
       await new Promise(resolve => setTimeout(resolve, pollingInterval))

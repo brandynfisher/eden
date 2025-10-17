@@ -39,9 +39,6 @@ export const LiveAudioManager = ({
         !currentSessionIdRef.current ||
         currentSessionIdRef.current === 'new'
       ) {
-        console.log(
-          '🎤 [LIVE-AUDIO-MANAGER] Skipping transcription - no real session yet',
-        )
         return
       }
 
@@ -49,10 +46,6 @@ export const LiveAudioManager = ({
         timestamp,
       ).toLocaleTimeString()}: ${content}\n\nReact to the ongoing conversation based on your instructions`
 
-      console.log(
-        '🎤 [LIVE-AUDIO-MANAGER] Sending transcription for session:',
-        currentSessionIdRef.current,
-      )
       onStreamingMessage(transcriptionMessage)
     },
     [onStreamingMessage],
@@ -60,8 +53,6 @@ export const LiveAudioManager = ({
 
   const startLiveAudioWithSession = useCallback(
     async (settings: LiveAudioSettings) => {
-      console.log('🎤 [LIVE-AUDIO-MANAGER] startLiveAudioWithSession called')
-
       // Clear any previous transcriptions
       collectedTranscriptionsRef.current = []
 
@@ -69,11 +60,6 @@ export const LiveAudioManager = ({
         settings,
         // On each transcription: send as streaming message (triggers agent response)
         (transcription: string, timestamp: string) => {
-          console.log(
-            '🎤 [LIVE-AUDIO-MANAGER] Transcription received:',
-            transcription.slice(0, 50) + '...',
-          )
-
           if (transcription.trim() && transcription.length > 3) {
             // Send transcription as streaming message (triggers agent response)
             sendTranscriptionMessage(transcription, timestamp)
@@ -93,8 +79,6 @@ export const LiveAudioManager = ({
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('pendingLiveAudioSettings')
         }
-      } else {
-        console.log('🎤 [LIVE-AUDIO-MANAGER] Live audio started successfully')
       }
     },
     [startLiveAudio, sendTranscriptionMessage],
@@ -114,9 +98,6 @@ export const LiveAudioManager = ({
           const stored = sessionStorage.getItem('pendingLiveAudioSettings')
           if (stored) {
             settingsToUse = JSON.parse(stored)
-            console.log(
-              '🎤 [LIVE-AUDIO-MANAGER] Found pending settings in sessionStorage',
-            )
           }
         } catch (error) {
           console.warn(
@@ -128,10 +109,6 @@ export const LiveAudioManager = ({
 
       // Start recording if we have settings
       if (settingsToUse) {
-        console.log(
-          '🎤 [LIVE-AUDIO-MANAGER] Starting recording for session:',
-          sessionId,
-        )
         startLiveAudioWithSession(settingsToUse)
 
         // Clear all pending state
@@ -149,9 +126,6 @@ export const LiveAudioManager = ({
   React.useEffect(() => {
     return () => {
       if (state.isRecording) {
-        console.log(
-          '🎤 [LIVE-AUDIO-MANAGER] Component unmounting, stopping recording',
-        )
         stopLiveAudio()
 
         // Clear any pending state
@@ -165,11 +139,6 @@ export const LiveAudioManager = ({
 
   const handleStartRecording = useCallback(
     async (settings: LiveAudioSettings) => {
-      console.log(
-        '🎤 [LIVE-AUDIO-MANAGER] Starting recording with sessionId:',
-        sessionId,
-      )
-
       if (!onStreamingMessage) {
         console.error(
           '🎤 [LIVE-AUDIO-MANAGER] No onStreamingMessage callback provided',

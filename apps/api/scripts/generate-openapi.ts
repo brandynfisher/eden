@@ -196,6 +196,21 @@ async function generateOpenAPISpec() {
       )
     }
 
+    // Copy to eve/mcp directory for MCP server
+    const eveMcpPath = resolve(
+      process.cwd(),
+      '../../../eve/eve/mcp/openapi.json',
+    )
+    try {
+      writeFileSync(eveMcpPath, JSON.stringify(filteredOpenapi, null, 2))
+      console.log(`✅ OpenAPI spec copied to eve/mcp: ${eveMcpPath}`)
+    } catch (error) {
+      console.log(`⚠️ Could not write to eve/mcp directory: ${eveMcpPath}`)
+      console.log(
+        `   You may need to manually copy openapi.json to eve/mcp directory`,
+      )
+    }
+
     // Close the server
     await server.close()
 

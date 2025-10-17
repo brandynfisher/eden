@@ -35,7 +35,6 @@ const RedeemVoucherForm = () => {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // console.log('try onSubmit', values)
     setIsSubmitting(true)
 
     try {
@@ -45,8 +44,6 @@ const RedeemVoucherForm = () => {
           code: values.code,
         },
       )
-
-      // console.log({ response })
 
       toast.success(`Code redeemed`, {
         description: (

@@ -19,6 +19,7 @@ import { UserMessage } from '@/features/sessions/components/user-message'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
+import { useSessionTracking } from '@/hooks/use-session-tracking'
 import { useSessionWebSocket } from '@/hooks/use-session-websocket'
 import { sessionConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
@@ -52,10 +53,17 @@ const Session = ({
   const searchParams = useSearchParams()
   const sessionId = optimisticSessionId || (params?.id as string)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const { user } = useAuthState()
   const ischatRoute = pathname?.startsWith('/chat')
   const [cancelledNotice, setCancelledNotice] = useState(false)
   const isPendingTransition = searchParams?.get('pending') === 'true'
+  const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false)
+  const [hasTriggeredInitialScroll, setHasTriggeredInitialScroll] =
+    useState(false)
+
+  // Track session viewing for notifications
+  useSessionTracking(sessionId)
 
   // Connection state tracking
   const [connectionState, setConnectionState] = useState<
@@ -68,6 +76,33 @@ const Session = ({
   // Update currentSessionId when sessionId prop changes
   useEffect(() => {
     setCurrentSessionId(sessionId)
+  }, [sessionId])
+
+  // Mark notifications as read when session is loaded
+  useEffect(() => {
+    if (sessionId && sessionId !== 'new') {
+      axios
+        .patch(`/api/sessions/${sessionId}/mark-read`)
+        .catch(err =>
+          console.error('Failed to mark notifications as read:', err),
+        )
+    }
+  }, [sessionId])
+
+  // Mark notifications as read when page regains focus
+  useEffect(() => {
+    if (!sessionId || sessionId === 'new') return
+
+    const handleFocus = () => {
+      axios
+        .patch(`/api/sessions/${sessionId}/mark-read`)
+        .catch(err =>
+          console.error('Failed to mark notifications as read on focus:', err),
+        )
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
   }, [sessionId])
 
   // Error handling
@@ -99,6 +134,8 @@ const Session = ({
     error: sessionError,
     addOrUpdateMessage,
     refetch: refetchSession,
+    fetchOlderMessages,
+    getPaginationData,
   } = useSessionQuery({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
@@ -175,7 +212,6 @@ const Session = ({
       session.messages.length > 0 &&
       onSessionLoaded
     ) {
-      console.log('[Session] Real session loaded, calling onSessionLoaded')
       onSessionLoaded()
     }
   }, [pendingMessage, session, onSessionLoaded])
@@ -187,14 +223,7 @@ const Session = ({
     }
 
     // Don't connect to SSE if we don't have a real session ID yet
-    console.log(
-      '[SSE Effect] Running with sessionId:',
-      sessionId,
-      'pendingMessage:',
-      !!pendingMessage,
-    )
     if (!sessionId || sessionId === 'new') {
-      console.log('[SSE Effect] Skipping - no valid sessionId')
       return
     }
 
@@ -226,11 +255,6 @@ const Session = ({
 
       try {
         const streamUrl = `/api/sessions/${sessionId}/stream`
-        console.log(
-          '[Session Stream] Attempting to connect to:',
-          streamUrl,
-          `(attempt ${reconnectAttempts + 1})`,
-        )
 
         setConnectionState(
           reconnectAttempts > 0 ? 'reconnecting' : 'connecting',
@@ -244,20 +268,12 @@ const Session = ({
         eventSource = new EventSource(streamUrl)
 
         eventSource.onopen = () => {
-          console.log(
-            '[Session Stream] Connected to session:',
-            sessionId,
-            isReconnection ? '(reconnected)' : '(initial connection)',
-          )
           lastMessageTime = Date.now()
           setConnectionState('connected')
 
           // Refetch session data to catch up on any missed messages
           // This is especially important after reconnecting from tab switch
           if (isReconnection) {
-            console.log(
-              '[Session Stream] Refetching session data to catch up on missed messages...',
-            )
             refetchSession()
           }
 
@@ -273,9 +289,6 @@ const Session = ({
             if (!isCleaningUp) {
               const timeSinceLastMessage = Date.now() - lastMessageTime
               if (timeSinceLastMessage > STALE_CONNECTION_THRESHOLD) {
-                console.log(
-                  `[Session Stream] Connection appears stale (no activity for ${timeSinceLastMessage}ms), reconnecting...`,
-                )
                 if (eventSource) {
                   eventSource.close()
                   eventSource = null
@@ -290,7 +303,6 @@ const Session = ({
         eventSource.onmessage = event => {
           try {
             const data = JSON.parse(event.data)
-            console.log('[Session Stream] Update received:', data)
             lastMessageTime = Date.now() // Update last message time
 
             // Handle session updates from SSE
@@ -322,20 +334,10 @@ const Session = ({
               const agentId = streamState.agent._id
 
               // First token received - remove loader for this agent
-              console.log('[First Token Check]', {
-                agentId,
-                accumulatedTokens: streamState.accumulatedTokens,
-                isFirstToken: streamState.accumulatedTokens === '',
-              })
               if (agentId && streamState.accumulatedTokens === '') {
-                console.log('[Removing loader for agent]', agentId)
                 setAgentsWaitingToRespond(prev => {
                   const next = new Set(prev)
                   next.delete(agentId)
-                  console.log(
-                    '[AgentsWaitingToRespond after delete]',
-                    Array.from(next),
-                  )
                   return next
                 })
               }
@@ -376,17 +378,6 @@ const Session = ({
               const message = data.message as Message
               const runId = data.session_run_id
               const streamState = streamingMessages.get(runId)
-
-              console.log('[Session Stream] Assistant message received:', {
-                runId,
-                hasStreamState: !!streamState,
-                hasToolCalls: !!(
-                  message.tool_calls && message.tool_calls.length > 0
-                ),
-                messageContent: message.content?.substring(0, 50) + '...',
-                accumulatedContent:
-                  streamState?.accumulatedTokens.substring(0, 50) + '...',
-              })
 
               // If we have a streaming state and this message has tool calls, merge them
               if (
@@ -435,9 +426,7 @@ const Session = ({
                 }
               } else if (!streamState) {
                 // If we didn't create a streaming message (shouldn't happen in streaming mode)
-                console.log(
-                  '[Session Stream] Adding assistant message without streaming state',
-                )
+                // This should never happen in streaming mode
                 if (pendingMessage) {
                   setStreamingMessages(prev => [...prev, message])
                 } else {
@@ -449,18 +438,11 @@ const Session = ({
             } else if (data.type === 'user_message' && data.message) {
               // Handle user messages from other users in multi-user sessions
               const userMessage = data.message as Message
-              console.log(
-                '[Session Stream] User message received:',
-                userMessage,
-              )
 
               // Skip processing user messages that are from the current user
               // to avoid duplicating optimistic messages
               const isCurrentUser = user?._id === userMessage.sender?._id
               if (isCurrentUser) {
-                console.log(
-                  '[Session Stream] Skipping user message from current user (already handled optimistically)',
-                )
                 return
               }
 
@@ -491,7 +473,6 @@ const Session = ({
               data.type === 'tool_cancelled'
             ) {
               // Tool updates - refetch to get updated data from DB
-              console.log('[Session Stream] Tool update received, refetching')
               refetchSession()
             }
           } catch (error) {
@@ -499,8 +480,7 @@ const Session = ({
           }
         }
 
-        eventSource.onerror = error => {
-          console.error('[Session Stream] Error:', error)
+        eventSource.onerror = () => {
           setConnectionState('disconnected')
 
           if (!isCleaningUp && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
@@ -513,11 +493,6 @@ const Session = ({
               MAX_RECONNECT_DELAY,
             )
 
-            console.log(
-              `[Session Stream] Will reconnect in ${delay}ms (attempt ${
-                reconnectAttempts + 1
-              }/${MAX_RECONNECT_ATTEMPTS})`,
-            )
             reconnectAttempts += 1
 
             reconnectTimeout = setTimeout(() => {
@@ -526,16 +501,11 @@ const Session = ({
               }
             }, delay)
           } else if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-            console.error(
-              '[Session Stream] Max reconnection attempts reached. Giving up.',
-            )
             eventSource?.close()
             eventSource = null
           }
         }
       } catch (error) {
-        console.error('[Session Stream] Failed to connect:', error)
-
         // Attempt reconnection on initial connection failure
         if (!isCleaningUp && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
           const delay = Math.min(
@@ -556,22 +526,14 @@ const Session = ({
     // Handle visibility changes - reconnect when tab becomes visible
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log(
-          '[Session Stream] Tab became visible, checking connection...',
-        )
-
         // If we don't have an active EventSource or it's closed, reconnect
         if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
-          console.log('[Session Stream] Connection was closed, reconnecting...')
           reconnectAttempts = 0 // Reset attempts for visibility-based reconnection
           connectToStream()
         } else if (eventSource.readyState === EventSource.OPEN) {
           // Check if we've received messages recently (within last 60 seconds)
           const timeSinceLastMessage = Date.now() - lastMessageTime
           if (timeSinceLastMessage > 60000) {
-            console.log(
-              '[Session Stream] Connection appears stale (no messages for 60s), reconnecting...',
-            )
             eventSource.close()
             eventSource = null
             reconnectAttempts = 0
@@ -583,10 +545,8 @@ const Session = ({
 
     // Handle page focus - similar to visibility but more aggressive
     const handleFocus = () => {
-      console.log('[Session Stream] Window gained focus')
       // Force reconnect if connection is not open
       if (!eventSource || eventSource.readyState !== EventSource.OPEN) {
-        console.log('[Session Stream] Reconnecting on focus...')
         reconnectAttempts = 0
         connectToStream()
       }
@@ -610,7 +570,6 @@ const Session = ({
       }
 
       if (eventSource) {
-        console.log('[Session Stream] Disconnecting from session:', sessionId)
         eventSource.close()
       }
 
@@ -669,8 +628,6 @@ const Session = ({
   // Error handling function
   const handleError = useCallback(
     (error: string) => {
-      console.error('Error:', error)
-
       // Clear appropriate state based on mode
       if (sessionConfig.useStreaming) {
         streamingState.clearStreamingState()
@@ -794,9 +751,114 @@ const Session = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
+  // Track previous message count to detect new messages vs older messages
+  const previousMessageCountRef = useRef<number>(0)
+
+  // Scroll to bottom on initial load and new messages (but not when loading older messages)
   useEffect(() => {
-    scrollToBottom()
-  }, [displaySession?.messages, scrollToBottom])
+    const currentMessageCount = displaySession?.messages?.length || 0
+    const previousMessageCount = previousMessageCountRef.current
+
+    if (
+      !hasTriggeredInitialScroll &&
+      displaySession?.messages &&
+      currentMessageCount > 0
+    ) {
+      setHasTriggeredInitialScroll(true)
+      // Delay to ensure DOM has rendered
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' })
+      }, 100)
+      previousMessageCountRef.current = currentMessageCount
+    } else if (
+      hasTriggeredInitialScroll &&
+      currentMessageCount > previousMessageCount &&
+      !isLoadingOlderMessages
+    ) {
+      // Only scroll if message count increased AND we're not loading older messages
+      // Check if we're near the bottom already (user is viewing recent messages)
+      const container = messagesContainerRef.current
+      if (container) {
+        const hasScrollbar = container.scrollHeight > container.clientHeight
+        const distanceFromBottom =
+          container.scrollHeight - container.scrollTop - container.clientHeight
+        const isNearBottom = hasScrollbar && distanceFromBottom < 200
+
+        if (isNearBottom) {
+          scrollToBottom()
+        }
+      }
+      previousMessageCountRef.current = currentMessageCount
+    } else {
+      // Update count even if we didn't scroll
+      previousMessageCountRef.current = currentMessageCount
+    }
+  }, [
+    displaySession?.messages,
+    scrollToBottom,
+    hasTriggeredInitialScroll,
+    isLoadingOlderMessages,
+  ])
+
+  // Handle scroll to detect when user scrolls near top for reverse pagination
+  useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container || !sessionId || sessionId === 'new') {
+      return
+    }
+
+    const handleScroll = async () => {
+      const scrollTop = container.scrollTop
+      const clientHeight = container.clientHeight
+
+      // Trigger when we're within 2 viewports from the top (aggressive pre-loading)
+      const scrollThreshold = clientHeight * 2
+
+      if (scrollTop < scrollThreshold && !isLoadingOlderMessages) {
+        const paginationData = getPaginationData()
+
+        if (paginationData?.hasMore) {
+          setIsLoadingOlderMessages(true)
+
+          // Store current scroll position
+          const previousScrollHeight = container.scrollHeight
+          const previousScrollTop = container.scrollTop
+          try {
+            const result = await fetchOlderMessages()
+
+            if (result.messages.length > 0) {
+              // Wait for DOM to update
+              setTimeout(() => {
+                // Restore scroll position
+                const newScrollHeight = container.scrollHeight
+                const scrollDiff = newScrollHeight - previousScrollHeight
+                container.scrollTop = previousScrollTop + scrollDiff
+              }, 0)
+            }
+          } catch (error) {
+            console.error(
+              '[Message Pagination] Failed to load older messages:',
+              error,
+            )
+          } finally {
+            setIsLoadingOlderMessages(false)
+          }
+        }
+      }
+    }
+
+    container.addEventListener('scroll', handleScroll)
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll)
+    }
+  }, [
+    sessionId,
+    isLoadingOlderMessages,
+    fetchOlderMessages,
+    getPaginationData,
+    displaySession,
+  ])
 
   // Separate effect for streaming text to avoid double scroll
   useEffect(() => {
@@ -1108,7 +1170,7 @@ const Session = ({
   }
 
   return (
-    <>
+    <div className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Connection status indicator - only show when not connected and using SSE streaming */}
       {sessionConfig.useStreaming &&
         connectionState !== 'connected' &&
@@ -1137,6 +1199,7 @@ const Session = ({
         )}
 
       <div
+        ref={messagesContainerRef}
         className={cn(
           'flex-1 min-h-0 overflow-y-auto pb-4',
           messageGroups.length === 0 &&
@@ -1144,6 +1207,60 @@ const Session = ({
         )}
       >
         <div className="p-4 pb-8 max-w-[calc(42rem+3.75rem)] mx-auto w-full">
+          {/* Load more button for older messages */}
+          {!isLoadingOlderMessages && getPaginationData()?.hasMore && (
+            <div className="flex justify-center py-4">
+              <button
+                onClick={async () => {
+                  setIsLoadingOlderMessages(true)
+
+                  const container = messagesContainerRef.current
+                  if (!container) return
+
+                  // Store current scroll position before loading
+                  const previousScrollHeight = container.scrollHeight
+                  const previousScrollTop = container.scrollTop
+
+                  try {
+                    const result = await fetchOlderMessages()
+
+                    if (result.messages.length > 0) {
+                      // Wait for DOM to update with new messages
+                      setTimeout(() => {
+                        const newScrollHeight = container.scrollHeight
+                        const scrollDiff =
+                          newScrollHeight - previousScrollHeight
+
+                        // Position at roughly 20% from top (in the trigger zone for next load)
+                        const newScrollableHeight =
+                          newScrollHeight - container.clientHeight
+                        const targetScrollTop = Math.min(
+                          previousScrollTop + scrollDiff,
+                          newScrollableHeight * 0.2,
+                        )
+                        container.scrollTop = targetScrollTop
+                      }, 150)
+                    }
+
+                    // Keep loading state true for a bit longer to let React update
+                    setTimeout(() => setIsLoadingOlderMessages(false), 200)
+                  } catch (error) {
+                    setIsLoadingOlderMessages(false)
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-accent transition-colors"
+              >
+                Load earlier messages
+              </button>
+            </div>
+          )}
+
+          {/* Loading indicator for older messages */}
+          {isLoadingOlderMessages && (
+            <div className="flex justify-center py-4">
+              <LoadingIndicator className="w-6 h-6 text-purple-600" />
+            </div>
+          )}
           {/* Only show loading skeleton if we are on a new session */}
           {sessionId === 'new' && isSessionLoading ? (
             <div className="space-y-4">
@@ -1483,7 +1600,7 @@ const Session = ({
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-background p-4 z-10 border-t border-gray-800">
+      <div className="flex-shrink-0 bg-background p-4 z-10 border-t border-gray-800">
         <div
           className={`max-w-[calc(42rem+3.75rem)] mx-auto w-full ${
             ischatRoute ? 'sm:pl-[calc(3rem+0.75rem)]' : ''
@@ -1581,7 +1698,7 @@ const Session = ({
           />
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

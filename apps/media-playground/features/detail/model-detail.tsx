@@ -46,23 +46,14 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
   )
 
   const clearScrollIndexState = useCallback(() => {
-    // console.log('[ModelDetail] Clearing initialScrollIndex')
     setInitialScrollIndex(null)
   }, [])
 
   useEffect(() => {
     const historyScrollIndex = window.history.state?.scrollIndex
 
-    // console.log(
-    //   `[ModelDetail] Scroll check effect: historyScrollIndex=${historyScrollIndex}`,
-    // )
-
     if (typeof historyScrollIndex === 'number') {
       const scrollIndex = historyScrollIndex
-      // console.log(
-      //   '[ModelDetail] Read initial scroll index from history state:',
-      //   scrollIndex,
-      // )
       setInitialScrollIndex(scrollIndex)
       try {
         const currentState = window.history.state || {}
@@ -78,7 +69,6 @@ const ModelDetail = ({ id, modelSSRData, isModal, scrollRef }: Props) => {
             }
           }
           window.history.replaceState(restState, '')
-          // console.log('[ModelDetail] Cleared scrollIndex from history state')
         }
       } catch (e) {
         console.error('Error clearing history state:', e)

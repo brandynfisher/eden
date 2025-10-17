@@ -72,8 +72,6 @@ export class EdenClient extends Methods {
       edenVersion ? `/${edenVersion}` : ''
     }/tasks/events${query}`
 
-    console.log({ endpointSSE })
-
     const eventSource = new EventSource(endpointSSE, { headers })
 
     const eventIterable = {
@@ -82,23 +80,8 @@ export class EdenClient extends Methods {
         let resolver
 
         eventSource.addEventListener('task-update', event => {
-          // console.log(
-          //   'eventSource event handler',
-          //   'task-update',
-          //   edenVersion,
-          //   event,
-          // )
-
           if (event && event.data) {
             const data = JSON.parse(event.data)
-            console.log(
-              event.type,
-              edenVersion,
-              taskId,
-              data.taskId,
-              data._id,
-              data.status,
-            )
             const eventTaskId = data
               ? data.taskId
                 ? data.taskId
@@ -139,7 +122,6 @@ export class EdenClient extends Methods {
         }
       },
       close: () => {
-        console.log('closing eventsource.')
         eventSource.close()
       },
     }
@@ -164,7 +146,6 @@ export class EdenClient extends Methods {
     } finally {
       // Close the subscription
       if (subscription.close) {
-        // console.log('closing subscription')
         subscription.close()
       }
     }
@@ -188,8 +169,6 @@ export class EdenClient extends Methods {
     const subscription = this.subscribe(task._id, 'v2')
     try {
       for await (const event of subscription) {
-        console.log('processing taskupdateEvent', event)
-
         if (event.status === 'completed' || event.status === 'failed') {
           return event.result
         }
@@ -199,7 +178,6 @@ export class EdenClient extends Methods {
     } finally {
       // Close the subscription
       if (subscription.close) {
-        // console.log('closing subscription')
         subscription.close()
       }
     }

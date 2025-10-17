@@ -35,8 +35,6 @@ export const useTaskQuery = ({
     staleTime,
   })
 
-  // console.log({ data })
-
   const queryClient = useQueryClient()
 
   return {

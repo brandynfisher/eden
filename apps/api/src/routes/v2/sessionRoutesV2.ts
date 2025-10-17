@@ -1,4 +1,9 @@
 import {
+  isSessionActive,
+  trackSessionView,
+  untrackSessionView,
+} from '../../controllers/sessionTrackingController'
+import {
   addSessionMessageReaction,
   cancelSession,
   createSession,
@@ -7,19 +12,20 @@ import {
   deleteSession,
   deleteSessionShare,
   getSession,
+  getSessionMessages,
   getSessionPermissions,
   getSharedSession,
   getSharedSessions,
   listSessions,
+  listUserShares,
   renameSession,
   updateSessionPermissions,
 } from '../../controllers/v2/sessionControllerV2'
-import { isAuth } from '../../middleware/authMiddleware'
+import { isAdmin, isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import {
   SessionsV2CreateArguments,
   SessionsV2DeleteArguments,
-  SessionsV2GetArguments,
   SessionsV2ListArguments,
   SessionsV2MessageArguments,
   SessionsV2MessageReactArguments,
@@ -75,6 +81,11 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
               Type.Literal('random'),
               Type.Literal('random_exclude_last'),
             ]),
+          }),
+        ),
+        extras: Type.Optional(
+          Type.Object({
+            exclude_memory: Type.Optional(Type.Boolean()),
           }),
         ),
       },
@@ -161,6 +172,11 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
               Type.Literal('random'),
               Type.Literal('random_exclude_last'),
             ]),
+          }),
+        ),
+        extras: Type.Optional(
+          Type.Object({
+            exclude_memory: Type.Optional(Type.Boolean()),
           }),
         ),
       },
@@ -258,13 +274,13 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
   })
 
   server.get<{
-    Params: SessionsV2GetArguments
+    Params: { session_id: string }
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
       summary: 'Get Session Details',
       description:
-        'Retrieve detailed information about a specific session including all messages and participants.',
+        'Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination.',
       security: [
         {
           apiKey: [],
@@ -276,11 +292,58 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       response: {
         200: Type.Object({
           session: Type.Any(),
+          hasMore: Type.Optional(Type.Boolean()),
+          nextCursor: Type.Optional(Type.String()),
         }),
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => getSession(server, request, reply),
+  })
+
+  server.get<{
+    Params: { session_id: string }
+    Querystring: { cursor?: string; limit?: string }
+  }>('/v2/sessions/:session_id/messages', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Get Session Messages (Paginated)',
+      description:
+        'Fetch messages for a session with cursor-based pagination. Returns messages in chronological order (oldest first).',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      params: {
+        session_id: Type.String(),
+      },
+      querystring: {
+        cursor: Type.Optional(Type.String()),
+        limit: Type.Optional(Type.String()),
+      },
+      response: {
+        200: Type.Object({
+          messages: Type.Array(Type.Any()),
+          hasMore: Type.Boolean(),
+          nextCursor: Type.Optional(Type.String()),
+        }),
+        400: {
+          message: Type.Optional(Type.String()),
+        },
+        403: {
+          message: Type.Optional(Type.String()),
+        },
+        404: {
+          message: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => getSessionMessages(server, request, reply),
   })
 
   server.patch<{
@@ -528,6 +591,33 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     handler: (request, reply) => deleteSessionShare(server, request, reply),
   })
 
+  server.get('/v2/sessions/shares', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'List User Shares',
+      description:
+        'Retrieve all session shares created by the authenticated user.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      response: {
+        200: Type.Object({
+          shares: Type.Array(Type.Any()),
+        }),
+        400: {
+          error: Type.Optional(Type.String()),
+        },
+        500: {
+          error: Type.Optional(Type.String()),
+        },
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => listUserShares(server, request, reply),
+  })
+
   // server.get<{
   //   Params: { session_id: string }
   // }>('/v2/sessions/:session_id/stream', {
@@ -673,6 +763,97 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => getSharedSessions(request, reply),
+  })
+
+  // Session Tracking Routes (for notification system)
+  server.post('/v2/sessions/track-view', {
+    schema: {
+      hide: true,
+      tags: ['Sessions - Tracking'],
+      summary: 'Track Session View',
+      description:
+        'Mark a session as actively being viewed by the current user (used for notification system).',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          tracked: Type.Boolean(),
+          reason: Type.Optional(Type.String()),
+        }),
+        500: Type.Object({
+          tracked: Type.Boolean(),
+          reason: Type.Optional(Type.String()),
+          error: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => trackSessionView(server, request, reply),
+  })
+
+  server.post('/v2/sessions/untrack-view', {
+    schema: {
+      hide: true,
+      tags: ['Sessions - Tracking'],
+      summary: 'Untrack Session View',
+      description:
+        'Mark a session as no longer being viewed by the current user.',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          tracked: Type.Boolean(),
+          reason: Type.Optional(Type.String()),
+        }),
+        500: Type.Object({
+          tracked: Type.Boolean(),
+          reason: Type.Optional(Type.String()),
+          error: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => untrackSessionView(server, request, reply),
+  })
+
+  server.get('/v2/sessions/is-active', {
+    schema: {
+      hide: true,
+      tags: ['Sessions - Tracking'],
+      summary: 'Check if Session is Active',
+      description:
+        'Check if a user is actively viewing a session (admin only - used by backend).',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      querystring: Type.Object({
+        user_id: Type.String(),
+        session_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          is_active: Type.Boolean(),
+          redis_available: Type.Boolean(),
+          error: Type.Optional(Type.String()),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAdmin(server, request, reply)],
+    handler: (request, reply) => isSessionActive(server, request, reply),
   })
 }
 

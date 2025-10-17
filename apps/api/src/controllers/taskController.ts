@@ -179,7 +179,6 @@ export const createTask = async (
   try {
     preparedConfig = prepareConfig(generatorVersion, config)
   } catch (err: any) {
-    console.log(err)
     return reply.status(400).send({
       message: err.message,
     })
@@ -413,7 +412,6 @@ export const subscribeTaskUpdates = async (
 
   // keep the connection alive.
   const keepAliveTimer = setInterval(() => {
-    // console.log('SSE keep alive', { event: 'keep-alive', data: JSON.stringify({ heartbeat: userId }) })
     reply.sse({
       event: 'keep-alive',
       data: JSON.stringify({ heartbeat: userId }),
@@ -423,26 +421,14 @@ export const subscribeTaskUpdates = async (
   reply.sse(
     // gather all accumulated emit calls for this tick
     (async function* source() {
-      server.log.info('REPLY SSE', userId)
       try {
         // handle task update emits
         for await (const [event] of on(server.eventEmitter, 'task-update')) {
           const taskUpdate = event as TaskUpdateEvent
-          server.log.info({
-            taskUpdate,
-            userId: userId.toString(),
-            taskId,
-            event,
-          })
           if (
             taskUpdate.userId.toString() === userId.toString() &&
             (!taskId || taskUpdate.taskId === taskId)
           ) {
-            server.log.info('sending SSE task update', {
-              event: 'task-update',
-              data: JSON.stringify(event),
-            })
-
             // send SSE message
             yield {
               event: 'task-update',
@@ -457,8 +443,6 @@ export const subscribeTaskUpdates = async (
   )
 
   request.socket.on('close', () => {
-    // console.log('request socket close')
-    // console.log('CLEARING keepAliveTimer')
     clearInterval(keepAliveTimer)
     reply.raw.end()
   })

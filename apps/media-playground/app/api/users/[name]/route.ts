@@ -15,8 +15,6 @@ export async function GET(
 
   const authToken = await getAuthToken(request)
 
-  // console.log('auth()', name, request.url)
-
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,

@@ -17,10 +17,6 @@ type Props = {
 }
 
 const PrivacyActionItem = ({ type, item, queryKey }: Props) => {
-  // console.log('[PrivacyActionItem] Rendering/Re-rendering...',
-  //   { type, itemId: item._id, itemPublic: item.public, queryKey },
-  // )
-
   const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
     GatedActions.MakePrivate,
   )
@@ -41,10 +37,6 @@ const PrivacyActionItem = ({ type, item, queryKey }: Props) => {
   // Determine the effective public status for UI display
   // While pending, show the opposite of the current state
   const displayPublic = isPending ? !item.public : item.public
-
-  // console.log('[PrivacyActionItem] State values:',
-  //   { isPending, itemPublic: item.public, displayPublic },
-  // )
 
   const onChangePrivacy = () => {
     if (isAllowedPrivacy || !item.public) {

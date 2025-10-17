@@ -25,13 +25,5 @@ export default function FormPersist<T extends FieldValues>(
     defaultValues: defaultValues,
   })
 
-  // useEffect(() => {
-  //   console.log({resetKey, lastResetKey: lastResetKey.current})
-  //   if (resetKey > lastResetKey.current) {
-  //     lastResetKey.current = resetKey
-  //     // clear()
-  //   }
-  // }, [clear, resetKey])
-
   return <></>
 }

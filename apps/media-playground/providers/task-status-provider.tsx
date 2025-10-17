@@ -57,7 +57,6 @@ export const TaskStatusProvider = ({ children }: Props) => {
 
   const queryResponse = useTaskListQuery({ enabled: !!isSignedIn })
 
-  // console.log({ queryResponse })
   useEffect(() => {
     setAllTasks(queryResponse.tasks || [])
   }, [queryResponse.tasks])

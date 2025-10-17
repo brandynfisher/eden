@@ -126,8 +126,8 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
               defaultSize={80}
               className="relative flex flex-col bg-aui-background"
             >
-              <div className="flex flex-col overflow-y-auto h-full">
-                <div className="mx-auto flex flex-col flex-1 w-full">
+              <div className="flex flex-col h-full overflow-hidden">
+                <div className="mx-auto flex flex-col h-full w-full overflow-hidden">
                   {children}
                 </div>
               </div>

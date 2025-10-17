@@ -11,6 +11,7 @@ export type NotificationType =
   | 'trigger_started'
   | 'session_complete'
   | 'session_failed'
+  | 'session_message'
   | 'agent_mentioned'
   | 'system_alert'
   | 'agent_permission_added'

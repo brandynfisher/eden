@@ -469,8 +469,6 @@ const FileUploader = ({
       return allowedFileTypes.some(type => type === fileType)
     })
 
-    // console.log({acceptedFilesWithType, acceptedFiles, allowedFileTypes})
-
     if (acceptedFilesWithType.length !== acceptedFiles.length) {
       toast.error(`Unsupported file type!`, {
         description: `Only ${allowedFileTypes

@@ -10,7 +10,6 @@ export const createThread = async () => {
   // const client = createClient();
   // return client.threads.create();
   alert('createThread: Not Implemented')
-  console.log('createThread')
   return {
     thread_id: '1234567890',
   }
@@ -44,8 +43,6 @@ export const sendMessage = async function (params: {
   messages: EdenMessage[]
   abortSignal?: AbortSignal | undefined
 }): Promise<AxiosResponse<ThreadsMessageResponse>> {
-  // console.log('sendMessage', params)
-
   const { threadId, agentId, messages, abortSignal } = params
   const userMessage = messages[messages.length - 1] as ThreadUserMessage
 
@@ -71,7 +68,6 @@ export const pinMessage = async (messageId: string) => {
       `/api/threads/pin`,
       { message_id: messageId },
     )
-    console.log(response)
     return response.data
   } catch (e) {
     console.error(e)
@@ -85,7 +81,7 @@ export const unpinMessage = async (messageId: string) => {
       `/api/threads/unpin`,
       { message_id: messageId },
     )
-    console.log(response)
+
     return response.data
   } catch (e) {
     console.error(e)

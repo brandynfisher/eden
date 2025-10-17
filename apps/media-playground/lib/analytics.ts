@@ -63,6 +63,5 @@ export const trackTaskCreate = (toolName: ToolV2['key'], cost: number) => {
         : `Train - ${toolName}`,
     },
   ]
-  // console.log('trackTaskCreate', events)
   sendAnalyticsEvents(events)
 }

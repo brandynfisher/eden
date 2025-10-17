@@ -50,15 +50,9 @@ export default function useFormPersist(
   const clearStorage = () => getStorage().removeItem(name)
 
   useEffect(() => {
-    console.log('useEffect triggered') // Checks when the useEffect runs
     const str = getStorage().getItem(name)
-    console.log(
-      `Values in storage for key ${name}:`,
-      str ? JSON.parse(str || '') : '',
-    ) // Checks what is in storage before parsing
 
     const parsed = str ? JSON.parse(str) : defaultValues
-    console.log('Parsed values OR defaultValues:', { parsed, defaultValues })
     if (parsed) {
       const { _timestamp = null, ...values } = parsed
       const dataRestored: { [key: string]: any } = {} // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -83,7 +77,6 @@ export default function useFormPersist(
       })
 
       if (onDataRestored) {
-        console.log('onDataRestored', dataRestored)
         onDataRestored(dataRestored)
       }
     }
@@ -100,14 +93,12 @@ export default function useFormPersist(
       if (timeout !== undefined) {
         values._timestamp = Date.now()
       }
-      console.log('!setting values', { values, watchedValues, defaultValues })
       getStorage().setItem(name, JSON.stringify(values))
     }
   }, [watchedValues, timeout])
 
   return {
     clear: () => {
-      console.log('!clearing')
       return getStorage().removeItem(name)
     },
   }

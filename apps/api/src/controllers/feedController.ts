@@ -32,7 +32,6 @@ const aggregateCreationsByFollowerId = (
   dateEndCutOff: string,
   filters: Filters,
 ) => {
-  // console.log({ filters })
   return Follow.aggregate([
     {
       $match: {
@@ -422,7 +421,7 @@ export const getCreationsFeed = async (
           return reply.status(200).send(emptyPaginatedResponse)
         }
       } catch (e) {
-        console.log('Error fetching chroma embeddings', e)
+        console.error('Error fetching chroma embeddings', e)
         return reply.status(200).send(emptyPaginatedResponse)
       }
     }
@@ -617,7 +616,6 @@ export const getConceptsFeed = async (
       : undefined
   const isUserRequestingOwnProfileFeed =
     creatorId && ownUserId && ownUserId.toString() === creatorId
-  // console.log({ filterUserIds, creators, ownUserId, creatorId })
 
   const conceptRepository = new ConceptRepository(Concept)
 
@@ -656,16 +654,12 @@ export const getConceptsFeed = async (
       ...sortFilter,
       deleted: { $eq: false },
     })
-    // console.log(JSON.stringify(aggregate))
     const sortObj = Object.fromEntries(sort)
-    // console.log(sortObj)
     concepts = await conceptRepository.aggregateQuery(aggregate, {
       limit,
       page,
       sort: sortObj,
     })
-    // console.log(concepts)
-    // use flat query
   } else {
     concepts = await conceptRepository.query(
       {
@@ -944,9 +938,7 @@ export const getCreatorsFeed = async (
   // use atlas search query
   if (name) {
     const aggregate = creatorsAggregate(name)
-    // console.log(JSON.stringify(aggregate))
     const sortObj = Object.fromEntries(sort)
-    // console.log(sortObj)
     creators = await creatorsRepository.aggregateQuery(aggregate, {
       limit,
       page,

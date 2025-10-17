@@ -36,6 +36,9 @@ export interface SessionSchema {
   last_actor_id?: ObjectId
   trigger?: ObjectId
   pinned?: boolean
+  extras?: {
+    exclude_memory?: boolean
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -137,6 +140,10 @@ export const sessionSchema = new Schema<SessionDocument>(
     pinned: {
       type: Boolean,
       default: false,
+    },
+    extras: {
+      type: Schema.Types.Mixed,
+      default: null,
     },
     deleted: {
       type: Boolean,

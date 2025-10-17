@@ -83,9 +83,6 @@ export const createThreadMessage = async (
     },
   }
 
-  server.log.info('> modal::request::chat')
-  server.log.info(modalRequest)
-
   try {
     const modalResponse = await axios.post(
       modalRequest.endpoint,
@@ -96,9 +93,6 @@ export const createThreadMessage = async (
         },
       },
     )
-
-    server.log.info('< modal::response::chat')
-    server.log.info(modalResponse.data)
 
     if (!modalResponse) {
       server.log.error('empty response', modalResponse)
@@ -141,7 +135,6 @@ export const createThreadMessage = async (
       error && error.response && error.response.data
         ? error.response.data
         : 'Unknown Error'
-    console.log(e)
     server.log.error({
       message: 'Failed to create thread/message',
       error: errorMessage,
@@ -263,18 +256,6 @@ export const getThread = async (
         },
       })
 
-    console.log(
-      '[threadController] Raw thread from DB:',
-      JSON.stringify(thread, null, 2),
-    )
-
-    // Log thinking blocks specifically
-    if (thread?.messages) {
-      thread.messages.forEach((msg, index) => {
-        console.log(`[threadController] Message ${index} thought:`, msg.thought)
-      })
-    }
-
     if (!thread) {
       return reply.status(404).send({
         message: 'Thread not found',
@@ -303,23 +284,6 @@ export const getThread = async (
     })
 
     thread.messages = extendedMessages
-
-    console.log(
-      '[threadController] Final processed thread:',
-      JSON.stringify(
-        {
-          _id: thread._id,
-          messagesCount: thread.messages.length,
-          messages: thread.messages.map(msg => ({
-            id: msg.id,
-            role: msg.role,
-            thought: msg.thought,
-          })),
-        },
-        null,
-        2,
-      ),
-    )
 
     return reply.status(200).send({ thread })
   } catch (e) {
@@ -384,14 +348,11 @@ export const addThreadMessageReaction = async (
           return m.id.toString() === message_id
         })?.reactions?.thumbs_up || []
 
-      console.log({ existingReactions })
-
       if (
         existingReactions
           .map(reactingUserId => reactingUserId?.toString())
           .includes(userId.toString())
       ) {
-        console.log('already reacted', 'remove', userId.toString())
         // User already reacted, remove the reaction
         await ThreadModel.updateOne(
           query,
@@ -403,7 +364,6 @@ export const addThreadMessageReaction = async (
           },
         )
       } else {
-        console.log('not reacted', 'add', userId.toString())
         // User has not reacted, add the reaction
         await ThreadModel.updateOne(
           query,
@@ -451,7 +411,6 @@ export const addThreadMessageReaction = async (
 
     return reply.status(200).send({ success: true })
   } catch (e) {
-    console.log(e)
     const error = e as { response?: { data?: string } }
     const errorMessage =
       error && error.response && error.response.data
@@ -578,8 +537,6 @@ export const pinThreadMessage = async (
       'messages.id': new ObjectId(message_id),
     }
 
-    console.log('pinning message', message_id, userId.toString())
-
     await ThreadModel.updateOne(
       query,
       {
@@ -592,7 +549,6 @@ export const pinThreadMessage = async (
 
     return reply.status(200).send({ success: true })
   } catch (e) {
-    console.log(e)
     const error = e as { response?: { data?: string } }
     const errorMessage =
       error && error.response && error.response.data
@@ -640,8 +596,6 @@ export const unpinThreadMessage = async (
       'messages.id': new ObjectId(message_id),
     }
 
-    console.log('pinning message', message_id, userId.toString())
-
     await ThreadModel.updateOne(
       query,
       {
@@ -654,7 +608,6 @@ export const unpinThreadMessage = async (
 
     return reply.status(200).send({ success: true })
   } catch (e) {
-    console.log(e)
     const error = e as { response?: { data?: string } }
     const errorMessage =
       error && error.response && error.response.data

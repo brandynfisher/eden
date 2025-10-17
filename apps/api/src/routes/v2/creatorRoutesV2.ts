@@ -1,5 +1,6 @@
 import { paginatedResponse, paginationProperties } from '..'
 import {
+  checkUsernameAvailability,
   getCreator,
   getCreatorMe,
   listCreators,
@@ -59,6 +60,29 @@ const creatorRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => getCreatorMe(request, reply),
+  })
+
+  server.get('/v2/creators/check-username', {
+    schema: {
+      tags: ['Creators'],
+      summary: 'Check Username Availability',
+      description:
+        'Check if a username is available for use. Performs case-insensitive lookup across all users.',
+      querystring: Type.Object({
+        username: Type.String({ minLength: 1 }),
+      }),
+      response: {
+        200: Type.Object({
+          available: Type.Boolean(),
+          username: Type.String(),
+        }),
+        400: Type.Object({
+          available: Type.Boolean(),
+          message: Type.String(),
+        }),
+      },
+    },
+    handler: (request, reply) => checkUsernameAvailability(request, reply),
   })
 
   server.get('/v2/creators/:userId', {

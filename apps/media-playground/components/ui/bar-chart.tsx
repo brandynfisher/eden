@@ -32,7 +32,6 @@ const BarChart: FC<BarChartProps> = ({
   className,
   showPlatformColors = true,
 }) => {
-  console.log('[BarChart] Received data:', data)
   const processedData = useMemo(() => {
     // Group by date and aggregate values
     const groupedByDate = data.reduce((acc, item) => {
