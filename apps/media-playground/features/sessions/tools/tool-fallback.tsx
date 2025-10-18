@@ -34,6 +34,7 @@ type TaskResultToolArgs = {
   result: TaskV2Result[]
   status: TaskV2Status
   error?: string
+  task?: string
   // }
 }
 
@@ -52,6 +53,7 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
     status: toolStatus,
     error: toolError,
     result: toolResults,
+    task: taskId,
   } = result as TaskResultToolArgs
   const [isCollapsed, setIsCollapsed] = useState(true)
   const [selectedArgsIndex, setSelectedArgsIndex] = useState<number>(0) // 0 = main args, 1+ = subtool indices
@@ -74,6 +76,11 @@ export const ToolFallback: React.FC<ToolFallbackProps> = ({
   const filteredArgs = { ...safeCurrentArgs }
   if (safeCurrentArgs.lora) delete filteredArgs.lora
   if (safeCurrentArgs.lora2) delete filteredArgs.lora2
+
+  // Add task ID to filtered args if it exists
+  if (taskId) {
+    filteredArgs.task = taskId
+  }
 
   // Check if we have any args to display
   const hasArgsToDisplay = Object.keys(filteredArgs).length > 0

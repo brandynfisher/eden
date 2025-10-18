@@ -493,6 +493,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
                   ? TaskV2Status.Cancelled
                   : TaskV2Status.Pending,
               error: toolCall.error,
+              task: toolCall.task,
             }}
             toolName={tool!}
             args={toolCall.args}

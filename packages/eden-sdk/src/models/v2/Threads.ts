@@ -261,6 +261,7 @@ export type ToolCall = {
   tool?: string
   args: TaskV2Args
   result?: TaskV2Result[]
+  task?: string
 }
 
 export type ThreadMessageReaction = {
