@@ -450,9 +450,6 @@ const MasonryVirtualizerVertical = forwardRef<MasonryVirtualizerHandle, Props>(
                 // Call restored callback after attempting scroll
                 onScrollRestored?.()
               } else {
-                // console.warn(
-                //   '[MasonryVirtualizer] Scroll attempt condition failed: virtualItems empty after data load and timeout.',
-                // )
                 // Still call onScrollRestored to clear parent state
                 onScrollRestored?.()
               }

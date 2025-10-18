@@ -26,6 +26,8 @@ type Props = {
     OverlayComponent?: () => ReactElement | null
   }
   scrollRef?: RefObject<HTMLDivElement>
+  open?: boolean
+  onClose?: () => void
 } & PropsWithChildren
 
 const FullScreenModal = ({
@@ -35,10 +37,15 @@ const FullScreenModal = ({
   className,
   components: { OverlayComponent } = {},
   scrollRef,
+  open: controlledOpen,
+  onClose,
 }: Props) => {
-  const [open, setOpen] = useState(true)
+  const [internalOpen, setInternalOpen] = useState(true)
   const [disableEsc, setDisableEsc] = useState(false)
   const router = useRouter()
+
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
 
   useEffect(() => {
     window.addEventListener('lightbox-open', () => {
@@ -69,8 +76,17 @@ const FullScreenModal = ({
 
   const handleOpenChange = (isOpen: boolean) => {
     if (disableEsc) return
-    setOpen(isOpen)
-    router.back()
+
+    // If controlled, use the onClose callback
+    if (onClose) {
+      if (!isOpen) {
+        onClose()
+      }
+    } else {
+      // Otherwise use internal state and router
+      setInternalOpen(isOpen)
+      router.back()
+    }
   }
 
   return (

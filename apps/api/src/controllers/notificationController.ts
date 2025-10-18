@@ -32,14 +32,9 @@ export const createNotification = async (
     expires_at,
   } = request.body as NotificationsCreateArguments
 
-  request.log.info(
-    `[NOTIFICATIONS] Create request: type=${type}, user=${user_id}, session=${session_id}`,
-  )
-
   // Verify user exists
   const user = await User.findById(user_id)
   if (!user) {
-    request.log.warn(`[NOTIFICATIONS] ⚠️  User not found: ${user_id}`)
     return reply.status(404).send({
       error: 'User not found',
     })
@@ -49,7 +44,6 @@ export const createNotification = async (
   if (trigger_id) {
     const trigger = await Trigger.findById(trigger_id)
     if (!trigger) {
-      request.log.warn(`[NOTIFICATIONS] ⚠️  Trigger not found: ${trigger_id}`)
       return reply.status(404).send({
         error: 'Trigger not found',
       })
@@ -59,7 +53,6 @@ export const createNotification = async (
   if (agent_id) {
     const agent = await Agent.findById(agent_id)
     if (!agent) {
-      request.log.warn(`[NOTIFICATIONS] ⚠️  Agent not found: ${agent_id}`)
       return reply.status(404).send({
         error: 'Agent not found',
       })
@@ -90,16 +83,9 @@ export const createNotification = async (
       await notification.save()
     }
 
-    request.log.info(
-      `[NOTIFICATIONS] ✓ Created notification: ${notification._id.toString()}`,
-    )
-
     // Broadcast WebSocket event for new notification
     try {
       if (server.internalMessages && session_id) {
-        request.log.info(
-          `[NOTIFICATIONS] Broadcasting notification event for new notification`,
-        )
         server.internalMessages.publish('notifications', {
           event: 'notification-created',
           data: {
@@ -448,10 +434,6 @@ export const markSessionNotificationsRead = async (
       '[NOTIFICATIONS] ❌ Error marking session notifications as read:',
       error,
     )
-    if (error instanceof Error) {
-      server.log.error(`[NOTIFICATIONS] Error details: ${error.message}`)
-      server.log.error(`[NOTIFICATIONS] Stack: ${error.stack}`)
-    }
     return reply.status(500).send({
       error: 'Failed to mark session notifications as read',
       details: error instanceof Error ? error.message : String(error),

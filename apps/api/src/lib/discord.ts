@@ -14,12 +14,6 @@ async function sendDiscordNotification(
     return
   }
 
-  fastify.log.info({
-    msg: 'Prep Discord notification',
-    url: fastify.config.DISCORD_TASK_ERROR_WEBHOOK_URL,
-    task,
-  })
-
   try {
     const user = await User.findById(task.user)
     const agent = await Agent.findById(task.agent)
@@ -97,12 +91,6 @@ async function sendDiscordNotification(
         },
       ],
     }
-
-    fastify.log.info({
-      msg: 'Sending Discord notifications',
-      url: fastify.config.DISCORD_TASK_ERROR_WEBHOOK_URL,
-      messages: [taskBaseData, taskArgs],
-    })
 
     // Send first message
     fetch(fastify.config.DISCORD_TASK_ERROR_WEBHOOK_URL, {

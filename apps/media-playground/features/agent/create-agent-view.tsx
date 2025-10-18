@@ -15,13 +15,6 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -30,7 +23,14 @@ import {
 } from '@/components/ui/sheet'
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { VoiceSelector } from '@/components/ui/voice-selector/voice-selector'
+import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { ProfileImageUploader } from '@/features/sessions/profile-image-uploader'
 import {
   AGENT_FIELD_GUIDANCE,
@@ -52,60 +52,6 @@ import { useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-
-// Agent form schema
-const agentSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Name is required')
-    .max(AGENT_FIELD_LIMITS.NAME_MAX_CHARS),
-  key: z
-    .string()
-    .min(1, 'Key is required')
-    .regex(
-      /^[a-z0-9_-]+$/,
-      'Key must only contain lowercase letters, numbers, underscores and dashes.',
-    ),
-  image: z.string().optional(),
-  description: z
-    .string()
-    .min(1, 'Description is required')
-    .max(AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS),
-  persona: z
-    .string()
-    .min(1, 'Persona is required')
-    .max(AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS),
-  public: z.boolean().default(true),
-  knowledge: z.string().optional(),
-  greeting: z.string().max(AGENT_FIELD_LIMITS.GREETING_MAX_CHARS).optional(),
-  voice: z.string().optional(),
-  models: z
-    .array(
-      z.object({
-        lora: z.string(),
-        use_when: z.string().trim().max(500).min(1),
-      }),
-    )
-    .max(10)
-    .default([]),
-  suggestions: z.array(z.string()).default([]),
-  tools: z.object({}).passthrough().default({
-    create_image: true,
-    create_video: true,
-    create_audio: true,
-    vj_tools: false,
-    news: false,
-    social_media_tools: false,
-  }),
-  llm_settings: z
-    .object({
-      model_profile: z.enum(['low', 'medium', 'high']).default('medium'),
-      thinking_policy: z.enum(['auto', 'off', 'always']).default('auto'),
-      thinking_effort_cap: z.enum(['low', 'medium', 'high']).default('medium'),
-      thinking_effort_instructions: z.string().default(''),
-    })
-    .default({}),
-})
 
 type AgentFormDto = z.infer<typeof agentSchema>
 
@@ -141,7 +87,7 @@ const CreateAgentView = () => {
         create_video: true,
         create_audio: true,
         vj_tools: false,
-        news: false,
+        manage_collections: false,
         social_media_tools: false,
       },
       llm_settings: {
@@ -385,14 +331,11 @@ const CreateAgentView = () => {
                                     <FormControl>
                                       <Input
                                         type="text"
-                                        placeholder="Agent display name"
+                                        placeholder="Display name"
                                         {...field}
                                         onChange={e => {
                                           field.onChange(
-                                            e.target.value.slice(
-                                              0,
-                                              AGENT_FIELD_LIMITS.NAME_MAX_CHARS,
-                                            ),
+                                            e.target.value.slice(0, 42),
                                           )
                                         }}
                                       />
@@ -462,14 +405,29 @@ const CreateAgentView = () => {
                           control={form.control}
                           name="description"
                           render={({ field }) => (
-                            <FormItem className="p-4 bg-card rounded-xl border border-border">
+                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
                               <FormLabel className="text-base font-medium">
-                                Description
-                                <span className="text-red-500 ml-1">*</span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="cursor-help">
+                                        Description
+                                        <span className="text-red-500 ml-1">
+                                          *
+                                        </span>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">
+                                        {AGENT_FIELD_GUIDANCE.DESCRIPTION}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder={AGENT_FIELD_GUIDANCE.DESCRIPTION}
+                                  placeholder="Short description of the agent shown on profile and cards."
                                   {...field}
                                   className="min-h-[80px]"
                                 />
@@ -490,16 +448,29 @@ const CreateAgentView = () => {
                           control={form.control}
                           name="persona"
                           render={({ field }) => (
-                            <FormItem className="p-4 bg-card rounded-xl border border-border">
+                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
                               <FormLabel className="text-base font-medium">
-                                Instructions
-                                <span className="text-red-500 ml-1">*</span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="cursor-help">
+                                        Instructions
+                                        <span className="text-red-500 ml-1">
+                                          *
+                                        </span>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs whitespace-pre-wrap">
+                                        {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </FormLabel>
                               <FormControl>
                                 <AutosizeTextarea
-                                  placeholder={
-                                    AGENT_FIELD_GUIDANCE.INSTRUCTIONS
-                                  }
+                                  placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
                                   {...field}
                                   className="min-h-[240px]"
                                   variant="xl"
@@ -523,7 +494,7 @@ const CreateAgentView = () => {
                           control={form.control}
                           name="greeting"
                           render={({ field }) => (
-                            <FormItem className="p-4 bg-card rounded-xl border border-border">
+                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
                               <FormLabel className="text-base font-medium">
                                 Greeting
                               </FormLabel>
@@ -541,7 +512,7 @@ const CreateAgentView = () => {
                               <div className="flex justify-end mt-2">
                                 <CharacterCount
                                   current={field.value?.length || 0}
-                                  max={AGENT_FIELD_LIMITS.GREETING_MAX_CHARS}
+                                  max={140}
                                 />
                               </div>
                               <FormMessage />
@@ -554,197 +525,12 @@ const CreateAgentView = () => {
                     {activeTab === 'concepts' && (
                       <div className="space-y-6">
                         <div>
-                          {/* LLM Preferences */}
-                          <div className="p-4 bg-secondary rounded-lg mb-4">
-                            <div className="mb-4">
-                              <h3 className="text-base font-medium">
-                                LLM Preferences
-                              </h3>
-                              <p className="text-sm text-muted-foreground">
-                                Configure reasoning and thinking behavior for
-                                this agent.
-                              </p>
-                            </div>
-
-                            <div className="space-y-4">
-                              <FormField
-                                control={form.control}
-                                name="llm_settings.model_profile"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Model Profile</FormLabel>
-                                    <FormDescription>
-                                      Select the reasoning capability level for
-                                      this agent.
-                                    </FormDescription>
-                                    <FormControl>
-                                      <Select
-                                        value={field.value || 'medium'}
-                                        onValueChange={field.onChange}
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Select model profile" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="low">
-                                            Efficient
-                                          </SelectItem>
-                                          <SelectItem value="medium">
-                                            Balanced
-                                          </SelectItem>
-                                          <SelectItem value="high">
-                                            Deep Reasoning
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              {form.watch('llm_settings.model_profile') ===
-                                'high' && (
-                                <>
-                                  <FormField
-                                    control={form.control}
-                                    name="llm_settings.thinking_policy"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>
-                                          Thinking Intensity
-                                        </FormLabel>
-                                        <FormDescription>
-                                          Control when the agent uses deeper
-                                          reasoning.
-                                        </FormDescription>
-                                        <FormControl>
-                                          <Select
-                                            value={field.value || 'auto'}
-                                            onValueChange={field.onChange}
-                                          >
-                                            <SelectTrigger>
-                                              <SelectValue placeholder="Select thinking policy" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="auto">
-                                                Auto
-                                              </SelectItem>
-                                              <SelectItem value="off">
-                                                Off
-                                              </SelectItem>
-                                              <SelectItem value="always">
-                                                Always
-                                              </SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-
-                                  {form.watch(
-                                    'llm_settings.thinking_policy',
-                                  ) === 'auto' && (
-                                    <FormField
-                                      control={form.control}
-                                      name="llm_settings.thinking_effort_instructions"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel>
-                                            Reasoning Guidelines
-                                          </FormLabel>
-                                          <FormDescription>
-                                            Guide the agent on when to use low,
-                                            medium, or high reasoning intensity.
-                                          </FormDescription>
-                                          <FormControl>
-                                            <AutosizeTextarea
-                                              placeholder="e.g., 'Use high reasoning for complex technical questions, medium for creative tasks, low for simple queries'"
-                                              {...field}
-                                              className="min-h-[80px]"
-                                            />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  )}
-
-                                  {form.watch(
-                                    'llm_settings.thinking_policy',
-                                  ) === 'always' && (
-                                    <FormField
-                                      control={form.control}
-                                      name="llm_settings.thinking_effort_cap"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel>
-                                            Reasoning Effort Cap
-                                          </FormLabel>
-                                          <FormDescription>
-                                            Set the maximum reasoning intensity
-                                            level.
-                                          </FormDescription>
-                                          <FormControl>
-                                            <Select
-                                              value={field.value || 'medium'}
-                                              onValueChange={field.onChange}
-                                            >
-                                              <SelectTrigger>
-                                                <SelectValue placeholder="Select effort cap" />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                <SelectItem value="low">
-                                                  Low
-                                                </SelectItem>
-                                                <SelectItem value="medium">
-                                                  Medium
-                                                </SelectItem>
-                                                <SelectItem value="high">
-                                                  High
-                                                </SelectItem>
-                                              </SelectContent>
-                                            </Select>
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Voice Field */}
-                          <FormField
-                            control={form.control}
-                            name="voice"
-                            render={({ field }) => (
-                              <FormItem className="p-4 bg-secondary rounded-lg mb-4">
-                                <FormLabel>Voice</FormLabel>
-                                <FormDescription>
-                                  Your agent will speak with this voice.
-                                </FormDescription>
-                                <FormControl>
-                                  <VoiceSelector
-                                    value={field.value || ''}
-                                    onChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Models Field (matching agent edit view) */}
+                          {/* Custom Models / LoRA Field */}
                           <FormField
                             control={form.control}
                             name="models"
                             render={() => (
-                              <FormItem className="p-4 bg-secondary rounded-lg">
+                              <FormItem className="p-4 bg-secondary rounded-lg mb-4">
                                 <FormLabel>Custom Models</FormLabel>
                                 <FormDescription>
                                   Give your agent a unique aesthetic using up to
@@ -753,7 +539,7 @@ const CreateAgentView = () => {
                                 <div>
                                   {models.fields.map((model, index) => (
                                     <div
-                                      key={model.id || model.lora}
+                                      key={model.lora}
                                       className="relative mb-4 p-4 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
                                     >
                                       <div className="space-y-4">
@@ -782,9 +568,6 @@ const CreateAgentView = () => {
                                               <FormItem className="flex-1">
                                                 <FormLabel className="text-sm text-muted-foreground">
                                                   When to use this model
-                                                  <span className="text-red-500 ml-1">
-                                                    *
-                                                  </span>
                                                 </FormLabel>
                                                 <FormControl>
                                                   <Input
@@ -825,15 +608,14 @@ const CreateAgentView = () => {
                                           )
                                           return
                                         }
-                                        models.append({
-                                          lora: modelId,
-                                          use_when: '',
-                                        })
+                                        form.setValue('models', [
+                                          ...models.fields,
+                                          { lora: modelId, use_when: '' },
+                                        ])
                                       }}
                                       trigger={
                                         <Button
                                           type="button"
-                                          variant="outline"
                                           disabled={models.fields.length >= 10}
                                           className="w-full"
                                         >
@@ -843,6 +625,27 @@ const CreateAgentView = () => {
                                     />
                                   </div>
                                 </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Voice Field */}
+                          <FormField
+                            control={form.control}
+                            name="voice"
+                            render={({ field }) => (
+                              <FormItem className="p-4 bg-secondary rounded-lg mb-4">
+                                <FormLabel>Voice</FormLabel>
+                                <FormDescription>
+                                  Your agent will speak with this voice.
+                                </FormDescription>
+                                <FormControl>
+                                  <VoiceSelector
+                                    value={field.value || ''}
+                                    onChange={field.onChange}
+                                  />
+                                </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -897,7 +700,6 @@ const CreateAgentView = () => {
                                               [tool.key]: checked,
                                             })
                                           }}
-                                          className="data-[state=unchecked]:bg-zinc-800"
                                         />
                                         <label className="text-sm font-medium">
                                           {tool.label}

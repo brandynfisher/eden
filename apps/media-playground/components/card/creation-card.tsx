@@ -14,12 +14,10 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
 import { AudioLinesIcon, CheckIcon, SquareIcon } from 'lucide-react'
-import Link from 'next/link'
 import React, { CSSProperties, useState } from 'react'
 
 type Props = {
   creation: CreationV2
-  linkHref: string
   creator?: Creator
   style?: CSSProperties
   onUpdate?: (item: CreationV2) => void
@@ -55,7 +53,6 @@ const CreationCard = ({
       event.preventDefault()
       onClick()
     }
-    // Don't prevent default if no onClick handler - let Link handle navigation
   }
 
   const fileType =
@@ -74,12 +71,10 @@ const CreationCard = ({
           </div>
         </div>
       ) : null}
-      <Link
-        href={`/creations/${creation._id}`}
-        prefetch={false}
+      <div
         onClick={handleCardClick}
         className={cn([
-          'relative w-full block group',
+          'relative w-full block group cursor-pointer',
           selected ? 'bg-popover-foreground/30' : '',
         ])}
       >
@@ -161,7 +156,7 @@ const CreationCard = ({
             </>
           ) : null}
         </div>
-      </Link>
+      </div>
       <div className="absolute bottom-2 right-2 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
         <LikeButton
           type="creation"

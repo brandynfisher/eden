@@ -83,6 +83,11 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
             ]),
           }),
         ),
+        extras: Type.Optional(
+          Type.Object({
+            exclude_memory: Type.Optional(Type.Boolean()),
+          }),
+        ),
       },
       response: {
         201: Type.Object({
@@ -167,6 +172,11 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
               Type.Literal('random'),
               Type.Literal('random_exclude_last'),
             ]),
+          }),
+        ),
+        extras: Type.Optional(
+          Type.Object({
+            exclude_memory: Type.Optional(Type.Boolean()),
           }),
         ),
       },

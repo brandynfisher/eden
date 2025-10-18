@@ -34,12 +34,18 @@ const NewSession = () => {
           reply_interval: number
           actor_selection_method: string
         }
+        extras?: {
+          exclude_memory?: boolean
+        }
       } = {
         agent_ids: data.agents.map(agent => agent._id),
         autonomy_settings: {
           auto_reply: data.auto_reply,
           reply_interval: data.reply_interval,
           actor_selection_method: data.actor_selection_method,
+        },
+        extras: {
+          exclude_memory: data.exclude_memory,
         },
       }
 

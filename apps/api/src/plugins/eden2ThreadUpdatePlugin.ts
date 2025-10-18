@@ -63,7 +63,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
     changeStream.on(
       'change',
       async (data: ChangeStreamDocument<ThreadDocument>) => {
-        // fastify.log.info(`Change stream onChange: ${WATCHED_COLLECTION}`)
         try {
           if (data.operationType === 'insert') {
             const cachedDoc = data.fullDocument
@@ -181,7 +180,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
 
       if (streamClosePromise) {
         streamClosePromise.then(() => {
-          fastify.log.info('Thread change stream closed')
           done()
           return
         })
@@ -189,8 +187,6 @@ export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
 
       done()
     })
-
-    fastify.log.info('Successfully registered plugin: Eden2ThreadUpdates')
   } catch (err) {
     fastify.log.error('Failed to register plugin: Eden2ThreadUpdates', { err })
   }

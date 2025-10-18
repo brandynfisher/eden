@@ -16,6 +16,7 @@ import { AssistantMessage } from '@/features/sessions/components/assistant-messa
 import { EdenMessage } from '@/features/sessions/components/eden-message'
 import { SystemMessage } from '@/features/sessions/components/system-message'
 import { UserMessage } from '@/features/sessions/components/user-message'
+import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useSessionErrors } from '@/hooks/use-session-errors'
@@ -65,6 +66,9 @@ const Session = ({
   // Track session viewing for notifications
   useSessionTracking(sessionId)
 
+  // Get optimistic notification clearing function
+  const { markSessionAsRead } = useSessionNotificationsQuery()
+
   // Connection state tracking
   const [connectionState, setConnectionState] = useState<
     'connecting' | 'connected' | 'disconnected' | 'reconnecting'
@@ -78,15 +82,29 @@ const Session = ({
     setCurrentSessionId(sessionId)
   }, [sessionId])
 
-  // Mark notifications as read when session is loaded
+  // Mark notifications as read when session is loaded (optimistic update)
   useEffect(() => {
     if (sessionId && sessionId !== 'new') {
-      axios
-        .patch(`/api/sessions/${sessionId}/mark-read`)
-        .catch(err =>
-          console.error('Failed to mark notifications as read:', err),
-        )
+      markSessionAsRead(sessionId).catch(err =>
+        console.error('Failed to mark notifications as read:', err),
+      )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId])
+
+  // Mark notifications as read when page regains focus (optimistic update)
+  useEffect(() => {
+    if (!sessionId || sessionId === 'new') return
+
+    const handleFocus = () => {
+      markSessionAsRead(sessionId).catch(err =>
+        console.error('Failed to mark notifications as read on focus:', err),
+      )
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId])
 
   // Error handling

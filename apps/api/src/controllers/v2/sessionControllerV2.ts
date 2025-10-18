@@ -64,7 +64,8 @@ export const createSession = async (
     })
   }
 
-  const { agent_ids, scenario, budget, title, autonomy_settings } = request.body
+  const { agent_ids, scenario, budget, title, autonomy_settings, extras } =
+    request.body
 
   // Validation
   if (!agent_ids || !Array.isArray(agent_ids) || agent_ids.length === 0) {
@@ -226,7 +227,16 @@ export const createSession = async (
       sessionData.autonomy_settings = autonomy_settings
     }
 
+    if (extras) {
+      sessionData.extras = extras
+    }
+
     const session = new Session(sessionData)
+
+    // Mark extras as modified since it's a Mixed type
+    if (session.extras) {
+      session.markModified('extras')
+    }
 
     // Create an eden message for agent additions
     await createEdenMessage(session._id, 'agent_add', existingAgents)
@@ -313,6 +323,7 @@ export const createSessionMessage = async (
     budget,
     title,
     autonomy_settings,
+    extras,
   } = request.body
 
   let session: any = null
@@ -370,7 +381,16 @@ export const createSessionMessage = async (
       sessionData.autonomy_settings = autonomy_settings
     }
 
+    if (extras) {
+      sessionData.extras = extras
+    }
+
     session = new Session(sessionData)
+
+    // Mark extras as modified since it's a Mixed type
+    if (session.extras) {
+      session.markModified('extras')
+    }
 
     // Create an eden message for agent additions
     await createEdenMessage(session._id, 'agent_add', existingAgents)
@@ -429,6 +449,8 @@ export const createSessionMessage = async (
       ...(agent_ids && { actor_agent_ids: agent_ids }),
       // Only include thinking override if explicitly provided
       ...(thinking !== undefined && { thinking }),
+      // Include api_key_id if available
+      ...(request.user?.apiKeyId && { api_key_id: request.user.apiKeyId }),
     },
     headers: {
       'X-Client-Platform': 'web',

@@ -55,11 +55,11 @@ const createFeedStore = () =>
     },
     setFetchNextPage: fetchNext => set({ fetchNextPage: fetchNext }),
     setActiveIndex: index => {
-      const { activeIndexMap } = get()
+      const { activeIndexMap, feedId } = get()
       set({
         activeIndexMap: {
           ...activeIndexMap,
-          [get().feedId]: index,
+          [feedId]: index,
         },
       })
     },
@@ -97,7 +97,10 @@ const createFeedStore = () =>
       const { activeIndexMap, feedId } = get()
       const activeIndex = activeIndexMap[feedId] ?? null
 
-      if (activeIndex === null || activeIndex <= 0) return
+      if (activeIndex === null || activeIndex <= 0) {
+        return
+      }
+
       set({
         activeIndexMap: {
           ...activeIndexMap,
