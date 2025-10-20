@@ -3,7 +3,7 @@
 
 export const MEMORY_LIMITS = {
   // Collective Memory - Memory Content
-  MEMORY_CONTENT_MAX_CHARS: 7000,
+  MEMORY_CONTENT_MAX_CHARS: 10000,
 
   // Collective Memory - Extraction Prompt
   EXTRACTION_PROMPT_MIN_CHARS: 100,
