@@ -47,6 +47,7 @@ const SOCIAL_TOOLS = {
     abraham_publish: {},
     verdelis_story: {},
     abraham_daily: {},
+    media_editor: {},
   },
 
   // Covenant tools - use CovenantEmbed
