@@ -63,6 +63,33 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     return null
   }, [results])
 
+  // Filter out results that only contain the session ID (string outputs that are session IDs)
+  // We want to show media outputs but not the session ID text
+  // IMPORTANT: This must be before early returns to satisfy React hooks rules
+  const mediaResults = React.useMemo(() => {
+    return (
+      results?.filter(result => {
+        // Keep results with array outputs (media)
+        if (result && Array.isArray(result?.output)) {
+          return true
+        }
+        // Filter out string outputs that are session IDs
+        // Session IDs are typically MongoDB ObjectIds (24 hex characters) or similar
+        if (result && typeof result?.output === 'string') {
+          const output = result.output as string
+          // Don't render if it looks like a session ID (24 char hex string)
+          if (/^[a-f0-9]{24}$/i.test(output)) {
+            return false
+          }
+          // Keep other string outputs
+          return true
+        }
+        // Keep other types of outputs
+        return result && result?.output !== undefined
+      }) || []
+    )
+  }, [results])
+
   // Fetch the posted session
   const { data: session, isLoading } = useSessionQuery({
     sessionId: sessionId || undefined,
@@ -74,6 +101,8 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     sessionId: currentSessionId || undefined,
     enabled: !!currentSessionId,
   })
+
+  const hasMediaOutputs = mediaResults.length > 0
 
   if (!sessionId) {
     return (
@@ -116,15 +145,10 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     ? `/chat/${firstAgent.username}/${session._id}`
     : `/sessions/${session._id}` // fallback to sessions if no agent
 
-  // Check if there are any media outputs to display
-  const hasMediaOutputs = results?.some(
-    result => result && Array.isArray(result?.output),
-  )
-
   return (
     <div className="space-y-2">
       {/* Display media outputs first if they exist */}
-      {hasMediaOutputs && <ToolMediaRenderer results={results} />}
+      {hasMediaOutputs && <ToolMediaRenderer results={mediaResults} />}
 
       {/* Display session card */}
       <div className="text-sm text-muted-foreground mb-2">
