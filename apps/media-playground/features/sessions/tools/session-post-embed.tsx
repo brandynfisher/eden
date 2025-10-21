@@ -1,6 +1,7 @@
 'use client'
 
 import SessionCard from '@/components/session/session-card'
+import { ToolMediaRenderer } from '@/features/sessions/tools/tool-media-renderer'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { TaskV2Result } from '@edenlabs/eden-sdk'
 import { Loader2 } from 'lucide-react'
@@ -115,8 +116,17 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     ? `/chat/${firstAgent.username}/${session._id}`
     : `/sessions/${session._id}` // fallback to sessions if no agent
 
+  // Check if there are any media outputs to display
+  const hasMediaOutputs = results?.some(
+    result => result && Array.isArray(result?.output),
+  )
+
   return (
     <div className="space-y-2">
+      {/* Display media outputs first if they exist */}
+      {hasMediaOutputs && <ToolMediaRenderer results={results} />}
+
+      {/* Display session card */}
       <div className="text-sm text-muted-foreground mb-2">
         Posted to session:
       </div>
