@@ -37,6 +37,7 @@ export interface TelegramAllowlistItem extends AllowlistItem {}
 
 export interface DeploymentSettingsTelegram {
   topic_allowlist?: TelegramAllowlistItem[]
+  bot_username?: string
 }
 
 export interface DeploymentSecretsTelegram {
@@ -51,7 +52,8 @@ export interface DeploymentSettingsFarcaster {
 }
 
 export interface DeploymentSecretsFarcaster {
-  mnemonic: string
+  mnemonic?: string // For backwards compatibility with direct mnemonic auth
+  signer_uuid?: string // For Neynar managed signers
   neynar_webhook_secret?: string
 }
 

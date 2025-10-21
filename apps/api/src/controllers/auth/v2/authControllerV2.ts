@@ -4,8 +4,11 @@ import { Manna } from '../../../models/Manna'
 import { Transaction } from '../../../models/Transaction'
 import { User } from '../../../models/User'
 import { CreationV2 } from '../../../models/v2/CreationV2'
+import { ViemLocalEip712Signer } from '@farcaster/hub-nodejs'
+import { NeynarAPIClient } from '@neynar/nodejs-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { mnemonicToAccount } from 'viem/accounts'
 
 export const discordOAuth = async (
   server: FastifyInstance,
@@ -568,5 +571,183 @@ export const disconnectTwitterIntegration = async (
     return reply
       .status(500)
       .send({ message: 'Failed to disconnect Twitter integration' })
+  }
+}
+
+export const createFarcasterManagedSigner = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { agentId } = request.body as { agentId: string }
+
+    if (!agentId) {
+      return reply.status(400).send({
+        message: 'Missing agentId',
+      })
+    }
+
+    // Get agent to verify ownership
+    const agent = await Agent.findById(agentId)
+    if (!agent) {
+      return reply.status(404).send({
+        message: 'Agent not found',
+      })
+    }
+
+    // Verify user owns the agent
+    if (agent.owner.toString() !== request.user.userId.toString()) {
+      console.error('Unauthorized user:', request.user.userId.toString())
+      console.error('Agent owner:', agent.owner.toString())
+      console.error('Agent ID:', agentId)
+      return reply.status(403).send({
+        message: 'Unauthorized',
+      })
+    }
+
+    const neynarApiKey = server.config.NEYNAR_API_KEY
+    const farcasterDeveloperMnemonic =
+      server.config.FARCASTER_DEVELOPER_MNEMONIC
+
+    if (!neynarApiKey || !farcasterDeveloperMnemonic) {
+      console.error('Missing Neynar configuration')
+      return reply.status(500).send({
+        message: 'Neynar configuration not available',
+      })
+    }
+
+    // Use @neynar/nodejs-sdk for managed signer creation
+    const neynarClient = new NeynarAPIClient({ apiKey: neynarApiKey })
+
+    // Create signer
+    const signer = await neynarClient.createSigner()
+    const { signer_uuid, public_key } = signer
+
+    // Sign the public key using developer's mnemonic
+    const account = mnemonicToAccount(farcasterDeveloperMnemonic)
+    const appFid = parseInt(server.config.FARCASTER_DEVELOPER_FID || '0')
+
+    if (!appFid) {
+      return reply.status(500).send({
+        message: 'Farcaster developer FID not configured',
+      })
+    }
+
+    const eip712signer = new ViemLocalEip712Signer(account)
+    const deadline = Math.floor(Date.now() / 1000) + 86400 // 24 hours from now
+
+    // Convert hex string to Uint8Array (strip 0x prefix if present)
+    const hexString = public_key.startsWith('0x')
+      ? public_key.slice(2)
+      : public_key
+    const publicKeyBytes = new Uint8Array(
+      hexString.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)),
+    )
+
+    const signedKeyRequestResult =
+      await eip712signer.getSignedKeyRequestMetadata({
+        requestFid: BigInt(appFid.toString()),
+        key: publicKeyBytes,
+        deadline: BigInt(deadline.toString()),
+      })
+
+    if (signedKeyRequestResult.isErr()) {
+      throw new Error(
+        `Failed to sign key: ${signedKeyRequestResult.error.message}`,
+      )
+    }
+
+    const fullSignatureHex = Buffer.from(signedKeyRequestResult.value).toString(
+      'hex',
+    )
+
+    // Extract the actual signature from ABI-encoded data
+    // Find the signature length marker (0x41 = 65 bytes) and extract 130 chars after it
+    const lengthMarker =
+      '0000000000000000000000000000000000000000000000000000000000000041'
+    const lengthMarkerIndex = fullSignatureHex.indexOf(lengthMarker)
+
+    if (lengthMarkerIndex === -1) {
+      throw new Error(
+        'Could not find signature length marker in ABI-encoded data',
+      )
+    }
+
+    // Signature starts right after the length marker (64 chars for the marker + 130 for signature)
+    const signatureStartIndex = lengthMarkerIndex + lengthMarker.length
+    const signatureHex = fullSignatureHex.slice(
+      signatureStartIndex,
+      signatureStartIndex + 130,
+    )
+
+    const registerPayload = {
+      signerUuid: signer_uuid,
+      signature: `0x${signatureHex}`,
+      appFid: appFid,
+      deadline: deadline,
+    }
+
+    // Register the signed key
+    const registeredSigner = await neynarClient.registerSignedKey(
+      registerPayload,
+    )
+
+    // Use the signer_approval_url from the response
+    const signerApprovalUrl = registeredSigner.signer_approval_url
+
+    if (!signerApprovalUrl) {
+      throw new Error('No signer_approval_url returned from Neynar')
+    }
+
+    return reply.status(200).send({
+      signer_uuid,
+      public_key,
+      status: 'pending_approval',
+      signer_approval_url: signerApprovalUrl,
+    })
+  } catch (error) {
+    console.error(
+      'Create Farcaster managed signer error:',
+      (error as any).response?.data || error,
+    )
+    return reply
+      .status(500)
+      .send({ message: 'Failed to create managed signer' })
+  }
+}
+
+export const getFarcasterSignerStatus = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  try {
+    const { signerUuid } = request.query as { signerUuid: string }
+
+    if (!signerUuid) {
+      return reply.status(400).send({
+        message: 'Missing signerUuid',
+      })
+    }
+
+    const neynarApiKey = server.config.NEYNAR_API_KEY
+    if (!neynarApiKey) {
+      return reply.status(500).send({
+        message: 'Neynar configuration not available',
+      })
+    }
+
+    // Use Neynar SDK to get signer status
+    const neynarClient = new NeynarAPIClient({ apiKey: neynarApiKey })
+
+    const signerStatus = await neynarClient.lookupSigner({
+      signerUuid: signerUuid,
+    })
+
+    return reply.status(200).send(signerStatus)
+  } catch (error) {
+    console.error('Get Farcaster signer status error:', error)
+    return reply.status(500).send({ message: 'Failed to get signer status' })
   }
 }

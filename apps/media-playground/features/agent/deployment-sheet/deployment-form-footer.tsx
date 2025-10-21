@@ -197,7 +197,7 @@ export const DeploymentFormFooter = ({
               token: data.token,
             },
           }
-        } else if (platform === 'farcaster') {
+        } else if (platform === 'farcaster' && data.mnemonic) {
           payload.secrets = {
             farcaster: {
               mnemonic: data.mnemonic,
