@@ -686,6 +686,9 @@ export const createFarcasterManagedSigner = async (
       signature: `0x${signatureHex}`,
       appFid: appFid,
       deadline: deadline,
+      sponsor: {
+        sponsored_by_neynar: true,
+      },
     }
 
     // Register the signed key
