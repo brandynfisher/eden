@@ -1080,6 +1080,10 @@ export abstract class Methods {
         this,
         sessionsRenameRequestConfigV2,
       ),
+      update: bindApiCall<SessionsV2RenameArguments, SessionsV2RenameResponse>(
+        this,
+        sessionsRenameRequestConfigV2,
+      ),
       delete: bindApiCall<SessionsV2DeleteArguments, SessionsV2DeleteResponse>(
         this,
         sessionsDeleteRequestConfigV2,

@@ -75,6 +75,7 @@ export interface SessionsV2RenameArguments extends WebAPICallOptions {
   session_id: string
   title?: string
   pinned?: boolean
+  extras?: SessionExtras
 }
 
 export interface SessionsV2CancelArguments extends WebAPICallOptions {
@@ -174,6 +175,9 @@ export const sessionsRenameRequestConfigV2 = (
   }
   if (args.pinned !== undefined) {
     data.pinned = args.pinned
+  }
+  if (args.extras !== undefined) {
+    data.extras = args.extras
   }
   return {
     method: 'PATCH',
@@ -484,6 +488,7 @@ export type SessionStatus = 'active' | 'archived'
 
 export type SessionExtras = {
   exclude_memory?: boolean
+  is_public?: boolean
 }
 
 export type SessionV2 = {

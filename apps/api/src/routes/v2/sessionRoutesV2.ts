@@ -348,7 +348,13 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
 
   server.patch<{
     Params: Pick<SessionsV2RenameArguments, 'session_id'>
-    Body: Pick<SessionsV2RenameArguments, 'title'> & { pinned?: boolean }
+    Body: Pick<SessionsV2RenameArguments, 'title'> & {
+      pinned?: boolean
+      extras?: {
+        exclude_memory?: boolean
+        is_public?: boolean
+      }
+    }
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
@@ -365,6 +371,12 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       body: {
         title: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
         pinned: Type.Optional(Type.Boolean()),
+        extras: Type.Optional(
+          Type.Object({
+            exclude_memory: Type.Optional(Type.Boolean()),
+            is_public: Type.Optional(Type.Boolean()),
+          }),
+        ),
       },
       response: {
         200: Type.Object({

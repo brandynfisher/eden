@@ -618,6 +618,7 @@ const AgentSelectorAndNewChat: FC<{
           sessionId={sessionId}
           messages={session.messages || []}
           isOwner={session.owner._id === userId}
+          isPublic={session.extras?.is_public}
           className="h-12 w-full justify-start border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary"
         />
       )}
