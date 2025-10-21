@@ -36,6 +36,7 @@ export type TelegramAllowlistItem = AllowlistItem
 
 export type DeploymentSettingsTelegram = {
   topic_allowlist?: TelegramAllowlistItem[]
+  bot_username?: string
 }
 
 export type DeploymentSecretsTelegram = {
