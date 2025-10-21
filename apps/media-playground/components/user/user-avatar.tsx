@@ -29,9 +29,11 @@ const UserAvatar = ({ image, name, className }: Props) => {
           }
           className={cn(['group-hover:brightness-105', className])}
         />
-      ) : (
+      ) : null}
+
+      {!image && !name ? (
         <Skeleton className="absolute inset-0 w-full h-full rounded-full overflow-hidden" />
-      )}
+      ) : null}
 
       {!image && name ? (
         <AvatarFallback

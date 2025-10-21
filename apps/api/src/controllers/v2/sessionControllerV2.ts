@@ -672,7 +672,7 @@ export const getSession = async (
       })
     }
 
-    // Check if user has access to the session (owner, in users list, or has permission)
+    // Check if user has access to the session (owner, in users list, has permission, is eden admin, or session is public)
     const getSessionUserIdStr = userId.toString()
     const isSessionOwner = session.owner._id.toString() === getSessionUserIdStr
     const isSessionUser = session.users?.some(
@@ -683,12 +683,14 @@ export const getSession = async (
       user: userId,
     })
     const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
+    const isPublicSession = session.extras?.is_public === true
 
     if (
       !isSessionOwner &&
       !isSessionUser &&
       !hasPermission &&
-      !isEdenTeamMember
+      !isEdenTeamMember &&
+      !isPublicSession
     ) {
       return reply.status(403).send({
         message:
@@ -788,7 +790,7 @@ export const getSessionMessages = async (
       })
     }
 
-    // Check access
+    // Check access (owner, in users list, has permission, is eden admin, or session is public)
     const userIdStr = userId.toString()
     const isOwner = session.owner.toString() === userIdStr
     const isUser = session.users?.some(
@@ -799,8 +801,15 @@ export const getSessionMessages = async (
       user: userId,
     })
     const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
+    const isPublicSession = session.extras?.is_public === true
 
-    if (!isOwner && !isUser && !hasPermission && !isEdenTeamMember) {
+    if (
+      !isOwner &&
+      !isUser &&
+      !hasPermission &&
+      !isEdenTeamMember &&
+      !isPublicSession
+    ) {
       return reply.status(403).send({
         message: 'You do not have access to this session',
       })
@@ -1021,7 +1030,13 @@ export const deleteSession = async (
 export const renameSession = async (
   request: FastifyRequest<{
     Params: Pick<SessionsV2RenameArguments, 'session_id'>
-    Body: Pick<SessionsV2RenameArguments, 'title'> & { pinned?: boolean }
+    Body: Pick<SessionsV2RenameArguments, 'title'> & {
+      pinned?: boolean
+      extras?: {
+        exclude_memory?: boolean
+        is_public?: boolean
+      }
+    }
   }>,
   reply: FastifyReply,
 ) => {
@@ -1033,11 +1048,11 @@ export const renameSession = async (
   }
 
   const { session_id } = request.params
-  const { title, pinned } = request.body
+  const { title, pinned, extras } = request.body
 
-  if (title === undefined && pinned === undefined) {
+  if (title === undefined && pinned === undefined && extras === undefined) {
     return reply.status(400).send({
-      error: 'Title or pinned status must be provided',
+      error: 'Title, pinned status, or extras must be provided',
     })
   }
 
@@ -1063,6 +1078,13 @@ export const renameSession = async (
   }
   if (pinned !== undefined) {
     updateData.pinned = pinned
+  }
+  if (extras !== undefined) {
+    // Merge with existing extras to preserve other fields
+    updateData.extras = {
+      ...session.extras,
+      ...extras,
+    }
   }
 
   await session.updateOne({

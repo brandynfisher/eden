@@ -40,9 +40,23 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
   const handleSave = async () => {
     setIsSubmitting(true)
     try {
-      await axios.patch(`/api/agents/${agent._id}`, {
+      // Send complete agent data to prevent field deletion
+      const updatePayload = {
+        name: agent.name,
+        key: agent.username,
+        description: agent.description,
+        persona: agent.persona,
+        public: agent.public,
+        knowledge: agent.knowledge ?? '',
+        greeting: agent.greeting || '',
+        voice: agent.voice || '',
+        models: agent.models || [],
+        tools: agent.tools || {},
+        llm_settings: agent.llm_settings || {},
         owner_pays: ownerPays,
-      })
+      }
+
+      await axios.patch(`/api/agents/${agent._id}`, updatePayload)
       toast.success('Integration settings updated successfully', {
         description: 'Your changes have been saved.',
         richColors: true,

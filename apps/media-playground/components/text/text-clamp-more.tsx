@@ -100,7 +100,9 @@ const TextClampMore = ({
       <div
         ref={textRef}
         className={cn([
-          !showMore ? lineClampClasses[clampedLines] : 'line-clamp-none',
+          !showMore
+            ? lineClampClasses[clampedLines]
+            : 'line-clamp-none max-h-[300px] overflow-y-auto',
         ])}
       >
         {text}

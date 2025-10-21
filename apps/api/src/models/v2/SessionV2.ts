@@ -38,6 +38,7 @@ export interface SessionSchema {
   pinned?: boolean
   extras?: {
     exclude_memory?: boolean
+    is_public?: boolean
   }
   createdAt: Date
   updatedAt: Date

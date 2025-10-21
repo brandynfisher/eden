@@ -12,15 +12,18 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
 import { Message } from '@edenlabs/eden-sdk'
 import { Copy, Share2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface SessionShareButtonProps {
   sessionId: string
   messages: Message[]
   isOwner: boolean
+  isPublic?: boolean
   className?: string
 }
 
@@ -28,12 +31,20 @@ export const SessionShareButton = ({
   sessionId,
   messages,
   isOwner,
+  isPublic = false,
   className,
 }: SessionShareButtonProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const [shareId, setShareId] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const [isPublicSession, setIsPublicSession] = useState(isPublic)
+  const [isUpdatingPublic, setIsUpdatingPublic] = useState(false)
+
+  // Update local state when prop changes
+  useEffect(() => {
+    setIsPublicSession(isPublic)
+  }, [isPublic])
 
   // Don't render if not the session owner
   if (!isOwner) {
@@ -123,6 +134,42 @@ export const SessionShareButton = ({
     }
   }
 
+  const togglePublicSession = async (checked: boolean) => {
+    setIsUpdatingPublic(true)
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          extras: {
+            is_public: checked,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update session visibility')
+      }
+
+      setIsPublicSession(checked)
+      toast.success(
+        checked
+          ? 'Session is now public - anyone can view it'
+          : 'Session is now private',
+      )
+    } catch (error) {
+      console.error('Error updating session visibility:', error)
+      toast.error('Failed to update session visibility')
+      // Revert the toggle on error
+      setIsPublicSession(!checked)
+    } finally {
+      setIsUpdatingPublic(false)
+    }
+  }
+
   const resetDialog = () => {
     setShareId(null)
     setTitle('')
@@ -146,14 +193,50 @@ export const SessionShareButton = ({
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Share session</DialogTitle>
           <DialogDescription>
-            Create a public link to share this conversation up to the current
-            point. Any messages you add after sharing stay private.
+            Share this conversation with others via a public link or by making
+            the entire session publicly accessible.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto space-y-6">
+          {/* Public Session Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5 flex-1">
+                <Label htmlFor="public-toggle" className="text-base">
+                  Public Session
+                </Label>
+                <div className="text-sm text-muted-foreground">
+                  Allow anyone to view this session (all messages)
+                </div>
+              </div>
+              <Switch
+                id="public-toggle"
+                checked={isPublicSession}
+                onCheckedChange={togglePublicSession}
+                disabled={isUpdatingPublic}
+              />
+            </div>
+            {isPublicSession && (
+              <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border">
+                This session is publicly accessible. Anyone with the link can
+                view all messages.
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Share Link Section */}
           {!shareId ? (
             <div className="space-y-4">
+              <div className="space-y-0.5">
+                <Label className="text-base">Share Snapshot</Label>
+                <div className="text-sm text-muted-foreground">
+                  Create a link to share this conversation up to the current
+                  point
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="title">Title (optional)</Label>
                 <Input
