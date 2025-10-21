@@ -84,6 +84,15 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
           // Keep other string outputs
           return true
         }
+        // Filter out object outputs that only contain a session field
+        if (result && result?.output && typeof result.output === 'object' && !Array.isArray(result.output)) {
+          const output = result.output as Record<string, unknown>
+          // If it's an object with only a 'session' field, filter it out
+          const keys = Object.keys(output)
+          if (keys.length === 1 && keys[0] === 'session') {
+            return false
+          }
+        }
         // Keep other types of outputs
         return result && result?.output !== undefined
       }) || []
