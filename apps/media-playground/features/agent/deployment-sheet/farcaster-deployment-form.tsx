@@ -222,9 +222,6 @@ export const FarcasterDeploymentForm = ({
                         ? 'Creating Signer...'
                         : 'Create Managed Signer'}
                     </Button>
-                    <FormDescription className="text-center">
-                      You can deploy without a signer and add one later.
-                    </FormDescription>
                   </div>
                 ) : currentSignerUuid || hasExistingSignerUuid ? (
                   <div className="space-y-4">
