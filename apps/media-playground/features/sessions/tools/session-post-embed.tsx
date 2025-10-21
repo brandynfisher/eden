@@ -104,6 +104,12 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
 
   const hasMediaOutputs = mediaResults.length > 0
 
+  // If no session ID but we have media outputs, just show the media
+  if (!sessionId && hasMediaOutputs) {
+    return <ToolMediaRenderer results={mediaResults} />
+  }
+
+  // If no session ID and no media outputs, show error
   if (!sessionId) {
     return (
       <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
