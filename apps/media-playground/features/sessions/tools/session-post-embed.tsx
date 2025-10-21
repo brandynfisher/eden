@@ -69,9 +69,15 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   const mediaResults = React.useMemo(() => {
     return (
       results?.filter(result => {
-        // Keep results with array outputs (media)
+        // Check if result has array outputs
         if (result && Array.isArray(result?.output)) {
-          return true
+          // Filter out arrays that only contain session objects
+          const hasActualMedia = result.output.some(item => {
+            if (!item || typeof item !== 'object') return false
+            // Check if it's a media object (has filename or mediaAttributes)
+            return 'filename' in item || 'mediaAttributes' in item || 'url' in item
+          })
+          return hasActualMedia
         }
         // Filter out string outputs that are session IDs
         // Session IDs are typically MongoDB ObjectIds (24 hex characters) or similar
