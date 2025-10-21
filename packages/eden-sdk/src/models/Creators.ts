@@ -265,5 +265,6 @@ export enum FeatureFlag {
   TestAgentRateLimit = 'test_agent_rate_limit',
   SessionsV2 = 'sessions_v2',
   ToolAccessVeo3 = 'tool_access_veo3',
+  ToolAccessPremiumSocialMedia = 'tool_access_premium_social_media',
   EdenAdmin = 'eden_admin',
 }
