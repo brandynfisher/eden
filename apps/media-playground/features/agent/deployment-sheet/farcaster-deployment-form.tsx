@@ -64,14 +64,18 @@ export const FarcasterDeploymentForm = ({
 
   const showQRCode = localSignerUuid !== '' && !isDeployed
 
-  // Reset form when deployment is deleted
+  // Reset form when deployment changes
   useEffect(() => {
     if (!isDeployed) {
       form.reset({
         autoReply: false,
       })
+    } else {
+      form.reset({
+        autoReply: deployment?.config?.farcaster?.auto_reply ?? false,
+      })
     }
-  }, [isDeployed, form])
+  }, [isDeployed, deployment?.config?.farcaster?.auto_reply, form])
 
   // Start polling if deployment exists but signer not approved
   useEffect(() => {
