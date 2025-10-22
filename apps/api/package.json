@@ -8,7 +8,7 @@
     "dev:eden": "DOTENV_PATH=.env.eden tsx watch src .env.eden | pino-pretty --colorize",
     "build": "tsc --outDir build",
     "test": "vitest",
-    "start": "tsx src/index.ts",
+    "start": "tsx build/src/index.js",
     "pretest": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
