@@ -139,3 +139,47 @@ export async function sendOutOfMannaEmail(
     throw error
   }
 }
+
+export async function sendAccountDeletionRequestEmail(
+  server: FastifyInstance,
+  userId: string,
+  email: string,
+  username?: string,
+): Promise<any> {
+  const apiKey = server.config.MAILCHIMP_API_KEY || ''
+
+  if (!apiKey) {
+    throw new Error('Mailchimp API key is required')
+  }
+
+  const client = mailchimpTransactional(apiKey)
+
+  try {
+    const message: MessagesSendRequest['message'] = {
+      to: [
+        {
+          email: 'support@eden.art',
+          type: 'to',
+        },
+      ],
+      from_email: server.config.EMAIL_FROM,
+      from_name: server.config.EMAIL_FROM_NAME,
+      subject: 'Account Deletion Request',
+      html: `
+        <p>A user has requested account deletion:</p>
+        <p><strong>User ID:</strong> ${userId}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        ${username ? `<p><strong>Username:</strong> ${username}</p>` : ''}
+        <p><strong>Request Time:</strong> ${new Date().toISOString()}</p>
+        <p>Please process this request according to Eden's account deletion policy.</p>
+      `,
+    }
+
+    await client.messages.send({
+      message,
+    })
+  } catch (error) {
+    server.log.error('Failed to send account deletion request email', error)
+    throw error
+  }
+}
