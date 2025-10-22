@@ -79,6 +79,9 @@ const ConfigSchema = Type.Strict(
     TIKTOK_CLIENT_KEY: Type.Optional(Type.String()),
     TIKTOK_CLIENT_SECRET: Type.Optional(Type.String()),
     REDIS_URL: Type.Optional(Type.String()),
+    NEYNAR_API_KEY: Type.Optional(Type.String()),
+    FARCASTER_DEVELOPER_MNEMONIC: Type.Optional(Type.String()),
+    FARCASTER_DEVELOPER_FID: Type.Optional(Type.String()),
   }),
 )
 

@@ -1,8 +1,10 @@
 import {
+  createFarcasterManagedSigner,
   disconnectTikTok,
   disconnectTwitter,
   disconnectTwitterIntegration,
   discordOAuth,
+  getFarcasterSignerStatus,
   tiktokOAuth,
   twitterIntegrationOAuth,
   twitterOAuth,
@@ -116,6 +118,38 @@ const authRoutes: FastifyPluginAsync = async server => {
       }),
     },
     handler: (request, reply) => disconnectTwitterIntegration(request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.post('/v2/auth/farcaster/managed-signer', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Create Farcaster Managed Signer',
+      description:
+        'Create a Neynar managed signer for Farcaster integration. Returns signer UUID and approval URL.',
+      hide: true,
+      body: Type.Object({
+        agentId: Type.String(),
+      }),
+    },
+    handler: (request, reply) =>
+      createFarcasterManagedSigner(server, request, reply),
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+  })
+
+  server.get('/v2/auth/farcaster/managed-signer/status', {
+    schema: {
+      tags: ['Auth'],
+      summary: 'Get Farcaster Managed Signer Status',
+      description:
+        'Check the approval status of a Farcaster managed signer by UUID.',
+      hide: true,
+      querystring: Type.Object({
+        signerUuid: Type.String(),
+      }),
+    },
+    handler: (request, reply) =>
+      getFarcasterSignerStatus(server, request, reply),
     preHandler: [(request, reply) => isAuth(server, request, reply)],
   })
 }

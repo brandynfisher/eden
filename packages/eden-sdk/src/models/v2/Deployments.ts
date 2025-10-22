@@ -51,7 +51,8 @@ export type DeploymentSettingsFarcaster = {
 }
 
 export type DeploymentSecretsFarcaster = {
-  mnemonic: string
+  mnemonic?: string // For backwards compatibility with direct mnemonic auth
+  signer_uuid?: string // For Neynar managed signers
   neynar_webhook_secret?: string
 }
 
