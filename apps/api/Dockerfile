@@ -1,6 +1,6 @@
-FROM node:18-alpine AS base
+FROM node:22-alpine AS base
 
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 RUN apk add --no-cache libc6-compat
 RUN apk update
 # Set working directory
@@ -68,7 +68,7 @@ ENV EDEN2_FRONTEND_URL=${EDEN2_FRONTEND_URL}
 
 RUN yarn turbo run build --filter=api...
 
-FROM node:18-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 COPY --from=installer /app/apps/api/build ./build

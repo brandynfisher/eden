@@ -1,6 +1,9 @@
+import { AccountDeletionRequest } from '../../models/AccountDeletionRequest'
 import { Manna } from '../../models/Manna'
 import { Transaction } from '../../models/Transaction'
+import { User } from '../../models/User'
 import TransactionRepository from '../../repositories/TransactionRepository'
+import { sendAccountDeletionRequestEmail } from '../../utils/mailchimp'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 export const getUserIdByClerkUserId = async (
@@ -59,4 +62,68 @@ export const listTransactions = async (
   })
 
   return reply.status(200).send(paginatedResponse)
+}
+
+export const requestAccountDeletion = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  try {
+    // Check if there's already a pending deletion request from the last 24 hours
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    const recentRequest = await AccountDeletionRequest.findOne({
+      user: userId,
+      status: 'pending',
+      createdAt: { $gte: oneDayAgo },
+    })
+
+    if (recentRequest) {
+      return reply.status(429).send({
+        message:
+          'An account deletion request has already been submitted recently. Please wait 24 hours before submitting another request.',
+      })
+    }
+
+    // Fetch user details
+    const user = await User.findById(userId)
+    if (!user) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+
+    // Create the deletion request
+    const deletionRequest = await AccountDeletionRequest.create({
+      user: userId,
+      userId: user.userId,
+      email: user.email,
+      status: 'pending',
+    })
+
+    // Send email notification to support
+    await sendAccountDeletionRequestEmail(
+      request.server,
+      user.userId,
+      user.email || 'No email provided',
+      user.username,
+    )
+
+    return reply.status(200).send({
+      message:
+        'Account deletion request submitted successfully. Our team will process your request shortly.',
+      requestId: deletionRequest._id,
+    })
+  } catch (error) {
+    request.server.log.error('Failed to request account deletion', error)
+    return reply.status(500).send({
+      message: 'Failed to submit account deletion request',
+    })
+  }
 }
