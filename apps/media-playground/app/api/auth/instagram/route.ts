@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       token: authToken,
     })
 
-    const res = await eden.creators.update({
+    const res = await eden.creators.updateV2({
       instagramHandle,
     })
 

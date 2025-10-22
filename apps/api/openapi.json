@@ -2256,7 +2256,6 @@
                 "type": "object",
                 "properties": {
                   "note": {
-                    "description": "Optional note to help identify this API key",
                     "type": "string"
                   }
                 }
@@ -2281,14 +2280,14 @@
                       "type": "object",
                       "properties": {
                         "apiKey": {
-                          "description": "The generated API key - store this securely as it won't be shown again",
+                          "type": "string"
+                        },
+                        "apiSecret": {
                           "type": "string"
                         }
-                      },
-                      "required": ["apiKey"]
+                      }
                     }
-                  },
-                  "required": ["apiKey"]
+                  }
                 }
               }
             }
@@ -2306,7 +2305,6 @@
                 "type": "object",
                 "properties": {
                   "apiKey": {
-                    "description": "The API key to delete",
                     "type": "string"
                   }
                 },
@@ -2350,25 +2348,17 @@
           {
             "required": false,
             "in": "query",
-            "name": "orderBy",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
-            "name": "direction",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "required": false,
-            "in": "query",
             "name": "limit",
             "schema": {
               "type": "number"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -2391,19 +2381,16 @@
                         "type": "object",
                         "properties": {
                           "apiKey": {
-                            "description": "Partial API key for identification",
                             "type": "string"
                           },
                           "note": {
-                            "description": "Optional note associated with this API key",
                             "type": "string"
                           },
                           "createdAt": {
-                            "description": "ISO timestamp when the API key was created",
                             "type": "string"
                           }
                         },
-                        "required": ["apiKey", "createdAt"]
+                        "required": ["apiKey", "note", "createdAt"]
                       }
                     },
                     "total": {
@@ -4188,39 +4175,6 @@
         }
       }
     },
-    "/manna/balance": {
-      "get": {
-        "summary": "Get Manna Balance",
-        "description": "Retrieve the authenticated user's current manna balance and subscription balance.",
-        "tags": ["Manna"],
-        "security": [
-          {
-            "apiKey": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Default Response",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "balance": {
-                      "type": "number"
-                    },
-                    "subscriptionBalance": {
-                      "type": "number"
-                    }
-                  },
-                  "required": ["balance", "subscriptionBalance"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/manna/vouchers/redeem": {
       "post": {
         "summary": "Redeem Manna Voucher",
@@ -4681,6 +4635,14 @@
                       "reply_interval",
                       "actor_selection_method"
                     ]
+                  },
+                  "extras": {
+                    "type": "object",
+                    "properties": {
+                      "exclude_memory": {
+                        "type": "boolean"
+                      }
+                    }
                   }
                 }
               }
@@ -4955,6 +4917,14 @@
                       "reply_interval",
                       "actor_selection_method"
                     ]
+                  },
+                  "extras": {
+                    "type": "object",
+                    "properties": {
+                      "exclude_memory": {
+                        "type": "boolean"
+                      }
+                    }
                   }
                 }
               }
@@ -5344,10 +5314,71 @@
         }
       }
     },
+    "/v2/sessions/shares": {
+      "get": {
+        "summary": "List User Shares",
+        "description": "Retrieve all session shares created by the authenticated user.",
+        "tags": ["Sessions"],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shares": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": ["shares"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v2/sessions/{session_id}": {
       "get": {
         "summary": "Get Session Details",
-        "description": "Retrieve detailed information about a specific session including all messages and participants.",
+        "description": "Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination.",
         "tags": ["Sessions"],
         "parameters": [
           {
@@ -5372,7 +5403,13 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "session": {}
+                    "session": {},
+                    "hasMore": {
+                      "type": "boolean"
+                    },
+                    "nextCursor": {
+                      "type": "string"
+                    }
                   },
                   "required": ["session"]
                 }
@@ -5689,6 +5726,129 @@
                       "type": "string"
                     },
                     "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/sessions/{session_id}/messages": {
+      "get": {
+        "summary": "Get Session Messages (Paginated)",
+        "description": "Fetch messages for a session with cursor-based pagination. Returns messages in chronological order (oldest first).",
+        "tags": ["Sessions"],
+        "parameters": [
+          {
+            "required": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "required": true,
+            "in": "path",
+            "name": "session_id",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "apiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "messages": {
+                      "type": "array",
+                      "items": {}
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    },
+                    "nextCursor": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["messages", "hasMore"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
                       "type": "string"
                     }
                   }

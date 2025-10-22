@@ -4011,12 +4011,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@edenlabs/eden-sdk@workspace:packages/eden-sdk"
   dependencies:
+    "@sinclair/typebox": "npm:^0.32.34"
     "@types/event-source-polyfill": "npm:^1.0.3"
     "@types/eventsource": "npm:^1.1.15"
+    "@types/node": "npm:^20"
     axios: "npm:^1.6.8"
     event-source-polyfill: "npm:^1.0.31"
     eventsource: "npm:^2.0.2"
     microbundle: "npm:^0.15.1"
+    ts-node: "npm:^10.9.2"
+    tsx: "npm:^4.20.6"
     typescript: "npm:^5"
   languageName: unknown
   linkType: soft
@@ -27107,6 +27111,22 @@ __metadata:
   bin:
     tsx: dist/cli.mjs
   checksum: 10c0/6ff0d91ed046ec743fac7ed60a07f3c025e5b71a5aaf58f3d2a6b45e4db114c83e59ebbb078c8e079e48d3730b944a02bc0de87695088aef4ec8bbc705dc791b
+  languageName: node
+  linkType: hard
+
+"tsx@npm:^4.20.6":
+  version: 4.20.6
+  resolution: "tsx@npm:4.20.6"
+  dependencies:
+    esbuild: "npm:~0.25.0"
+    fsevents: "npm:~2.3.3"
+    get-tsconfig: "npm:^4.7.5"
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    tsx: dist/cli.mjs
+  checksum: 10c0/07757a9bf62c271e0a00869b2008c5f2d6e648766536e4faf27d9d8027b7cde1ac8e4871f4bb570c99388bcee0018e6869dad98c07df809b8052f9c549cd216f
   languageName: node
   linkType: hard
 

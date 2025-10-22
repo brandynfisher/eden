@@ -14,7 +14,8 @@
     "dev:eden": "yarn dev",
     "dev:dummy": "yarn dev",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "test": "vitest"
+    "test": "vitest",
+    "generate:apikeys": "tsx scripts/generate-api-types.ts"
   },
   "keywords": [],
   "author": "Eden Labs",
@@ -22,10 +23,14 @@
   "devDependencies": {
     "@types/event-source-polyfill": "^1.0.3",
     "@types/eventsource": "^1.1.15",
+    "@types/node": "^20",
     "microbundle": "^0.15.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5"
   },
   "dependencies": {
+    "@sinclair/typebox": "^0.32.34",
     "axios": "^1.6.8",
     "event-source-polyfill": "^1.0.31",
     "eventsource": "^2.0.2"

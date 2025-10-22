@@ -103,24 +103,3 @@ export const listApiKeys = async (
 
   return reply.status(200).send(apiKeys)
 }
-
-export const adminListApiKeys = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  const { character, limit, page, sort } = request.query as ApiKeysListArguments
-
-  const apiKeyRepository = new ApiKeyRepository(ApiKey)
-  const apiKeys = await apiKeyRepository.query(
-    {
-      character,
-    },
-    {
-      limit,
-      page,
-      sort,
-    },
-  )
-
-  return reply.status(200).send(apiKeys)
-}
