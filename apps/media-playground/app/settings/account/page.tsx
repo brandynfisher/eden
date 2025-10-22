@@ -1,4 +1,5 @@
 import TypographyH4 from '@/components/ui/typography/TypographyH4'
+import DeleteAccountCard from '@/features/account/delete-account-card'
 import ManageAccountCard from '@/features/account/manage-account-card'
 import { TransactionHistory } from '@/features/account/transaction-history'
 import { UserPreferences } from '@/features/account/user-preferences'
@@ -17,6 +18,9 @@ const SettingsAccountPage = async () => {
       <div className="mt-4">
         <TransactionHistory />
       </div>
+
+      <TypographyH4>Danger Zone</TypographyH4>
+      <DeleteAccountCard />
     </div>
   )
 }

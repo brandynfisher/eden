@@ -1,3 +1,7 @@
+import {
+  AccountDeletionRequest,
+  AccountDeletionRequestDocument,
+} from './AccountDeletionRequest'
 import { Agent, AgentDocument } from './Agent'
 import { AgentPermission, AgentPermissionDocument } from './AgentPermission'
 import { ApiKey, ApiKeyDocument } from './ApiKey'
@@ -39,6 +43,7 @@ import { TransactionV2, TransactionV2Document } from './v2/TransactionV2'
 import { Model } from 'mongoose'
 
 export interface Database {
+  AccountDeletionRequest: Model<AccountDeletionRequestDocument>
   BaseUser: Model<BaseUserDocument>
   User: Model<UserDocument>
   Agent: Model<AgentDocument>
@@ -76,6 +81,7 @@ export interface Database {
 }
 
 export const models: Database = {
+  AccountDeletionRequest,
   BaseUser,
   User,
   Agent,
