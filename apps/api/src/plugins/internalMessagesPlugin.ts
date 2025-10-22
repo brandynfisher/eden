@@ -1,6 +1,7 @@
 import EventEmitter from 'events'
 import { FastifyPluginAsync } from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
+import { WebSocket } from 'ws'
 
 export enum InternalMessagesQueues {
   TaskUpdates = 'task-updates',
@@ -84,7 +85,7 @@ export const registerInternalMessages: FastifyPluginAsync = async fastify => {
           onMessage: async message => {
             // Broadcast to WebSocket clients
             const sockets = fastify.websocketServer.clients
-            sockets.forEach(socket => {
+            sockets.forEach((socket: WebSocket) => {
               if (socket.readyState === 1) {
                 socket.send(JSON.stringify(message))
               }
