@@ -1,7 +1,5 @@
-import { FastifyInstance } from 'fastify'
-
-import { dummyTaskHandlers } from '../lib/taskHandlers/dummy'
 import { GeneratorDocument, GeneratorVersionSchema } from '../models/Generator'
+import { FastifyInstance } from 'fastify'
 
 export interface LogosResponse {
   message: string
@@ -28,7 +26,10 @@ export const registerTaskHandlers = (
   server: FastifyInstance,
   taskHandlers: TaskHandlers | undefined,
 ) => {
-  const handlers = taskHandlers || dummyTaskHandlers
+  const handlers = taskHandlers
+  if (!handlers) {
+    throw new Error('Task handlers are not defined')
+  }
   server.decorate('submitTask', handlers.submitTask)
   server.decorate('receiveTaskUpdate', handlers.receiveTaskUpdate)
   server.decorate('getTransactionCost', handlers.getTransactionCost)
