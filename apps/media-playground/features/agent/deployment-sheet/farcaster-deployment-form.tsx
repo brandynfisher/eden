@@ -64,6 +64,15 @@ export const FarcasterDeploymentForm = ({
 
   const showQRCode = localSignerUuid !== '' && !isDeployed
 
+  // Reset form when deployment is deleted
+  useEffect(() => {
+    if (!isDeployed) {
+      form.reset({
+        autoReply: false,
+      })
+    }
+  }, [isDeployed, form])
+
   // Start polling if deployment exists but signer not approved
   useEffect(() => {
     if (
@@ -72,7 +81,7 @@ export const FarcasterDeploymentForm = ({
       !pollingInterval &&
       signerStatus !== 'approved'
     ) {
-      startPolling(hasExistingSignerUuid)
+      startPolling(hasExistingSignerUuid, false)
     }
   }, [isDeployed, hasExistingSignerUuid, pollingInterval, signerStatus])
 
@@ -104,8 +113,8 @@ export const FarcasterDeploymentForm = ({
         dismissible: true,
       })
 
-      // Start polling for approval
-      startPolling(signer_uuid)
+      // Start polling for approval - this is a NEW signer
+      startPolling(signer_uuid, true)
     } catch (error: unknown) {
       console.error('Failed to create managed signer:', error)
       const errorMessage = 'Failed to create managed signer'
@@ -119,7 +128,7 @@ export const FarcasterDeploymentForm = ({
     }
   }
 
-  const startPolling = (signerUuid: string) => {
+  const startPolling = (signerUuid: string, isNewSigner: boolean = false) => {
     const interval = setInterval(async () => {
       try {
         const response = await axios.get(
@@ -136,43 +145,57 @@ export const FarcasterDeploymentForm = ({
           clearInterval(interval)
           setPollingInterval(null)
 
-          // Create deployment now that signer is approved
-          try {
-            await axios.post(`/api/agents/${agentId}/deployments`, {
-              agentId,
-              platform: 'farcaster',
-              config: {
-                farcaster: {
-                  auto_reply: form.getValues('autoReply'),
+          if (isNewSigner) {
+            // Create deployment now that signer is approved
+            try {
+              const autoReplyValue = form.getValues('autoReply')
+              const deploymentPayload = {
+                agentId,
+                platform: 'farcaster',
+                config: {
+                  farcaster: {
+                    auto_reply: autoReplyValue,
+                  },
                 },
-              },
-              secrets: {
-                farcaster: {
-                  signer_uuid: signerUuid,
+                secrets: {
+                  farcaster: {
+                    signer_uuid: signerUuid,
+                  },
                 },
-              },
-            })
+              }
 
-            toast.success('Signer approved! Deployment created.', {
-              richColors: true,
-              dismissible: true,
-            })
+              await axios.post(
+                `/api/agents/${agentId}/deployments`,
+                deploymentPayload,
+              )
 
-            // Clear local signer state
-            setLocalSignerUuid('')
-            setSignerApprovalUrl('')
+              toast.success('Signer approved! Deployment created.', {
+                richColors: true,
+                dismissible: true,
+              })
 
-            // Invalidate deployments query to refresh UI
+              // Clear local signer state
+              setLocalSignerUuid('')
+              setSignerApprovalUrl('')
+
+              // Invalidate deployments query to refresh UI
+              const queryClient = getQueryClient()
+              queryClient.invalidateQueries({
+                queryKey: ['agents', agentId, 'deployments'],
+              })
+            } catch (error) {
+              console.error('Failed to create deployment:', error)
+              toast.error('Failed to create deployment', {
+                description: 'Please try again.',
+                richColors: true,
+                dismissible: true,
+              })
+            }
+          } else {
+            // Existing deployment's signer was approved, just refresh
             const queryClient = getQueryClient()
             queryClient.invalidateQueries({
               queryKey: ['agents', agentId, 'deployments'],
-            })
-          } catch (error) {
-            console.error('Failed to create deployment:', error)
-            toast.error('Failed to create deployment', {
-              description: 'Please try again.',
-              richColors: true,
-              dismissible: true,
             })
           }
         }
@@ -236,9 +259,6 @@ export const FarcasterDeploymentForm = ({
                     Signer Status:{' '}
                     <span className="text-yellow-600">Pending Approval</span>
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Signer UUID: {localSignerUuid}
-                  </p>
                 </div>
 
                 {signerApprovalUrl && (
@@ -270,11 +290,6 @@ export const FarcasterDeploymentForm = ({
                     Signer Status:{' '}
                     <span className="text-green-600">Approved</span>
                   </p>
-                  {hasExistingSignerUuid && (
-                    <p className="text-xs text-muted-foreground">
-                      Signer UUID: {hasExistingSignerUuid}
-                    </p>
-                  )}
                 </div>
               </div>
             )}
