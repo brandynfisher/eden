@@ -262,6 +262,7 @@ export type ToolCall = {
   args: TaskV2Args
   result?: TaskV2Result[]
   task?: string
+  child_session?: string
 }
 
 export type ThreadMessageReaction = {

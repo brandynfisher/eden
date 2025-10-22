@@ -10,17 +10,24 @@ import React from 'react'
 
 export type SessionPostEmbedProps = {
   results: TaskV2Result[]
+  childSessionId?: string
 }
 
 export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   results,
+  childSessionId,
 }) => {
   // Get the current session ID to fetch current session's agents
   const params = useParams()
   const currentSessionId = params?.id as string | undefined
-  // Extract session ID from results
+
+  // Extract session ID from results or use the provided childSessionId
   // The result structure should have a session field with the session ID
   const sessionId = React.useMemo(() => {
+    // If childSessionId is provided, use it directly
+    if (childSessionId) {
+      return childSessionId
+    }
     if (!results || !Array.isArray(results) || results.length === 0) {
       return null
     }
@@ -61,7 +68,7 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     }
 
     return null
-  }, [results])
+  }, [results, childSessionId])
 
   // Filter out results that only contain the session ID (string outputs that are session IDs)
   // We want to show media outputs but not the session ID text

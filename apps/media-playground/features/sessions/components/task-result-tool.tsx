@@ -163,7 +163,10 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
         ) : isSessionPost ? (
           // Handle session post results (abraham_publish, session_post, abraham_daily)
           <div className="mb-2 relative group">
-            <SessionPostEmbed results={toolResults || []} />
+            <SessionPostEmbed
+              results={toolResults || []}
+              childSessionId={toolCall.child_session}
+            />
           </div>
         ) : isCovenantTool ? (
           // Handle covenant results (abraham_covenant)
@@ -194,6 +197,18 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
               contentType={contentToolConfig?.contentType || 'search'}
             />
           </div>
+        ) : toolCall.child_session ? (
+          // If tool has a child_session but isn't a SESSION_POST_TOOLS, show media + session
+          <>
+            <ToolMediaRenderer
+              results={toolResults || []}
+              args={toolCall.args}
+            />
+            <SessionPostEmbed
+              results={toolResults || []}
+              childSessionId={toolCall.child_session}
+            />
+          </>
         ) : (
           <ToolMediaRenderer results={toolResults || []} args={toolCall.args} />
         )}
