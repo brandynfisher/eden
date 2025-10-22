@@ -260,6 +260,7 @@ const ChatHeader = ({
                 sessionId={sessionId}
                 messages={session.messages || []}
                 isOwner={session.owner._id === user?._id}
+                isPublic={session.extras?.is_public}
                 className="h-9 w-auto px-3"
               />
             )}

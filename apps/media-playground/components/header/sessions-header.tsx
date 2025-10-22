@@ -26,6 +26,8 @@ import { useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 type SessionsHeaderProps = {
   onChatClick?: () => void
   isSidebarCollapsed?: boolean
@@ -151,6 +153,7 @@ const SessionsHeader = ({
               sessionId={sessionId}
               messages={session.messages || []}
               isOwner={session.owner._id === user?._id}
+              isPublic={session.extras?.is_public}
               className="h-9 w-auto px-2"
             />
           )}
@@ -287,6 +290,7 @@ const SessionsHeader = ({
                   sessionId={sessionId}
                   messages={session.messages || []}
                   isOwner={session.owner._id === user?._id}
+                  isPublic={session.extras?.is_public}
                   className="h-9 w-auto px-3"
                 />
               )}

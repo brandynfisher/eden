@@ -8,7 +8,7 @@
     "dev:eden": "DOTENV_PATH=.env.eden tsx watch src .env.eden | pino-pretty --colorize",
     "build": "tsc --outDir build",
     "test": "vitest",
-    "start": "node --experimental-specifier-resolution=node build/src",
+    "start": "tsx build/src/index.js",
     "pretest": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
@@ -30,6 +30,7 @@
     "@edenlabs/config": "*",
     "@edenlabs/eden-sdk": "*",
     "@edenlabs/tsconfig": "*",
+    "@farcaster/hub-nodejs": "^0.15.9",
     "@fastify/cors": "^9.0.1",
     "@fastify/jwt": "^8.0.0",
     "@fastify/mongodb": "^8.0.0",
@@ -41,6 +42,7 @@
     "@huggingface/hub": "^0.12.3",
     "@immobiliarelabs/fastify-sentry": "^7.1.0",
     "@mailchimp/mailchimp_transactional": "^1.0.59",
+    "@neynar/nodejs-sdk": "^3.34.0",
     "@sinclair/typebox": "^0.32.34",
     "ajv": "^8.12.0",
     "archiver": "^7.0.1",
@@ -74,7 +76,8 @@
     "stripe": "^12.18.0",
     "svix": "^1.12.0",
     "tar": "^6.2.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "viem": "^2.38.3"
   },
   "devDependencies": {
     "@types/archiver": "^6.0.2",

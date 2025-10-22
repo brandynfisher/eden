@@ -1,5 +1,4 @@
 import { subscribeWebSocketUpdates } from './controllers/v2/taskControllerV2'
-import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import registerAssetUpload from './plugins/assetUploadPlugin'
 import registerChroma from './plugins/chromaPlugin'
 import registerClerk from './plugins/clerkPlugin'
@@ -33,11 +32,7 @@ export interface CreateServerOpts {
   taskHandlers?: TaskHandlers
 }
 
-const createServer = async (
-  opts: CreateServerOpts = {
-    taskHandlers: dummyTaskHandlers,
-  },
-) => {
+const createServer = async (opts: CreateServerOpts) => {
   const server = fastify({
     ajv: {
       customOptions: {

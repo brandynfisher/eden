@@ -1,25 +1,43 @@
 'use client'
 
 import SessionCard from '@/components/session/session-card'
+import { Button } from '@/components/ui/button'
+import { ToolHoverMenu } from '@/features/sessions/components/tool-hover-menu'
+import { ToolMediaRenderer } from '@/features/sessions/tools/tool-media-renderer'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
-import { TaskV2Result } from '@edenlabs/eden-sdk'
-import { Loader2 } from 'lucide-react'
+import { TaskV2Args, TaskV2Result, TaskV2Status } from '@edenlabs/eden-sdk'
+import { XIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import React from 'react'
 
 export type SessionPostEmbedProps = {
   results: TaskV2Result[]
+  childSessionId?: string
+  toolStatus?: TaskV2Status | string | null
+  onCancel?: () => void
+  toolName?: string
+  toolArgs?: TaskV2Args
 }
 
 export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   results,
+  childSessionId,
+  toolStatus,
+  onCancel,
+  toolName,
+  toolArgs,
 }) => {
   // Get the current session ID to fetch current session's agents
   const params = useParams()
   const currentSessionId = params?.id as string | undefined
-  // Extract session ID from results
+
+  // Extract session ID from results or use the provided childSessionId
   // The result structure should have a session field with the session ID
   const sessionId = React.useMemo(() => {
+    // If childSessionId is provided, use it directly
+    if (childSessionId) {
+      return childSessionId
+    }
     if (!results || !Array.isArray(results) || results.length === 0) {
       return null
     }
@@ -60,6 +78,55 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     }
 
     return null
+  }, [results, childSessionId])
+
+  // Filter out results that only contain the session ID (string outputs that are session IDs)
+  // We want to show media outputs but not the session ID text
+  // IMPORTANT: This must be before early returns to satisfy React hooks rules
+  const mediaResults = React.useMemo(() => {
+    return (
+      results?.filter(result => {
+        // Check if result has array outputs
+        if (result && Array.isArray(result?.output)) {
+          // Filter out arrays that only contain session objects
+          const hasActualMedia = result.output.some(item => {
+            if (!item || typeof item !== 'object') return false
+            // Check if it's a media object (has filename or mediaAttributes)
+            return (
+              'filename' in item || 'mediaAttributes' in item || 'url' in item
+            )
+          })
+          return hasActualMedia
+        }
+        // Filter out string outputs that are session IDs
+        // Session IDs are typically MongoDB ObjectIds (24 hex characters) or similar
+        if (result && typeof result?.output === 'string') {
+          const output = result.output as string
+          // Don't render if it looks like a session ID (24 char hex string)
+          if (/^[a-f0-9]{24}$/i.test(output)) {
+            return false
+          }
+          // Keep other string outputs
+          return true
+        }
+        // Filter out object outputs that only contain a session field
+        if (
+          result &&
+          result?.output &&
+          typeof result.output === 'object' &&
+          !Array.isArray(result.output)
+        ) {
+          const output = result.output as Record<string, unknown>
+          // If it's an object with only a 'session' field, filter it out
+          const keys = Object.keys(output)
+          if (keys.length === 1 && keys[0] === 'session') {
+            return false
+          }
+        }
+        // Keep other types of outputs
+        return result && result?.output !== undefined
+      }) || []
+    )
   }, [results])
 
   // Fetch the posted session
@@ -74,35 +141,21 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     enabled: !!currentSessionId,
   })
 
+  const hasMediaOutputs = mediaResults.length > 0
+
+  // If no session ID but we have media outputs, just show the media
+  if (!sessionId && hasMediaOutputs) {
+    return <ToolMediaRenderer results={mediaResults} args={toolArgs} />
+  }
+
+  // If no session ID and no media outputs, don't render anything
   if (!sessionId) {
-    return (
-      <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
-        <span className="text-sm text-muted-foreground">
-          Posted to session (ID not found)
-        </span>
-      </div>
-    )
+    return null
   }
 
-  if (isLoading) {
-    return (
-      <div className="px-3 py-2 bg-accent rounded-md border border-secondary flex items-center gap-2">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        <span className="text-sm text-muted-foreground">
-          Loading session...
-        </span>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return (
-      <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
-        <span className="text-sm text-muted-foreground">
-          Posted to session (session not found)
-        </span>
-      </div>
-    )
+  // If loading or session not found, don't render anything
+  if (isLoading || !session) {
+    return null
   }
 
   // Get agent IDs from current session to hide them in the posted session card
@@ -115,16 +168,55 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     ? `/chat/${firstAgent.username}/${session._id}`
     : `/sessions/${session._id}` // fallback to sessions if no agent
 
+  // Check if tool is running
+  const isRunning =
+    toolStatus === TaskV2Status.Running || toolStatus === TaskV2Status.Pending
+
   return (
     <div className="space-y-2">
-      <div className="text-sm text-muted-foreground mb-2">
-        Posted to session:
+      {/* Wrapper for session card with overlays */}
+      <div className="relative">
+        {/* Display session card */}
+        <SessionCard
+          session={session}
+          hideAgentIds={currentAgentIds}
+          linkPath={chatLinkPath}
+        />
+
+        {/* Running indicator and cancel button - top right corner */}
+        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+          {isRunning && (
+            <span className="text-blue-500 h-6 w-6 loading loading-ring pointer-events-none" />
+          )}
+          {isRunning && onCancel && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={e => {
+                e.stopPropagation()
+                e.preventDefault()
+                onCancel()
+              }}
+              className="h-7 px-2 hover:bg-destructive/10 hover:text-destructive pointer-events-auto"
+            >
+              <XIcon className="h-4 w-4 mr-1" />
+              Cancel
+            </Button>
+          )}
+        </div>
       </div>
-      <SessionCard
-        session={session}
-        hideAgentIds={currentAgentIds}
-        linkPath={chatLinkPath}
-      />
+
+      {/* Display media outputs below session card if they exist */}
+      {hasMediaOutputs && (
+        <ToolMediaRenderer results={mediaResults} args={toolArgs} />
+      )}
+
+      {/* Small tool badge - always visible at bottom right using ToolHoverMenu */}
+      {toolName && toolArgs && (
+        <div className="flex justify-end mt-2">
+          <ToolHoverMenu toolName={toolName} args={toolArgs} result={results} />
+        </div>
+      )}
     </div>
   )
 }

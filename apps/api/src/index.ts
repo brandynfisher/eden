@@ -1,4 +1,3 @@
-import { dummyTaskHandlers } from './lib/taskHandlers/dummy'
 import { edenHandlers } from './lib/taskHandlers/edenHandlers'
 import { TaskHandlers } from './plugins/tasks'
 import createServer from './server'
@@ -6,7 +5,7 @@ import createServer from './server'
 //
 
 const handlersMap: Record<string, TaskHandlers> = {
-  development: dummyTaskHandlers,
+  development: edenHandlers,
   staging: edenHandlers,
   production: edenHandlers,
 }

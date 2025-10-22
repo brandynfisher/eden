@@ -31,6 +31,7 @@ interface SessionTopBarProps {
   sessionId?: string
   messages?: Message[]
   isOwner?: boolean
+  isPublic?: boolean
 }
 
 export const SessionTopBar = ({
@@ -41,6 +42,7 @@ export const SessionTopBar = ({
   sessionId,
   messages,
   isOwner,
+  isPublic,
 }: SessionTopBarProps) => {
   const AgentsPopoverContent = ({ agents }: { agents: Agent[] }) => (
     <div className="grid grid-cols-1 gap-2 min-w-48">
@@ -99,6 +101,7 @@ export const SessionTopBar = ({
             sessionId={sessionId}
             messages={messages}
             isOwner={isOwner}
+            isPublic={isPublic}
             className="mr-2"
           />
         )}

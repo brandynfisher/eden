@@ -21,7 +21,7 @@ import {
   SquareCheckBigIcon,
   SquareIcon,
 } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 const INITIAL_VISIBLE_IMAGES = 4
@@ -29,14 +29,73 @@ const SHORT_STRING_LENGTH = 30
 
 const ImageGalleryCell = ({ images }: { images: string[] }) => {
   const [showAll, setShowAll] = useState(false)
+  const [maxHeight, setMaxHeight] = useState<number>(384) // default 96 * 4 = 384px
+  const containerRef = useRef<HTMLDivElement>(null)
+  const galleryRef = useRef<HTMLDivElement>(null)
+
   const visibleImages = showAll
     ? images
     : images.slice(0, INITIAL_VISIBLE_IMAGES)
   const hasMore = images.length > INITIAL_VISIBLE_IMAGES
 
+  useEffect(() => {
+    if (!showAll || !containerRef.current) return
+
+    const calculateMaxHeight = () => {
+      const container = containerRef.current
+      if (!container) return
+
+      const rect = container.getBoundingClientRect()
+
+      // Find the nearest scrollable parent (likely the dropdown content)
+      let scrollParent = container.parentElement
+      while (scrollParent) {
+        const overflowY = window.getComputedStyle(scrollParent).overflowY
+        if (overflowY === 'auto' || overflowY === 'scroll') {
+          break
+        }
+        scrollParent = scrollParent.parentElement
+      }
+
+      let availableHeight: number
+      if (scrollParent) {
+        // Calculate space within scroll container
+        const scrollRect = scrollParent.getBoundingClientRect()
+        const spaceInContainer = scrollRect.bottom - rect.top
+        availableHeight = Math.max(150, spaceInContainer - 100)
+      } else {
+        // Fallback to viewport calculation
+        const viewportHeight = window.innerHeight
+        const spaceBelow = viewportHeight - rect.top
+        availableHeight = Math.max(150, spaceBelow - 100)
+      }
+
+      // Cap at reasonable max
+      const calculatedHeight = Math.min(availableHeight, 400)
+      setMaxHeight(calculatedHeight)
+    }
+
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      calculateMaxHeight()
+    })
+
+    window.addEventListener('resize', calculateMaxHeight)
+    window.addEventListener('scroll', calculateMaxHeight, true)
+
+    return () => {
+      window.removeEventListener('resize', calculateMaxHeight)
+      window.removeEventListener('scroll', calculateMaxHeight, true)
+    }
+  }, [showAll])
+
   return (
-    <div className="space-y-2 mt-2">
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-2 mt-2" ref={containerRef}>
+      <div
+        ref={galleryRef}
+        className="flex flex-wrap gap-2 overflow-y-auto overflow-x-hidden scrollbar-thin"
+        style={{ maxHeight: showAll ? `${maxHeight}px` : undefined }}
+      >
         <LightboxGallery>
           {visibleImages.map((inputImageUrl, index) => (
             <LightboxTrigger

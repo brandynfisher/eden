@@ -1,8 +1,6 @@
 import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
-import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { formatDistanceToNow } from 'date-fns'
 import { ClockIcon, MessageCircleIcon } from 'lucide-react'
-import Image from 'next/image'
 import Link from 'next/link'
 
 interface SessionCardProps {
@@ -67,31 +65,13 @@ const SessionCard = ({
 
           {/* Title and timestamp */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-1">
+            <h3 className="font-medium text-base line-clamp-2 group-hover:text-primary transition-colors mb-1">
               {displayTitle}
             </h3>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <ClockIcon className="w-3 h-3" />
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <ClockIcon className="w-3.5 h-3.5" />
               <span>{timeAgo}</span>
             </div>
-          </div>
-
-          {/* Owner avatar and scheduled badge in top right */}
-          <div className="flex items-center gap-2 shrink-0">
-            {!!session.trigger && (
-              <div className="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-xs font-medium">
-                Scheduled
-              </div>
-            )}
-            {session.owner?.userImage && (
-              <Image
-                src={getCloudfrontOriginalUrl(session.owner.userImage)}
-                alt={session.owner.username || 'Owner'}
-                width={24}
-                height={24}
-                className="w-6 h-6 rounded-full border border-border object-cover"
-              />
-            )}
           </div>
         </div>
 
