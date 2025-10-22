@@ -179,9 +179,6 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
       {hasMediaOutputs && <ToolMediaRenderer results={mediaResults} />}
 
       {/* Display session card */}
-      <div className="text-sm text-muted-foreground mb-2">
-        Posted to session:
-      </div>
       <SessionCard
         session={session}
         hideAgentIds={currentAgentIds}
