@@ -131,36 +131,14 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     return <ToolMediaRenderer results={mediaResults} />
   }
 
-  // If no session ID and no media outputs, show error
+  // If no session ID and no media outputs, don't render anything
   if (!sessionId) {
-    return (
-      <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
-        <span className="text-sm text-muted-foreground">
-          Posted to session (ID not found)
-        </span>
-      </div>
-    )
+    return null
   }
 
-  if (isLoading) {
-    return (
-      <div className="px-3 py-2 bg-accent rounded-md border border-secondary flex items-center gap-2">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        <span className="text-sm text-muted-foreground">
-          Loading session...
-        </span>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return (
-      <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
-        <span className="text-sm text-muted-foreground">
-          Posted to session (session not found)
-        </span>
-      </div>
-    )
+  // If loading or session not found, don't render anything
+  if (isLoading || !session) {
+    return null
   }
 
   // Get agent IDs from current session to hide them in the posted session card
@@ -175,15 +153,15 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
 
   return (
     <div className="space-y-2">
-      {/* Display media outputs first if they exist */}
-      {hasMediaOutputs && <ToolMediaRenderer results={mediaResults} />}
-
       {/* Display session card */}
       <SessionCard
         session={session}
         hideAgentIds={currentAgentIds}
         linkPath={chatLinkPath}
       />
+
+      {/* Display media outputs below session card if they exist */}
+      {hasMediaOutputs && <ToolMediaRenderer results={mediaResults} />}
     </div>
   )
 }

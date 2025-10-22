@@ -198,17 +198,11 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
             />
           </div>
         ) : toolCall.child_session ? (
-          // If tool has a child_session but isn't a SESSION_POST_TOOLS, show media + session
-          <>
-            <ToolMediaRenderer
-              results={toolResults || []}
-              args={toolCall.args}
-            />
-            <SessionPostEmbed
-              results={toolResults || []}
-              childSessionId={toolCall.child_session}
-            />
-          </>
+          // If tool has a child_session but isn't a SESSION_POST_TOOLS, show session (which includes media)
+          <SessionPostEmbed
+            results={toolResults || []}
+            childSessionId={toolCall.child_session}
+          />
         ) : (
           <ToolMediaRenderer results={toolResults || []} args={toolCall.args} />
         )}
