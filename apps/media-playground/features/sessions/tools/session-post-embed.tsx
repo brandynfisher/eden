@@ -1,21 +1,31 @@
 'use client'
 
 import SessionCard from '@/components/session/session-card'
+import { Button } from '@/components/ui/button'
+import { ToolHoverMenu } from '@/features/sessions/components/tool-hover-menu'
 import { ToolMediaRenderer } from '@/features/sessions/tools/tool-media-renderer'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
-import { TaskV2Result } from '@edenlabs/eden-sdk'
-import { Loader2 } from 'lucide-react'
+import { TaskV2Args, TaskV2Result, TaskV2Status } from '@edenlabs/eden-sdk'
+import { XIcon } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import React from 'react'
 
 export type SessionPostEmbedProps = {
   results: TaskV2Result[]
   childSessionId?: string
+  toolStatus?: TaskV2Status | string | null
+  onCancel?: () => void
+  toolName?: string
+  toolArgs?: TaskV2Args
 }
 
 export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   results,
   childSessionId,
+  toolStatus,
+  onCancel,
+  toolName,
+  toolArgs,
 }) => {
   // Get the current session ID to fetch current session's agents
   const params = useParams()
@@ -82,7 +92,9 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
           const hasActualMedia = result.output.some(item => {
             if (!item || typeof item !== 'object') return false
             // Check if it's a media object (has filename or mediaAttributes)
-            return 'filename' in item || 'mediaAttributes' in item || 'url' in item
+            return (
+              'filename' in item || 'mediaAttributes' in item || 'url' in item
+            )
           })
           return hasActualMedia
         }
@@ -98,7 +110,12 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
           return true
         }
         // Filter out object outputs that only contain a session field
-        if (result && result?.output && typeof result.output === 'object' && !Array.isArray(result.output)) {
+        if (
+          result &&
+          result?.output &&
+          typeof result.output === 'object' &&
+          !Array.isArray(result.output)
+        ) {
           const output = result.output as Record<string, unknown>
           // If it's an object with only a 'session' field, filter it out
           const keys = Object.keys(output)
@@ -128,7 +145,7 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
 
   // If no session ID but we have media outputs, just show the media
   if (!sessionId && hasMediaOutputs) {
-    return <ToolMediaRenderer results={mediaResults} />
+    return <ToolMediaRenderer results={mediaResults} args={toolArgs} />
   }
 
   // If no session ID and no media outputs, don't render anything
@@ -151,17 +168,55 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
     ? `/chat/${firstAgent.username}/${session._id}`
     : `/sessions/${session._id}` // fallback to sessions if no agent
 
+  // Check if tool is running
+  const isRunning =
+    toolStatus === TaskV2Status.Running || toolStatus === TaskV2Status.Pending
+
   return (
     <div className="space-y-2">
-      {/* Display session card */}
-      <SessionCard
-        session={session}
-        hideAgentIds={currentAgentIds}
-        linkPath={chatLinkPath}
-      />
+      {/* Wrapper for session card with overlays */}
+      <div className="relative">
+        {/* Display session card */}
+        <SessionCard
+          session={session}
+          hideAgentIds={currentAgentIds}
+          linkPath={chatLinkPath}
+        />
+
+        {/* Running indicator and cancel button - top right corner */}
+        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+          {isRunning && (
+            <span className="text-blue-500 h-6 w-6 loading loading-ring pointer-events-none" />
+          )}
+          {isRunning && onCancel && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={e => {
+                e.stopPropagation()
+                e.preventDefault()
+                onCancel()
+              }}
+              className="h-7 px-2 hover:bg-destructive/10 hover:text-destructive pointer-events-auto"
+            >
+              <XIcon className="h-4 w-4 mr-1" />
+              Cancel
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* Display media outputs below session card if they exist */}
-      {hasMediaOutputs && <ToolMediaRenderer results={mediaResults} />}
+      {hasMediaOutputs && (
+        <ToolMediaRenderer results={mediaResults} args={toolArgs} />
+      )}
+
+      {/* Small tool badge - always visible at bottom right using ToolHoverMenu */}
+      {toolName && toolArgs && (
+        <div className="flex justify-end mt-2">
+          <ToolHoverMenu toolName={toolName} args={toolArgs} result={results} />
+        </div>
+      )}
     </div>
   )
 }

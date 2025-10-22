@@ -9,8 +9,6 @@ import modelRoutesV2 from './modelRoutesV2'
 import notificationRoutes from './notificationRoutes'
 import sessionRoutesV2 from './sessionRoutesV2'
 import taskRoutesV2 from './taskRoutesV2'
-// import testRoutes from './testRoutes'
-import threadRoutes from './threadRoutes'
 import toolRoutesV2 from './toolRoutesV2'
 import userRoutes from './userRoutes'
 
@@ -24,10 +22,8 @@ export const routes = [
   creationRoutesV2,
   feedRoutesV2,
   collectionRoutesV2,
-  threadRoutes,
   agentRoutes,
   userRoutes,
   sessionRoutesV2,
   notificationRoutes,
-  // testRoutes,
 ]

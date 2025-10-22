@@ -117,7 +117,6 @@ export const listAgents = async (
     request.query as AgentsListArguments
   const agentRepository = new AgentRepository(Agent)
 
-  // Get authenticated user if available
   const currentUserId = request.user ? request.user.userId : undefined
   let currentUserObjectId: ObjectId | undefined
 

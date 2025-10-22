@@ -70,7 +70,6 @@ export const TwitterDeploymentForm = ({
     try {
       await axios.delete(`/api/auth/integrations/twitter?agentId=${agentId}`)
       toast.success('Twitter account disconnected successfully')
-      // Refresh the page to update deployment status
       window.location.reload()
     } catch (error) {
       toast.error('Failed to disconnect Twitter account')

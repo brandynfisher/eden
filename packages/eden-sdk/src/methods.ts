@@ -1,16 +1,10 @@
 import {
-  AdminApiKeysListArguments,
-  AdminApiKeysListResponse,
   AdminAuthChallengeArguments,
   AdminAuthChallengeResponse,
-  AdminConceptsExportToHFArguments,
-  AdminConceptsRemoveFromHFArguments,
   AdminMannaModifyArguments,
   AdminMannaModifyResponse,
   AdminMannaVouchersCreateArguments,
   AdminMannaVouchersCreateResponse,
-  AdminMediaUploadArguments,
-  AdminMediaUploadResponse,
   AgentGetArguments,
   AgentGetResponse,
   AgentsCreateArguments,
@@ -37,80 +31,11 @@ import {
   ApiKeysDeleteResponse,
   ApiKeysListArguments,
   ApiKeysListResponse,
-  CharactersCreateArguments,
-  CharactersCreateResponse,
-  CharactersDeleteArguments,
-  CharactersDeleteResponse,
-  CharactersGetArguments,
-  CharactersGetResponse,
-  CharactersListArguments,
-  CharactersListResponse,
-  CharactersTestArguments,
-  CharactersTestResponse,
-  CharactersUpdateArguments,
-  CharactersUpdateResponse,
-  CollectionsAddCreationsArguments,
-  CollectionsAddCreationsResponse,
-  CollectionsCreateArguments,
-  CollectionsCreateResponse,
-  CollectionsDeleteArguments,
-  CollectionsDeleteResponse,
-  CollectionsGetArguments,
-  CollectionsGetResponse,
-  CollectionsListArguments,
-  CollectionsListResponse,
-  CollectionsRemoveCreationsArguments,
-  CollectionsRemoveCreationsResponse,
-  CollectionsUpdateArguments,
-  CollectionsUpdateResponse,
-  ConceptsDeleteArguments,
-  ConceptsDeleteResponse,
-  ConceptsGetArguments,
-  ConceptsGetResponse,
-  ConceptsListArguments,
-  ConceptsListResponse,
-  ConceptsReactArguments,
-  ConceptsReactResponse,
-  ConceptsUnreactArguments,
-  ConceptsUnreactResponse,
-  ConceptsUpdateArguments,
-  ConceptsUpdateResponse,
-  CreationsDeleteArguments,
-  CreationsDeleteResponse,
-  CreationsGetArguments,
-  CreationsGetResponse,
-  CreationsListArguments,
-  CreationsListResponse,
-  CreationsReactArguments,
-  CreationsReactResponse,
-  CreationsUnreactArguments,
-  CreationsUnreactResponse,
-  CreationsUpdateArguments,
-  CreationsUpdateResponse,
-  CreatorFollowersListArguments,
-  CreatorFollowersListResponse,
-  CreatorFollowingListResponse,
-  CreatorsFollowArguments,
-  CreatorsFollowResponse,
   CreatorsGetArguments,
   CreatorsGetMeResponse,
   CreatorsGetResponse,
-  CreatorsListArguments,
-  CreatorsListResponse,
-  CreatorsUnfollowArguments,
-  CreatorsUnfollowResponse,
   CreatorsUpdateArguments,
   CreatorsUpdateResponse,
-  FeedConceptsArguments,
-  FeedConceptsResponse,
-  FeedCreationsArguments,
-  FeedCreationsCursorArguments,
-  FeedCreationsCursorResponse,
-  FeedCreationsResponse,
-  GeneratorsGetArguments,
-  GeneratorsGetResponse,
-  GeneratorsListArguments,
-  GeneratorsListResponse,
   MannaBalanceGetArguments,
   MannaBalanceGetResponse,
   MannaVoucherRedeemResponse,
@@ -124,34 +49,9 @@ import {
   PaymentsProductsResponse,
   PaymentsSubscriptionArguments,
   PaymentsSubscriptionResponse,
-  SessionEventsListArguments,
-  SessionEventsListResponse,
-  SessionsAddCharactersArguments,
-  SessionsAddCharactersResponse,
-  SessionsAddUsersArguments,
-  SessionsAddUsersResponse,
-  SessionsCreateResponse,
-  SessionsDeleteArguments,
-  SessionsDeleteResponse,
-  SessionsGetArguments,
-  SessionsGetResponse,
-  SessionsInteractArguments,
-  SessionsInteractResponse,
-  SessionsListArguments,
-  SessionsListResponse,
-  TasksCreateArguments,
-  TasksCreateResponse,
-  TasksGetArguments,
-  TasksGetResponse,
-  TasksListArguments,
-  TasksListResponse,
-  adminApiKeysListRequestConfig,
   adminAuthChallengeRequestConfig,
-  adminConceptsExportToHFRequestConfig,
-  adminConceptsRemoveFromHFRequestConfig,
   adminMannaModifyRequestConfig,
   adminMannaVouchersCreateRequestConfig,
-  adminMediaUploadRequestConfig,
   agentGetRequestConfig,
   agentsCreateRequestConfig,
   agentsDeleteRequestConfig,
@@ -162,47 +62,9 @@ import {
   apiKeysCreateRequestConfig,
   apiKeysDeleteRequestConfig,
   apiKeysListRequestConfig,
-  charactersCreateRequestConfig,
-  charactersDeleteRequestConfig,
-  charactersGetRequestConfig,
-  charactersListRequestConfig,
-  charactersTestRequestConfig,
-  charactersUpdateRequestConfig,
-  collectionsAddCreationsRequestConfig,
-  collectionsCreateRequestConfig,
-  collectionsDeleteRequestConfig,
-  collectionsGetRequestConfig,
-  collectionsListRequestConfig,
-  collectionsRemoveCreationsRequestConfig,
-  collectionsUpdateRequestConfig,
-  conceptsDeleteRequestConfig,
-  conceptsGetRequestConfig,
-  conceptsListRequestConfig,
-  conceptsReactRequestConfig,
-  conceptsUnreactRequestConfig,
-  conceptsUpdateRequestConfig,
-  creationsDeleteRequestConfig,
-  creationsGetRequestConfig,
-  creationsListRequestConfig,
-  creationsReactRequestConfig,
-  creationsUnreactRequestConfig,
-  creationsUpdateRequestConfig,
-  creatorFollowersListRequestConfig,
-  creatorFollowingListRequestConfig,
-  creatorsFollowRequestConfig,
-  creatorsGetMeRequestConfig,
   creatorsGetMeV2RequestConfig,
-  creatorsGetRequestConfig,
   creatorsGetV2RequestConfig,
-  creatorsListRequestConfig,
-  creatorsUnfollowRequestConfig,
-  creatorsUpdateRequestConfig,
   creatorsUpdateV2RequestConfig,
-  feedConceptsRequestConfig,
-  feedCreationsRequestConfig,
-  feedCursorCreationsRequestConfig,
-  generatorsGetRequestConfig,
-  generatorsListRequestConfig,
   mannaBalanceGetRequestConfig,
   mannaVouchersRedeemRequestConfig,
   mediaBulkDownloadRequestConfig,
@@ -210,18 +72,6 @@ import {
   paymentsCreateRequestConfig,
   paymentsProductsRequestConfig,
   paymentsSubscriptionRequestConfig,
-  sessionEventsListRequestConfig,
-  sessionsAddCharactersRequestConfig,
-  sessionsAddUsersRequestConfig,
-  sessionsCreateRequestConfig,
-  sessionsDeleteRequestConfig,
-  sessionsGetRequestConfig,
-  sessionsInteractRequestConfig,
-  sessionsListRequestConfig,
-  tasksCostRequestConfig,
-  tasksCreateRequestConfig,
-  tasksGetRequestConfig,
-  tasksListRequestConfig,
 } from './models'
 import {
   AgentsCreateTriggerArguments,
@@ -344,24 +194,6 @@ import {
   TasksV2GetResponse,
   TasksV2ListArguments,
   TasksV2ListResponse,
-  ThreadsCreateArguments,
-  ThreadsCreateResponse,
-  ThreadsDeleteArguments,
-  ThreadsDeleteResponse,
-  ThreadsGetArguments,
-  ThreadsGetResponse,
-  ThreadsListArguments,
-  ThreadsListResponse,
-  ThreadsMessageArguments,
-  ThreadsMessageReactArguments,
-  ThreadsMessageReactResponse,
-  ThreadsMessageResponse,
-  ThreadsPinMessageArguments,
-  ThreadsPinMessageResponse,
-  ThreadsRenameArguments,
-  ThreadsRenameResponse,
-  ThreadsUnpinMessageArguments,
-  ThreadsUnpinMessageResponse,
   ToolsGetArgumentsV2,
   ToolsGetResponseV2,
   ToolsListArgumentsV2,
@@ -432,15 +264,6 @@ import {
   tasksV2CreateRequestConfig,
   tasksV2GetRequestConfig,
   tasksV2ListRequestConfig,
-  threadsCreateRequestConfig,
-  threadsDeleteRequestConfig,
-  threadsGetRequestConfig,
-  threadsListRequestConfig,
-  threadsMessageReactRequestConfig,
-  threadsMessageRequestConfig,
-  threadsPinMessageRequestConfig,
-  threadsRenameRequestConfig,
-  threadsUnpinMessageRequestConfig,
   toolsGetRequestConfigV2,
   toolsListRequestConfigV2,
   userConceptsListRequestConfig,
@@ -504,32 +327,6 @@ export abstract class Methods {
         AdminAuthChallengeResponse
       >(this, adminAuthChallengeRequestConfig),
     },
-    media: {
-      upload: bindApiCall<AdminMediaUploadArguments, AdminMediaUploadResponse>(
-        this,
-        adminMediaUploadRequestConfig,
-      ),
-    },
-    concepts: {
-      remove: {
-        hf: bindApiCall<
-          AdminConceptsRemoveFromHFArguments,
-          AdminConceptsRemoveFromHFArguments
-        >(this, adminConceptsRemoveFromHFRequestConfig),
-      },
-      export: {
-        hf: bindApiCall<
-          AdminConceptsExportToHFArguments,
-          AdminConceptsExportToHFArguments
-        >(this, adminConceptsExportToHFRequestConfig),
-      },
-    },
-    apikeys: {
-      list: bindApiCall<AdminApiKeysListArguments, AdminApiKeysListResponse>(
-        this,
-        adminApiKeysListRequestConfig,
-      ),
-    },
   }
 
   public readonly apiKeys = {
@@ -547,42 +344,7 @@ export abstract class Methods {
     ),
   }
 
-  public readonly characters = {
-    create: bindApiCall<CharactersCreateArguments, CharactersCreateResponse>(
-      this,
-      charactersCreateRequestConfig,
-    ),
-    update: bindApiCall<CharactersUpdateArguments, CharactersUpdateResponse>(
-      this,
-      charactersUpdateRequestConfig,
-    ),
-    delete: bindApiCall<CharactersDeleteArguments, CharactersDeleteResponse>(
-      this,
-      charactersDeleteRequestConfig,
-    ),
-    list: bindApiCall<CharactersListArguments, CharactersListResponse>(
-      this,
-      charactersListRequestConfig,
-    ),
-    get: bindApiCall<CharactersGetArguments, CharactersGetResponse>(
-      this,
-      charactersGetRequestConfig,
-    ),
-    test: bindApiCall<CharactersTestArguments, CharactersTestResponse>(
-      this,
-      charactersTestRequestConfig,
-    ),
-  }
-
   public readonly collections = {
-    list: bindApiCall<CollectionsListArguments, CollectionsListResponse>(
-      this,
-      collectionsListRequestConfig,
-    ),
-    get: bindApiCall<CollectionsGetArguments, CollectionsGetResponse>(
-      this,
-      collectionsGetRequestConfig,
-    ),
     getV2: bindApiCall<CollectionsV2GetArguments, CollectionsV2GetResponse>(
       this,
       collectionsV2GetRequestConfig,
@@ -595,31 +357,11 @@ export abstract class Methods {
       CollectionsV2GetLightArguments,
       CollectionsV2GetLightResponse
     >(this, collectionsV2GetLightRequestConfig),
-    create: bindApiCall<CollectionsCreateArguments, CollectionsCreateResponse>(
-      this,
-      collectionsCreateRequestConfig,
-    ),
     createV2: bindApiCall<
       CollectionsV2CreateArguments,
       CollectionsV2CreateResponse
     >(this, collectionsV2CreateRequestConfig),
-    update: bindApiCall<CollectionsUpdateArguments, CollectionsUpdateResponse>(
-      this,
-      collectionsUpdateRequestConfig,
-    ),
-    delete: bindApiCall<CollectionsDeleteArguments, CollectionsDeleteResponse>(
-      this,
-      collectionsDeleteRequestConfig,
-    ),
     creations: {
-      add: bindApiCall<
-        CollectionsAddCreationsArguments,
-        CollectionsAddCreationsResponse
-      >(this, collectionsAddCreationsRequestConfig),
-      remove: bindApiCall<
-        CollectionsRemoveCreationsArguments,
-        CollectionsRemoveCreationsResponse
-      >(this, collectionsRemoveCreationsRequestConfig),
       addV2: bindApiCall<
         CollectionsV2AddCreationsArguments,
         CollectionsV2AddCreationsResponse
@@ -637,33 +379,6 @@ export abstract class Methods {
       CollectionsV2DeleteArguments,
       CollectionsV2DeleteResponse
     >(this, collectionsV2DeleteRequestConfig),
-  }
-
-  public readonly concepts = {
-    list: bindApiCall<ConceptsListArguments, ConceptsListResponse>(
-      this,
-      conceptsListRequestConfig,
-    ),
-    get: bindApiCall<ConceptsGetArguments, ConceptsGetResponse>(
-      this,
-      conceptsGetRequestConfig,
-    ),
-    update: bindApiCall<ConceptsUpdateArguments, ConceptsUpdateResponse>(
-      this,
-      conceptsUpdateRequestConfig,
-    ),
-    delete: bindApiCall<ConceptsDeleteArguments, ConceptsDeleteResponse>(
-      this,
-      conceptsDeleteRequestConfig,
-    ),
-    react: bindApiCall<ConceptsReactArguments, ConceptsReactResponse>(
-      this,
-      conceptsReactRequestConfig,
-    ),
-    unreact: bindApiCall<ConceptsUnreactArguments, ConceptsUnreactResponse>(
-      this,
-      conceptsUnreactRequestConfig,
-    ),
   }
 
   public readonly models = {
@@ -839,29 +554,9 @@ export abstract class Methods {
   }
 
   public readonly creations = {
-    list: bindApiCall<CreationsListArguments, CreationsListResponse>(
-      this,
-      creationsListRequestConfig,
-    ),
-    get: bindApiCall<CreationsGetArguments, CreationsGetResponse>(
-      this,
-      creationsGetRequestConfig,
-    ),
     getV2: bindApiCall<CreationsV2GetArguments, CreationsV2GetResponse>(
       this,
       creationsV2GetRequestConfig,
-    ),
-    react: bindApiCall<CreationsReactArguments, CreationsReactResponse>(
-      this,
-      creationsReactRequestConfig,
-    ),
-    unreact: bindApiCall<CreationsUnreactArguments, CreationsUnreactResponse>(
-      this,
-      creationsUnreactRequestConfig,
-    ),
-    update: bindApiCall<CreationsUpdateArguments, CreationsUpdateResponse>(
-      this,
-      creationsUpdateRequestConfig,
     ),
     updateV2: bindApiCall<CreationsV2PatchArguments, CreationsV2PatchResponse>(
       this,
@@ -871,10 +566,6 @@ export abstract class Methods {
       CreationsV2BulkPatchArguments,
       CreationsV2BulkPatchResponse
     >(this, creationsV2BulkPatchRequestConfig),
-    delete: bindApiCall<CreationsDeleteArguments, CreationsDeleteResponse>(
-      this,
-      creationsDeleteRequestConfig,
-    ),
     likeV2: bindApiCall<CreationsV2LikeArguments, CreationsV2LikeResponse>(
       this,
       creationsV2LikeRequestConfig,
@@ -890,37 +581,13 @@ export abstract class Methods {
   }
 
   public readonly creators = {
-    follow: bindApiCall<CreatorsFollowArguments, CreatorsFollowResponse>(
-      this,
-      creatorsFollowRequestConfig,
-    ),
-    unfollow: bindApiCall<CreatorsUnfollowArguments, CreatorsUnfollowResponse>(
-      this,
-      creatorsUnfollowRequestConfig,
-    ),
-    list: bindApiCall<CreatorsListArguments, CreatorsListResponse>(
-      this,
-      creatorsListRequestConfig,
-    ),
-    get: bindApiCall<CreatorsGetArguments, CreatorsGetResponse>(
-      this,
-      creatorsGetRequestConfig,
-    ),
     getV2: bindApiCall<CreatorsGetArguments, CreatorsGetResponse>(
       this,
       creatorsGetV2RequestConfig,
     ),
-    update: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
-      this,
-      creatorsUpdateRequestConfig,
-    ),
     updateV2: bindApiCall<CreatorsUpdateArguments, CreatorsUpdateResponse>(
       this,
       creatorsUpdateV2RequestConfig,
-    ),
-    me: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
-      this,
-      creatorsGetMeRequestConfig,
     ),
     meV2: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
       this,
@@ -928,52 +595,11 @@ export abstract class Methods {
     ),
   }
 
-  public readonly creator = {
-    followers: bindApiCall<
-      CreatorFollowersListArguments,
-      CreatorFollowersListResponse
-    >(this, creatorFollowersListRequestConfig),
-
-    following: bindApiCall<
-      CreatorFollowersListArguments,
-      CreatorFollowingListResponse
-    >(this, creatorFollowingListRequestConfig),
-  }
-
-  public readonly feed = {
-    creations: bindApiCall<FeedCreationsArguments, FeedCreationsResponse>(
-      this,
-      feedCreationsRequestConfig,
-    ),
-    concepts: bindApiCall<FeedConceptsArguments, FeedConceptsResponse>(
-      this,
-      feedConceptsRequestConfig,
-    ),
-  }
-
-  public readonly feed_cursor = {
-    creations: bindApiCall<
-      FeedCreationsCursorArguments,
-      FeedCreationsCursorResponse
-    >(this, feedCursorCreationsRequestConfig),
-  }
-
   public readonly feed_cursorV2 = {
     creations: bindApiCall<
       FeedCreationsV2CursorArguments,
       FeedCreationsV2CursorResponse
     >(this, feedCursorCreationsV2RequestConfig),
-  }
-
-  public readonly generators = {
-    list: bindApiCall<GeneratorsListArguments, GeneratorsListResponse>(
-      this,
-      generatorsListRequestConfig,
-    ),
-    get: bindApiCall<GeneratorsGetArguments, GeneratorsGetResponse>(
-      this,
-      generatorsGetRequestConfig,
-    ),
   }
 
   public readonly tools = {
@@ -1027,38 +653,6 @@ export abstract class Methods {
   }
 
   public readonly sessions = {
-    create: bindApiCall<WebAPICallOptions, SessionsCreateResponse>(
-      this,
-      sessionsCreateRequestConfig,
-    ),
-    delete: bindApiCall<SessionsDeleteArguments, SessionsDeleteResponse>(
-      this,
-      sessionsDeleteRequestConfig,
-    ),
-    list: bindApiCall<SessionsListArguments, SessionsListResponse>(
-      this,
-      sessionsListRequestConfig,
-    ),
-    get: bindApiCall<SessionsGetArguments, SessionsGetResponse>(
-      this,
-      sessionsGetRequestConfig,
-    ),
-    interact: bindApiCall<SessionsInteractArguments, SessionsInteractResponse>(
-      this,
-      sessionsInteractRequestConfig,
-    ),
-    users: {
-      add: bindApiCall<SessionsAddUsersArguments, SessionsAddUsersResponse>(
-        this,
-        sessionsAddUsersRequestConfig,
-      ),
-    },
-    characters: {
-      add: bindApiCall<
-        SessionsAddCharactersArguments,
-        SessionsAddCharactersResponse
-      >(this, sessionsAddCharactersRequestConfig),
-    },
     v2: {
       list: bindApiCall<SessionsV2ListArguments, SessionsV2ListResponse>(
         this,
@@ -1133,82 +727,18 @@ export abstract class Methods {
     },
   }
 
-  public readonly session = {
-    events: {
-      list: bindApiCall<SessionEventsListArguments, SessionEventsListResponse>(
-        this,
-        sessionEventsListRequestConfig,
-      ),
-    },
-  }
-
-  public readonly threads = {
-    create: bindApiCall<ThreadsCreateArguments, ThreadsCreateResponse>(
-      this,
-      threadsCreateRequestConfig,
-    ),
-    get: bindApiCall<ThreadsGetArguments, ThreadsGetResponse>(
-      this,
-      threadsGetRequestConfig,
-    ),
-    list: bindApiCall<ThreadsListArguments, ThreadsListResponse>(
-      this,
-      threadsListRequestConfig,
-    ),
-    message: bindApiCall<ThreadsMessageArguments, ThreadsMessageResponse>(
-      this,
-      threadsMessageRequestConfig,
-    ),
-    react: bindApiCall<
-      ThreadsMessageReactArguments,
-      ThreadsMessageReactResponse
-    >(this, threadsMessageReactRequestConfig),
-    pinMessage: bindApiCall<
-      ThreadsPinMessageArguments,
-      ThreadsPinMessageResponse
-    >(this, threadsPinMessageRequestConfig),
-    unpinMessage: bindApiCall<
-      ThreadsUnpinMessageArguments,
-      ThreadsUnpinMessageResponse
-    >(this, threadsUnpinMessageRequestConfig),
-    delete: bindApiCall<ThreadsDeleteArguments, ThreadsDeleteResponse>(
-      this,
-      threadsDeleteRequestConfig,
-    ),
-    rename: bindApiCall<ThreadsRenameArguments, ThreadsRenameResponse>(
-      this,
-      threadsRenameRequestConfig,
-    ),
-  }
-
   public readonly tasks = {
-    create: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
-      this,
-      tasksCreateRequestConfig,
-    ),
     createV2: bindApiCall<TasksV2CreateArguments, TasksV2CreateResponse>(
       this,
       tasksV2CreateRequestConfig,
-    ),
-    cost: bindApiCall<TasksCreateArguments, TasksCreateResponse>(
-      this,
-      tasksCostRequestConfig,
     ),
     costV2: bindApiCall<TasksV2CreateArguments, TasksV2CreateResponse>(
       this,
       tasksV2CostRequestConfig,
     ),
-    get: bindApiCall<TasksGetArguments, TasksGetResponse>(
-      this,
-      tasksGetRequestConfig,
-    ),
     getV2: bindApiCall<TasksV2GetArguments, TasksV2GetResponse>(
       this,
       tasksV2GetRequestConfig,
-    ),
-    list: bindApiCall<TasksListArguments, TasksListResponse>(
-      this,
-      tasksListRequestConfig,
     ),
     listV2: bindApiCall<TasksV2ListArguments, TasksV2ListResponse>(
       this,

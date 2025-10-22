@@ -184,7 +184,17 @@ const ToolActionButton = ({ creationId }: { creationId: string }) => {
 const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
   // const { TimeAgo } = useTimeAgo()
 
+  // Session post tools that have their own badge in SessionPostEmbed
+  const SESSION_POST_TOOLS = [
+    'session_post',
+    'abraham_publish',
+    'verdelis_story',
+    'abraham_daily',
+    'media_editor',
+  ]
+
   // Get completed tool calls with results that have creation IDs
+  // Exclude session post tools and tools with child_session (they render their own badge)
   const completedToolCallsWithCreations =
     message.tool_calls?.filter(
       toolCall =>
@@ -198,7 +208,9 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
             result.output.some(
               (output: TasksV2ResultOutput) => output.creation,
             ),
-        ),
+        ) &&
+        !SESSION_POST_TOOLS.includes(toolCall.tool || '') &&
+        !toolCall.child_session,
     ) || []
 
   // Get all creation IDs from completed tool calls

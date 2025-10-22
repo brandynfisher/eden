@@ -166,6 +166,10 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
             <SessionPostEmbed
               results={toolResults || []}
               childSessionId={toolCall.child_session}
+              toolStatus={toolCall.status}
+              onCancel={onCancel}
+              toolName={tool}
+              toolArgs={toolCall.args}
             />
           </div>
         ) : isCovenantTool ? (
@@ -202,13 +206,20 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
           <SessionPostEmbed
             results={toolResults || []}
             childSessionId={toolCall.child_session}
+            toolStatus={toolCall.status}
+            onCancel={onCancel}
+            toolName={tool}
+            toolArgs={toolCall.args}
           />
         ) : (
           <ToolMediaRenderer results={toolResults || []} args={toolCall.args} />
         )}
       </ErrorBoundary>
+      {/* Show ToolFallback only for tools that don't have session posts or child sessions */}
       {!isCompletedWithResults &&
-        !(isWebSearchTool && toolCall.status === 'completed') && (
+        !(isWebSearchTool && toolCall.status === 'completed') &&
+        !isSessionPost &&
+        !toolCall.child_session && (
           <ToolFallback
             result={{
               tool: tool!,
