@@ -302,8 +302,8 @@ export const retrieveMemoryAgent = async (
         factsWithContent = factDocs.map((doc: any) => ({
           _id: doc._id.toString(),
           content: doc.content || '',
-          createdAt: doc.createdAt,
-          updatedAt: doc.updatedAt,
+          createdAt: doc.createdAt?.toISOString(),
+          updatedAt: doc.updatedAt?.toISOString(),
         }))
       }
 
@@ -327,8 +327,8 @@ export const retrieveMemoryAgent = async (
         unabsorbedWithContent = unabsorbedDocs.map((doc: any) => ({
           _id: doc._id.toString(),
           content: doc.content || '',
-          createdAt: doc.createdAt,
-          updatedAt: doc.updatedAt,
+          createdAt: doc.createdAt?.toISOString(),
+          updatedAt: doc.updatedAt?.toISOString(),
         }))
       }
 
@@ -705,11 +705,9 @@ export const createMemoryAgent = async (
   }
 
   if (extraction_prompt.length > MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS) {
-    return reply
-      .status(400)
-      .send({
-        error: `Extraction prompt cannot exceed ${MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS} characters`,
-      })
+    return reply.status(400).send({
+      error: `Extraction prompt cannot exceed ${MEMORY_LIMITS.EXTRACTION_PROMPT_MAX_CHARS} characters`,
+    })
   }
 
   try {
