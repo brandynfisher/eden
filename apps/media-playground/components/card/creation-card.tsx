@@ -14,6 +14,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { CreationV2, Creator } from '@edenlabs/eden-sdk'
 import { AudioLinesIcon, CheckIcon, SquareIcon } from 'lucide-react'
+import Link from 'next/link'
 import React, { CSSProperties, useState } from 'react'
 
 type Props = {
@@ -71,7 +72,8 @@ const CreationCard = ({
           </div>
         </div>
       ) : null}
-      <div
+      <Link
+        href={`/creations/${creation._id}`}
         onClick={handleCardClick}
         className={cn([
           'relative w-full block group cursor-pointer',
@@ -156,7 +158,7 @@ const CreationCard = ({
             </>
           ) : null}
         </div>
-      </div>
+      </Link>
       <div className="absolute bottom-2 right-2 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity">
         <LikeButton
           type="creation"
