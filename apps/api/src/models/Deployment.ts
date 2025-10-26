@@ -136,6 +136,7 @@ export interface DeploymentSchema {
   secrets?: DeploymentSecrets
   config?: DeploymentConfig
   valid?: boolean
+  local?: boolean
 }
 
 export interface DeploymentDocument extends DeploymentSchema {}
@@ -164,6 +165,9 @@ const DeploymentSchema = new Schema<DeploymentDocument>(
       type: Object,
     },
     valid: {
+      type: Boolean,
+    },
+    local: {
       type: Boolean,
     },
   },

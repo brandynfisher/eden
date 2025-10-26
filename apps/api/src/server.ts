@@ -46,7 +46,7 @@ const createServer = async (opts: CreateServerOpts) => {
     logger: {
       level: process.env.LOG_LEVEL || 'info',
     },
-    disableRequestLogging: true,
+    disableRequestLogging: false,
     pluginTimeout: 0,
     connectionTimeout: 60000, // 60 seconds
     keepAliveTimeout: 30000, // 30 seconds
