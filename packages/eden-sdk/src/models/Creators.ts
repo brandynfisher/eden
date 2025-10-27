@@ -260,7 +260,7 @@ export enum FeatureFlag {
   LimitsBeliever = 'limits_Believer',
   LimitsAdmin = 'limits_Admin',
   AssistantAccess = 'assistant_access',
-  FreeTools = 'freeTools',
+  FreeTools = 'free_tools',
   FeatureDeployments = 'feature_Deployments',
   TestAgentRateLimit = 'test_agent_rate_limit',
   SessionsV2 = 'sessions_v2',
