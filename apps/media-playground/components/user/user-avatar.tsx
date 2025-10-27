@@ -14,6 +14,7 @@ const UserAvatar = ({ image, name, className }: Props) => {
     <Avatar
       className={cn(
         'group-hover:brightness-105 transition-all flex items-center',
+        className,
       )}
     >
       {image ? (
@@ -27,7 +28,7 @@ const UserAvatar = ({ image, name, className }: Props) => {
           unoptimized={
             image.includes('clerk.') || image.includes('img.clerk.com')
           }
-          className={cn(['group-hover:brightness-105', className])}
+          className="group-hover:brightness-105"
         />
       ) : null}
 

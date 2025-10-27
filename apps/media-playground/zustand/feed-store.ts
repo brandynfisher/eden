@@ -4,6 +4,7 @@ import { create } from 'zustand'
 
 type FeedState = {
   activeIndexMap: Record<string, number | null>
+  scrollPositionMap: Record<string, number | null>
   items: RowItem[]
   fetchNextPage: (() => Promise<PaginatedCursorResponse<RowItem>>) | null
   setItems: (items: RowItem[]) => void
@@ -11,6 +12,8 @@ type FeedState = {
     fetchNext: () => Promise<PaginatedCursorResponse<RowItem>>,
   ) => void
   setActiveIndex: (index: number | null) => void
+  setScrollPosition: (index: number | null) => void
+  getScrollPosition: () => number | null
   goNext: () => Promise<void>
   goPrevious: () => void
   feedId: string
@@ -44,6 +47,7 @@ export const useActiveFeedStore = create<FeedStore>((set, get) => ({
 const createFeedStore = () =>
   create<FeedState>((set, get) => ({
     activeIndexMap: {},
+    scrollPositionMap: {},
     items: [],
     fetchNextPage: null,
     setItems: newItems => {
@@ -62,6 +66,19 @@ const createFeedStore = () =>
           [feedId]: index,
         },
       })
+    },
+    setScrollPosition: index => {
+      const { scrollPositionMap, feedId } = get()
+      set({
+        scrollPositionMap: {
+          ...scrollPositionMap,
+          [feedId]: index,
+        },
+      })
+    },
+    getScrollPosition: () => {
+      const { scrollPositionMap, feedId } = get()
+      return scrollPositionMap[feedId] ?? null
     },
     goNext: async () => {
       const { activeIndexMap, items, fetchNextPage, setItems, feedId } = get()

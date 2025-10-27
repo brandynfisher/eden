@@ -21,7 +21,7 @@ import {
   renameSession,
   updateSessionPermissions,
 } from '../../controllers/v2/sessionControllerV2'
-import { isAdmin, isAuth } from '../../middleware/authMiddleware'
+import { isAdmin, isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import {
   SessionsV2CreateArguments,
@@ -280,7 +280,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       tags: ['Sessions'],
       summary: 'Get Session Details',
       description:
-        'Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination.',
+        'Retrieve detailed information about a specific session with the latest 25 messages. Use the dedicated messages endpoint for pagination. Public sessions can be accessed without authentication if is_public is true.',
       security: [
         {
           apiKey: [],
@@ -297,7 +297,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         }),
       },
     },
-    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getSession(server, request, reply),
   })
 
@@ -309,7 +309,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       tags: ['Sessions'],
       summary: 'Get Session Messages (Paginated)',
       description:
-        'Fetch messages for a session with cursor-based pagination. Returns messages in chronological order (oldest first).',
+        'Fetch messages for a session with cursor-based pagination. Returns messages in chronological order (oldest first). Public sessions can be accessed without authentication if is_public is true.',
       security: [
         {
           apiKey: [],
@@ -342,7 +342,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         },
       },
     },
-    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    preHandler: [request => maybeAuth(server, request)],
     handler: (request, reply) => getSessionMessages(server, request, reply),
   })
 

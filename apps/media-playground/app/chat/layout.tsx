@@ -78,7 +78,10 @@ const SessionChatSidebarContent: FC<{
   )
 }
 
-const SessionChatLayout = ({ children }: PropsWithChildren) => {
+const SessionChatLayout = ({
+  children,
+  creationModal,
+}: PropsWithChildren<{ creationModal?: React.ReactNode }>) => {
   const { user } = useAuthState()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -134,13 +137,16 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     const page = searchParams.get('page')
     const tab = searchParams.get('tab')
 
-    if (page === 'tasks') {
+    if (page === 'creations') {
+      setViewMode('creations')
+    } else if (page === 'tasks') {
       setViewMode('tasks')
     } else if (page === 'settings' || tab === 'deployments') {
       setViewMode('settings')
     } else if (page === 'memories') {
       setViewMode('memories')
-    } else {
+    } else if (!page) {
+      // Only reset to chat if there's no page parameter at all
       setViewMode('chat')
     }
   }, [searchParams])
@@ -195,14 +201,31 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   }
 
   const handleBackToChat = () => {
-    // Just reset view mode to chat - no navigation needed since we're already on the right URL
+    // Reset view mode to chat and clear page query param
     setViewMode('chat')
+    const url = new URL(window.location.href)
+    url.searchParams.delete('page')
+    router.replace(url.pathname + url.search, { scroll: false })
   }
 
   const handleNewChat = () => {
     // Always go to new chat screen regardless of current session
     setViewMode('chat')
     router.push(`/chat/${agentId}`)
+  }
+
+  // Update view mode and sync with URL
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode)
+
+    // Update URL query parameter
+    const url = new URL(window.location.href)
+    if (mode === 'chat') {
+      url.searchParams.delete('page')
+    } else {
+      url.searchParams.set('page', mode)
+    }
+    router.replace(url.pathname + url.search, { scroll: false })
   }
 
   const handleAgentSelect = (selectedAgent: Agent) => {
@@ -240,7 +263,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         agent={agent}
         onChatClick={handleChatClick}
         onAgentSelect={() => setIsAgentSelectorOpen(true)}
-        onSettingsClick={() => setViewMode('settings')}
+        onSettingsClick={() => handleViewModeChange('settings')}
         isSidebarCollapsed={isSidebarCollapsed}
         onSidebarToggle={handleSidebarToggle}
         viewMode={viewMode}
@@ -276,10 +299,10 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
               onNewSession={handleNewSession}
               onItemClick={() => setIsSheetOpen(false)}
               viewMode={viewMode}
-              onViewModeChange={setViewMode}
+              onViewModeChange={handleViewModeChange}
               userId={user?._id}
               onAgentSelect={() => setIsAgentSelectorOpen(true)}
-              onSettingsClick={() => setViewMode('settings')}
+              onSettingsClick={() => handleViewModeChange('settings')}
               session={session}
             />
           </SheetContent>
@@ -317,10 +340,10 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
                 onNewSession={handleNewSession}
                 onItemClick={() => {}}
                 viewMode={viewMode}
-                onViewModeChange={setViewMode}
+                onViewModeChange={handleViewModeChange}
                 userId={user?._id}
                 onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                onSettingsClick={() => setViewMode('settings')}
+                onSettingsClick={() => handleViewModeChange('settings')}
                 session={session}
               />
             )}
@@ -364,6 +387,9 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
+
+      {/* Intercept creation routes with modal */}
+      {creationModal}
     </LiveAudioProvider>
   )
 }

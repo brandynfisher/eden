@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { Agent, Creator } from '@edenlabs/eden-sdk'
 import { useRouter } from 'next/navigation'
 import { usePathname } from 'next/navigation'
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import * as React from 'react'
 
 const AgentCreationsView: FC<{
@@ -64,14 +64,6 @@ const AgentCreationsView: FC<{
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [pathname, router])
-  const handleCreationNavigation = useCallback(
-    (creationId: string) => {
-      // This could be used for programmatic navigation if needed
-      router.push(`/creations/${creationId}`)
-    },
-    [router],
-  )
-
   const showFilterTabs = !!user
 
   return (
@@ -123,7 +115,6 @@ const AgentCreationsView: FC<{
             maxCols={8}
             scrollRef={scrollContainerRef}
             showSkeleton
-            onNavigate={handleCreationNavigation}
           />
         </div>
       </div>

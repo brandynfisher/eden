@@ -636,11 +636,6 @@ export const getSession = async (
   reply: FastifyReply,
 ) => {
   const { userId, featureFlags } = request.user || {}
-  if (!userId) {
-    return reply.status(400).send({
-      message: 'User missing from request',
-    })
-  }
 
   const { session_id } = request.params
   const limit = 25 // Fixed limit for initial session load
@@ -672,30 +667,43 @@ export const getSession = async (
       })
     }
 
-    // Check if user has access to the session (owner, in users list, has permission, is eden admin, or session is public)
-    const getSessionUserIdStr = userId.toString()
-    const isSessionOwner = session.owner._id.toString() === getSessionUserIdStr
-    const isSessionUser = session.users?.some(
-      (user: any) => user.toString() === getSessionUserIdStr,
-    )
-    const hasPermission = await SessionPermission.exists({
-      session: session._id,
-      user: userId,
-    })
-    const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
+    // Check if session is public
     const isPublicSession = session.extras?.is_public === true
 
-    if (
-      !isSessionOwner &&
-      !isSessionUser &&
-      !hasPermission &&
-      !isEdenTeamMember &&
-      !isPublicSession
-    ) {
-      return reply.status(403).send({
-        message:
-          'You do not have access to this session. If you believe this is an error, ask the session owner to create a share link.',
+    // If not authenticated, only allow access to public sessions
+    if (!userId) {
+      if (!isPublicSession) {
+        return reply.status(401).send({
+          message: 'Authentication required to access this session',
+        })
+      }
+      // Continue to fetch and return session for public access
+    } else {
+      // Check if user has access to the session (owner, in users list, has permission, is eden admin, or session is public)
+      const getSessionUserIdStr = userId.toString()
+      const isSessionOwner =
+        session.owner._id.toString() === getSessionUserIdStr
+      const isSessionUser = session.users?.some(
+        (user: any) => user.toString() === getSessionUserIdStr,
+      )
+      const hasPermission = await SessionPermission.exists({
+        session: session._id,
+        user: userId,
       })
+      const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
+
+      if (
+        !isSessionOwner &&
+        !isSessionUser &&
+        !hasPermission &&
+        !isEdenTeamMember &&
+        !isPublicSession
+      ) {
+        return reply.status(403).send({
+          message:
+            'You do not have access to this session. If you believe this is an error, ask the session owner to create a share link.',
+        })
+      }
     }
 
     // Fetch latest messages (no pagination on initial session fetch)
@@ -768,11 +776,6 @@ export const getSessionMessages = async (
   reply: FastifyReply,
 ) => {
   const { userId, featureFlags } = request.user || {}
-  if (!userId) {
-    return reply.status(400).send({
-      message: 'User missing from request',
-    })
-  }
 
   const { session_id } = request.params
   const { cursor, limit: limitStr } = request.query
@@ -790,29 +793,41 @@ export const getSessionMessages = async (
       })
     }
 
-    // Check access (owner, in users list, has permission, is eden admin, or session is public)
-    const userIdStr = userId.toString()
-    const isOwner = session.owner.toString() === userIdStr
-    const isUser = session.users?.some(
-      (user: any) => user.toString() === userIdStr,
-    )
-    const hasPermission = await SessionPermission.exists({
-      session: session._id,
-      user: userId,
-    })
-    const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
+    // Check if session is public
     const isPublicSession = session.extras?.is_public === true
 
-    if (
-      !isOwner &&
-      !isUser &&
-      !hasPermission &&
-      !isEdenTeamMember &&
-      !isPublicSession
-    ) {
-      return reply.status(403).send({
-        message: 'You do not have access to this session',
+    // If not authenticated, only allow access to public sessions
+    if (!userId) {
+      if (!isPublicSession) {
+        return reply.status(401).send({
+          message: 'Authentication required to access this session',
+        })
+      }
+      // Continue to fetch and return messages for public access
+    } else {
+      // Check access (owner, in users list, has permission, is eden admin, or session is public)
+      const userIdStr = userId.toString()
+      const isOwner = session.owner.toString() === userIdStr
+      const isUser = session.users?.some(
+        (user: any) => user.toString() === userIdStr,
+      )
+      const hasPermission = await SessionPermission.exists({
+        session: session._id,
+        user: userId,
       })
+      const isEdenTeamMember = featureFlags?.includes(FeatureFlag.EdenAdmin)
+
+      if (
+        !isOwner &&
+        !isUser &&
+        !hasPermission &&
+        !isEdenTeamMember &&
+        !isPublicSession
+      ) {
+        return reply.status(403).send({
+          message: 'You do not have access to this session',
+        })
+      }
     }
 
     // Build query for cursor-based pagination

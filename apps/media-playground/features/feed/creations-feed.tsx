@@ -13,9 +13,11 @@ import { useRouter } from 'next/navigation'
 import {
   RefObject,
   forwardRef,
+  useCallback,
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from 'react'
 
 type Props = {
@@ -74,9 +76,25 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
     // Use query-based feedId like profile page does, not route-based
     const feedId = useMemo(() => JSON.stringify({ queryKey }), [queryKey])
 
-    const { items, setItems, setActiveIndex, setFetchNextPage } =
-      useFeedStore(feedId)
+    const {
+      items,
+      setItems,
+      setActiveIndex,
+      setFetchNextPage,
+      getScrollPosition,
+      setScrollPosition,
+    } = useFeedStore(feedId)
     const { addToHistory } = useActiveFeedStore()
+
+    // Get saved scroll position and track if we've used it
+    const savedScrollIndex = getScrollPosition()
+    const [scrollRestored, setScrollRestored] = useState(false)
+
+    // Only use savedScrollIndex if we haven't restored yet and it's not explicitly overridden
+    const effectiveScrollIndex =
+      !scrollRestored && savedScrollIndex !== null
+        ? savedScrollIndex
+        : initialScrollIndex ?? null
 
     const handleItemsLoaded = (newItems: RowItem[]) => {
       setItems(newItems)
@@ -85,6 +103,16 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
     const handleCardClick = (item: CreationV2, index: number) => {
       setActiveIndex(index)
       addToHistory(feedId)
+
+      // Save current scroll position before navigating
+      // Use the topmost visible index from the virtualizer if available
+      const topmostIndex = virtualizerRef.current?.getTopmostVisibleIndex()
+      if (topmostIndex !== null && topmostIndex !== undefined) {
+        setScrollPosition(topmostIndex)
+      } else {
+        // Fallback to the clicked item's index
+        setScrollPosition(index)
+      }
 
       // Seed cache for instant thumbnail display
       queryClient.setQueryData(['creations', item._id], {
@@ -97,6 +125,13 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
       // Navigate to creation - modal opens via parallel route
       router.push(`/creations/${item._id}`)
     }
+
+    const handleScrollRestored = useCallback(() => {
+      setScrollRestored(true)
+      // Clear the saved scroll position after it's been used
+      setScrollPosition(null)
+      onScrollRestored?.()
+    }, [setScrollPosition, onScrollRestored])
 
     // Expose navigation helpers via ref
     useImperativeHandle(
@@ -132,8 +167,8 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
         onItemsLoaded={handleItemsLoaded}
         setFetchNextPage={setFetchNextPage}
         scrollRef={scrollRef}
-        initialScrollIndex={initialScrollIndex}
-        onScrollRestored={onScrollRestored}
+        initialScrollIndex={effectiveScrollIndex}
+        onScrollRestored={handleScrollRestored}
         showSkeleton={showSkeleton}
         render={(item: RowItem, onUpdate, index) => (
           <CreationCard
