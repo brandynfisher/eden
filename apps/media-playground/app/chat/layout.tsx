@@ -327,15 +327,14 @@ const SessionChatLayout = ({
           {/* Desktop Sidebar */}
           {!isSidebarCollapsed && (
             <ResizablePanel
+              id="sidebar"
               ref={sidebarPanelRef}
               defaultSize={20}
-              minSize={15}
-              maxSize={30}
-              collapsible
-              collapsedSize={0}
+              minSize={18}
+              maxSize={35}
+              order={1}
               className={cn(
-                'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out overflow-hidden',
-                'max-w-[320px]',
+                'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 overflow-hidden',
               )}
             >
               <div className="flex flex-col flex-1 min-h-0">
@@ -373,13 +372,15 @@ const SessionChatLayout = ({
             // Show resizable handle when sidebar is open
             <ResizableHandle
               withHandle
-              className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
+              className="hidden md:flex w-1 bg-transparent hover:bg-primary/10 [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary relative cursor-col-resize"
             />
           )}
 
           {/* Main Content */}
           <ResizablePanel
+            id="content"
             defaultSize={80}
+            order={2}
             className="relative flex flex-col bg-aui-background"
           >
             <div className="flex flex-col h-full">
