@@ -2,6 +2,8 @@
 
 import { AgentAvatars } from './agent-avatars'
 import { SessionShareButton } from './session-share-button'
+import { SettingsSidebar } from './settings-sidebar'
+import { ModeToggle } from '@/components/header/mode-toggle'
 import LoadingIndicator from '@/components/loading-indicator'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -20,12 +22,10 @@ import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifica
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { isAgentOwner } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag, SessionV2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
-  BrainIcon,
   CheckIcon,
   ChevronRightIcon,
   ClockIcon,
@@ -35,10 +35,9 @@ import {
   PencilIcon,
   PinIcon,
   PinOffIcon,
-  SettingsIcon,
   TrashIcon,
 } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -489,7 +488,7 @@ const TopLeft: FC<{
       variant={isNewSession ? 'outline' : 'default'}
       onClick={handleClick}
       className={cn(
-        'flex w-full justify-start gap-2 py-3 mb-2 rounded-md font-medium transition-colors',
+        'flex w-full justify-start gap-2 py-3 mb-1 rounded-md font-medium transition-colors',
         isNewSession
           ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
           : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
@@ -512,16 +511,19 @@ const AgentSelectorAndNewChat: FC<{
   userId?: string | null
   sessionId?: string
   session?: SessionV2
+  viewMode?: ViewMode
+  hasEditAccess?: boolean
 }> = ({
   onItemClick,
   isChat,
   onViewModeChange,
   agent,
   onAgentSelect,
-  onSettingsClick,
   userId,
   sessionId,
   session,
+  viewMode,
+  hasEditAccess,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -544,17 +546,9 @@ const AgentSelectorAndNewChat: FC<{
     onAgentSelect?.()
   }
 
-  const handleSettingsClick = () => {
-    onItemClick?.()
-    onSettingsClick?.()
-  }
-
-  // Check if user can access settings
-  const showSettingsButton = agent && isAgentOwner(agent, userId)
-
   return (
     <div className="mb-2 space-y-2">
-      {/* Row 1: Agent selector with settings button */}
+      {/* Row 1: Agent selector - full width */}
       <div className="flex gap-2 items-center">
         {/* Agent selector */}
         {agent && (
@@ -582,22 +576,20 @@ const AgentSelectorAndNewChat: FC<{
             <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           </button>
         )}
-
-        {/* Settings button */}
-        {showSettingsButton && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSettingsClick}
-            className="h-12 w-12 hover:bg-muted/20 transition-colors flex-shrink-0"
-          >
-            <SettingsIcon className="size-5" />
-            <span className="sr-only">Agent Settings</span>
-          </Button>
-        )}
       </div>
 
-      {/* Row 2: New Chat button - full width */}
+      {/* Row 2: Mode Toggle - only show if user has edit access */}
+      {hasEditAccess && onViewModeChange && viewMode && (
+        <ModeToggle
+          mode={viewMode === 'settings' ? 'settings' : 'chat'}
+          onModeChange={mode => {
+            onViewModeChange(mode === 'settings' ? 'settings' : 'chat')
+          }}
+          variant="sidebar"
+        />
+      )}
+
+      {/* Row 2: New Chat button - full width, tighter spacing to match mode toggle */}
       <Button
         variant={isNewSession ? 'outline' : 'default'}
         onClick={handleNewChatClick}
@@ -626,30 +618,26 @@ const AgentSelectorAndNewChat: FC<{
   )
 }
 
-// Navigation buttons component for Creations, Tasks, and Settings
+// Navigation buttons component for Creations
 const NavigationButtons: FC<{
   onItemClick?: () => void
   agent: Agent | null | undefined
   userId?: string | null
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
-}> = ({ onItemClick, agent, userId, viewMode, onViewModeChange }) => {
-  const { user } = useAuthState()
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
-  const { hasEditAccess } = useAgentPermissions(agent, userId ?? undefined)
-
+}> = ({ onItemClick, viewMode, onViewModeChange }) => {
   const handleNavClick = (mode: ViewMode) => {
     onViewModeChange(mode)
     onItemClick?.()
   }
 
   return (
-    <div className="flex flex-col gap-1 mb-2 mr-2">
+    <div className="flex flex-col gap-1 mb-2 mr-2 mt-[-0.5rem]">
       <Button
         variant={viewMode === 'creations' ? 'outline' : 'default'}
         onClick={() => handleNavClick('creations')}
         className={cn(
-          'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
+          'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-12',
           viewMode === 'creations'
             ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
             : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
@@ -657,36 +645,6 @@ const NavigationButtons: FC<{
       >
         <ImageIcon className="size-4" />
         <span>Creations</span>
-      </Button>
-
-      {hasEditAccess && isPreviewUser && (
-        <Button
-          variant={viewMode === 'tasks' ? 'outline' : 'default'}
-          onClick={() => handleNavClick('tasks')}
-          className={cn(
-            'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
-            viewMode === 'tasks'
-              ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
-              : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
-          )}
-        >
-          <ClockIcon className="size-4" />
-          <span>Tasks</span>
-        </Button>
-      )}
-
-      <Button
-        variant={viewMode === 'memories' ? 'outline' : 'default'}
-        onClick={() => handleNavClick('memories')}
-        className={cn(
-          'flex w-full justify-start gap-2 py-2 rounded-md font-medium transition-colors',
-          viewMode === 'memories'
-            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
-            : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
-        )}
-      >
-        <BrainIcon className="size-4" />
-        <span>Memories</span>
       </Button>
     </div>
   )
@@ -1012,6 +970,68 @@ export const SessionsSidebarContent = ({
   sessionId?: string
   session?: SessionV2
 }) => {
+  const { user } = useAuthState()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const isPreviewUser =
+    user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
+
+  // Get permissions for settings sidebar
+  const { isOriginalOwner, hasOwnerAccess, hasEditAccess } =
+    useAgentPermissions(agent, user?._id)
+
+  // Get active tab from URL for settings mode
+  const activeSettingsTab = searchParams?.get('tab') || 'profile'
+
+  const handleSettingsTabChange = (tab: string) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('page', 'settings')
+    url.searchParams.set('tab', tab)
+    router.replace(url.pathname + url.search, { scroll: false })
+  }
+
+  // Show settings sidebar when in settings mode
+  if (viewMode === 'settings' && agent) {
+    return (
+      <div className="flex flex-col h-full min-h-0">
+        {/* Mobile sidebar header with navigation - only show in mobile sidebar */}
+        <div className="md:hidden flex-shrink-0">
+          <MobileSidebarHeader onItemClick={onItemClick} />
+        </div>
+
+        {/* Agent selector - mobile only */}
+        <div className="mb-2 mr-2 md:hidden flex-shrink-0">
+          <AgentSelectorAndNewChat
+            onItemClick={onItemClick}
+            isChat={isChat}
+            onViewModeChange={onViewModeChange}
+            agent={agent}
+            onAgentSelect={onAgentSelect}
+            onSettingsClick={onSettingsClick}
+            userId={userId}
+            sessionId={sessionId}
+            session={session}
+            viewMode={viewMode}
+            hasEditAccess={hasEditAccess}
+          />
+        </div>
+
+        <div className="flex-1 min-h-0">
+          <SettingsSidebar
+            activeTab={activeSettingsTab}
+            onTabChange={handleSettingsTabChange}
+            isOriginalOwner={isOriginalOwner}
+            hasOwnerAccess={hasOwnerAccess}
+            hasEditAccess={hasEditAccess}
+            isPreviewUser={isPreviewUser}
+            onItemClick={onItemClick}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Show regular chat sidebar for all other modes
   return (
     <>
       {/* Mobile sidebar header with navigation - only show in mobile sidebar */}
@@ -1031,6 +1051,8 @@ export const SessionsSidebarContent = ({
           userId={userId}
           sessionId={sessionId}
           session={session}
+          viewMode={viewMode}
+          hasEditAccess={hasEditAccess}
         />
       </div>
 
@@ -1043,7 +1065,7 @@ export const SessionsSidebarContent = ({
         />
       </div>
 
-      {/* Navigation buttons for Creations, Tasks, Settings */}
+      {/* Navigation buttons for Creations */}
       {agent && viewMode && onViewModeChange && (
         <NavigationButtons
           onItemClick={onItemClick}

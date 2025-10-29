@@ -158,18 +158,7 @@ const SessionChatLayout = ({
     }
   }, [agent, user, isOwner, viewMode, agentId, router])
 
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
-
-  const handleSidebarToggle = () => {
-    if (sidebarPanelRef.current) {
-      if (isSidebarCollapsed) {
-        sidebarPanelRef.current.expand()
-      } else {
-        sidebarPanelRef.current.collapse()
-      }
-    }
-  }
 
   const handleSessionSelect = (sessionId: string) => {
     // Navigate to the session URL
@@ -218,6 +207,12 @@ const SessionChatLayout = ({
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode)
 
+    // On mobile, auto-open sidebar when mode changes
+    const isMobile = window.innerWidth < 768
+    if (isMobile) {
+      setIsSheetOpen(true)
+    }
+
     // Update URL query parameter
     const url = new URL(window.location.href)
     if (mode === 'chat') {
@@ -264,8 +259,6 @@ const SessionChatLayout = ({
         onChatClick={handleChatClick}
         onAgentSelect={() => setIsAgentSelectorOpen(true)}
         onSettingsClick={() => handleViewModeChange('settings')}
-        isSidebarCollapsed={isSidebarCollapsed}
-        onSidebarToggle={handleSidebarToggle}
         viewMode={viewMode}
         onBackToChat={handleBackToChat}
       />
@@ -287,24 +280,26 @@ const SessionChatLayout = ({
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetContent
             side="left"
-            className="flex flex-col max-h-full pt-3 px-3 bg-[#0e1421] border-r gap-0"
+            className="flex flex-col h-full pt-3 px-3 bg-[#0e1421] border-r gap-0 overflow-hidden"
           >
             <SheetTitle className="sr-only">Session List</SheetTitle>
-            <SessionChatSidebarContent
-              agent={agent}
-              isOwner={isOwner}
-              agentId={agentId}
-              currentSessionId={sessionId}
-              onSessionSelect={handleSessionSelect}
-              onNewSession={handleNewSession}
-              onItemClick={() => setIsSheetOpen(false)}
-              viewMode={viewMode}
-              onViewModeChange={handleViewModeChange}
-              userId={user?._id}
-              onAgentSelect={() => setIsAgentSelectorOpen(true)}
-              onSettingsClick={() => handleViewModeChange('settings')}
-              session={session}
-            />
+            <div className="flex flex-col flex-1 min-h-0">
+              <SessionChatSidebarContent
+                agent={agent}
+                isOwner={isOwner}
+                agentId={agentId}
+                currentSessionId={sessionId}
+                onSessionSelect={handleSessionSelect}
+                onNewSession={handleNewSession}
+                onItemClick={() => setIsSheetOpen(false)}
+                viewMode={viewMode}
+                onViewModeChange={handleViewModeChange}
+                userId={user?._id}
+                onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                onSettingsClick={() => handleViewModeChange('settings')}
+                session={session}
+              />
+            </div>
           </SheetContent>
         </Sheet>
 
@@ -320,17 +315,12 @@ const SessionChatLayout = ({
             defaultSize={20}
             minSize={15}
             maxSize={30}
-            collapsible
-            collapsedSize={0}
-            onCollapse={() => setIsSidebarCollapsed(true)}
-            onExpand={() => setIsSidebarCollapsed(false)}
             className={cn(
-              'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+              'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out overflow-hidden',
               'max-w-[320px]',
-              isSidebarCollapsed && 'p-0 border-none',
             )}
           >
-            {!isSidebarCollapsed && (
+            <div className="flex flex-col flex-1 min-h-0">
               <SessionChatSidebarContent
                 agent={agent}
                 isOwner={isOwner}
@@ -346,7 +336,7 @@ const SessionChatLayout = ({
                 onSettingsClick={() => handleViewModeChange('settings')}
                 session={session}
               />
-            )}
+            </div>
           </ResizablePanel>
 
           <ResizableHandle

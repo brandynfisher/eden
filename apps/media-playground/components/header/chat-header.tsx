@@ -2,9 +2,8 @@
 import HeaderActions from '@/components/header/header-actions'
 import HeaderLogo from '@/components/header/header-logo'
 import HeaderNavLinks from '@/components/header/header-nav-links'
+import { ModeToggle } from '@/components/header/mode-toggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { SessionShareButton } from '@/features/sessions/components/session-share-button'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
@@ -12,21 +11,14 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
-import {
-  ChevronRightIcon,
-  MenuIcon,
-  MessageCircleIcon,
-  SettingsIcon,
-} from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
+import { ChevronRightIcon, MenuIcon } from 'lucide-react'
+import { useParams } from 'next/navigation'
 
 type ChatHeaderProps = {
   agent: Agent | null | undefined
   onChatClick?: () => void
   onAgentSelect?: () => void
   onSettingsClick?: () => void
-  isSidebarCollapsed?: boolean
-  onSidebarToggle?: () => void
   viewMode?: string
   onBackToChat?: () => void
   className?: string
@@ -37,14 +29,11 @@ const ChatHeader = ({
   onChatClick,
   onAgentSelect,
   onSettingsClick,
-  isSidebarCollapsed,
-  onSidebarToggle,
   viewMode,
   onBackToChat,
   className,
 }: ChatHeaderProps) => {
   const params = useParams()
-  const router = useRouter()
   const { user } = useAuthState()
   const sessionId = params?.id as string
 
@@ -58,26 +47,13 @@ const ChatHeader = ({
   const { hasEditAccess } = useAgentPermissions(agent, user?._id)
   const showSettingsIcon = agent && hasEditAccess
 
-  const handleSessionTitleClick = () => {
-    // Check if we're on mobile (window width < 768px for md breakpoint)
-    const isMobile = window.innerWidth < 768
-
-    // Only open sidebar if:
-    // 1. We're on mobile (sidebar is never visible on mobile), OR
-    // 2. We're on desktop but sidebar is collapsed
-    if (isMobile || isSidebarCollapsed) {
-      onChatClick?.()
-    }
-    // If we're on desktop and sidebar is visible, do nothing
-  }
-
   const handleHamburgerClick = () => {
     onChatClick?.()
   }
 
   return (
     <>
-      {/* Mobile: Single navbar layout - Hamburger + Agent + Session title + HeaderActions */}
+      {/* Mobile: Single navbar layout - Hamburger + HeaderActions */}
       <div
         className={cn(
           'md:hidden sticky z-50 top-0 bg-background border-b',
@@ -85,7 +61,7 @@ const ChatHeader = ({
         )}
       >
         <header className="flex h-14 items-center gap-2 px-2">
-          {/* Left section - Hamburger + Agent info */}
+          {/* Left section - Hamburger */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
             {/* Hamburger menu - always show on mobile */}
             <button
@@ -95,65 +71,9 @@ const ChatHeader = ({
             >
               <MenuIcon className="w-5 h-5 text-muted-foreground" />
             </button>
-
-            {agent ? (
-              <button
-                onClick={onAgentSelect}
-                className="flex items-center gap-2 hover:bg-muted/10 rounded-lg px-1 py-1 transition-all duration-200 hover:scale-[1.02] min-w-0 flex-shrink-0"
-              >
-                <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors">
-                  <AvatarImage
-                    src={
-                      agent.userImage && agent.userImage.trim()
-                        ? getCloudfrontOriginalUrl(agent.userImage)
-                        : undefined
-                    }
-                    alt={agent.name}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-muted text-sm font-medium">
-                    {agent.username?.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-medium text-sm text-foreground truncate max-w-[100px]">
-                  {agent.username}
-                </span>
-                <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              </button>
-            ) : (
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
-                <div className="w-20 h-5 bg-muted animate-pulse rounded" />
-              </div>
-            )}
-
-            {/* Session title or back navigation */}
-            {viewMode !== 'chat'
-              ? // When in settings/other views, show navigation back to chat
-                // Only show if we have an active session, otherwise hide text (New Chat icon will be in settings tabs)
-                sessionId &&
-                session?.title && (
-                  <button
-                    onClick={onBackToChat}
-                    className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
-                  >
-                    {session.title}
-                  </button>
-                )
-              : // When in chat mode, show session title if available
-                sessionId &&
-                session?.title && (
-                  <button
-                    onClick={handleSessionTitleClick}
-                    className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors min-w-0"
-                    title={session.title}
-                  >
-                    {session.title}
-                  </button>
-                )}
           </div>
 
-          {/* Right section - HeaderActions only (share button moved to sidebar on mobile) */}
+          {/* Right section - HeaderActions */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <HeaderActions hideMannaMobile />
           </div>
@@ -174,22 +94,13 @@ const ChatHeader = ({
           <HeaderActions />
         </header>
 
-        {/* Bottom navbar - Agent selector + session title */}
+        {/* Bottom navbar - Agent info + Mode toggle on left, share button on right */}
         <header className="sticky z-40 top-14 flex h-12 items-center gap-4 border-b bg-muted/30 px-4 py-2">
-          {/* Left section - Agent controls */}
-          <div className="flex items-center gap-2 min-w-0 flex-1">
+          {/* Left section - Agent info + Mode toggle */}
+          <div className="flex items-center gap-3 min-w-0">
             {agent ? (
               <>
-                {/* Hamburger menu - always show on desktop for sidebar toggle */}
-                <button
-                  onClick={onSidebarToggle || handleHamburgerClick}
-                  className="p-1 hover:bg-muted/10 rounded-lg transition-colors"
-                  aria-label="Toggle sidebar"
-                >
-                  <MenuIcon className="w-5 h-5 text-muted-foreground" />
-                </button>
-
-                {/* Agent avatar and name */}
+                {/* Agent selector button */}
                 <button
                   onClick={onAgentSelect}
                   className="flex items-center gap-2 hover:bg-muted/10 rounded-lg px-1 py-1 transition-all duration-200 hover:scale-[1.02] min-w-0"
@@ -208,41 +119,26 @@ const ChatHeader = ({
                       {agent.username?.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="font-medium text-sm text-foreground truncate max-w-[200px]">
+                  <span className="font-bold text-[1.09375rem] text-foreground truncate max-w-[200px]">
                     {agent.username}
                   </span>
                   <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 </button>
 
-                {/* Session title or back navigation */}
-                {viewMode !== 'chat'
-                  ? // When in settings/other views, show navigation back to chat
-                    sessionId &&
-                    session?.title && (
-                      <>
-                        <Separator orientation="vertical" className="h-7" />
-                        <button
-                          onClick={onBackToChat}
-                          className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
-                        >
-                          {session.title}
-                        </button>
-                      </>
-                    )
-                  : // When in chat mode, show session title if available
-                    sessionId &&
-                    session?.title && (
-                      <>
-                        <Separator orientation="vertical" className="h-7" />
-                        <button
-                          onClick={handleSessionTitleClick}
-                          className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors max-w-[400px]"
-                          title={session.title}
-                        >
-                          {session.title}
-                        </button>
-                      </>
-                    )}
+                {/* Mode Toggle - only show if user has edit access */}
+                {showSettingsIcon && (
+                  <ModeToggle
+                    mode={viewMode === 'settings' ? 'settings' : 'chat'}
+                    onModeChange={mode => {
+                      if (mode === 'settings') {
+                        onSettingsClick?.()
+                      } else {
+                        onBackToChat?.()
+                      }
+                    }}
+                    variant="sidebar"
+                  />
+                )}
               </>
             ) : (
               <div className="flex items-center gap-3">
@@ -252,9 +148,8 @@ const ChatHeader = ({
             )}
           </div>
 
-          {/* Right section - New Chat icon (when sidebar collapsed) and Settings/Chat toggle icon */}
+          {/* Right section - Share button */}
           <div className="ml-auto flex items-center gap-2">
-            {/* Share button */}
             {session && session.owner._id === user?._id && (
               <SessionShareButton
                 sessionId={sessionId}
@@ -263,44 +158,6 @@ const ChatHeader = ({
                 isPublic={session.extras?.is_public}
                 className="h-9 w-auto px-3"
               />
-            )}
-
-            {/* New Chat button - only show when sidebar is collapsed */}
-            {isSidebarCollapsed && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  // Navigate to new chat for this agent
-                  router.push(`/chat/${params?.agentId || 'eve'}`)
-                }}
-                className="h-9 w-9 hover:bg-muted/20 transition-colors"
-              >
-                <MessageCircleIcon className="size-4" />
-                <span className="sr-only">New Chat</span>
-              </Button>
-            )}
-
-            {/* Settings/Chat toggle icon - show settings when in chat, chat when in settings */}
-            {showSettingsIcon && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={viewMode === 'chat' ? onSettingsClick : onBackToChat}
-                className="h-9 w-9 hover:bg-muted/20 transition-colors"
-              >
-                {viewMode === 'chat' ? (
-                  <>
-                    <SettingsIcon className="size-4" />
-                    <span className="sr-only">Agent Settings</span>
-                  </>
-                ) : (
-                  <>
-                    <MessageCircleIcon className="size-4" />
-                    <span className="sr-only">Back to Chat</span>
-                  </>
-                )}
-              </Button>
             )}
           </div>
         </header>

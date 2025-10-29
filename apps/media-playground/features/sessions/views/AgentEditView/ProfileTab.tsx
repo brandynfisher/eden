@@ -135,8 +135,8 @@ export const ProfileTab: FC<ProfileTabProps> = ({ form, agent }) => {
             </div>
           </div>
 
-          {/* Agent ID Display */}
-          <div className="absolute bottom-6 right-6 flex items-center gap-2">
+          {/* Agent ID Display - responsive positioning */}
+          <div className="mt-4 lg:mt-0 lg:absolute lg:bottom-6 lg:right-6 flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
               ID: {agent._id}
             </span>
