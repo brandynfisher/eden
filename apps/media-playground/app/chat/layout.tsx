@@ -20,6 +20,7 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, SessionV2 } from '@edenlabs/eden-sdk'
+import { MenuIcon } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   FC,
@@ -46,6 +47,7 @@ const SessionChatSidebarContent: FC<{
   onAgentSelect?: () => void
   onSettingsClick?: () => void
   session?: SessionV2
+  onSidebarToggle?: () => void
 }> = ({
   onItemClick,
   agentId,
@@ -57,6 +59,7 @@ const SessionChatSidebarContent: FC<{
   onSettingsClick,
   currentSessionId,
   session,
+  onSidebarToggle,
 }) => {
   return (
     <>
@@ -73,6 +76,7 @@ const SessionChatSidebarContent: FC<{
         onSettingsClick={onSettingsClick}
         sessionId={currentSessionId}
         session={session}
+        onSidebarToggle={onSidebarToggle}
       />
     </>
   )
@@ -94,6 +98,7 @@ const SessionChatLayout = ({
   const [viewMode, setViewMode] = useState<ViewMode>('chat')
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const { agent } = useAgentQuery({ key: agentId })
   const { data: session } = useSessionQuery({
@@ -159,6 +164,20 @@ const SessionChatLayout = ({
   }, [agent, user, isOwner, viewMode, agentId, router])
 
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
+
+  const handleSidebarToggle = () => {
+    if (isSidebarCollapsed) {
+      // Just toggle state - panel will remount
+      setIsSidebarCollapsed(false)
+    } else {
+      // Collapse the panel
+      const panel = sidebarPanelRef.current
+      if (panel) {
+        panel.collapse()
+      }
+      setIsSidebarCollapsed(true)
+    }
+  }
 
   const handleSessionSelect = (sessionId: string) => {
     // Navigate to the session URL
@@ -293,6 +312,7 @@ const SessionChatLayout = ({
                 onAgentSelect={() => setIsAgentSelectorOpen(true)}
                 onSettingsClick={() => handleViewModeChange('settings')}
                 session={session}
+                onSidebarToggle={handleSidebarToggle}
               />
             </div>
           </SheetContent>
@@ -305,39 +325,57 @@ const SessionChatLayout = ({
           autoSaveId={`resizable-session-chat-layout-${agentId}`}
         >
           {/* Desktop Sidebar */}
-          <ResizablePanel
-            ref={sidebarPanelRef}
-            defaultSize={20}
-            minSize={15}
-            maxSize={30}
-            className={cn(
-              'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out overflow-hidden',
-              'max-w-[320px]',
-            )}
-          >
-            <div className="flex flex-col flex-1 min-h-0">
-              <SessionChatSidebarContent
-                agent={agent}
-                isOwner={isOwner}
-                agentId={agentId}
-                currentSessionId={sessionId}
-                onSessionSelect={handleSessionSelect}
-                onNewSession={handleNewSession}
-                onItemClick={() => {}}
-                viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-                userId={user?._id}
-                onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                onSettingsClick={() => handleViewModeChange('settings')}
-                session={session}
-              />
-            </div>
-          </ResizablePanel>
+          {!isSidebarCollapsed && (
+            <ResizablePanel
+              ref={sidebarPanelRef}
+              defaultSize={20}
+              minSize={15}
+              maxSize={30}
+              collapsible
+              collapsedSize={0}
+              className={cn(
+                'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out overflow-hidden',
+                'max-w-[320px]',
+              )}
+            >
+              <div className="flex flex-col flex-1 min-h-0">
+                <SessionChatSidebarContent
+                  agent={agent}
+                  isOwner={isOwner}
+                  agentId={agentId}
+                  currentSessionId={sessionId}
+                  onSessionSelect={handleSessionSelect}
+                  onNewSession={handleNewSession}
+                  onItemClick={() => {}}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                  userId={user?._id}
+                  onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                  onSettingsClick={() => handleViewModeChange('settings')}
+                  session={session}
+                  onSidebarToggle={handleSidebarToggle}
+                />
+              </div>
+            </ResizablePanel>
+          )}
 
-          <ResizableHandle
-            withHandle
-            className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
-          />
+          {/* Resizable Handle or Hamburger Button */}
+          {isSidebarCollapsed ? (
+            // Show hamburger button when sidebar is collapsed - full height clickable
+            <button
+              onClick={handleSidebarToggle}
+              className="hidden md:flex flex-col items-center w-8 bg-accent border-r border-border relative hover:bg-muted/20 transition-colors pt-3"
+              title="Open sidebar"
+            >
+              <MenuIcon className="h-4 w-4 shrink-0" />
+            </button>
+          ) : (
+            // Show resizable handle when sidebar is open
+            <ResizableHandle
+              withHandle
+              className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
+            />
+          )}
 
           {/* Main Content */}
           <ResizablePanel

@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ViewMode } from '@/features/sessions/components/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
+import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
@@ -31,10 +32,12 @@ import {
   ClockIcon,
   EditIcon,
   ImageIcon,
+  MenuIcon,
   MoreHorizontal,
   PencilIcon,
   PinIcon,
   PinOffIcon,
+  Share2,
   TrashIcon,
 } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
@@ -59,6 +62,7 @@ interface SessionListItemProps {
   isPinned?: boolean
   onPinToggle?: (sessionId: string, pinned: boolean) => Promise<void>
   unreadCount?: number
+  userId?: string
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -73,6 +77,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   isPinned = false,
   onPinToggle,
   unreadCount = 0,
+  userId: _userId, // Used in share dialog
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -85,6 +90,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   })
 
   const [isEditing, setIsEditing] = useState(false)
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [isRenaming, setIsRenaming] = useState(false)
   const [optimisticTitle, setOptimisticTitle] = useState(title)
@@ -93,6 +99,12 @@ const SessionListItem: FC<SessionListItemProps> = ({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const isSubmittingRef = useRef(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch session data when share dialog is opened
+  const { data: session, isLoading: isSessionLoading } = useSessionQuery({
+    sessionId: id,
+    enabled: isShareDialogOpen,
+  })
 
   // Update optimistic title when title prop changes
   useEffect(() => {
@@ -333,6 +345,17 @@ const SessionListItem: FC<SessionListItemProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {/* Share menu item - always visible */}
+            <DropdownMenuItem
+              className="flex items-center gap-2"
+              onSelect={() => {
+                setIsShareDialogOpen(true)
+              }}
+              disabled={isDeleting}
+            >
+              <Share2 className="size-4" />
+              Share
+            </DropdownMenuItem>
             <DropdownMenuItem
               className="flex items-center gap-2"
               onSelect={async () => {
@@ -393,6 +416,26 @@ const SessionListItem: FC<SessionListItemProps> = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      )}
+
+      {/* Share Dialog - render separately, controlled by state */}
+      {isShareDialogOpen && (
+        <>
+          {isSessionLoading ? (
+            // Show loading state while fetching session
+            <div className="hidden">Loading...</div>
+          ) : session ? (
+            <SessionShareButton
+              sessionId={id}
+              messages={session.messages || []}
+              isOwner={session.owner?._id === _userId}
+              isPublic={session.extras?.is_public}
+              className="hidden"
+              open={isShareDialogOpen}
+              onOpenChange={setIsShareDialogOpen}
+            />
+          ) : null}
+        </>
       )}
 
       {/* Confirmation Dialog */}
@@ -715,7 +758,7 @@ const MainLeft = ({
   isChat?: boolean
   onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
 }) => {
-  const { isSignedIn, verifyAuth } = useAuthState()
+  const { isSignedIn, verifyAuth, user } = useAuthState()
   const router = useRouter()
   const params = useParams()
   const currentSessionId =
@@ -874,6 +917,7 @@ const MainLeft = ({
                         isPinned={true}
                         onPinToggle={handlePinToggle}
                         unreadCount={unreadCounts?.get(session._id) || 0}
+                        userId={user?._id}
                         onItemClick={() => {
                           onItemClick?.()
                           if (isChat && agentId) {
@@ -914,6 +958,7 @@ const MainLeft = ({
                     isPinned={false}
                     onPinToggle={handlePinToggle}
                     unreadCount={unreadCounts?.get(session._id) || 0}
+                    userId={user?._id}
                     onItemClick={() => {
                       onItemClick?.()
                       if (isChat && agentId) {
@@ -962,6 +1007,7 @@ export const SessionsSidebarContent = ({
   onSettingsClick,
   sessionId,
   session,
+  onSidebarToggle,
 }: {
   onItemClick?: () => void
   agentId?: string
@@ -974,6 +1020,7 @@ export const SessionsSidebarContent = ({
   onSettingsClick?: () => void
   sessionId?: string
   session?: SessionV2
+  onSidebarToggle?: () => void
 }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
@@ -1025,29 +1072,43 @@ export const SessionsSidebarContent = ({
         <div className="hidden md:flex mb-2 mr-2 flex-col gap-1.5 flex-shrink-0">
           {/* Agent selector - desktop only */}
           {agent && (
-            <button
-              onClick={onAgentSelect}
-              className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] w-full min-w-0"
-            >
-              <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
-                <AvatarImage
-                  src={
-                    agent.userImage && agent.userImage.trim()
-                      ? getCloudfrontOriginalUrl(agent.userImage)
-                      : undefined
-                  }
-                  alt={agent.name}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted text-sm font-medium">
-                  {agent.username?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="font-semibold text-base text-foreground truncate">
-                {agent.username}
-              </span>
-              <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
-            </button>
+            <div className="flex items-center gap-1">
+              {/* Hamburger icon to toggle sidebar */}
+              {onSidebarToggle && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onSidebarToggle}
+                  className="h-8 w-8 shrink-0 hover:bg-muted/20"
+                  title="Toggle sidebar"
+                >
+                  <MenuIcon className="h-4 w-4" />
+                </Button>
+              )}
+              <button
+                onClick={onAgentSelect}
+                className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] flex-1 min-w-0"
+              >
+                <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
+                  <AvatarImage
+                    src={
+                      agent.userImage && agent.userImage.trim()
+                        ? getCloudfrontOriginalUrl(agent.userImage)
+                        : undefined
+                    }
+                    alt={agent.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-muted text-sm font-medium">
+                    {agent.username?.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="font-semibold text-base text-foreground truncate">
+                  {agent.username}
+                </span>
+                <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
+              </button>
+            </div>
           )}
 
           {/* Mode Toggle - desktop only */}
@@ -1106,29 +1167,43 @@ export const SessionsSidebarContent = ({
       <div className="hidden md:flex mb-2 mr-2 flex-col gap-1.5">
         {/* Agent selector - desktop only */}
         {agent && (
-          <button
-            onClick={onAgentSelect}
-            className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] w-full min-w-0"
-          >
-            <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
-              <AvatarImage
-                src={
-                  agent.userImage && agent.userImage.trim()
-                    ? getCloudfrontOriginalUrl(agent.userImage)
-                    : undefined
-                }
-                alt={agent.name}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-muted text-sm font-medium">
-                {agent.username?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="font-semibold text-base text-foreground truncate">
-              {agent.username}
-            </span>
-            <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
-          </button>
+          <div className="flex items-center gap-1">
+            {/* Hamburger icon to toggle sidebar */}
+            {onSidebarToggle && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onSidebarToggle}
+                className="h-8 w-8 shrink-0 hover:bg-muted/20"
+                title="Toggle sidebar"
+              >
+                <MenuIcon className="h-4 w-4" />
+              </Button>
+            )}
+            <button
+              onClick={onAgentSelect}
+              className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] flex-1 min-w-0"
+            >
+              <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
+                <AvatarImage
+                  src={
+                    agent.userImage && agent.userImage.trim()
+                      ? getCloudfrontOriginalUrl(agent.userImage)
+                      : undefined
+                  }
+                  alt={agent.name}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-muted text-sm font-medium">
+                  {agent.username?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="font-semibold text-base text-foreground truncate">
+                {agent.username}
+              </span>
+              <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
+            </button>
+          </div>
         )}
 
         {/* Mode Toggle - desktop only, show if user has edit access */}
@@ -1160,20 +1235,6 @@ export const SessionsSidebarContent = ({
             onViewModeChange={onViewModeChange}
           />
         )}
-
-        {/* Share button - desktop only, show when in chat mode with existing session */}
-        {viewMode === 'chat' &&
-          session &&
-          sessionId &&
-          session.owner?._id === userId && (
-            <SessionShareButton
-              sessionId={sessionId}
-              messages={session.messages || []}
-              isOwner={session.owner?._id === userId}
-              isPublic={session.extras?.is_public}
-              className="h-10 w-full justify-start border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary"
-            />
-          )}
       </div>
 
       <MainLeft

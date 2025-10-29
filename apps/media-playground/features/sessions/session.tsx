@@ -3,6 +3,7 @@
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
+import { SessionShareButton } from './components/session-share-button'
 import SessionWelcome from './components/session-welcome'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useStreamingState } from './hooks/use-streaming-state'
@@ -1171,6 +1172,10 @@ const Session = ({
     )
   }
 
+  // Check if we're on /chat route and have a named session (not 'new')
+  const isNamedSession = ischatRoute && sessionId && sessionId !== 'new'
+  const isOwner = session?.owner?._id === user?._id
+
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Connection status indicator - only show when not connected and using SSE streaming */}
@@ -1199,6 +1204,19 @@ const Session = ({
             )}
           </div>
         )}
+
+      {/* Floating share button - desktop only, shown for named sessions when user is owner */}
+      {isNamedSession && isOwner && session && (
+        <div className="hidden md:block fixed top-[72px] right-6 z-40">
+          <SessionShareButton
+            sessionId={sessionId as string}
+            messages={session.messages || []}
+            isOwner={isOwner}
+            isPublic={session.extras?.is_public}
+            className="bg-background/90 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-shadow"
+          />
+        </div>
+      )}
 
       <div
         ref={messagesContainerRef}
