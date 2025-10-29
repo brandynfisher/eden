@@ -1,39 +1,20 @@
 'use client'
 
+import { LiveAudioProvider } from '../live-audio/live-audio-context'
+import { MessageInput } from './message-input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  AutosizeTextAreaRef,
-  AutosizeTextarea,
-} from '@/components/ui/custom/autoresize-textarea'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form'
 import { Separator } from '@/components/ui/separator'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { AgentBasicInfo } from '@/lib/actions/agent'
 import { cn } from '@/lib/utils'
 import { Agent, AgentSuggestion } from '@edenlabs/eden-sdk'
-import { zodResolver } from '@hookform/resolvers/zod'
-import {
-  ExternalLinkIcon,
-  Keyboard,
-  Loader2Icon,
-  PlusIcon,
-  SendIcon,
-} from 'lucide-react'
+import { ExternalLinkIcon, PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FC, useEffect, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import React from 'react'
-import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { z } from 'zod'
 
 export interface AgentConfig extends Agent {
   greeting: string
@@ -44,18 +25,6 @@ type Props = {
   initialAgentId?: string
 }
 
-const chatMockSchema = z.object({
-  message: z.string().min(1).max(30000),
-  attachments: z.array(z.string()).optional(),
-})
-
-type FormData = z.infer<typeof chatMockSchema>
-
-interface StoredFormData extends FormData {
-  selectedAgentId?: string
-}
-
-const FORM_STORAGE_KEY = 'chat-mock-form-state'
 const TEMP_MESSAGE_KEY = 'chat-temp-message'
 
 const DEFAULT_SUGGESTIONS: AgentSuggestion[] = [
@@ -86,134 +55,42 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
 
   const agent = agents.find(a => a._id === selectedAgentId)
 
-  const { verifyAuth, isSignedIn } = useAuthState()
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
-  const [shouldShowHint, setShouldShowHint] = useState(false)
 
-  const defaultValues: FormData = {
-    message: '',
-    attachments: [],
-  }
-
-  const [initialFormData, setInitialFormData] =
-    useState<FormData>(defaultValues)
-  const [hasStoredData, setHasStoredData] = useState(false)
-
-  const form = useForm<FormData>({
-    resolver: zodResolver(chatMockSchema),
-    defaultValues: initialFormData,
-  })
-
-  const textareaRef = React.useRef<AutosizeTextAreaRef>(null)
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    try {
-      const stored = localStorage.getItem(FORM_STORAGE_KEY)
-      if (stored) {
-        const parsed: StoredFormData = JSON.parse(stored)
-        const { selectedAgentId: storedAgentId, ...formData } = parsed
-        setInitialFormData(formData)
-        if (storedAgentId) {
-          setSelectedAgentId(storedAgentId)
+  const handleSendMessage = useCallback(
+    async (content: string, attachments?: string[], thinking?: boolean) => {
+      try {
+        const selectedAgent = agents.find(a => a._id === selectedAgentId)
+        if (!selectedAgent?.username) {
+          toast.error('Agent not found or username missing.')
+          return
         }
-        setHasStoredData(true)
-        form.reset(formData)
+
+        // Store message in sessionStorage to be picked up by the chat page
+        sessionStorage.setItem(
+          TEMP_MESSAGE_KEY,
+          JSON.stringify({
+            content,
+            attachments: attachments || [],
+            thinking,
+            timestamp: Date.now(),
+          }),
+        )
+
+        // Navigate to the chat page - opens in current tab
+        router.push(`/chat/${selectedAgent.username}`)
+      } catch (err) {
+        console.error('Error preparing chat initiation:', err)
+        toast.error('Failed to prepare chat initiation.', {
+          description: err instanceof Error ? err.message : 'Unknown error',
+          dismissible: true,
+          richColors: true,
+        })
+        sessionStorage.removeItem(TEMP_MESSAGE_KEY)
       }
-    } catch (e) {
-      console.error('Error reading stored form state:', e)
-    }
-  }, [])
-
-  const message = form.watch('message')
-
-  useEffect(() => {
-    const messageLength = message?.length || 0
-    setShouldShowHint(messageLength > 3)
-  }, [message])
-
-  const handleSubmit = async (formData: FormData) => {
-    if (!(await verifyAuth())) {
-      const currentFormData = form.getValues()
-      const storedData: StoredFormData = {
-        ...currentFormData,
-        selectedAgentId,
-      }
-      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(storedData))
-      return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      const agent = agents.find(a => a._id === selectedAgentId)
-      if (!agent?.username) {
-        toast.error('Agent not found or username missing.')
-        setIsSubmitting(false)
-        return
-      }
-
-      sessionStorage.setItem(
-        TEMP_MESSAGE_KEY,
-        JSON.stringify({
-          content: formData.message,
-          attachments: formData.attachments || [],
-          timestamp: Date.now(),
-        }),
-      )
-
-      localStorage.removeItem(FORM_STORAGE_KEY)
-      setHasStoredData(false)
-
-      router.push(`/chat/${agent.username}`)
-    } catch (err) {
-      console.error('Error preparing chat initiation:', err)
-      toast.error('Failed to prepare chat initiation.', {
-        description: err instanceof Error ? err.message : 'Unknown error',
-        dismissible: true,
-        richColors: true,
-      })
-      setIsSubmitting(false)
-      sessionStorage.removeItem(TEMP_MESSAGE_KEY)
-    }
-  }
-
-  useEffect(() => {
-    const shouldAutoSubmit = isSignedIn && hasStoredData && !isSubmitting
-
-    if (shouldAutoSubmit) {
-      const formData = form.getValues()
-      if (formData.message) {
-        handleSubmit(formData)
-      }
-    }
-  }, [isSignedIn, hasStoredData, isSubmitting])
-
-  useEffect(() => {
-    return () => {
-      localStorage.removeItem(FORM_STORAGE_KEY)
-    }
-  }, [])
-
-  const handleSuggestionClick = (prompt: string) => {
-    form.setValue('message', prompt, {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true,
-    })
-
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.resize()
-      }
-    }, 10)
-
-    setTimeout(() => {
-      form.handleSubmit(handleSubmit)()
-    }, 20)
-  }
+    },
+    [agents, selectedAgentId, router],
+  )
 
   return (
     <div
@@ -324,107 +201,38 @@ export const ChatMockWidget: FC<Props> = ({ agents, initialAgentId }) => {
         </div>
         <Separator className="shrink-0" />
         <div className="px-2 md:px-4 p-4 shrink-0">
-          <Form {...form}>
-            <form
-              className="flex gap-2 w-full bg-popover border border-secondary rounded-lg p-2"
-              onSubmit={form.handleSubmit(handleSubmit)}
-            >
-              <FormField
-                name="message"
-                render={({ field }) => (
-                  <FormItem className="w-full relative">
-                    <FormControl id={'message'}>
-                      <AutosizeTextarea
-                        className="w-full !border-none !ring-0 !outline-none !ring-offset-0"
-                        placeholder="Type your message here..."
-                        rows={2}
-                        // minHeight={64}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        value={field.value || ''}
-                        disabled={isSubmitting}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault()
-                            if (form.formState.isValid && !isSubmitting) {
-                              form.handleSubmit(handleSubmit)()
-                            }
-                          }
-                        }}
-                        ref={textareaRef}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                    <div
-                      className={cn(
-                        'absolute bottom-0 right-0 flex items-center gap-1.5 text-xs text-muted-foreground transition-all duration-200 [@media(pointer:coarse)]:hidden',
-                        shouldShowHint
-                          ? 'opacity-100 translate-y-0'
-                          : 'opacity-0 translate-y-2 pointer-events-none',
-                      )}
-                    >
-                      <Keyboard className="h-3 w-3" />
-                      <span className="opacity-70">
-                        <Badge variant="outline" className="rounded-sm px-1.5">
-                          Enter
-                        </Badge>{' '}
-                        to send,{' '}
-                        <Badge variant="outline" className="px-1.5 rounded-sm">
-                          Shift+Enter
-                        </Badge>{' '}
-                        for new line
-                      </span>
-                    </div>
-                  </FormItem>
-                )}
-              />
-              <div
-                className={cn(
-                  'flex justify-end transition-all opacity-50',
-                  isSubmitting && 'opacity-75',
-                  form.formState.isValid && 'opacity-100 ',
-                )}
-              >
-                <Button
-                  aria-label="Send message"
-                  variant="secondary"
-                  type="submit"
-                  disabled={isSubmitting || !form.formState.isValid}
-                >
-                  {isSubmitting ? (
-                    <Loader2Icon className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <SendIcon className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </form>
+          <LiveAudioProvider>
+            <MessageInput
+              sessionId="new"
+              onStreamingMessage={handleSendMessage}
+              enableLiveAudio={true}
+              agent={agent as Agent}
+            />
+          </LiveAudioProvider>
 
-            <div className="mt-4 border border-secondary rounded-lg p-4 bg-secondary/30">
-              <div className="flex flex-wrap gap-2">
-                {(agent?.suggestions || DEFAULT_SUGGESTIONS).map(
-                  (suggestion, index) => {
-                    return (
-                      <Button
-                        aria-label={suggestion.label}
-                        key={`${agent?._id || 'default'}-${
-                          suggestion.label
-                        }-${index}`}
-                        variant="outline"
-                        type="button"
-                        size="sm"
-                        className="text-xs justify-start w-fit rounded-xl shrink-0 md:min-w-[49%]"
-                        onClick={() => handleSuggestionClick(suggestion.prompt)}
-                        disabled={isSubmitting}
-                      >
-                        {suggestion.label}
-                      </Button>
-                    )
-                  },
-                )}
-              </div>
+          <div className="mt-4 border border-secondary rounded-lg p-4 bg-secondary/30">
+            <div className="flex flex-wrap gap-2">
+              {(agent?.suggestions || DEFAULT_SUGGESTIONS).map(
+                (suggestion, index) => {
+                  return (
+                    <Button
+                      aria-label={suggestion.label}
+                      key={`${agent?._id || 'default'}-${
+                        suggestion.label
+                      }-${index}`}
+                      variant="outline"
+                      type="button"
+                      size="sm"
+                      className="text-xs justify-start w-fit rounded-xl shrink-0 md:min-w-[49%]"
+                      onClick={() => handleSendMessage(suggestion.prompt)}
+                    >
+                      {suggestion.label}
+                    </Button>
+                  )
+                },
+              )}
             </div>
-          </Form>
+          </div>
         </div>
       </div>
     </div>
