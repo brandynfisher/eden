@@ -255,17 +255,12 @@ const SessionChatLayout = ({
       {/* Chat-specific header that replaces the main header */}
       <ChatHeader
         className={isPWA ? 'pwa-chat-header' : ''}
-        agent={agent}
         onChatClick={handleChatClick}
-        onAgentSelect={() => setIsAgentSelectorOpen(true)}
-        onSettingsClick={() => handleViewModeChange('settings')}
-        viewMode={viewMode}
-        onBackToChat={handleBackToChat}
       />
 
       <div
         className={cn(
-          'flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[104px]',
+          'flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[56px]',
           isPWA && 'pwa-chat-layout',
         )}
       >

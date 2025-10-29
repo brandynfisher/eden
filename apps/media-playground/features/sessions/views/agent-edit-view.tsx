@@ -208,7 +208,7 @@ const AgentEditView: FC<{
   return (
     <div className="flex-1 bg-accent flex flex-col h-full">
       <div className="flex-1 overflow-auto">
-        <div className="p-6 pt-6 md:pt-2">
+        <div className="p-6 pt-6 md:pt-6">
           <div className="mx-auto max-w-4xl">
             <Form {...form}>
               <form

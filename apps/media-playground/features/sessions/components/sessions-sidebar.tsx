@@ -457,7 +457,8 @@ const TopLeft: FC<{
   onItemClick?: () => void
   isChat?: boolean
   onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
-}> = ({ onItemClick, isChat, onViewModeChange }) => {
+  viewMode?: ViewMode
+}> = ({ onItemClick, isChat, onViewModeChange, viewMode }) => {
   const router = useRouter()
   const params = useParams()
   const agentId = params?.agentId as string
@@ -483,15 +484,18 @@ const TopLeft: FC<{
     return null
   }
 
+  // Check if this button should be highlighted (in chat mode and on new session)
+  const isActive = viewMode === 'chat' && isNewSession
+
   return (
     <Button
-      variant={isNewSession ? 'outline' : 'default'}
+      variant={isActive ? 'outline' : 'default'}
       onClick={handleClick}
       className={cn(
-        'flex w-full justify-start gap-2 py-3 mb-1 rounded-md font-medium transition-colors',
-        isNewSession
-          ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
-          : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+        isActive
+          ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
+          : 'bg-cyan-500/5 hover:bg-cyan-500/10 border-transparent text-foreground',
       )}
     >
       <EditIcon className="size-4" />
@@ -604,16 +608,19 @@ const AgentSelectorAndNewChat: FC<{
         <span>{isChat ? 'New Chat' : 'New Session'}</span>
       </Button>
 
-      {/* Row 3: Share Chat button - only show when user owns the session */}
-      {session && sessionId && session.owner._id === userId && (
-        <SessionShareButton
-          sessionId={sessionId}
-          messages={session.messages || []}
-          isOwner={session.owner._id === userId}
-          isPublic={session.extras?.is_public}
-          className="h-12 w-full justify-start border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary"
-        />
-      )}
+      {/* Row 3: Share Chat button - only show when in chat mode and user owns the session */}
+      {viewMode === 'chat' &&
+        session &&
+        sessionId &&
+        session.owner?._id === userId && (
+          <SessionShareButton
+            sessionId={sessionId}
+            messages={session.messages || []}
+            isOwner={session.owner?._id === userId}
+            isPublic={session.extras?.is_public}
+            className="h-12 w-full justify-start border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary"
+          />
+        )}
     </div>
   )
 }
@@ -632,21 +639,19 @@ const NavigationButtons: FC<{
   }
 
   return (
-    <div className="flex flex-col gap-1 mb-2 mr-2 mt-[-0.5rem]">
-      <Button
-        variant={viewMode === 'creations' ? 'outline' : 'default'}
-        onClick={() => handleNavClick('creations')}
-        className={cn(
-          'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-12',
-          viewMode === 'creations'
-            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
-            : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
-        )}
-      >
-        <ImageIcon className="size-4" />
-        <span>Creations</span>
-      </Button>
-    </div>
+    <Button
+      variant={viewMode === 'creations' ? 'outline' : 'default'}
+      onClick={() => handleNavClick('creations')}
+      className={cn(
+        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+        viewMode === 'creations'
+          ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
+          : 'bg-cyan-500/5 hover:bg-cyan-500/10 border-transparent text-foreground',
+      )}
+    >
+      <ImageIcon className="size-4" />
+      <span>Creations</span>
+    </Button>
   )
 }
 
@@ -1016,6 +1021,47 @@ export const SessionsSidebarContent = ({
           />
         </div>
 
+        {/* Desktop: Agent selector + Mode Toggle */}
+        <div className="hidden md:flex mb-2 mr-2 flex-col gap-1.5 flex-shrink-0">
+          {/* Agent selector - desktop only */}
+          {agent && (
+            <button
+              onClick={onAgentSelect}
+              className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] w-full min-w-0"
+            >
+              <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
+                <AvatarImage
+                  src={
+                    agent.userImage && agent.userImage.trim()
+                      ? getCloudfrontOriginalUrl(agent.userImage)
+                      : undefined
+                  }
+                  alt={agent.name}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-muted text-sm font-medium">
+                  {agent.username?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="font-semibold text-base text-foreground truncate">
+                {agent.username}
+              </span>
+              <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
+            </button>
+          )}
+
+          {/* Mode Toggle - desktop only */}
+          {hasEditAccess && onViewModeChange && (
+            <ModeToggle
+              mode="settings"
+              onModeChange={mode => {
+                onViewModeChange(mode === 'settings' ? 'settings' : 'chat')
+              }}
+              variant="sidebar"
+            />
+          )}
+        </div>
+
         <div className="flex-1 min-h-0">
           <SettingsSidebar
             activeTab={activeSettingsTab}
@@ -1056,25 +1102,79 @@ export const SessionsSidebarContent = ({
         />
       </div>
 
-      {/* Desktop: Keep original TopLeft component */}
-      <div className="mb-2 mr-2 hidden md:block">
+      {/* Desktop: Agent selector + ModeToggle + TopLeft + Navigation + Share */}
+      <div className="hidden md:flex mb-2 mr-2 flex-col gap-1.5">
+        {/* Agent selector - desktop only */}
+        {agent && (
+          <button
+            onClick={onAgentSelect}
+            className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] w-full min-w-0"
+          >
+            <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
+              <AvatarImage
+                src={
+                  agent.userImage && agent.userImage.trim()
+                    ? getCloudfrontOriginalUrl(agent.userImage)
+                    : undefined
+                }
+                alt={agent.name}
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-muted text-sm font-medium">
+                {agent.username?.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-semibold text-base text-foreground truncate">
+              {agent.username}
+            </span>
+            <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
+          </button>
+        )}
+
+        {/* Mode Toggle - desktop only, show if user has edit access */}
+        {hasEditAccess && viewMode && onViewModeChange && (
+          <ModeToggle
+            mode={viewMode === 'settings' ? 'settings' : 'chat'}
+            onModeChange={mode => {
+              onViewModeChange(mode === 'settings' ? 'settings' : 'chat')
+            }}
+            variant="sidebar"
+          />
+        )}
+
+        {/* New Chat button */}
         <TopLeft
           onItemClick={onItemClick}
           isChat={isChat}
           onViewModeChange={onViewModeChange}
-        />
-      </div>
-
-      {/* Navigation buttons for Creations */}
-      {agent && viewMode && onViewModeChange && (
-        <NavigationButtons
-          onItemClick={onItemClick}
-          agent={agent}
-          userId={userId}
           viewMode={viewMode}
-          onViewModeChange={onViewModeChange}
         />
-      )}
+
+        {/* Navigation buttons for Creations */}
+        {agent && viewMode && onViewModeChange && (
+          <NavigationButtons
+            onItemClick={onItemClick}
+            agent={agent}
+            userId={userId}
+            viewMode={viewMode}
+            onViewModeChange={onViewModeChange}
+          />
+        )}
+
+        {/* Share button - desktop only, show when in chat mode with existing session */}
+        {viewMode === 'chat' &&
+          session &&
+          sessionId &&
+          session.owner?._id === userId && (
+            <SessionShareButton
+              sessionId={sessionId}
+              messages={session.messages || []}
+              isOwner={session.owner?._id === userId}
+              isPublic={session.extras?.is_public}
+              className="h-10 w-full justify-start border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary"
+            />
+          )}
+      </div>
 
       <MainLeft
         onItemClick={onItemClick}
