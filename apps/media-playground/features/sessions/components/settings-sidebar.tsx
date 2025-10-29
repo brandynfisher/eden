@@ -80,7 +80,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
         key: 'concepts',
         label: 'Concepts',
         icon: ImageIcon,
-        description: 'Visual concepts and styles',
+        description: 'Visual knowledge and styles',
       })
     }
 
