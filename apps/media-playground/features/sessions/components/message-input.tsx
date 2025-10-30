@@ -418,7 +418,8 @@ export const MessageInput = ({
     const cursorPosition = e.target.selectionStart
 
     // Check if textarea has multiple lines (wrapped or newline)
-    const shouldBeMultiline = e.target.scrollHeight > 40 // ~40px is roughly 2rem height
+    // Reset to single line if content is empty or very short
+    const shouldBeMultiline = value.length > 0 && e.target.scrollHeight > 40 // ~40px is roughly 2rem height
 
     // Only update isMultiline state if it actually changed to prevent unnecessary re-renders
     if (shouldBeMultiline !== isMultiline) {

@@ -1,6 +1,6 @@
 import { FilterSection } from '@/components/filter/base-filter'
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
-import { LockOpenIcon } from 'lucide-react'
+import { Heart, LockOpenIcon } from 'lucide-react'
 import { LockIcon } from 'lucide-react'
 
 export const profilePrivacyFilterSections: FilterSection = {
@@ -14,5 +14,12 @@ export const profilePrivacyFilterSections: FilterSection = {
       icon: <LockOpenIcon className="h-4 w-4" />,
     },
   ],
+  canHaveMultipleValues: false,
+}
+
+export const profileLikedFilterSection: FilterSection = {
+  id: 'isLiked' as keyof FeedCursorRouteQueryParams['filter'],
+  label: 'Liked',
+  items: [{ id: 'true', name: 'Liked', icon: <Heart className="h-4 w-4" /> }],
   canHaveMultipleValues: false,
 }

@@ -31,25 +31,23 @@ export const MessageAttachment: FC<MessageAttachmentProps> = ({
       mediaType === 'audio' ? (
         <LightboxTrigger
           startIndex={index}
-          className="block"
+          className="block w-full h-full"
           slide={{
             type: mediaType,
             duration: mediaType === 'video' ? 0 : undefined,
             url: mediaType === 'audio' ? url : getCloudfrontOriginalUrl(url),
           }}
           imageProps={{
-            className:
-              'max-w-256 max-h-256 w-auto h-auto object-contain rounded-lg',
+            className: 'w-full h-full object-cover rounded-lg',
             unoptimized: true,
             loading: 'lazy',
           }}
           videoProps={{
-            className:
-              'max-w-256 max-h-256 w-auto h-auto object-contain rounded-lg',
+            className: 'w-full h-full object-cover rounded-lg',
           }}
         />
       ) : (
-        <div className="w-32 h-20 flex items-center justify-center text-muted-foreground bg-muted rounded-lg">
+        <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted rounded-lg">
           <div className="text-xs font-medium">
             {url.split('.').pop()?.toUpperCase() || 'FILE'}
           </div>

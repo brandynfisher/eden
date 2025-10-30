@@ -294,7 +294,7 @@ const SessionChatLayout = ({
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetContent
             side="left"
-            className="flex flex-col h-full pt-3 px-3 bg-[#0e1421] border-r gap-0 overflow-hidden"
+            className="flex flex-col h-full pt-3 px-3 bg-accent border-r gap-0 overflow-hidden"
           >
             <SheetTitle className="sr-only">Session List</SheetTitle>
             <div className="flex flex-col flex-1 min-h-0">

@@ -1,5 +1,8 @@
 import { BaseFilter } from '@/components/filter/base-filter'
-import { profilePrivacyFilterSections } from '@/features/profile/profile-shared-privacy-filter'
+import {
+  profileLikedFilterSection,
+  profilePrivacyFilterSections,
+} from '@/features/profile/profile-shared-privacy-filter'
 import {
   outputTypeFilterSection,
   toolFilterSection,
@@ -7,6 +10,7 @@ import {
 import { FeedCursorRouteQueryParams } from '@edenlabs/eden-sdk'
 
 const profileCreationSections = [
+  profileLikedFilterSection,
   profilePrivacyFilterSections,
   outputTypeFilterSection,
   toolFilterSection,
