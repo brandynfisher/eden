@@ -65,8 +65,11 @@ export function useSessionQuery({
         const newMessageIds = new Set(
           response.data.session.messages.map(m => m._id),
         )
+        // Filter older messages, excluding optimistic messages (they should be replaced by real messages from API)
         const olderMessages = existingSession.messages.filter(
-          m => !newMessageIds.has(m._id),
+          m =>
+            !newMessageIds.has(m._id) &&
+            !m._id.startsWith(OPTIMISTIC_ID_PREFIX),
         )
 
         // Prepend older messages to the new session data

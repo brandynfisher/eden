@@ -93,7 +93,10 @@ export const extractPaginationParams = (
 
 export const createCursorPaginationRoute = (
   baseUrl: string,
-  query: FeedCursorRouteQueryParams['filter'] & CursorPaginatedRouteQueryParams,
+  query: (FeedCursorRouteQueryParams['filter'] &
+    CursorPaginatedRouteQueryParams) & {
+    isLiked?: boolean | string
+  },
 ) => {
   const basePath = baseUrl
   const params: CursorPaginatedFeedQuery = {}

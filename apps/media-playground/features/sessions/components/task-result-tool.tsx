@@ -170,6 +170,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
               onCancel={onCancel}
               toolName={tool}
               toolArgs={toolCall.args}
+              error={toolCall.error}
             />
           </div>
         ) : isCovenantTool ? (

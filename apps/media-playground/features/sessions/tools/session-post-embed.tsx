@@ -1,6 +1,9 @@
 'use client'
 
+import AlertDestructive from '@/components/alert/alert-destructive'
 import SessionCard from '@/components/session/session-card'
+import TextClampMore from '@/components/text/text-clamp-more'
+import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { ToolHoverMenu } from '@/features/sessions/components/tool-hover-menu'
 import { ToolMediaRenderer } from '@/features/sessions/tools/tool-media-renderer'
@@ -17,6 +20,7 @@ export type SessionPostEmbedProps = {
   onCancel?: () => void
   toolName?: string
   toolArgs?: TaskV2Args
+  error?: string
 }
 
 export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
@@ -26,6 +30,7 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
   onCancel,
   toolName,
   toolArgs,
+  error,
 }) => {
   // Get the current session ID to fetch current session's agents
   const params = useParams()
@@ -143,13 +148,74 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
 
   const hasMediaOutputs = mediaResults.length > 0
 
+  // Extract error from results if it exists in the output
+  const resultError = React.useMemo(() => {
+    if (!results || !Array.isArray(results) || results.length === 0) {
+      return null
+    }
+
+    // Check if any result has an error field
+    for (const result of results) {
+      if (result && typeof result === 'object') {
+        // Check if result.output is an object with an error field
+        if (result.output && typeof result.output === 'object') {
+          if ('error' in result.output) {
+            const errorValue = (result.output as { error?: string }).error
+            if (typeof errorValue === 'string') {
+              return errorValue
+            }
+          }
+        }
+        // Check if result itself has an error field
+        if ('error' in result) {
+          const errorValue = (result as { error?: string }).error
+          if (typeof errorValue === 'string') {
+            return errorValue
+          }
+        }
+      }
+    }
+
+    return null
+  }, [results])
+
+  // Use error from prop or from results
+  const displayError = error || resultError
+
   // If no session ID but we have media outputs, just show the media
   if (!sessionId && hasMediaOutputs) {
-    return <ToolMediaRenderer results={mediaResults} args={toolArgs} />
+    return (
+      <>
+        <ToolMediaRenderer results={mediaResults} args={toolArgs} />
+        {/* Display error if present */}
+        {displayError && (
+          <div className="mt-2">
+            <AlertDestructive title="Tool Call failed">
+              <AlertDescription>
+                <TextClampMore text={displayError} lines={3} />
+              </AlertDescription>
+            </AlertDestructive>
+          </div>
+        )}
+      </>
+    )
   }
 
-  // If no session ID and no media outputs, don't render anything
+  // If no session ID and no media outputs, check if we should display error
   if (!sessionId) {
+    // If we have an error, display it
+    if (displayError) {
+      return (
+        <div className="mt-2">
+          <AlertDestructive title="Tool Call failed">
+            <AlertDescription>
+              <TextClampMore text={displayError} lines={3} />
+            </AlertDescription>
+          </AlertDestructive>
+        </div>
+      )
+    }
+    // Otherwise don't render anything
     return null
   }
 
@@ -209,6 +275,17 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
       {/* Display media outputs below session card if they exist */}
       {hasMediaOutputs && (
         <ToolMediaRenderer results={mediaResults} args={toolArgs} />
+      )}
+
+      {/* Display error if present */}
+      {displayError && (
+        <div className="mt-2">
+          <AlertDestructive title="Tool Call failed">
+            <AlertDescription>
+              <TextClampMore text={displayError} lines={3} />
+            </AlertDescription>
+          </AlertDestructive>
+        </div>
       )}
 
       {/* Small tool badge - always visible at bottom right using ToolHoverMenu */}
