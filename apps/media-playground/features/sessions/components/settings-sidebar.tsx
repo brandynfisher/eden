@@ -136,13 +136,8 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Header */}
-      <div className="mb-4 mr-2 flex-shrink-0">
-        <h2 className="text-lg font-semibold text-foreground px-2">Settings</h2>
-        <p className="text-sm text-muted-foreground px-2 mt-1">
-          Configure your agent
-        </p>
-      </div>
+      {/* Spacing to match chat mode's h-3 div */}
+      <div className="h-3 flex-shrink-0" />
 
       {/* Navigation items */}
       <nav className="flex flex-col gap-1 overflow-y-auto flex-1 mr-2 min-h-0">
@@ -155,11 +150,11 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
               key={tab.key}
               onClick={() => handleTabClick(tab.key)}
               className={cn(
-                'group flex items-start gap-3 rounded-lg px-3 py-3 transition-all text-left',
+                'group flex items-start gap-3 rounded-lg px-3 py-3 transition-all text-left border',
                 'hover:bg-muted/50',
                 isActive
-                  ? 'bg-primary/40 hover:bg-primary/30 border border-primary/60 text-primary-foreground'
-                  : 'text-foreground',
+                  ? 'bg-primary/40 hover:bg-primary/30 border-primary/60 text-primary-foreground'
+                  : 'text-foreground border-transparent',
               )}
             >
               <Icon

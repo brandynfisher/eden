@@ -23,7 +23,7 @@ export const ModeToggle: FC<ModeToggleProps> = ({
     return (
       <div
         className={cn(
-          'grid grid-cols-2 gap-0.5 p-0.5 rounded-lg bg-muted/30',
+          'grid grid-cols-2 gap-0.5 p-0.5 rounded-lg bg-background',
           className,
         )}
       >
@@ -33,10 +33,10 @@ export const ModeToggle: FC<ModeToggleProps> = ({
           size="default"
           onClick={() => onModeChange('chat')}
           className={cn(
-            'gap-1.5 transition-all justify-center h-10 w-full px-2 py-2 min-w-0',
+            'gap-1.5 transition-all justify-center h-10 w-full px-2 py-2 min-w-0 border-0',
             mode === 'chat'
-              ? 'bg-primary/20 text-primary-foreground border border-primary/40 hover:bg-primary/25'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent',
+              ? 'bg-primary/20 text-primary-foreground hover:bg-primary/25'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
           )}
         >
           <MessageCircleIcon className="size-4 flex-shrink-0" />
@@ -49,10 +49,10 @@ export const ModeToggle: FC<ModeToggleProps> = ({
           size="default"
           onClick={() => onModeChange('settings')}
           className={cn(
-            'gap-1.5 transition-all justify-center h-10 w-full px-2 py-2 min-w-0',
+            'gap-1.5 transition-all justify-center h-10 w-full px-2 py-2 min-w-0 border-0',
             mode === 'settings'
-              ? 'bg-primary/20 text-primary-foreground border border-primary/40 hover:bg-primary/25'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent',
+              ? 'bg-primary/20 text-primary-foreground hover:bg-primary/25'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
           )}
         >
           <SettingsIcon className="size-4 flex-shrink-0" />

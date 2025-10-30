@@ -11,16 +11,34 @@ import AgentDashboardView from './agent-dashboard-view'
 import AgentMemoryView from './agent-memory-view'
 import AgentTasksView from './agent-tasks-view'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Form } from '@/components/ui/form'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
 import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { Loader2 } from 'lucide-react'
+import {
+  BarChart3Icon,
+  BrainIcon,
+  ChevronDownIcon,
+  ClockIcon,
+  ImageIcon,
+  KeyIcon,
+  Loader2,
+  SettingsIcon,
+  UserIcon,
+  WrenchIcon,
+} from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -199,16 +217,98 @@ const AgentEditView: FC<{
 
   if (isPermissionsLoading) {
     return (
-      <div className="flex-1 bg-accent flex items-center justify-center">
+      <div className="flex-1 bg-background flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin" />
       </div>
     )
   }
 
+  // Get available tabs based on permissions
+  const getAvailableTabs = () => {
+    const tabs: Array<{
+      key: string
+      label: string
+      icon: typeof UserIcon
+    }> = []
+
+    if (hasEditAccess) {
+      tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
+    }
+    if (hasOwnerAccess && isPreviewUser) {
+      tabs.push({ key: 'tasks', label: 'Tasks', icon: ClockIcon })
+    }
+    if (hasEditAccess) {
+      tabs.push({ key: 'dashboard', label: 'Dashboard', icon: BarChart3Icon })
+    }
+    if (hasOwnerAccess) {
+      tabs.push({ key: 'concepts', label: 'Concepts', icon: ImageIcon })
+    }
+    if (hasOwnerAccess && isPreviewUser) {
+      tabs.push({ key: 'memories', label: 'Memories', icon: BrainIcon })
+    }
+    if (hasOwnerAccess) {
+      tabs.push({ key: 'tools', label: 'Tools', icon: WrenchIcon })
+    }
+    if (hasOwnerAccess && isPreviewUser) {
+      tabs.push({
+        key: 'integrations',
+        label: 'Integrations',
+        icon: SettingsIcon,
+      })
+    }
+    if (isOriginalOwner && isPreviewUser) {
+      tabs.push({ key: 'permissions', label: 'Permissions', icon: KeyIcon })
+    }
+
+    return tabs
+  }
+
+  const availableTabs = getAvailableTabs()
+  const currentTab =
+    availableTabs.find(tab => tab.key === activeTab) || availableTabs[0]
+
   return (
-    <div className="flex-1 bg-accent flex flex-col h-full">
+    <div className="flex-1 bg-background flex flex-col h-full">
       <div className="flex-1 overflow-auto">
         <div className="p-6 pt-6 md:pt-6">
+          {/* Mobile header with title and dropdown */}
+          <div className="mx-auto max-w-4xl mb-6 md:hidden">
+            <h1 className="text-3xl font-semibold mb-4">Agent Settings</h1>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-between"
+                  size="sm"
+                >
+                  <span className="flex items-center gap-2">
+                    {currentTab && <currentTab.icon className="w-4 h-4" />}
+                    {currentTab?.label || 'Agent Settings'}
+                  </span>
+                  <ChevronDownIcon className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full" align="start">
+                {availableTabs.map(tab => {
+                  const Icon = tab.icon
+                  return (
+                    <DropdownMenuItem
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={cn(
+                        'flex items-center gap-2',
+                        activeTab === tab.key && 'bg-accent',
+                      )}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {tab.label}
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           <div className="mx-auto max-w-4xl">
             <Form {...form}>
               <form

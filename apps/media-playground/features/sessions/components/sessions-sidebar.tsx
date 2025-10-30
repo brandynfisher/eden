@@ -232,10 +232,10 @@ const SessionListItem: FC<SessionListItemProps> = ({
   return (
     <div
       className={cn(
-        'group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5',
+        'group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-sm relative p-0.5 border',
         isActive
           ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground font-medium'
-          : 'hover:text-foreground hover:bg-muted/50',
+          : 'hover:text-foreground hover:bg-muted/50 border-transparent',
       )}
     >
       <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
@@ -532,13 +532,13 @@ const TopLeft: FC<{
 
   return (
     <Button
-      variant={isActive ? 'outline' : 'default'}
+      variant={isActive ? 'outline' : 'ghost'}
       onClick={handleClick}
       className={cn(
         'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
         isActive
           ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
-          : 'bg-cyan-500/5 hover:bg-cyan-500/10 border-transparent text-foreground',
+          : 'hover:bg-muted/50 text-foreground',
       )}
     >
       <EditIcon className="size-4" />
@@ -594,7 +594,7 @@ const AgentSelectorAndNewChat: FC<{
   }
 
   return (
-    <div className="mb-2 space-y-2">
+    <div className="mb-4 space-y-3">
       {/* Row 1: Agent selector - full width */}
       <div className="flex gap-2 items-center">
         {/* Agent selector */}
@@ -636,22 +636,45 @@ const AgentSelectorAndNewChat: FC<{
         />
       )}
 
-      {/* Row 2: New Chat button - full width, tighter spacing to match mode toggle */}
+      {/* Spacing between mode toggle and action buttons */}
+      <div className="h-3" />
+
+      {/* Row 3: New Chat button - full width */}
       <Button
-        variant={isNewSession ? 'outline' : 'default'}
+        variant={viewMode === 'chat' && isNewSession ? 'outline' : 'ghost'}
         onClick={handleNewChatClick}
         className={cn(
           'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-          isNewSession
+          viewMode === 'chat' && isNewSession
             ? 'bg-primary/20 text-primary-foreground border border-primary/40 hover:bg-primary/25'
-            : 'bg-cyan-500/5 hover:bg-cyan-500/10 border-transparent text-foreground',
+            : 'hover:bg-muted/50 text-foreground',
         )}
       >
         <EditIcon className="size-4" />
         <span>{isChat ? 'New Chat' : 'New Session'}</span>
       </Button>
 
-      {/* Row 3: Share Chat button - only show when in chat mode and user owns the session */}
+      {/* Row 4: Creations button - full width */}
+      {viewMode && onViewModeChange && (
+        <Button
+          variant={viewMode === 'creations' ? 'outline' : 'ghost'}
+          onClick={() => {
+            onViewModeChange('creations')
+            onItemClick?.()
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            viewMode === 'creations'
+              ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
+              : 'hover:bg-muted/50 text-foreground',
+          )}
+        >
+          <ImageIcon className="size-4" />
+          <span>Creations</span>
+        </Button>
+      )}
+
+      {/* Row 5: Share Chat button - only show when in chat mode and user owns the session */}
       {viewMode === 'chat' &&
         session &&
         sessionId &&
@@ -661,7 +684,7 @@ const AgentSelectorAndNewChat: FC<{
             messages={session.messages || []}
             isOwner={session.owner?._id === userId}
             isPublic={session.extras?.is_public}
-            className="h-10 w-full justify-start bg-cyan-500/5 hover:bg-cyan-500/10 border-transparent text-foreground"
+            className="h-10 w-full justify-start hover:bg-muted/50 text-foreground"
           />
         )}
     </div>
@@ -683,13 +706,13 @@ const NavigationButtons: FC<{
 
   return (
     <Button
-      variant={viewMode === 'creations' ? 'outline' : 'default'}
+      variant={viewMode === 'creations' ? 'outline' : 'ghost'}
       onClick={() => handleNavClick('creations')}
       className={cn(
         'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
         viewMode === 'creations'
           ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
-          : 'bg-cyan-500/5 hover:bg-cyan-500/10 border-transparent text-foreground',
+          : 'hover:bg-muted/50 text-foreground',
       )}
     >
       <ImageIcon className="size-4" />
@@ -710,7 +733,7 @@ const MobileSidebarHeader: FC<{
   }
 
   return (
-    <div className="mb-3 pb-3 border-b border-border pr-8">
+    <div className="mb-3 pb-3 border-b border-border pr-8 bg-background">
       {/* Eden logo + Navigation links in one row */}
       <div className="flex items-center justify-between">
         <button
@@ -939,8 +962,8 @@ const MainLeft = ({
                 )}
 
                 {/* Recent section */}
-                <div className="sticky top-0 z-10 pb-1 mb-1 bg-accent">
-                  <div className="text-muted-foreground">Recent</div>
+                <div className="sticky top-0 z-10 pb-1 mb-1 bg-accent mr-2">
+                  <div className="text-muted-foreground">Recent Sessions</div>
                 </div>
                 {unpinnedSessions.map(session => (
                   <SessionListItem
@@ -1069,7 +1092,7 @@ export const SessionsSidebarContent = ({
         </div>
 
         {/* Desktop: Agent selector + Mode Toggle */}
-        <div className="hidden md:flex mb-2 mr-2 flex-col gap-1.5 flex-shrink-0">
+        <div className="hidden md:flex mb-4 mr-2 flex-col gap-3 flex-shrink-0">
           {/* Agent selector - desktop only */}
           {agent && (
             <div className="flex items-center gap-1">
@@ -1163,8 +1186,8 @@ export const SessionsSidebarContent = ({
         />
       </div>
 
-      {/* Desktop: Agent selector + ModeToggle + TopLeft + Navigation + Share */}
-      <div className="hidden md:flex mb-2 mr-2 flex-col gap-1.5">
+      {/* Desktop: Agent selector + ModeToggle + Action Buttons */}
+      <div className="hidden md:flex mb-4 mr-2 flex-col gap-3">
         {/* Agent selector - desktop only */}
         {agent && (
           <div className="flex items-center gap-1">
@@ -1216,6 +1239,9 @@ export const SessionsSidebarContent = ({
             variant="sidebar"
           />
         )}
+
+        {/* Spacing between mode toggle and action buttons */}
+        <div className="h-3" />
 
         {/* New Chat button */}
         <TopLeft

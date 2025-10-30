@@ -55,113 +55,29 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
     return width / height
   }
 
-  // Determine grid layout based on count and aspect ratios
-  const getGridLayout = (
-    count: number,
-    outputs: { output: TasksV2ResultOutput }[],
-  ) => {
+  // Determine grid layout based on count
+  const getGridLayout = (count: number) => {
     if (count === 1) {
-      return {
-        gridClass: '',
-        itemClasses: ['aspect-video max-h-[500px] w-full'],
-      }
+      return 'w-full max-w-full'
     }
 
     if (count === 2) {
-      const avgAspect =
-        outputs.reduce((sum, item) => sum + getAspectRatio(item.output), 0) /
-        count
-      // If images are very wide (> 2.5), stack vertically
-      if (avgAspect > 2.5) {
-        return {
-          gridClass: 'grid grid-rows-2 gap-2',
-          itemClasses: ['aspect-video', 'aspect-video'],
-        }
-      }
-      // Otherwise side by side
-      return {
-        gridClass: 'grid grid-cols-2 gap-2',
-        itemClasses: ['aspect-square', 'aspect-square'],
-      }
+      return 'grid grid-cols-2 gap-2 w-full'
     }
 
     if (count === 3) {
-      const aspects = outputs.map(item => getAspectRatio(item.output))
-      const avgAspect = aspects.reduce((a, b) => a + b, 0) / count
-
-      // If tall images (< 0.8), use 3 columns in a single row
-      if (avgAspect < 0.8) {
-        return {
-          gridClass: 'grid grid-cols-3 gap-2',
-          itemClasses: [
-            'aspect-[3/4] h-full',
-            'aspect-[3/4] h-full',
-            'aspect-[3/4] h-full',
-          ],
-        }
-      }
-
-      // For normal/wide images: use 3 columns in a single row taking up all horizontal space
-      return {
-        gridClass: 'grid grid-cols-3 gap-2',
-        itemClasses: [
-          'aspect-square h-full',
-          'aspect-square h-full',
-          'aspect-square h-full',
-        ],
-      }
+      return 'grid grid-cols-3 gap-2 w-full'
     }
 
     if (count === 4) {
-      const aspects = outputs.map(item => getAspectRatio(item.output))
-      const avgAspect = aspects.reduce((a, b) => a + b, 0) / count
-
-      // If very tall images (< 0.7), use 4 columns
-      if (avgAspect < 0.7) {
-        return {
-          gridClass: 'grid grid-cols-4 gap-2',
-          itemClasses: [
-            'aspect-[3/4]',
-            'aspect-[3/4]',
-            'aspect-[3/4]',
-            'aspect-[3/4]',
-          ],
-        }
-      }
-
-      // If very wide images (> 2.5), use 4 rows
-      if (avgAspect > 2.5) {
-        return {
-          gridClass: 'grid grid-rows-4 gap-2',
-          itemClasses: [
-            'aspect-video',
-            'aspect-video',
-            'aspect-video',
-            'aspect-video',
-          ],
-        }
-      }
-
-      // Default: 2x2 grid
-      return {
-        gridClass: 'grid grid-cols-2 gap-2',
-        itemClasses: [
-          'aspect-square',
-          'aspect-square',
-          'aspect-square',
-          'aspect-square',
-        ],
-      }
+      return 'grid grid-cols-2 gap-2 w-full'
     }
 
     // 5+ items: use responsive grid
-    return {
-      gridClass: 'grid grid-cols-2 md:grid-cols-3 gap-2',
-      itemClasses: Array(count).fill('aspect-square'),
-    }
+    return 'grid grid-cols-2 md:grid-cols-3 gap-2 w-full'
   }
 
-  const layout = getGridLayout(visualOutputs.length, visualOutputs)
+  const layout = getGridLayout(visualOutputs.length)
 
   // If no media outputs, return null
   if (
@@ -176,13 +92,14 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
     <LightboxGallery>
       {/* Visual media grid */}
       {visualOutputs.length > 0 && (
-        <div className={cn('mb-2', layout.gridClass)}>
-          {visualOutputs.map((item, index) => (
-            <div
-              key={`${item.resultIndex}-${item.outputIndex}-${item.output.filename}`}
-              className="group relative overflow-hidden rounded-lg"
-            >
+        <div className={cn('mb-2', layout)}>
+          {visualOutputs.map((item, index) => {
+            const aspectRatio = getAspectRatio(item.output)
+            return (
               <div
+                key={`${item.resultIndex}-${item.outputIndex}-${item.output.filename}`}
+                className="group relative overflow-hidden rounded-lg w-full"
+                style={{ aspectRatio: aspectRatio.toString() }}
                 draggable
                 onDragStart={(e: React.DragEvent<HTMLDivElement>) => {
                   const url = getCloudfrontOriginalUrl(item.output.filename)
@@ -198,7 +115,6 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
                   )
                   e.dataTransfer.effectAllowed = 'copy'
                 }}
-                className={cn('relative w-full', layout.itemClasses[index])}
               >
                 <LightboxTrigger
                   className="absolute inset-0"
@@ -225,15 +141,15 @@ export const ToolMediaRenderer: React.FC<ToolMediaRendererProps> = ({
                   imageProps={{
                     loading: 'lazy',
                     blurhash: item.output.mediaAttributes?.blurhash,
-                    className: 'object-cover',
+                    className: 'object-contain',
                   }}
                   videoProps={{
-                    className: 'object-cover',
+                    className: 'object-contain',
                   }}
                 />
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

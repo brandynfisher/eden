@@ -1,5 +1,6 @@
 import { MessageAttachment } from './message-attachment'
 import { LightboxGallery } from '@/components/media/lightbox'
+import { cn } from '@/lib/utils'
 import { Message, SessionV2 } from '@edenlabs/eden-sdk'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -32,6 +33,26 @@ export const UserMessage = ({
     ? trimmedContent.slice(0, previewLimit)
     : trimmedContent
 
+  // Grid layout logic for attachments (rows of up to 5)
+  const getGridLayout = (count: number) => {
+    if (count === 1) {
+      return 'w-full max-w-32'
+    }
+    if (count === 2) {
+      return 'grid grid-cols-2 gap-1 w-full max-w-64'
+    }
+    if (count === 3) {
+      return 'grid grid-cols-3 gap-1 w-full max-w-96'
+    }
+    if (count === 4) {
+      return 'grid grid-cols-4 gap-1 w-full'
+    }
+    // 5+ items: rows of up to 5
+    return 'grid grid-cols-5 gap-1 w-full'
+  }
+
+  const attachmentLayout = getGridLayout(message.attachments?.length || 0)
+
   return (
     <div
       className={
@@ -42,12 +63,13 @@ export const UserMessage = ({
         <div className="flex flex-col items-end gap-2 max-w-[85%]">
           {hasAttachments && (
             <LightboxGallery galleryKey={message._id}>
-              <div className="flex flex-wrap gap-2 justify-end">
+              <div className={cn('justify-end', attachmentLayout)}>
                 {message.attachments?.map((attachment, index) => (
                   <MessageAttachment
                     key={attachment}
                     url={attachment}
                     index={index}
+                    className="w-full aspect-square"
                   />
                 ))}
               </div>

@@ -67,7 +67,10 @@ const AgentCreationsView: FC<{
   const showFilterTabs = !!user
 
   return (
-    <div ref={scrollContainerRef} className="flex-1 overflow-auto bg-accent">
+    <div
+      ref={scrollContainerRef}
+      className="flex-1 overflow-auto bg-background"
+    >
       <div className="w-full px-2 py-6">
         <div className="flex text-lg items-center gap-2 justify-center mb-6 pt-4">
           {`Creations with ${agent.name}`}
