@@ -538,7 +538,7 @@ const TopLeft: FC<{
         'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
         isActive
           ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
-          : 'hover:bg-muted/50 text-foreground',
+          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
       )}
     >
       <EditIcon className="size-4" />
@@ -636,26 +636,25 @@ const AgentSelectorAndNewChat: FC<{
         />
       )}
 
-      {/* Spacing between mode toggle and action buttons */}
-      <div className="h-3" />
+      {/* Row 3: New Chat button - full width - hide in settings mode */}
+      {viewMode !== 'settings' && (
+        <Button
+          variant={viewMode === 'chat' && isNewSession ? 'outline' : 'ghost'}
+          onClick={handleNewChatClick}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            viewMode === 'chat' && isNewSession
+              ? 'bg-primary/20 text-primary-foreground border border-primary/40 hover:bg-primary/25'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <EditIcon className="size-4" />
+          <span>{isChat ? 'New Chat' : 'New Session'}</span>
+        </Button>
+      )}
 
-      {/* Row 3: New Chat button - full width */}
-      <Button
-        variant={viewMode === 'chat' && isNewSession ? 'outline' : 'ghost'}
-        onClick={handleNewChatClick}
-        className={cn(
-          'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-          viewMode === 'chat' && isNewSession
-            ? 'bg-primary/20 text-primary-foreground border border-primary/40 hover:bg-primary/25'
-            : 'hover:bg-muted/50 text-foreground',
-        )}
-      >
-        <EditIcon className="size-4" />
-        <span>{isChat ? 'New Chat' : 'New Session'}</span>
-      </Button>
-
-      {/* Row 4: Creations button - full width */}
-      {viewMode && onViewModeChange && (
+      {/* Row 4: Creations button - full width - hide in settings mode */}
+      {viewMode && viewMode !== 'settings' && onViewModeChange && (
         <Button
           variant={viewMode === 'creations' ? 'outline' : 'ghost'}
           onClick={() => {
@@ -666,7 +665,7 @@ const AgentSelectorAndNewChat: FC<{
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
             viewMode === 'creations'
               ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
-              : 'hover:bg-muted/50 text-foreground',
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
           )}
         >
           <ImageIcon className="size-4" />
@@ -712,7 +711,7 @@ const NavigationButtons: FC<{
         'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
         viewMode === 'creations'
           ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
-          : 'hover:bg-muted/50 text-foreground',
+          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
       )}
     >
       <ImageIcon className="size-4" />
@@ -1239,9 +1238,6 @@ export const SessionsSidebarContent = ({
             variant="sidebar"
           />
         )}
-
-        {/* Spacing between mode toggle and action buttons */}
-        <div className="h-3" />
 
         {/* New Chat button */}
         <TopLeft

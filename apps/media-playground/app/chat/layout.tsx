@@ -150,8 +150,8 @@ const SessionChatLayout = ({
       setViewMode('settings')
     } else if (page === 'memories') {
       setViewMode('memories')
-    } else if (!page) {
-      // Only reset to chat if there's no page parameter at all
+    } else if (!page && !tab) {
+      // Only reset to chat if there's no page or tab parameter at all
       setViewMode('chat')
     }
   }, [searchParams])
@@ -213,6 +213,7 @@ const SessionChatLayout = ({
     setViewMode('chat')
     const url = new URL(window.location.href)
     url.searchParams.delete('page')
+    url.searchParams.delete('tab')
     router.replace(url.pathname + url.search, { scroll: false })
   }
 
@@ -236,8 +237,16 @@ const SessionChatLayout = ({
     const url = new URL(window.location.href)
     if (mode === 'chat') {
       url.searchParams.delete('page')
+      url.searchParams.delete('tab') // Clear tab when going to chat
+    } else if (mode === 'settings') {
+      url.searchParams.set('page', mode)
+      // Keep tab parameter if it exists, or default to profile
+      if (!url.searchParams.has('tab')) {
+        url.searchParams.set('tab', 'profile')
+      }
     } else {
       url.searchParams.set('page', mode)
+      url.searchParams.delete('tab') // Clear tab for non-settings modes
     }
     router.replace(url.pathname + url.search, { scroll: false })
   }

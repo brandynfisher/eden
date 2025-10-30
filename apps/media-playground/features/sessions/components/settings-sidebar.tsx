@@ -136,9 +136,6 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Spacing to match chat mode's h-3 div */}
-      <div className="h-3 flex-shrink-0" />
-
       {/* Navigation items */}
       <nav className="flex flex-col gap-1 overflow-y-auto flex-1 mr-2 min-h-0">
         {availableTabs.map(tab => {
