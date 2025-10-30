@@ -111,6 +111,7 @@ export const createCursorPaginationRoute = (
   const filters = []
 
   const userIdExists = !!query.user
+  const isLikedFilter = query.isLiked === 'true' || query.isLiked === true
   const isOrderByLiked = query.orderBy === 'liked'
   const isOrderByOther = !query.orderBy || !isOrderByLiked
 
@@ -118,12 +119,14 @@ export const createCursorPaginationRoute = (
   const userFilter = { user: String(query.user) }
 
   if (userIdExists) {
-    if (isOrderByLiked) {
+    if (isOrderByLiked || isLikedFilter) {
       filters.push(likedByUserFilter)
-      filters.push({ public: false })
+      if (isOrderByLiked) {
+        filters.push({ public: false })
+      }
     }
 
-    if (isOrderByOther) {
+    if (isOrderByOther && !isLikedFilter) {
       filters.push(userFilter)
     }
   }

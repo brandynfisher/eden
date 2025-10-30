@@ -83,6 +83,7 @@ export type FeedCursorRouteQueryParams = {
     output_type?: string[]
     concept?: string | string[]
     isPrivate?: boolean
+    isLiked?: boolean | string
     visibility?: 'all' | 'public' | 'private'
     maxDate?: string
     minDate?: string

@@ -9,6 +9,7 @@ import {
   CollectionV2Document,
 } from '../../models/v2/CollectionV2'
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
+import { LikeV2 } from '../../models/v2/LikeV2'
 import { ModelV2, ModelV2Document } from '../../models/v2/ModelV2'
 import { TaskV2 } from '../../models/v2/TaskV2'
 import {
@@ -125,6 +126,7 @@ type GenericFilters = {
   character?: ObjectId
   concept?: ObjectId
   collection?: ObjectId
+  entityType?: string
   'args.lora'?: string
   'result.output.creation'?: { $exists: true }
 }
@@ -219,6 +221,24 @@ const tasksPreAggregatePipeline = (
     //     _id: -1,
     //   },
     // },
+  ]
+}
+
+const reactionsPreAggregatePipeline = (
+  matchStage: PipelineStage[],
+  lookupPipeline: PipelineStage[],
+) => {
+  return [
+    ...matchStage,
+    {
+      $project: {
+        _id: 0,
+        user: 1,
+        entityId: 1,
+        entityType: 1,
+      },
+    },
+    ...creationsLookup('entityId', '_id', lookupPipeline),
   ]
 }
 
@@ -390,10 +410,8 @@ const handleArguments = async ({
           if (field === 'likedBy') {
             useReactionsPreAggregate = true
             preAggregateFilterOptions['user'] = new ObjectId(value)
-            customFilterOptions['$or'] = [
-              { user: { $ne: new ObjectId(value) }, public: true },
-              { user: { $eq: new ObjectId(value) }, public: false },
-            ]
+            preAggregateFilterOptions['entityType'] = 'creation'
+            // Don't add privacy filters here - let the existing user/public filters work
             return []
           }
 
@@ -790,6 +808,7 @@ export const getCreationsFeedCursorV2 = async (
     preAggregateFilterOptions,
     useCollectionsPreAggregate,
     useTasksPreAggregate,
+    useReactionsPreAggregate,
   } = await handleArguments({
     server,
     reply,
@@ -956,6 +975,24 @@ export const getCreationsFeedCursorV2 = async (
 
     // @ts-ignore
     results = await TaskV2.aggregate(pipeline)
+  } else if (useReactionsPreAggregate) {
+    const lookupPipeline = await createPipeline({
+      // @ts-ignore
+      filters,
+      sortOptions,
+    })
+    const pipeline = [
+      ...reactionsPreAggregatePipeline(
+        [{ $match: preAggregateFilterOptions }, { $sort: { createdAt: -1 } }],
+        lookupPipeline,
+      ),
+      maybeAddCursorFilterStage(cursor),
+      { $limit: limit ?? 100 },
+      ...lateLookupStages,
+    ].filter(Boolean)
+
+    // @ts-ignore
+    results = await LikeV2.aggregate(pipeline)
   } else {
     const pipeline = await createPipeline({
       limit: limit ?? 100,
