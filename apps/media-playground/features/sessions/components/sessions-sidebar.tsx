@@ -641,10 +641,10 @@ const AgentSelectorAndNewChat: FC<{
         variant={isNewSession ? 'outline' : 'default'}
         onClick={handleNewChatClick}
         className={cn(
-          'flex w-full justify-start gap-2 py-3 rounded-md font-medium transition-colors h-12',
+          'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
           isNewSession
-            ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary text-primary-foreground'
-            : 'border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary',
+            ? 'bg-primary/20 text-primary-foreground border border-primary/40 hover:bg-primary/25'
+            : 'bg-cyan-500/5 hover:bg-cyan-500/10 border-transparent text-foreground',
         )}
       >
         <EditIcon className="size-4" />
@@ -661,7 +661,7 @@ const AgentSelectorAndNewChat: FC<{
             messages={session.messages || []}
             isOwner={session.owner?._id === userId}
             isPublic={session.extras?.is_public}
-            className="h-12 w-full justify-start border-gray-800 bg-gray-800 hover:bg-primary/20 border-primary/60 hover:border-primary"
+            className="h-10 w-full justify-start bg-cyan-500/5 hover:bg-cyan-500/10 border-transparent text-foreground"
           />
         )}
     </div>
