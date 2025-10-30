@@ -8,6 +8,8 @@ import {
   ToolsTab,
 } from './AgentEditView'
 import AgentDashboardView from './agent-dashboard-view'
+import AgentMemoryView from './agent-memory-view'
+import AgentTasksView from './agent-tasks-view'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { agentSchema } from '@/features/agent/agent-form-sheet'
@@ -15,19 +17,10 @@ import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-qu
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
-import { cn } from '@/lib/utils'
 import { Agent, FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import {
-  BarChart3Icon,
-  ImageIcon,
-  Loader2,
-  MessageCircleIcon,
-  SettingsIcon,
-  UserIcon,
-  WrenchIcon,
-} from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -42,7 +35,7 @@ const AgentEditView: FC<{
   sessionId?: string
   onBackToChat?: () => void
   onNewChat?: () => void
-}> = ({ agent, onNewChat }) => {
+}> = ({ agent }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
@@ -57,6 +50,8 @@ const AgentEditView: FC<{
         'tools',
         'concepts',
         'integrations',
+        'memories',
+        'tasks',
         'permissions',
         'dashboard',
       ].includes(tabFromUrl)
@@ -112,6 +107,8 @@ const AgentEditView: FC<{
         'tools',
         'concepts',
         'integrations',
+        'memories',
+        'tasks',
         'permissions',
         'dashboard',
       ].includes(tabFromUrl)
@@ -198,113 +195,7 @@ const AgentEditView: FC<{
     isLoading: isPermissionsLoading,
   } = useAgentPermissions(agent, user?._id)
 
-  // Get available tabs
-  const getAvailableTabs = () => {
-    const tabs = []
-
-    // All users with edit access can see profile
-    if (hasEditAccess) {
-      tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
-    }
-
-    // Only owners can see tools, integrations, and permissions
-    if (hasOwnerAccess) {
-      tabs.push({ key: 'tools', label: 'Tools', icon: WrenchIcon })
-      tabs.push({ key: 'concepts', label: 'Concepts', icon: ImageIcon })
-
-      if (isPreviewUser) {
-        tabs.push({
-          key: 'integrations',
-          label: 'Integrations',
-          icon: SettingsIcon,
-        })
-
-        // Only original owner can see permissions tab
-        if (isOriginalOwner) {
-          tabs.push({
-            key: 'permissions',
-            label: 'Permissions',
-            icon: UserIcon,
-          })
-        }
-      }
-    }
-
-    // All users with edit access can see dashboard
-    if (hasEditAccess) {
-      tabs.push({ key: 'dashboard', label: 'Dashboard', icon: BarChart3Icon })
-    }
-
-    return tabs
-  }
-
-  // Top tabs content component
-  const TopTabsContent = () => {
-    const availableTabs = getAvailableTabs()
-
-    return (
-      <div className="sticky top-0 z-10 border-b border-border bg-background">
-        <div className="px-6">
-          {/* Desktop horizontal tabs */}
-          <div className="hidden sm:flex space-x-8 overflow-x-auto">
-            <div className="flex space-x-8 overflow-x-auto flex-1">
-              {availableTabs.map(tab => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={cn(
-                    'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-                    activeTab === tab.key
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground',
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile horizontal tabs */}
-          <div className="sm:hidden">
-            <div className="flex items-center justify-between py-4">
-              <div className="flex space-x-6 overflow-x-auto flex-1">
-                {availableTabs.map(tab => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={cn(
-                      'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors',
-                      activeTab === tab.key
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground',
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* New Chat icon - always show when in settings */}
-              {onNewChat && (
-                <div className="flex items-center pl-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onNewChat}
-                    className="px-3"
-                    aria-label="New Chat"
-                  >
-                    <MessageCircleIcon className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // Mobile header component removed - users should access new chat via sidebar
 
   if (isPermissionsLoading) {
     return (
@@ -316,9 +207,8 @@ const AgentEditView: FC<{
 
   return (
     <div className="flex-1 bg-accent flex flex-col h-full">
-      <TopTabsContent />
       <div className="flex-1 overflow-auto">
-        <div className="p-6">
+        <div className="p-6 pt-6 md:pt-6">
           <div className="mx-auto max-w-4xl">
             <Form {...form}>
               <form
@@ -352,6 +242,18 @@ const AgentEditView: FC<{
                       isError={deploymentsQuery.isError}
                     />
                   )}
+                {activeTab === 'memories' &&
+                  hasOwnerAccess &&
+                  isPreviewUser && (
+                    <div className="-m-6">
+                      <AgentMemoryView agent={agent} />
+                    </div>
+                  )}
+                {activeTab === 'tasks' && hasOwnerAccess && isPreviewUser && (
+                  <div className="-m-6">
+                    <AgentTasksView agent={agent} />
+                  </div>
+                )}
                 {activeTab === 'permissions' &&
                   isOriginalOwner &&
                   isPreviewUser && <PermissionsTab agent={agent} />}
@@ -366,10 +268,11 @@ const AgentEditView: FC<{
             {/* Global Update Button */}
             {activeTab !== 'integrations' &&
               activeTab !== 'tasks' &&
+              activeTab !== 'memories' &&
               activeTab !== 'permissions' &&
               activeTab !== 'concepts' &&
               activeTab !== 'dashboard' && (
-                <div className="border-t border-border p-6">
+                <div className="border-t border-border p-6 mt-8">
                   <div className="mx-auto max-w-4xl">
                     <Button
                       onClick={form.handleSubmit(handleSubmit)}

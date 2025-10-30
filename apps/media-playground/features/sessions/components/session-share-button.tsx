@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Message } from '@edenlabs/eden-sdk'
 import { Copy, Share2 } from 'lucide-react'
@@ -25,6 +24,9 @@ interface SessionShareButtonProps {
   isOwner: boolean
   isPublic?: boolean
   className?: string
+  hideText?: boolean
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export const SessionShareButton = ({
@@ -33,8 +35,18 @@ export const SessionShareButton = ({
   isOwner,
   isPublic = false,
   className,
+  hideText = false,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: SessionShareButtonProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+
+  // Use controlled state if provided, otherwise use internal state
+  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setIsOpen =
+    controlledOnOpenChange !== undefined
+      ? controlledOnOpenChange
+      : setInternalOpen
   const [shareId, setShareId] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [isCreating, setIsCreating] = useState(false)
@@ -157,7 +169,7 @@ export const SessionShareButton = ({
       setIsPublicSession(checked)
       toast.success(
         checked
-          ? 'Session is now public - anyone can view it'
+          ? 'Session is now public - all messages (including future ones) are visible to anyone with the link'
           : 'Session is now private',
       )
     } catch (error) {
@@ -186,99 +198,86 @@ export const SessionShareButton = ({
           onClick={() => setIsOpen(true)}
         >
           <Share2 className="h-4 w-4" />
-          <span className="ml-2 text-sm">Share</span>
+          {!hideText && <span className="ml-2 text-sm">Share</span>}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Share session</DialogTitle>
           <DialogDescription>
-            Share this conversation with others via a public link or by making
-            the entire session publicly accessible.
+            Share a snapshot of this conversation up to now, or make the entire
+            session public for all messages.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-6">
-          {/* Public Session Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5 flex-1">
-                <Label htmlFor="public-toggle" className="text-base">
-                  Public Session
-                </Label>
-                <div className="text-sm text-muted-foreground">
-                  Allow anyone to view this session (all messages)
-                </div>
-              </div>
-              <Switch
-                id="public-toggle"
-                checked={isPublicSession}
-                onCheckedChange={togglePublicSession}
-                disabled={isUpdatingPublic}
+        <div className="flex-1 overflow-y-auto space-y-4">
+          {!shareId && (
+            <div className="space-y-2">
+              <Label htmlFor="title">Title (optional)</Label>
+              <Input
+                id="title"
+                placeholder="Add a title for your shared conversation"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                maxLength={200}
               />
             </div>
-            {isPublicSession && (
-              <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border">
-                This session is publicly accessible. Anyone with the link can
-                view all messages.
-              </div>
-            )}
-          </div>
+          )}
 
-          <Separator />
-
-          {/* Share Link Section */}
-          {!shareId ? (
-            <div className="space-y-4">
-              <div className="space-y-0.5">
-                <Label className="text-base">Share Snapshot</Label>
-                <div className="text-sm text-muted-foreground">
-                  Create a link to share this conversation up to the current
-                  point
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="title">Title (optional)</Label>
-                <Input
-                  id="title"
-                  placeholder="Add a title for your shared conversation"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  maxLength={200}
-                />
-              </div>
-              <div className="text-sm text-muted-foreground">
-                This will share {messages.length} message
-                {messages.length !== 1 ? 's' : ''} up to the current point.
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Share link</Label>
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border min-w-0">
-                  <div className="flex-1 min-w-0 overflow-hidden">
-                    <div className="text-sm font-mono text-foreground truncate">
-                      {`${window.location.host}/sessions/share/${shareId}`}
-                    </div>
+          {shareId && (
+            <div className="space-y-2">
+              <Label>Share link</Label>
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border min-w-0">
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="text-sm font-mono text-foreground truncate">
+                    {`${window.location.host}/sessions/share/${shareId}`}
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={copyShareLink}
-                    className="flex-shrink-0 gap-2"
-                  >
-                    <Copy className="h-4 w-4" />
-                    Copy
-                  </Button>
                 </div>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Anyone with this link will be able to view the shared
-                conversation.
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={copyShareLink}
+                  className="flex-shrink-0 gap-2"
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy
+                </Button>
               </div>
             </div>
           )}
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5 flex-1">
+              <Label htmlFor="public-toggle" className="text-base">
+                Make Entire Session Public
+              </Label>
+              <div className="text-sm text-muted-foreground">
+                Anyone can see all messages, including future ones
+              </div>
+            </div>
+            <Switch
+              id="public-toggle"
+              checked={isPublicSession}
+              onCheckedChange={togglePublicSession}
+              disabled={isUpdatingPublic}
+            />
+          </div>
+
+          <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border">
+            {isPublicSession ? (
+              <>
+                This session is now public. Anyone with the link can view all
+                messages, including any new messages you send.
+              </>
+            ) : (
+              <>
+                This will create a permanent snapshot of {messages.length}{' '}
+                message
+                {messages.length !== 1 ? 's' : ''}. The snapshot won't update
+                with new messages.
+              </>
+            )}
+          </div>
         </div>
 
         <DialogFooter className="flex-shrink-0">

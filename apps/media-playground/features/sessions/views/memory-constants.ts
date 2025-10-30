@@ -20,7 +20,7 @@ export const MEMORY_LIMITS = {
   DIRECTIVE_CONTENT_MAX_CHARS: 200,
 
   // User Memory Content
-  USER_MEMORY_CONTENT_MAX_CHARS: 2500,
+  USER_MEMORY_CONTENT_MAX_CHARS: 5000,
 } as const
 
 // Error messages

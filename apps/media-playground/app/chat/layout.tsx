@@ -20,6 +20,7 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, SessionV2 } from '@edenlabs/eden-sdk'
+import { MenuIcon } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   FC,
@@ -46,6 +47,7 @@ const SessionChatSidebarContent: FC<{
   onAgentSelect?: () => void
   onSettingsClick?: () => void
   session?: SessionV2
+  onSidebarToggle?: () => void
 }> = ({
   onItemClick,
   agentId,
@@ -57,6 +59,7 @@ const SessionChatSidebarContent: FC<{
   onSettingsClick,
   currentSessionId,
   session,
+  onSidebarToggle,
 }) => {
   return (
     <>
@@ -73,12 +76,16 @@ const SessionChatSidebarContent: FC<{
         onSettingsClick={onSettingsClick}
         sessionId={currentSessionId}
         session={session}
+        onSidebarToggle={onSidebarToggle}
       />
     </>
   )
 }
 
-const SessionChatLayout = ({ children }: PropsWithChildren) => {
+const SessionChatLayout = ({
+  children,
+  creationModal,
+}: PropsWithChildren<{ creationModal?: React.ReactNode }>) => {
   const { user } = useAuthState()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -91,6 +98,7 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   const [viewMode, setViewMode] = useState<ViewMode>('chat')
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const { agent } = useAgentQuery({ key: agentId })
   const { data: session } = useSessionQuery({
@@ -134,13 +142,16 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     const page = searchParams.get('page')
     const tab = searchParams.get('tab')
 
-    if (page === 'tasks') {
+    if (page === 'creations') {
+      setViewMode('creations')
+    } else if (page === 'tasks') {
       setViewMode('tasks')
     } else if (page === 'settings' || tab === 'deployments') {
       setViewMode('settings')
     } else if (page === 'memories') {
       setViewMode('memories')
-    } else {
+    } else if (!page) {
+      // Only reset to chat if there's no page parameter at all
       setViewMode('chat')
     }
   }, [searchParams])
@@ -152,16 +163,19 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
     }
   }, [agent, user, isOwner, viewMode, agentId, router])
 
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
 
   const handleSidebarToggle = () => {
-    if (sidebarPanelRef.current) {
-      if (isSidebarCollapsed) {
-        sidebarPanelRef.current.expand()
-      } else {
-        sidebarPanelRef.current.collapse()
+    if (isSidebarCollapsed) {
+      // Just toggle state - panel will remount
+      setIsSidebarCollapsed(false)
+    } else {
+      // Collapse the panel
+      const panel = sidebarPanelRef.current
+      if (panel) {
+        panel.collapse()
       }
+      setIsSidebarCollapsed(true)
     }
   }
 
@@ -195,14 +209,37 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
   }
 
   const handleBackToChat = () => {
-    // Just reset view mode to chat - no navigation needed since we're already on the right URL
+    // Reset view mode to chat and clear page query param
     setViewMode('chat')
+    const url = new URL(window.location.href)
+    url.searchParams.delete('page')
+    router.replace(url.pathname + url.search, { scroll: false })
   }
 
   const handleNewChat = () => {
     // Always go to new chat screen regardless of current session
     setViewMode('chat')
     router.push(`/chat/${agentId}`)
+  }
+
+  // Update view mode and sync with URL
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode)
+
+    // On mobile, auto-open sidebar when mode changes
+    const isMobile = window.innerWidth < 768
+    if (isMobile) {
+      setIsSheetOpen(true)
+    }
+
+    // Update URL query parameter
+    const url = new URL(window.location.href)
+    if (mode === 'chat') {
+      url.searchParams.delete('page')
+    } else {
+      url.searchParams.set('page', mode)
+    }
+    router.replace(url.pathname + url.search, { scroll: false })
   }
 
   const handleAgentSelect = (selectedAgent: Agent) => {
@@ -237,19 +274,12 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
       {/* Chat-specific header that replaces the main header */}
       <ChatHeader
         className={isPWA ? 'pwa-chat-header' : ''}
-        agent={agent}
         onChatClick={handleChatClick}
-        onAgentSelect={() => setIsAgentSelectorOpen(true)}
-        onSettingsClick={() => setViewMode('settings')}
-        isSidebarCollapsed={isSidebarCollapsed}
-        onSidebarToggle={handleSidebarToggle}
-        viewMode={viewMode}
-        onBackToChat={handleBackToChat}
       />
 
       <div
         className={cn(
-          'flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[104px]',
+          'flex flex-col fixed inset-x-0 bottom-0 top-[56px] md:top-[56px]',
           isPWA && 'pwa-chat-layout',
         )}
       >
@@ -264,24 +294,27 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetContent
             side="left"
-            className="flex flex-col max-h-full pt-3 px-3 bg-[#0e1421] border-r gap-0"
+            className="flex flex-col h-full pt-3 px-3 bg-[#0e1421] border-r gap-0 overflow-hidden"
           >
             <SheetTitle className="sr-only">Session List</SheetTitle>
-            <SessionChatSidebarContent
-              agent={agent}
-              isOwner={isOwner}
-              agentId={agentId}
-              currentSessionId={sessionId}
-              onSessionSelect={handleSessionSelect}
-              onNewSession={handleNewSession}
-              onItemClick={() => setIsSheetOpen(false)}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-              userId={user?._id}
-              onAgentSelect={() => setIsAgentSelectorOpen(true)}
-              onSettingsClick={() => setViewMode('settings')}
-              session={session}
-            />
+            <div className="flex flex-col flex-1 min-h-0">
+              <SessionChatSidebarContent
+                agent={agent}
+                isOwner={isOwner}
+                agentId={agentId}
+                currentSessionId={sessionId}
+                onSessionSelect={handleSessionSelect}
+                onNewSession={handleNewSession}
+                onItemClick={() => setIsSheetOpen(false)}
+                viewMode={viewMode}
+                onViewModeChange={handleViewModeChange}
+                userId={user?._id}
+                onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                onSettingsClick={() => handleViewModeChange('settings')}
+                session={session}
+                onSidebarToggle={handleSidebarToggle}
+              />
+            </div>
           </SheetContent>
         </Sheet>
 
@@ -292,48 +325,62 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
           autoSaveId={`resizable-session-chat-layout-${agentId}`}
         >
           {/* Desktop Sidebar */}
-          <ResizablePanel
-            ref={sidebarPanelRef}
-            defaultSize={20}
-            minSize={15}
-            maxSize={30}
-            collapsible
-            collapsedSize={0}
-            onCollapse={() => setIsSidebarCollapsed(true)}
-            onExpand={() => setIsSidebarCollapsed(false)}
-            className={cn(
-              'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
-              'max-w-[320px]',
-              isSidebarCollapsed && 'p-0 border-none',
-            )}
-          >
-            {!isSidebarCollapsed && (
-              <SessionChatSidebarContent
-                agent={agent}
-                isOwner={isOwner}
-                agentId={agentId}
-                currentSessionId={sessionId}
-                onSessionSelect={handleSessionSelect}
-                onNewSession={handleNewSession}
-                onItemClick={() => {}}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                userId={user?._id}
-                onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                onSettingsClick={() => setViewMode('settings')}
-                session={session}
-              />
-            )}
-          </ResizablePanel>
+          {!isSidebarCollapsed && (
+            <ResizablePanel
+              id="sidebar"
+              ref={sidebarPanelRef}
+              defaultSize={20}
+              minSize={18}
+              maxSize={35}
+              order={1}
+              className={cn(
+                'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 overflow-hidden',
+              )}
+            >
+              <div className="flex flex-col flex-1 min-h-0">
+                <SessionChatSidebarContent
+                  agent={agent}
+                  isOwner={isOwner}
+                  agentId={agentId}
+                  currentSessionId={sessionId}
+                  onSessionSelect={handleSessionSelect}
+                  onNewSession={handleNewSession}
+                  onItemClick={() => {}}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                  userId={user?._id}
+                  onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                  onSettingsClick={() => handleViewModeChange('settings')}
+                  session={session}
+                  onSidebarToggle={handleSidebarToggle}
+                />
+              </div>
+            </ResizablePanel>
+          )}
 
-          <ResizableHandle
-            withHandle
-            className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
-          />
+          {/* Resizable Handle or Hamburger Button */}
+          {isSidebarCollapsed ? (
+            // Show hamburger button when sidebar is collapsed - full height clickable
+            <button
+              onClick={handleSidebarToggle}
+              className="hidden md:flex flex-col items-center w-8 bg-accent border-r border-border relative hover:bg-muted/20 transition-colors pt-3"
+              title="Open sidebar"
+            >
+              <MenuIcon className="h-4 w-4 shrink-0" />
+            </button>
+          ) : (
+            // Show resizable handle when sidebar is open
+            <ResizableHandle
+              withHandle
+              className="hidden md:flex w-1 bg-transparent hover:bg-primary/10 [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary relative cursor-col-resize"
+            />
+          )}
 
           {/* Main Content */}
           <ResizablePanel
+            id="content"
             defaultSize={80}
+            order={2}
             className="relative flex flex-col bg-aui-background"
           >
             <div className="flex flex-col h-full">
@@ -364,6 +411,9 @@ const SessionChatLayout = ({ children }: PropsWithChildren) => {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
+
+      {/* Intercept creation routes with modal */}
+      {creationModal}
     </LiveAudioProvider>
   )
 }

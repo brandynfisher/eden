@@ -136,6 +136,7 @@ export type Deployment = {
   secrets?: DeploymentSecrets
   config?: DeploymentConfig
   valid?: boolean
+  local?: boolean
   createdAt: Date
   updatedAt: Date
 }
