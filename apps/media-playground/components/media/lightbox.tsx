@@ -189,32 +189,13 @@ export const LightboxGallery = ({
         carousel={{
           finite: hasSingleSlide,
         }}
-        render={{
-          buttonPrev: slides.length === 1 ? () => null : undefined,
-          buttonNext: slides.length === 1 ? () => null : undefined,
-          slide: props => {
-            // @ts-expect-error slide.src is not always defined
-            if (props.slide.type === 'audio') {
-              return (
-                <AudioComponent
-                  // @ts-expect-error slide.src is not always defined
-                  src={props.slide.src}
-                  autoPlay={props.offset === 0}
-                />
-              )
-            }
-            return null
-          },
-        }}
+        controller={{ closeOnBackdropClick: true }}
         on={{
           view: props => {
             // Handle both audio and video elements
             const audios = document.querySelectorAll(
               '.audio-component audio',
             ) as NodeListOf<HTMLAudioElement>
-            // const videos = document.querySelectorAll(
-            //   'video',
-            // ) as NodeListOf<HTMLVideoElement>
 
             // Handle audio elements
             audios.forEach(audio => {
@@ -234,38 +215,34 @@ export const LightboxGallery = ({
                 audio.currentTime = 0
               }
             })
-
-            // Handle video elements
-            // videos.forEach(video => {
-            //   const currentSlide = slides[props.index]
-            //   if (!currentSlide || !('sources' in currentSlide)) {
-            //     video.pause()
-            //     video.currentTime = 0
-            //     return
-            //   }
-            //   const currentVideoSrc = currentSlide.sources?.[0]?.src
-            //   if (video.src === currentVideoSrc) {
-            //     // Enable audio for videos in lightbox
-            //     video.muted = false
-            //     video.play().catch(() => {
-            //       // If autoplay fails due to browser policy, mute and try again
-            //       video.muted = true
-            //       video.play().catch(() => {
-            //         // Handle final autoplay failure silently
-            //       })
-            //     })
-            //     video.currentTime = 0
-            //   } else {
-            //     video.pause()
-            //     video.currentTime = 0
-            //   }
-            // })
           },
           entered: () => {
             window.dispatchEvent(new Event(`lightbox-open`))
           },
+          exiting: () => {
+            // Prevent Escape key from bubbling to parent modals
+            // Add a small flag to indicate lightbox is closing
+            window.dispatchEvent(new Event(`lightbox-closing`))
+          },
           exited: () => {
             window.dispatchEvent(new Event(`lightbox-close`))
+          },
+        }}
+        render={{
+          buttonPrev: slides.length === 1 ? () => null : undefined,
+          buttonNext: slides.length === 1 ? () => null : undefined,
+          slide: props => {
+            // @ts-expect-error slide.src is not always defined
+            if (props.slide.type === 'audio') {
+              return (
+                <AudioComponent
+                  // @ts-expect-error slide.src is not always defined
+                  src={props.slide.src}
+                  autoPlay={props.offset === 0}
+                />
+              )
+            }
+            return null
           },
         }}
       />
