@@ -9,7 +9,7 @@ import customImageLoader from '@/image-loader'
 import { siteConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { AudioLinesIcon } from 'lucide-react'
+import { AudioLinesIcon, PauseIcon, PlayIcon } from 'lucide-react'
 import NextImage, { ImageProps } from 'next/image'
 import React from 'react'
 import { ReactNode, createContext, useContext, useState } from 'react'
@@ -474,46 +474,67 @@ export function LightboxAudioTrigger({
   src,
   duration,
 }: LightboxAudioTriggerProps) {
-  const { hovered, ref: hoverRef } = useHover()
   const audioRef = React.useRef<HTMLAudioElement>(null)
-  const { setOpen } = useLightbox()
+  const [isPlaying, setIsPlaying] = React.useState(false)
 
-  const handleClick = () => {
-    // Stop audio playback when opening lightbox
+  const togglePlayPause = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent opening lightbox when toggling play
+
     if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
+      if (isPlaying) {
+        audioRef.current.pause()
+        setIsPlaying(false)
+      } else {
+        audioRef.current.play()
+        setIsPlaying(true)
+      }
     }
-    setOpen(true)
+  }
+
+  // Handle audio end event
+  React.useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleEnded = () => setIsPlaying(false)
+    audio.addEventListener('ended', handleEnded)
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded)
+    }
+  }, [])
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   return (
-    <div
-      ref={hoverRef}
-      className="relative h-full w-full"
-      onClick={handleClick}
-    >
-      {/* <div
-        className={cn(
-          'flex items-center justify-center bg-muted rounded-md',
-          className,
+    <div className="relative h-full w-full flex items-center justify-center bg-muted/30 rounded-md">
+      <audio ref={audioRef} src={src} className="hidden" />
+
+      <div className="flex flex-col items-center justify-center gap-2 p-4">
+        <AudioLinesIcon className="w-8 h-8 text-muted-foreground" />
+
+        <button
+          onClick={togglePlayPause}
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+        >
+          {isPlaying ? (
+            <PauseIcon className="w-5 h-5 text-primary" />
+          ) : (
+            <PlayIcon className="w-5 h-5 text-primary ml-0.5" />
+          )}
+        </button>
+
+        {typeof duration === 'number' && (
+          <span className="text-xs text-muted-foreground font-medium">
+            {formatDuration(duration)}
+          </span>
         )}
-      > */}
-      {/* <div className="flex flex-col items-center justify-center w-full h-full bg-background/80 backdrop-blur-sm"> */}
-      {/* <AudioLinesIcon className="w-24 h-24 text-muted-foreground" /> */}
-      <audio
-        ref={audioRef}
-        controls
-        loop
-        autoPlay={false}
-        className="px-2"
-        src={src}
-      />
-      {/* </div> */}
-      {/* </div> */}
-      {typeof duration === 'number' && !hovered ? (
-        <MediaDurationBadge duration={duration} isLoading={false} />
-      ) : null}
+      </div>
     </div>
   )
 }

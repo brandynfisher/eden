@@ -1,6 +1,5 @@
 'use client'
 
-import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
 import {
   Sortable,
   SortableDragHandle,
@@ -697,7 +696,7 @@ const FileUploader = ({
               ))}
             </Sortable>
           ) : (
-            <LightboxGallery>
+            <>
               {existingFiles.map(file => (
                 <FileCard
                   key={file.url}
@@ -706,7 +705,7 @@ const FileUploader = ({
                   showDragHandle={false}
                 />
               ))}
-            </LightboxGallery>
+            </>
           )}
 
           {/* Uploading Files */}
@@ -755,14 +754,17 @@ const FileCard = ({
 
       {/* File Preview */}
       {file.type === 'image' ? (
-        <LightboxTrigger
-          slide={{ url: file.url, thumbnail: file.url }}
-          className="w-full h-full cursor-zoom-in block"
+        <img
+          src={file.url}
+          alt="Preview"
+          className="w-full h-full object-cover"
         />
       ) : file.type === 'video' ? (
-        <LightboxTrigger
-          slide={{ url: file.url, thumbnail: file.url }}
-          className="w-full h-full cursor-zoom-in block"
+        <video
+          src={file.url}
+          className="w-full h-full object-cover"
+          muted
+          playsInline
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">

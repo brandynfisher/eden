@@ -183,7 +183,27 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
           setIsCreateModalOpen(open)
         }}
       >
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-2">
+        <DialogContent
+          className="max-w-6xl max-h-[90vh] overflow-y-auto p-2 focus:outline-none"
+          onEscapeKeyDown={e => {
+            // Prevent Dialog from handling Escape when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+          onPointerDownOutside={e => {
+            // Prevent Dialog from handling outside clicks when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+          onInteractOutside={e => {
+            // Prevent Dialog from handling outside interactions when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+        >
           <CreateConceptView
             onSuccess={handleCreateSuccess}
             onCancel={() => setIsCreateModalOpen(false)}
@@ -211,7 +231,27 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
           }
         }}
       >
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-2">
+        <DialogContent
+          className="max-w-6xl max-h-[90vh] overflow-y-auto p-2 focus:outline-none"
+          onEscapeKeyDown={e => {
+            // Prevent Dialog from handling Escape when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+          onPointerDownOutside={e => {
+            // Prevent Dialog from handling outside clicks when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+          onInteractOutside={e => {
+            // Prevent Dialog from handling outside interactions when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+        >
           {editingConceptId && (
             <EditConceptView
               conceptId={editingConceptId}
