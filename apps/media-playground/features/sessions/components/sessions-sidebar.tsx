@@ -943,8 +943,11 @@ const MainLeft = ({
                         onItemClick={() => {
                           onItemClick?.()
                           if (isChat && agentId) {
-                            // Switch to chat mode first, then navigate to session
-                            onViewModeChange?.('chat')
+                            // Only switch to chat mode if we're navigating to a different session
+                            // If we're already on this session, preserve the current view mode
+                            if (session._id !== currentSessionId) {
+                              onViewModeChange?.('chat')
+                            }
                             router.push(`/chat/${agentId}/${session._id}`, {
                               scroll: false,
                             })
@@ -984,8 +987,11 @@ const MainLeft = ({
                     onItemClick={() => {
                       onItemClick?.()
                       if (isChat && agentId) {
-                        // Switch to chat mode first, then navigate to session
-                        onViewModeChange?.('chat')
+                        // Only switch to chat mode if we're navigating to a different session
+                        // If we're already on this session, preserve the current view mode
+                        if (session._id !== currentSessionId) {
+                          onViewModeChange?.('chat')
+                        }
                         router.push(`/chat/${agentId}/${session._id}`, {
                           scroll: false,
                         })
