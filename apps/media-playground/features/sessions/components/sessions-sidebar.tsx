@@ -3,6 +3,7 @@
 import { AgentAvatars } from './agent-avatars'
 import { SessionShareButton } from './session-share-button'
 import { SettingsSidebar } from './settings-sidebar'
+import SingleAgentSelectorModal from './single-agent-selector-modal'
 import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
 import { ModeToggle } from '@/components/header/mode-toggle'
 import DiscordIcon from '@/components/icons/discord'
@@ -969,6 +970,7 @@ const AgentsSection = () => {
   const router = useRouter()
   const [isAgentsCollapsed, setIsAgentsCollapsed] = useState(false)
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
+  const [showAgentSelector, setShowAgentSelector] = useState(false)
 
   // Query for user's top 3 agents - filter by owner, sort by message count
   const query: FeedAgentCursorArguments = React.useMemo(
@@ -1010,7 +1012,7 @@ const AgentsSection = () => {
 
   return (
     <div className="mr-2 mb-6">
-      {/* Agents header - collapsible */}
+      {/* Chat header - collapsible */}
       <button
         onClick={() => setIsAgentsCollapsed(!isAgentsCollapsed)}
         className="sticky top-0 z-10 pb-1 mb-1 bg-accent flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
@@ -1021,20 +1023,32 @@ const AgentsSection = () => {
             !isAgentsCollapsed && 'rotate-90',
           )}
         />
-        Agents
+        Chat
       </button>
 
       {/* Agent list */}
       {!isAgentsCollapsed && (
-        <div className="flex flex-col gap-1 mr-1">
+        <div className="flex flex-col gap-1">
+          {/* Select Agent button */}
+          <Button
+            variant="ghost"
+            onClick={() => setShowAgentSelector(true)}
+            className="justify-start text-sm font-normal h-auto p-0.5 mr-1 border border-transparent hover:bg-muted/50 hover:text-foreground"
+          >
+            <div className="px-2 py-1.5 flex items-center gap-2 w-full">
+              <span className="truncate flex-1 text-left">Select Agent</span>
+            </div>
+          </Button>
+
+          {/* Agent items - styled to match sessions */}
           {myAgents.map(agent => (
             <div
               key={agent._id}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors group"
+              className="group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-sm p-0.5 border border-transparent hover:text-foreground hover:bg-muted/50"
             >
               <button
                 onClick={() => router.push(`/chat/${agent.username}`)}
-                className="flex items-center gap-2 flex-1 min-w-0"
+                className="flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5"
               >
                 <Avatar className="w-7 h-7 flex-shrink-0">
                   <AvatarImage
@@ -1059,7 +1073,7 @@ const AgentsSection = () => {
                   e.stopPropagation()
                   setSettingsAgentId(agent.username)
                 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 px-2"
               >
                 <SettingsIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
               </button>
@@ -1067,6 +1081,16 @@ const AgentsSection = () => {
           ))}
         </div>
       )}
+
+      {/* Single Agent Selector Modal */}
+      <SingleAgentSelectorModal
+        open={showAgentSelector}
+        onOpenChange={setShowAgentSelector}
+        onSelect={(agent: Agent) => {
+          router.push(`/chat/${agent.username}`)
+          setShowAgentSelector(false)
+        }}
+      />
 
       {/* Agent Settings Modal */}
       {settingsAgentId && (
