@@ -24187,6 +24187,7 @@ __metadata:
     "@dnd-kit/sortable": "npm:^8.0.0"
     "@dnd-kit/utilities": "npm:^3.2.2"
     "@edenlabs/config": "npm:*"
+    "@edenlabs/eden-react": "npm:*"
     "@edenlabs/eden-sdk": "npm:*"
     "@edenlabs/tsconfig": "npm:*"
     "@hookform/resolvers": "npm:^3.9.0"
