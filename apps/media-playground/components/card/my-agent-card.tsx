@@ -17,9 +17,10 @@ type Props = {
   agent: Agent
   userId: string
   className?: string
+  onSettingsClick?: () => void
 }
 
-const MyAgentCard = ({ agent, userId, className }: Props) => {
+const MyAgentCard = ({ agent, userId, className, onSettingsClick }: Props) => {
   // Fetch recent sessions for this agent (backend expects username, not _id)
   const { sessions, isLoading: isLoadingSessions } = useSessionListQuery({
     enabled: !!userId,
@@ -46,7 +47,8 @@ const MyAgentCard = ({ agent, userId, className }: Props) => {
         title="Settings"
         onClick={e => {
           e.preventDefault()
-          // TODO: Add settings link/action
+          e.stopPropagation()
+          onSettingsClick?.()
         }}
       >
         <SettingsIcon className="w-4 h-4 text-muted-foreground" />

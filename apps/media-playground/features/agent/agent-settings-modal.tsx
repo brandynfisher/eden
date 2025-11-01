@@ -1,0 +1,368 @@
+'use client'
+
+import {
+  ConceptsTab,
+  IntegrationsTab,
+  PermissionsTab,
+  ProfileTab,
+  ToolsTab,
+} from '../sessions/views/AgentEditView'
+import AgentDashboardView from '../sessions/views/agent-dashboard-view'
+import AgentMemoryView from '../sessions/views/agent-memory-view'
+import AgentTasksView from '../sessions/views/agent-tasks-view'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Form } from '@/components/ui/form'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { agentSchema } from '@/features/agent/agent-form-sheet'
+import { useAgentDeploymentsQuery } from '@/hooks/query/use-agent-deployments-query'
+import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { cn } from '@/lib/utils'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
+import { zodResolver } from '@hookform/resolvers/zod'
+import axios, { AxiosError } from 'axios'
+import {
+  BarChart3Icon,
+  BrainIcon,
+  ClockIcon,
+  ImageIcon,
+  KeyIcon,
+  Loader2,
+  SettingsIcon,
+  UserIcon,
+  WrenchIcon,
+} from 'lucide-react'
+import { FC, useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
+
+type AgentFormDto = z.infer<typeof agentSchema>
+
+interface AgentSettingsModalProps {
+  agentId: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialTab?: string
+}
+
+export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
+  agentId,
+  open,
+  onOpenChange,
+  initialTab = 'profile',
+}) => {
+  const { user } = useAuthState()
+  const { agent, isLoading: isAgentLoading } = useAgentQuery({ key: agentId })
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+
+  const [activeTab, setActiveTab] = useState(initialTab)
+
+  // Reset active tab when modal opens
+  useEffect(() => {
+    if (open) {
+      setActiveTab(initialTab)
+    }
+  }, [open, initialTab])
+
+  // Fetch deployments
+  const deploymentsQuery = useAgentDeploymentsQuery({
+    key: agentId,
+    enabled: !!agentId && open,
+  })
+
+  const form = useForm<AgentFormDto>({
+    resolver: zodResolver(agentSchema),
+    defaultValues: {
+      name: '',
+      key: '',
+      image: '',
+      description: '',
+      persona: '',
+      public: false,
+      knowledge: '',
+      greeting: '',
+      voice: '',
+      models: [],
+      tools: {},
+      llm_settings: {
+        model_profile: 'medium',
+        thinking_policy: 'auto',
+        thinking_effort_cap: 'medium',
+        thinking_effort_instructions: '',
+      },
+    },
+  })
+
+  // Update form when agent data changes
+  useEffect(() => {
+    if (agent) {
+      form.reset({
+        name: agent.name,
+        key: agent.username,
+        image:
+          agent.userImage && agent.userImage.trim()
+            ? getCloudfrontOriginalUrl(agent.userImage)
+            : '',
+        description: agent.description,
+        persona: agent.persona,
+        public: agent.public,
+        knowledge: agent.knowledge ?? '',
+        greeting: agent.greeting || '',
+        voice: agent.voice || '',
+        models: agent.models || [],
+        tools: agent.tools || {},
+        llm_settings: {
+          model_profile: agent.llm_settings?.model_profile || 'medium',
+          thinking_policy: agent.llm_settings?.thinking_policy || 'auto',
+          thinking_effort_cap:
+            agent.llm_settings?.thinking_effort_cap || 'medium',
+          thinking_effort_instructions:
+            agent.llm_settings?.thinking_effort_instructions || '',
+        },
+      })
+    }
+  }, [agent, form])
+
+  const handleSubmit = async (data: AgentFormDto) => {
+    if (!agent) return
+
+    try {
+      // Handle image field
+      let imageToSend = data.image
+      if (data.image && agent.userImage) {
+        const originalImageUrl = getCloudfrontOriginalUrl(agent.userImage)
+        if (data.image === originalImageUrl) {
+          imageToSend = agent.userImage
+        }
+      }
+
+      await axios.patch(`/api/agents/${agent._id}`, {
+        ...data,
+        image: imageToSend,
+      })
+      toast.success('Agent updated successfully', {
+        description: `"${data.name}" has been updated successfully`,
+        richColors: true,
+        dismissible: true,
+      })
+    } catch (error) {
+      const errorMessage =
+        (error as AxiosError<{ message?: string }>).response?.data?.message ||
+        (error as AxiosError).message ||
+        'Please try again later.'
+      const description =
+        errorMessage === 'An agent with this key already exists'
+          ? 'This username is taken. Please try another.'
+          : errorMessage
+
+      toast.error('Agent update failed', {
+        description,
+        richColors: true,
+        dismissible: true,
+      })
+    }
+  }
+
+  const {
+    isOriginalOwner,
+    hasOwnerAccess,
+    hasEditAccess,
+    isLoading: isPermissionsLoading,
+  } = useAgentPermissions(agent || undefined, user?._id)
+
+  // Get available tabs based on permissions
+  const getAvailableTabs = () => {
+    const tabs: Array<{
+      key: string
+      label: string
+      icon: typeof UserIcon
+    }> = []
+
+    if (hasEditAccess) {
+      tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
+    }
+    if (hasEditAccess) {
+      tabs.push({ key: 'dashboard', label: 'Dashboard', icon: BarChart3Icon })
+    }
+    if (hasOwnerAccess) {
+      tabs.push({ key: 'concepts', label: 'Concepts', icon: ImageIcon })
+    }
+    if (hasOwnerAccess) {
+      tabs.push({ key: 'tools', label: 'Tools', icon: WrenchIcon })
+    }
+    if (hasOwnerAccess && isPreviewUser) {
+      tabs.push({ key: 'memories', label: 'Memories', icon: BrainIcon })
+    }
+    if (hasOwnerAccess && isPreviewUser) {
+      tabs.push({
+        key: 'integrations',
+        label: 'Integrations',
+        icon: SettingsIcon,
+      })
+    }
+    if (hasOwnerAccess && isPreviewUser) {
+      tabs.push({ key: 'tasks', label: 'Tasks', icon: ClockIcon })
+    }
+    if (isOriginalOwner && isPreviewUser) {
+      tabs.push({ key: 'permissions', label: 'Permissions', icon: KeyIcon })
+    }
+
+    return tabs
+  }
+
+  const availableTabs = getAvailableTabs()
+
+  if (isAgentLoading || isPermissionsLoading || !agent) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-6xl h-[90vh] p-0">
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="w-8 h-8 animate-spin" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  // Determine if save button should show for current tab
+  const showSaveButton =
+    activeTab !== 'integrations' &&
+    activeTab !== 'tasks' &&
+    activeTab !== 'memories' &&
+    activeTab !== 'permissions' &&
+    activeTab !== 'concepts' &&
+    activeTab !== 'dashboard'
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0">
+        <DialogTitle className="sr-only">Agent Settings</DialogTitle>
+        <div className="flex h-full overflow-hidden">
+          {/* Sidebar */}
+          <div className="w-56 border-r bg-muted/30 flex flex-col">
+            <div className="p-4 border-b">
+              <h2 className="font-semibold text-lg">Settings</h2>
+              <p className="text-xs text-muted-foreground mt-1">{agent.name}</p>
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {availableTabs.map(tab => {
+                  const Icon = tab.icon
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-left',
+                        activeTab === tab.key
+                          ? 'bg-background text-foreground font-medium shadow-sm'
+                          : 'text-muted-foreground hover:bg-background/50 hover:text-foreground',
+                      )}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      {tab.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <ScrollArea className="flex-1">
+              <div className="p-6">
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="space-y-8"
+                  >
+                    {activeTab === 'profile' && (
+                      <ProfileTab form={form} agent={agent} />
+                    )}
+
+                    {activeTab === 'tools' && hasOwnerAccess && (
+                      <ToolsTab
+                        form={form}
+                        hasDeployments={
+                          deploymentsQuery.deployments &&
+                          deploymentsQuery.deployments.length > 0
+                        }
+                        user={user}
+                      />
+                    )}
+
+                    {activeTab === 'concepts' && hasOwnerAccess && (
+                      <ConceptsTab form={form} agent={agent} />
+                    )}
+
+                    {activeTab === 'integrations' &&
+                      hasOwnerAccess &&
+                      isPreviewUser && (
+                        <IntegrationsTab
+                          agent={agent}
+                          deployments={deploymentsQuery.deployments}
+                          isLoading={deploymentsQuery.isPending}
+                          isError={deploymentsQuery.isError}
+                        />
+                      )}
+
+                    {activeTab === 'memories' &&
+                      hasOwnerAccess &&
+                      isPreviewUser && (
+                        <div className="-m-6">
+                          <AgentMemoryView agent={agent} />
+                        </div>
+                      )}
+
+                    {activeTab === 'tasks' &&
+                      hasOwnerAccess &&
+                      isPreviewUser && (
+                        <div className="-m-6">
+                          <AgentTasksView agent={agent} />
+                        </div>
+                      )}
+
+                    {activeTab === 'permissions' &&
+                      isOriginalOwner &&
+                      isPreviewUser && <PermissionsTab agent={agent} />}
+
+                    {activeTab === 'dashboard' && hasEditAccess && (
+                      <div className="-m-6">
+                        <AgentDashboardView agent={agent} />
+                      </div>
+                    )}
+                  </form>
+                </Form>
+              </div>
+            </ScrollArea>
+
+            {/* Save Button Footer */}
+            {showSaveButton && (
+              <div className="border-t p-4 bg-background">
+                <Button
+                  onClick={form.handleSubmit(handleSubmit)}
+                  disabled={form.formState.isSubmitting}
+                  className="w-full"
+                >
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Updating Agent...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

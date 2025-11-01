@@ -2,6 +2,7 @@
 
 import MyAgentCard from '@/components/card/my-agent-card'
 import FeedSearchForm from '@/components/filter/feed-search-form'
+import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
@@ -11,6 +12,7 @@ import { useMemo, useState } from 'react'
 const HomePage = () => {
   const { user } = useAuthState()
   const [searchQuery, setSearchQuery] = useState('')
+  const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
 
   // Query for user's agents - filter by owner, sort by message count
   const query: FeedAgentCursorArguments = useMemo(
@@ -81,7 +83,12 @@ const HomePage = () => {
           </>
         ) : myAgents.length > 0 ? (
           myAgents.map(agent => (
-            <MyAgentCard key={agent._id} agent={agent} userId={user._id} />
+            <MyAgentCard
+              key={agent._id}
+              agent={agent}
+              userId={user._id}
+              onSettingsClick={() => setSettingsAgentId(agent.username)}
+            />
           ))
         ) : (
           <div className="col-span-full text-center py-12">
@@ -93,6 +100,15 @@ const HomePage = () => {
           </div>
         )}
       </div>
+
+      {/* Agent Settings Modal */}
+      {settingsAgentId && (
+        <AgentSettingsModal
+          agentId={settingsAgentId}
+          open={!!settingsAgentId}
+          onOpenChange={open => !open && setSettingsAgentId(null)}
+        />
+      )}
     </div>
   )
 }

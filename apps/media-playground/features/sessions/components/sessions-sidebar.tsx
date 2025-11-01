@@ -23,6 +23,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatar from '@/components/user/user-avatar'
+import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { ViewMode } from '@/features/sessions/components/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
@@ -984,6 +985,7 @@ const AgentsSection = () => {
   const { user } = useAuthState()
   const router = useRouter()
   const [isAgentsCollapsed, setIsAgentsCollapsed] = useState(false)
+  const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
 
   // Query for user's top 3 agents - filter by owner, sort by message count
   const query: FeedAgentCursorArguments = React.useMemo(
@@ -1068,7 +1070,7 @@ const AgentsSection = () => {
               <button
                 onClick={e => {
                   e.stopPropagation()
-                  // TODO: Link to settings
+                  setSettingsAgentId(agent.username)
                 }}
                 className="opacity-0 group-hover:opacity-100 transition-opacity"
               >
@@ -1077,6 +1079,15 @@ const AgentsSection = () => {
             </button>
           ))}
         </div>
+      )}
+
+      {/* Agent Settings Modal */}
+      {settingsAgentId && (
+        <AgentSettingsModal
+          agentId={settingsAgentId}
+          open={!!settingsAgentId}
+          onOpenChange={open => !open && setSettingsAgentId(null)}
+        />
       )}
     </div>
   )
