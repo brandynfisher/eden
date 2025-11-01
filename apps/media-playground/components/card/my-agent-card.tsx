@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
 import { MessageSquareIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 
 type Props = {
@@ -21,6 +22,8 @@ type Props = {
 }
 
 const MyAgentCard = ({ agent, userId, className, onSettingsClick }: Props) => {
+  const router = useRouter()
+
   // Fetch recent sessions for this agent (backend expects username, not _id)
   const { sessions, isLoading: isLoadingSessions } = useSessionListQuery({
     enabled: !!userId,
@@ -118,17 +121,20 @@ const MyAgentCard = ({ agent, userId, className, onSettingsClick }: Props) => {
                 recentSessions.map(session => {
                   if (!session) return null
                   return (
-                    <Link
+                    <button
                       key={session._id}
-                      href={`/sessions/${session._id}`}
+                      onClick={e => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        router.push(`/sessions/${session._id}`)
+                      }}
                       className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors text-sm group/session"
-                      onClick={e => e.stopPropagation()}
                     >
                       <MessageSquareIcon className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                       <span className="truncate text-muted-foreground group-hover/session:text-foreground transition-colors">
                         {session.title || 'Untitled Session'}
                       </span>
-                    </Link>
+                    </button>
                   )
                 })
               ) : (

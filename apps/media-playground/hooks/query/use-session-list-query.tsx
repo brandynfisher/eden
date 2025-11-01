@@ -7,6 +7,7 @@ import {
   useInfiniteQuery,
   useQueryClient,
 } from '@tanstack/react-query'
+import { useMemo } from 'react'
 
 type Props = {
   enabled?: boolean
@@ -62,7 +63,10 @@ export const useSessionListQuery = (props?: Props) => {
     refetchInterval: disableInterval ? false : 5000, // Refetch every 5 seconds to pick up newly titled sessions, unless disabled
   })
 
-  const sessions = data?.pages.flatMap(page => page.docs) ?? []
+  const sessions = useMemo(
+    () => data?.pages.flatMap(page => page.docs) ?? [],
+    [data?.pages],
+  )
   const lastPage = data?.pages[data.pages.length - 1]
 
   const renameSession = async (sessionId: string, title: string) => {

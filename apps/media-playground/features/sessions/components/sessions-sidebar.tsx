@@ -808,94 +808,79 @@ const MainLeft = ({
     }
   }
 
-  // Setup intersection observer for infinite scrolling
+  // Track fetching state with refs
+  const isFetchingRef = useRef(isFetchingNextPage)
+  const hasMoreRef = useRef(hasMore)
+
   useEffect(() => {
-    if (!hasMore || isFetchingNextPage) {
-      return
-    }
+    isFetchingRef.current = isFetchingNextPage
+    hasMoreRef.current = hasMore
+  }, [isFetchingNextPage, hasMore])
 
-    const target = document.getElementById('session-list-observer-target')
-    if (!target) {
-      return
-    }
+  // Scroll-based pagination
+  useEffect(() => {
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      const container = document.getElementById('sidebar-scroll-container')
+      if (!container) {
+        return
+      }
 
-    const container = target.closest('nav')
-    if (!container) {
-      return
-    }
+      const handleScroll = () => {
+        const scrollTop = container.scrollTop
+        const scrollHeight = container.scrollHeight
+        const clientHeight = container.clientHeight
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight
 
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore) {
-          const scrollPosition = container.scrollTop
-
-          fetchNextPage().then(() => {
-            requestAnimationFrame(() => {
-              container.scrollTop = scrollPosition
-            })
-          })
+        // Fetch when within 200px of bottom
+        if (
+          distanceFromBottom <= 200 &&
+          hasMoreRef.current &&
+          !isFetchingRef.current
+        ) {
+          fetchNextPage()
         }
-      },
-      {
-        root: container,
-        threshold: 0,
-        rootMargin: '100px',
-      },
-    )
+      }
 
-    observer.observe(target)
+      container.addEventListener('scroll', handleScroll)
+
+      // Cleanup function
+      return () => {
+        container.removeEventListener('scroll', handleScroll)
+      }
+    }, 100)
 
     return () => {
-      observer.disconnect()
+      clearTimeout(timeoutId)
     }
-  }, [hasMore, isFetchingNextPage, fetchNextPage, sessions.length])
+  }, [fetchNextPage])
 
-  // Auto-fetch more sessions if container doesn't have scroll after filtering
-  useEffect(() => {
-    if (isLoading || isFetchingNextPage || !hasMore) {
-      return
-    }
-
-    const container = document.querySelector(
-      'nav.flex.flex-col.items-stretch.gap-1.overflow-y-auto.flex-1',
-    ) as HTMLElement
-    if (!container) {
-      return
-    }
-
-    // Check if container has scroll
-    const hasScroll = container.scrollHeight > container.clientHeight
-
-    if (!hasScroll && hasMore) {
-      // No scroll and more data available - fetch next page
-      fetchNextPage()
-    }
-  }, [isLoading, isFetchingNextPage, hasMore, fetchNextPage, sessions.length])
-
-  // Separate pinned and unpinned sessions
-  const filteredSessions = sessions.filter(
-    (session): session is NonNullable<typeof session> =>
-      session != null &&
-      // For chat mode, only show sessions with one agent or less
-      (!isChat || !session.agents || session.agents.length <= 1),
-  )
-
-  const pinnedSessions = filteredSessions
-    .filter(session => session.pinned === true)
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
+  const allSessions = React.useMemo(() => {
+    const filteredSessions = sessions.filter(
+      (session): session is NonNullable<typeof session> =>
+        session != null &&
+        // For chat mode, only show sessions with one agent or less
+        (!isChat || !session.agents || session.agents.length <= 1),
     )
 
-  const unpinnedSessions = filteredSessions
-    .filter(session => !session.pinned)
-    .sort((a, b) => {
-      // Sort by updatedAt only
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    })
+    const pinnedSessions = filteredSessions
+      .filter(session => session.pinned === true)
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      )
 
-  // Combine pinned and unpinned sessions with pinned first
-  const allSessions = [...pinnedSessions, ...unpinnedSessions]
+    const unpinnedSessions = filteredSessions
+      .filter(session => !session.pinned)
+      .sort((a, b) => {
+        // Sort by updatedAt only
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      })
+
+    // Combine pinned and unpinned sessions with pinned first
+    return [...pinnedSessions, ...unpinnedSessions]
+  }, [sessions, isChat])
 
   return (
     <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-2">
@@ -960,8 +945,6 @@ const MainLeft = ({
                       }}
                     />
                   ))}
-                  {/* Observer target for infinite scrolling */}
-                  <div id="session-list-observer-target" className="h-1"></div>
                 </nav>
               )}
             </>
@@ -1045,38 +1028,42 @@ const AgentsSection = () => {
       {!isAgentsCollapsed && (
         <div className="flex flex-col gap-1 mr-1">
           {myAgents.map(agent => (
-            <button
+            <div
               key={agent._id}
-              onClick={() => router.push(`/chat/${agent.username}`)}
               className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors group"
             >
-              <Avatar className="w-7 h-7 flex-shrink-0">
-                <AvatarImage
-                  src={
-                    agent.userImage && agent.userImage.trim()
-                      ? getCloudfrontOriginalUrl(agent.userImage)
-                      : undefined
-                  }
-                  alt={agent.name}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted text-xs font-medium">
-                  {agent.name?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm truncate flex-1 text-left">
-                {agent.name}
-              </span>
+              <button
+                onClick={() => router.push(`/chat/${agent.username}`)}
+                className="flex items-center gap-2 flex-1 min-w-0"
+              >
+                <Avatar className="w-7 h-7 flex-shrink-0">
+                  <AvatarImage
+                    src={
+                      agent.userImage && agent.userImage.trim()
+                        ? getCloudfrontOriginalUrl(agent.userImage)
+                        : undefined
+                    }
+                    alt={agent.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-muted text-xs font-medium">
+                    {agent.name?.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm truncate flex-1 text-left">
+                  {agent.name}
+                </span>
+              </button>
               <button
                 onClick={e => {
                   e.stopPropagation()
                   setSettingsAgentId(agent.username)
                 }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
               >
                 <SettingsIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
               </button>
-            </button>
+            </div>
           ))}
         </div>
       )}
@@ -1111,6 +1098,7 @@ const SidebarUserProfile = () => {
     isAuthenticated: !!isSignedIn,
   })
   const { signOut } = useClerk()
+  const { verifyAuth } = useAuthState()
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
@@ -1136,7 +1124,16 @@ const SidebarUserProfile = () => {
     }
   }
 
-  if (!user) return null
+  // Show sign-in button when not signed in
+  if (!user) {
+    return (
+      <div className="hidden md:block border-t bg-background p-3">
+        <Button onClick={verifyAuth} className="w-full" variant="default">
+          Sign In
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="hidden md:block border-t bg-background">
@@ -1699,7 +1696,10 @@ export const SessionsSidebarContent = ({
       </div>
 
       {/* Content area based on mode */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div
+        id="sidebar-scroll-container"
+        className="flex-1 min-h-0 overflow-y-auto"
+      >
         {mode === 'sessions' && (
           <>
             <AgentsSection />
