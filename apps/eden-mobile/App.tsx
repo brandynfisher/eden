@@ -1,6 +1,6 @@
 import { TypographyH1 } from '@edenlabs/eden-react'
 import { StatusBar } from 'expo-status-bar'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   FlatList,
@@ -125,7 +125,7 @@ export default function App() {
   )
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f6f5f4' },
   header: {
     paddingHorizontal: 24,
@@ -201,4 +201,4 @@ const styles = {
     textAlign: 'center',
     marginTop: 24,
   },
-}
+})
