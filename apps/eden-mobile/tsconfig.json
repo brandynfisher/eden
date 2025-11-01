@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@edenlabs/tsconfig/react-native.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["./*"],
+      "@edenlabs/eden-react": ["../../packages/eden-react/src"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}

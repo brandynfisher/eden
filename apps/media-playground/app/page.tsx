@@ -7,6 +7,7 @@ import SectionTraining from '@/features/landing/section-training'
 import { getAgentCached } from '@/lib/actions/agent'
 import { siteConfig } from '@/lib/config'
 import { OpenGraph, TwitterMetadata } from '@/types/OpenGraph'
+import { TypographyH1 } from '@edenlabs/eden-react'
 import { Metadata, ResolvingMetadata } from 'next'
 
 type Props = {
@@ -57,6 +58,15 @@ const HomePage = async () => {
 
   return (
     <div className="flex flex-col items-center h-full justify-between flex-grow">
+      <section className="w-full px-4 pt-8 md:pt-12 text-center">
+        <TypographyH1 className="text-balance">
+          Cross-platform Eden UI components
+        </TypographyH1>
+        <p className="mt-3 text-muted-foreground">
+          This heading renders from the shared <code>@edenlabs/eden-react</code>{' '}
+          package.
+        </p>
+      </section>
       {/* <div className="max-w-2xl flex flex-col flex-grow justify-center w-full gap-14 my-10"> */}
       <div className="flex flex-col flex-grow justify-center w-full gap-12 ">
         {response?.agent ? (

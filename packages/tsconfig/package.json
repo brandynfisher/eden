@@ -7,6 +7,7 @@
     "base.json",
     "api.json",
     "eden-sdk.json",
-    "garden.json"
+    "garden.json",
+    "react-native.json"
   ]
 }
