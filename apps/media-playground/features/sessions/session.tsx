@@ -1,5 +1,6 @@
 'use client'
 
+import { EditSessionModal } from './components/edit-session-modal'
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
@@ -28,6 +29,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent, Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import { EditIcon } from 'lucide-react'
 import {
   useParams,
   usePathname,
@@ -63,6 +65,7 @@ const Session = ({
   const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false)
   const [hasTriggeredInitialScroll, setHasTriggeredInitialScroll] =
     useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Track session viewing for notifications
   useSessionTracking(sessionId)
@@ -1172,12 +1175,94 @@ const Session = ({
     )
   }
 
-  // Check if we're on /chat route and have a named session (not 'new')
-  const isNamedSession = ischatRoute && sessionId && sessionId !== 'new'
   const isOwner = session?.owner?._id === user?._id
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden">
+      {/* Second navbar - Agent avatars + session title + budget */}
+      {sessionId && sessionId !== 'new' && session && (
+        <div className="hidden md:flex h-12 items-center gap-4 border-b border-l-0 bg-background px-4 flex-shrink-0">
+          {/* Left section - Agent avatars and session title - clickable for edit */}
+          <button
+            onClick={() => isOwner && setIsEditModalOpen(true)}
+            className={cn(
+              'flex items-center gap-2 min-w-0 flex-1',
+              isOwner &&
+                'hover:bg-muted/50 rounded-md px-2 -mx-2 py-1 transition-colors cursor-pointer',
+            )}
+            disabled={!isOwner}
+          >
+            {session.agents && session.agents.length > 0 && (
+              <>
+                {/* Agent avatars */}
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {session.agents.slice(0, 3).map((agent, index) => (
+                      <div
+                        key={agent._id}
+                        className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden"
+                        style={{ zIndex: session.agents.length - index }}
+                      >
+                        {agent.userImage ? (
+                          <img
+                            src={getCloudfrontUrl(agent.userImage)}
+                            alt={agent.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center text-xs font-medium">
+                            {agent.name?.[0]?.toUpperCase() || 'A'}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {session.agents.length > 3 && (
+                    <span className="text-xs text-muted-foreground">
+                      +{session.agents.length - 3}
+                    </span>
+                  )}
+                </div>
+
+                {/* Session title */}
+                {session.title && (
+                  <div
+                    className="text-sm text-muted-foreground truncate flex-1 max-w-[400px] text-left ml-2"
+                    title={session.title}
+                  >
+                    {session.title}
+                  </div>
+                )}
+              </>
+            )}
+          </button>
+
+          {/* Right section - New Session, Share */}
+          <div className="flex items-center gap-2">
+            {/* New Session button */}
+            <button
+              onClick={() => router.push('/sessions/new')}
+              className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors flex items-center gap-2"
+              title="New Session"
+            >
+              <EditIcon className="h-3.5 w-3.5" />
+              New Session
+            </button>
+
+            {/* Share button */}
+            {isOwner && (
+              <SessionShareButton
+                sessionId={sessionId as string}
+                messages={session.messages || []}
+                isOwner={isOwner}
+                isPublic={session.extras?.is_public}
+                className="h-8 px-3"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Connection status indicator - only show when not connected and using SSE streaming */}
       {sessionConfig.useStreaming &&
         connectionState !== 'connected' &&
@@ -1204,19 +1289,6 @@ const Session = ({
             )}
           </div>
         )}
-
-      {/* Floating share button - desktop only, shown for named sessions when user is owner */}
-      {isNamedSession && isOwner && session && (
-        <div className="hidden md:block fixed top-[72px] right-6 z-40">
-          <SessionShareButton
-            sessionId={sessionId as string}
-            messages={session.messages || []}
-            isOwner={isOwner}
-            isPublic={session.extras?.is_public}
-            className="bg-background/90 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-shadow"
-          />
-        </div>
-      )}
 
       <div
         ref={messagesContainerRef}
@@ -1718,6 +1790,15 @@ const Session = ({
           />
         </div>
       </div>
+
+      {/* Edit Session Modal */}
+      {session && sessionId && sessionId !== 'new' && (
+        <EditSessionModal
+          sessionId={sessionId}
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+        />
+      )}
     </div>
   )
 }
