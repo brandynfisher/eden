@@ -1,0 +1,57 @@
+{
+  "name": "@edenlabs/eden-react",
+  "version": "0.0.1",
+  "description": "React utilities and data fetching hooks for Eden apps",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "react-native": "./dist/index.native.cjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./native": {
+      "types": "./dist/index.native.d.ts",
+      "import": "./dist/index.native.js",
+      "require": "./dist/index.native.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/index.native.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts src/index.native.ts --format cjs,esm --dts --watch",
+    "dev:eden": "yarn dev",
+    "dev:dummy": "yarn dev",
+    "lint": "eslint \"src/**/*.{ts,tsx}\""
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.32.0",
+    "react": "^18.2.0 || ^19.0.0",
+    "react-dom": "^18.2.0 || ^19.0.0",
+    "react-native": ">=0.74.0"
+  },
+  "peerDependenciesMeta": {
+    "@tanstack/react-query": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "react-native": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.79",
+    "@types/react-native": "^0.73.0",
+    "eslint": "8.56.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist"
+  ]
+}
