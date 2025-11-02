@@ -4,6 +4,7 @@ import {
   AgentPermissionLevel,
 } from '../models/AgentPermission'
 import { Deployment } from '../models/Deployment'
+import { EmailDomain } from '../models/EmailDomain'
 import { Trigger } from '../models/Trigger'
 import { Message } from '../models/v2/Message'
 import { Session } from '../models/v2/SessionV2'
@@ -22,6 +23,7 @@ import {
 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
+import { ObjectId } from 'mongodb'
 
 // Helper function to check if user has owner-level permissions
 const hasOwnerPermissions = async (
@@ -596,14 +598,60 @@ export const deployAgent = async (
   }
 
   try {
+    const configPayload: Record<string, any> = config
+      ? JSON.parse(JSON.stringify(config))
+      : {}
+    const secretsPayload: Record<string, any> = secrets
+      ? JSON.parse(JSON.stringify(secrets))
+      : {}
+
+    if (platform === 'email') {
+      const emailDomain = await EmailDomain.findOne({ agent: agentId })
+
+      if (!emailDomain) {
+        return reply.status(400).send({
+          error: 'Email domain has not been configured',
+        })
+      }
+
+      if (emailDomain.status !== 'verified') {
+        return reply.status(400).send({
+          error: 'Email domain is not verified yet',
+        })
+      }
+
+      const emailConfigInput = config?.email ?? {}
+
+      configPayload.email = {
+        domain_id: emailDomain._id.toString(),
+        sender_email: emailConfigInput.sender_email,
+        autoreply_enabled: emailConfigInput.autoreply_enabled ?? false,
+        reply_delay_average_minutes:
+          emailConfigInput.reply_delay_average_minutes ?? 0,
+        reply_delay_variance_minutes:
+          emailConfigInput.reply_delay_variance_minutes ?? 0,
+      }
+
+      secretsPayload.email = {
+        domain: emailDomain.domain,
+        provider_domain_id: emailDomain.provider_domain_id,
+        inbound_route_id: emailDomain.inbound_route_id,
+        inbound_route_expression: emailDomain.inbound_route_expression,
+        forwarding_address: emailDomain.forwarding_address,
+        webhook_signing_key:
+          emailDomain.webhook_signing_key ||
+          server.config.MAILGUN_WEBHOOK_SIGNING_KEY,
+      }
+    }
+
     const modalRequest = {
       endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/create`,
       data: {
         agent: agentId,
         user: currentUserId,
         platform,
-        secrets,
-        config,
+        secrets: secretsPayload,
+        config: configPayload,
       },
     }
 
@@ -618,6 +666,17 @@ export const deployAgent = async (
     )
 
     const deployment = modalResponse.data as AgentsDeployResponse
+
+    if (platform === 'email') {
+      await EmailDomain.updateOne(
+        { agent: agentId },
+        {
+          $set: {
+            deployment: new ObjectId(deployment.deployment_id),
+          },
+        },
+      )
+    }
 
     return reply.status(200).send({
       deploymentId: deployment.deployment_id,
@@ -678,12 +737,58 @@ export const updateAgentDeployment = async (
   }
 
   try {
+    const configPayload: Record<string, any> = config
+      ? JSON.parse(JSON.stringify(config))
+      : {}
+    const secretsPayload: Record<string, any> = secrets
+      ? JSON.parse(JSON.stringify(secrets))
+      : {}
+
+    if (platform === 'email') {
+      const emailDomain = await EmailDomain.findOne({ agent: agentId })
+
+      if (!emailDomain) {
+        return reply.status(400).send({
+          error: 'Email domain has not been configured',
+        })
+      }
+
+      if (emailDomain.status !== 'verified') {
+        return reply.status(400).send({
+          error: 'Email domain is not verified yet',
+        })
+      }
+
+      const emailConfigInput = config?.email ?? {}
+
+      configPayload.email = {
+        domain_id: emailDomain._id.toString(),
+        sender_email: emailConfigInput.sender_email,
+        autoreply_enabled: emailConfigInput.autoreply_enabled ?? false,
+        reply_delay_average_minutes:
+          emailConfigInput.reply_delay_average_minutes ?? 0,
+        reply_delay_variance_minutes:
+          emailConfigInput.reply_delay_variance_minutes ?? 0,
+      }
+
+      secretsPayload.email = {
+        domain: emailDomain.domain,
+        provider_domain_id: emailDomain.provider_domain_id,
+        inbound_route_id: emailDomain.inbound_route_id,
+        inbound_route_expression: emailDomain.inbound_route_expression,
+        forwarding_address: emailDomain.forwarding_address,
+        webhook_signing_key:
+          emailDomain.webhook_signing_key ||
+          server.config.MAILGUN_WEBHOOK_SIGNING_KEY,
+      }
+    }
+
     const modalRequest = {
       endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/update`,
       data: {
         deployment_id: deployment._id,
-        config,
-        secrets,
+        config: configPayload,
+        secrets: secretsPayload,
       },
     }
 
@@ -692,6 +797,17 @@ export const updateAgentDeployment = async (
         Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
       },
     })
+
+    if (platform === 'email') {
+      await EmailDomain.updateOne(
+        { agent: agentId },
+        {
+          $set: {
+            deployment: deployment._id,
+          },
+        },
+      )
+    }
 
     return reply.status(200).send({
       deploymentId: deployment._id,
@@ -759,6 +875,32 @@ export const deleteAgentDeployment = async (
     )
 
     const response = modalResponse.data as AgentsStopDeploymentResponse
+
+    if (platform === 'email') {
+      const emailDomain = await EmailDomain.findOne({ agent: agentId })
+
+      if (emailDomain) {
+        try {
+          await server.mailgun.deleteRoute(emailDomain.inbound_route_id)
+        } catch (error: any) {
+          server.log.error(
+            { error },
+            'Failed to delete email route from provider',
+          )
+        }
+
+        try {
+          await server.mailgun.deleteDomain(emailDomain.domain)
+        } catch (error: any) {
+          server.log.error(
+            { error },
+            'Failed to delete email domain from provider',
+          )
+        }
+
+        await EmailDomain.deleteOne({ _id: emailDomain._id })
+      }
+    }
 
     return reply.status(200).send({
       success: response.success,

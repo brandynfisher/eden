@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captions-deployment-form'
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
+import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
 import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
 import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
@@ -232,6 +233,12 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
               agentId={agent._id}
               deployment={deployments?.find(
                 deployment => deployment.platform === 'captions',
+              )}
+            />
+            <EmailDeploymentForm
+              agentId={agent._id}
+              deployment={deployments?.find(
+                deployment => deployment.platform === 'email',
               )}
             />
           </div>

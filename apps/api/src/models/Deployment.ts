@@ -9,6 +9,7 @@ export enum ClientType {
   PRINTIFY = 'printify',
   CAPTIONS = 'captions',
   TIKTOK = 'tiktok',
+  EMAIL = 'email',
 }
 
 // Allowlist item base interface
@@ -106,6 +107,24 @@ export interface DeploymentSecretsTiktok {
   username?: string
 }
 
+// Email Types
+export interface DeploymentSettingsEmail {
+  domain_id?: string
+  sender_email?: string
+  autoreply_enabled?: boolean
+  reply_delay_average_minutes?: number
+  reply_delay_variance_minutes?: number
+}
+
+export interface DeploymentSecretsEmail {
+  domain?: string
+  provider_domain_id?: string
+  inbound_route_id?: string
+  inbound_route_expression?: string
+  forwarding_address?: string
+  webhook_signing_key?: string
+}
+
 // Combined Types
 export interface DeploymentSecrets {
   discord?: DeploymentSecretsDiscord
@@ -116,6 +135,7 @@ export interface DeploymentSecrets {
   printify?: DeploymentSecretsPrintify
   captions?: DeploymentSecretsCaptions
   tiktok?: DeploymentSecretsTiktok
+  email?: DeploymentSecretsEmail
 }
 
 export interface DeploymentConfig {
@@ -127,6 +147,7 @@ export interface DeploymentConfig {
   printify?: DeploymentSettingsPrintify
   captions?: DeploymentSettingsCaptions
   tiktok?: DeploymentSettingsTiktok
+  email?: DeploymentSettingsEmail
 }
 
 export interface DeploymentSchema {

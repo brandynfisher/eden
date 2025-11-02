@@ -10,6 +10,7 @@ export type ClientType =
   | 'printify'
   | 'captions'
   | 'tiktok'
+  | 'email'
 
 export type AllowlistItem = {
   id: string
@@ -105,6 +106,23 @@ export type DeploymentSecretsTiktok = {
   username?: string
 }
 
+export type DeploymentSettingsEmail = {
+  domain_id?: string
+  sender_email?: string
+  autoreply_enabled?: boolean
+  reply_delay_average_minutes?: number
+  reply_delay_variance_minutes?: number
+}
+
+export type DeploymentSecretsEmail = {
+  domain?: string
+  provider_domain_id?: string
+  inbound_route_id?: string
+  inbound_route_expression?: string
+  forwarding_address?: string
+  webhook_signing_key?: string
+}
+
 // Combined Types
 export type DeploymentSecrets = {
   discord?: DeploymentSecretsDiscord
@@ -115,6 +133,7 @@ export type DeploymentSecrets = {
   printify?: DeploymentSecretsPrintify
   captions?: DeploymentSecretsCaptions
   tiktok?: DeploymentSecretsTiktok
+  email?: DeploymentSecretsEmail
 }
 
 export type DeploymentConfig = {
@@ -126,6 +145,7 @@ export type DeploymentConfig = {
   printify?: DeploymentSettingsPrintify
   captions?: DeploymentSettingsCaptions
   tiktok?: DeploymentSettingsTiktok
+  email?: DeploymentSettingsEmail
 }
 
 export type Deployment = {

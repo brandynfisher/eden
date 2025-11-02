@@ -82,6 +82,10 @@ const ConfigSchema = Type.Strict(
     NEYNAR_API_KEY: Type.Optional(Type.String()),
     FARCASTER_DEVELOPER_MNEMONIC: Type.Optional(Type.String()),
     FARCASTER_DEVELOPER_FID: Type.Optional(Type.String()),
+    MAILGUN_API_KEY: Type.Optional(Type.String()),
+    MAILGUN_API_BASE_URL: Type.Optional(Type.String()),
+    MAILGUN_INBOUND_WEBHOOK_URL: Type.Optional(Type.String()),
+    MAILGUN_WEBHOOK_SIGNING_KEY: Type.Optional(Type.String()),
   }),
 )
 
@@ -120,6 +124,10 @@ const configPlugin: FastifyPluginAsync = async server => {
         'https://discord.com/api/webhooks/1330194903141060608/Qp-4QRtBNc3BUU69T8Rl8hMzOtPnFSPiJTnMNdiaNNvSEibesC2mSVAqWc8XGGZzMQT2',
       EMAIL_FROM: envData.EMAIL_FROM,
       EMAIL_FROM_NAME: envData.EMAIL_FROM_NAME,
+      MAILGUN_API_KEY: envData.MAILGUN_API_KEY,
+      MAILGUN_API_BASE_URL: envData.MAILGUN_API_BASE_URL,
+      MAILGUN_INBOUND_WEBHOOK_URL: envData.MAILGUN_INBOUND_WEBHOOK_URL,
+      MAILGUN_WEBHOOK_SIGNING_KEY: envData.MAILGUN_WEBHOOK_SIGNING_KEY,
     } as Config)
   } else {
     throw new Error(`ajv or ConfigSchema is not defined`)

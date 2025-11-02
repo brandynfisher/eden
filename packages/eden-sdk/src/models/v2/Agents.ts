@@ -110,6 +110,7 @@ export type AgentClientType =
   | 'farcaster'
   | 'web'
   | 'shopify'
+  | 'email'
 export type AgentDeployCommand = 'deploy' | 'stop'
 export type AgentDeployCredentials = {
   CLIENT_DISCORD_TOKEN: string
@@ -242,6 +243,23 @@ interface CaptionsDeploymentSecrets {
   api_key: string
 }
 
+interface EmailDeploymentConfig {
+  domain_id?: string
+  sender_email?: string
+  autoreply_enabled?: boolean
+  reply_delay_average_minutes?: number
+  reply_delay_variance_minutes?: number
+}
+
+interface EmailDeploymentSecrets {
+  domain?: string
+  provider_domain_id?: string
+  inbound_route_id?: string
+  inbound_route_expression?: string
+  forwarding_address?: string
+  webhook_signing_key?: string
+}
+
 export interface AgentsGetDeploymentsArguments extends WebAPICallOptions {
   agentId: string
 }
@@ -257,6 +275,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     shopify?: ShopifyDeploymentConfig
     printify?: PrintifyDeploymentConfig
     captions?: CaptionsDeploymentConfig
+    email?: EmailDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
@@ -266,6 +285,7 @@ export interface AgentsDeployArguments extends WebAPICallOptions {
     shopify?: ShopifyDeploymentSecrets
     printify?: PrintifyDeploymentSecrets
     captions?: CaptionsDeploymentSecrets
+    email?: EmailDeploymentSecrets
   }
 }
 
@@ -278,6 +298,7 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     farcaster?: FarcasterDeploymentConfig
     twitter?: TwitterDeploymentConfig
     shopify?: ShopifyDeploymentConfig
+    email?: EmailDeploymentConfig
   }
   secrets?: {
     discord?: DiscordDeploymentSecrets
@@ -287,6 +308,7 @@ export interface AgentsUpdateDeploymentArguments extends WebAPICallOptions {
     shopify?: ShopifyDeploymentSecrets
     printify?: PrintifyDeploymentSecrets
     captions?: CaptionsDeploymentSecrets
+    email?: EmailDeploymentSecrets
   }
 }
 export interface AgentsStopDeploymentArguments extends WebAPICallOptions {

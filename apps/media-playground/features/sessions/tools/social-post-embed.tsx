@@ -14,6 +14,7 @@ export type SocialPostEmbedProps = {
     | 'shopify'
     | 'printify'
     | 'tiktok'
+    | 'email'
 }
 
 export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
@@ -35,6 +36,8 @@ export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
       ? 'Printify'
       : platform === 'tiktok'
       ? 'TikTok'
+      : platform === 'email'
+      ? 'Email'
       : platform
 
   // Handle case where results might not have the expected structure
