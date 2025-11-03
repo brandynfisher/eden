@@ -125,7 +125,8 @@ const configPlugin: FastifyPluginAsync = async server => {
       EMAIL_FROM: envData.EMAIL_FROM,
       EMAIL_FROM_NAME: envData.EMAIL_FROM_NAME,
       MAILGUN_API_KEY: envData.MAILGUN_API_KEY,
-      MAILGUN_API_BASE_URL: envData.MAILGUN_API_BASE_URL,
+      MAILGUN_API_BASE_URL:
+        envData.MAILGUN_API_BASE_URL || 'https://api.mailgun.net',
       MAILGUN_INBOUND_WEBHOOK_URL: envData.MAILGUN_INBOUND_WEBHOOK_URL,
       MAILGUN_WEBHOOK_SIGNING_KEY: envData.MAILGUN_WEBHOOK_SIGNING_KEY,
     } as Config)

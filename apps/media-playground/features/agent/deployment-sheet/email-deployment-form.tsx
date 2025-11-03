@@ -2,7 +2,11 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import {
   Form,
   FormControl,
@@ -20,7 +24,7 @@ import { cn } from '@/lib/utils'
 import { Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
-import { Loader2, RefreshCw, Trash2 } from 'lucide-react'
+import { ChevronDown, Copy, Loader2, RefreshCw, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -31,6 +35,8 @@ const domainRecordSchema = z.object({
   name: z.string(),
   value: z.string(),
   priority: z.number().optional(),
+  category: z.enum(['sending', 'receiving', 'tracking']).optional(),
+  status: z.enum(['verified', 'unverified']).optional(),
 })
 
 const emailDomainSchema = z
@@ -80,6 +86,7 @@ export const EmailDeploymentForm = ({
   const [domainInput, setDomainInput] = useState('')
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isDeletingDomain, setIsDeletingDomain] = useState(false)
+  const [isDnsOpen, setIsDnsOpen] = useState(true)
 
   const form = useForm<EmailDeploymentFormSchema>({
     resolver: zodResolver(schema),
@@ -117,6 +124,13 @@ export const EmailDeploymentForm = ({
         const domain = response.data?.domain as EmailDomainData | undefined
         setDomainData(domain)
         setDomainOnForm(domain)
+
+        if (response.data?.warning) {
+          toast.warning(response.data.warning, {
+            richColors: true,
+            dismissible: true,
+          })
+        }
       } catch (error: unknown) {
         if (axios.isAxiosError(error) && error.response?.status === 404) {
           setDomainData(undefined)
@@ -297,15 +311,104 @@ export const EmailDeploymentForm = ({
     : 'Not configured'
 
   const dnsRecords = domainData?.dnsRecords ?? []
+  const groupedRecords = useMemo(() => {
+    return dnsRecords.reduce((acc, record) => {
+      const key = record.category ?? 'other'
+      if (!acc[key]) {
+        acc[key] = []
+      }
+      acc[key].push(record)
+      return acc
+    }, {} as Record<string, typeof dnsRecords>)
+  }, [dnsRecords])
   const verificationErrors = domainData?.verificationErrors ?? []
   const lastSyncedAt = domainData?.lastSyncedAt
     ? new Date(domainData.lastSyncedAt)
     : undefined
 
+  useEffect(() => {
+    if (domainData?.status && domainData.status !== 'verified') {
+      setIsDnsOpen(true)
+    }
+  }, [domainData?.status])
+
+  const handleCopy = useCallback((label: string, value?: string) => {
+    if (!value) {
+      toast.error('Nothing to copy', {
+        richColors: true,
+        dismissible: true,
+      })
+      return
+    }
+
+    if (typeof navigator === 'undefined' || !navigator.clipboard) {
+      toast.error('Clipboard access is not available in this browser', {
+        richColors: true,
+        dismissible: true,
+      })
+      return
+    }
+
+    navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        toast.success(`${label} copied to clipboard`, {
+          richColors: true,
+          dismissible: true,
+          duration: 1500,
+        })
+      })
+      .catch(() => {
+        toast.error('Failed to copy to clipboard', {
+          richColors: true,
+          dismissible: true,
+        })
+      })
+  }, [])
+
+  const DnsField = ({
+    label,
+    value,
+    onCopy,
+    className,
+  }: {
+    label: string
+    value?: string
+    onCopy?: () => void
+    className?: string
+  }) => (
+    <div className={cn('space-y-1', className)}>
+      <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        <span>{label}</span>
+        {value && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+            onClick={onCopy}
+          >
+            <Copy className="h-3.5 w-3.5" />
+            <span className="sr-only">Copy {label}</span>
+          </Button>
+        )}
+      </div>
+      <code className="block rounded border border-border/50 bg-muted/10 px-2 py-1 text-xs font-mono leading-relaxed text-foreground/90 break-all">
+        {value ?? '—'}
+      </code>
+    </div>
+  )
+
   const disableSettings = !isDomainVerified || isDomainLoading
   const senderEmailValue = form.watch('senderEmail')
   const canSubmit =
     isDomainVerified && Boolean(senderEmailValue && senderEmailValue.trim())
+
+  const statusBadgeClass = isDomainVerified
+    ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+    : domainData?.status === 'failed'
+    ? 'bg-destructive/15 text-destructive border border-destructive/30'
+    : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
 
   return (
     <Collapsible className="w-full" open={isOpen} onOpenChange={setIsOpen}>
@@ -334,15 +437,14 @@ export const EmailDeploymentForm = ({
                 verify ownership.
               </p>
             </div>
-            <Badge
-              variant={isDomainVerified ? 'default' : 'secondary'}
+            <span
               className={cn(
-                'uppercase tracking-wide',
-                domainData?.status === 'failed' && 'bg-destructive text-white',
+                'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wide',
+                statusBadgeClass,
               )}
             >
               {domainStatusLabel}
-            </Badge>
+            </span>
           </div>
 
           {isDomainLoading ? (
@@ -445,159 +547,268 @@ export const EmailDeploymentForm = ({
           )}
 
           {dnsRecords.length > 0 && (
-            <div className="space-y-2 rounded-md border border-border/50 p-3">
-              <p className="text-sm font-medium">DNS Records</p>
-              <p className="text-xs text-muted-foreground">
-                Add the following records to your DNS provider. Verification can
-                take a few minutes after the records propagate.
-              </p>
-              <div className="space-y-2">
-                {dnsRecords.map(record => (
-                  <div
-                    key={`${record.record_type}-${record.name}-${record.value}`}
-                    className="grid gap-1 rounded border border-border/60 p-3 text-xs md:grid-cols-2 lg:grid-cols-4"
-                  >
-                    <div>
-                      <span className="font-medium">Type:</span>{' '}
-                      <span className="text-muted-foreground">
-                        {record.record_type}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Name:</span>{' '}
-                      <span className="text-muted-foreground">
-                        {record.name}
-                      </span>
-                    </div>
-                    <div className="lg:col-span-2 break-words">
-                      <span className="font-medium">Value:</span>{' '}
-                      <span className="text-muted-foreground">
-                        {record.value}
-                      </span>
-                    </div>
-                    {typeof record.priority === 'number' && (
-                      <div>
-                        <span className="font-medium">Priority:</span>{' '}
-                        <span className="text-muted-foreground">
-                          {record.priority}
-                        </span>
-                      </div>
+            <Collapsible
+              open={isDnsOpen}
+              onOpenChange={setIsDnsOpen}
+              className="rounded-md border border-border/50"
+            >
+              <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition hover:bg-muted/60 focus:outline-none focus-visible:ring-1 focus-visible:ring-border">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium">DNS records</p>
+                  <p className="text-xs text-muted-foreground">
+                    Add these at your DNS provider. Verification may take a few
+                    minutes after propagation.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      'uppercase tracking-wide border',
+                      statusBadgeClass,
+                      isDomainVerified && 'bg-emerald-500/15 text-emerald-300',
                     )}
-                  </div>
-                ))}
-              </div>
-            </div>
+                  >
+                    {domainStatusLabel}
+                  </Badge>
+                  <ChevronDown
+                    className={cn(
+                      'h-4 w-4 text-muted-foreground transition-transform',
+                      isDnsOpen ? 'rotate-180' : '',
+                    )}
+                  />
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 border-t border-border/40 px-3 pb-3 pt-3">
+                {(['sending', 'receiving', 'tracking'] as const)
+                  .filter(section => (groupedRecords[section] ?? []).length)
+                  .map(section => {
+                    const sectionRecords = groupedRecords[section] ?? []
+                    const sectionLabel =
+                      section === 'sending'
+                        ? 'Sending records'
+                        : section === 'receiving'
+                        ? 'Receiving records'
+                        : 'Tracking records'
+
+                    return (
+                      <div key={section} className="space-y-3">
+                        <div className="flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground">
+                          <p className="font-semibold">{sectionLabel}</p>
+                          <span className="text-[10px]">
+                            {sectionRecords.length}{' '}
+                            {sectionRecords.length === 1 ? 'record' : 'records'}
+                          </span>
+                        </div>
+                        <div className="grid gap-3">
+                          {sectionRecords.map(record => {
+                            const statusLabel =
+                              record.status === 'verified'
+                                ? 'Verified'
+                                : 'Unverified'
+                            const statusClasses =
+                              record.status === 'verified'
+                                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                                : 'border-amber-500/30 bg-amber-500/10 text-amber-300'
+
+                            return (
+                              <div
+                                key={`${section}-${record.record_type}-${record.name}-${record.value}`}
+                                className="overflow-hidden rounded-lg border border-border/60 bg-background/60 shadow-sm backdrop-blur-sm"
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/40 px-3 py-2">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="inline-flex items-center rounded-md bg-muted/40 px-2 py-0.5 font-mono text-[11px] uppercase text-foreground/80">
+                                      {record.record_type}
+                                    </span>
+                                    {typeof record.priority === 'number' && (
+                                      <span className="rounded-full bg-muted/30 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                        Priority {record.priority}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span
+                                    className={cn(
+                                      'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide',
+                                      statusClasses,
+                                    )}
+                                  >
+                                    {statusLabel}
+                                  </span>
+                                </div>
+                                <div className="grid gap-3 p-3 sm:grid-cols-2">
+                                  <DnsField
+                                    label="Name"
+                                    value={record.name}
+                                    onCopy={() =>
+                                      handleCopy(
+                                        `${record.record_type} name`,
+                                        record.name,
+                                      )
+                                    }
+                                  />
+                                  <DnsField
+                                    label="Value"
+                                    value={record.value}
+                                    onCopy={() =>
+                                      handleCopy(
+                                        `${record.record_type} value`,
+                                        record.value,
+                                      )
+                                    }
+                                    className="sm:col-span-2"
+                                  />
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+              </CollapsibleContent>
+            </Collapsible>
           )}
         </div>
 
         <Separator className="my-4" />
 
-        <Form {...form}>
-          <form className="flex flex-col gap-4">
-            {!isDomainVerified && (
-              <p className="text-xs text-muted-foreground">
-                Verify your domain to configure email settings and deploy your
-                agent.
-              </p>
-            )}
-            <fieldset
-              className={cn('space-y-4', disableSettings && 'opacity-60')}
-              disabled={disableSettings}
-            >
-              <FormField
-                control={form.control}
-                name="senderEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sender email address</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="notifications@yourdomain.com"
-                        {...field}
-                        disabled={disableSettings}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="autoreply"
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-md border border-border/40 p-3">
-                    <div className="space-y-0.5">
-                      <FormLabel>Automatic replies</FormLabel>
-                      <p className="text-xs text-muted-foreground">
-                        Enable the agent to automatically reply to incoming
-                        emails.
-                      </p>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        disabled={disableSettings}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid gap-4 sm:grid-cols-2">
+        {isDomainVerified && (
+          <Form {...form}>
+            <form className="flex flex-col gap-4">
+              <fieldset
+                className={cn('space-y-4', disableSettings && 'opacity-60')}
+                disabled={disableSettings}
+              >
                 <FormField
                   control={form.control}
-                  name="replyDelayAverage"
+                  name="senderEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Reply delay (minutes)</FormLabel>
+                      <FormLabel>Sender email address</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          step={5}
-                          {...field}
-                          disabled={disableSettings}
-                        />
+                        {domainData?.domain ? (
+                          <div className="flex items-stretch overflow-hidden rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+                            <input
+                              type="text"
+                              className={cn(
+                                'flex-1 border-0 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground',
+                                disableSettings && 'opacity-60',
+                              )}
+                              placeholder="agent"
+                              value={
+                                field.value && field.value.includes('@')
+                                  ? field.value.replace(
+                                      new RegExp(`@${domainData.domain}$`),
+                                      '',
+                                    )
+                                  : field.value ?? ''
+                              }
+                              onChange={event => {
+                                const localPart = event.target.value
+                                const suffix = `@${domainData.domain}`
+                                field.onChange(
+                                  localPart
+                                    ? `${localPart.replace(/@.*/, '')}${suffix}`
+                                    : '',
+                                )
+                              }}
+                              disabled={disableSettings}
+                            />
+                            <div className="flex items-center border-l border-border bg-muted/40 px-3 text-sm font-medium text-muted-foreground">
+                              @{domainData.domain}
+                            </div>
+                          </div>
+                        ) : (
+                          <Input
+                            placeholder="notifications@yourdomain.com"
+                            {...field}
+                            disabled={disableSettings}
+                          />
+                        )}
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
-                  name="replyDelayVariance"
+                  name="autoreply"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Reply variance (minutes)</FormLabel>
+                    <FormItem className="flex items-center justify-between rounded-md border border-border/40 p-3">
+                      <div className="space-y-0.5">
+                        <FormLabel>Automatic replies</FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          Enable the agent to automatically reply to incoming
+                          emails.
+                        </p>
+                      </div>
                       <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          step={5}
-                          {...field}
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
                           disabled={disableSettings}
                         />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-            </fieldset>
 
-            <DeploymentFormFooter
-              form={form}
-              agentId={agentId}
-              platform="email"
-              isDeployed={isDeployed}
-              valid={deployment?.valid}
-              canSubmit={canSubmit}
-              guideUrl="https://docs.eden.art/integrations/email"
-            />
-          </form>
-        </Form>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="replyDelayAverage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Reply delay (minutes)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            step={5}
+                            {...field}
+                            disabled={disableSettings}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="replyDelayVariance"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Reply variance (minutes)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            step={5}
+                            {...field}
+                            disabled={disableSettings}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </fieldset>
+
+              <DeploymentFormFooter
+                form={form}
+                agentId={agentId}
+                platform="email"
+                isDeployed={isDeployed}
+                valid={deployment?.valid}
+                canSubmit={canSubmit}
+                guideUrl="https://docs.eden.art/integrations/email"
+              />
+            </form>
+          </Form>
+        )}
       </CollapsibleContent>
     </Collapsible>
   )

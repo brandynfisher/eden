@@ -40,13 +40,14 @@ export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
       ? 'Email'
       : platform
 
+  const label =
+    platform === 'email' ? 'Email sent' : `Posted to ${platformName}`
+
   // Handle case where results might not have the expected structure
   if (!results || !Array.isArray(results)) {
     return (
       <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
-        <span className="text-sm text-muted-foreground">
-          Posted to {platformName}
-        </span>
+        <span className="text-sm text-muted-foreground">{label}</span>
       </div>
     )
   }
@@ -61,9 +62,7 @@ export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
                 key={outputIndex}
                 className="flex items-center gap-2 px-3 py-2 bg-accent rounded-md border border-secondary"
               >
-                <span className="text-sm text-muted-foreground">
-                  Posted to {platformName}
-                </span>
+                <span className="text-sm text-muted-foreground">{label}</span>
                 {output && output.url ? (
                   <a
                     href={output.url}
@@ -83,18 +82,14 @@ export const SocialPostEmbed: React.FC<SocialPostEmbedProps> = ({
             ))
           ) : result && result.output && typeof result.output === 'string' ? (
             <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
-              <span className="text-sm text-muted-foreground">
-                Posted to {platformName}
-              </span>
+              <span className="text-sm text-muted-foreground">{label}</span>
               <div className="text-sm mt-1 text-foreground/80">
                 {result.output}
               </div>
             </div>
           ) : (
             <div className="px-3 py-2 bg-accent rounded-md border border-secondary">
-              <span className="text-sm text-muted-foreground">
-                Posted to {platformName}
-              </span>
+              <span className="text-sm text-muted-foreground">{label}</span>
             </div>
           )}
         </div>

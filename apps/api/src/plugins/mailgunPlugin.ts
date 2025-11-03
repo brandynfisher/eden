@@ -7,6 +7,8 @@ export type MailgunDnsRecord = {
   name: string
   value: string
   priority?: number
+  category?: 'sending' | 'receiving' | 'tracking'
+  status?: 'verified' | 'unverified'
 }
 
 export type MailgunDomainState = 'pending' | 'verified' | 'failed'
@@ -56,20 +58,74 @@ const getMailgunClient = (
   })
 }
 
-const normalizeDnsRecords = (raw: any[]): MailgunDnsRecord[] => {
+const normalizeDnsRecords = (
+  raw: any[],
+  category: 'sending' | 'receiving' | 'tracking',
+): MailgunDnsRecord[] => {
   if (!Array.isArray(raw)) {
     return []
   }
 
-  return raw
-    .filter(record => record)
-    .map(record => ({
-      record_type: record.record_type || record.type || '',
-      name: record.name || record.hostname || '',
-      value: record.value || record.target || record.item || '',
-      priority: record.priority,
-    }))
-    .filter(record => record.record_type && record.name && record.value)
+  const records: MailgunDnsRecord[] = []
+
+  for (const entry of raw) {
+    if (!entry) {
+      continue
+    }
+
+    const recordType = entry.record_type || entry.type || entry.recordType || ''
+    const rawName =
+      entry.name ||
+      entry.hostname ||
+      entry.label ||
+      entry.subdomain ||
+      entry.domain ||
+      entry.host ||
+      ''
+    const value =
+      entry.value ||
+      entry.target ||
+      entry.item ||
+      entry.answer ||
+      entry.cname_value ||
+      entry.txt_value ||
+      (Array.isArray(entry.cached) ? entry.cached.join(', ') : '')
+
+    if (!recordType || !value) {
+      continue
+    }
+
+    let name =
+      typeof rawName === 'string' ? rawName.trim() : String(rawName ?? '')
+
+    if (!name) {
+      if (recordType === 'MX' || recordType === 'TXT') {
+        name = '@'
+      } else if (
+        recordType === 'CNAME' &&
+        (entry.cname || entry.cname_record)
+      ) {
+        name = entry.cname || entry.cname_record
+      }
+    }
+
+    const verified =
+      entry.verified === true ||
+      entry.valid === true ||
+      entry.valid === 'valid' ||
+      entry.state === 'verified'
+
+    records.push({
+      record_type: recordType,
+      name,
+      value,
+      priority: entry.priority ?? entry.mx_priority,
+      category,
+      status: verified ? 'verified' : 'unverified',
+    })
+  }
+
+  return records
 }
 
 const mapDomainState = (mailgunState?: string): MailgunDomainState => {
@@ -109,89 +165,111 @@ const mailgunPlugin: FastifyPluginAsync = async server => {
     return
   }
 
+  const fetchDomainDetails = async (
+    domain: string,
+  ): Promise<MailgunDomainResult> => {
+    const clientV4 = getMailgunClient(server, 'v4')
+    const response = await clientV4.get(`/domains/${domain}`, {
+      params: {
+        'h:extended': true,
+        'h:with_dns': true,
+      },
+    })
+    const domainPayload = response.data?.domain ?? response.data ?? {}
+    const sendingRecords = normalizeDnsRecords(
+      response.data?.sending_dns_records ?? domainPayload?.sending_dns_records,
+      'sending',
+    )
+    const receivingRecords = normalizeDnsRecords(
+      response.data?.receiving_dns_records ??
+        domainPayload?.receiving_dns_records,
+      'receiving',
+    )
+    const trackingRecords = normalizeDnsRecords(
+      response.data?.tracking_dns_records ??
+        domainPayload?.tracking_dns_records,
+      'tracking',
+    )
+
+    const allRecords = [
+      ...sendingRecords,
+      ...receivingRecords,
+      ...trackingRecords,
+    ]
+
+    const computedStatus =
+      allRecords.length > 0 &&
+      allRecords.every(record => record.status === 'verified')
+        ? 'verified'
+        : mapDomainState(domainPayload?.state)
+
+    return {
+      providerDomainId: domainPayload?.id ?? domainPayload?.name ?? domain,
+      status: computedStatus,
+      dnsRecords: allRecords,
+    }
+  }
+
+  const createDomain = async (domain: string): Promise<MailgunDomainResult> => {
+    const client = getMailgunClient(server, 'v3')
+    const payload = new URLSearchParams()
+    payload.append('name', domain)
+    payload.append('dkim_key_size', '2048')
+    payload.append('spam_action', 'disabled')
+
+    await client.post('/domains', payload.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+
+    return fetchDomainDetails(domain)
+  }
+
+  const deleteDomain = async (domain: string): Promise<void> => {
+    const client = getMailgunClient(server, 'v4')
+    await client.delete(`/domains/${domain}`)
+  }
+
+  const createRoute = async (
+    domain: string,
+    forwardingUrl: string,
+  ): Promise<{ id: string; expression: string }> => {
+    const client = getMailgunClient(server, 'v3')
+    const payload = new URLSearchParams()
+    payload.append('priority', '1')
+    payload.append('description', `Eden inbound route for ${domain}`)
+    payload.append('expression', `match_recipient(".*@${domain}")`)
+    payload.append('action', `forward("${forwardingUrl}")`)
+    payload.append('action', 'stop()')
+
+    const response = await client.post('/routes', payload.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+
+    return {
+      id: response.data?.route?.id ?? response.data?.id,
+      expression:
+        response.data?.route?.expression ?? `match_recipient(".*@${domain}")`,
+    }
+  }
+
+  const deleteRoute = async (routeId?: string): Promise<void> => {
+    if (!routeId) {
+      return
+    }
+    const client = getMailgunClient(server, 'v3')
+    await client.delete(`/routes/${routeId}`)
+  }
+
   server.decorate('mailgun', {
-    async createDomain(domain: string): Promise<MailgunDomainResult> {
-      const client = getMailgunClient(server, 'v4')
-      const response = await client.post('/domains', {
-        name: domain,
-        dkim_key_size: 2048,
-        spam_action: 'disabled',
-      })
-      const domainData = response.data?.domain ?? response.data
-      const sendingRecords = normalizeDnsRecords(
-        domainData?.sending_dns_records,
-      )
-      const receivingRecords = normalizeDnsRecords(
-        domainData?.receiving_dns_records,
-      )
-
-      return {
-        providerDomainId: domainData?.id ?? domainData?.name ?? domain,
-        status: mapDomainState(domainData?.state),
-        dnsRecords: [...sendingRecords, ...receivingRecords],
-      }
-    },
-
-    async getDomain(domain: string): Promise<MailgunDomainResult> {
-      const client = getMailgunClient(server, 'v4')
-      const response = await client.get(`/domains/${domain}`)
-      const domainData = response.data?.domain ?? response.data
-
-      const recordsResponse = await client.get(`/domains/${domain}/records`)
-      const recordsPayload = recordsResponse.data
-
-      const sendingRecords = normalizeDnsRecords(
-        recordsPayload?.sending_dns_records ?? domainData?.sending_dns_records,
-      )
-      const receivingRecords = normalizeDnsRecords(
-        recordsPayload?.receiving_dns_records ??
-          domainData?.receiving_dns_records,
-      )
-
-      return {
-        providerDomainId: domainData?.id ?? domainData?.name ?? domain,
-        status: mapDomainState(domainData?.state),
-        dnsRecords: [...sendingRecords, ...receivingRecords],
-      }
-    },
-
-    async deleteDomain(domain: string): Promise<void> {
-      const client = getMailgunClient(server, 'v4')
-      await client.delete(`/domains/${domain}`)
-    },
-
-    async createRoute(
-      domain: string,
-      forwardingUrl: string,
-    ): Promise<{ id: string; expression: string }> {
-      const client = getMailgunClient(server, 'v3')
-      const payload = new URLSearchParams()
-      payload.append('priority', '1')
-      payload.append('description', `Eden inbound route for ${domain}`)
-      payload.append('expression', `match_recipient(".*@${domain}")`)
-      payload.append('action', `forward("${forwardingUrl}")`)
-      payload.append('action', 'stop()')
-
-      const response = await client.post('/routes', payload.toString(), {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      })
-
-      return {
-        id: response.data?.route?.id ?? response.data?.id,
-        expression:
-          response.data?.route?.expression ?? `match_recipient(".*@${domain}")`,
-      }
-    },
-
-    async deleteRoute(routeId?: string): Promise<void> {
-      if (!routeId) {
-        return
-      }
-      const client = getMailgunClient(server, 'v3')
-      await client.delete(`/routes/${routeId}`)
-    },
+    createDomain,
+    getDomain: fetchDomainDetails,
+    deleteDomain,
+    createRoute,
+    deleteRoute,
   })
 }
 

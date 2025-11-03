@@ -7,6 +7,8 @@ export interface EmailDomainDnsRecord {
   name: string
   value: string
   priority?: number
+  category?: 'sending' | 'receiving' | 'tracking'
+  status?: 'verified' | 'unverified'
 }
 
 export interface EmailDomainSchema {
@@ -79,6 +81,14 @@ const EmailDomainSchema = new Schema<EmailDomainDocument>(
           name: { type: String, required: true },
           value: { type: String, required: true },
           priority: { type: Number },
+          category: {
+            type: String,
+            enum: ['sending', 'receiving', 'tracking'],
+          },
+          status: {
+            type: String,
+            enum: ['verified', 'unverified'],
+          },
         },
       ],
       default: [],
