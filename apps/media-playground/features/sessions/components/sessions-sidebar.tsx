@@ -323,7 +323,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
             onClick={onItemClick}
             disabled={isEditing}
           >
-            {!isChat && agents.length > 0 && (
+            {agents.length > 0 && (
               <AgentAvatars agents={agents} className="shrink-0" />
             )}
             {isFromTrigger && !agents.length && (
@@ -1149,7 +1149,7 @@ const SidebarUserProfile = () => {
   }
 
   // Show sign-in button when not signed in
-  if (!user) {
+  if (!isSignedIn || !user) {
     return (
       <div className="hidden md:block border-t bg-background p-3">
         <Button onClick={verifyAuth} className="w-full" variant="default">
@@ -1160,12 +1160,12 @@ const SidebarUserProfile = () => {
   }
 
   return (
-    <div className="hidden md:block border-t bg-background">
+    <div className="hidden md:block border-t bg-background -ml-3 w-[calc(100%+0.75rem)]">
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <button
             ref={dropdownTriggerRef}
-            className="flex items-center gap-2 w-full p-3 hover:bg-muted/20 transition-colors"
+            className="flex items-center gap-3 w-full py-3 pr-3 pl-[18px] hover:bg-muted/20 transition-colors"
           >
             <UserAvatar
               image={user?.userImage}
@@ -1394,6 +1394,7 @@ export const SessionsSidebarContent = ({
 }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
   const router = useRouter()
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
@@ -1436,6 +1437,27 @@ export const SessionsSidebarContent = ({
           title="Home"
         >
           <EdenLogoBw className="w-[20px]" />
+        </button>
+
+        {/* Chat icon */}
+        <button
+          onClick={() => router.push('/sessions')}
+          className="flex items-center justify-center h-9 w-9 hover:bg-muted/20 rounded-md transition-colors"
+          title="Chat"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
         </button>
 
         {/* Explore icon */}
@@ -1655,6 +1677,37 @@ export const SessionsSidebarContent = ({
 
       {/* Desktop: Navigation Buttons */}
       <div className="hidden md:flex mb-4 mr-2 flex-col gap-2">
+        {/* Chat button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/sessions')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/chat') || pathname?.startsWith('/sessions')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span>Chat</span>
+        </Button>
+
         {/* Explore button */}
         <Button
           variant="ghost"
@@ -1664,7 +1717,7 @@ export const SessionsSidebarContent = ({
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            mode === 'explore'
+            pathname?.startsWith('/explore')
               ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
               : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
           )}
@@ -1696,7 +1749,7 @@ export const SessionsSidebarContent = ({
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            mode === 'create'
+            pathname?.startsWith('/create') || pathname?.startsWith('/tools')
               ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
               : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
           )}
