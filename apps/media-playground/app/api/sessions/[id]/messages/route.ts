@@ -1,6 +1,7 @@
 import { getAuthToken } from '@/lib/auth'
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { EdenClient } from '@edenlabs/eden-sdk'
+import axios from 'axios'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
@@ -8,12 +9,6 @@ export async function GET(
   { params }: { params: { id: string } },
 ) {
   const authToken = await getAuthToken(request)
-
-  if (!authToken) {
-    return new NextResponse(JSON.stringify({ message: 'Not authenticated' }), {
-      status: 401,
-    })
-  }
 
   const { searchParams } = new URL(request.url)
   const cursor = searchParams.get('cursor') || undefined
@@ -23,7 +18,7 @@ export async function GET(
   try {
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
-      token: authToken,
+      token: authToken || undefined,
     })
 
     const res = await eden.sessions.v2.getMessages({
@@ -36,6 +31,14 @@ export async function GET(
   } catch (error) {
     const errorMessage = handleAxiosServerError(error)
     console.error('Failed to fetch session messages:', errorMessage)
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status ?? 500
+      return new NextResponse(JSON.stringify({ message: errorMessage }), {
+        status,
+      })
+    }
+
     return new NextResponse(JSON.stringify({ message: errorMessage }), {
       status: 500,
     })

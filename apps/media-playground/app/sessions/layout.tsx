@@ -8,10 +8,11 @@ import {
 } from '@/components/ui/resizable'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
+import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { cn } from '@/lib/utils'
 import { useParams, usePathname } from 'next/navigation'
-import { PropsWithChildren, useState } from 'react'
+import { PropsWithChildren, useEffect, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const params = useParams()
@@ -19,11 +20,19 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
   const sessionId = params?.id as string
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [forceHideSidebar, setForceHideSidebar] = useState(false)
 
-  // Check if we're on a share route
+  // Hide sidebar on main sessions page
   const isShareRoute = pathname?.includes('/sessions/share/')
+  const isMainSessionsPage = !sessionId
+  const showSidebar = !isMainSessionsPage && !forceHideSidebar
 
-  // If it's a share route, render layout with header but no sidebar
+  useEffect(() => {
+    if (!showSidebar) {
+      setIsSheetOpen(false)
+    }
+  }, [showSidebar])
+
   if (isShareRoute) {
     return (
       <LiveAudioProvider>
@@ -43,11 +52,11 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
     )
   }
 
-  // Hide sidebar on main sessions page
-  const isMainSessionsPage = !sessionId
-  const showSidebar = !isMainSessionsPage
-
   const handleChatClick = () => {
+    if (!showSidebar) {
+      return
+    }
+
     // Check if we're on mobile (window width < 768px for md breakpoint)
     const isMobile = window.innerWidth < 768
 
@@ -59,87 +68,93 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
   }
 
   return (
-    <LiveAudioProvider>
-      {/* Sessions-specific header that replaces the main header */}
-      <SessionsHeader
-        onChatClick={handleChatClick}
-        isSidebarCollapsed={isSidebarCollapsed}
-      />
+    <SessionsLayoutContext.Provider
+      value={{ forceHideSidebar, setForceHideSidebar }}
+    >
+      <LiveAudioProvider>
+        {/* Sessions-specific header that replaces the main header */}
+        <SessionsHeader
+          onChatClick={handleChatClick}
+          isSidebarCollapsed={isSidebarCollapsed || forceHideSidebar}
+        />
 
-      <div
-        className={`flex flex-col fixed inset-x-0 bottom-0 ${
-          // Different top margins based on session ID and screen size
-          sessionId === 'new' || !sessionId
-            ? 'top-16 md:top-14' // Single navbar on new session page (desktop)
-            : 'top-16 md:top-[104px]' // Double navbar on existing session pages (56px + 48px)
-        }`}
-      >
-        {/* MOBILE LEFT BAR SHEET FOR SESSIONS - only show when sidebar is enabled */}
-        {showSidebar && (
-          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetContent
-              side="left"
-              className="flex flex-col max-h-full pt-3 px-3 bg-accent border-r gap-0"
+        <div
+          className={`flex flex-col fixed inset-x-0 bottom-0 ${
+            // Different top margins based on session ID and screen size
+            sessionId === 'new' || !sessionId
+              ? 'top-16 md:top-14' // Single navbar on new session page (desktop)
+              : 'top-16 md:top-[104px]' // Double navbar on existing session pages (56px + 48px)
+          }`}
+        >
+          {/* MOBILE LEFT BAR SHEET FOR SESSIONS - only show when sidebar is enabled */}
+          {showSidebar && (
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetContent
+                side="left"
+                className="flex flex-col max-h-full pt-3 px-3 bg-accent border-r gap-0"
+              >
+                <SheetTitle className="sr-only">Session List</SheetTitle>
+                <SessionsSidebarContent
+                  onItemClick={() => setIsSheetOpen(false)}
+                />
+              </SheetContent>
+            </Sheet>
+          )}
+
+          {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
+          {showSidebar ? (
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="flex-1 !overflow-y-hidden"
+              autoSaveId="resizable-session-layout"
             >
-              <SheetTitle className="sr-only">Session List</SheetTitle>
-              <SessionsSidebarContent
-                onItemClick={() => setIsSheetOpen(false)}
+              {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
+              <ResizablePanel
+                defaultSize={20}
+                minSize={15}
+                maxSize={30}
+                collapsible
+                collapsedSize={0}
+                onCollapse={() => setIsSidebarCollapsed(true)}
+                onExpand={() => setIsSidebarCollapsed(false)}
+                className={cn(
+                  'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+                  'max-w-[320px]',
+                  isSidebarCollapsed && 'p-0 border-none',
+                )}
+              >
+                {/* Render content only if not collapsed */}
+                {!isSidebarCollapsed && !forceHideSidebar && (
+                  <SessionsSidebarContent />
+                )}
+              </ResizablePanel>
+
+              {/* Separator Handle - visible only on desktop */}
+              <ResizableHandle
+                withHandle
+                className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
               />
-            </SheetContent>
-          </Sheet>
-        )}
 
-        {/* RESIZABLE LAYOUT FOR DESKTOP / MAIN CONTENT AREA */}
-        {showSidebar ? (
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="flex-1 !overflow-y-hidden"
-            autoSaveId="resizable-session-layout"
-          >
-            {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
-            <ResizablePanel
-              defaultSize={20}
-              minSize={15}
-              maxSize={30}
-              collapsible
-              collapsedSize={0}
-              onCollapse={() => setIsSidebarCollapsed(true)}
-              onExpand={() => setIsSidebarCollapsed(false)}
-              className={cn(
-                'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
-                'max-w-[320px]',
-                isSidebarCollapsed && 'p-0 border-none',
-              )}
-            >
-              {/* Render content only if not collapsed */}
-              {!isSidebarCollapsed && <SessionsSidebarContent />}
-            </ResizablePanel>
-
-            {/* Separator Handle - visible only on desktop */}
-            <ResizableHandle
-              withHandle
-              className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
-            />
-
-            {/* MAIN CONTENT PANEL */}
-            <ResizablePanel
-              defaultSize={80}
-              className="relative flex flex-col bg-aui-background"
-            >
-              <div className="flex flex-col h-full overflow-hidden">
-                <div className="mx-auto flex flex-col h-full w-full overflow-hidden">
-                  {children}
+              {/* MAIN CONTENT PANEL */}
+              <ResizablePanel
+                defaultSize={80}
+                className="relative flex flex-col bg-aui-background"
+              >
+                <div className="flex flex-col h-full overflow-hidden">
+                  <div className="mx-auto flex flex-col h-full w-full overflow-hidden">
+                    {children}
+                  </div>
                 </div>
-              </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        ) : (
-          /* Main sessions page without sidebar */
-          <div className="flex-1 overflow-y-auto bg-background">
-            <div className="w-full h-full">{children}</div>
-          </div>
-        )}
-      </div>
-    </LiveAudioProvider>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : (
+            /* Main sessions page without sidebar */
+            <div className="flex-1 overflow-y-auto bg-background">
+              <div className="w-full h-full">{children}</div>
+            </div>
+          )}
+        </div>
+      </LiveAudioProvider>
+    </SessionsLayoutContext.Provider>
   )
 }

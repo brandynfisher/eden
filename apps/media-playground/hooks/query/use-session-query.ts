@@ -83,8 +83,17 @@ export function useSessionQuery({
     },
     enabled: enabled && !!sessionId,
     staleTime: 1000, // 1 second - allow frequent refetches during active conversation
-    refetchInterval: 2000, // Poll every 2 seconds for new messages
-    refetchOnWindowFocus: true,
+    refetchInterval: data => (data ? 2000 : false), // Poll only when we have session data
+    refetchOnWindowFocus: query => !!query.state.data,
+    retry: (failureCount, error) => {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status
+        if (status === 401 || status === 403) {
+          return false
+        }
+      }
+      return failureCount < 3
+    },
   })
 
   const updateReaction = useCallback(
