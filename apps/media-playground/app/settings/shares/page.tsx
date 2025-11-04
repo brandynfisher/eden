@@ -171,10 +171,10 @@ const SettingsSharesPage = () => {
                   </div>
                 </div>
               </CardHeader>
-              {share.session?.scenario && (
+              {share.session?.context && (
                 <CardContent>
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {share.session.scenario}
+                    {share.session.context}
                   </p>
                 </CardContent>
               )}

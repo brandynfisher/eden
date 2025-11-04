@@ -14,10 +14,10 @@ export interface SessionSchema {
   owner: UserDocument
   users?: UserDocument[]
   agents: AgentDocument[]
-  status: 'active' | 'archived'
+  status: 'active' | 'paused' | 'stopped' | 'archived'
   title?: string
   channel?: string
-  scenario?: string
+  context?: string
   messages: MessageDocument[]
   platform?: 'web' | 'discord' | 'telegram' | 'twitter' | 'farcaster'
   budget?: {
@@ -28,10 +28,11 @@ export interface SessionSchema {
     manna_spent?: number
     turns_spent?: number
   }
-  autonomy_settings?: {
-    auto_reply: boolean
-    reply_interval: number
-    actor_selection_method: 'random' | 'random_exclude_last'
+  type?: 'chat' | 'passive' | 'automatic'
+  settings?: {
+    conductor_prompt?: string
+    delay_interval: number
+    mention_force_reply: boolean
   }
   last_actor_id?: ObjectId
   trigger?: ObjectId
@@ -67,7 +68,7 @@ export const sessionSchema = new Schema<SessionDocument>(
     },
     status: {
       type: Schema.Types.String,
-      enum: ['active', 'archived'],
+      enum: ['active', 'paused', 'stopped', 'archived'],
       default: 'active',
     },
     channel: {
@@ -76,7 +77,7 @@ export const sessionSchema = new Schema<SessionDocument>(
     title: {
       type: Schema.Types.String,
     },
-    scenario: {
+    context: {
       type: Schema.Types.String,
     },
     messages: [
@@ -112,23 +113,29 @@ export const sessionSchema = new Schema<SessionDocument>(
         default: 0,
       },
     },
-    autonomy_settings: {
+    type: {
+      type: Schema.Types.String,
+      enum: ['chat', 'passive', 'automatic'],
+      default: 'chat',
+    },
+    settings: {
       type: {
-        auto_reply: {
-          type: Schema.Types.Boolean,
-          default: false,
+        conductor_prompt: {
+          type: Schema.Types.String,
         },
-        reply_interval: {
+        delay_interval: {
           type: Schema.Types.Number,
           default: 0,
         },
-        actor_selection_method: {
-          type: Schema.Types.String,
-          enum: ['random', 'random_exclude_last'],
-          default: 'random',
+        mention_force_reply: {
+          type: Schema.Types.Boolean,
+          default: false,
         },
       },
-      default: null,
+      default: () => ({
+        delay_interval: 0,
+        mention_force_reply: false,
+      }),
     },
     last_actor_id: {
       type: Schema.Types.ObjectId,

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const { agent_ids, scenario, budget, title, autonomy_settings, extras } =
+  const { agent_ids, context, budget, title, type, status, settings, extras } =
     await request.json()
 
   // Validation
@@ -26,12 +26,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (
-    scenario !== undefined &&
-    (typeof scenario !== 'string' || scenario.length > 1000)
+    context !== undefined &&
+    (typeof context !== 'string' || context.length > 5000)
   ) {
     return new NextResponse(
       JSON.stringify({
-        message: 'scenario must be a string with max 1000 characters',
+        message: 'context must be a string with max 5000 characters',
       }),
       {
         status: 400,
@@ -115,12 +115,39 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Validate autonomy_settings
-  if (autonomy_settings !== undefined) {
-    if (typeof autonomy_settings !== 'object') {
+  // Validate type
+  if (type !== undefined && !['chat', 'passive', 'automatic'].includes(type)) {
+    return new NextResponse(
+      JSON.stringify({
+        message: 'type must be "chat", "passive", or "automatic"',
+      }),
+      {
+        status: 400,
+      },
+    )
+  }
+
+  // Validate status
+  if (
+    status !== undefined &&
+    !['active', 'paused', 'stopped', 'archived'].includes(status)
+  ) {
+    return new NextResponse(
+      JSON.stringify({
+        message: 'status must be "active", "paused", "stopped", or "archived"',
+      }),
+      {
+        status: 400,
+      },
+    )
+  }
+
+  // Validate settings
+  if (settings !== undefined) {
+    if (typeof settings !== 'object') {
       return new NextResponse(
         JSON.stringify({
-          message: 'autonomy_settings must be an object',
+          message: 'settings must be an object',
         }),
         {
           status: 400,
@@ -129,12 +156,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (
-      autonomy_settings.auto_reply !== undefined &&
-      typeof autonomy_settings.auto_reply !== 'boolean'
+      settings.conductor_prompt !== undefined &&
+      (typeof settings.conductor_prompt !== 'string' ||
+        settings.conductor_prompt.length > 2000)
     ) {
       return new NextResponse(
         JSON.stringify({
-          message: 'auto_reply must be a boolean',
+          message: 'conductor_prompt must be a string with max 2000 characters',
         }),
         {
           status: 400,
@@ -143,14 +171,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (
-      autonomy_settings.reply_interval !== undefined &&
-      (typeof autonomy_settings.reply_interval !== 'number' ||
-        autonomy_settings.reply_interval < 0 ||
-        autonomy_settings.reply_interval > 3600)
+      settings.delay_interval !== undefined &&
+      (typeof settings.delay_interval !== 'number' ||
+        settings.delay_interval < 0 ||
+        settings.delay_interval > 3600)
     ) {
       return new NextResponse(
         JSON.stringify({
-          message: 'reply_interval must be a number between 0 and 3600',
+          message: 'delay_interval must be a number between 0 and 3600',
         }),
         {
           status: 400,
@@ -159,15 +187,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (
-      autonomy_settings.actor_selection_method !== undefined &&
-      !['random', 'random_exclude_last'].includes(
-        autonomy_settings.actor_selection_method,
-      )
+      settings.mention_force_reply !== undefined &&
+      typeof settings.mention_force_reply !== 'boolean'
     ) {
       return new NextResponse(
         JSON.stringify({
-          message:
-            'actor_selection_method must be "random" or "random_exclude_last"',
+          message: 'mention_force_reply must be a boolean',
         }),
         {
           status: 400,
@@ -186,8 +211,8 @@ export async function POST(request: NextRequest) {
       agent_ids,
     }
 
-    if (scenario) {
-      createArgs.scenario = scenario
+    if (context) {
+      createArgs.context = context
     }
 
     if (budget) {
@@ -198,8 +223,16 @@ export async function POST(request: NextRequest) {
       createArgs.title = title
     }
 
-    if (autonomy_settings) {
-      createArgs.autonomy_settings = autonomy_settings
+    if (type) {
+      createArgs.type = type
+    }
+
+    if (status) {
+      createArgs.status = status
+    }
+
+    if (settings) {
+      createArgs.settings = settings
     }
 
     if (extras) {

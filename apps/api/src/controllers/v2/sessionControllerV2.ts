@@ -64,8 +64,16 @@ export const createSession = async (
     })
   }
 
-  const { agent_ids, scenario, budget, title, autonomy_settings, extras } =
-    request.body
+  const {
+    agent_ids,
+    context,
+    budget,
+    title,
+    type: sessionType,
+    status,
+    settings,
+    extras,
+  } = request.body
 
   // Validation
   if (!agent_ids || !Array.isArray(agent_ids) || agent_ids.length === 0) {
@@ -75,11 +83,11 @@ export const createSession = async (
   }
 
   if (
-    scenario !== undefined &&
-    (typeof scenario !== 'string' || scenario.length > 1000)
+    context !== undefined &&
+    (typeof context !== 'string' || context.length > 5000)
   ) {
     return reply.status(400).send({
-      message: 'scenario must be a string with max 1000 characters',
+      message: 'context must be a string with max 5000 characters',
     })
   }
 
@@ -134,43 +142,59 @@ export const createSession = async (
     })
   }
 
-  // Validate autonomy_settings
-  if (autonomy_settings !== undefined) {
-    if (typeof autonomy_settings !== 'object') {
+  // Validate type
+  if (sessionType !== undefined && sessionType !== null) {
+    if (
+      typeof sessionType !== 'string' ||
+      !['chat', 'passive', 'automatic'].includes(sessionType)
+    ) {
       return reply.status(400).send({
-        message: 'autonomy_settings must be an object',
+        message: 'type must be "chat", "passive", or "automatic"',
+      })
+    }
+  }
+
+  // Validate settings
+  if (settings !== undefined) {
+    if (typeof settings !== 'object' || settings === null) {
+      return reply.status(400).send({
+        message: 'settings must be an object',
+      })
+    }
+
+    const settingsObj = settings as {
+      conductor_prompt?: string
+      delay_interval?: number
+      mention_force_reply?: boolean
+    }
+
+    if (
+      settingsObj.conductor_prompt !== undefined &&
+      (typeof settingsObj.conductor_prompt !== 'string' ||
+        settingsObj.conductor_prompt.length > 2000)
+    ) {
+      return reply.status(400).send({
+        message: 'conductor_prompt must be a string with max 2000 characters',
       })
     }
 
     if (
-      autonomy_settings.auto_reply !== undefined &&
-      typeof autonomy_settings.auto_reply !== 'boolean'
+      settingsObj.delay_interval !== undefined &&
+      (typeof settingsObj.delay_interval !== 'number' ||
+        settingsObj.delay_interval < 0 ||
+        settingsObj.delay_interval > 3600)
     ) {
       return reply.status(400).send({
-        message: 'auto_reply must be a boolean',
+        message: 'delay_interval must be a number between 0 and 3600',
       })
     }
 
     if (
-      autonomy_settings.reply_interval !== undefined &&
-      (typeof autonomy_settings.reply_interval !== 'number' ||
-        autonomy_settings.reply_interval < 0 ||
-        autonomy_settings.reply_interval > 3600)
+      settingsObj.mention_force_reply !== undefined &&
+      typeof settingsObj.mention_force_reply !== 'boolean'
     ) {
       return reply.status(400).send({
-        message: 'reply_interval must be a number between 0 and 3600',
-      })
-    }
-
-    if (
-      autonomy_settings.actor_selection_method !== undefined &&
-      !['random', 'random_exclude_last'].includes(
-        autonomy_settings.actor_selection_method,
-      )
-    ) {
-      return reply.status(400).send({
-        message:
-          'actor_selection_method must be "random" or "random_exclude_last"',
+        message: 'mention_force_reply must be a boolean',
       })
     }
   }
@@ -208,8 +232,16 @@ export const createSession = async (
       title,
     }
 
-    if (scenario) {
-      sessionData.scenario = scenario
+    if (context) {
+      sessionData.context = context
+    }
+
+    if (sessionType) {
+      sessionData.type = sessionType
+    }
+
+    if (status) {
+      sessionData.status = status
     }
 
     if (budget) {
@@ -223,8 +255,8 @@ export const createSession = async (
       }
     }
 
-    if (autonomy_settings) {
-      sessionData.autonomy_settings = autonomy_settings
+    if (settings) {
+      sessionData.settings = settings
     }
 
     if (extras) {
@@ -233,9 +265,12 @@ export const createSession = async (
 
     const session = new Session(sessionData)
 
-    // Mark extras as modified since it's a Mixed type
+    // Mark extras and settings as modified since they're nested types
     if (session.extras) {
       session.markModified('extras')
+    }
+    if (session.settings) {
+      session.markModified('settings')
     }
 
     // Create an eden message for agent additions
@@ -289,17 +324,22 @@ export const createSessionMessage = async (
       stream?: boolean
       thinking?: boolean
       agent_ids?: string[]
-      scenario?: string
+      context?: string
       budget?: {
         manna_budget?: number
         token_budget?: number
         turn_budget?: number
       }
       title?: string
-      autonomy_settings?: {
-        auto_reply: boolean
-        reply_interval: number
-        actor_selection_method: 'random' | 'random_exclude_last'
+      type?: 'chat' | 'passive' | 'automatic'
+      settings?: {
+        conductor_prompt?: string
+        delay_interval: number
+        mention_force_reply: boolean
+      }
+      extras?: {
+        exclude_memory?: boolean
+        is_public?: boolean
       }
     }
   }>,
@@ -319,10 +359,11 @@ export const createSessionMessage = async (
     stream,
     thinking,
     agent_ids,
-    scenario,
+    context,
     budget,
     title,
-    autonomy_settings,
+    type: sessionType,
+    settings,
     extras,
   } = request.body
 
@@ -362,8 +403,16 @@ export const createSessionMessage = async (
       title,
     }
 
-    if (scenario) {
-      sessionData.scenario = scenario
+    if (context) {
+      sessionData.context = context
+    }
+
+    if (sessionType) {
+      sessionData.type = sessionType
+    }
+
+    if (status) {
+      sessionData.status = status
     }
 
     if (budget) {
@@ -377,8 +426,8 @@ export const createSessionMessage = async (
       }
     }
 
-    if (autonomy_settings) {
-      sessionData.autonomy_settings = autonomy_settings
+    if (settings) {
+      sessionData.settings = settings
     }
 
     if (extras) {
@@ -387,9 +436,12 @@ export const createSessionMessage = async (
 
     session = new Session(sessionData)
 
-    // Mark extras as modified since it's a Mixed type
+    // Mark extras and settings as modified since they're nested types
     if (session.extras) {
       session.markModified('extras')
+    }
+    if (session.settings) {
+      session.markModified('settings')
     }
 
     // Create an eden message for agent additions
@@ -1045,13 +1097,7 @@ export const deleteSession = async (
 export const renameSession = async (
   request: FastifyRequest<{
     Params: Pick<SessionsV2RenameArguments, 'session_id'>
-    Body: Pick<SessionsV2RenameArguments, 'title'> & {
-      pinned?: boolean
-      extras?: {
-        exclude_memory?: boolean
-        is_public?: boolean
-      }
-    }
+    Body: Omit<SessionsV2RenameArguments, 'session_id'>
   }>,
   reply: FastifyReply,
 ) => {
@@ -1063,11 +1109,29 @@ export const renameSession = async (
   }
 
   const { session_id } = request.params
-  const { title, pinned, extras } = request.body
+  const {
+    title,
+    pinned,
+    extras,
+    agent_ids,
+    type: sessionType,
+    settings,
+    context,
+    budget,
+  } = request.body
 
-  if (title === undefined && pinned === undefined && extras === undefined) {
+  if (
+    title === undefined &&
+    pinned === undefined &&
+    extras === undefined &&
+    agent_ids === undefined &&
+    sessionType === undefined &&
+    settings === undefined &&
+    context === undefined &&
+    budget === undefined
+  ) {
     return reply.status(400).send({
-      error: 'Title, pinned status, or extras must be provided',
+      error: 'At least one field must be provided to update',
     })
   }
 
@@ -1099,6 +1163,28 @@ export const renameSession = async (
     updateData.extras = {
       ...session.extras,
       ...extras,
+    }
+  }
+  if (
+    agent_ids !== undefined &&
+    agent_ids !== null &&
+    Array.isArray(agent_ids)
+  ) {
+    updateData.agents = agent_ids.map((id: string) => new ObjectId(id))
+  }
+  if (sessionType !== undefined) {
+    updateData.type = sessionType
+  }
+  if (settings !== undefined) {
+    updateData.settings = settings
+  }
+  if (context !== undefined) {
+    updateData.context = context
+  }
+  if (budget !== undefined) {
+    updateData.budget = {
+      ...session.budget,
+      ...budget,
     }
   }
 
@@ -1281,7 +1367,7 @@ export const getSharedSession = async (
     const sessionShare = await SessionShare.findById(share_id)
       .populate({
         path: 'session',
-        select: '_id title scenario agents createdAt',
+        select: '_id title context agents createdAt',
         populate: [
           {
             path: 'agents',
@@ -1400,7 +1486,7 @@ export const listUserShares = async (
     const shares = await SessionShare.find({ owner: userId })
       .populate({
         path: 'session',
-        select: '_id title scenario createdAt',
+        select: '_id title context createdAt',
       })
       .sort({ createdAt: -1 })
       .select('_id session title message_id createdAt')

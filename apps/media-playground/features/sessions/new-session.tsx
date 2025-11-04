@@ -23,44 +23,45 @@ const NewSession = () => {
       const requestBody: {
         agent_ids: string[]
         title?: string
-        scenario?: string
+        context?: string
+        type?: string
+        status?: string
+        settings?: {
+          conductor_prompt?: string
+          delay_interval: number
+          mention_force_reply: boolean
+        }
         budget?: {
           manna_budget?: number
           token_budget?: number
           turn_budget?: number
-        }
-        autonomy_settings?: {
-          auto_reply: boolean
-          reply_interval: number
-          actor_selection_method: string
         }
         extras?: {
           exclude_memory?: boolean
         }
       } = {
         agent_ids: data.agents.map(agent => agent._id),
-        autonomy_settings: {
-          auto_reply: data.auto_reply,
-          reply_interval: data.reply_interval,
-          actor_selection_method: data.actor_selection_method,
+        type: data.type,
+        status: 'paused',
+        settings: {
+          conductor_prompt: data.conductor_prompt,
+          delay_interval: data.delay_interval,
+          mention_force_reply: data.mention_force_reply,
         },
         extras: {
           exclude_memory: data.exclude_memory,
         },
       }
 
-      if (data.title && data.title.trim()) {
-        requestBody.title = data.title
-      } else {
-        const agentNames = data.agents.map(agent => agent.name).join(', ')
-        requestBody.title =
-          data.agents.length === 1
-            ? `Chat with ${agentNames}`
-            : `Multi-agent session with ${agentNames}`
-      }
+      // Generate default title based on agents
+      const agentNames = data.agents.map(agent => agent.name).join(', ')
+      requestBody.title =
+        data.agents.length === 1
+          ? `Chat with ${agentNames}`
+          : `Multi-agent session with ${agentNames}`
 
-      if (data.scenario && data.scenario.trim()) {
-        requestBody.scenario = data.scenario
+      if (data.context && data.context.trim()) {
+        requestBody.context = data.context
       }
 
       const budget: {
@@ -125,7 +126,7 @@ const NewSession = () => {
 
   return (
     <div className="flex-1 overflow-y-auto p-4 flex justify-center">
-      <div className="w-full max-w-2xl space-y-6 py-8">
+      <div className="w-full max-w-2xl space-y-6 pt-8 pb-32">
         <div className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
             <MessageCircleIcon className="w-8 h-8 text-muted-foreground" />
