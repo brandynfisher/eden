@@ -528,6 +528,7 @@ export type SessionV2 = {
   pinned?: boolean
   active_requests?: string[]
   extras?: SessionExtras
+  deleted?: boolean
   createdAt: Date
   updatedAt: Date
 }
