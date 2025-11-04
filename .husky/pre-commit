@@ -22,4 +22,12 @@ if [ $? -ne 0 ]; then
 fi
 cd ../..
 
+echo "🔍 Checking TypeScript compilation for apps/eden-mobile..."
+cd apps/eden-mobile && yarn tsc --noEmit --incremental
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript compilation failed in apps/eden-mobile! Fix the errors before committing."
+  exit 1
+fi
+cd ../..
+
 echo "✅ All TypeScript checks passed!"

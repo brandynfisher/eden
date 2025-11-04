@@ -33,10 +33,11 @@ export const getFileHash = async (file: File): Promise<string> => {
 export const requestSignedUrl = async (
   fileHash: string,
   fileType: string,
+  fileExtension: string,
 ): Promise<string> => {
   try {
     const response = await axios.post('/api/media/upload/sign-request', {
-      filename: `${fileHash}.${fileType.split('/')[1]}`,
+      filename: `${fileHash}.${fileExtension}`,
       contentType: fileType,
     })
     return response.data.signedUrl // Adjust according to your actual API response
@@ -204,8 +205,11 @@ export const uploadFileToS3 = async (
   // Auto-rotate image based on EXIF data before upload
   file = await rotateImageBasedOnExif(file)
 
+  // Extract the original file extension
+  const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin'
+
   const fileHash = await getFileHash(file)
-  const signedUrl = await requestSignedUrl(fileHash, file.type)
+  const signedUrl = await requestSignedUrl(fileHash, file.type, fileExtension)
   const config = {
     headers: {
       'Content-Type': file.type,

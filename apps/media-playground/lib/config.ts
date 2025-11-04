@@ -5,7 +5,7 @@ export const env = {
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV || 'staging',
   NEXT_PUBLIC_DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
   NEXT_PUBLIC_EDEN_API_URL:
-    process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://0.0.0.0:5050',
+    process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://127.0.0.1:5050',
   NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL:
     process.env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || 'ws://localhost:5050',
   NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',

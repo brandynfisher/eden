@@ -811,7 +811,7 @@ export const handlePaymentEvent = async (
   const event = server.stripe.webhooks.constructEvent(
     request.rawBody,
     sig,
-    server.config.STRIPE_WEBHOOK_SECRET,
+    server.config.STRIPE_WEBHOOK_SECRET || '',
   )
 
   const dataObject = event.data.object
