@@ -10,13 +10,11 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { cn } from '@/lib/utils'
-import { useParams, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { PropsWithChildren, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
-  const params = useParams()
   const pathname = usePathname()
-  const sessionId = params?.id as string
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
@@ -43,9 +41,8 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
     )
   }
 
-  // Hide sidebar on main sessions page
-  const isMainSessionsPage = !sessionId
-  const showSidebar = !isMainSessionsPage
+  // Always show sidebar for all /sessions routes
+  const showSidebar = true
 
   const handleChatClick = () => {
     // Check if we're on mobile (window width < 768px for md breakpoint)

@@ -3,7 +3,6 @@
 import { AgentAvatars } from './agent-avatars'
 import { SessionShareButton } from './session-share-button'
 import { SettingsSidebar } from './settings-sidebar'
-import SingleAgentSelectorModal from './single-agent-selector-modal'
 import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
 import { ModeToggle } from '@/components/header/mode-toggle'
 import DiscordIcon from '@/components/icons/discord'
@@ -24,7 +23,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatar from '@/components/user/user-avatar'
-import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { ViewMode } from '@/features/sessions/components/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
@@ -33,7 +31,6 @@ import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
 import { siteConfig } from '@/lib/config'
-import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { cn } from '@/lib/utils'
@@ -41,11 +38,9 @@ import { useAuth, useClerk } from '@clerk/nextjs'
 import {
   Agent,
   FeatureFlag,
-  FeedAgentCursorArguments,
   SessionV2,
   SubscriptionTier,
 } from '@edenlabs/eden-sdk'
-import { useInfiniteQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import {
   ActivityIcon,
@@ -100,6 +95,7 @@ interface SessionListItemProps {
   onPinToggle?: (sessionId: string, pinned: boolean) => Promise<void>
   unreadCount?: number
   userId?: string
+  hideAvatars?: boolean
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -115,6 +111,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   onPinToggle,
   unreadCount = 0,
   userId: _userId, // Used in share dialog
+  hideAvatars = false,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -323,7 +320,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
             onClick={onItemClick}
             disabled={isEditing}
           >
-            {agents.length > 0 && (
+            {!hideAvatars && agents.length > 0 && (
               <AgentAvatars agents={agents} className="shrink-0" />
             )}
             {isFromTrigger && !agents.length && (
@@ -630,7 +627,21 @@ const AgentSelectorAndNewChat: FC<{
         />
       )}
 
-      {/* Row 3: New Chat button - full width - hide in settings mode */}
+      {/* Row 3: Share Chat button - only show when in chat mode and user owns the session */}
+      {viewMode === 'chat' &&
+        session &&
+        sessionId &&
+        session.owner?._id === userId && (
+          <SessionShareButton
+            sessionId={sessionId}
+            messages={session.messages || []}
+            isOwner={session.owner?._id === userId}
+            isPublic={session.extras?.is_public}
+            className="h-10 w-full justify-start hover:bg-muted/50 text-foreground"
+          />
+        )}
+
+      {/* Row 4: New Chat button - full width - hide in settings mode */}
       {viewMode !== 'settings' && (
         <Button
           variant={viewMode === 'chat' && isNewSession ? 'outline' : 'ghost'}
@@ -647,7 +658,7 @@ const AgentSelectorAndNewChat: FC<{
         </Button>
       )}
 
-      {/* Row 4: Creations button - full width - hide in settings mode */}
+      {/* Row 5: Creations button - full width - hide in settings mode */}
       {viewMode && viewMode !== 'settings' && onViewModeChange && (
         <Button
           variant={viewMode === 'creations' ? 'outline' : 'ghost'}
@@ -667,7 +678,7 @@ const AgentSelectorAndNewChat: FC<{
         </Button>
       )}
 
-      {/* Row 5: Explore button - full width - hide in settings mode */}
+      {/* Row 6: Explore button - full width - hide in settings mode */}
       {viewMode !== 'settings' && (
         <Button
           variant="ghost"
@@ -696,7 +707,7 @@ const AgentSelectorAndNewChat: FC<{
         </Button>
       )}
 
-      {/* Row 6: Tools button - full width - hide in settings mode */}
+      {/* Row 7: Tools button - full width - hide in settings mode */}
       {viewMode !== 'settings' && (
         <Button
           variant="ghost"
@@ -723,20 +734,6 @@ const AgentSelectorAndNewChat: FC<{
           <span>Tools</span>
         </Button>
       )}
-
-      {/* Row 7: Share Chat button - only show when in chat mode and user owns the session */}
-      {viewMode === 'chat' &&
-        session &&
-        sessionId &&
-        session.owner?._id === userId && (
-          <SessionShareButton
-            sessionId={sessionId}
-            messages={session.messages || []}
-            isOwner={session.owner?._id === userId}
-            isPublic={session.extras?.is_public}
-            className="h-10 w-full justify-start hover:bg-muted/50 text-foreground"
-          />
-        )}
     </div>
   )
 }
@@ -768,17 +765,32 @@ const MainLeft = ({
   agentId,
   isChat,
   onViewModeChange,
+  agent,
+  pathname,
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
   onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  agent?: Agent | null | undefined
+  pathname?: string | null
 }) => {
   const { isSignedIn, verifyAuth, user } = useAuthState()
   const router = useRouter()
   const params = useParams()
   const currentSessionId =
     (params?.id as string) || (params?.sessionId as string)
+
+  // Determine the label for the sessions section
+  const sessionsLabel = React.useMemo(() => {
+    if (pathname?.startsWith('/chat')) {
+      if (agentId && agent) {
+        return `Chats with ${agent.name || agent.username}`
+      }
+      return 'Chats'
+    }
+    return 'Sessions'
+  }, [pathname, agentId, agent])
   const [isSessionsCollapsed, setIsSessionsCollapsed] = useState(false)
   const {
     isLoading,
@@ -906,7 +918,7 @@ const MainLeft = ({
                     !isSessionsCollapsed && 'rotate-90',
                   )}
                 />
-                Sessions
+                {sessionsLabel}
               </button>
 
               {/* Scrollable session list */}
@@ -929,14 +941,28 @@ const MainLeft = ({
                       onPinToggle={handlePinToggle}
                       unreadCount={unreadCounts?.get(session._id) || 0}
                       userId={user?._id}
+                      hideAvatars={pathname?.startsWith('/chat') && !!agentId}
                       onItemClick={() => {
                         onItemClick?.()
-                        if (isChat && agentId) {
-                          // Switch to chat mode first, then navigate to session
-                          onViewModeChange?.('chat')
-                          router.push(`/chat/${agentId}/${session._id}`, {
-                            scroll: false,
-                          })
+                        if (isChat) {
+                          // In chat mode, navigate to /chat/{agent}/{session}
+                          // Use the agent from the session or the current agentId
+                          const sessionAgent =
+                            session.agents?.[0]?.username || agentId
+                          if (sessionAgent) {
+                            onViewModeChange?.('chat')
+                            router.push(
+                              `/chat/${sessionAgent}/${session._id}`,
+                              {
+                                scroll: false,
+                              },
+                            )
+                          } else {
+                            // Fallback to sessions if no agent
+                            router.push(`/sessions/${session._id}`, {
+                              scroll: false,
+                            })
+                          }
                         } else {
                           // For regular sessions, go to /sessions/[sessionId]
                           router.push(`/sessions/${session._id}`, {
@@ -964,142 +990,48 @@ const MainLeft = ({
   )
 }
 
-// Agents section for sidebar
-const AgentsSection = () => {
-  const { user } = useAuthState()
-  const router = useRouter()
-  const [isAgentsCollapsed, setIsAgentsCollapsed] = useState(false)
-  const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
-  const [showAgentSelector, setShowAgentSelector] = useState(false)
-
-  // Query for user's top 3 agents - filter by owner, sort by message count
-  const query: FeedAgentCursorArguments = React.useMemo(
-    () => ({
-      limit: 3,
-      ...(user?._id ? { owner: user._id } : {}),
-      sort: ['stats.userMessageCount;-1'],
-    }),
-    [user?._id],
-  )
-
-  interface AgentPage {
-    docs: Agent[]
-    nextCursor?: string
-  }
-
-  const { data, isLoading } = useInfiniteQuery<AgentPage>({
-    queryKey: ['feed', 'agents', 'sidebar-agents', query],
-    queryFn: ({ pageParam }): Promise<AgentPage> => {
-      const paginationRoute = createCursorPaginationRoute('/api/feed/agents', {
-        ...query,
-        cursor: (pageParam as string) || '',
-        limit: 3,
-      })
-      return fetcher(paginationRoute)
-    },
-    getNextPageParam: lastPage => lastPage.nextCursor,
-    initialPageParam: '',
-    enabled: !!user?._id,
-  })
-
-  // Get agents from pages
-  const myAgents = React.useMemo(() => {
-    if (!data?.pages) return []
-    return data.pages.flatMap(page => page.docs || []).slice(0, 3) as Agent[]
-  }, [data])
-
-  if (!user || isLoading || myAgents.length === 0) return null
-
+// Current Agent Display for /chat/{agentId}
+const CurrentAgentDisplay: FC<{
+  agent: Agent
+  onAgentClick: () => void
+  onSettingsClick: () => void
+}> = ({ agent, onAgentClick, onSettingsClick }) => {
   return (
-    <div className="mr-2 mb-6">
-      {/* Chat header - collapsible */}
-      <button
-        onClick={() => setIsAgentsCollapsed(!isAgentsCollapsed)}
-        className="sticky top-0 z-10 pb-1 mb-1 bg-accent flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
-      >
-        <ChevronRightIcon
-          className={cn(
-            'h-3 w-3 transition-transform',
-            !isAgentsCollapsed && 'rotate-90',
-          )}
-        />
-        Chat
-      </button>
-
-      {/* Agent list */}
-      {!isAgentsCollapsed && (
-        <div className="flex flex-col gap-1">
-          {/* Select Agent button */}
-          <Button
-            variant="ghost"
-            onClick={() => setShowAgentSelector(true)}
-            className="justify-start text-sm font-normal h-auto p-0.5 mr-1 border border-transparent hover:bg-muted/50 hover:text-foreground"
-          >
-            <div className="px-2 py-1.5 flex items-center gap-2 w-full">
-              <span className="truncate flex-1 text-left">Select Agent</span>
-            </div>
-          </Button>
-
-          {/* Agent items - styled to match sessions */}
-          {myAgents.map(agent => (
-            <div
-              key={agent._id}
-              className="group flex justify-between font-normal items-center gap-1 rounded-md transition-all mr-1 text-sm p-0.5 border border-transparent hover:text-foreground hover:bg-muted/50"
-            >
-              <button
-                onClick={() => router.push(`/chat/${agent.username}`)}
-                className="flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5"
-              >
-                <Avatar className="w-7 h-7 flex-shrink-0">
-                  <AvatarImage
-                    src={
-                      agent.userImage && agent.userImage.trim()
-                        ? getCloudfrontOriginalUrl(agent.userImage)
-                        : undefined
-                    }
-                    alt={agent.name}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-muted text-xs font-medium">
-                    {agent.name?.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm truncate flex-1 text-left">
-                  {agent.name}
-                </span>
-              </button>
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  setSettingsAgentId(agent.username)
-                }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 px-2"
-              >
-                <SettingsIcon className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Single Agent Selector Modal */}
-      <SingleAgentSelectorModal
-        open={showAgentSelector}
-        onOpenChange={setShowAgentSelector}
-        onSelect={(agent: Agent) => {
-          router.push(`/chat/${agent.username}`)
-          setShowAgentSelector(false)
-        }}
-      />
-
-      {/* Agent Settings Modal */}
-      {settingsAgentId && (
-        <AgentSettingsModal
-          agentId={settingsAgentId}
-          open={!!settingsAgentId}
-          onOpenChange={open => !open && setSettingsAgentId(null)}
-        />
-      )}
+    <div className="mr-2 mb-4">
+      <div className="flex justify-between font-normal items-center gap-1 rounded-md transition-all text-sm p-0.5 border border-transparent hover:bg-muted/50">
+        <button
+          onClick={onAgentClick}
+          className="flex items-center gap-2 flex-1 min-w-0 px-2 py-2"
+        >
+          <Avatar className="w-8 h-8 flex-shrink-0">
+            <AvatarImage
+              src={
+                agent.userImage && agent.userImage.trim()
+                  ? getCloudfrontOriginalUrl(agent.userImage)
+                  : undefined
+              }
+              alt={agent.name}
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-muted text-xs font-medium">
+              {agent.name?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-base font-semibold truncate flex-1 text-left">
+            {agent.name}
+          </span>
+        </button>
+        <button
+          onClick={e => {
+            e.stopPropagation()
+            onSettingsClick()
+          }}
+          className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
+          title="Agent Settings"
+        >
+          <SettingsIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+        </button>
+      </div>
     </div>
   )
 }
@@ -1441,8 +1373,15 @@ export const SessionsSidebarContent = ({
 
         {/* Chat icon */}
         <button
-          onClick={() => router.push('/sessions')}
-          className="flex items-center justify-center h-9 w-9 hover:bg-muted/20 rounded-md transition-colors"
+          onClick={() => router.push('/chat')}
+          className={cn(
+            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+            pathname === '/chat' ||
+              pathname === '/' ||
+              pathname?.startsWith('/chat/')
+              ? 'bg-primary/20 text-primary-foreground'
+              : 'hover:bg-muted/20',
+          )}
           title="Chat"
         >
           <svg
@@ -1460,10 +1399,41 @@ export const SessionsSidebarContent = ({
           </svg>
         </button>
 
+        {/* Sessions icon */}
+        <button
+          onClick={() => router.push('/sessions')}
+          className={cn(
+            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+            pathname?.startsWith('/sessions')
+              ? 'bg-primary/20 text-primary-foreground'
+              : 'hover:bg-muted/20',
+          )}
+          title="Sessions"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+          </svg>
+        </button>
+
         {/* Explore icon */}
         <button
           onClick={() => router.push('/explore?type=agents')}
-          className="flex items-center justify-center h-9 w-9 hover:bg-muted/20 rounded-md transition-colors"
+          className={cn(
+            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+            pathname?.startsWith('/explore')
+              ? 'bg-primary/20 text-primary-foreground'
+              : 'hover:bg-muted/20',
+          )}
           title="Explore"
         >
           <svg
@@ -1485,7 +1455,12 @@ export const SessionsSidebarContent = ({
         {/* Tools icon */}
         <button
           onClick={() => router.push('/create')}
-          className="flex items-center justify-center h-9 w-9 hover:bg-muted/20 rounded-md transition-colors"
+          className={cn(
+            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+            pathname?.startsWith('/create')
+              ? 'bg-primary/20 text-primary-foreground'
+              : 'hover:bg-muted/20',
+          )}
           title="Tools"
         >
           <svg
@@ -1682,11 +1657,13 @@ export const SessionsSidebarContent = ({
           variant="ghost"
           onClick={() => {
             onItemClick?.()
-            router.push('/sessions')
+            router.push('/chat')
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/chat') || pathname?.startsWith('/sessions')
+            pathname === '/chat' ||
+              pathname === '/' ||
+              pathname?.startsWith('/chat/')
               ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
               : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
           )}
@@ -1706,6 +1683,37 @@ export const SessionsSidebarContent = ({
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
           <span>Chat</span>
+        </Button>
+
+        {/* Sessions button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/sessions')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/sessions')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+          </svg>
+          <span>Sessions</span>
         </Button>
 
         {/* Explore button */}
@@ -1779,12 +1787,42 @@ export const SessionsSidebarContent = ({
       >
         {mode === 'sessions' && (
           <>
-            <AgentsSection />
+            {/* Show CurrentAgentDisplay for /chat/{agentId} routes */}
+            {pathname?.startsWith('/chat') && agentId && agent && (
+              <>
+                <CurrentAgentDisplay
+                  agent={agent}
+                  onAgentClick={() => onAgentSelect?.()}
+                  onSettingsClick={() => onSettingsClick?.()}
+                />
+                {/* Creations button for /chat/{agent} */}
+                <div className="mr-2 mb-4">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      onItemClick?.()
+                      router.push(`/chat/${agentId}?page=creations`)
+                    }}
+                    className={cn(
+                      'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                      viewMode === 'creations'
+                        ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                        : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                    )}
+                  >
+                    <ImageIcon className="size-4" />
+                    <span>Creations</span>
+                  </Button>
+                </div>
+              </>
+            )}
             <MainLeft
               onItemClick={onItemClick}
               agentId={agentId}
               isChat={isChat}
               onViewModeChange={onViewModeChange}
+              agent={agent}
+              pathname={pathname}
             />
           </>
         )}
