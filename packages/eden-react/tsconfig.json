@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../tsconfig/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "target": "ES2021",
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "noEmit": false,
+    "types": ["react"],
+    "incremental": false,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src"],
+  "exclude": ["dist", "node_modules"]
+}

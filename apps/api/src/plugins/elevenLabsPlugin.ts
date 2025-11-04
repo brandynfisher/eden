@@ -549,7 +549,7 @@ export class ElevenLabs {
 
 export const registerElevenLabs = async (fastify: FastifyInstance) => {
   try {
-    const elevenLabs = new ElevenLabs(fastify.config.ELEVENLABS_API_KEY)
+    const elevenLabs = new ElevenLabs(fastify.config.ELEVENLABS_API_KEY || '')
     fastify.decorate('elevenLabs', elevenLabs)
     fastify.log.info('Successfully registered plugin: ElevenLabs')
   } catch (err) {
