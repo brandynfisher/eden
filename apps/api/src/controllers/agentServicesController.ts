@@ -392,6 +392,9 @@ export const updateAgentTrigger = async (
   if (posting_instructions !== undefined)
     updateData.posting_instructions = posting_instructions
 
+  // do not overwrite the original user who owns that Trigger
+  delete updateData.user
+
   // Update the trigger
   const updatedTrigger = await Trigger.findByIdAndUpdate(
     triggerId,
