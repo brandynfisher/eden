@@ -7,6 +7,7 @@ import { NonStreamingMessageDisplay } from './components/non-streaming-message-d
 import { SessionShareButton } from './components/session-share-button'
 import { SessionStatusToggle } from './components/session-status-toggle'
 import SessionWelcome from './components/session-welcome'
+import { useSessionsLayoutContext } from './context/sessions-layout-context'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useStreamingState } from './hooks/use-streaming-state'
 import NewSession from './new-session'
@@ -147,6 +148,27 @@ const Session = ({
     sessionId: sessionId as string,
     enabled: !!sessionId && sessionId !== 'new',
   })
+  const sessionsLayoutContext = useSessionsLayoutContext()
+  const isOwner = useMemo(() => {
+    return user?._id === session?.owner?._id
+  }, [user, session])
+  const isPublicSession = session?.extras?.is_public === true
+  const isReadOnlySession = Boolean(
+    session && sessionId && sessionId !== 'new' && isPublicSession && !isOwner,
+  )
+
+  useEffect(() => {
+    if (!sessionsLayoutContext) {
+      return
+    }
+    sessionsLayoutContext.setForceHideSidebar(isReadOnlySession)
+  }, [sessionsLayoutContext, isReadOnlySession])
+
+  useEffect(() => {
+    return () => {
+      sessionsLayoutContext?.setForceHideSidebar(false)
+    }
+  }, [sessionsLayoutContext])
 
   // State to store trigger data
   const [triggerData, setTriggerData] = useState<{ context: string } | null>(
@@ -1176,8 +1198,6 @@ const Session = ({
     )
   }
 
-  const isOwner = session?.owner?._id === user?._id
-
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Second navbar - Agent avatars + session title + budget */}
@@ -1712,6 +1732,13 @@ const Session = ({
             })()
           )}
 
+          {isReadOnlySession && (
+            <div className="mt-12 mb-8 p-4 bg-muted/50 rounded-lg border text-sm text-muted-foreground text-center">
+              This is a public conversation. You cannot interact with this
+              session.
+            </div>
+          )}
+
           {/* Non-streaming loading indicator */}
           {!sessionConfig.useStreaming && (
             <NonStreamingMessageDisplay
@@ -1742,104 +1769,108 @@ const Session = ({
         </div>
       </div>
 
-      <div className="flex-shrink-0 bg-background p-4 z-10 border-t border-gray-800">
-        <div
-          className={`max-w-[calc(42rem+3.75rem)] mx-auto w-full ${
-            ischatRoute ? 'sm:pl-[calc(3rem+0.75rem)]' : ''
-          }`}
-        >
-          <MessageInput
-            sessionId={currentSessionId as string}
-            enableLiveAudio={true}
-            onStreamingMessage={(content, attachments, thinking) => {
-              clearErrors()
-              setCancelledNotice(false)
+      {!isReadOnlySession && (
+        <div className="flex-shrink-0 bg-background p-4 z-10 border-t border-gray-800">
+          <div
+            className={`max-w-[calc(42rem+3.75rem)] mx-auto w-full ${
+              ischatRoute ? 'sm:pl-[calc(3rem+0.75rem)]' : ''
+            }`}
+          >
+            <MessageInput
+              sessionId={currentSessionId as string}
+              enableLiveAudio={true}
+              onStreamingMessage={(content, attachments, thinking) => {
+                clearErrors()
+                setCancelledNotice(false)
 
-              // Parse mentions to get agent IDs
-              const mentions = parseMentions(content)
-              let agentIds = getAgentIdsFromMentions(mentions)
+                // Parse mentions to get agent IDs
+                const mentions = parseMentions(content)
+                let agentIds = getAgentIdsFromMentions(mentions)
 
-              // If no agent IDs and it's a single agent session, use the single agent
-              if (
-                agentIds.length === 0 &&
-                displaySession?.agents &&
-                displaySession.agents.length === 1
-              ) {
-                agentIds = [displaySession.agents[0]._id]
-              }
+                // If no agent IDs and it's a single agent session, use the single agent
+                if (
+                  agentIds.length === 0 &&
+                  displaySession?.agents &&
+                  displaySession.agents.length === 1
+                ) {
+                  agentIds = [displaySession.agents[0]._id]
+                }
 
-              // For multi-agent sessions with no mentions, agentIds will remain empty array
-              // This will still create the user message but won't trigger any agent responses
+                // For multi-agent sessions with no mentions, agentIds will remain empty array
+                // This will still create the user message but won't trigger any agent responses
 
-              if (sessionConfig.useStreaming) {
-                // Show optimistic loaders for responding agents
-                agentIds.forEach(agentId => {
-                  setAgentsWaitingToRespond(prev => new Set(prev).add(agentId))
-                })
+                if (sessionConfig.useStreaming) {
+                  // Show optimistic loaders for responding agents
+                  agentIds.forEach(agentId => {
+                    setAgentsWaitingToRespond(prev =>
+                      new Set(prev).add(agentId),
+                    )
+                  })
 
-                streamingState.initializeStreaming()
-                streamingState.sendMessage(content, attachments, {
-                  agent_ids: agentIds,
-                  thinking,
-                })
+                  streamingState.initializeStreaming()
+                  streamingState.sendMessage(content, attachments, {
+                    agent_ids: agentIds,
+                    thinking,
+                  })
 
-                // Add optimistic user message only (agents show as loaders)
-                const optimisticUserMessage = {
-                  _id: `optimistic-user-${Date.now()}`,
-                  content: content,
-                  sender: {
-                    _id: user?._id || 'user',
-                    username: user?.username || 'User',
-                    name: user?.username || 'You',
-                    userImage: user?.userImage,
-                  },
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  session: sessionId,
-                  role: 'user',
-                } as Message
+                  // Add optimistic user message only (agents show as loaders)
+                  const optimisticUserMessage = {
+                    _id: `optimistic-user-${Date.now()}`,
+                    content: content,
+                    sender: {
+                      _id: user?._id || 'user',
+                      username: user?.username || 'User',
+                      name: user?.username || 'You',
+                      userImage: user?.userImage,
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    session: sessionId,
+                    role: 'user',
+                  } as Message
 
-                streamingOptimisticMessages.current = [
-                  ...streamingOptimisticMessages.current,
-                  optimisticUserMessage,
-                ]
+                  streamingOptimisticMessages.current = [
+                    ...streamingOptimisticMessages.current,
+                    optimisticUserMessage,
+                  ]
 
-                setTimeout(scrollToBottom, 100)
-              } else {
-                nonStreamingState.setWaitingForResponse(true)
+                  setTimeout(scrollToBottom, 100)
+                } else {
+                  nonStreamingState.setWaitingForResponse(true)
 
-                const userMessage: Message = {
-                  _id: `optimistic-user-${Date.now()}`,
-                  content: content,
-                  sender: {
-                    _id: user?._id || 'user',
-                    username: user?.username || 'User',
-                    name: user?.username || 'You',
-                    userImage: user?.userImage,
-                  },
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  session: sessionId,
-                  role: 'user',
-                  attachments: attachments || [],
-                } as Message
+                  const userMessage: Message = {
+                    _id: `optimistic-user-${Date.now()}`,
+                    content: content,
+                    sender: {
+                      _id: user?._id || 'user',
+                      username: user?.username || 'User',
+                      name: user?.username || 'You',
+                      userImage: user?.userImage,
+                    },
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                    session: sessionId,
+                    role: 'user',
+                    attachments: attachments || [],
+                  } as Message
 
-                nonStreamingState.setOptimisticMessages(prev => [
-                  ...prev,
-                  userMessage,
-                ])
+                  nonStreamingState.setOptimisticMessages(prev => [
+                    ...prev,
+                    userMessage,
+                  ])
 
-                // Pass agent_ids and thinking in options
-                nonStreamingState.sendMessage(content, attachments, {
-                  agent_ids: agentIds,
-                  thinking,
-                })
-                setTimeout(scrollToBottom, 100)
-              }
-            }}
-          />
+                  // Pass agent_ids and thinking in options
+                  nonStreamingState.sendMessage(content, attachments, {
+                    agent_ids: agentIds,
+                    thinking,
+                  })
+                  setTimeout(scrollToBottom, 100)
+                }
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Edit Session Modal */}
       {session && sessionId && sessionId !== 'new' && (

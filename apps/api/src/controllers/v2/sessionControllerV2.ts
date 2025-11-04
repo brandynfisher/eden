@@ -586,6 +586,7 @@ export const createSessionMessage = async (
       })
     }
   } catch (e) {
+    console.error('Error creating session message:', e)
     const error = e as { response?: { data?: string } }
     const errorMessage = error?.response?.data || 'Unknown Error'
 

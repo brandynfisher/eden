@@ -110,6 +110,8 @@ export type AgentClientType =
   | 'farcaster'
   | 'web'
   | 'shopify'
+  | 'gmail'
+  | 'email'
 export type AgentDeployCommand = 'deploy' | 'stop'
 export type AgentDeployCredentials = {
   CLIENT_DISCORD_TOKEN: string
