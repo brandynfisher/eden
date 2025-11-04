@@ -126,7 +126,7 @@ const MyAgentCard = ({ agent, userId, className, onSettingsClick }: Props) => {
                       onClick={e => {
                         e.preventDefault()
                         e.stopPropagation()
-                        router.push(`/sessions/${session._id}`)
+                        router.push(`/chat/${agent.username}/${session._id}`)
                       }}
                       className="flex items-center gap-2 px-3 py-2 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors text-sm group/session"
                     >

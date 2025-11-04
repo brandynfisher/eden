@@ -376,6 +376,7 @@ export const updateAgentTrigger = async (
   }
 
   // Build update data - only include fields that are provided
+  // IMPORTANT: Never update the 'user' field - it should only be set on creation
   const updateData: any = {}
 
   if (name !== undefined) updateData.name = name
@@ -391,6 +392,9 @@ export const updateAgentTrigger = async (
   if (status !== undefined) updateData.status = status
   if (posting_instructions !== undefined)
     updateData.posting_instructions = posting_instructions
+
+  // do not overwrite the original user who owns that Trigger
+  delete updateData.user
 
   // Update the trigger
   const updatedTrigger = await Trigger.findByIdAndUpdate(

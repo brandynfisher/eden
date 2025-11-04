@@ -92,10 +92,12 @@ const ChatPage = () => {
             <SessionsSidebarContent
               onSidebarToggle={() => setIsSidebarCollapsed(false)}
               isCollapsed={true}
+              isChat={true}
             />
           ) : (
             <SessionsSidebarContent
               onSidebarToggle={() => setIsSidebarCollapsed(true)}
+              isChat={true}
             />
           )}
         </ResizablePanel>
