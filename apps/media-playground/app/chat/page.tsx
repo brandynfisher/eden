@@ -17,7 +17,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 
 const ChatPage = () => {
-  const { user } = useAuthState()
+  const { user, verifyAuth } = useAuthState()
   const [searchQuery, setSearchQuery] = useState('')
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -61,10 +61,16 @@ const ChatPage = () => {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex flex-col items-center justify-center h-screen gap-4">
         <p className="text-muted-foreground">
           Please sign in to view your agents
         </p>
+        <button
+          onClick={verifyAuth}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+        >
+          Sign In
+        </button>
       </div>
     )
   }

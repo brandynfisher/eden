@@ -124,8 +124,8 @@ const NewSession = () => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
-      <div className="w-full max-w-2xl space-y-6">
+    <div className="flex-1 overflow-y-auto p-4 flex justify-center">
+      <div className="w-full max-w-2xl space-y-6 py-8">
         <div className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
             <MessageCircleIcon className="w-8 h-8 text-muted-foreground" />
