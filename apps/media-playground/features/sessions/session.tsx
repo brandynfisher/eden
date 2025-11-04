@@ -5,6 +5,7 @@ import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
 import { SessionShareButton } from './components/session-share-button'
+import { SessionStatusToggle } from './components/session-status-toggle'
 import SessionWelcome from './components/session-welcome'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
 import { useStreamingState } from './hooks/use-streaming-state'
@@ -1237,17 +1238,21 @@ const Session = ({
             )}
           </button>
 
-          {/* Right section - New Session, Share */}
+          {/* Right section - Status Toggle, Share, New Session */}
           <div className="flex items-center gap-2">
-            {/* New Session button */}
-            <button
-              onClick={() => router.push('/sessions/new')}
-              className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors flex items-center gap-2"
-              title="New Session"
-            >
-              <EditIcon className="h-3.5 w-3.5" />
-              New Session
-            </button>
+            {/* Status Toggle */}
+            {isOwner && (
+              <SessionStatusToggle
+                sessionId={sessionId as string}
+                currentStatus={session.status}
+                onStatusChange={newStatus => {
+                  // Update session in cache
+                  if (session) {
+                    session.status = newStatus
+                  }
+                }}
+              />
+            )}
 
             {/* Share button */}
             {isOwner && (
@@ -1259,6 +1264,16 @@ const Session = ({
                 className="h-8 px-3"
               />
             )}
+
+            {/* New Session button */}
+            <button
+              onClick={() => router.push('/sessions/new')}
+              className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors flex items-center gap-2"
+              title="New Session"
+            >
+              <EditIcon className="h-3.5 w-3.5" />
+              New Session
+            </button>
           </div>
         </div>
       )}
@@ -1580,6 +1595,41 @@ const Session = ({
                       agents={displaySession.agents}
                       sessionTitle={''}
                     />
+                    {/* Show Start Session button if paused and no messages */}
+                    {session?.status === 'paused' &&
+                      messageGroups.length === 0 &&
+                      isOwner && (
+                        <div className="flex justify-center mt-8">
+                          <button
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(
+                                  `/api/sessions/${sessionId}`,
+                                  {
+                                    method: 'PATCH',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                      status: 'active',
+                                    }),
+                                  },
+                                )
+
+                                if (response.ok && session) {
+                                  session.status = 'active'
+                                  refetchSession()
+                                }
+                              } catch (error) {
+                                console.error('Failed to start session:', error)
+                              }
+                            }}
+                            className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl"
+                          >
+                            Start Session
+                          </button>
+                        </div>
+                      )}
                   </>
                 ) : null
               }

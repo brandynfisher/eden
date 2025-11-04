@@ -93,6 +93,7 @@ export interface SessionsV2RenameArguments extends WebAPICallOptions {
     token_budget?: number
     turn_budget?: number
   }
+  status?: SessionStatus
 }
 
 export interface SessionsV2CancelArguments extends WebAPICallOptions {
@@ -210,6 +211,9 @@ export const sessionsRenameRequestConfigV2 = (
   }
   if (args.budget !== undefined) {
     data.budget = args.budget
+  }
+  if (args.status !== undefined) {
+    data.status = args.status
   }
   return {
     method: 'PATCH',

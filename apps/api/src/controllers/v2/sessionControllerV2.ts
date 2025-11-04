@@ -1118,6 +1118,7 @@ export const renameSession = async (
     settings,
     context,
     budget,
+    status,
   } = request.body
 
   if (
@@ -1128,7 +1129,8 @@ export const renameSession = async (
     sessionType === undefined &&
     settings === undefined &&
     context === undefined &&
-    budget === undefined
+    budget === undefined &&
+    status === undefined
   ) {
     return reply.status(400).send({
       error: 'At least one field must be provided to update',
@@ -1186,6 +1188,9 @@ export const renameSession = async (
       ...session.budget,
       ...budget,
     }
+  }
+  if (status !== undefined) {
+    updateData.status = status
   }
 
   await session.updateOne({

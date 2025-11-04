@@ -428,6 +428,14 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
             ),
           }),
         ),
+        status: Type.Optional(
+          Type.Union([
+            Type.Literal('active'),
+            Type.Literal('paused'),
+            Type.Literal('stopped'),
+            Type.Literal('archived'),
+          ]),
+        ),
       }),
       response: {
         200: Type.Object({
