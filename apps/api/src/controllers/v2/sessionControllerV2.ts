@@ -627,7 +627,8 @@ export const listSessions = async (
 
   try {
     const queryOptions: QueryOptions = {
-      select: '_id title name createdAt updatedAt trigger agents users pinned',
+      select:
+        '_id title name createdAt updatedAt trigger agents users pinned type',
       limit,
       page,
       sort: {

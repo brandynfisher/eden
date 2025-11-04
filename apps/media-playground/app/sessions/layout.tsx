@@ -11,21 +11,18 @@ import { SessionsSidebarContent } from '@/features/sessions/components/sessions-
 import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { cn } from '@/lib/utils'
-import { useParams, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { PropsWithChildren, useEffect, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const pathname = usePathname()
-  const params = useParams()
-  const sessionId = params?.id as string | undefined
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
 
-  // Hide sidebar on main sessions page
+  // Hide sidebar on share routes only
   const isShareRoute = pathname?.includes('/sessions/share/')
-  const isMainSessionsPage = !sessionId
-  const showSidebar = !isMainSessionsPage && !forceHideSidebar
+  const showSidebar = !isShareRoute && !forceHideSidebar
 
   useEffect(() => {
     if (!showSidebar) {

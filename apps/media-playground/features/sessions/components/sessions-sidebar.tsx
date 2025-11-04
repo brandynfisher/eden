@@ -871,10 +871,19 @@ const MainLeft = ({
   // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
   const allSessions = React.useMemo(() => {
     const filteredSessions = sessions.filter(
-      (session): session is NonNullable<typeof session> =>
-        session != null &&
-        // For chat mode, only show sessions with one agent or less
-        (!isChat || !session.agents || session.agents.length <= 1),
+      (session): session is NonNullable<typeof session> => {
+        if (!session) return false
+
+        // For /chat route, show sessions that are NOT "passive" or "automatic"
+        // (includes chat, undefined, null - i.e., single-agent chats)
+        if (pathname?.startsWith('/chat')) {
+          return session.type !== 'passive' && session.type !== 'automatic'
+        }
+
+        // For /sessions route, show only "passive" or "automatic" sessions
+        // (multi-agent sessions)
+        return session.type === 'passive' || session.type === 'automatic'
+      },
     )
 
     const pinnedSessions = filteredSessions
@@ -893,7 +902,7 @@ const MainLeft = ({
 
     // Combine pinned and unpinned sessions with pinned first
     return [...pinnedSessions, ...unpinnedSessions]
-  }, [sessions, isChat])
+  }, [sessions, isChat, pathname])
 
   return (
     <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-2">
