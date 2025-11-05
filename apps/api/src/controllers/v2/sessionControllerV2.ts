@@ -69,7 +69,7 @@ export const createSession = async (
     context,
     budget,
     title,
-    type: sessionType,
+    session_type: sessionType,
     status,
     settings,
     extras,
@@ -237,7 +237,7 @@ export const createSession = async (
     }
 
     if (sessionType) {
-      sessionData.type = sessionType
+      sessionData.session_type = sessionType
     }
 
     if (status) {
@@ -362,7 +362,7 @@ export const createSessionMessage = async (
     context,
     budget,
     title,
-    type: sessionType,
+    session_type: sessionType,
     settings,
     extras,
   } = request.body
@@ -408,7 +408,7 @@ export const createSessionMessage = async (
     }
 
     if (sessionType) {
-      sessionData.type = sessionType
+      sessionData.session_type = sessionType
     }
 
     if (status) {
@@ -628,7 +628,7 @@ export const listSessions = async (
   try {
     const queryOptions: QueryOptions = {
       select:
-        '_id title name createdAt updatedAt trigger agents users pinned type',
+        '_id title name createdAt updatedAt trigger agents users pinned session_type',
       limit,
       page,
       sort: {
@@ -1116,7 +1116,7 @@ export const renameSession = async (
     pinned,
     extras,
     agent_ids,
-    type: sessionType,
+    session_type: sessionType,
     settings,
     context,
     budget,
@@ -1177,7 +1177,7 @@ export const renameSession = async (
     updateData.agents = agent_ids.map((id: string) => new ObjectId(id))
   }
   if (sessionType !== undefined) {
-    updateData.type = sessionType
+    updateData.session_type = sessionType
   }
   if (settings !== undefined) {
     updateData.settings = settings
@@ -1843,6 +1843,86 @@ export const getSharedSessions = async (
     console.error('Error fetching shared sessions:', error)
     return reply.status(500).send({
       error: 'Failed to fetch shared sessions',
+    })
+  }
+}
+
+export const updateSessionStatus = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { session_id, status } = request.body as {
+    session_id: string
+    status: string
+  }
+  const currentUserId = request.user.userId
+
+  if (!session_id) {
+    return reply.status(400).send({
+      message: 'Missing session_id',
+    })
+  }
+
+  if (
+    !status ||
+    !['active', 'paused', 'stopped', 'archived'].includes(status)
+  ) {
+    return reply.status(400).send({
+      message: 'status must be "active", "paused", "stopped", or "archived"',
+    })
+  }
+
+  try {
+    // First, get the session to check ownership
+    const session = await Session.findById(session_id)
+    if (!session) {
+      return reply.status(404).send({
+        message: 'Session not found',
+      })
+    }
+
+    // Check if the user owns the session
+    if (session.owner.toString() !== currentUserId.toString()) {
+      return reply.status(403).send({
+        message: 'User not authorized to update this session',
+      })
+    }
+
+    // Forward the request to compute API
+    const edenComputeRequest = {
+      endpoint: `${server.config.EDEN_COMPUTE_API_URL}/sessions/status`,
+      data: { session_id, status },
+    }
+
+    const edenComputeResponse = await axios.post(
+      edenComputeRequest.endpoint,
+      edenComputeRequest.data,
+      {
+        headers: {
+          Authorization: `Bearer ${server.config.EDEN_COMPUTE_API_KEY}`,
+        },
+      },
+    )
+
+    const response = edenComputeResponse.data
+
+    return reply.status(200).send(response)
+  } catch (error) {
+    server.log.error('Error updating session status:', error)
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status || 500
+      const message =
+        error.response?.data?.message || 'Failed to update session status'
+
+      return reply.status(status).send({
+        message,
+      })
+    }
+
+    return reply.status(500).send({
+      message: 'Internal server error',
     })
   }
 }

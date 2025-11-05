@@ -241,9 +241,9 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0">
         <DialogTitle className="sr-only">Agent Settings</DialogTitle>
-        <div className="flex h-full overflow-hidden">
-          {/* Sidebar */}
-          <div className="w-56 border-r bg-muted/30 flex flex-col">
+        <div className="flex flex-col md:flex-row h-full overflow-hidden">
+          {/* Desktop Sidebar - Hidden on mobile */}
+          <div className="hidden md:flex w-56 border-r bg-muted/30 flex-col">
             <div className="p-4 border-b">
               <h2 className="font-semibold text-lg">Settings</h2>
               <p className="text-xs text-muted-foreground mt-1">{agent.name}</p>
@@ -270,6 +270,41 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                 })}
               </div>
             </ScrollArea>
+          </div>
+
+          {/* Mobile Header with Horizontal Tabs */}
+          <div className="md:hidden border-b bg-background">
+            <div className="p-4 border-b">
+              <h2 className="font-semibold text-base">
+                {availableTabs.find(t => t.key === activeTab)?.label ||
+                  'Settings'}{' '}
+                <span className="text-sm text-muted-foreground font-normal">
+                  {agent.name}
+                </span>
+              </h2>
+            </div>
+            <div className="w-full">
+              <div className="flex flex-wrap gap-1 p-2">
+                {availableTabs.map(tab => {
+                  const Icon = tab.icon
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={cn(
+                        'flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
+                        activeTab === tab.key
+                          ? 'bg-primary/10 text-primary border border-primary/20'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5 shrink-0" />
+                      {tab.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Main Content */}

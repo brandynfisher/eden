@@ -33,7 +33,7 @@ export interface SessionsV2CreateArguments extends WebAPICallOptions {
     turn_budget?: number
   }
   title?: string
-  type?: SessionType
+  session_type?: SessionType
   status?: SessionStatus
   settings?: SessionSettings
   extras?: SessionExtras
@@ -52,7 +52,7 @@ export interface SessionsV2MessageArguments extends WebAPICallOptions {
     turn_budget?: number
   }
   title?: string
-  type?: SessionType
+  session_type?: SessionType
   settings?: SessionSettings
   extras?: SessionExtras
 }
@@ -85,7 +85,7 @@ export interface SessionsV2RenameArguments extends WebAPICallOptions {
   pinned?: boolean
   extras?: SessionExtras
   agent_ids?: string[]
-  type?: SessionType
+  session_type?: SessionType
   settings?: SessionSettings
   context?: string
   budget?: {
@@ -200,8 +200,8 @@ export const sessionsRenameRequestConfigV2 = (
   if (args.agent_ids !== undefined) {
     data.agent_ids = args.agent_ids
   }
-  if (args.type !== undefined) {
-    data.type = args.type
+  if (args.session_type !== undefined) {
+    data.session_type = args.session_type
   }
   if (args.settings !== undefined) {
     data.settings = args.settings
@@ -544,7 +544,7 @@ export type SessionV2 = {
   }
   title?: string
   context?: string
-  type?: SessionType
+  session_type?: SessionType
   settings?: SessionSettings
   last_actor_id?: string
   last_memory_message_id?: string

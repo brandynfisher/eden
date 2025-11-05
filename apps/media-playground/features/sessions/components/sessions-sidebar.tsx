@@ -38,6 +38,7 @@ import { useAuth, useClerk } from '@clerk/nextjs'
 import {
   Agent,
   FeatureFlag,
+  SessionType,
   SessionV2,
   SubscriptionTier,
 } from '@edenlabs/eden-sdk'
@@ -554,8 +555,6 @@ const AgentSelectorAndNewChat: FC<{
   onItemClick,
   isChat,
   onViewModeChange,
-  agent,
-  onAgentSelect,
   userId,
   sessionId,
   session,
@@ -579,44 +578,9 @@ const AgentSelectorAndNewChat: FC<{
     }
   }
 
-  const handleAgentClick = () => {
-    onItemClick?.()
-    onAgentSelect?.()
-  }
-
   return (
     <div className="mb-4 space-y-3">
-      {/* Row 1: Agent selector - full width */}
-      <div className="flex gap-2 items-center">
-        {/* Agent selector */}
-        {agent && (
-          <button
-            onClick={handleAgentClick}
-            className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] flex-1 min-w-0"
-          >
-            <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
-              <AvatarImage
-                src={
-                  agent.userImage && agent.userImage.trim()
-                    ? getCloudfrontOriginalUrl(agent.userImage)
-                    : undefined
-                }
-                alt={agent.name}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-muted text-sm font-medium">
-                {agent.username?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="font-semibold text-base text-foreground truncate">
-              {agent.username}
-            </span>
-            <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          </button>
-        )}
-      </div>
-
-      {/* Row 2: Mode Toggle - only show if user has edit access */}
+      {/* Row 1: Mode Toggle - only show if user has edit access */}
       {hasEditAccess && onViewModeChange && viewMode && (
         <ModeToggle
           mode={viewMode === 'settings' ? 'settings' : 'chat'}
@@ -627,7 +591,7 @@ const AgentSelectorAndNewChat: FC<{
         />
       )}
 
-      {/* Row 3: Share Chat button - only show when in chat mode and user owns the session */}
+      {/* Row 2: Share Chat button - only show when in chat mode and user owns the session */}
       {viewMode === 'chat' &&
         session &&
         sessionId &&
@@ -641,7 +605,7 @@ const AgentSelectorAndNewChat: FC<{
           />
         )}
 
-      {/* Row 4: New Chat button - full width - hide in settings mode */}
+      {/* Row 3: New Chat button - full width - hide in settings mode and hide "New Session" in mobile /sessions */}
       {viewMode !== 'settings' && (
         <Button
           variant={viewMode === 'chat' && isNewSession ? 'outline' : 'ghost'}
@@ -651,6 +615,8 @@ const AgentSelectorAndNewChat: FC<{
             viewMode === 'chat' && isNewSession
               ? 'bg-primary/20 text-primary-foreground border border-primary/40 hover:bg-primary/25'
               : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            // Hide "New Session" button on mobile for /sessions (not chat)
+            !isChat && 'md:flex hidden',
           )}
         >
           <EditIcon className="size-4" />
@@ -877,12 +843,18 @@ const MainLeft = ({
         // For /chat route, show sessions that are NOT "passive" or "automatic"
         // (includes chat, undefined, null - i.e., single-agent chats)
         if (pathname?.startsWith('/chat')) {
-          return session.type !== 'passive' && session.type !== 'automatic'
+          return (
+            session.session_type !== SessionType.PASSIVE &&
+            session.session_type !== SessionType.AUTOMATIC
+          )
         }
 
         // For /sessions route, show only "passive" or "automatic" sessions
         // (multi-agent sessions)
-        return session.type === 'passive' || session.type === 'automatic'
+        return (
+          session.session_type === SessionType.PASSIVE ||
+          session.session_type === SessionType.AUTOMATIC
+        )
       },
     )
 
@@ -1092,7 +1064,7 @@ const SidebarUserProfile = () => {
   // Show sign-in button when not signed in
   if (!isSignedIn || !user) {
     return (
-      <div className="hidden md:block border-t bg-background p-3">
+      <div className="border-t bg-background p-3 md:-ml-3 md:w-[calc(100%+0.75rem)]">
         <Button onClick={verifyAuth} className="w-full" variant="default">
           Sign In
         </Button>
@@ -1101,7 +1073,7 @@ const SidebarUserProfile = () => {
   }
 
   return (
-    <div className="hidden md:block border-t bg-background -ml-3 w-[calc(100%+0.75rem)]">
+    <div className="border-t bg-background -ml-3 md:w-[calc(100%+0.75rem)] w-full">
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <button
@@ -1640,9 +1612,9 @@ export const SessionsSidebarContent = ({
         <MobileSidebarHeader onItemClick={onItemClick} />
       </div>
 
-      {/* Agent selector + New Chat two-column layout - mobile only */}
+      {/* Mobile: Agent selector + Navigation - Only for sessions mode */}
       {mode === 'sessions' && (
-        <div className="mb-2 mr-2 md:hidden">
+        <div className="mb-2 md:hidden">
           <AgentSelectorAndNewChat
             onItemClick={onItemClick}
             isChat={isChat}
@@ -1659,8 +1631,138 @@ export const SessionsSidebarContent = ({
         </div>
       )}
 
+      {/* Mobile: Navigation Buttons */}
+      <div className="mb-4 mr-2 flex-col gap-2 md:hidden flex">
+        {/* Chat button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/chat')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname === '/chat' ||
+              pathname === '/' ||
+              pathname?.startsWith('/chat/')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span>Chat</span>
+        </Button>
+
+        {/* Sessions button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/sessions')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/sessions')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+          </svg>
+          <span>Sessions</span>
+        </Button>
+
+        {/* Explore button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/explore?type=agents')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/explore')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <span>Explore</span>
+        </Button>
+
+        {/* Tools button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/create')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/create') || pathname?.startsWith('/tools')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+          <span>Tools</span>
+        </Button>
+      </div>
+
       {/* Desktop: Navigation Buttons */}
-      <div className="hidden md:flex mb-4 mr-2 flex-col gap-2">
+      <div className="mb-4 mr-2 flex-col gap-2 hidden md:flex">
         {/* Chat button */}
         <Button
           variant="ghost"

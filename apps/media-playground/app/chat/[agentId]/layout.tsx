@@ -20,6 +20,7 @@ import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent, SessionV2 } from '@edenlabs/eden-sdk'
+import { EditIcon, MenuIcon } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   FC,
@@ -269,9 +270,31 @@ const SessionChatLayout = ({
 
   return (
     <LiveAudioProvider>
+      {/* MOBILE HEADER - Only visible on mobile */}
+      <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 border-b bg-background px-2">
+        <button
+          onClick={() => setIsSheetOpen(true)}
+          className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+          aria-label="Open sidebar"
+        >
+          <MenuIcon className="w-5 h-5 text-muted-foreground" />
+        </button>
+
+        {/* New Chat button - only show in creations view */}
+        {viewMode === 'creations' && (
+          <button
+            onClick={handleNewChat}
+            className="ml-auto p-2 hover:bg-muted/50 rounded-lg transition-colors shrink-0"
+            aria-label="New Chat"
+          >
+            <EditIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+        )}
+      </header>
+
       <div
         className={cn(
-          'flex flex-col fixed inset-x-0 bottom-0 top-0',
+          'flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0',
           isPWA && 'pwa-chat-layout',
         )}
       >
@@ -286,7 +309,7 @@ const SessionChatLayout = ({
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetContent
             side="left"
-            className="flex flex-col max-h-full pt-3 px-3 pb-0 bg-accent border-r gap-0"
+            className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
           >
             <SheetTitle className="sr-only">Session List</SheetTitle>
             <SessionChatSidebarContent

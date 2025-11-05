@@ -20,6 +20,7 @@ import {
   listUserShares,
   renameSession,
   updateSessionPermissions,
+  updateSessionStatus,
 } from '../../controllers/v2/sessionControllerV2'
 import { isAdmin, isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
@@ -73,7 +74,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           }),
         ),
         title: Type.Optional(Type.String({ maxLength: 1000 })),
-        type: Type.Optional(
+        session_type: Type.Optional(
           Type.Union([
             Type.Literal('chat'),
             Type.Literal('passive'),
@@ -139,7 +140,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         turn_budget?: number
       }
       title?: string
-      type?: 'chat' | 'passive' | 'automatic'
+      session_type?: 'chat' | 'passive' | 'automatic'
       settings?: {
         conductor_prompt?: string
         delay_interval: number
@@ -183,7 +184,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           }),
         ),
         title: Type.Optional(Type.String({ maxLength: 1000 })),
-        type: Type.Optional(
+        session_type: Type.Optional(
           Type.Union([
             Type.Literal('chat'),
             Type.Literal('passive'),
@@ -398,7 +399,7 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           }),
         ),
         agent_ids: Type.Optional(Type.Array(Type.String())),
-        type: Type.Optional(
+        session_type: Type.Optional(
           Type.Union([
             Type.Literal('chat'),
             Type.Literal('passive'),
@@ -542,6 +543,57 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => cancelSession(server, request, reply),
+  })
+
+  server.post<{
+    Body: {
+      session_id: string
+      status: string
+    }
+  }>('/v2/sessions/status', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Update Session Status',
+      description:
+        'Update the status of a session (active, paused, stopped, or archived).',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+        status: Type.Union([
+          Type.Literal('active'),
+          Type.Literal('paused'),
+          Type.Literal('stopped'),
+          Type.Literal('archived'),
+        ]),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          error: Type.Optional(Type.String()),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        401: Type.Object({
+          message: Type.String(),
+        }),
+        403: Type.Object({
+          message: Type.String(),
+        }),
+        404: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => updateSessionStatus(server, request, reply),
   })
 
   // Session Share Routes

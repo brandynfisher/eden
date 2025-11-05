@@ -11,6 +11,7 @@ interface SessionStatusToggleProps {
   currentStatus: SessionStatus
   onStatusChange?: (newStatus: SessionStatus) => void
   className?: string
+  iconOnly?: boolean
 }
 
 export function SessionStatusToggle({
@@ -18,6 +19,7 @@ export function SessionStatusToggle({
   currentStatus,
   onStatusChange,
   className,
+  iconOnly = false,
 }: SessionStatusToggleProps) {
   const [isUpdating, setIsUpdating] = useState(false)
   const [status, setStatus] = useState<SessionStatus>(currentStatus)
@@ -29,12 +31,14 @@ export function SessionStatusToggle({
     try {
       setIsUpdating(true)
 
-      const response = await fetch(`/api/sessions/${sessionId}`, {
-        method: 'PATCH',
+      // Send request to compute API to handle session status change
+      const response = await fetch('/api/sessions/status', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          session_id: sessionId,
           status: newStatus,
         }),
       })
@@ -43,21 +47,43 @@ export function SessionStatusToggle({
         throw new Error('Failed to update session status')
       }
 
-      setStatus(newStatus)
-      onStatusChange?.(newStatus)
+      const result = await response.json()
 
-      toast({
-        title: newStatus === 'active' ? 'Session started' : 'Session paused',
-        description:
-          newStatus === 'active'
-            ? 'The session is now active'
-            : 'The session has been paused',
-      })
+      // Commented out: Direct MongoDB update
+      // const response = await fetch(`/api/sessions/${sessionId}`, {
+      //   method: 'PATCH',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     status: newStatus,
+      //   }),
+      // })
+
+      // Check if the compute API returned success
+      if (result.success) {
+        setStatus(newStatus)
+        onStatusChange?.(newStatus)
+
+        toast({
+          title: newStatus === 'active' ? 'Session started' : 'Session paused',
+          description:
+            newStatus === 'active'
+              ? 'The session is now active'
+              : 'The session has been paused',
+        })
+      } else {
+        // Handle failure from compute API
+        throw new Error(result.error || 'Failed to update session status')
+      }
     } catch (error) {
       console.error('Failed to toggle session status:', error)
       toast({
         title: 'Error',
-        description: 'Failed to update session status',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update session status',
         variant: 'destructive',
       })
     } finally {
@@ -73,7 +99,9 @@ export function SessionStatusToggle({
       onClick={handleToggle}
       disabled={isUpdating}
       className={cn(
-        'h-8 px-3 text-sm font-medium rounded-md transition-colors flex items-center gap-2',
+        iconOnly
+          ? 'h-9 w-9 rounded-md transition-colors flex items-center justify-center'
+          : 'h-8 px-3 text-sm font-medium rounded-md transition-colors flex items-center gap-2',
         isPaused
           ? 'text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-950'
           : 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:text-yellow-300 dark:hover:bg-yellow-950',
@@ -82,8 +110,8 @@ export function SessionStatusToggle({
       )}
       title={isPaused ? 'Start session' : 'Pause session'}
     >
-      <Icon className="h-3.5 w-3.5" />
-      {isPaused ? 'Start' : 'Pause'}
+      <Icon className={iconOnly ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
+      {!iconOnly && (isPaused ? 'Start' : 'Pause')}
     </button>
   )
 }

@@ -7,6 +7,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -14,6 +15,7 @@ import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { MenuIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 const ChatPage = () => {
@@ -21,6 +23,7 @@ const ChatPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   // Query for user's agents - filter by owner, sort by message count
   const query: FeedAgentCursorArguments = useMemo(
@@ -76,111 +79,138 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="flex flex-col fixed inset-0">
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="flex-1 !overflow-y-hidden"
-      >
-        {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
-        <ResizablePanel
-          defaultSize={20}
-          minSize={isSidebarCollapsed ? 0 : 15}
-          maxSize={30}
-          collapsible={false}
-          className={cn(
-            'hidden md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
-            isSidebarCollapsed
-              ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
-              : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
-          )}
+    <>
+      {/* MOBILE HEADER - Only visible on mobile */}
+      <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 border-b bg-background px-2">
+        <button
+          onClick={() => setIsSheetOpen(true)}
+          className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+          aria-label="Open sidebar"
         >
-          {isSidebarCollapsed ? (
+          <MenuIcon className="w-5 h-5 text-muted-foreground" />
+        </button>
+      </header>
+
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0">
+        {/* MOBILE LEFT BAR SHEET FOR CHAT */}
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetContent
+            side="left"
+            className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
+          >
+            <SheetTitle className="sr-only">Chats</SheetTitle>
             <SessionsSidebarContent
-              onSidebarToggle={() => setIsSidebarCollapsed(false)}
-              isCollapsed={true}
+              onItemClick={() => setIsSheetOpen(false)}
               isChat={true}
             />
-          ) : (
-            <SessionsSidebarContent
-              onSidebarToggle={() => setIsSidebarCollapsed(true)}
-              isChat={true}
-            />
-          )}
-        </ResizablePanel>
+          </SheetContent>
+        </Sheet>
 
-        {/* Separator Handle - hidden, keeping for resizing functionality */}
-        <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
-
-        {/* MAIN CONTENT PANEL */}
-        <ResizablePanel
-          defaultSize={80}
-          className="relative flex flex-col bg-background -ml-px"
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 !overflow-y-hidden"
         >
-          <div className="flex flex-col h-full overflow-hidden">
-            <div className="mx-auto flex flex-col h-full w-full overflow-y-auto">
-              <div className="p-4 md:p-6 lg:p-8">
-                {/* Header */}
-                <div className="mb-6">
-                  <h1 className="text-3xl font-bold tracking-tight">
-                    My Agents
-                  </h1>
-                </div>
+          {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
+          <ResizablePanel
+            defaultSize={20}
+            minSize={isSidebarCollapsed ? 0 : 15}
+            maxSize={30}
+            collapsible={false}
+            className={cn(
+              'hidden md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
+              isSidebarCollapsed
+                ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
+                : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
+            )}
+          >
+            {isSidebarCollapsed ? (
+              <SessionsSidebarContent
+                onSidebarToggle={() => setIsSidebarCollapsed(false)}
+                isCollapsed={true}
+                isChat={true}
+              />
+            ) : (
+              <SessionsSidebarContent
+                onSidebarToggle={() => setIsSidebarCollapsed(true)}
+                isChat={true}
+              />
+            )}
+          </ResizablePanel>
 
-                {/* Search bar */}
-                <div className="mb-6">
-                  <FeedSearchForm
-                    handleSearch={setSearchQuery}
-                    className="max-w-md"
-                  />
-                </div>
+          {/* Separator Handle - hidden, keeping for resizing functionality */}
+          <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
 
-                {/* Agents grid - single row, 3 columns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {isLoading ? (
-                    <>
-                      {[...Array(3)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="h-64 bg-muted animate-pulse rounded-lg"
+          {/* MAIN CONTENT PANEL */}
+          <ResizablePanel
+            defaultSize={80}
+            className="relative flex flex-col bg-background -ml-px"
+          >
+            <div className="flex flex-col h-full overflow-hidden">
+              <div className="mx-auto flex flex-col h-full w-full overflow-y-auto">
+                <div className="p-4 md:p-6 lg:p-8">
+                  {/* Header */}
+                  <div className="mb-6">
+                    <h1 className="text-3xl font-bold tracking-tight">
+                      My Agents
+                    </h1>
+                  </div>
+
+                  {/* Search bar */}
+                  <div className="mb-6">
+                    <FeedSearchForm
+                      handleSearch={setSearchQuery}
+                      className="max-w-md"
+                    />
+                  </div>
+
+                  {/* Agents grid - single row, 3 columns */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {isLoading ? (
+                      <>
+                        {[...Array(3)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="h-64 bg-muted animate-pulse rounded-lg"
+                          />
+                        ))}
+                      </>
+                    ) : myAgents.length > 0 ? (
+                      myAgents.map(agent => (
+                        <MyAgentCard
+                          key={agent._id}
+                          agent={agent}
+                          userId={user._id}
+                          onSettingsClick={() =>
+                            setSettingsAgentId(agent.username)
+                          }
                         />
-                      ))}
-                    </>
-                  ) : myAgents.length > 0 ? (
-                    myAgents.map(agent => (
-                      <MyAgentCard
-                        key={agent._id}
-                        agent={agent}
-                        userId={user._id}
-                        onSettingsClick={() =>
-                          setSettingsAgentId(agent.username)
-                        }
-                      />
-                    ))
-                  ) : (
-                    <div className="col-span-full text-center py-12">
-                      <p className="text-muted-foreground">
-                        {searchQuery
-                          ? 'No agents found matching your search'
-                          : 'You have no agents yet'}
-                      </p>
-                    </div>
+                      ))
+                    ) : (
+                      <div className="col-span-full text-center py-12">
+                        <p className="text-muted-foreground">
+                          {searchQuery
+                            ? 'No agents found matching your search'
+                            : 'You have no agents yet'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Agent Settings Modal */}
+                  {settingsAgentId && (
+                    <AgentSettingsModal
+                      agentId={settingsAgentId}
+                      open={!!settingsAgentId}
+                      onOpenChange={open => !open && setSettingsAgentId(null)}
+                    />
                   )}
                 </div>
-
-                {/* Agent Settings Modal */}
-                {settingsAgentId && (
-                  <AgentSettingsModal
-                    agentId={settingsAgentId}
-                    open={!!settingsAgentId}
-                    onOpenChange={open => !open && setSettingsAgentId(null)}
-                  />
-                )}
               </div>
             </div>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    </>
   )
 }
 
