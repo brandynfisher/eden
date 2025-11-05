@@ -97,7 +97,17 @@ export const siteConfig: SiteConfig = {
     '/tools',
   ],
   featured: {
-    tools: ['flux_dev', 'texture_flow', 'kling_pro', 'flux_double_character'],
+    tools: [
+      'flux_dev',
+      'texture_flow',
+      'kling_pro',
+      'flux_double_character',
+      'seeddream4',
+      'nano_banana',
+      'background_removal',
+      'veo3',
+      'elevenlabs',
+    ],
     agents:
       process.env.NEXT_PUBLIC_APP_ENV === 'production'
         ? [
