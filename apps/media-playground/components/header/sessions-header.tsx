@@ -30,15 +30,14 @@ import { useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 type SessionsHeaderProps = {
   onChatClick?: () => void
   isSidebarCollapsed?: boolean
 }
 
-const SessionsHeader = ({
-  onChatClick,
-  isSidebarCollapsed,
-}: SessionsHeaderProps) => {
+const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
   const params = useParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -57,19 +56,6 @@ const SessionsHeader = ({
 
   const handleNewSession = () => {
     router.push('/sessions/new')
-  }
-
-  const handleSessionTitleClick = () => {
-    // Check if we're on mobile (window width < 768px for md breakpoint)
-    const isMobile = window.innerWidth < 768
-
-    // Only open sidebar if:
-    // 1. We're on mobile (sidebar is never visible on mobile), OR
-    // 2. We're on desktop but sidebar is collapsed
-    if (isMobile || isSidebarCollapsed) {
-      onChatClick?.()
-    }
-    // If we're on desktop and sidebar is visible, do nothing
   }
 
   const handleHamburgerClick = () => {
@@ -111,7 +97,7 @@ const SessionsHeader = ({
               </Popover>
               {session.title && (
                 <button
-                  onClick={handleSessionTitleClick}
+                  onClick={() => setIsEditModalOpen(true)}
                   className="text-sm text-muted-foreground hover:text-foreground truncate flex-1 text-left transition-colors"
                   title={session.title}
                 >

@@ -16,10 +16,9 @@ import AgentEditView from '@/features/sessions/views/agent-edit-view'
 import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
 import AgentTasksView from '@/features/sessions/views/agent-tasks-view'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
-import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
-import { Agent, SessionV2 } from '@edenlabs/eden-sdk'
+import { Agent } from '@edenlabs/eden-sdk'
 import { EditIcon, MenuIcon } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
@@ -35,18 +34,12 @@ import { ImperativePanelHandle } from 'react-resizable-panels'
 // Custom sidebar content for agent chat
 const SessionChatSidebarContent: FC<{
   agent: Agent | null | undefined
-  isOwner: boolean
   agentId: string
-  currentSessionId?: string
   onItemClick?: () => void
-  onSessionSelect: (sessionId: string) => void
-  onNewSession: () => void
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
-  userId?: string | null
   onAgentSelect?: () => void
   onSettingsClick?: () => void
-  session?: SessionV2
   onSidebarToggle?: () => void
   isCollapsed?: boolean
 }> = ({
@@ -55,11 +48,8 @@ const SessionChatSidebarContent: FC<{
   agent,
   viewMode,
   onViewModeChange,
-  userId,
   onAgentSelect,
   onSettingsClick,
-  currentSessionId,
-  session,
   onSidebarToggle,
   isCollapsed,
 }) => {
@@ -71,13 +61,10 @@ const SessionChatSidebarContent: FC<{
         agentId={agentId}
         isChat
         agent={agent}
-        userId={userId}
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
         onAgentSelect={onAgentSelect}
         onSettingsClick={onSettingsClick}
-        sessionId={currentSessionId}
-        session={session}
         onSidebarToggle={onSidebarToggle}
         isCollapsed={isCollapsed}
       />
@@ -97,7 +84,6 @@ const SessionChatLayout = ({
   const sessionId = params?.id as string
   const [isMounted, setIsMounted] = useState(false)
   const [isPWA, setIsPWA] = useState(false)
-  const [resetKey, setResetKey] = useState<number>(0)
   const [viewMode, setViewMode] = useState<ViewMode>('chat')
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -105,10 +91,6 @@ const SessionChatLayout = ({
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
 
   const { agent } = useAgentQuery({ key: agentId, enabled: !!agentId })
-  const { data: session } = useSessionQuery({
-    sessionId: sessionId,
-    enabled: !!sessionId && sessionId !== 'new',
-  })
 
   // Mount effect
   useEffect(() => {
@@ -180,21 +162,6 @@ const SessionChatLayout = ({
         panel.collapse()
       }
       setIsSidebarCollapsed(true)
-    }
-  }
-
-  const handleSessionSelect = (sessionId: string) => {
-    // Navigate to the session URL
-    router.push(`/chat/${agentId}/${sessionId}`)
-  }
-
-  const handleNewSession = () => {
-    // If we're already on the base agent route, just reset the state
-    if (!sessionId) {
-      setResetKey(prev => prev + 1)
-    } else {
-      // Navigate to the new session URL
-      router.push(`/chat/${agentId}`)
     }
   }
 
@@ -270,31 +237,35 @@ const SessionChatLayout = ({
 
   return (
     <LiveAudioProvider>
-      {/* MOBILE HEADER - Only visible on mobile */}
-      <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 border-b bg-background px-2">
-        <button
-          onClick={() => setIsSheetOpen(true)}
-          className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
-          aria-label="Open sidebar"
-        >
-          <MenuIcon className="w-5 h-5 text-muted-foreground" />
-        </button>
-
-        {/* New Chat button - only show in creations view */}
-        {viewMode === 'creations' && (
+      {/* MOBILE HEADER - Only visible on mobile when NOT on a session page */}
+      {!sessionId && (
+        <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 border-b bg-background px-2">
           <button
-            onClick={handleNewChat}
-            className="ml-auto p-2 hover:bg-muted/50 rounded-lg transition-colors shrink-0"
-            aria-label="New Chat"
+            onClick={() => setIsSheetOpen(true)}
+            className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+            aria-label="Open sidebar"
           >
-            <EditIcon className="w-5 h-5 text-muted-foreground" />
+            <MenuIcon className="w-5 h-5 text-muted-foreground" />
           </button>
-        )}
-      </header>
+
+          {/* New Chat button - only show in creations view */}
+          {viewMode === 'creations' && (
+            <button
+              onClick={handleNewChat}
+              className="ml-auto p-2 hover:bg-muted/50 rounded-lg transition-colors shrink-0"
+              aria-label="New Chat"
+            >
+              <EditIcon className="w-5 h-5 text-muted-foreground" />
+            </button>
+          )}
+        </header>
+      )}
 
       <div
         className={cn(
-          'flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0',
+          'flex flex-col fixed inset-x-0 bottom-0 md:top-0',
+          !sessionId && 'top-16',
+          sessionId && 'top-0',
           isPWA && 'pwa-chat-layout',
         )}
       >
@@ -314,18 +285,12 @@ const SessionChatLayout = ({
             <SheetTitle className="sr-only">Session List</SheetTitle>
             <SessionChatSidebarContent
               agent={agent}
-              isOwner={isOwner}
               agentId={agentId}
-              currentSessionId={sessionId}
-              onSessionSelect={handleSessionSelect}
-              onNewSession={handleNewSession}
               onItemClick={() => setIsSheetOpen(false)}
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
-              userId={user?._id}
               onAgentSelect={() => setIsAgentSelectorOpen(true)}
               onSettingsClick={() => setSettingsAgentId(agentId)}
-              session={session}
               onSidebarToggle={handleSidebarToggle}
             />
           </SheetContent>
@@ -356,36 +321,24 @@ const SessionChatLayout = ({
             {isSidebarCollapsed ? (
               <SessionChatSidebarContent
                 agent={agent}
-                isOwner={isOwner}
                 agentId={agentId}
-                currentSessionId={sessionId}
-                onSessionSelect={handleSessionSelect}
-                onNewSession={handleNewSession}
                 onItemClick={() => {}}
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
-                userId={user?._id}
                 onAgentSelect={() => setIsAgentSelectorOpen(true)}
                 onSettingsClick={() => setSettingsAgentId(agentId)}
-                session={session}
                 onSidebarToggle={handleSidebarToggle}
                 isCollapsed={true}
               />
             ) : (
               <SessionChatSidebarContent
                 agent={agent}
-                isOwner={isOwner}
                 agentId={agentId}
-                currentSessionId={sessionId}
-                onSessionSelect={handleSessionSelect}
-                onNewSession={handleNewSession}
                 onItemClick={() => {}}
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
-                userId={user?._id}
                 onAgentSelect={() => setIsAgentSelectorOpen(true)}
                 onSettingsClick={() => setSettingsAgentId(agentId)}
-                session={session}
                 onSidebarToggle={handleSidebarToggle}
               />
             )}
@@ -402,10 +355,7 @@ const SessionChatLayout = ({
             className="relative flex flex-col bg-aui-background"
           >
             <div className="flex flex-col h-full">
-              <div
-                className="mx-auto flex flex-col flex-1 w-full h-full overflow-hidden"
-                key={resetKey}
-              >
+              <div className="mx-auto flex flex-col flex-1 w-full h-full overflow-hidden">
                 {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}
                 {viewMode === 'creations'
                   ? agent && <AgentCreationsView agent={agent} user={user} />
@@ -423,6 +373,10 @@ const SessionChatLayout = ({
                     )
                   : viewMode === 'memories'
                   ? agent && <AgentMemoryView agent={agent} />
+                  : React.isValidElement(children)
+                  ? React.cloneElement(children as React.ReactElement, {
+                      onOpenSidebar: () => setIsSheetOpen(true),
+                    })
                   : children}
               </div>
             </div>

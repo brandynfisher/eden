@@ -31,7 +31,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent, Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { EditIcon } from 'lucide-react'
+import { EditIcon, MenuIcon } from 'lucide-react'
 import {
   useParams,
   usePathname,
@@ -44,6 +44,7 @@ const Session = ({
   optimisticSessionId,
   pendingMessage,
   onSessionLoaded,
+  onOpenSidebar,
 }: {
   optimisticSessionId?: string
   pendingMessage?: {
@@ -52,6 +53,7 @@ const Session = ({
     agent: Agent
   }
   onSessionLoaded?: () => void
+  onOpenSidebar?: () => void
 } = {}) => {
   const params = useParams()
   const router = useRouter()
@@ -1220,9 +1222,18 @@ const Session = ({
 
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden">
-      {/* Mobile navbar - Icon buttons only */}
-      {sessionId && sessionId !== 'new' && session && (
+      {/* Mobile navbar - Icon buttons only (CHAT ROUTES ONLY - sessions uses SessionsHeader) */}
+      {sessionId && sessionId !== 'new' && session && ischatRoute && (
         <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 flex-shrink-0">
+          {/* Hamburger menu */}
+          <button
+            onClick={onOpenSidebar}
+            className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+            aria-label="Open sidebar"
+          >
+            <MenuIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+
           {/* Left section - Agent avatars and session title */}
           <button
             onClick={() => isOwner && setIsEditModalOpen(true)}
