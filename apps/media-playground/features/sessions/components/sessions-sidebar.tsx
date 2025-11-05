@@ -797,7 +797,7 @@ const CurrentAgentDisplay: FC<{
   onSettingsClick: () => void
 }> = ({ agent, onAgentClick, onSettingsClick }) => {
   return (
-    <div className="mr-2 mb-4">
+    <div className="mr-2 mb-2">
       <div className="flex justify-between font-normal items-center gap-1 rounded-md transition-all text-sm p-0.5 border border-transparent hover:bg-muted/50">
         <button
           onClick={onAgentClick}
@@ -1589,8 +1589,26 @@ export const SessionsSidebarContent = ({
                   onAgentClick={() => onAgentSelect?.()}
                   onSettingsClick={() => onSettingsClick?.()}
                 />
-                {/* Creations button for /chat/{agent} */}
-                <div className="mr-2 mb-4">
+                {/* Tasks and Creations buttons for /chat/{agent} */}
+                <div className="mr-2 mb-4 flex flex-col gap-2">
+                  {/* Tasks button */}
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      onItemClick?.()
+                      router.push(`/chat/${agentId}?page=tasks`)
+                    }}
+                    className={cn(
+                      'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                      viewMode === 'tasks'
+                        ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                        : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                    )}
+                  >
+                    <ClockIcon className="size-4" />
+                    <span>Tasks</span>
+                  </Button>
+                  {/* Creations button */}
                   <Button
                     variant="ghost"
                     onClick={() => {
