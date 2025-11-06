@@ -10,6 +10,7 @@ import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { ViewMode } from '@/features/sessions/components/types'
+import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import AgentCreationsView from '@/features/sessions/views/agent-creations-view'
 import AgentEditView from '@/features/sessions/views/agent-edit-view'
@@ -89,6 +90,7 @@ const SessionChatLayout = ({
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
+  const [forceHideSidebar, setForceHideSidebar] = useState(false)
 
   const { agent } = useAgentQuery({ key: agentId, enabled: !!agentId })
 
@@ -184,10 +186,10 @@ const SessionChatLayout = ({
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode)
 
-    // On mobile, auto-open sidebar when mode changes
+    // On mobile, auto-close sidebar when mode changes (user clicked a navigation item)
     const isMobile = window.innerWidth < 768
     if (isMobile) {
-      setIsSheetOpen(true)
+      setIsSheetOpen(false)
     }
 
     // Update URL query parameter
@@ -231,171 +233,183 @@ const SessionChatLayout = ({
     }
   }, [])
 
+  // Create context value before any early returns (hooks must be called in same order)
+  const contextValue = useMemo(
+    () => ({
+      forceHideSidebar,
+      setForceHideSidebar,
+      openSidebar: () => setIsSheetOpen(true),
+    }),
+    [forceHideSidebar],
+  )
+
   if (!isMounted) {
     return null
   }
 
   return (
-    <LiveAudioProvider>
-      {/* MOBILE HEADER - Only visible on mobile when NOT on a session page */}
-      {!sessionId && (
-        <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 border-b bg-background px-2">
-          <button
-            onClick={() => setIsSheetOpen(true)}
-            className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
-            aria-label="Open sidebar"
-          >
-            <MenuIcon className="w-5 h-5 text-muted-foreground" />
-          </button>
-
-          {/* New Chat button - only show in creations view */}
-          {viewMode === 'creations' && (
+    <SessionsLayoutContext.Provider value={contextValue}>
+      <LiveAudioProvider>
+        {/* MOBILE HEADER - Only visible on mobile when NOT on a session page */}
+        {!sessionId && (
+          <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 border-b bg-background px-2">
             <button
-              onClick={handleNewChat}
-              className="ml-auto p-2 hover:bg-muted/50 rounded-lg transition-colors shrink-0"
-              aria-label="New Chat"
+              onClick={() => setIsSheetOpen(true)}
+              className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+              aria-label="Open sidebar"
             >
-              <EditIcon className="w-5 h-5 text-muted-foreground" />
+              <MenuIcon className="w-5 h-5 text-muted-foreground" />
             </button>
-          )}
-        </header>
-      )}
 
-      <div
-        className={cn(
-          'flex flex-col fixed inset-x-0 bottom-0 md:top-0',
-          !sessionId && 'top-16',
-          sessionId && 'top-0',
-          isPWA && 'pwa-chat-layout',
+            {/* New Chat button - only show in creations view */}
+            {viewMode === 'creations' && (
+              <button
+                onClick={handleNewChat}
+                className="ml-auto p-2 hover:bg-muted/50 rounded-lg transition-colors shrink-0"
+                aria-label="New Chat"
+              >
+                <EditIcon className="w-5 h-5 text-muted-foreground" />
+              </button>
+            )}
+          </header>
         )}
-      >
-        {/* AGENT SELECTOR MODAL */}
-        <SingleAgentSelectorModal
-          open={isAgentSelectorOpen}
-          onOpenChange={setIsAgentSelectorOpen}
-          onSelect={handleAgentSelect}
-        />
 
-        {/* MOBILE LEFT BAR SHEET FOR CHAT */}
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetContent
-            side="left"
-            className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
-          >
-            <SheetTitle className="sr-only">Session List</SheetTitle>
-            <SessionChatSidebarContent
-              agent={agent}
-              agentId={agentId}
-              onItemClick={() => setIsSheetOpen(false)}
-              viewMode={viewMode}
-              onViewModeChange={handleViewModeChange}
-              onAgentSelect={() => setIsAgentSelectorOpen(true)}
-              onSettingsClick={() => setSettingsAgentId(agentId)}
-              onSidebarToggle={handleSidebarToggle}
-            />
-          </SheetContent>
-        </Sheet>
-
-        {/* RESIZABLE LAYOUT FOR ALL VIEWS */}
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="flex-1 !overflow-y-hidden"
-          autoSaveId={`resizable-session-chat-layout-${agentId}`}
+        <div
+          className={cn(
+            'flex flex-col fixed inset-x-0 bottom-0 md:top-0',
+            !sessionId && 'top-16',
+            sessionId && 'top-0',
+            isPWA && 'pwa-chat-layout',
+          )}
         >
-          {/* Desktop Sidebar */}
-          <ResizablePanel
-            id="sidebar"
-            ref={sidebarPanelRef}
-            defaultSize={20}
-            minSize={isSidebarCollapsed ? 0 : 15}
-            maxSize={30}
-            collapsible={false}
-            order={1}
-            className={cn(
-              'hidden md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
-              isSidebarCollapsed
-                ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
-                : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
-            )}
-          >
-            {isSidebarCollapsed ? (
+          {/* AGENT SELECTOR MODAL */}
+          <SingleAgentSelectorModal
+            open={isAgentSelectorOpen}
+            onOpenChange={setIsAgentSelectorOpen}
+            onSelect={handleAgentSelect}
+          />
+
+          {/* MOBILE LEFT BAR SHEET FOR CHAT */}
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetContent
+              side="left"
+              className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
+            >
+              <SheetTitle className="sr-only">Session List</SheetTitle>
               <SessionChatSidebarContent
                 agent={agent}
                 agentId={agentId}
-                onItemClick={() => {}}
-                viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-                onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                onSettingsClick={() => setSettingsAgentId(agentId)}
-                onSidebarToggle={handleSidebarToggle}
-                isCollapsed={true}
-              />
-            ) : (
-              <SessionChatSidebarContent
-                agent={agent}
-                agentId={agentId}
-                onItemClick={() => {}}
+                onItemClick={() => setIsSheetOpen(false)}
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
                 onAgentSelect={() => setIsAgentSelectorOpen(true)}
                 onSettingsClick={() => setSettingsAgentId(agentId)}
                 onSidebarToggle={handleSidebarToggle}
               />
-            )}
-          </ResizablePanel>
+            </SheetContent>
+          </Sheet>
 
-          {/* Separator Handle - hidden, keeping for resizing functionality */}
-          <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
-
-          {/* Main Content */}
-          <ResizablePanel
-            id="content"
-            defaultSize={80}
-            order={2}
-            className="relative flex flex-col bg-aui-background"
+          {/* RESIZABLE LAYOUT FOR ALL VIEWS */}
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="flex-1 !overflow-y-hidden"
+            autoSaveId={`resizable-session-chat-layout-${agentId}`}
           >
-            <div className="flex flex-col h-full">
-              <div className="mx-auto flex flex-col flex-1 w-full h-full overflow-hidden">
-                {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}
-                {viewMode === 'creations'
-                  ? agent && <AgentCreationsView agent={agent} user={user} />
-                  : viewMode === 'tasks'
-                  ? agent && <AgentTasksView agent={agent} />
-                  : viewMode === 'settings'
-                  ? agent && (
-                      <AgentEditView
-                        agent={agent}
-                        user={user}
-                        sessionId={sessionId}
-                        onBackToChat={handleBackToChat}
-                        onNewChat={handleNewChat}
-                      />
-                    )
-                  : viewMode === 'memories'
-                  ? agent && <AgentMemoryView agent={agent} />
-                  : React.isValidElement(children)
-                  ? React.cloneElement(children as React.ReactElement, {
-                      onOpenSidebar: () => setIsSheetOpen(true),
-                    })
-                  : children}
+            {/* Desktop Sidebar */}
+            <ResizablePanel
+              id="sidebar"
+              ref={sidebarPanelRef}
+              defaultSize={20}
+              minSize={isSidebarCollapsed ? 0 : 15}
+              maxSize={30}
+              collapsible={false}
+              order={1}
+              className={cn(
+                'hidden md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
+                isSidebarCollapsed
+                  ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
+                  : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
+              )}
+            >
+              {isSidebarCollapsed ? (
+                <SessionChatSidebarContent
+                  agent={agent}
+                  agentId={agentId}
+                  onItemClick={() => {}}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                  onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                  onSettingsClick={() => setSettingsAgentId(agentId)}
+                  onSidebarToggle={handleSidebarToggle}
+                  isCollapsed={true}
+                />
+              ) : (
+                <SessionChatSidebarContent
+                  agent={agent}
+                  agentId={agentId}
+                  onItemClick={() => {}}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                  onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                  onSettingsClick={() => setSettingsAgentId(agentId)}
+                  onSidebarToggle={handleSidebarToggle}
+                />
+              )}
+            </ResizablePanel>
+
+            {/* Separator Handle - hidden, keeping for resizing functionality */}
+            <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
+
+            {/* Main Content */}
+            <ResizablePanel
+              id="content"
+              defaultSize={80}
+              order={2}
+              className="relative flex flex-col bg-aui-background"
+            >
+              <div className="flex flex-col h-full">
+                <div className="mx-auto flex flex-col flex-1 w-full h-full overflow-hidden">
+                  {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}
+                  {viewMode === 'creations'
+                    ? agent && <AgentCreationsView agent={agent} user={user} />
+                    : viewMode === 'tasks'
+                    ? agent && <AgentTasksView agent={agent} />
+                    : viewMode === 'settings'
+                    ? agent && (
+                        <AgentEditView
+                          agent={agent}
+                          user={user}
+                          sessionId={sessionId}
+                          onBackToChat={handleBackToChat}
+                          onNewChat={handleNewChat}
+                        />
+                      )
+                    : viewMode === 'memories'
+                    ? agent && <AgentMemoryView agent={agent} />
+                    : React.isValidElement(children)
+                    ? React.cloneElement(children as React.ReactElement, {
+                        onOpenSidebar: () => setIsSheetOpen(true),
+                      })
+                    : children}
+                </div>
               </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </div>
 
-      {/* Agent Settings Modal */}
-      {settingsAgentId && (
-        <AgentSettingsModal
-          agentId={settingsAgentId}
-          open={!!settingsAgentId}
-          onOpenChange={open => !open && setSettingsAgentId(null)}
-        />
-      )}
+        {/* Agent Settings Modal */}
+        {settingsAgentId && (
+          <AgentSettingsModal
+            agentId={settingsAgentId}
+            open={!!settingsAgentId}
+            onOpenChange={open => !open && setSettingsAgentId(null)}
+          />
+        )}
 
-      {/* Intercept creation routes with modal */}
-      {creationModal}
-    </LiveAudioProvider>
+        {/* Intercept creation routes with modal */}
+        {creationModal}
+      </LiveAudioProvider>
+    </SessionsLayoutContext.Provider>
   )
 }
 

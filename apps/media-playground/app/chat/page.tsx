@@ -8,6 +8,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { AgentDashboardModal } from '@/features/agent/agent-dashboard-modal'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -22,6 +23,7 @@ const ChatPage = () => {
   const { user, verifyAuth } = useAuthState()
   const [searchQuery, setSearchQuery] = useState('')
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
+  const [dashboardAgentId, setDashboardAgentId] = useState<string | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
@@ -183,6 +185,9 @@ const ChatPage = () => {
                           onSettingsClick={() =>
                             setSettingsAgentId(agent.username)
                           }
+                          onDashboardClick={() =>
+                            setDashboardAgentId(agent.username)
+                          }
                         />
                       ))
                     ) : (
@@ -202,6 +207,15 @@ const ChatPage = () => {
                       agentId={settingsAgentId}
                       open={!!settingsAgentId}
                       onOpenChange={open => !open && setSettingsAgentId(null)}
+                    />
+                  )}
+
+                  {/* Agent Dashboard Modal */}
+                  {dashboardAgentId && (
+                    <AgentDashboardModal
+                      agentId={dashboardAgentId}
+                      open={!!dashboardAgentId}
+                      onOpenChange={open => !open && setDashboardAgentId(null)}
                     />
                   )}
                 </div>

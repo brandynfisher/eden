@@ -1227,7 +1227,14 @@ const Session = ({
         <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 flex-shrink-0">
           {/* Hamburger menu */}
           <button
-            onClick={onOpenSidebar}
+            onClick={() => {
+              // Try context first, fallback to prop
+              if (sessionsLayoutContext?.openSidebar) {
+                sessionsLayoutContext.openSidebar()
+              } else if (onOpenSidebar) {
+                onOpenSidebar()
+              }
+            }}
             className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
             aria-label="Open sidebar"
           >

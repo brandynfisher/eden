@@ -84,7 +84,9 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
                 className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
               >
                 <SheetTitle className="sr-only">Sessions</SheetTitle>
-                <SessionsSidebarContent />
+                <SessionsSidebarContent
+                  onItemClick={() => setIsSheetOpen(false)}
+                />
               </SheetContent>
             </Sheet>
           )}

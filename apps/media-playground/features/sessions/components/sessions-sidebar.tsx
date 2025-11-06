@@ -568,7 +568,7 @@ const MainLeft = ({
 
   // Determine the label for the sessions section
   const sessionsLabel = React.useMemo(() => {
-    if (pathname?.startsWith('/chat')) {
+    if (pathname?.startsWith('/chat') || pathname === '/') {
       if (agentId && agent) {
         return `Chats with ${agent.name || agent.username}`
       }
@@ -661,7 +661,7 @@ const MainLeft = ({
 
         // For /chat route, show sessions that are NOT "passive" or "automatic"
         // (includes chat, undefined, null - i.e., single-agent chats)
-        if (pathname?.startsWith('/chat')) {
+        if (pathname?.startsWith('/chat') || pathname === '/') {
           return (
             session.session_type !== SessionType.PASSIVE &&
             session.session_type !== SessionType.AUTOMATIC
@@ -741,7 +741,10 @@ const MainLeft = ({
                       onPinToggle={handlePinToggle}
                       unreadCount={unreadCounts?.get(session._id) || 0}
                       userId={user?._id}
-                      hideAvatars={pathname?.startsWith('/chat') && !!agentId}
+                      hideAvatars={
+                        (pathname?.startsWith('/chat') || pathname === '/') &&
+                        !!agentId
+                      }
                       onItemClick={() => {
                         onItemClick?.()
                         if (isChat) {
@@ -820,6 +823,20 @@ const CurrentAgentDisplay: FC<{
           <span className="text-base font-semibold truncate flex-1 text-left">
             {agent.name}
           </span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="flex-shrink-0 text-muted-foreground"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
         </button>
         <button
           onClick={e => {
@@ -1444,13 +1461,12 @@ export const SessionsSidebarContent = ({
         </Button>
       </div>
 
-      {/* Desktop: Navigation Buttons */}
+      {/* Desktop: Navigation Buttons - don't close sidebar on desktop */}
       <div className="mb-4 mr-2 flex-col gap-2 hidden md:flex">
         {/* Chat button */}
         <Button
           variant="ghost"
           onClick={() => {
-            onItemClick?.()
             router.push('/chat')
           }}
           className={cn(
@@ -1483,7 +1499,6 @@ export const SessionsSidebarContent = ({
         <Button
           variant="ghost"
           onClick={() => {
-            onItemClick?.()
             router.push('/sessions')
           }}
           className={cn(
@@ -1514,7 +1529,6 @@ export const SessionsSidebarContent = ({
         <Button
           variant="ghost"
           onClick={() => {
-            onItemClick?.()
             router.push('/explore?type=agents')
           }}
           className={cn(
@@ -1546,7 +1560,6 @@ export const SessionsSidebarContent = ({
         <Button
           variant="ghost"
           onClick={() => {
-            onItemClick?.()
             router.push('/create')
           }}
           className={cn(
@@ -1582,52 +1595,54 @@ export const SessionsSidebarContent = ({
         {mode === 'sessions' && (
           <>
             {/* Show CurrentAgentDisplay for /chat/{agentId} routes */}
-            {pathname?.startsWith('/chat') && agentId && agent && (
-              <>
-                <CurrentAgentDisplay
-                  agent={agent}
-                  onAgentClick={() => onAgentSelect?.()}
-                  onSettingsClick={() => onSettingsClick?.()}
-                />
-                {/* Tasks and Creations buttons for /chat/{agent} */}
-                <div className="mr-2 mb-4 flex flex-col gap-2">
-                  {/* Tasks button */}
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      onItemClick?.()
-                      router.push(`/chat/${agentId}?page=tasks`)
-                    }}
-                    className={cn(
-                      'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                      viewMode === 'tasks'
-                        ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                        : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-                    )}
-                  >
-                    <ClockIcon className="size-4" />
-                    <span>Tasks</span>
-                  </Button>
-                  {/* Creations button */}
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      onItemClick?.()
-                      router.push(`/chat/${agentId}?page=creations`)
-                    }}
-                    className={cn(
-                      'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                      viewMode === 'creations'
-                        ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                        : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-                    )}
-                  >
-                    <ImageIcon className="size-4" />
-                    <span>Creations</span>
-                  </Button>
-                </div>
-              </>
-            )}
+            {(pathname?.startsWith('/chat') || pathname === '/') &&
+              agentId &&
+              agent && (
+                <>
+                  <CurrentAgentDisplay
+                    agent={agent}
+                    onAgentClick={() => onAgentSelect?.()}
+                    onSettingsClick={() => onSettingsClick?.()}
+                  />
+                  {/* Tasks and Creations buttons for /chat/{agent} */}
+                  <div className="mr-2 mb-4 flex flex-col gap-2">
+                    {/* Tasks button */}
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        onItemClick?.()
+                        router.push(`/chat/${agentId}?page=tasks`)
+                      }}
+                      className={cn(
+                        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                        viewMode === 'tasks'
+                          ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                      )}
+                    >
+                      <ClockIcon className="size-4" />
+                      <span>Tasks</span>
+                    </Button>
+                    {/* Creations button */}
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        onItemClick?.()
+                        router.push(`/chat/${agentId}?page=creations`)
+                      }}
+                      className={cn(
+                        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                        viewMode === 'creations'
+                          ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                      )}
+                    >
+                      <ImageIcon className="size-4" />
+                      <span>Creations</span>
+                    </Button>
+                  </div>
+                </>
+              )}
             <MainLeft
               onItemClick={onItemClick}
               agentId={agentId}

@@ -9,7 +9,7 @@ import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { formatCompactNumber } from '@/lib/strings'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
-import { MessageSquareIcon, SettingsIcon } from 'lucide-react'
+import { BarChart3Icon, MessageSquareIcon, SettingsIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React from 'react'
@@ -19,9 +19,16 @@ type Props = {
   userId: string
   className?: string
   onSettingsClick?: () => void
+  onDashboardClick?: () => void
 }
 
-const MyAgentCard = ({ agent, userId, className, onSettingsClick }: Props) => {
+const MyAgentCard = ({
+  agent,
+  userId,
+  className,
+  onSettingsClick,
+  onDashboardClick,
+}: Props) => {
   const router = useRouter()
 
   // Fetch recent sessions for this agent (backend expects username, not _id)
@@ -44,18 +51,34 @@ const MyAgentCard = ({ agent, userId, className, onSettingsClick }: Props) => {
     >
       {!agent.public ? <PrivateIcon className="" /> : null}
 
-      {/* Settings icon - top right */}
-      <button
-        className="absolute top-3 right-3 z-10 p-2 rounded-md bg-muted/80 hover:bg-muted transition-colors"
-        title="Settings"
-        onClick={e => {
-          e.preventDefault()
-          e.stopPropagation()
-          onSettingsClick?.()
-        }}
-      >
-        <SettingsIcon className="w-4 h-4 text-muted-foreground" />
-      </button>
+      {/* Action buttons - top right */}
+      <div className="absolute top-3 right-3 z-10 flex gap-2">
+        {/* Dashboard button */}
+        <button
+          className="p-2 rounded-md bg-muted/80 hover:bg-muted transition-colors"
+          title="Dashboard"
+          onClick={e => {
+            e.preventDefault()
+            e.stopPropagation()
+            onDashboardClick?.()
+          }}
+        >
+          <BarChart3Icon className="w-4 h-4 text-muted-foreground" />
+        </button>
+
+        {/* Settings button */}
+        <button
+          className="p-2 rounded-md bg-muted/80 hover:bg-muted transition-colors"
+          title="Settings"
+          onClick={e => {
+            e.preventDefault()
+            e.stopPropagation()
+            onSettingsClick?.()
+          }}
+        >
+          <SettingsIcon className="w-4 h-4 text-muted-foreground" />
+        </button>
+      </div>
 
       <Link
         href={`/chat/${agent.username}`}

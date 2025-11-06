@@ -12,7 +12,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useState } from 'react'
 
-const SessionChat: FC = () => {
+const SessionChat: FC<{ onOpenSidebar?: () => void }> = ({ onOpenSidebar }) => {
   const params = useParams()
   const agentId = params?.agentId as string | undefined
   const sessionId = params?.id as string | undefined
@@ -93,7 +93,7 @@ const SessionChat: FC = () => {
 
   // If we have a sessionId in the URL, render normal session
   if (sessionId && agent) {
-    return <Session />
+    return <Session onOpenSidebar={onOpenSidebar} />
   }
 
   const handleAgentSelect = (selectedAgent: {
