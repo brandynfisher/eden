@@ -107,6 +107,12 @@ const defaultImageRemotePatterns = [
     port: '',
     pathname: '**',
   },
+  {
+    protocol: 'https',
+    hostname: 'placehold.co',
+    port: '',
+    pathname: '**',
+  },
 ]
 
 const devImageRemotePatterns = [
