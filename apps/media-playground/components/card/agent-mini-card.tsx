@@ -71,7 +71,7 @@ export const AgentMiniCard = ({
                   className="pointer-events-auto cursor-help rounded-l-lg rounded-r-none border border-r-0 px-2 flex items-center bg-muted-darker/60 hover:text-primary text-muted-foreground"
                 >
                   <div className="text-xs font-mono w-14 flex justify-end">
-                    {formatCompactNumber(agent.stats?.userMessageCount)}
+                    {formatCompactNumber(agent.stats?.messageCount)}
                   </div>
                 </TooltipTrigger>
                 <Button

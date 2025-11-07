@@ -1,7 +1,10 @@
 'use client'
 
 import MyAgentCard from '@/components/card/my-agent-card'
+import { ExploreAgentsGrid } from '@/components/explore-agents-grid'
 import FeedSearchForm from '@/components/filter/feed-search-form'
+import { HomeFooter } from '@/components/footer/home-footer'
+import { Button } from '@/components/ui/button'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -11,29 +14,42 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { AgentDashboardModal } from '@/features/agent/agent-dashboard-modal'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
+import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
+import {
+  useRenderCount,
+  useRenderTime,
+  useUpdateThrottle,
+  useWhyDidYouUpdate,
+} from '@/lib/performance-debug'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { MenuIcon } from 'lucide-react'
+import { MenuIcon, Plus, UserPlus } from 'lucide-react'
+import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 const HomePage = () => {
-  const { user, verifyAuth } = useAuthState()
+  const { user } = useAuthState()
   const [searchQuery, setSearchQuery] = useState('')
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [dashboardAgentId, setDashboardAgentId] = useState<string | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
+
+  // Performance debugging - remove after diagnosing
+  useRenderCount('HomePage')
+  useRenderTime('HomePage')
 
   // Query for user's agents - filter by owner, sort by message count
   const query: FeedAgentCursorArguments = useMemo(
     () => ({
-      limit: 3,
+      limit: 6,
       ...(user?._id ? { owner: user._id } : {}),
       ...(searchQuery ? { search: searchQuery } : {}),
-      sort: ['stats.userMessageCount;-1'],
+      sort: ['stats.messageCount;-1'],
     }),
     [user?._id, searchQuery],
   )
@@ -49,7 +65,7 @@ const HomePage = () => {
       const paginationRoute = createCursorPaginationRoute('/api/feed/agents', {
         ...query,
         cursor: (pageParam as string) || '',
-        limit: 3,
+        limit: 6,
       })
       return fetcher(paginationRoute)
     },
@@ -61,24 +77,29 @@ const HomePage = () => {
   // Get agents from pages
   const myAgents = useMemo(() => {
     if (!data?.pages) return []
-    return data.pages.flatMap(page => page.docs || []).slice(0, 3) as Agent[]
+    return data.pages.flatMap(page => page.docs || []).slice(0, 6) as Agent[]
   }, [data])
 
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
-        <p className="text-muted-foreground">
-          Please sign in to view your agents
-        </p>
-        <button
-          onClick={verifyAuth}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-        >
-          Sign In
-        </button>
-      </div>
-    )
-  }
+  // More performance debugging
+  useWhyDidYouUpdate('HomePage', {
+    user,
+    searchQuery,
+    settingsAgentId,
+    dashboardAgentId,
+    isSidebarCollapsed,
+    isSheetOpen,
+    myAgentsLength: myAgents.length,
+  })
+  useUpdateThrottle('HomePage-data', data)
+
+  // Query for public agents - user's own agents will be filtered out in the component
+  const exploreAgentsQuery: FeedAgentCursorArguments = useMemo(
+    () => ({
+      limit: user ? 15 : 30, // 30 when not logged in, 15 when logged in
+      sort: ['stats.messageCount;-1'],
+    }),
+    [user],
+  )
 
   return (
     <>
@@ -150,56 +171,110 @@ const HomePage = () => {
             <div className="flex flex-col h-full overflow-hidden">
               <div className="mx-auto flex flex-col h-full w-full overflow-y-auto">
                 <div className="p-4 md:p-6 lg:p-8">
-                  {/* Header */}
-                  <div className="mb-6">
-                    <h1 className="text-3xl font-bold tracking-tight">
-                      My Agents
-                    </h1>
-                  </div>
-
-                  {/* Search bar */}
-                  <div className="mb-6">
-                    <FeedSearchForm
-                      handleSearch={setSearchQuery}
-                      className="max-w-md"
-                    />
-                  </div>
-
-                  {/* Agents grid - single row, 3 columns */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {isLoading ? (
-                      <>
-                        {[...Array(3)].map((_, i) => (
-                          <div
-                            key={i}
-                            className="h-64 bg-muted animate-pulse rounded-lg"
-                          />
-                        ))}
-                      </>
-                    ) : myAgents.length > 0 ? (
-                      myAgents.map(agent => (
-                        <MyAgentCard
-                          key={agent._id}
-                          agent={agent}
-                          userId={user._id}
-                          onSettingsClick={() =>
-                            setSettingsAgentId(agent.username)
-                          }
-                          onDashboardClick={() =>
-                            setDashboardAgentId(agent.username)
-                          }
-                        />
-                      ))
-                    ) : (
-                      <div className="col-span-full text-center py-12">
-                        <p className="text-muted-foreground">
-                          {searchQuery
-                            ? 'No agents found matching your search'
-                            : 'You have no agents yet'}
+                  {/* My Agents Section - Only shown when logged in */}
+                  {user && (
+                    <>
+                      {/* Welcome Message */}
+                      <div className="mb-4">
+                        <p className="text-xl text-muted-foreground">
+                          Welcome back, {user.username}
                         </p>
                       </div>
-                    )}
+
+                      {/* My Agents Header */}
+                      <div className="mb-6">
+                        <h1 className="text-3xl font-bold tracking-tight">
+                          My Agents
+                        </h1>
+                      </div>
+
+                      {/* Search bar and action buttons */}
+                      <div className="mb-6 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                        <FeedSearchForm
+                          handleSearch={setSearchQuery}
+                          className="max-w-md flex-1"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsAgentSelectorOpen(true)}
+                            className="gap-2"
+                          >
+                            <UserPlus className="w-4 h-4" />
+                            Select Agent
+                          </Button>
+                          <Button asChild size="sm" className="gap-2">
+                            <Link href="/new/agent">
+                              <Plus className="w-4 h-4" />
+                              Create Agent
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Agents grid - 2 rows, 3 columns */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                        {isLoading ? (
+                          <>
+                            {[...Array(6)].map((_, i) => (
+                              <div
+                                key={i}
+                                className="h-64 bg-muted animate-pulse rounded-lg"
+                              />
+                            ))}
+                          </>
+                        ) : myAgents.length > 0 ? (
+                          myAgents.map(agent => (
+                            <MyAgentCard
+                              key={agent._id}
+                              agent={agent}
+                              userId={user._id}
+                              onSettingsClick={() =>
+                                setSettingsAgentId(agent.username)
+                              }
+                              onDashboardClick={() =>
+                                setDashboardAgentId(agent.username)
+                              }
+                            />
+                          ))
+                        ) : (
+                          <div className="col-span-full text-center py-12">
+                            <p className="text-muted-foreground">
+                              {searchQuery
+                                ? 'No agents found matching your search'
+                                : 'You have no agents yet'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Explore Agents Section */}
+                  <div className="mb-8">
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold tracking-tight">
+                        Explore Agents
+                      </h2>
+                      <p className="text-muted-foreground mt-1">
+                        Discover and chat with AI agents created by the
+                        community
+                      </p>
+                    </div>
+
+                    <ExploreAgentsGrid query={exploreAgentsQuery} />
                   </div>
+
+                  {/* Agent Selector Modal */}
+                  <SingleAgentSelectorModal
+                    open={isAgentSelectorOpen}
+                    onOpenChange={setIsAgentSelectorOpen}
+                    onSelect={agent => {
+                      setIsAgentSelectorOpen(false)
+                      window.location.href = `/chat/${agent.username}`
+                    }}
+                  />
 
                   {/* Agent Settings Modal */}
                   {settingsAgentId && (
@@ -219,6 +294,9 @@ const HomePage = () => {
                     />
                   )}
                 </div>
+
+                {/* Footer */}
+                <HomeFooter />
               </div>
             </div>
           </ResizablePanel>

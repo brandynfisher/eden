@@ -1,6 +1,7 @@
-import { AgentAvatars } from '@/features/sessions/components/agent-avatars'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { formatDistanceToNow } from 'date-fns'
-import { ClockIcon, MessageCircleIcon } from 'lucide-react'
+import { ClockIcon, MessageCircleIcon, UsersIcon } from 'lucide-react'
 import Link from 'next/link'
 
 interface SessionCardProps {
@@ -9,6 +10,7 @@ interface SessionCardProps {
     title?: string
     createdAt: Date | string
     updatedAt?: Date | string
+    session_type?: 'chat' | 'passive' | 'automatic'
     agents?: Array<{
       _id: string
       username: string
@@ -39,41 +41,92 @@ const SessionCard = ({
     includeSeconds: false,
   }).replace(/^about /, '') // Remove "about" prefix
 
-  // Filter agents with userImage for AgentAvatars component, excluding hidden agents
-  const agentsWithImages =
-    session.agents?.filter(
-      (agent): agent is typeof agent & { userImage: string } =>
-        !!agent.userImage && !hideAgentIds.includes(agent._id),
-    ) || []
+  // Filter agents, excluding hidden agents
+  const visibleAgents =
+    session.agents?.filter(agent => !hideAgentIds.includes(agent._id)) || []
 
   // Use custom linkPath if provided, otherwise default to /sessions/{id}
   const href = linkPath || `/sessions/${session._id}`
 
+  // Get session type label
+  const sessionTypeLabel =
+    session.session_type === 'automatic'
+      ? 'Automatic'
+      : session.session_type === 'passive'
+      ? 'Passive'
+      : 'Chat'
+
   return (
     <Link href={href}>
-      <div className="group relative bg-card hover:bg-card/80 border border-border hover:border-primary/40 rounded-lg p-4 transition-all duration-200 hover:shadow-md cursor-pointer">
-        {/* Header with agent avatars, title, and timestamp */}
-        <div className="flex items-start gap-3 mb-2">
-          {/* Agent avatars on the left */}
-          {agentsWithImages.length > 0 ? (
-            <AgentAvatars agents={agentsWithImages} className="shrink-0" />
-          ) : (
-            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-              <MessageCircleIcon className="w-4 h-4 text-muted-foreground" />
-            </div>
-          )}
-
-          {/* Title and timestamp */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-base line-clamp-2 group-hover:text-primary transition-colors mb-1">
+      <div className="group relative bg-card hover:bg-card/80 border border-border hover:border-primary/40 rounded-lg p-6 transition-all duration-200 hover:shadow-md cursor-pointer min-h-[280px] flex flex-col">
+        {/* Header with title and session type */}
+        <div className="mb-4">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors flex-1">
               {displayTitle}
             </h3>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <ClockIcon className="w-3.5 h-3.5" />
-              <span>{timeAgo}</span>
-            </div>
+            <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium shrink-0">
+              {sessionTypeLabel}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <ClockIcon className="w-3.5 h-3.5" />
+            <span>{timeAgo}</span>
           </div>
         </div>
+
+        {/* Agents section */}
+        {visibleAgents.length > 0 && (
+          <div className="flex-1">
+            <div className="flex items-center gap-1.5 mb-3 text-sm text-muted-foreground">
+              <UsersIcon className="w-4 h-4" />
+              <span className="font-medium">
+                {visibleAgents.length} Agent
+                {visibleAgents.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {visibleAgents.slice(0, 4).map(agent => (
+                <div
+                  key={agent._id}
+                  className="flex items-center gap-2 bg-muted/50 rounded-full px-2.5 py-1.5 text-sm"
+                >
+                  <Avatar className="w-5 h-5 border border-border">
+                    <AvatarImage
+                      src={
+                        agent.userImage && agent.userImage.trim()
+                          ? getCloudfrontOriginalUrl(agent.userImage)
+                          : undefined
+                      }
+                      alt={agent.name || agent.username}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="text-xs">
+                      {(agent.name || agent.username)
+                        ?.slice(0, 2)
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-foreground font-medium truncate max-w-[100px]">
+                    {agent.name || agent.username}
+                  </span>
+                </div>
+              ))}
+              {visibleAgents.length > 4 && (
+                <div className="flex items-center justify-center bg-muted/50 rounded-full px-3 py-1.5 text-sm text-muted-foreground">
+                  +{visibleAgents.length - 4} more
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {visibleAgents.length === 0 && (
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+            <MessageCircleIcon className="w-4 h-4" />
+            <span>No agents</span>
+          </div>
+        )}
 
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg pointer-events-none" />

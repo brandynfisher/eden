@@ -1316,7 +1316,10 @@ export const getAgentsFeedCursor = async (
   const { query } = request
   const { userId: authUserId } = request.user || {}
 
-  const ownerQuery = query as { filter: string | string[] }
+  const ownerQuery = query as {
+    filter: string | string[]
+    excludeOwner?: string
+  }
   if (ownerQuery.filter) {
     ownerQuery.filter = (
       Array.isArray(ownerQuery.filter) ? ownerQuery.filter : [ownerQuery.filter]
@@ -1329,6 +1332,11 @@ export const getAgentsFeedCursor = async (
     authUserId,
     query: ownerQuery as unknown as CursorPaginatedFeedQuery,
   })
+
+  // Handle excludeOwner parameter
+  if (ownerQuery.excludeOwner) {
+    (filters as any).owner = { $ne: new ObjectId(ownerQuery.excludeOwner) }
+  }
 
   const { search } = customFilterOptions
 
