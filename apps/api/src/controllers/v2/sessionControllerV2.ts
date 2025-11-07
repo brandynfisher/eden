@@ -331,7 +331,8 @@ export const createSessionMessage = async (
         turn_budget?: number
       }
       title?: string
-      type?: 'chat' | 'passive' | 'automatic'
+      session_type?: 'chat' | 'passive' | 'automatic'
+      status?: 'active' | 'paused' | 'stopped' | 'archived'
       settings?: {
         conductor_prompt?: string
         delay_interval: number
@@ -363,6 +364,7 @@ export const createSessionMessage = async (
     budget,
     title,
     session_type: sessionType,
+    status,
     settings,
     extras,
   } = request.body
