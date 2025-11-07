@@ -55,10 +55,12 @@ export async function POST(request: NextRequest) {
       ...(requestJson.session_id
         ? {}
         : {
-            scenario: requestJson.scenario,
+            context: requestJson.context,
             budget: requestJson.budget,
             title: requestJson.title,
-            autonomy_settings: requestJson.autonomy_settings,
+            type: requestJson.type,
+            settings: requestJson.settings,
+            extras: requestJson.extras,
           }),
     }
 

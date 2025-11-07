@@ -11,21 +11,18 @@ import { SessionsSidebarContent } from '@/features/sessions/components/sessions-
 import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { cn } from '@/lib/utils'
-import { useParams, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { PropsWithChildren, useEffect, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
-  const params = useParams()
   const pathname = usePathname()
-  const sessionId = params?.id as string
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
 
-  // Hide sidebar on main sessions page
+  // Hide sidebar on share routes only
   const isShareRoute = pathname?.includes('/sessions/share/')
-  const isMainSessionsPage = !sessionId
-  const showSidebar = !isMainSessionsPage && !forceHideSidebar
+  const showSidebar = !isShareRoute && !forceHideSidebar
 
   useEffect(() => {
     if (!showSidebar) {
@@ -42,7 +39,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           isSidebarCollapsed={false}
         />
 
-        <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-14">
+        <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0">
           {/* Main content without sidebar */}
           <div className="flex-1 overflow-y-auto bg-background">
             <div className="mx-auto w-full max-w-4xl h-full">{children}</div>
@@ -78,22 +75,15 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
           isSidebarCollapsed={isSidebarCollapsed || forceHideSidebar}
         />
 
-        <div
-          className={`flex flex-col fixed inset-x-0 bottom-0 ${
-            // Different top margins based on session ID and screen size
-            sessionId === 'new' || !sessionId
-              ? 'top-16 md:top-14' // Single navbar on new session page (desktop)
-              : 'top-16 md:top-[104px]' // Double navbar on existing session pages (56px + 48px)
-          }`}
-        >
+        <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0">
           {/* MOBILE LEFT BAR SHEET FOR SESSIONS - only show when sidebar is enabled */}
           {showSidebar && (
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetContent
                 side="left"
-                className="flex flex-col max-h-full pt-3 px-3 bg-accent border-r gap-0"
+                className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
               >
-                <SheetTitle className="sr-only">Session List</SheetTitle>
+                <SheetTitle className="sr-only">Sessions</SheetTitle>
                 <SessionsSidebarContent
                   onItemClick={() => setIsSheetOpen(false)}
                 />
@@ -111,34 +101,35 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
               {/* DESKTOP-ONLY RESIZABLE SIDEBAR */}
               <ResizablePanel
                 defaultSize={20}
-                minSize={15}
+                minSize={isSidebarCollapsed ? 0 : 15}
                 maxSize={30}
-                collapsible
-                collapsedSize={0}
-                onCollapse={() => setIsSidebarCollapsed(true)}
-                onExpand={() => setIsSidebarCollapsed(false)}
+                collapsible={false}
                 className={cn(
-                  'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
-                  'max-w-[320px]',
-                  isSidebarCollapsed && 'p-0 border-none',
+                  'hidden md:flex md:flex-col bg-accent border-r transition-all duration-300 ease-in-out',
+                  isSidebarCollapsed
+                    ? 'min-w-[56px] max-w-[56px] w-[56px] p-1.5'
+                    : 'max-w-[320px] pl-3 pr-0 pt-0 pb-0',
                 )}
               >
-                {/* Render content only if not collapsed */}
-                {!isSidebarCollapsed && !forceHideSidebar && (
-                  <SessionsSidebarContent />
+                {isSidebarCollapsed ? (
+                  <SessionsSidebarContent
+                    onSidebarToggle={() => setIsSidebarCollapsed(false)}
+                    isCollapsed={true}
+                  />
+                ) : (
+                  <SessionsSidebarContent
+                    onSidebarToggle={() => setIsSidebarCollapsed(true)}
+                  />
                 )}
               </ResizablePanel>
 
-              {/* Separator Handle - visible only on desktop */}
-              <ResizableHandle
-                withHandle
-                className="hidden md:flex w-2 bg-transparent [&>div]:border-l [&>div]:border-border [&>div]:hover:border-primary [&>div]:transition-colors relative"
-              />
+              {/* Separator Handle - hidden, keeping for resizing functionality */}
+              <ResizableHandle className="hidden md:flex w-2 bg-transparent" />
 
               {/* MAIN CONTENT PANEL */}
               <ResizablePanel
                 defaultSize={80}
-                className="relative flex flex-col bg-aui-background"
+                className="relative flex flex-col bg-aui-background -ml-px"
               >
                 <div className="flex flex-col h-full overflow-hidden">
                   <div className="mx-auto flex flex-col h-full w-full overflow-hidden">

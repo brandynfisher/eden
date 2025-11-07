@@ -44,64 +44,68 @@ export const AgentAvatars: FC<AgentAvatarsProps> = ({ agents, className }) => {
     )
   }
 
-  if (totalAgents >= 4) {
-    // Show "x Members" text for many agents
-    return (
-      <div className={cn('flex items-center', className)}>
-        <div className="relative w-8 h-8 flex items-center justify-center">
-          {/* Background circle stack effect */}
-          <div className="absolute inset-0 rounded-full bg-muted/30 border border-background/50" />
-          <div className="absolute inset-0.5 rounded-full bg-muted/50 border border-background/50" />
-          <div className="absolute inset-1 rounded-full bg-muted border border-background overflow-hidden">
-            {agents[0].userImage ? (
-              <img
-                src={getCloudfrontOriginalUrl(agents[0].userImage)}
-                alt={agents[0].name || agents[0].username}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center">
-                <span className="font-medium text-white text-[8px]">
-                  {(agents[0].name ||
-                    agents[0].username ||
-                    '?')[0].toUpperCase()}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-        <span className="ml-2 text-xs text-muted-foreground font-medium">
-          {totalAgents} Members
-        </span>
-      </div>
-    )
+  // Helper function to calculate circular positions
+  const getCircularPosition = (
+    index: number,
+    total: number,
+    containerSize: number,
+    avatarSize: number,
+    radius: number,
+  ) => {
+    let angle: number
+
+    if (total === 2) {
+      // Diagonal: top-left and bottom-right
+      angle = index === 0 ? -Math.PI / 4 : (3 * Math.PI) / 4
+    } else if (total === 3) {
+      // Triangle: top, bottom-right, bottom-left (clockwise)
+      const startAngle = -Math.PI / 2 // Start from top
+      angle = startAngle + (index * 2 * Math.PI) / 3
+    } else {
+      // 4+ agents: Cross pattern starting from top (clockwise)
+      const startAngle = -Math.PI / 2 // Start from top, same as 3
+      angle = startAngle + (index * Math.PI) / 2
+    }
+
+    const centerX = containerSize / 2
+    const centerY = containerSize / 2
+    const x = centerX + radius * Math.cos(angle) - avatarSize / 2
+    const y = centerY + radius * Math.sin(angle) - avatarSize / 2
+
+    return { x, y }
   }
 
-  // 2-3 agents: diagonal overlapping circles
-  const displayAgents = agents.slice(0, 3)
+  // For 2-4+ agents: show avatars in circular pattern
+  const displayCount = Math.min(totalAgents, 4)
+  const displayAgents = agents.slice(0, displayCount)
+  const containerSize = 32 // w-8 h-8 = 32px
+  const avatarSize = totalAgents === 2 ? 24 : totalAgents === 3 ? 22 : 21 // h-6 for 2, 22px for 3, 21px for 4
+  const radius = totalAgents === 2 ? 5 : totalAgents === 3 ? 8 : 8
 
   return (
     <div className={cn('flex items-center', className)}>
       <div className="relative w-8 h-8 flex-shrink-0">
         {displayAgents.map((agent, index) => {
-          const positions = [
-            { top: '0px', left: '0px', size: 'h-5 w-5' }, // Top-left
-            { top: '12px', left: '12px', size: 'h-5 w-5' }, // Bottom-right
-            { top: '6px', left: '6px', size: 'h-4 w-4' }, // Center (for 3rd agent)
-          ]
-
-          const position = positions[index]
+          const { x, y } = getCircularPosition(
+            index,
+            displayCount,
+            containerSize,
+            avatarSize,
+            radius,
+          )
 
           return (
             <div
               key={agent._id}
               className={cn(
                 'absolute rounded-full bg-muted border border-background overflow-hidden',
-                position.size,
+                avatarSize === 24 ? 'h-6 w-6' : '',
               )}
               style={{
-                top: position.top,
-                left: position.left,
+                top: `${y}px`,
+                left: `${x}px`,
+                width: avatarSize !== 24 ? `${avatarSize}px` : undefined,
+                height: avatarSize !== 24 ? `${avatarSize}px` : undefined,
                 zIndex: 10 - index,
               }}
             >

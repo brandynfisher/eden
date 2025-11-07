@@ -55,16 +55,19 @@ const sessionFormSchema = z.object({
     )
     .min(1, 'Please select at least one agent')
     .max(MAX_AGENTS, `You can select a maximum of ${MAX_AGENTS} agents`),
-  title: z
+  type: z.enum(['passive', 'automatic']).default('passive'),
+  context: z
     .string()
-    .max(1000, 'Title must not exceed 1000 characters')
+    .max(5000, 'Context must not exceed 5000 characters')
     .optional()
     .or(z.literal('')),
-  scenario: z
+  conductor_prompt: z
     .string()
-    .max(1000, 'Scenario must not exceed 1000 characters')
+    .max(2000, 'Conductor prompt must not exceed 2000 characters')
     .optional()
     .or(z.literal('')),
+  delay_interval: z.number().min(0).max(3600).default(0),
+  mention_force_reply: z.boolean().default(false),
   manna_budget_unlimited: z.boolean().default(true),
   manna_budget: z
     .number()
@@ -83,15 +86,6 @@ const sessionFormSchema = z.object({
     .min(1, 'Turn budget must be at least 1')
     .max(1000, 'Turn budget must not exceed 1000')
     .optional(),
-  auto_reply: z.boolean().default(false),
-  reply_interval: z
-    .number()
-    .min(0, 'Reply interval must be at least 0')
-    .max(3600, 'Reply interval must not exceed 3600 seconds')
-    .default(0),
-  actor_selection_method: z
-    .enum(['random', 'random_exclude_last'])
-    .default('random_exclude_last'),
   exclude_memory: z.boolean().default(false),
   permissions: z
     .array(
@@ -124,7 +118,7 @@ export const SessionForm = ({
   submitLabel,
 }: SessionFormProps) => {
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>(initialAgents)
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
+  const [isBudgetSettingsOpen, setIsBudgetSettingsOpen] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [permissionLevel, setPermissionLevel] = useState<'editor' | 'owner'>(
     'editor',
@@ -140,17 +134,17 @@ export const SessionForm = ({
     resolver: zodResolver(sessionFormSchema),
     defaultValues: {
       agents: [],
-      title: '',
-      scenario: '',
+      type: 'passive',
+      context: '',
+      conductor_prompt: '',
+      delay_interval: 0,
+      mention_force_reply: false,
       manna_budget_unlimited: true,
       manna_budget: 1000,
       token_budget_unlimited: true,
       token_budget: 10000,
       turn_budget_unlimited: true,
       turn_budget: 100,
-      auto_reply: false,
-      reply_interval: 0,
-      actor_selection_method: 'random_exclude_last',
       exclude_memory: false,
       permissions: [],
       ...defaultValues,
@@ -310,63 +304,151 @@ export const SessionForm = ({
 
         <FormField
           control={form.control}
-          name="title"
+          name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title (Optional)</FormLabel>
-              <FormControl>
-                <AutosizeTextarea
-                  placeholder="Give your session a title..."
-                  variant="sm"
-                  {...field}
-                />
-              </FormControl>
+              <FormLabel>Session Mode</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select session mode" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="passive">Passive</SelectItem>
+                  <SelectItem value="automatic">Automatic</SelectItem>
+                </SelectContent>
+              </Select>
               <FormDescription>
-                Optional title for your session (max 1000 characters)
+                <strong>Passive:</strong> Agents listen and decide when to
+                speak.
+                <br />
+                <strong>Automatic:</strong> One agent always responds to a new
+                message, playing out the entire scenario.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen}>
+        <FormField
+          control={form.control}
+          name="context"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Context</FormLabel>
+              <FormControl>
+                <AutosizeTextarea
+                  placeholder="Describe the scenario or other background information relevant to this session..."
+                  variant="lg"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                The context is where you describe the scenario or other
+                background information relevant to this session (max 5000
+                characters)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="conductor_prompt"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Conductor Prompt (Optional)</FormLabel>
+              <FormControl>
+                <AutosizeTextarea
+                  placeholder="Describe how agents should be selected to speak..."
+                  variant="sm"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                The conductor prompt determines how agents are selected to speak
+                or under what circumstances they will speak (max 2000
+                characters)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="delay_interval"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Reply Delay</FormLabel>
+              <FormControl>
+                <Select
+                  onValueChange={value => field.onChange(Number(value))}
+                  defaultValue={field.value.toString()}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select delay" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">Instant</SelectItem>
+                    <SelectItem value="60">1 minute</SelectItem>
+                    <SelectItem value="300">5 minutes</SelectItem>
+                    <SelectItem value="900">15 minutes</SelectItem>
+                    <SelectItem value="3600">1 hour</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormDescription>
+                Time delay between agent responses
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="mention_force_reply"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Mention Force Reply</FormLabel>
+                <FormDescription>
+                  If you mention a specific agent in a message, they will always
+                  respond
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <Collapsible
+          open={isBudgetSettingsOpen}
+          onOpenChange={setIsBudgetSettingsOpen}
+        >
           <CollapsibleTrigger asChild>
             <Button
               type="button"
               variant="ghost"
               className="w-full justify-between p-0 h-auto text-left"
             >
-              <span className="font-medium">Advanced Settings</span>
+              <span className="font-medium">Budget Settings</span>
               <ChevronDown
                 className={`w-4 h-4 transition-transform ${
-                  isAdvancedOpen ? 'rotate-180' : ''
+                  isBudgetSettingsOpen ? 'rotate-180' : ''
                 }`}
               />
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-6 pt-4">
-            <FormField
-              control={form.control}
-              name="scenario"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Scenario (Optional)</FormLabel>
-                  <FormControl>
-                    <AutosizeTextarea
-                      placeholder="Describe what you want to accomplish in this session..."
-                      variant="lg"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Optional context or goal for this session (max 1000
-                    characters)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <div className="space-y-4">
               <FormField
                 control={form.control}
@@ -392,30 +474,32 @@ export const SessionForm = ({
               />
 
               {!form.watch('manna_budget_unlimited') && (
-                <FormField
-                  control={form.control}
-                  name="manna_budget"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Manna Budget</FormLabel>
-                      <FormControl>
-                        <SliderInput
-                          type="integer"
-                          value={field.value || 1000}
-                          onChange={value => field.onChange(value)}
-                          min={100}
-                          max={50000}
-                          step={100}
-                          unit=" manna"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Budget limit for manna spending (100-50000 manna)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="ml-4 mt-2 border-l-2 border-muted pl-4">
+                  <FormField
+                    control={form.control}
+                    name="manna_budget"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Manna Budget</FormLabel>
+                        <FormControl>
+                          <SliderInput
+                            type="integer"
+                            value={field.value || 1000}
+                            onChange={value => field.onChange(value)}
+                            min={100}
+                            max={50000}
+                            step={100}
+                            unit=" manna"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Budget limit for manna spending (100-50000 manna)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               )}
             </div>
 
@@ -444,30 +528,32 @@ export const SessionForm = ({
               />
 
               {!form.watch('token_budget_unlimited') && (
-                <FormField
-                  control={form.control}
-                  name="token_budget"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Token Budget</FormLabel>
-                      <FormControl>
-                        <SliderInput
-                          type="integer"
-                          value={field.value || 10000}
-                          onChange={value => field.onChange(value)}
-                          min={1000}
-                          max={1000000}
-                          step={1000}
-                          unit=" tokens"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Budget limit for token usage (1000-1000000 tokens)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="ml-4 mt-2 border-l-2 border-muted pl-4">
+                  <FormField
+                    control={form.control}
+                    name="token_budget"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Token Budget</FormLabel>
+                        <FormControl>
+                          <SliderInput
+                            type="integer"
+                            value={field.value || 10000}
+                            onChange={value => field.onChange(value)}
+                            min={1000}
+                            max={1000000}
+                            step={1000}
+                            unit=" tokens"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Budget limit for token usage (1000-1000000 tokens)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               )}
             </div>
 
@@ -496,114 +582,34 @@ export const SessionForm = ({
               />
 
               {!form.watch('turn_budget_unlimited') && (
-                <FormField
-                  control={form.control}
-                  name="turn_budget"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Turn Budget</FormLabel>
-                      <FormControl>
-                        <SliderInput
-                          type="integer"
-                          value={field.value || 100}
-                          onChange={value => field.onChange(value)}
-                          min={1}
-                          max={1000}
-                          step={1}
-                          unit=" turns"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Budget limit for conversation turns (1-1000 turns)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="ml-4 mt-2 border-l-2 border-muted pl-4">
+                  <FormField
+                    control={form.control}
+                    name="turn_budget"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Turn Budget</FormLabel>
+                        <FormControl>
+                          <SliderInput
+                            type="integer"
+                            value={field.value || 100}
+                            onChange={value => field.onChange(value)}
+                            min={1}
+                            max={1000}
+                            step={1}
+                            unit=" turns"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Budget limit for conversation turns (1-1000 turns)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               )}
             </div>
-
-            <FormField
-              control={form.control}
-              name="auto_reply"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Auto Reply</FormLabel>
-                    <FormDescription>
-                      Enable automatic responses between agents
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {form.watch('auto_reply') && (
-              <div className="space-y-6 pl-4 border-l-2 border-muted">
-                <FormField
-                  control={form.control}
-                  name="reply_interval"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Reply Interval</FormLabel>
-                      <FormControl>
-                        <SliderInput
-                          type="integer"
-                          value={field.value || 0}
-                          onChange={value => field.onChange(value)}
-                          min={0}
-                          max={3600}
-                          step={5}
-                          unit=" seconds"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Delay between agent responses (0-3600 seconds, 0 = no
-                        delay)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="actor_selection_method"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Actor Selection Method</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select how agents are chosen to respond" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="random">Random</SelectItem>
-                          <SelectItem value="random_exclude_last">
-                            Random (Exclude Last Speaker)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        How agents are selected to respond in multi-agent
-                        sessions
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
 
             <FormField
               control={form.control}
@@ -776,7 +782,7 @@ export const SessionForm = ({
           </CollapsibleContent>
         </Collapsible>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button type="submit" className="w-full mb-8" disabled={isLoading}>
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

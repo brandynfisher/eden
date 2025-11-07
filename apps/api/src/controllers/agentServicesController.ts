@@ -148,7 +148,8 @@ export const getAgentTriggers = async (
 ) => {
   const { agentId } = request.params as { agentId: string }
   const currentUserId = request.user.userId
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!agent) {
     return reply.status(404).send({
@@ -183,7 +184,8 @@ export const getAgentTrigger = async (
     triggerId: string
   }
   const currentUserId = request.user.userId
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!agent) {
     return reply.status(404).send({
@@ -232,7 +234,8 @@ export const createAgentTrigger = async (
     posting_instructions,
   } = request.body as Omit<AgentsCreateTriggerArguments, 'agentId'>
   const currentUserId = request.user.userId
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!agent) {
     return reply.status(404).send({
@@ -328,7 +331,8 @@ export const updateAgentTrigger = async (
   }
   const currentUserId = request.user.userId
 
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!agent) {
     return reply.status(404).send({
@@ -376,6 +380,7 @@ export const updateAgentTrigger = async (
   }
 
   // Build update data - only include fields that are provided
+  // IMPORTANT: Never update the 'user' field - it should only be set on creation
   const updateData: any = {}
 
   if (name !== undefined) updateData.name = name
@@ -418,7 +423,8 @@ export const deleteAgentTrigger = async (
   }
   const currentUserId = request.user.userId
 
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!agent) {
     return reply.status(404).send({
@@ -542,7 +548,8 @@ export const getAgentDeployments = async (
 ) => {
   const { agentId } = request.params as { agentId: string }
   const currentUserId = request.user.userId
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!agent) {
     return reply.status(404).send({
@@ -559,7 +566,7 @@ export const getAgentDeployments = async (
   }
 
   const deployments = await Deployment.find({
-    agent: agentId,
+    agent: agent._id,
   })
 
   return reply.status(200).send({
@@ -576,7 +583,8 @@ export const deployAgent = async (
   const { agentId } = request.params as AgentsDeployArguments
   const { platform, secrets, config } = request.body as AgentsDeployArguments
 
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!request.user.featureFlags.includes(FeatureFlag.Preview)) {
     return reply.status(401).send({
@@ -647,7 +655,8 @@ export const updateAgentDeployment = async (
   const { platform, config, secrets } =
     request.body as AgentsUpdateDeploymentArguments
 
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!agent) {
     return reply.status(404).send({
@@ -715,7 +724,8 @@ export const deleteAgentDeployment = async (
   const currentUserId = request.user.userId
   const { agentId, platform } = request.params as AgentsStopDeploymentArguments
 
-  const agent = await Agent.findById(agentId)
+  const query = createIdOrSlugQuery(agentId)
+  const agent = await Agent.findOne(query)
 
   if (!agent) {
     return reply.status(404).send({

@@ -20,6 +20,7 @@ import {
   listUserShares,
   renameSession,
   updateSessionPermissions,
+  updateSessionStatus,
 } from '../../controllers/v2/sessionControllerV2'
 import { isAdmin, isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
@@ -56,9 +57,9 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           apiKey: [],
         },
       ],
-      body: {
+      body: Type.Object({
         agent_ids: Type.Array(Type.String(), { minItems: 1 }),
-        scenario: Type.Optional(Type.String({ maxLength: 1000 })),
+        context: Type.Optional(Type.String({ maxLength: 5000 })),
         budget: Type.Optional(
           Type.Object({
             manna_budget: Type.Optional(
@@ -73,14 +74,28 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           }),
         ),
         title: Type.Optional(Type.String({ maxLength: 1000 })),
-        autonomy_settings: Type.Optional(
+        session_type: Type.Optional(
+          Type.Union([
+            Type.Literal('chat'),
+            Type.Literal('passive'),
+            Type.Literal('automatic'),
+          ]),
+        ),
+        status: Type.Optional(
+          Type.Union([
+            Type.Literal('active'),
+            Type.Literal('paused'),
+            Type.Literal('stopped'),
+            Type.Literal('archived'),
+          ]),
+        ),
+        settings: Type.Optional(
           Type.Object({
-            auto_reply: Type.Boolean(),
-            reply_interval: Type.Number({ minimum: 0, maximum: 3600 }),
-            actor_selection_method: Type.Union([
-              Type.Literal('random'),
-              Type.Literal('random_exclude_last'),
-            ]),
+            conductor_prompt: Type.Optional(Type.String({ maxLength: 2000 })),
+            delay_interval: Type.Optional(
+              Type.Number({ minimum: 0, maximum: 3600 }),
+            ),
+            mention_force_reply: Type.Optional(Type.Boolean()),
           }),
         ),
         extras: Type.Optional(
@@ -88,25 +103,25 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
             exclude_memory: Type.Optional(Type.Boolean()),
           }),
         ),
-      },
+      }),
       response: {
         201: Type.Object({
           success: Type.Boolean(),
           session: Type.Any(),
         }),
-        400: {
+        400: Type.Object({
           message: Type.Optional(Type.String()),
-        },
-        401: {
+        }),
+        401: Type.Object({
           message: Type.Optional(Type.String()),
-        },
-        404: {
+        }),
+        404: Type.Object({
           message: Type.Optional(Type.String()),
-        },
-        500: {
+        }),
+        500: Type.Object({
           error: Type.Optional(Type.Any()),
           message: Type.Optional(Type.String()),
-        },
+        }),
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
@@ -118,17 +133,22 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
       stream?: boolean
       thinking?: boolean
       agent_ids?: string[]
-      scenario?: string
+      context?: string
       budget?: {
         manna_budget?: number
         token_budget?: number
         turn_budget?: number
       }
       title?: string
-      autonomy_settings?: {
-        auto_reply: boolean
-        reply_interval: number
-        actor_selection_method: 'random' | 'random_exclude_last'
+      session_type?: 'chat' | 'passive' | 'automatic'
+      settings?: {
+        conductor_prompt?: string
+        delay_interval: number
+        mention_force_reply: boolean
+      }
+      extras?: {
+        exclude_memory?: boolean
+        is_public?: boolean
       }
     }
   }>('/v2/sessions', {
@@ -142,14 +162,14 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           apiKey: [],
         },
       ],
-      body: {
+      body: Type.Object({
         session_id: Type.Optional(Type.String()),
         content: Type.Optional(Type.String()),
         attachments: Type.Optional(Type.Array(Type.String())),
         stream: Type.Optional(Type.Boolean()),
         thinking: Type.Optional(Type.Boolean()),
         agent_ids: Type.Optional(Type.Array(Type.String())),
-        scenario: Type.Optional(Type.String({ maxLength: 1000 })),
+        context: Type.Optional(Type.String({ maxLength: 5000 })),
         budget: Type.Optional(
           Type.Object({
             manna_budget: Type.Optional(
@@ -164,14 +184,20 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
           }),
         ),
         title: Type.Optional(Type.String({ maxLength: 1000 })),
-        autonomy_settings: Type.Optional(
+        session_type: Type.Optional(
+          Type.Union([
+            Type.Literal('chat'),
+            Type.Literal('passive'),
+            Type.Literal('automatic'),
+          ]),
+        ),
+        settings: Type.Optional(
           Type.Object({
-            auto_reply: Type.Boolean(),
-            reply_interval: Type.Number({ minimum: 0, maximum: 3600 }),
-            actor_selection_method: Type.Union([
-              Type.Literal('random'),
-              Type.Literal('random_exclude_last'),
-            ]),
+            conductor_prompt: Type.Optional(Type.String({ maxLength: 2000 })),
+            delay_interval: Type.Optional(
+              Type.Number({ minimum: 0, maximum: 3600 }),
+            ),
+            mention_force_reply: Type.Optional(Type.Boolean()),
           }),
         ),
         extras: Type.Optional(
@@ -179,24 +205,24 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
             exclude_memory: Type.Optional(Type.Boolean()),
           }),
         ),
-      },
+      }),
       response: {
         200: Type.Object({
           session_id: Type.String(),
         }),
-        400: {
+        400: Type.Object({
           message: Type.Optional(Type.String()),
-        },
-        401: {
+        }),
+        401: Type.Object({
           message: Type.Optional(Type.String()),
-        },
-        404: {
+        }),
+        404: Type.Object({
           message: Type.Optional(Type.String()),
-        },
-        500: {
+        }),
+        500: Type.Object({
           error: Type.Optional(Type.Any()),
           message: Type.Optional(Type.String()),
-        },
+        }),
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
@@ -348,28 +374,23 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
 
   server.patch<{
     Params: Pick<SessionsV2RenameArguments, 'session_id'>
-    Body: Pick<SessionsV2RenameArguments, 'title'> & {
-      pinned?: boolean
-      extras?: {
-        exclude_memory?: boolean
-        is_public?: boolean
-      }
-    }
+    Body: Omit<SessionsV2RenameArguments, 'session_id'>
   }>('/v2/sessions/:session_id', {
     schema: {
       tags: ['Sessions'],
       summary: 'Update Session',
-      description: 'Update session properties such as title or pinned status.',
+      description:
+        'Update session properties such as title, pinned status, type, settings, context, and budget.',
       security: [
         {
           apiKey: [],
         },
       ],
-      params: {
+      params: Type.Object({
         session_id: Type.String(),
-      },
-      body: {
-        title: Type.Optional(Type.String({ minLength: 1, maxLength: 100 })),
+      }),
+      body: Type.Object({
+        title: Type.Optional(Type.String({ minLength: 1, maxLength: 1000 })),
         pinned: Type.Optional(Type.Boolean()),
         extras: Type.Optional(
           Type.Object({
@@ -377,23 +398,62 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
             is_public: Type.Optional(Type.Boolean()),
           }),
         ),
-      },
+        agent_ids: Type.Optional(Type.Array(Type.String())),
+        session_type: Type.Optional(
+          Type.Union([
+            Type.Literal('chat'),
+            Type.Literal('passive'),
+            Type.Literal('automatic'),
+          ]),
+        ),
+        settings: Type.Optional(
+          Type.Object({
+            conductor_prompt: Type.Optional(Type.String({ maxLength: 2000 })),
+            delay_interval: Type.Optional(
+              Type.Number({ minimum: 0, maximum: 3600 }),
+            ),
+            mention_force_reply: Type.Optional(Type.Boolean()),
+          }),
+        ),
+        context: Type.Optional(Type.String({ maxLength: 5000 })),
+        budget: Type.Optional(
+          Type.Object({
+            manna_budget: Type.Optional(
+              Type.Number({ minimum: 100, maximum: 50000 }),
+            ),
+            token_budget: Type.Optional(
+              Type.Number({ minimum: 1000, maximum: 1000000 }),
+            ),
+            turn_budget: Type.Optional(
+              Type.Number({ minimum: 1, maximum: 1000 }),
+            ),
+          }),
+        ),
+        status: Type.Optional(
+          Type.Union([
+            Type.Literal('active'),
+            Type.Literal('paused'),
+            Type.Literal('stopped'),
+            Type.Literal('archived'),
+          ]),
+        ),
+      }),
       response: {
         200: Type.Object({
           success: Type.Boolean(),
         }),
-        400: {
+        400: Type.Object({
           error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
-        },
-        401: {
+        }),
+        401: Type.Object({
           error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
-        },
-        404: {
+        }),
+        404: Type.Object({
           error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
-        },
+        }),
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
@@ -420,18 +480,18 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
         200: Type.Object({
           success: Type.Boolean(),
         }),
-        400: {
+        400: Type.Object({
           error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
-        },
-        401: {
+        }),
+        401: Type.Object({
           error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
-        },
-        404: {
+        }),
+        404: Type.Object({
           error: Type.Optional(Type.String()),
           message: Type.Optional(Type.String()),
-        },
+        }),
       },
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
@@ -483,6 +543,57 @@ const sessionRoutesV2: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => sessionPreHandler(request, reply)],
     handler: (request, reply) => cancelSession(server, request, reply),
+  })
+
+  server.post<{
+    Body: {
+      session_id: string
+      status: string
+    }
+  }>('/v2/sessions/status', {
+    schema: {
+      tags: ['Sessions'],
+      summary: 'Update Session Status',
+      description:
+        'Update the status of a session (active, paused, stopped, or archived).',
+      security: [
+        {
+          apiKey: [],
+        },
+      ],
+      body: Type.Object({
+        session_id: Type.String(),
+        status: Type.Union([
+          Type.Literal('active'),
+          Type.Literal('paused'),
+          Type.Literal('stopped'),
+          Type.Literal('archived'),
+        ]),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+          error: Type.Optional(Type.String()),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        401: Type.Object({
+          message: Type.String(),
+        }),
+        403: Type.Object({
+          message: Type.String(),
+        }),
+        404: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => sessionPreHandler(request, reply)],
+    handler: (request, reply) => updateSessionStatus(server, request, reply),
   })
 
   // Session Share Routes

@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react'
 type SessionsLayoutContextValue = {
   forceHideSidebar: boolean
   setForceHideSidebar: (value: boolean) => void
+  openSidebar?: () => void
 }
 
 export const SessionsLayoutContext =

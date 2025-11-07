@@ -1,9 +1,11 @@
 'use client'
 
+import { EditSessionModal } from './components/edit-session-modal'
 import { ErrorDisplay } from './components/error-display'
 import { MessageInput } from './components/message-input'
 import { NonStreamingMessageDisplay } from './components/non-streaming-message-display'
 import { SessionShareButton } from './components/session-share-button'
+import { SessionStatusToggle } from './components/session-status-toggle'
 import SessionWelcome from './components/session-welcome'
 import { useSessionsLayoutContext } from './context/sessions-layout-context'
 import { useNonStreamingState } from './hooks/use-non-streaming-state'
@@ -29,6 +31,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent, Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import { EditIcon, MenuIcon } from 'lucide-react'
 import {
   useParams,
   usePathname,
@@ -41,6 +44,7 @@ const Session = ({
   optimisticSessionId,
   pendingMessage,
   onSessionLoaded,
+  onOpenSidebar,
 }: {
   optimisticSessionId?: string
   pendingMessage?: {
@@ -49,6 +53,7 @@ const Session = ({
     agent: Agent
   }
   onSessionLoaded?: () => void
+  onOpenSidebar?: () => void
 } = {}) => {
   const params = useParams()
   const router = useRouter()
@@ -64,6 +69,7 @@ const Session = ({
   const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false)
   const [hasTriggeredInitialScroll, setHasTriggeredInitialScroll] =
     useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   // Track session viewing for notifications
   useSessionTracking(sessionId)
@@ -1021,8 +1027,10 @@ const Session = ({
         )
       }) ?? []
 
-    // Prepend trigger system message if trigger data exists
-    let messagesWithTrigger = existingMessages
+    // Prepend session context and trigger context system messages if they exist
+    let messagesWithContext = existingMessages
+
+    // Add trigger context message if trigger data exists
     if (triggerData && triggerData.context) {
       const triggerSystemMessage = {
         _id: `trigger-context-${sessionId}`,
@@ -1037,11 +1045,29 @@ const Session = ({
         trigger_context: true,
       } as Message & { trigger_context: boolean }
 
-      messagesWithTrigger = [triggerSystemMessage, ...existingMessages]
+      messagesWithContext = [triggerSystemMessage, ...messagesWithContext]
+    }
+
+    // Add session context message if session context exists (displayed above trigger context)
+    if (session?.context && session.context.trim()) {
+      const sessionContextMessage = {
+        _id: `session-context-${sessionId}`,
+        session: sessionId,
+        role: 'system' as const,
+        content: session.context,
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+        attachments: [],
+        reactions: {},
+        sender: { _id: 'system', username: 'system', name: 'System' },
+        session_context: true,
+      } as Message & { session_context: boolean }
+
+      messagesWithContext = [sessionContextMessage, ...messagesWithContext]
     }
 
     if (sessionId === 'new' && isSessionLoading) {
-      return [...messagesWithTrigger, ...optimisticMessages]
+      return [...messagesWithContext, ...optimisticMessages]
     }
 
     // In non-streaming mode, include optimistic messages but avoid duplicates
@@ -1059,7 +1085,7 @@ const Session = ({
               ) < 10000,
           ),
       )
-      return [...messagesWithTrigger, ...uniqueOptimisticMessages]
+      return [...messagesWithContext, ...uniqueOptimisticMessages]
     }
 
     // In streaming mode, include optimistic messages but avoid duplicates
@@ -1078,7 +1104,7 @@ const Session = ({
 
     // Include local streaming messages when in pendingMessage mode
     return [
-      ...messagesWithTrigger,
+      ...messagesWithContext,
       ...uniqueOptimisticMessages,
       ...streamingMessages,
     ]
@@ -1194,11 +1220,218 @@ const Session = ({
     )
   }
 
-  // Check if we're on /chat route and have a named session (not 'new')
-  const isNamedSession = ischatRoute && sessionId && sessionId !== 'new'
-
   return (
     <div className="flex flex-col h-full max-h-full overflow-hidden">
+      {/* Mobile navbar - Icon buttons only (CHAT ROUTES ONLY - sessions uses SessionsHeader) */}
+      {sessionId && sessionId !== 'new' && session && ischatRoute && (
+        <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 flex-shrink-0">
+          {/* Hamburger menu */}
+          <button
+            onClick={() => {
+              // Try context first, fallback to prop
+              if (sessionsLayoutContext?.openSidebar) {
+                sessionsLayoutContext.openSidebar()
+              } else if (onOpenSidebar) {
+                onOpenSidebar()
+              }
+            }}
+            className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
+            aria-label="Open sidebar"
+          >
+            <MenuIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+
+          {/* Left section - Agent avatars and session title */}
+          <button
+            onClick={() => isOwner && setIsEditModalOpen(true)}
+            className={cn(
+              'flex items-center gap-2 min-w-0 flex-1',
+              isOwner &&
+                'hover:bg-muted/50 rounded-md px-2 -mx-2 py-1 transition-colors cursor-pointer',
+            )}
+            disabled={!isOwner}
+          >
+            {session.agents && session.agents.length > 0 && (
+              <>
+                {/* Agent avatars */}
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {session.agents.slice(0, 3).map((agent, index) => (
+                      <div
+                        key={agent._id}
+                        className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden"
+                        style={{ zIndex: session.agents.length - index }}
+                      >
+                        {agent.userImage ? (
+                          <img
+                            src={getCloudfrontUrl(agent.userImage)}
+                            alt={agent.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center text-xs font-medium">
+                            {agent.name?.[0]?.toUpperCase() || 'A'}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {session.agents.length > 3 && (
+                    <span className="text-xs text-muted-foreground">
+                      +{session.agents.length - 3}
+                    </span>
+                  )}
+                </div>
+
+                {/* Session title - truncated */}
+                {session.title && (
+                  <div
+                    className="text-sm text-muted-foreground truncate flex-1 text-left"
+                    title={session.title}
+                  >
+                    {session.title}
+                  </div>
+                )}
+              </>
+            )}
+          </button>
+
+          {/* Right section - Icon-only buttons */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Share button - icon only */}
+            {isOwner && (
+              <SessionShareButton
+                sessionId={sessionId as string}
+                messages={session.messages || []}
+                isOwner={isOwner}
+                isPublic={session.extras?.is_public}
+                className="h-9 w-9 px-0"
+                hideText
+              />
+            )}
+
+            {/* New Chat button - icon only */}
+            <button
+              onClick={() => {
+                if (ischatRoute && params?.agentId) {
+                  router.push(`/chat/${params.agentId}`)
+                } else {
+                  router.push('/sessions/new')
+                }
+              }}
+              className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+              title={ischatRoute ? 'New Chat' : 'New Session'}
+            >
+              <EditIcon className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop navbar - Agent avatars + session title + buttons */}
+      {sessionId && sessionId !== 'new' && session && (
+        <div className="hidden md:flex h-12 items-center gap-4 border-b border-l-0 bg-background px-4 flex-shrink-0">
+          {/* Left section - Agent avatars and session title - clickable for edit */}
+          <button
+            onClick={() => isOwner && setIsEditModalOpen(true)}
+            className={cn(
+              'flex items-center gap-2 min-w-0 flex-1',
+              isOwner &&
+                'hover:bg-muted/50 rounded-md px-2 -mx-2 py-1 transition-colors cursor-pointer',
+            )}
+            disabled={!isOwner}
+          >
+            {session.agents && session.agents.length > 0 && (
+              <>
+                {/* Agent avatars */}
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {session.agents.slice(0, 3).map((agent, index) => (
+                      <div
+                        key={agent._id}
+                        className="relative w-8 h-8 rounded-full border-2 border-background overflow-hidden"
+                        style={{ zIndex: session.agents.length - index }}
+                      >
+                        {agent.userImage ? (
+                          <img
+                            src={getCloudfrontUrl(agent.userImage)}
+                            alt={agent.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center text-xs font-medium">
+                            {agent.name?.[0]?.toUpperCase() || 'A'}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {session.agents.length > 3 && (
+                    <span className="text-xs text-muted-foreground">
+                      +{session.agents.length - 3}
+                    </span>
+                  )}
+                </div>
+
+                {/* Session title */}
+                {session.title && (
+                  <div
+                    className="text-sm text-muted-foreground truncate flex-1 max-w-[400px] text-left ml-2"
+                    title={session.title}
+                  >
+                    {session.title}
+                  </div>
+                )}
+              </>
+            )}
+          </button>
+
+          {/* Right section - Share, New Chat/Session (no Status Toggle for chat) */}
+          <div className="flex items-center gap-2">
+            {/* Status Toggle - only show for sessions, not chat */}
+            {!ischatRoute && isOwner && (
+              <SessionStatusToggle
+                sessionId={sessionId as string}
+                currentStatus={session.status}
+                onStatusChange={newStatus => {
+                  // Update session in cache
+                  if (session) {
+                    session.status = newStatus
+                  }
+                }}
+              />
+            )}
+
+            {/* Share button */}
+            {isOwner && (
+              <SessionShareButton
+                sessionId={sessionId as string}
+                messages={session.messages || []}
+                isOwner={isOwner}
+                isPublic={session.extras?.is_public}
+                className="h-8 px-3"
+              />
+            )}
+
+            {/* New Chat button (for chat routes) or New Session button (for sessions routes) */}
+            <button
+              onClick={() => {
+                if (ischatRoute && params?.agentId) {
+                  router.push(`/chat/${params.agentId}`)
+                } else {
+                  router.push('/sessions/new')
+                }
+              }}
+              className="h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors flex items-center gap-2"
+              title={ischatRoute ? 'New Chat' : 'New Session'}
+            >
+              <EditIcon className="h-3.5 w-3.5" />
+              {ischatRoute ? 'New Chat' : 'New Session'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Connection status indicator - only show when not connected and using SSE streaming */}
       {sessionConfig.useStreaming &&
         connectionState !== 'connected' &&
@@ -1225,19 +1458,6 @@ const Session = ({
             )}
           </div>
         )}
-
-      {/* Floating share button - desktop only, shown for named sessions when user is owner */}
-      {isNamedSession && isOwner && session && (
-        <div className="hidden md:block fixed top-[72px] right-6 z-40">
-          <SessionShareButton
-            sessionId={sessionId as string}
-            messages={session.messages || []}
-            isOwner={isOwner}
-            isPublic={session.extras?.is_public}
-            className="bg-background/90 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-shadow"
-          />
-        </div>
-      )}
 
       <div
         ref={messagesContainerRef}
@@ -1529,6 +1749,67 @@ const Session = ({
                       agents={displaySession.agents}
                       sessionTitle={''}
                     />
+                    {/* Show Start Session button if paused and no messages */}
+                    {session?.status === 'paused' &&
+                      messageGroups.length === 0 &&
+                      isOwner && (
+                        <div className="flex justify-center mt-8">
+                          <button
+                            onClick={async () => {
+                              try {
+                                // Send request to compute API to handle session status change
+                                const response = await fetch(
+                                  '/api/sessions/status',
+                                  {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                      session_id: sessionId,
+                                      status: 'active',
+                                    }),
+                                  },
+                                )
+
+                                // Commented out: Direct MongoDB update
+                                // const response = await fetch(
+                                //   `/api/sessions/${sessionId}`,
+                                //   {
+                                //     method: 'PATCH',
+                                //     headers: {
+                                //       'Content-Type': 'application/json',
+                                //     },
+                                //     body: JSON.stringify({
+                                //       status: 'active',
+                                //     }),
+                                //   },
+                                // )
+
+                                if (response.ok) {
+                                  const result = await response.json()
+
+                                  if (result.success && session) {
+                                    session.status = 'active'
+                                    refetchSession()
+                                  } else {
+                                    // Show error notification
+                                    console.error(
+                                      'Failed to start session:',
+                                      result.error,
+                                    )
+                                  }
+                                }
+                              } catch (error) {
+                                console.error('Failed to start session:', error)
+                              }
+                            }}
+                            className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-lg transition-colors shadow-lg hover:shadow-xl"
+                          >
+                            Start Session
+                          </button>
+                        </div>
+                      )}
                   </>
                 ) : null
               }
@@ -1749,6 +2030,15 @@ const Session = ({
             />
           </div>
         </div>
+      )}
+
+      {/* Edit Session Modal */}
+      {session && sessionId && sessionId !== 'new' && (
+        <EditSessionModal
+          sessionId={sessionId}
+          open={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+        />
       )}
     </div>
   )

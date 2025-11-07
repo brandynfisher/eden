@@ -191,15 +191,13 @@ export const SessionShareButton = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={className}
+        <button
+          className={`h-8 px-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors flex items-center gap-2 ${className}`}
           onClick={() => setIsOpen(true)}
         >
-          <Share2 className="h-4 w-4" />
-          {!hideText && <span className="ml-2 text-sm">Share</span>}
-        </Button>
+          <Share2 className="h-3.5 w-3.5" />
+          {!hideText && <span>Share</span>}
+        </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">

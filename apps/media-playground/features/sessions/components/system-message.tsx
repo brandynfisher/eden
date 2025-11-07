@@ -11,7 +11,17 @@ export const SystemMessage = ({ message }: SystemMessageProps) => {
   const isTriggerContext =
     'trigger_context' in message &&
     (message as Message & { trigger_context: boolean }).trigger_context === true
-  const label = isTriggerContext ? 'TASK CONTEXT' : 'SYSTEM'
+
+  // Check if this is a session context message
+  const isSessionContext =
+    'session_context' in message &&
+    (message as Message & { session_context: boolean }).session_context === true
+
+  const label = isTriggerContext
+    ? 'TASK CONTEXT'
+    : isSessionContext
+    ? 'SESSION CONTEXT'
+    : 'SYSTEM'
   const trimmedContent = message.content.trim()
 
   return (

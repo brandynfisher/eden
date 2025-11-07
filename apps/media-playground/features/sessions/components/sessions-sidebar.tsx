@@ -3,44 +3,74 @@
 import { AgentAvatars } from './agent-avatars'
 import { SessionShareButton } from './session-share-button'
 import { SettingsSidebar } from './settings-sidebar'
-import { ModeToggle } from '@/components/header/mode-toggle'
+import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
+import DiscordIcon from '@/components/icons/discord'
+import TwitterIcon from '@/components/icons/twitter'
 import LoadingIndicator from '@/components/loading-indicator'
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
+import DialogMenuItem from '@/components/modal/dialog-menu-item'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import UserAvatar from '@/components/user/user-avatar'
 import { ViewMode } from '@/features/sessions/components/types'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { useMe } from '@/hooks/use-me'
+import { siteConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { subscriptionTierNameMap } from '@/lib/strings'
 import { cn } from '@/lib/utils'
-import { Agent, FeatureFlag, SessionV2 } from '@edenlabs/eden-sdk'
+import { useAuth, useClerk } from '@clerk/nextjs'
+import {
+  Agent,
+  FeatureFlag,
+  SessionType,
+  SubscriptionTier,
+} from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
+  ActivityIcon,
+  BookmarkIcon,
+  BotIcon,
   CheckIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
-  EditIcon,
+  ComponentIcon,
+  CreditCardIcon,
   ImageIcon,
+  LogOutIcon,
   MenuIcon,
+  MessageSquareIcon,
   MoreHorizontal,
   PencilIcon,
   PinIcon,
   PinOffIcon,
+  SettingsIcon,
   Share2,
+  TicketIcon,
   TrashIcon,
 } from 'lucide-react'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
@@ -63,6 +93,7 @@ interface SessionListItemProps {
   onPinToggle?: (sessionId: string, pinned: boolean) => Promise<void>
   unreadCount?: number
   userId?: string
+  hideAvatars?: boolean
 }
 
 const SessionListItem: FC<SessionListItemProps> = ({
@@ -78,6 +109,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
   onPinToggle,
   unreadCount = 0,
   userId: _userId, // Used in share dialog
+  hideAvatars = false,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -238,7 +270,7 @@ const SessionListItem: FC<SessionListItemProps> = ({
           : 'hover:text-foreground hover:bg-muted/50 border-transparent',
       )}
     >
-      <div className="flex-grow min-w-0 pl-1.5 pr-1 py-1.5 flex items-stretch">
+      <div className="flex-grow min-w-0 px-2 py-1.5 flex items-stretch">
         {isEditing ? (
           <div className="flex items-center gap-1 flex-grow min-w-0 text-foreground">
             <Input
@@ -286,40 +318,47 @@ const SessionListItem: FC<SessionListItemProps> = ({
             onClick={onItemClick}
             disabled={isEditing}
           >
-            {!isChat && agents.length > 0 && (
+            {!hideAvatars && agents.length > 0 && (
               <AgentAvatars agents={agents} className="shrink-0" />
             )}
             {isFromTrigger && !agents.length && (
               <ClockIcon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             )}
-            <div className="min-w-0 flex-1">
-              <div className="overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-2">
-                <span className="truncate">
-                  {optimisticTitle || 'Untitled'}
-                </span>
-                {unreadCount > 0 && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground shrink-0">
-                    {unreadCount}
+            <div className="min-w-0 flex-1 flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-2">
+                  <span className="truncate">
+                    {optimisticTitle || 'Untitled'}
                   </span>
-                )}
-              </div>
-              {(agents.length > 2 || isFromTrigger) && (
-                <div className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-1">
-                  {isFromTrigger && <ClockIcon className="h-3 w-3 shrink-0" />}
-                  {isFromTrigger && agents.length > 2 && <span>•</span>}
-                  {agents.length > 2 && (
-                    <span>
-                      {agents.length > 3
-                        ? `${agents.length} members`
-                        : agents
-                            .map(agent => agent.name || agent.username)
-                            .join(', ')}
+                  {unreadCount > 0 && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground shrink-0">
+                      {unreadCount}
                     </span>
                   )}
-                  {isFromTrigger && agents.length <= 2 && (
-                    <span>Scheduled Task</span>
-                  )}
                 </div>
+                {(agents.length > 2 || isFromTrigger) && (
+                  <div className="text-xs text-muted-foreground overflow-hidden whitespace-nowrap text-ellipsis flex items-center gap-1">
+                    {isFromTrigger && (
+                      <ClockIcon className="h-3 w-3 shrink-0" />
+                    )}
+                    {isFromTrigger && agents.length > 2 && <span>•</span>}
+                    {agents.length > 2 && (
+                      <span>
+                        {agents.length > 3
+                          ? `${agents.length} members`
+                          : agents
+                              .map(agent => agent.name || agent.username)
+                              .join(', ')}
+                      </span>
+                    )}
+                    {isFromTrigger && agents.length <= 2 && (
+                      <span>Scheduled Task</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              {isPinned && (
+                <PinIcon className="h-3 w-3 text-muted-foreground shrink-0" />
               )}
             </div>
           </button>
@@ -484,287 +523,24 @@ const SessionListItem: FC<SessionListItemProps> = ({
   )
 }
 
-function isNewSessionRoute(
-  params: Record<string, string | string[]>,
-  isChat?: boolean,
-): boolean {
-  // For chat: /chat/[agentId] (no sessionId)
-  if (isChat) {
-    return !!params.agentId && !params.sessionId && !params.id
-  }
-  // For sessions: /sessions/new
-  return params.id === 'new' || (!params.sessionId && !params.id)
-}
-
-const TopLeft: FC<{
-  onItemClick?: () => void
-  isChat?: boolean
-  onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
-  viewMode?: ViewMode
-}> = ({ onItemClick, isChat, onViewModeChange, viewMode }) => {
-  const router = useRouter()
-  const params = useParams()
-  const agentId = params?.agentId as string
-  const sessionId = params?.id as string
-  const isNewSession = isNewSessionRoute(params || {}, isChat)
-
-  // Hide button on /sessions/new in desktop view
-  const shouldHideButton = !isChat && (sessionId === 'new' || !sessionId)
-
-  const handleClick = () => {
-    onItemClick?.()
-    if (isChat && agentId) {
-      // Switch to chat mode first, then navigate
-      onViewModeChange?.('chat')
-      router.push(`/chat/${agentId}`, { scroll: false })
-    } else {
-      router.push('/sessions/new', { scroll: false })
-    }
-  }
-
-  // Don't render the button if we're on /sessions/new
-  if (shouldHideButton) {
-    return null
-  }
-
-  // Check if this button should be highlighted (in chat mode and on new session)
-  const isActive = viewMode === 'chat' && isNewSession
-
-  return (
-    <Button
-      variant={isActive ? 'outline' : 'ghost'}
-      onClick={handleClick}
-      className={cn(
-        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-        isActive
-          ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
-          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-      )}
-    >
-      <EditIcon className="size-4" />
-      <span>{isChat ? 'New Chat' : 'New Session'}</span>
-    </Button>
-  )
-}
-
-// Agent selector and New Chat - two separate rows for mobile
-const AgentSelectorAndNewChat: FC<{
-  onItemClick?: () => void
-  isChat?: boolean
-  onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
-  agent?: Agent | null | undefined
-  onAgentSelect?: () => void
-  onSettingsClick?: () => void
-  userId?: string | null
-  sessionId?: string
-  session?: SessionV2
-  viewMode?: ViewMode
-  hasEditAccess?: boolean
-}> = ({
-  onItemClick,
-  isChat,
-  onViewModeChange,
-  agent,
-  onAgentSelect,
-  userId,
-  sessionId,
-  session,
-  viewMode,
-  hasEditAccess,
-}) => {
-  const router = useRouter()
-  const params = useParams()
-  const agentId = params?.agentId as string
-  const isNewSession = isNewSessionRoute(params || {}, isChat)
-
-  const handleNewChatClick = () => {
-    onItemClick?.()
-    if (isChat && agentId) {
-      // Switch to chat mode first, then navigate
-      onViewModeChange?.('chat')
-      router.push(`/chat/${agentId}`, { scroll: false })
-    } else {
-      router.push('/sessions/new', { scroll: false })
-    }
-  }
-
-  const handleAgentClick = () => {
-    onItemClick?.()
-    onAgentSelect?.()
-  }
-
-  return (
-    <div className="mb-4 space-y-3">
-      {/* Row 1: Agent selector - full width */}
-      <div className="flex gap-2 items-center">
-        {/* Agent selector */}
-        {agent && (
-          <button
-            onClick={handleAgentClick}
-            className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] flex-1 min-w-0"
-          >
-            <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
-              <AvatarImage
-                src={
-                  agent.userImage && agent.userImage.trim()
-                    ? getCloudfrontOriginalUrl(agent.userImage)
-                    : undefined
-                }
-                alt={agent.name}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-muted text-sm font-medium">
-                {agent.username?.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="font-semibold text-base text-foreground truncate">
-              {agent.username}
-            </span>
-            <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          </button>
-        )}
-      </div>
-
-      {/* Row 2: Mode Toggle - only show if user has edit access */}
-      {hasEditAccess && onViewModeChange && viewMode && (
-        <ModeToggle
-          mode={viewMode === 'settings' ? 'settings' : 'chat'}
-          onModeChange={mode => {
-            onViewModeChange(mode === 'settings' ? 'settings' : 'chat')
-          }}
-          variant="sidebar"
-        />
-      )}
-
-      {/* Row 3: New Chat button - full width - hide in settings mode */}
-      {viewMode !== 'settings' && (
-        <Button
-          variant={viewMode === 'chat' && isNewSession ? 'outline' : 'ghost'}
-          onClick={handleNewChatClick}
-          className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            viewMode === 'chat' && isNewSession
-              ? 'bg-primary/20 text-primary-foreground border border-primary/40 hover:bg-primary/25'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-          )}
-        >
-          <EditIcon className="size-4" />
-          <span>{isChat ? 'New Chat' : 'New Session'}</span>
-        </Button>
-      )}
-
-      {/* Row 4: Creations button - full width - hide in settings mode */}
-      {viewMode && viewMode !== 'settings' && onViewModeChange && (
-        <Button
-          variant={viewMode === 'creations' ? 'outline' : 'ghost'}
-          onClick={() => {
-            onViewModeChange('creations')
-            onItemClick?.()
-          }}
-          className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            viewMode === 'creations'
-              ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-          )}
-        >
-          <ImageIcon className="size-4" />
-          <span>Creations</span>
-        </Button>
-      )}
-
-      {/* Row 5: Share Chat button - only show when in chat mode and user owns the session */}
-      {viewMode === 'chat' &&
-        session &&
-        sessionId &&
-        session.owner?._id === userId && (
-          <SessionShareButton
-            sessionId={sessionId}
-            messages={session.messages || []}
-            isOwner={session.owner?._id === userId}
-            isPublic={session.extras?.is_public}
-            className="h-10 w-full justify-start hover:bg-muted/50 text-foreground"
-          />
-        )}
-    </div>
-  )
-}
-
-// Navigation buttons component for Creations
-const NavigationButtons: FC<{
-  onItemClick?: () => void
-  agent: Agent | null | undefined
-  userId?: string | null
-  viewMode: ViewMode
-  onViewModeChange: (mode: ViewMode) => void
-}> = ({ onItemClick, viewMode, onViewModeChange }) => {
-  const handleNavClick = (mode: ViewMode) => {
-    onViewModeChange(mode)
-    onItemClick?.()
-  }
-
-  return (
-    <Button
-      variant={viewMode === 'creations' ? 'outline' : 'ghost'}
-      onClick={() => handleNavClick('creations')}
-      className={cn(
-        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-        viewMode === 'creations'
-          ? 'bg-primary/20 hover:bg-primary/25 border-primary/40 text-primary-foreground'
-          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-      )}
-    >
-      <ImageIcon className="size-4" />
-      <span>Creations</span>
-    </Button>
-  )
-}
-
-// Mobile sidebar header with navigation links
+// Mobile sidebar header with just the logo
 const MobileSidebarHeader: FC<{
   onItemClick?: () => void
 }> = ({ onItemClick }) => {
   const router = useRouter()
 
-  const handleNavClick = (href: string) => {
-    onItemClick?.()
-    router.push(href)
-  }
-
   return (
-    <div className="mb-3 pb-3 border-b border-border pr-8 bg-background">
-      {/* Eden logo + Navigation links in one row */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => handleNavClick('/')}
-          className="flex items-center gap-2 text-lg font-semibold"
-        >
-          <EdenLogoBw className="w-[28px]" />
-          <span className="sr-only">Eden</span>
-        </button>
-
-        {/* Navigation links */}
-        <nav className="flex items-center gap-4">
-          <button
-            onClick={() => handleNavClick('/chat')}
-            className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Chat
-          </button>
-          <button
-            onClick={() => handleNavClick('/explore?type=agents')}
-            className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Explore
-          </button>
-          <button
-            onClick={() => handleNavClick('/explore?type=tools')}
-            className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Tools
-          </button>
-        </nav>
-      </div>
+    <div className="mb-3">
+      <button
+        onClick={() => {
+          onItemClick?.()
+          router.push('/')
+        }}
+        className="flex items-center gap-2 text-lg font-semibold"
+      >
+        <EdenLogoBw className="w-[28px]" />
+        <span className="sr-only">Eden</span>
+      </button>
     </div>
   )
 }
@@ -774,17 +550,33 @@ const MainLeft = ({
   agentId,
   isChat,
   onViewModeChange,
+  agent,
+  pathname,
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
   onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  agent?: Agent | null | undefined
+  pathname?: string | null
 }) => {
   const { isSignedIn, verifyAuth, user } = useAuthState()
   const router = useRouter()
   const params = useParams()
   const currentSessionId =
     (params?.id as string) || (params?.sessionId as string)
+
+  // Determine the label for the sessions section
+  const sessionsLabel = React.useMemo(() => {
+    if (pathname?.startsWith('/chat') || pathname === '/') {
+      if (agentId && agent) {
+        return `Chats with ${agent.name || agent.username}`
+      }
+      return 'Chats'
+    }
+    return 'Sessions'
+  }, [pathname, agentId, agent])
+  const [isSessionsCollapsed, setIsSessionsCollapsed] = useState(false)
   const {
     isLoading,
     hasMore,
@@ -814,211 +606,506 @@ const MainLeft = ({
     }
   }
 
-  // Setup intersection observer for infinite scrolling
+  // Track fetching state with refs
+  const isFetchingRef = useRef(isFetchingNextPage)
+  const hasMoreRef = useRef(hasMore)
+
   useEffect(() => {
-    if (!hasMore || isFetchingNextPage) {
-      return
-    }
+    isFetchingRef.current = isFetchingNextPage
+    hasMoreRef.current = hasMore
+  }, [isFetchingNextPage, hasMore])
 
-    const target = document.getElementById('session-list-observer-target')
-    if (!target) {
-      return
-    }
+  // Scroll-based pagination
+  useEffect(() => {
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      const container = document.getElementById('sidebar-scroll-container')
+      if (!container) {
+        return
+      }
 
-    const container = target.closest('nav')
-    if (!container) {
-      return
-    }
+      const handleScroll = () => {
+        const scrollTop = container.scrollTop
+        const scrollHeight = container.scrollHeight
+        const clientHeight = container.clientHeight
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight
 
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore) {
-          const scrollPosition = container.scrollTop
-
-          fetchNextPage().then(() => {
-            requestAnimationFrame(() => {
-              container.scrollTop = scrollPosition
-            })
-          })
+        // Fetch when within 200px of bottom
+        if (
+          distanceFromBottom <= 200 &&
+          hasMoreRef.current &&
+          !isFetchingRef.current
+        ) {
+          fetchNextPage()
         }
-      },
-      {
-        root: container,
-        threshold: 0,
-        rootMargin: '100px',
-      },
-    )
+      }
 
-    observer.observe(target)
+      container.addEventListener('scroll', handleScroll)
+
+      // Cleanup function
+      return () => {
+        container.removeEventListener('scroll', handleScroll)
+      }
+    }, 100)
 
     return () => {
-      observer.disconnect()
+      clearTimeout(timeoutId)
     }
-  }, [hasMore, isFetchingNextPage, fetchNextPage, sessions.length])
+  }, [fetchNextPage])
 
-  // Auto-fetch more sessions if container doesn't have scroll after filtering
-  useEffect(() => {
-    if (isLoading || isFetchingNextPage || !hasMore) {
-      return
-    }
+  // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
+  const allSessions = React.useMemo(() => {
+    const filteredSessions = sessions.filter(
+      (session): session is NonNullable<typeof session> => {
+        if (!session) return false
 
-    const container = document.querySelector(
-      'nav.flex.flex-col.items-stretch.gap-1.overflow-y-auto.flex-1',
-    ) as HTMLElement
-    if (!container) {
-      return
-    }
+        // For /chat route, show sessions that are NOT "passive" or "automatic"
+        // (includes chat, undefined, null - i.e., single-agent chats)
+        if (pathname?.startsWith('/chat') || pathname === '/') {
+          return (
+            session.session_type !== SessionType.PASSIVE &&
+            session.session_type !== SessionType.AUTOMATIC
+          )
+        }
 
-    // Check if container has scroll
-    const hasScroll = container.scrollHeight > container.clientHeight
-
-    if (!hasScroll && hasMore) {
-      // No scroll and more data available - fetch next page
-      fetchNextPage()
-    }
-  }, [isLoading, isFetchingNextPage, hasMore, fetchNextPage, sessions.length])
-
-  // Separate pinned and unpinned sessions
-  const filteredSessions = sessions.filter(
-    (session): session is NonNullable<typeof session> =>
-      session != null &&
-      // For chat mode, only show sessions with one agent or less
-      (!isChat || !session.agents || session.agents.length <= 1),
-  )
-
-  const pinnedSessions = filteredSessions
-    .filter(session => session.pinned === true)
-    .sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+        // For /sessions route, show only "passive" or "automatic" sessions
+        // (multi-agent sessions)
+        return (
+          session.session_type === SessionType.PASSIVE ||
+          session.session_type === SessionType.AUTOMATIC
+        )
+      },
     )
 
-  const unpinnedSessions = filteredSessions
-    .filter(session => !session.pinned)
-    .sort((a, b) => {
-      // Sort by updatedAt only
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    })
+    const pinnedSessions = filteredSessions
+      .filter(session => session.pinned === true)
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      )
+
+    const unpinnedSessions = filteredSessions
+      .filter(session => !session.pinned)
+      .sort((a, b) => {
+        // Sort by updatedAt only
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      })
+
+    // Combine pinned and unpinned sessions with pinned first
+    return [...pinnedSessions, ...unpinnedSessions]
+  }, [sessions, isChat, pathname])
 
   return (
-    <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-1">
-      {/* Scrollable session list */}
-      <nav className="flex flex-col items-stretch gap-1 overflow-y-auto flex-1">
-        {isLoading ? (
-          <>
-            <Skeleton className="w-full h-9" />
-            <Skeleton className="w-full h-9" />
-            <Skeleton className="w-full h-9" />
-          </>
-        ) : (
-          <>
-            {isSignedIn ? (
-              <>
-                {/* Pinned section */}
-                {pinnedSessions.length > 0 && (
-                  <>
-                    <div className="sticky top-0 z-10 pb-1 mb-1 bg-accent">
-                      <div className="text-muted-foreground flex items-center gap-1">
-                        <PinIcon className="h-3 w-3" />
-                        Pinned
-                      </div>
-                    </div>
-                    {pinnedSessions.map(session => (
-                      <SessionListItem
-                        key={session._id}
-                        id={session._id}
-                        title={
-                          session.title ||
-                          (session.trigger ? 'Scheduled Task' : 'Untitled')
-                        }
-                        isActive={session._id === currentSessionId}
-                        isFromTrigger={!!session.trigger}
-                        isChat={isChat}
-                        agentId={agentId}
-                        agents={session.agents}
-                        isPinned={true}
-                        onPinToggle={handlePinToggle}
-                        unreadCount={unreadCounts?.get(session._id) || 0}
-                        userId={user?._id}
-                        onItemClick={() => {
-                          onItemClick?.()
-                          if (isChat && agentId) {
-                            // Only switch to chat mode if we're navigating to a different session
-                            // If we're already on this session, preserve the current view mode
-                            if (session._id !== currentSessionId) {
-                              onViewModeChange?.('chat')
-                            }
-                            router.push(`/chat/${agentId}/${session._id}`, {
-                              scroll: false,
-                            })
+    <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-2">
+      {isLoading ? (
+        <div className="flex flex-col items-stretch gap-1 pb-2">
+          <Skeleton className="w-full h-9" />
+          <Skeleton className="w-full h-9" />
+          <Skeleton className="w-full h-9" />
+        </div>
+      ) : (
+        <>
+          {isSignedIn ? (
+            <>
+              {/* Sessions header - collapsible */}
+              <button
+                onClick={() => setIsSessionsCollapsed(!isSessionsCollapsed)}
+                className="sticky top-0 z-10 pb-1 mb-1 bg-accent flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronRightIcon
+                  className={cn(
+                    'h-3 w-3 transition-transform',
+                    !isSessionsCollapsed && 'rotate-90',
+                  )}
+                />
+                {sessionsLabel}
+              </button>
+
+              {/* Scrollable session list */}
+              {!isSessionsCollapsed && (
+                <nav className="flex flex-col items-stretch gap-1 overflow-y-auto flex-1 pb-2">
+                  {allSessions.map(session => (
+                    <SessionListItem
+                      key={session._id}
+                      id={session._id}
+                      title={
+                        session.title ||
+                        (session.trigger ? 'Scheduled Task' : 'Untitled')
+                      }
+                      isActive={session._id === currentSessionId}
+                      isFromTrigger={!!session.trigger}
+                      isChat={isChat}
+                      agentId={agentId}
+                      agents={session.agents}
+                      isPinned={session.pinned === true}
+                      onPinToggle={handlePinToggle}
+                      unreadCount={unreadCounts?.get(session._id) || 0}
+                      userId={user?._id}
+                      hideAvatars={
+                        (pathname?.startsWith('/chat') || pathname === '/') &&
+                        !!agentId
+                      }
+                      onItemClick={() => {
+                        onItemClick?.()
+                        if (isChat) {
+                          // In chat mode, navigate to /chat/{agent}/{session}
+                          // Use the agent from the session or the current agentId
+                          const sessionAgent =
+                            session.agents?.[0]?.username || agentId
+                          if (sessionAgent) {
+                            onViewModeChange?.('chat')
+                            router.push(
+                              `/chat/${sessionAgent}/${session._id}`,
+                              {
+                                scroll: false,
+                              },
+                            )
                           } else {
-                            // For regular sessions, go to /sessions/[sessionId]
+                            // Fallback to sessions if no agent
                             router.push(`/sessions/${session._id}`, {
                               scroll: false,
                             })
                           }
-                        }}
-                      />
-                    ))}
-                  </>
-                )}
-
-                {/* Recent section */}
-                <div className="sticky top-0 z-10 pb-1 mb-1 bg-accent mr-2">
-                  <div className="text-muted-foreground">Recent Sessions</div>
-                </div>
-                {unpinnedSessions.map(session => (
-                  <SessionListItem
-                    key={session._id}
-                    id={session._id}
-                    title={
-                      session.title ||
-                      (session.trigger ? 'Scheduled Task' : 'Untitled')
-                    }
-                    isActive={session._id === currentSessionId}
-                    isFromTrigger={!!session.trigger}
-                    isChat={isChat}
-                    agentId={agentId}
-                    agents={session.agents}
-                    isPinned={false}
-                    onPinToggle={handlePinToggle}
-                    unreadCount={unreadCounts?.get(session._id) || 0}
-                    userId={user?._id}
-                    onItemClick={() => {
-                      onItemClick?.()
-                      if (isChat && agentId) {
-                        // Only switch to chat mode if we're navigating to a different session
-                        // If we're already on this session, preserve the current view mode
-                        if (session._id !== currentSessionId) {
-                          onViewModeChange?.('chat')
+                        } else {
+                          // For regular sessions, go to /sessions/[sessionId]
+                          router.push(`/sessions/${session._id}`, {
+                            scroll: false,
+                          })
                         }
-                        router.push(`/chat/${agentId}/${session._id}`, {
-                          scroll: false,
-                        })
-                      } else {
-                        // For regular sessions, go to /sessions/[sessionId]
-                        router.push(`/sessions/${session._id}`, {
-                          scroll: false,
-                        })
-                      }
-                    }}
-                  />
-                ))}
-                {/* Observer target for infinite scrolling */}
-                <div id="session-list-observer-target" className="h-1"></div>
+                      }}
+                    />
+                  ))}
+                </nav>
+              )}
+            </>
+          ) : (
+            <Button
+              className="text-muted-foreground text-center"
+              variant="link"
+              onClick={verifyAuth}
+            >
+              Not signed in
+            </Button>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// Current Agent Display for /chat/{agentId}
+const CurrentAgentDisplay: FC<{
+  agent: Agent
+  onAgentClick: () => void
+  onSettingsClick: () => void
+}> = ({ agent, onAgentClick, onSettingsClick }) => {
+  return (
+    <div className="mr-2 mb-2">
+      <div className="flex justify-between font-normal items-center gap-1 rounded-md transition-all text-sm p-0.5 border border-transparent hover:bg-muted/50">
+        <button
+          onClick={onAgentClick}
+          className="flex items-center gap-2 flex-1 min-w-0 px-2 py-2"
+        >
+          <Avatar className="w-8 h-8 flex-shrink-0">
+            <AvatarImage
+              src={
+                agent.userImage && agent.userImage.trim()
+                  ? getCloudfrontOriginalUrl(agent.userImage)
+                  : undefined
+              }
+              alt={agent.name}
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-muted text-xs font-medium">
+              {agent.name?.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-base font-semibold truncate flex-1 text-left">
+            {agent.name}
+          </span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="flex-shrink-0 text-muted-foreground"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
+        <button
+          onClick={e => {
+            e.stopPropagation()
+            onSettingsClick()
+          }}
+          className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
+          title="Agent Settings"
+        >
+          <SettingsIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ThemeToggle wrapper for forwardRef
+const ThemeToggleForwardWrap = React.forwardRef<HTMLDivElement>(
+  ({ ...rest }, ref) => (
+    <div ref={ref} className="w-full">
+      <ThemeToggle {...rest} label={'Theme'} />
+    </div>
+  ),
+)
+ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
+
+// User Profile component for sidebar bottom
+const SidebarUserProfile = () => {
+  const { isSignedIn } = useAuth()
+  const pathname = usePathname()
+  const { user, balance } = useMe({
+    isAuthenticated: !!isSignedIn,
+  })
+  const { signOut } = useClerk()
+  const { verifyAuth } = useAuthState()
+
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+
+  const logout = async () => {
+    if (isSignedIn) {
+      await signOut({ redirectUrl: pathname || '/' })
+    }
+  }
+
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [hasOpenDialog, setHasOpenDialog] = useState(false)
+  const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const focusRef = useRef<HTMLButtonElement | null>(null)
+
+  function handleDialogItemSelect() {
+    focusRef.current = dropdownTriggerRef.current
+  }
+
+  function handleDialogItemOpenChange(open: boolean) {
+    setHasOpenDialog(open)
+    if (!open) {
+      setDropdownOpen(false)
+    }
+  }
+
+  // Show sign-in button when not signed in
+  if (!isSignedIn || !user) {
+    return (
+      <div className="border-t bg-background p-3 md:-ml-3 md:w-[calc(100%+0.75rem)]">
+        <Button onClick={verifyAuth} className="w-full" variant="default">
+          Sign In
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="border-t bg-background -ml-3 md:w-[calc(100%+0.75rem)] w-full">
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          <button
+            ref={dropdownTriggerRef}
+            className="flex items-center gap-3 w-full py-3 pr-3 pl-[18px] hover:bg-muted/20 transition-colors"
+          >
+            <UserAvatar
+              image={user?.userImage}
+              name={user?.username}
+              className="w-8 h-8"
+            />
+            <span className="text-sm font-medium truncate flex-1 text-left">
+              {user?.username}
+            </span>
+            <ChevronDownIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          side="top"
+          align="start"
+          className="w-60 mb-2"
+          hidden={hasOpenDialog}
+          onCloseAutoFocus={event => {
+            if (focusRef.current) {
+              (focusRef.current as HTMLButtonElement).focus()
+              focusRef.current = null
+              event.preventDefault()
+            }
+          }}
+        >
+          <DropdownMenuItem className="cursor-pointer group" asChild>
+            <Link
+              href={`/creators/${user?.username}`}
+              className="group flex gap-2 items-center cursor-pointer "
+            >
+              <UserAvatar
+                image={user?.userImage}
+                name={user?.username}
+                className="h-8 w-8"
+              />
+              <div className="flex flex-col justify-center min-w-0">
+                <div className="group-hover:text-primary text-xs transition-colors">
+                  {user?.username}
+                </div>
+                {user?.email ? (
+                  <span className="text-xs text-muted-foreground/70 truncate">
+                    {user?.email}
+                  </span>
+                ) : null}
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link
+              href={'/settings/subscription'}
+              className="flex items-center justify-between w-full"
+            >
+              <div className="capitalize text-xs">
+                <span>
+                  {
+                    subscriptionTierNameMap[
+                      user?.subscriptionTier || SubscriptionTier.Free
+                    ]
+                  }
+                </span>
+                <span className="ml-1 text-muted-foreground/70">plan</span>
+              </div>
+              <div className="text-xs">
+                <span>
+                  {Number((balance || 0).toFixed(0)).toLocaleString()}
+                </span>
+                <span className="ml-1 text-muted-foreground/70">manna</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/creators/${user?.username}`}>
+              <ImageIcon className="mr-2 h-4 w-4" />
+              <span>Creations</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/creators/${user?.username}?tab=models`}>
+              <ComponentIcon className="mr-2 h-4 w-4" />
+              <span>Models</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/creators/${user?.username}?tab=collections`}>
+              <BookmarkIcon className="mr-2 h-4 w-4" />
+              <span>Collections</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/creators/${user?.username}?tab=agents`}>
+              <BotIcon className="mr-2 h-4 w-4" />
+              <span>Agents</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+
+          {isPreviewUser && (
+            <>
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href="/sessions">
+                  <MessageSquareIcon className="mr-2 h-4 w-4" />
+                  <span>Sessions</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href={`/settings/tasks`}>
+                  <ClockIcon className="mr-2 h-4 w-4" />
+                  <span>Tasks</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href={`/settings/integrations`}>
+                  <ActivityIcon className="mr-2 h-4 w-4" />
+                  <span>Integrations</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/settings/subscription`}>
+              <CreditCardIcon className="mr-2 h-4 w-4" />
+              <span>Subscription</span>
+            </Link>
+          </DropdownMenuItem>
+          <DialogMenuItem
+            onSelect={handleDialogItemSelect}
+            onOpenChange={handleDialogItemOpenChange}
+            triggerChildren={
+              <>
+                <TicketIcon className="mr-2 h-4 w-4" />
+                <span>Redeem Voucher</span>
               </>
-            ) : (
-              <Button
-                className="text-muted-foreground text-center"
-                variant="link"
-                onClick={verifyAuth}
+            }
+          >
+            <RedeemVoucherForm />
+          </DialogMenuItem>
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <Link href={`/settings/account`}>
+              <SettingsIcon className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <ThemeToggleForwardWrap />
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-pointer" onClick={logout}>
+            <LogOutIcon className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <div className="pl-2">
+            <div className="flex items-center w-full">
+              <Link
+                className="text-xs hover:underline text-muted-foreground"
+                href={`https://docs.eden.art/legal/tos`}
+                prefetch={false}
               >
-                Not signed in
-              </Button>
-            )}
-          </>
-        )}
-      </nav>
+                <span>Terms</span>
+              </Link>
+
+              <div className="ml-auto flex gap-1">
+                <Button variant="ghost" size={'icon'} asChild>
+                  <Link
+                    href={siteConfig.links.discord}
+                    target="_blank"
+                    className="filter grayscale hover:grayscale-0"
+                  >
+                    <DiscordIcon size={20} />
+                  </Link>
+                </Button>
+                <Button variant="ghost" size={'icon'} asChild>
+                  <Link
+                    href={siteConfig.links.twitter}
+                    target="_blank"
+                    className="group grayscale hover:grayscale-0 hover:text-white"
+                  >
+                    <TwitterIcon
+                      size={18}
+                      className="brightness-50 group-hover:!brightness-100"
+                    />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }
@@ -1028,30 +1115,29 @@ export const SessionsSidebarContent = ({
   agentId,
   isChat,
   agent,
-  userId,
   viewMode,
   onViewModeChange,
   onAgentSelect,
   onSettingsClick,
-  sessionId,
-  session,
   onSidebarToggle,
+  isCollapsed = false,
+  mode = 'sessions',
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
   agent?: Agent | null | undefined
-  userId?: string | null
   viewMode?: ViewMode
   onViewModeChange?: (mode: ViewMode) => void
   onAgentSelect?: () => void
   onSettingsClick?: () => void
-  sessionId?: string
-  session?: SessionV2
   onSidebarToggle?: () => void
+  isCollapsed?: boolean
+  mode?: 'sessions' | 'explore' | 'create'
 }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
   const router = useRouter()
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
@@ -1070,85 +1156,135 @@ export const SessionsSidebarContent = ({
     router.replace(url.pathname + url.search, { scroll: false })
   }
 
+  // Show collapsed sidebar with icons only
+  if (isCollapsed) {
+    return (
+      <div className="flex flex-col items-center gap-2 h-full pt-2">
+        {/* Expand button */}
+        {onSidebarToggle && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onSidebarToggle}
+            className="h-9 w-9 shrink-0 hover:bg-muted/20 p-0"
+            title="Expand sidebar"
+          >
+            <MenuIcon className="h-4 w-4" />
+          </Button>
+        )}
+
+        {/* Eden logo */}
+        <button
+          onClick={() => router.push('/')}
+          className="flex items-center justify-center h-9 w-9 hover:bg-muted/20 rounded-md transition-colors"
+          title="Home"
+        >
+          <EdenLogoBw className="w-[20px]" />
+        </button>
+
+        {/* Chat icon */}
+        <button
+          onClick={() => router.push('/chat')}
+          className={cn(
+            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+            pathname === '/chat' ||
+              pathname === '/' ||
+              pathname?.startsWith('/chat/')
+              ? 'bg-primary/20 text-primary-foreground'
+              : 'hover:bg-muted/20',
+          )}
+          title="Chat"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+
+        {/* Sessions icon */}
+        <button
+          onClick={() => router.push('/sessions')}
+          className={cn(
+            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+            pathname?.startsWith('/sessions')
+              ? 'bg-primary/20 text-primary-foreground'
+              : 'hover:bg-muted/20',
+          )}
+          title="Sessions"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+          </svg>
+        </button>
+
+        {/* Spacer to push profile to bottom */}
+        <div className="flex-1" />
+
+        {/* User Profile icon at bottom */}
+        {user && (
+          <button
+            onClick={() => router.push(`/creators/${user.username}`)}
+            className="flex items-center justify-center h-9 w-9 hover:bg-muted/20 rounded-md transition-colors mb-2"
+            title={user.username}
+          >
+            <UserAvatar
+              image={user.userImage}
+              name={user.username}
+              className="w-7 h-7"
+            />
+          </button>
+        )}
+      </div>
+    )
+  }
+
   // Show settings sidebar when in settings mode
   if (viewMode === 'settings' && agent) {
     return (
       <div className="flex flex-col h-full min-h-0">
+        {/* Desktop: Eden logo + close button at the top */}
+        <div className="hidden md:flex items-center justify-between mb-4 mr-2 pt-3">
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2"
+          >
+            <EdenLogoBw className="w-[28px]" />
+          </button>
+          {onSidebarToggle && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onSidebarToggle}
+              className="h-8 w-8 shrink-0 hover:bg-muted/20"
+              title="Close sidebar"
+            >
+              <MenuIcon className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
         {/* Mobile sidebar header with navigation - only show in mobile sidebar */}
         <div className="md:hidden flex-shrink-0">
           <MobileSidebarHeader onItemClick={onItemClick} />
-        </div>
-
-        {/* Agent selector - mobile only */}
-        <div className="mb-2 mr-2 md:hidden flex-shrink-0">
-          <AgentSelectorAndNewChat
-            onItemClick={onItemClick}
-            isChat={isChat}
-            onViewModeChange={onViewModeChange}
-            agent={agent}
-            onAgentSelect={onAgentSelect}
-            onSettingsClick={onSettingsClick}
-            userId={userId}
-            sessionId={sessionId}
-            session={session}
-            viewMode={viewMode}
-            hasEditAccess={hasEditAccess}
-          />
-        </div>
-
-        {/* Desktop: Agent selector + Mode Toggle */}
-        <div className="hidden md:flex mb-4 mr-2 flex-col gap-3 flex-shrink-0">
-          {/* Agent selector - desktop only */}
-          {agent && (
-            <div className="flex items-center gap-1">
-              {/* Hamburger icon to toggle sidebar */}
-              {onSidebarToggle && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onSidebarToggle}
-                  className="h-8 w-8 shrink-0 hover:bg-muted/20"
-                  title="Toggle sidebar"
-                >
-                  <MenuIcon className="h-4 w-4" />
-                </Button>
-              )}
-              <button
-                onClick={onAgentSelect}
-                className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] flex-1 min-w-0"
-              >
-                <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
-                  <AvatarImage
-                    src={
-                      agent.userImage && agent.userImage.trim()
-                        ? getCloudfrontOriginalUrl(agent.userImage)
-                        : undefined
-                    }
-                    alt={agent.name}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-muted text-sm font-medium">
-                    {agent.username?.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-semibold text-base text-foreground truncate">
-                  {agent.username}
-                </span>
-                <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
-              </button>
-            </div>
-          )}
-
-          {/* Mode Toggle - desktop only */}
-          {hasEditAccess && onViewModeChange && (
-            <ModeToggle
-              mode="settings"
-              onModeChange={mode => {
-                onViewModeChange(mode === 'settings' ? 'settings' : 'chat')
-              }}
-              variant="sidebar"
-            />
-          )}
         </div>
 
         <div className="flex-1 min-h-0">
@@ -1168,110 +1304,416 @@ export const SessionsSidebarContent = ({
 
   // Show regular chat sidebar for all other modes
   return (
-    <>
+    <div className="flex flex-col h-full">
+      {/* Desktop: Eden logo + close button at the top */}
+      <div className="hidden md:flex items-center justify-between mb-4 mr-2 pt-3">
+        <button
+          onClick={() => router.push('/')}
+          className="flex items-center gap-2"
+        >
+          <EdenLogoBw className="w-[28px]" />
+        </button>
+        {onSidebarToggle && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onSidebarToggle}
+            className="h-8 w-8 shrink-0 hover:bg-muted/20"
+            title="Close sidebar"
+          >
+            <MenuIcon className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
       {/* Mobile sidebar header with navigation - only show in mobile sidebar */}
       <div className="md:hidden">
         <MobileSidebarHeader onItemClick={onItemClick} />
       </div>
 
-      {/* Agent selector + New Chat two-column layout - mobile only */}
-      <div className="mb-2 mr-2 md:hidden">
-        <AgentSelectorAndNewChat
-          onItemClick={onItemClick}
-          isChat={isChat}
-          onViewModeChange={onViewModeChange}
-          agent={agent}
-          onAgentSelect={onAgentSelect}
-          onSettingsClick={onSettingsClick}
-          userId={userId}
-          sessionId={sessionId}
-          session={session}
-          viewMode={viewMode}
-          hasEditAccess={hasEditAccess}
-        />
+      {/* Mobile: Navigation Buttons */}
+      <div className="mb-4 mr-2 flex-col gap-2 md:hidden flex">
+        {/* Chat button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/chat')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname === '/chat' ||
+              pathname === '/' ||
+              pathname?.startsWith('/chat/')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span>Chat</span>
+        </Button>
+
+        {/* Sessions button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/sessions')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/sessions')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+          </svg>
+          <span>Sessions</span>
+        </Button>
+
+        {/* Explore button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/explore?type=agents')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/explore')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <span>Explore</span>
+        </Button>
+
+        {/* Tools button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onItemClick?.()
+            router.push('/create')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/create') || pathname?.startsWith('/tools')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+          <span>Tools</span>
+        </Button>
       </div>
 
-      {/* Desktop: Agent selector + ModeToggle + Action Buttons */}
-      <div className="hidden md:flex mb-4 mr-2 flex-col gap-3">
-        {/* Agent selector - desktop only */}
-        {agent && (
-          <div className="flex items-center gap-1">
-            {/* Hamburger icon to toggle sidebar */}
-            {onSidebarToggle && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onSidebarToggle}
-                className="h-8 w-8 shrink-0 hover:bg-muted/20"
-                title="Toggle sidebar"
-              >
-                <MenuIcon className="h-4 w-4" />
-              </Button>
-            )}
-            <button
-              onClick={onAgentSelect}
-              className="flex items-center gap-2 hover:bg-muted/10 rounded-lg p-2 transition-all duration-200 hover:scale-[1.02] flex-1 min-w-0"
+      {/* Desktop: Navigation Buttons - don't close sidebar on desktop */}
+      <div className="mb-4 mr-2 flex-col gap-2 hidden md:flex">
+        {/* Chat button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push('/chat')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname === '/chat' ||
+              pathname === '/' ||
+              pathname?.startsWith('/chat/')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          <span>Chat</span>
+        </Button>
+
+        {/* Sessions button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push('/sessions')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/sessions')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+          </svg>
+          <span>Sessions</span>
+        </Button>
+
+        {/* Explore button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push('/explore?type=agents')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/explore')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <span>Explore</span>
+        </Button>
+
+        {/* Tools button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push('/create')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname?.startsWith('/create') || pathname?.startsWith('/tools')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+          <span>Tools</span>
+        </Button>
+      </div>
+
+      {/* Content area based on mode */}
+      <div
+        id="sidebar-scroll-container"
+        className="flex-1 min-h-0 overflow-y-auto"
+      >
+        {mode === 'sessions' && (
+          <>
+            {/* Show CurrentAgentDisplay for /chat/{agentId} routes */}
+            {(pathname?.startsWith('/chat') || pathname === '/') &&
+              agentId &&
+              agent && (
+                <>
+                  <CurrentAgentDisplay
+                    agent={agent}
+                    onAgentClick={() => onAgentSelect?.()}
+                    onSettingsClick={() => onSettingsClick?.()}
+                  />
+                  {/* Tasks and Creations buttons for /chat/{agent} */}
+                  <div className="mr-2 mb-4 flex flex-col gap-2">
+                    {/* Tasks button */}
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        onItemClick?.()
+                        router.push(`/chat/${agentId}?page=tasks`)
+                      }}
+                      className={cn(
+                        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                        viewMode === 'tasks'
+                          ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                      )}
+                    >
+                      <ClockIcon className="size-4" />
+                      <span>Tasks</span>
+                    </Button>
+                    {/* Creations button */}
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        onItemClick?.()
+                        router.push(`/chat/${agentId}?page=creations`)
+                      }}
+                      className={cn(
+                        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                        viewMode === 'creations'
+                          ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                      )}
+                    >
+                      <ImageIcon className="size-4" />
+                      <span>Creations</span>
+                    </Button>
+                  </div>
+                </>
+              )}
+            <MainLeft
+              onItemClick={onItemClick}
+              agentId={agentId}
+              isChat={isChat}
+              onViewModeChange={onViewModeChange}
+              agent={agent}
+              pathname={pathname}
+            />
+          </>
+        )}
+
+        {mode === 'explore' && (
+          <div className="hidden md:flex flex-col gap-2 mr-2">
+            <div className="text-xs font-medium text-muted-foreground mb-1">
+              Browse
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/explore?type=agents')}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                searchParams?.get('type') === 'agents'
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
             >
-              <Avatar className="w-10 h-10 border-2 border-primary/20 hover:border-primary/40 transition-colors flex-shrink-0">
-                <AvatarImage
-                  src={
-                    agent.userImage && agent.userImage.trim()
-                      ? getCloudfrontOriginalUrl(agent.userImage)
-                      : undefined
-                  }
-                  alt={agent.name}
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-muted text-sm font-medium">
-                  {agent.username?.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="font-semibold text-base text-foreground truncate">
-                {agent.username}
-              </span>
-              <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-auto" />
-            </button>
+              Agents
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/explore?type=models')}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                searchParams?.get('type') === 'models'
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              Models
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/explore?type=creations')}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                searchParams?.get('type') === 'creations'
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              Creations
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/explore?type=tools')}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                searchParams?.get('type') === 'tools'
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              Tools
+            </Button>
           </div>
         )}
-
-        {/* Mode Toggle - desktop only, show if user has edit access */}
-        {hasEditAccess && viewMode && onViewModeChange && (
-          <ModeToggle
-            mode={viewMode === 'settings' ? 'settings' : 'chat'}
-            onModeChange={mode => {
-              onViewModeChange(mode === 'settings' ? 'settings' : 'chat')
-            }}
-            variant="sidebar"
-          />
-        )}
-
-        {/* New Chat button */}
-        <TopLeft
-          onItemClick={onItemClick}
-          isChat={isChat}
-          onViewModeChange={onViewModeChange}
-          viewMode={viewMode}
-        />
-
-        {/* Navigation buttons for Creations */}
-        {agent && viewMode && onViewModeChange && (
-          <NavigationButtons
-            onItemClick={onItemClick}
-            agent={agent}
-            userId={userId}
-            viewMode={viewMode}
-            onViewModeChange={onViewModeChange}
-          />
-        )}
       </div>
 
-      <MainLeft
-        onItemClick={onItemClick}
-        agentId={agentId}
-        isChat={isChat}
-        onViewModeChange={onViewModeChange}
-      />
-    </>
+      {/* User Profile Section - Bottom of sidebar */}
+      <SidebarUserProfile />
+    </div>
   )
 }
 
