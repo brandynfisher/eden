@@ -17,23 +17,24 @@ export default function SessionsList() {
 
   // Filter and sort sessions for display
   const displaySessions = useMemo(() => {
-    return sessions
-      .filter(
-        (session): session is NonNullable<typeof session> =>
-          session != null &&
-          // Include sessions with valid titles
-          ((session.title != null &&
-            session.title !== '' &&
-            session.title !== 'Untitled') ||
-            // Include trigger sessions even without titles
-            !!session.trigger),
-      )
-      .sort((a, b) => {
-        // Sort by updatedAt/createdAt in descending order (most recent first)
-        const aDate = new Date(a.updatedAt || a.createdAt)
-        const bDate = new Date(b.updatedAt || b.createdAt)
-        return bDate.getTime() - aDate.getTime()
-      })
+    const filtered = sessions.filter(
+      (session): session is NonNullable<typeof session> => {
+        if (!session) return false
+
+        // Only include automatic and passive sessions
+        return (
+          session.session_type === 'automatic' ||
+          session.session_type === 'passive'
+        )
+      },
+    )
+
+    return filtered.sort((a, b) => {
+      // Sort by updatedAt/createdAt in descending order (most recent first)
+      const aDate = new Date(a.updatedAt || a.createdAt)
+      const bDate = new Date(b.updatedAt || b.createdAt)
+      return bDate.getTime() - aDate.getTime()
+    })
   }, [sessions])
 
   if (!isSignedIn) {
@@ -58,7 +59,7 @@ export default function SessionsList() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Your Sessions</h1>
+          <h1 className="text-3xl font-bold">My Sessions</h1>
           <p className="text-muted-foreground mt-1">
             Manage your conversations and collaborative sessions
           </p>
@@ -73,15 +74,15 @@ export default function SessionsList() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="space-y-3">
-              <Skeleton className="h-32 w-full rounded-lg" />
+              <Skeleton className="h-64 w-full rounded-lg" />
             </div>
           ))}
         </div>
       ) : displaySessions.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {displaySessions.map(session => (
             <SessionCard key={session._id} session={session} />
           ))}

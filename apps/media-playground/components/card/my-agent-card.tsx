@@ -120,8 +120,7 @@ const MyAgentCard = ({
               <div className="flex items-center gap-1.5 mt-1">
                 <MessageSquareIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <span className="text-sm text-muted-foreground font-medium">
-                  {formatCompactNumber(agent.stats?.userMessageCount || 0)}{' '}
-                  messages
+                  {formatCompactNumber(agent.stats?.messageCount || 0)} messages
                 </span>
               </div>
             </div>
