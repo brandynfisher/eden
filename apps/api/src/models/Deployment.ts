@@ -126,6 +126,27 @@ export interface DeploymentSecretsEmail {
   webhook_signing_key?: string
 }
 
+// Gmail Types
+export interface DeploymentSettingsGmail {
+  reply_from_address?: string
+  reply_display_name?: string
+  last_history_id?: string
+  watch_expiration?: Date | string
+  reply_delay_minimum?: number
+  reply_delay_variance?: number
+  email_instructions?: string
+}
+
+export interface DeploymentSecretsGmail {
+  service_account_info: Record<string, any>
+  delegated_user: string
+  token_scopes?: string[]
+  pubsub_subscription?: string
+  pubsub_topic?: string
+  watch_label_ids?: string[]
+  reply_alias?: string
+}
+
 // Combined Types
 export interface DeploymentSecrets {
   discord?: DeploymentSecretsDiscord
@@ -137,6 +158,7 @@ export interface DeploymentSecrets {
   captions?: DeploymentSecretsCaptions
   tiktok?: DeploymentSecretsTiktok
   email?: DeploymentSecretsEmail
+  gmail?: DeploymentSecretsGmail
 }
 
 export interface DeploymentConfig {
@@ -149,6 +171,7 @@ export interface DeploymentConfig {
   captions?: DeploymentSettingsCaptions
   tiktok?: DeploymentSettingsTiktok
   email?: DeploymentSettingsEmail
+  gmail?: DeploymentSettingsGmail
 }
 
 export interface DeploymentSchema {

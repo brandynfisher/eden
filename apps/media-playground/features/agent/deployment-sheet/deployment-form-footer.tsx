@@ -135,6 +135,17 @@ export const DeploymentFormFooter = ({
             reply_delay_variance_minutes: Number(data.replyDelayVariance ?? 0),
           },
         }
+      } else if (platform === 'gmail') {
+        config = {
+          gmail: {
+            reply_delay_minimum: Number(data.replyDelayMinimum ?? 0),
+            reply_delay_variance: Number(data.replyDelayVariance ?? 0),
+            email_instructions:
+              data.emailInstructions?.trim().length > 0
+                ? data.emailInstructions.trim()
+                : undefined,
+          },
+        }
       }
 
       if (isDeployed) {
