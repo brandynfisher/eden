@@ -11,6 +11,7 @@ import registerElevenLabs from './plugins/elevenLabsPlugin'
 import registerEventEmitter from './plugins/eventEmitterPlugin'
 import { registerInternalMessages } from './plugins/internalMessagesPlugin'
 import registerLogos from './plugins/logosPlugin'
+import registerMailgun from './plugins/mailgunPlugin'
 import registerMongo from './plugins/mongoPlugin'
 import registerMultipart from './plugins/multipartPlugin'
 import { registerRedis } from './plugins/redisPlugin'
@@ -119,6 +120,8 @@ const createServer = async (opts: CreateServerOpts) => {
   if (server.config.REPLICATE_API_TOKEN) {
     await registerReplicate(server)
   }
+
+  await registerMailgun(server)
 
   if (server.config.ELEVENLABS_API_KEY) {
     await registerElevenLabs(server)

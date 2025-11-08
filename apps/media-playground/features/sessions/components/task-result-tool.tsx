@@ -29,6 +29,7 @@ const SOCIAL_TOOLS = {
     shopify: { platform: 'shopify' as const },
     printify: { platform: 'printify' as const },
     tiktok_post: { platform: 'tiktok' as const },
+    email_send: { platform: 'email' as const },
   },
 
   // Session post tools - use SessionPostEmbed

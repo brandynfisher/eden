@@ -37,10 +37,20 @@ import {
   updateUserMemoryEnabled,
 } from '../../controllers/agentController'
 import { getAgentTrigger } from '../../controllers/agentServicesController'
+import {
+  createEmailDomain,
+  deleteEmailDomain,
+  getEmailDomain,
+} from '../../controllers/emailController'
+import type {
+  EmailDomainBody,
+  EmailDomainParams,
+  EmailDomainQuery,
+} from '../../controllers/emailController'
 import { MEMORY_LIMITS } from '../../lib/constants'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync, FastifyRequest } from 'fastify'
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify'
 
 const agentRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/agents', {
@@ -257,6 +267,81 @@ const agentRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => updateAgent(server, request, reply),
+  })
+
+  server.post('/v2/agents/:agentId/email/domain', {
+    schema: {
+      tags: ['Agents'],
+      summary: 'Create Mailgun Domain',
+      security: [{ apiKey: [] }],
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      body: Type.Object({
+        domain: Type.String(),
+      }),
+      response: {
+        201: Type.Object({
+          domain: Type.Any(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (
+      request: FastifyRequest<{
+        Params: EmailDomainParams
+        Body: EmailDomainBody
+      }>,
+      reply: FastifyReply,
+    ) => createEmailDomain(server, request, reply),
+  })
+
+  server.get('/v2/agents/:agentId/email/domain', {
+    schema: {
+      tags: ['Agents'],
+      summary: 'Get Mailgun Domain',
+      security: [{ apiKey: [] }],
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      querystring: Type.Object({
+        refresh: Type.Optional(Type.Boolean()),
+      }),
+      response: {
+        200: Type.Object({
+          domain: Type.Any(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (
+      request: FastifyRequest<{
+        Params: EmailDomainParams
+        Querystring: EmailDomainQuery
+      }>,
+      reply: FastifyReply,
+    ) => getEmailDomain(server, request, reply),
+  })
+
+  server.delete('/v2/agents/:agentId/email/domain', {
+    schema: {
+      tags: ['Agents'],
+      summary: 'Delete Mailgun Domain',
+      security: [{ apiKey: [] }],
+      params: Type.Object({
+        agentId: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          success: Type.Boolean(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (
+      request: FastifyRequest<{ Params: EmailDomainParams }>,
+      reply: FastifyReply,
+    ) => deleteEmailDomain(server, request, reply),
   })
 
   server.get('/v2/agents/:agentId/triggers', {
