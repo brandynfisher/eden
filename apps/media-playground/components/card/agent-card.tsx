@@ -111,7 +111,7 @@ const AgentCard = ({
               <div className="flex items-center gap-1 mt-auto flex-shrink-0">
                 <MessageSquareIcon className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                 <span className="text-xs text-muted-foreground">
-                  {formatCompactNumber(agent.stats?.userMessageCount || 0)}
+                  {formatCompactNumber(agent.stats?.messageCount || 0)}
                 </span>
               </div>
             </div>
@@ -203,7 +203,7 @@ const AgentCard = ({
                     className="pointer-events-auto cursor-help rounded-l-lg rounded-r-none border border-r-0 px-2 flex items-center bg-muted-darker/60 hover:text-primary text-muted-foreground"
                   >
                     <div className="text-xs font-mono w-14 flex justify-end">
-                      {formatCompactNumber(agent.stats?.userMessageCount)}
+                      {formatCompactNumber(agent.stats?.messageCount)}
                     </div>
                   </TooltipTrigger>
                   <Button

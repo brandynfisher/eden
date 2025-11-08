@@ -10,21 +10,32 @@ import { Agent } from './Agents'
 import { Message } from './Messages'
 import { AxiosRequestConfig } from 'axios'
 
+// Session Types
+export enum SessionType {
+  CHAT = 'chat',
+  PASSIVE = 'passive',
+  AUTOMATIC = 'automatic',
+}
+
+export interface SessionSettings {
+  conductor_prompt?: string
+  delay_interval: number
+  mention_force_reply: boolean
+}
+
 // Arguments
 export interface SessionsV2CreateArguments extends WebAPICallOptions {
   agent_ids: string[]
-  scenario?: string
+  context?: string
   budget?: {
     manna_budget?: number
     token_budget?: number
     turn_budget?: number
   }
   title?: string
-  autonomy_settings?: {
-    auto_reply: boolean
-    reply_interval: number
-    actor_selection_method: 'random' | 'random_exclude_last'
-  }
+  session_type?: SessionType
+  status?: SessionStatus
+  settings?: SessionSettings
   extras?: SessionExtras
 }
 
@@ -34,18 +45,15 @@ export interface SessionsV2MessageArguments extends WebAPICallOptions {
   attachments?: string[]
   // Creation args (used when session_id is not provided)
   agent_ids?: string[]
-  scenario?: string
+  context?: string
   budget?: {
     manna_budget?: number
     token_budget?: number
     turn_budget?: number
   }
   title?: string
-  autonomy_settings?: {
-    auto_reply: boolean
-    reply_interval: number
-    actor_selection_method: 'random' | 'random_exclude_last'
-  }
+  session_type?: SessionType
+  settings?: SessionSettings
   extras?: SessionExtras
 }
 
@@ -76,6 +84,16 @@ export interface SessionsV2RenameArguments extends WebAPICallOptions {
   title?: string
   pinned?: boolean
   extras?: SessionExtras
+  agent_ids?: string[]
+  session_type?: SessionType
+  settings?: SessionSettings
+  context?: string
+  budget?: {
+    manna_budget?: number
+    token_budget?: number
+    turn_budget?: number
+  }
+  status?: SessionStatus
 }
 
 export interface SessionsV2CancelArguments extends WebAPICallOptions {
@@ -178,6 +196,24 @@ export const sessionsRenameRequestConfigV2 = (
   }
   if (args.extras !== undefined) {
     data.extras = args.extras
+  }
+  if (args.agent_ids !== undefined) {
+    data.agent_ids = args.agent_ids
+  }
+  if (args.session_type !== undefined) {
+    data.session_type = args.session_type
+  }
+  if (args.settings !== undefined) {
+    data.settings = args.settings
+  }
+  if (args.context !== undefined) {
+    data.context = args.context
+  }
+  if (args.budget !== undefined) {
+    data.budget = args.budget
+  }
+  if (args.status !== undefined) {
+    data.status = args.status
   }
   return {
     method: 'PATCH',
@@ -406,7 +442,7 @@ export interface SessionShare {
   session: {
     _id: string
     title?: string
-    scenario?: string
+    context?: string
     createdAt: Date
   }
   title?: string
@@ -484,7 +520,7 @@ export type SessionsV2GetMessagesResponse = WebAPICallResult & {
   error?: string
 }
 
-export type SessionStatus = 'active' | 'archived'
+export type SessionStatus = 'active' | 'paused' | 'stopped' | 'archived'
 
 export type SessionExtras = {
   exclude_memory?: boolean
@@ -502,17 +538,14 @@ export type SessionV2 = {
   status: SessionStatus
   messages: Message[]
   permissions?: SessionPermission[]
-  context?: {
+  memory_context?: {
     memories?: string[]
     memory_updated?: string
   }
   title?: string
-  scenario?: string
-  autonomy_settings?: {
-    auto_reply: boolean
-    reply_interval: number
-    actor_selection_method: 'random' | 'random_exclude_last'
-  }
+  context?: string
+  session_type?: SessionType
+  settings?: SessionSettings
   last_actor_id?: string
   last_memory_message_id?: string
   budget?: {
@@ -528,6 +561,7 @@ export type SessionV2 = {
   pinned?: boolean
   active_requests?: string[]
   extras?: SessionExtras
+  deleted?: boolean
   createdAt: Date
   updatedAt: Date
 }

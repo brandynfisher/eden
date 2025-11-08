@@ -14,12 +14,16 @@ const conceptRoutesV2: FastifyPluginAsync = async server => {
     schema: {
       tags: ['Concepts V2'],
       summary: 'List User Concepts',
-      description: 'Get all concepts for the current user.',
+      description:
+        'Get all concepts for the current user, or all concepts for a specific agent if agent query parameter is provided.',
       security: [
         {
           apiKey: [],
         },
       ],
+      querystring: Type.Object({
+        agent: Type.Optional(Type.String()),
+      }),
       response: {
         200: {
           concepts: Type.Array(Type.Any()),

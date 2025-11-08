@@ -9,7 +9,7 @@ import EditConceptView from '@/features/concepts/edit-concept-view'
 import { Agent, Concept2 } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { Plus } from 'lucide-react'
-import { FC, useEffect, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -26,29 +26,24 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
   const [loading, setLoading] = useState(true)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [editingConceptId, setEditingConceptId] = useState<string | null>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const lightboxJustClosedRef = React.useRef(false)
+  const editCloseRequestRef = React.useRef<(() => void) | null>(null)
+  const createCloseRequestRef = React.useRef<(() => void) | null>(null)
 
   // Fetch concepts for this agent
   useEffect(() => {
     const fetchConcepts = async () => {
       try {
+        // Pass agent ID as query parameter to get all concepts for this agent
         const response = await axios.get<{ concepts: Concept2[] }>(
-          '/api/v2/concepts',
+          `/api/v2/concepts?agent=${agent._id}`,
         )
 
-        // Filter concepts by agent
-        const agentConcepts = (response.data.concepts || []).filter(concept => {
-          if (concept.deleted) return false
-
-          // Handle both populated agent object and agent ID string
-          const conceptAgentId =
-            typeof concept.agent === 'string'
-              ? concept.agent
-              : concept.agent && typeof concept.agent === 'object'
-              ? (concept.agent as Agent)._id
-              : undefined
-
-          return conceptAgentId === agent._id
-        })
+        // Filter out deleted concepts
+        const agentConcepts = (response.data.concepts || []).filter(
+          concept => !concept.deleted,
+        )
         setConcepts(agentConcepts)
       } catch (error) {
         console.error('Error fetching concepts:', error)
@@ -60,6 +55,29 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
 
     fetchConcepts()
   }, [agent._id])
+
+  // Listen for lightbox open/close to prevent Dialog from closing
+  useEffect(() => {
+    const handleLightboxOpen = () => {
+      setLightboxOpen(true)
+    }
+
+    const handleLightboxClosing = () => {
+      setLightboxOpen(false)
+      lightboxJustClosedRef.current = true
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        lightboxJustClosedRef.current = false
+      }, 100)
+    }
+
+    window.addEventListener('lightbox-open', handleLightboxOpen)
+    window.addEventListener('lightbox-closing', handleLightboxClosing)
+    return () => {
+      window.removeEventListener('lightbox-open', handleLightboxOpen)
+      window.removeEventListener('lightbox-closing', handleLightboxClosing)
+    }
+  }, [])
 
   const handleEditConcept = (conceptId: string) => {
     setEditingConceptId(conceptId)
@@ -82,22 +100,14 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
 
   const refreshConcepts = async () => {
     try {
+      // Pass agent ID as query parameter to get all concepts for this agent
       const response = await axios.get<{ concepts: Concept2[] }>(
-        '/api/v2/concepts',
+        `/api/v2/concepts?agent=${agent._id}`,
       )
-      const agentConcepts = (response.data.concepts || []).filter(concept => {
-        if (concept.deleted) return false
-
-        // Handle both populated agent object and agent ID string
-        const conceptAgentId =
-          typeof concept.agent === 'string'
-            ? concept.agent
-            : concept.agent && typeof concept.agent === 'object'
-            ? (concept.agent as Agent)._id
-            : undefined
-
-        return conceptAgentId === agent._id
-      })
+      // Filter out deleted concepts
+      const agentConcepts = (response.data.concepts || []).filter(
+        concept => !concept.deleted,
+      )
       setConcepts(agentConcepts)
     } catch (error) {
       console.error('Error fetching concepts:', error)
@@ -158,10 +168,46 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
       </div>
 
       {/* Create Concept Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-2">
+      <Dialog
+        open={isCreateModalOpen}
+        onOpenChange={open => {
+          // Don't close the dialog if lightbox is open or just closed
+          if (!open && (lightboxOpen || lightboxJustClosedRef.current)) {
+            return
+          }
+          if (!open && createCloseRequestRef.current) {
+            // Request the child component to handle the close (check unsaved changes)
+            createCloseRequestRef.current()
+            return
+          }
+          setIsCreateModalOpen(open)
+        }}
+      >
+        <DialogContent
+          className="max-w-6xl max-h-[90vh] overflow-y-auto p-2 focus:outline-none"
+          onEscapeKeyDown={e => {
+            // Prevent Dialog from handling Escape when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+          onPointerDownOutside={e => {
+            // Prevent Dialog from handling outside clicks when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+          onInteractOutside={e => {
+            // Prevent Dialog from handling outside interactions when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+        >
           <CreateConceptView
             onSuccess={handleCreateSuccess}
+            onCancel={() => setIsCreateModalOpen(false)}
+            onCloseRequestRef={createCloseRequestRef}
             preselectedAgent={agent}
           />
         </DialogContent>
@@ -170,14 +216,49 @@ export const ConceptsTab: FC<ConceptsTabProps> = ({ agent }) => {
       {/* Edit Concept Modal */}
       <Dialog
         open={!!editingConceptId}
-        onOpenChange={open => !open && setEditingConceptId(null)}
+        onOpenChange={open => {
+          // Don't close the dialog if lightbox is open or just closed
+          if (!open && (lightboxOpen || lightboxJustClosedRef.current)) {
+            return
+          }
+          if (!open && editCloseRequestRef.current) {
+            // Request the child component to handle the close (check unsaved changes)
+            editCloseRequestRef.current()
+            return
+          }
+          if (!open) {
+            setEditingConceptId(null)
+          }
+        }}
       >
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto p-2">
+        <DialogContent
+          className="max-w-6xl max-h-[90vh] overflow-y-auto p-2 focus:outline-none"
+          onEscapeKeyDown={e => {
+            // Prevent Dialog from handling Escape when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+          onPointerDownOutside={e => {
+            // Prevent Dialog from handling outside clicks when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+          onInteractOutside={e => {
+            // Prevent Dialog from handling outside interactions when lightbox is open
+            if (lightboxOpen) {
+              e.preventDefault()
+            }
+          }}
+        >
           {editingConceptId && (
             <EditConceptView
               conceptId={editingConceptId}
               onSuccess={handleEditSuccess}
               onDelete={handleDeleteSuccess}
+              onCancel={() => setEditingConceptId(null)}
+              onCloseRequestRef={editCloseRequestRef}
               preselectedAgent={agent}
             />
           )}

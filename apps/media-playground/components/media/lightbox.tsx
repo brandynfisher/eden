@@ -9,7 +9,7 @@ import customImageLoader from '@/image-loader'
 import { siteConfig } from '@/lib/config'
 import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { AudioLinesIcon } from 'lucide-react'
+import { AudioLinesIcon, PauseIcon, PlayIcon } from 'lucide-react'
 import NextImage, { ImageProps } from 'next/image'
 import React from 'react'
 import { ReactNode, createContext, useContext, useState } from 'react'
@@ -189,32 +189,13 @@ export const LightboxGallery = ({
         carousel={{
           finite: hasSingleSlide,
         }}
-        render={{
-          buttonPrev: slides.length === 1 ? () => null : undefined,
-          buttonNext: slides.length === 1 ? () => null : undefined,
-          slide: props => {
-            // @ts-expect-error slide.src is not always defined
-            if (props.slide.type === 'audio') {
-              return (
-                <AudioComponent
-                  // @ts-expect-error slide.src is not always defined
-                  src={props.slide.src}
-                  autoPlay={props.offset === 0}
-                />
-              )
-            }
-            return null
-          },
-        }}
+        controller={{ closeOnBackdropClick: true }}
         on={{
           view: props => {
             // Handle both audio and video elements
             const audios = document.querySelectorAll(
               '.audio-component audio',
             ) as NodeListOf<HTMLAudioElement>
-            // const videos = document.querySelectorAll(
-            //   'video',
-            // ) as NodeListOf<HTMLVideoElement>
 
             // Handle audio elements
             audios.forEach(audio => {
@@ -234,38 +215,34 @@ export const LightboxGallery = ({
                 audio.currentTime = 0
               }
             })
-
-            // Handle video elements
-            // videos.forEach(video => {
-            //   const currentSlide = slides[props.index]
-            //   if (!currentSlide || !('sources' in currentSlide)) {
-            //     video.pause()
-            //     video.currentTime = 0
-            //     return
-            //   }
-            //   const currentVideoSrc = currentSlide.sources?.[0]?.src
-            //   if (video.src === currentVideoSrc) {
-            //     // Enable audio for videos in lightbox
-            //     video.muted = false
-            //     video.play().catch(() => {
-            //       // If autoplay fails due to browser policy, mute and try again
-            //       video.muted = true
-            //       video.play().catch(() => {
-            //         // Handle final autoplay failure silently
-            //       })
-            //     })
-            //     video.currentTime = 0
-            //   } else {
-            //     video.pause()
-            //     video.currentTime = 0
-            //   }
-            // })
           },
           entered: () => {
             window.dispatchEvent(new Event(`lightbox-open`))
           },
+          exiting: () => {
+            // Prevent Escape key from bubbling to parent modals
+            // Add a small flag to indicate lightbox is closing
+            window.dispatchEvent(new Event(`lightbox-closing`))
+          },
           exited: () => {
             window.dispatchEvent(new Event(`lightbox-close`))
+          },
+        }}
+        render={{
+          buttonPrev: slides.length === 1 ? () => null : undefined,
+          buttonNext: slides.length === 1 ? () => null : undefined,
+          slide: props => {
+            // @ts-expect-error slide.src is not always defined
+            if (props.slide.type === 'audio') {
+              return (
+                <AudioComponent
+                  // @ts-expect-error slide.src is not always defined
+                  src={props.slide.src}
+                  autoPlay={props.offset === 0}
+                />
+              )
+            }
+            return null
           },
         }}
       />
@@ -497,46 +474,67 @@ export function LightboxAudioTrigger({
   src,
   duration,
 }: LightboxAudioTriggerProps) {
-  const { hovered, ref: hoverRef } = useHover()
   const audioRef = React.useRef<HTMLAudioElement>(null)
-  const { setOpen } = useLightbox()
+  const [isPlaying, setIsPlaying] = React.useState(false)
 
-  const handleClick = () => {
-    // Stop audio playback when opening lightbox
+  const togglePlayPause = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent opening lightbox when toggling play
+
     if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
+      if (isPlaying) {
+        audioRef.current.pause()
+        setIsPlaying(false)
+      } else {
+        audioRef.current.play()
+        setIsPlaying(true)
+      }
     }
-    setOpen(true)
+  }
+
+  // Handle audio end event
+  React.useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleEnded = () => setIsPlaying(false)
+    audio.addEventListener('ended', handleEnded)
+
+    return () => {
+      audio.removeEventListener('ended', handleEnded)
+    }
+  }, [])
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   return (
-    <div
-      ref={hoverRef}
-      className="relative h-full w-full"
-      onClick={handleClick}
-    >
-      {/* <div
-        className={cn(
-          'flex items-center justify-center bg-muted rounded-md',
-          className,
+    <div className="relative h-full w-full flex items-center justify-center bg-muted/30 rounded-md">
+      <audio ref={audioRef} src={src} className="hidden" />
+
+      <div className="flex flex-col items-center justify-center gap-2 p-4">
+        <AudioLinesIcon className="w-8 h-8 text-muted-foreground" />
+
+        <button
+          onClick={togglePlayPause}
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+        >
+          {isPlaying ? (
+            <PauseIcon className="w-5 h-5 text-primary" />
+          ) : (
+            <PlayIcon className="w-5 h-5 text-primary ml-0.5" />
+          )}
+        </button>
+
+        {typeof duration === 'number' && (
+          <span className="text-xs text-muted-foreground font-medium">
+            {formatDuration(duration)}
+          </span>
         )}
-      > */}
-      {/* <div className="flex flex-col items-center justify-center w-full h-full bg-background/80 backdrop-blur-sm"> */}
-      {/* <AudioLinesIcon className="w-24 h-24 text-muted-foreground" /> */}
-      <audio
-        ref={audioRef}
-        controls
-        loop
-        autoPlay={false}
-        className="px-2"
-        src={src}
-      />
-      {/* </div> */}
-      {/* </div> */}
-      {typeof duration === 'number' && !hovered ? (
-        <MediaDurationBadge duration={duration} isLoading={false} />
-      ) : null}
+      </div>
     </div>
   )
 }

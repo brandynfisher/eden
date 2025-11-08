@@ -1,5 +1,6 @@
 import TextClampMore from '../text/text-clamp-more'
 import { LightboxGallery, LightboxTrigger } from '@/components/media/lightbox'
+import PreviewAudioPlayer from '@/components/timeline/preview-audio-player'
 import PreviewVideoPlayer from '@/components/timeline/preview-video-player'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,7 +28,12 @@ import { toast } from 'sonner'
 const INITIAL_VISIBLE_IMAGES = 4
 const SHORT_STRING_LENGTH = 30
 
-const ImageGalleryCell = ({ images }: { images: string[] }) => {
+type ImageGalleryCellProps = {
+  images: string[]
+  className?: string
+}
+
+const ImageGalleryCell = ({ images, className }: ImageGalleryCellProps) => {
   const [showAll, setShowAll] = useState(false)
   const [maxHeight, setMaxHeight] = useState<number>(384) // default 96 * 4 = 384px
   const containerRef = useRef<HTMLDivElement>(null)
@@ -90,7 +96,7 @@ const ImageGalleryCell = ({ images }: { images: string[] }) => {
   }, [showAll])
 
   return (
-    <div className="space-y-2 mt-2" ref={containerRef}>
+    <div className={cn('space-y-2 mt-2', className)} ref={containerRef}>
       <div
         ref={galleryRef}
         className="flex flex-wrap gap-2 overflow-y-auto overflow-x-hidden scrollbar-thin"
@@ -165,7 +171,59 @@ const videoInputParameterNames = [
   'video3',
   'video4',
   'video5',
+  'videos',
 ]
+
+const audioInputParameterNames = [
+  'audio',
+  'voice_audio',
+  'audio1',
+  'audio2',
+  'audio3',
+  'audio4',
+  'audio5',
+  'audio_files',
+  'audio_file',
+]
+
+const mixedMediaInputParameterNames = [
+  'media_files',
+  'media_inputs',
+  'media_files',
+]
+
+const IMAGE_FILE_EXTENSIONS = new Set([
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'webp',
+  'bmp',
+  'tiff',
+  'svg',
+  'avif',
+])
+
+const VIDEO_FILE_EXTENSIONS = new Set([
+  'mp4',
+  'mov',
+  'webm',
+  'mkv',
+  'avi',
+  'flv',
+  'wmv',
+  'm4v',
+])
+
+const AUDIO_FILE_EXTENSIONS = new Set([
+  'mp3',
+  'wav',
+  'ogg',
+  'aac',
+  'flac',
+  'm4a',
+  'mpeg',
+])
 
 type ParameterValue =
   | TaskV2Args[keyof TaskV2Args]
@@ -222,51 +280,155 @@ const ParameterTable = ({
       })
     : Object.entries({ ...args })
 
-  const isValidImageUrl = (val: unknown): boolean => {
+  const isValidMediaUrl = (val: unknown): val is string => {
     if (typeof val !== 'string') return false
-    // Check if it's a valid URL (http/https or S3-style path)
     const urlRegex = /^(https?:\/\/|s3:\/\/|\/)/i
     return urlRegex.test(val.trim())
   }
 
-  const renderValue = (paramName: string, value: ParameterValue) => {
-    // Handle media types - always render below
-    if (imageInputParameterNames.includes(paramName)) {
-      // Filter to only valid URLs
-      const imageUrls = [value as string]
-        .flat()
-        .filter(Boolean)
-        .filter(isValidImageUrl)
-
-      // Only render as images if we have valid URLs
-      if (imageUrls.length > 0) {
-        return {
-          isInline: false,
-          content: <ImageGalleryCell images={imageUrls} />,
-        }
+  const collectMediaUrls = (paramValue: ParameterValue): string[] => {
+    const pick = (input: unknown): string[] => {
+      if (typeof input === 'string') {
+        return [input]
       }
+      if (
+        input &&
+        typeof input === 'object' &&
+        'url' in input &&
+        typeof (input as { url?: unknown }).url === 'string'
+      ) {
+        return [(input as { url: string }).url]
+      }
+      return []
+    }
 
-      // Fall through to render as text if no valid URLs
+    if (Array.isArray(paramValue)) {
+      return paramValue.flatMap(pick)
+    }
+
+    return pick(paramValue)
+  }
+
+  const getFileExtension = (url: string): string => {
+    try {
+      const sanitized = url.split('#')[0]?.split('?')[0] ?? ''
+      const lastDotIndex = sanitized.lastIndexOf('.')
+      if (lastDotIndex === -1) return ''
+      return sanitized.slice(lastDotIndex + 1).toLowerCase()
+    } catch {
+      return ''
+    }
+  }
+
+  const getMediaTypeFromUrl = (url: string): 'image' | 'video' | 'audio' => {
+    const extension = getFileExtension(url)
+    if (AUDIO_FILE_EXTENSIONS.has(extension)) return 'audio'
+    if (VIDEO_FILE_EXTENSIONS.has(extension)) return 'video'
+    if (IMAGE_FILE_EXTENSIONS.has(extension)) return 'image'
+    return 'image'
+  }
+
+  const renderImageContent = (
+    urls: string[],
+    overrides?: Pick<ImageGalleryCellProps, 'className'>,
+  ) => ({
+    isInline: false,
+    content: <ImageGalleryCell images={urls} {...overrides} />,
+  })
+
+  const renderVideoContent = (urls: string[], wrapperClassName?: string) => ({
+    isInline: false,
+    content: (
+      <div className={cn('flex flex-wrap gap-2', wrapperClassName)}>
+        {urls.map(inputVideoUrl => (
+          <PreviewVideoPlayer
+            key={inputVideoUrl}
+            src={inputVideoUrl}
+            width={72}
+            height={72}
+            className="hover:brightness-105"
+          />
+        ))}
+      </div>
+    ),
+  })
+
+  const renderAudioContent = (urls: string[], wrapperClassName?: string) => ({
+    isInline: false,
+    content: (
+      <div className={cn('flex flex-col gap-2', wrapperClassName)}>
+        {urls.map(inputAudioUrl => (
+          <PreviewAudioPlayer key={inputAudioUrl} src={inputAudioUrl} />
+        ))}
+      </div>
+    ),
+  })
+
+  const renderMixedMediaContent = (urls: string[]) => {
+    if (!urls.length) return null
+
+    const categorized = urls.map(url => ({
+      url,
+      type: getMediaTypeFromUrl(url),
+    }))
+
+    const imageUrls = categorized
+      .filter(item => item.type === 'image')
+      .map(item => item.url)
+    const videoUrls = categorized
+      .filter(item => item.type === 'video')
+      .map(item => item.url)
+    const audioUrls = categorized
+      .filter(item => item.type === 'audio')
+      .map(item => item.url)
+
+    return {
+      isInline: false,
+      content: (
+        <div className="space-y-3">
+          {imageUrls.length ? (
+            <div key="images">
+              {renderImageContent(imageUrls, { className: 'mt-0' }).content}
+            </div>
+          ) : null}
+          {videoUrls.length ? (
+            <div key="videos">{renderVideoContent(videoUrls).content}</div>
+          ) : null}
+          {audioUrls.length ? (
+            <div key="audios">{renderAudioContent(audioUrls).content}</div>
+          ) : null}
+        </div>
+      ),
+    }
+  }
+
+  const renderValue = (paramName: string, value: ParameterValue) => {
+    if (imageInputParameterNames.includes(paramName)) {
+      const urls = collectMediaUrls(value).filter(isValidMediaUrl)
+      if (urls.length) {
+        return renderImageContent(urls)
+      }
     }
 
     if (videoInputParameterNames.includes(paramName)) {
-      return {
-        isInline: false,
-        content: (
-          <div className="flex flex-wrap gap-2">
-            {((Array.isArray(value) ? value : [value]) as string[])
-              .filter(Boolean)
-              .map(inputVideoUrl => (
-                <PreviewVideoPlayer
-                  key={inputVideoUrl}
-                  src={inputVideoUrl}
-                  width={72}
-                  height={72}
-                  className="hover:brightness-105"
-                />
-              ))}
-          </div>
-        ),
+      const urls = collectMediaUrls(value).filter(isValidMediaUrl)
+      if (urls.length) {
+        return renderVideoContent(urls)
+      }
+    }
+
+    if (audioInputParameterNames.includes(paramName)) {
+      const urls = collectMediaUrls(value).filter(isValidMediaUrl)
+      if (urls.length) {
+        return renderAudioContent(urls)
+      }
+    }
+
+    if (mixedMediaInputParameterNames.includes(paramName)) {
+      const urls = collectMediaUrls(value).filter(isValidMediaUrl)
+      const mixedContent = renderMixedMediaContent(urls)
+      if (mixedContent) {
+        return mixedContent
       }
     }
 

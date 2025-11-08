@@ -3,6 +3,7 @@
 import ConceptAgentPicker from './components/concept-agent-picker'
 import ConceptDeleteConfirmationDialog from './components/concept-delete-confirmation-dialog'
 import ImageDeleteConfirmationDialog from './components/image-delete-confirmation-dialog'
+import UnsavedChangesDialog from './components/unsaved-changes-dialog'
 import FileUploader from '@/components/media/file-uploader'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
@@ -20,7 +21,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -49,6 +50,8 @@ interface EditConceptViewProps {
   conceptId: string
   onSuccess?: () => void
   onDelete?: () => void
+  onCancel?: () => void
+  onCloseRequestRef?: React.MutableRefObject<(() => void) | null>
   preselectedAgent?: Agent | null
 }
 
@@ -56,6 +59,8 @@ const EditConceptView = ({
   conceptId,
   onSuccess,
   onDelete,
+  onCancel,
+  onCloseRequestRef,
   preselectedAgent,
 }: EditConceptViewProps) => {
   const router = useRouter()
@@ -69,6 +74,8 @@ const EditConceptView = ({
     hasContent: boolean
   }>({ open: false, index: -1, hasContent: false })
   const [conceptDeleteConfirmation, setConceptDeleteConfirmation] =
+    useState(false)
+  const [unsavedChangesConfirmation, setUnsavedChangesConfirmation] =
     useState(false)
 
   const form = useForm<ConceptFormDto>({
@@ -242,6 +249,39 @@ const EditConceptView = ({
       remove(deleteConfirmation.index)
     }
   }
+
+  const handleCancelClick = useCallback(() => {
+    if (form.formState.isDirty) {
+      setUnsavedChangesConfirmation(true)
+    } else {
+      if (onCancel) {
+        onCancel()
+      } else {
+        router.push('/concepts')
+      }
+    }
+  }, [form.formState.isDirty, onCancel, router])
+
+  const confirmCancel = useCallback(() => {
+    setUnsavedChangesConfirmation(false)
+    if (onCancel) {
+      onCancel()
+    } else {
+      router.push('/concepts')
+    }
+  }, [onCancel, router])
+
+  // Handle close requests from parent (Dialog X button or Escape)
+  useEffect(() => {
+    if (onCloseRequestRef) {
+      onCloseRequestRef.current = handleCancelClick
+    }
+    return () => {
+      if (onCloseRequestRef) {
+        onCloseRequestRef.current = null
+      }
+    }
+  }, [onCloseRequestRef, handleCancelClick])
 
   if (loading) {
     return (
@@ -459,7 +499,7 @@ const EditConceptView = ({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push('/concepts')}
+                onClick={handleCancelClick}
                 className="h-11 px-8 text-base"
               >
                 Cancel
@@ -529,6 +569,12 @@ const EditConceptView = ({
           onOpenChange={setConceptDeleteConfirmation}
           onConfirm={handleConfirmDelete}
           concept={concept}
+        />
+
+        <UnsavedChangesDialog
+          open={unsavedChangesConfirmation}
+          onOpenChange={setUnsavedChangesConfirmation}
+          onConfirm={confirmCancel}
         />
       </div>
     </div>

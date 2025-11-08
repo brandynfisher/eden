@@ -9,6 +9,7 @@ export enum ClientType {
   PRINTIFY = 'printify',
   CAPTIONS = 'captions',
   TIKTOK = 'tiktok',
+  GMAIL = 'gmail',
   EMAIL = 'email',
 }
 

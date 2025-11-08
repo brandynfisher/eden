@@ -148,7 +148,7 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
           </p>
         </div>
 
-        <div className="w-full max-w-[calc(42rem+3.75rem)] mx-auto mb-6">
+        <div className="w-full px-4 mb-6">
           <MessageInput
             sessionId={'new'}
             onStreamingMessage={onSendMessage}
