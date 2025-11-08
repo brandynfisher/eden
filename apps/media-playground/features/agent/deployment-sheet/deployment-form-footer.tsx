@@ -21,6 +21,7 @@ interface DeploymentFormFooterProps {
   platform: string
   guideUrl?: string
   valid?: boolean
+  canSubmit?: boolean
 }
 
 export const DeploymentFormFooter = ({
@@ -30,6 +31,7 @@ export const DeploymentFormFooter = ({
   isDeployed,
   guideUrl,
   valid,
+  canSubmit = true,
 }: DeploymentFormFooterProps) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
@@ -115,6 +117,24 @@ export const DeploymentFormFooter = ({
         config = {
           shopify: {},
         }
+      } else if (platform === 'email') {
+        const domain = data.domain
+        if (!domain || domain.status !== 'verified') {
+          throw new Error('Email domain must be verified before deployment')
+        }
+        if (!data.senderEmail || data.senderEmail.trim().length === 0) {
+          throw new Error('Sender email is required')
+        }
+
+        config = {
+          email: {
+            domain_id: domain.id ?? domain._id,
+            sender_email: data.senderEmail.trim(),
+            autoreply_enabled: data.autoreply,
+            reply_delay_average_minutes: Number(data.replyDelayAverage ?? 0),
+            reply_delay_variance_minutes: Number(data.replyDelayVariance ?? 0),
+          },
+        }
       }
 
       if (isDeployed) {
@@ -175,6 +195,17 @@ export const DeploymentFormFooter = ({
               api_key: data.api_key,
             },
           }
+        } else if (platform === 'email' && data.domain) {
+          payload.secrets = {
+            email: {
+              domain: data.domain.domain,
+              provider_domain_id: data.domain.provider_domain_id,
+              inbound_route_id: data.domain.inbound_route_id,
+              inbound_route_expression: data.domain.inbound_route_expression,
+              forwarding_address: data.domain.forwarding_address,
+              webhook_signing_key: data.domain.webhook_signing_key,
+            },
+          }
         }
 
         await axios.patch(`/api/agents/${agentId}/deployments`, payload)
@@ -233,6 +264,17 @@ export const DeploymentFormFooter = ({
           payload.secrets = {
             captions: {
               api_key: data.api_key,
+            },
+          }
+        } else if (platform === 'email' && data.domain) {
+          payload.secrets = {
+            email: {
+              domain: data.domain.domain,
+              provider_domain_id: data.domain.provider_domain_id,
+              inbound_route_id: data.domain.inbound_route_id,
+              inbound_route_expression: data.domain.inbound_route_expression,
+              forwarding_address: data.domain.forwarding_address,
+              webhook_signing_key: data.domain.webhook_signing_key,
             },
           }
         }
@@ -336,7 +378,7 @@ export const DeploymentFormFooter = ({
               <Button
                 type="submit"
                 onClick={form.handleSubmit(handleSubmit)}
-                disabled={isDeploying || !form.formState.isDirty}
+                disabled={isDeploying || !form.formState.isDirty || !canSubmit}
               >
                 {isDeployed ? (
                   <SaveIcon className="size-4 mr-2" />

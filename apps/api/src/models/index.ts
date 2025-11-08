@@ -13,6 +13,7 @@ import { Concept, ConceptDocument } from './Concept'
 import { Creation, CreationDocument } from './Creation'
 import { Deployment, DeploymentDocument } from './Deployment'
 import { DiscordAgent, DiscordAgentDocument } from './DiscordAgent'
+import { EmailDomain, EmailDomainDocument } from './EmailDomain'
 import { Embedding, EmbeddingDocument } from './Embedding'
 import { Follow, FollowDocument } from './Follow'
 import { Generator, GeneratorDocument } from './Generator'
@@ -66,6 +67,7 @@ export interface Database {
   CollectionV2: Model<CollectionV2Document>
   Transaction: Model<TransactionDocument>
   Generator: Model<GeneratorDocument>
+  EmailDomain: Model<EmailDomainDocument>
   ToolV2: Model<ToolV2Document>
   Character: Model<CharacterDocument>
   Challenge: Model<ChallengeDocument>
@@ -104,6 +106,7 @@ export const models: Database = {
   CollectionV2,
   Transaction,
   Generator,
+  EmailDomain,
   ToolV2,
   Character,
   Challenge,
