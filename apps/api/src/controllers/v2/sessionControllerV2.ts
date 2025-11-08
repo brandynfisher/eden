@@ -764,8 +764,30 @@ export const getSession = async (
 
     // Fetch latest messages (no pagination on initial session fetch)
     // Fetch limit+1 to check if there are more
+    // Filter out messages with no content, no tool_calls, and no attachments
     const fetchLimit = limit + 1
-    const messages = await Message.find({ session: session._id })
+    const messages = await Message.find({
+      session: session._id,
+      $or: [
+        { content: { $exists: true, $nin: ['', null] } },
+        {
+          $and: [
+            { tool_calls: { $exists: true } },
+            { tool_calls: { $ne: null } },
+            { tool_calls: { $type: 'array' } },
+            { tool_calls: { $not: { $size: 0 } } },
+          ],
+        },
+        {
+          $and: [
+            { attachments: { $exists: true } },
+            { attachments: { $ne: null } },
+            { attachments: { $type: 'array' } },
+            { attachments: { $not: { $size: 0 } } },
+          ],
+        },
+      ],
+    })
       .populate({
         path: 'sender',
         select: '_id username userImage',
@@ -887,8 +909,28 @@ export const getSessionMessages = async (
     }
 
     // Build query for cursor-based pagination
+    // Filter out messages with no content, no tool_calls, and no attachments
     const messageQuery: any = {
       session: session._id,
+      $or: [
+        { content: { $exists: true, $nin: ['', null] } },
+        {
+          $and: [
+            { tool_calls: { $exists: true } },
+            { tool_calls: { $ne: null } },
+            { tool_calls: { $type: 'array' } },
+            { tool_calls: { $not: { $size: 0 } } },
+          ],
+        },
+        {
+          $and: [
+            { attachments: { $exists: true } },
+            { attachments: { $ne: null } },
+            { attachments: { $type: 'array' } },
+            { attachments: { $not: { $size: 0 } } },
+          ],
+        },
+      ],
     }
 
     if (cursor) {
@@ -897,11 +939,16 @@ export const getSessionMessages = async (
         const [cursorCreatedAt, cursorId] = decodedCursor.split('_')
 
         // Find messages older than the cursor
-        messageQuery.$or = [
-          { createdAt: { $lt: new Date(cursorCreatedAt) } },
+        // Combine with content filter using $and
+        messageQuery.$and = [
           {
-            createdAt: new Date(cursorCreatedAt),
-            _id: { $lt: new ObjectId(cursorId) },
+            $or: [
+              { createdAt: { $lt: new Date(cursorCreatedAt) } },
+              {
+                createdAt: new Date(cursorCreatedAt),
+                _id: { $lt: new ObjectId(cursorId) },
+              },
+            ],
           },
         ]
       } catch (error) {
