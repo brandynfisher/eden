@@ -169,9 +169,17 @@ export const sessionsListRequestConfigV2 = (
 export const sessionsGetRequestConfigV2 = (
   args: SessionsV2GetArguments,
 ): AxiosRequestConfig => {
+  const params: Record<string, string | number> = {}
+  if (args.cursor) {
+    params.cursor = args.cursor
+  }
+  if (args.limit !== undefined) {
+    params.limit = args.limit
+  }
   return {
     method: 'GET',
     url: `v2/sessions/${args.session_id}`,
+    ...(Object.keys(params).length > 0 && { params }),
   }
 }
 
