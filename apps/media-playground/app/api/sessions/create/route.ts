@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (type) {
-      createArgs.type = type
+      createArgs.session_type = type
     }
 
     if (status) {

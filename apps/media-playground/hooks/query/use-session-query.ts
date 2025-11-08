@@ -38,21 +38,10 @@ export function useSessionQuery({
         throw new Error('Session not found')
       }
 
-      // Get existing pagination state
-      const existingPagination = queryClient.getQueryData([
-        'session-pagination',
-        sessionId,
-      ]) as { nextCursor?: string; hasMore?: boolean } | undefined
-
-      // If we've already determined there are no more messages, never set hasMore back to true
-      // This prevents refetches from incorrectly showing "Load earlier" after all messages are loaded
-      const hasMore =
-        existingPagination?.hasMore === false ? false : response.data.hasMore
-
-      // Store pagination metadata
+      // Store pagination metadata - always trust the server's hasMore value
       queryClient.setQueryData(['session-pagination', sessionId], {
         nextCursor: response.data.nextCursor,
-        hasMore,
+        hasMore: response.data.hasMore,
       })
 
       // Merge with existing older messages if they exist
