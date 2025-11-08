@@ -40,8 +40,8 @@ export const TwitterDeploymentForm = ({
     return deployment !== undefined
   }, [deployment])
 
-  // Check if Twitter is connected by looking at deployment secrets
-  const isConnected = deployment?.secrets?.twitter?.access_token ? true : false
+  // Treat any existing deployment as a connected account (tokens are encrypted server-side)
+  const isConnected = Boolean(deployment)
   const twitterUsername = deployment?.config?.twitter?.username
 
   const handleConnect = async () => {
@@ -140,7 +140,7 @@ export const TwitterDeploymentForm = ({
                 </>
               )}
 
-              {isConnected && (
+              {isDeployed && (
                 <DeploymentFormFooter
                   agentId={agentId}
                   platform="twitter"

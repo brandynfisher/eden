@@ -10,7 +10,12 @@ import {
 } from '@/components/ui/dialog'
 import { useToast } from '@/components/ui/use-toast'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
-import { Agent, SessionPermission, SessionV2 } from '@edenlabs/eden-sdk'
+import {
+  Agent,
+  SessionPermission,
+  SessionType,
+  SessionV2,
+} from '@edenlabs/eden-sdk'
 import { Settings2Icon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -62,19 +67,17 @@ export const EditSessionModal = ({
 
       const requestBody: Partial<SessionV2> & { agent_ids: string[] } = {
         agent_ids: data.agents.map(agent => agent._id),
-        autonomy_settings: {
-          auto_reply: data.auto_reply,
-          reply_interval: data.reply_interval,
-          actor_selection_method: data.actor_selection_method,
+        session_type:
+          data.type === 'passive' ? SessionType.PASSIVE : SessionType.AUTOMATIC,
+        settings: {
+          conductor_prompt: data.conductor_prompt,
+          delay_interval: data.delay_interval,
+          mention_force_reply: data.mention_force_reply,
         },
       }
 
-      if (data.title && data.title.trim()) {
-        requestBody.title = data.title
-      }
-
-      if (data.scenario && data.scenario.trim()) {
-        requestBody.scenario = data.scenario
+      if (data.context && data.context.trim()) {
+        requestBody.context = data.context
       }
 
       const budget: {
@@ -159,19 +162,17 @@ export const EditSessionModal = ({
       _id: agent._id,
       name: agent.name,
     })),
-    title: session.title || '',
-    scenario: session.scenario || '',
+    type: (session.session_type as 'passive' | 'automatic') || 'passive',
+    context: session.context || '',
+    conductor_prompt: session.settings?.conductor_prompt || '',
+    delay_interval: session.settings?.delay_interval || 0,
+    mention_force_reply: session.settings?.mention_force_reply || false,
     manna_budget_unlimited: !session.budget?.manna_budget,
     manna_budget: session.budget?.manna_budget || 1000,
     token_budget_unlimited: !session.budget?.token_budget,
     token_budget: session.budget?.token_budget || 10000,
     turn_budget_unlimited: !session.budget?.turn_budget,
     turn_budget: session.budget?.turn_budget || 100,
-    auto_reply: session.autonomy_settings?.auto_reply || false,
-    reply_interval: session.autonomy_settings?.reply_interval || 0,
-    actor_selection_method:
-      session.autonomy_settings?.actor_selection_method ||
-      'random_exclude_last',
     permissions: permissions.map(p => ({
       username: p.user?.username,
       level: p.level,

@@ -56,17 +56,22 @@ export const useSessionStream = ({
       creationArgs?: {
         agent_ids: string[]
         thinking?: boolean
-        scenario?: string
+        context?: string
         budget?: {
           manna_budget?: number
           token_budget?: number
           turn_budget?: number
         }
         title?: string
-        autonomy_settings?: {
-          auto_reply: boolean
-          reply_interval: number
-          actor_selection_method: 'random' | 'random_exclude_last'
+        type?: 'chat' | 'passive' | 'automatic'
+        settings?: {
+          conductor_prompt?: string
+          delay_interval: number
+          mention_force_reply: boolean
+        }
+        extras?: {
+          exclude_memory?: boolean
+          is_public?: boolean
         }
       },
     ) => {

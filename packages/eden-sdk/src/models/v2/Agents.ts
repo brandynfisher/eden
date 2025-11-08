@@ -20,13 +20,11 @@ export type AgentSuggestion = {
 export type AgentStats = {
   threadCount: number
   userCount: number
-  userMessageCount: number
-  assistantMessageCount: number
+  messageCount: number
   toolCallCount: number
   threadCount_7d: number
   userCount_7d: number
-  userMessageCount_7d: number
-  assistantMessageCount_7d: number
+  messageCount_7d: number
   toolCallCount_7d: number
   lastUpdated: Date
 }
@@ -110,6 +108,8 @@ export type AgentClientType =
   | 'farcaster'
   | 'web'
   | 'shopify'
+  | 'gmail'
+  | 'email'
 export type AgentDeployCommand = 'deploy' | 'stop'
 export type AgentDeployCredentials = {
   CLIENT_DISCORD_TOKEN: string

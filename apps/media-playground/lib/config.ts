@@ -5,7 +5,7 @@ export const env = {
   NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV || 'staging',
   NEXT_PUBLIC_DEV_TYPE: process.env.NEXT_PUBLIC_DEV_TYPE || 'eden',
   NEXT_PUBLIC_EDEN_API_URL:
-    process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://0.0.0.0:5050',
+    process.env.NEXT_PUBLIC_EDEN_API_URL || 'http://127.0.0.1:5050',
   NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL:
     process.env.NEXT_PUBLIC_EDEN_COMPUTE_SOCKET_URL || 'ws://localhost:5050',
   NEXT_PUBLIC_HOST: process.env.NEXT_PUBLIC_HOST || 'http://localhost:3000',
@@ -97,7 +97,17 @@ export const siteConfig: SiteConfig = {
     '/tools',
   ],
   featured: {
-    tools: ['flux_dev', 'texture_flow', 'kling_pro', 'flux_double_character'],
+    tools: [
+      'flux_dev',
+      'texture_flow',
+      'kling_pro',
+      'flux_double_character',
+      'seeddream4',
+      'nano_banana',
+      'background_removal',
+      'veo3',
+      'elevenlabs',
+    ],
     agents:
       process.env.NEXT_PUBLIC_APP_ENV === 'production'
         ? [

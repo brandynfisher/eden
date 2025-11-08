@@ -1,6 +1,11 @@
 import { handleAxiosServerError } from '@/lib/fetcher'
 import { getAuth } from '@clerk/nextjs/server'
-import { EdenClient } from '@edenlabs/eden-sdk'
+import {
+  EdenClient,
+  SessionSettings,
+  SessionStatus,
+  SessionType,
+} from '@edenlabs/eden-sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
@@ -88,12 +93,32 @@ export async function PATCH(
   const authToken = await getToken()
 
   const body = await request.json()
-  const { title, pinned, extras } = body
+  const {
+    title,
+    pinned,
+    extras,
+    agent_ids,
+    type,
+    settings,
+    context,
+    budget,
+    status,
+  } = body
 
-  if (title === undefined && pinned === undefined && extras === undefined) {
+  if (
+    title === undefined &&
+    pinned === undefined &&
+    extras === undefined &&
+    agent_ids === undefined &&
+    type === undefined &&
+    settings === undefined &&
+    context === undefined &&
+    budget === undefined &&
+    status === undefined
+  ) {
     return new NextResponse(
       JSON.stringify({
-        message: 'Missing title, pinned status, or extras',
+        message: 'No fields to update',
       }),
       {
         status: 400,
@@ -112,7 +137,18 @@ export async function PATCH(
       title?: string
       pinned?: boolean
       extras?: { exclude_memory?: boolean; is_public?: boolean }
+      agent_ids?: string[]
+      type?: SessionType
+      settings?: SessionSettings
+      context?: string
+      budget?: {
+        manna_budget?: number
+        token_budget?: number
+        turn_budget?: number
+      }
+      status?: SessionStatus
     } = { session_id: id }
+
     if (title !== undefined) {
       updateData.title = title
     }
@@ -121,6 +157,24 @@ export async function PATCH(
     }
     if (extras !== undefined) {
       updateData.extras = extras
+    }
+    if (agent_ids !== undefined) {
+      updateData.agent_ids = agent_ids
+    }
+    if (type !== undefined) {
+      updateData.type = type as SessionType
+    }
+    if (settings !== undefined) {
+      updateData.settings = settings
+    }
+    if (context !== undefined) {
+      updateData.context = context
+    }
+    if (budget !== undefined) {
+      updateData.budget = budget
+    }
+    if (status !== undefined) {
+      updateData.status = status as SessionStatus
     }
 
     const res = await eden.sessions.v2.update(updateData)

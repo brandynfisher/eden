@@ -121,15 +121,7 @@ const ExplorePage = () => {
     [agentsSort, creatorType, user?._id, searchQuery],
   )
 
-  // Update URL when tabs change
-  const handleContentTypeChange = (value: string) => {
-    const newContentType = value as ContentType
-    setContentType(newContentType)
-    const params = new URLSearchParams(searchParams?.toString())
-    params.set('type', newContentType)
-    router.push(`/explore${params.toString() ? `?${params.toString()}` : ''}`)
-  }
-
+  // Update URL when creator type changes
   const handleCreatorTypeChange = (value: string) => {
     const newCreatorType = value as CreatorType
     setCreatorType(newCreatorType)
@@ -265,26 +257,6 @@ const ExplorePage = () => {
       {/* Content with filters bar */}
       <div className="w-full">
         <div className="flex flex-wrap gap-2 lg:gap-3 w-full mb-6 items-center">
-          {/* Content Type Selector - controls content display */}
-          <div className="flex rounded-md border bg-background">
-            {['agents', 'models', 'creations', 'tools'].map(type => (
-              <button
-                key={type}
-                onClick={() => handleContentTypeChange(type)}
-                className={`px-3 py-2 text-sm font-medium transition-colors first:rounded-l-md last:rounded-r-md border-r last:border-r-0 ${
-                  contentType === type
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          {/* Separator */}
-          <div className="h-6 w-px bg-border mx-2" />
-
           {/* Filter controls */}
           <div className="flex flex-wrap gap-2 lg:gap-3 items-center">
             {/* Ownership Type Tabs - only show for non-tools content types and when user is logged in */}

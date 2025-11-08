@@ -43,8 +43,8 @@ const SingleAgentSelectorModal: FC<{
     limit: 35,
     ...(currentTab === 'user' && user?._id ? { user: user._id } : {}),
     ...(searchQuery ? { search: searchQuery } : {}),
-    // Sort by total popularity for both tabs
-    sort: ['stats.userMessageCount;-1'],
+    // Sort by total number of messages
+    sort: ['stats.messageCount;-1'],
   }
 
   const handleAgentClick = (agent: Agent, event?: React.MouseEvent) => {

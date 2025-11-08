@@ -71,6 +71,10 @@ export async function PATCH(
   try {
     const body = await request.json()
 
+    // do not overwrite the original user who owns that Trigger, so we remove user from the request body
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+    const { user: _user, ...updateData } = body
+
     const eden = new EdenClient({
       edenApiUrl: process.env.NEXT_PUBLIC_EDEN_API_URL,
       token: authToken,
@@ -79,7 +83,7 @@ export async function PATCH(
     const result = await eden.agents.triggers.update({
       agentId: id,
       triggerId,
-      ...body,
+      ...updateData,
     })
 
     return NextResponse.json(result)

@@ -53,34 +53,37 @@ export const listUserConcepts = async (
 
   const conceptsRepository = new ConceptV2Repository(ConceptV2)
 
-  const concepts = await conceptsRepository.query(
-    {
-      user: user._id,
+  // Get agent query parameter
+  const { agent } = request.query as { agent?: string }
+
+  // Build query: if agent is provided, filter by agent; otherwise filter by user
+  const query = agent
+    ? { agent: new Types.ObjectId(agent) }
+    : { user: user._id }
+
+  const concepts = await conceptsRepository.query(query, {
+    sort: {
+      createdAt: -1,
     },
-    {
-      sort: {
-        createdAt: -1,
+    populate: [
+      {
+        path: 'user',
+        select: '_id userId username userImage',
       },
-      populate: [
-        {
-          path: 'user',
-          select: '_id userId username userImage',
-        },
-        {
-          path: 'agent',
-          select: '_id userId username userImage',
-        },
-        {
-          path: 'sdxl_lora',
-          select: '_id name thumbnail',
-        },
-        {
-          path: 'flux_lora',
-          select: '_id name thumbnail',
-        },
-      ],
-    },
-  )
+      {
+        path: 'agent',
+        select: '_id userId username userImage',
+      },
+      {
+        path: 'sdxl_lora',
+        select: '_id name thumbnail',
+      },
+      {
+        path: 'flux_lora',
+        select: '_id name thumbnail',
+      },
+    ],
+  })
 
   return reply.status(200).send({ concepts: concepts.docs })
 }
@@ -192,7 +195,6 @@ export const updateConcept = async (
 
   const concept = await ConceptV2.findOne({
     _id: conceptId,
-    user: userId,
   })
 
   if (!concept) {
@@ -275,7 +277,6 @@ export const getConcept = async (
 
   const concept = await ConceptV2.findOne({
     _id: conceptId,
-    user: userId,
   }).populate([
     {
       path: 'user',
@@ -319,7 +320,6 @@ export const deleteConcept = async (
 
   const concept = await ConceptV2.findOne({
     _id: conceptId,
-    user: userId,
   })
 
   if (!concept) {
