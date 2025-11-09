@@ -1,7 +1,7 @@
 'use client'
 
 import AlertDestructive from '@/components/alert/alert-destructive'
-import SessionCard from '@/components/session/session-card'
+import InlineSessionCard from '@/components/session/inline-session-card'
 import TextClampMore from '@/components/text/text-clamp-more'
 import { AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -240,19 +240,19 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
 
   return (
     <div className="space-y-2">
-      {/* Wrapper for session card with overlays */}
+      {/* Wrapper for inline session card with overlays */}
       <div className="relative">
-        {/* Display session card */}
-        <SessionCard
+        {/* Display inline session card */}
+        <InlineSessionCard
           session={session}
           hideAgentIds={currentAgentIds}
           linkPath={chatLinkPath}
         />
 
         {/* Running indicator and cancel button - top right corner */}
-        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+        <div className="absolute top-2 right-2 flex items-center gap-2">
           {isRunning && (
-            <span className="text-blue-500 h-6 w-6 loading loading-ring pointer-events-none" />
+            <span className="text-blue-500 h-4 w-4 loading loading-ring pointer-events-none" />
           )}
           {isRunning && onCancel && (
             <Button
@@ -263,9 +263,9 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
                 e.preventDefault()
                 onCancel()
               }}
-              className="h-7 px-2 hover:bg-destructive/10 hover:text-destructive pointer-events-auto"
+              className="h-6 px-2 text-xs hover:bg-destructive/10 hover:text-destructive pointer-events-auto"
             >
-              <XIcon className="h-4 w-4 mr-1" />
+              <XIcon className="h-3 w-3 mr-1" />
               Cancel
             </Button>
           )}
