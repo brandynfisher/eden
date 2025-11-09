@@ -16,8 +16,8 @@ const featuredAgentIds =
     : [
         'eve',
         'abraham',
-        'verdelis',
         'eden_gigabrain',
+        'verdelis',
         'mechanical_duck',
         'hypotheticards',
       ]
