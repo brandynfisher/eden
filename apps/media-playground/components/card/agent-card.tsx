@@ -18,6 +18,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import {
   CheckIcon,
+  GlobeIcon,
   MessageSquareIcon,
   SquareMousePointerIcon,
 } from 'lucide-react'
@@ -182,6 +183,26 @@ const AgentCard = ({
       </Link>
       <div className="absolute bottom-0 right-0 p-2 flex items-center justify-between shrink-0 pointer-events-none">
         <div className="flex items-center gap-1 ml-auto">
+          {/* Website link icon */}
+          {agent.website && (
+            <Button
+              size="icon"
+              variant="outline"
+              asChild
+              aria-label="Visit website"
+              className="pointer-events-auto h-9 w-9 bg-muted-darker/60 text-muted-foreground hover:text-primary"
+            >
+              <Link
+                href={agent.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Visit website"
+                onClick={e => e.stopPropagation()}
+              >
+                <GlobeIcon className="w-4 h-4" />
+              </Link>
+            </Button>
+          )}
           {/* <LikeButton
             type="agent"
             id={agent._id}

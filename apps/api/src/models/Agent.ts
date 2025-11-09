@@ -18,6 +18,7 @@ export interface AgentSchema extends BaseUserSchema {
   tools?: { [key: string]: boolean }
   discordId?: string
   voice?: string
+  website?: string
   models?: Array<{
     lora: ModelV2Document
     use_when?: string
@@ -132,6 +133,11 @@ const AgentSchema = new Schema<AgentDocument>(
     voice: {
       type: String,
       required: false,
+    },
+    website: {
+      type: String,
+      required: false,
+      maxlength: 500,
     },
     public: {
       type: Boolean,
