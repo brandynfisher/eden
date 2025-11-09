@@ -21,7 +21,10 @@ const HeaderNavLinks = ({
 
   const isActive = (path: string) => {
     if (path === 'chat') {
-      return pathname?.startsWith('/chat') || pathname?.startsWith('/sessions')
+      return pathname?.startsWith('/chat')
+    }
+    if (path === 'sessions') {
+      return pathname?.startsWith('/sessions')
     }
     if (path === 'tools') {
       return (
@@ -64,6 +67,24 @@ const HeaderNavLinks = ({
         onClick={handleLinkClick}
       >
         Chat
+      </Link>
+      {orientation === 'horizontal' && (
+        <Separator
+          orientation="vertical"
+          className="h-3 sm:h-4 flex-shrink-0"
+        />
+      )}
+      <Link
+        href="/sessions"
+        className={getLinkClassName('sessions')}
+        onClick={handleLinkClick}
+      >
+        <span className="flex items-center gap-1.5">
+          Sessions
+          <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+            BETA
+          </span>
+        </span>
       </Link>
       {orientation === 'horizontal' && (
         <Separator
