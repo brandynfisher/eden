@@ -1726,7 +1726,12 @@ export const SessionsSidebarContent = ({
               >
                 <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
               </svg>
-              <span>Sessions</span>
+              <span className="flex items-center gap-1.5">
+                Sessions
+                <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  BETA
+                </span>
+              </span>
             </Button>
 
             {/* Explore button */}
