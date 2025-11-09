@@ -11,6 +11,9 @@ import { useAgentTriggersQuery } from '@/hooks/query/use-agent-triggers-query'
 import { formatCronSchedule } from '@/lib/format-cron-schedule'
 import { Agent, Trigger } from '@edenlabs/eden-sdk'
 import axios from 'axios'
+import dayjs from 'dayjs'
+import timezonePlugin from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 import {
   AlertCircle,
   ChevronDownIcon,
@@ -26,6 +29,9 @@ import { FC, useMemo, useState } from 'react'
 import * as React from 'react'
 import { toast } from 'sonner'
 
+dayjs.extend(utc)
+dayjs.extend(timezonePlugin)
+
 interface TriggerWithLastRun extends Trigger {
   last_run_time?: Date
 }
@@ -36,12 +42,28 @@ const TaskItem: FC<{
   onEdit: (trigger: TriggerWithLastRun) => void
   onDelete: (triggerId: string) => void
   isFinished?: boolean
-}> = ({ trigger, agentId, onEdit, isFinished = false }) => {
+  timezone: string
+}> = ({ trigger, agentId, onEdit, isFinished = false, timezone }) => {
   // const [isDeleting, setIsDeleting] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)
   const router = useRouter()
 
-  const formattedSchedule = formatCronSchedule(trigger.schedule)
+  const scheduleDescription = useMemo(() => {
+    if (!trigger.schedule) return 'No schedule configured'
+    const scheduleWithTimezone = {
+      ...trigger.schedule,
+      timezone: timezone,
+    }
+    return formatCronSchedule(scheduleWithTimezone)
+  }, [trigger.schedule, timezone])
+
+  const nextRunDisplay = useMemo(() => {
+    if (trigger.next_scheduled_run) {
+      const zonedTime = dayjs(trigger.next_scheduled_run).tz(timezone)
+      return zonedTime.format('MMM D [at] h:mma')
+    }
+    return scheduleDescription
+  }, [trigger.next_scheduled_run, timezone, scheduleDescription])
 
   // const handleDelete = async () => {
   //   setIsDeleting(true)
@@ -112,7 +134,7 @@ const TaskItem: FC<{
             {trigger.name || trigger.trigger_prompt}
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            {formattedSchedule}
+            {nextRunDisplay}
           </div>
           {!isFinished && (
             <div className="text-xs text-muted-foreground mt-1">
@@ -173,6 +195,12 @@ const TaskItem: FC<{
 const AgentTasksView: FC<{
   agent: Agent
 }> = ({ agent }) => {
+  const userTimezone = useMemo(() => {
+    if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+    }
+    return 'UTC'
+  }, [])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TriggerWithLastRun | null>(
     null,
@@ -342,6 +370,7 @@ const AgentTasksView: FC<{
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         isFinished={false}
+                        timezone={userTimezone}
                       />
                     ))}
                   </div>
@@ -379,6 +408,7 @@ const AgentTasksView: FC<{
                             onEdit={handleEdit}
                             onDelete={handleDelete}
                             isFinished={true}
+                            timezone={userTimezone}
                           />
                         ))}
                       </div>
