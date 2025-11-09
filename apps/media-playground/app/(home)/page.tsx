@@ -13,6 +13,7 @@ import {
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { AgentDashboardModal } from '@/features/agent/agent-dashboard-modal'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
+import { FeaturedAgents } from '@/features/agent/featured-agents'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { useAuthState } from '@/hooks/use-auth-state'
@@ -26,7 +27,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { MenuIcon, Plus, UserPlus } from 'lucide-react'
+import { EditIcon, MenuIcon, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
@@ -103,8 +104,8 @@ const HomePage = () => {
 
   return (
     <>
-      {/* MOBILE HEADER - Only visible on mobile */}
-      <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 border-b bg-background px-2">
+      {/* Mobile navbar */}
+      <div className="md:hidden flex h-12 items-center gap-2 border-b bg-background px-2 flex-shrink-0">
         <button
           onClick={() => setIsSheetOpen(true)}
           className="p-1 hover:bg-muted/10 rounded-lg transition-colors shrink-0"
@@ -112,20 +113,55 @@ const HomePage = () => {
         >
           <MenuIcon className="w-5 h-5 text-muted-foreground" />
         </button>
-      </header>
+        <h1 className="text-xl font-bold">Chat</h1>
+        <div className="ml-auto">
+          <button
+            onClick={() => setIsAgentSelectorOpen(true)}
+            className="p-1 hover:bg-muted/10 rounded-lg transition-colors"
+            aria-label="New chat"
+          >
+            <EditIcon className="w-5 h-5 text-muted-foreground" />
+          </button>
+        </div>
+      </div>
 
-      <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0">
+      <div className="flex flex-col fixed inset-x-0 bottom-0 top-12 md:top-0">
         {/* MOBILE LEFT BAR SHEET */}
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetContent
             side="left"
-            className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
+            className="flex flex-col max-h-full pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
           >
             <SheetTitle className="sr-only">Navigation</SheetTitle>
-            <SessionsSidebarContent
-              onItemClick={() => setIsSheetOpen(false)}
-              isChat={true}
-            />
+            {/* Mobile sticky header with logo and new chat button */}
+            <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
+              <button
+                onClick={() => {
+                  setIsSheetOpen(false)
+                }}
+                className="flex items-center gap-2"
+              >
+                <span className="text-lg font-semibold">Chat</span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsSheetOpen(false)
+                  setIsAgentSelectorOpen(true)
+                }}
+                className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+                aria-label="New Chat"
+              >
+                <EditIcon className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            {/* Scrollable sidebar content */}
+            <div className="flex-1 overflow-y-auto pl-3">
+              <SessionsSidebarContent
+                onItemClick={() => setIsSheetOpen(false)}
+                isChat={true}
+                isMobileSidebar={true}
+              />
+            </div>
           </SheetContent>
         </Sheet>
 
@@ -174,43 +210,23 @@ const HomePage = () => {
                   {/* My Agents Section - Only shown when logged in */}
                   {user && (
                     <>
-                      {/* Welcome Message */}
+                      {/* My Agents Section Title */}
                       <div className="mb-4">
-                        <p className="text-xl text-muted-foreground">
-                          Welcome back, {user.username}
-                        </p>
+                        <h2 className="text-2xl font-semibold">My Agents</h2>
                       </div>
 
-                      {/* My Agents Header */}
-                      <div className="mb-6">
-                        <h1 className="text-3xl font-bold tracking-tight">
-                          My Agents
-                        </h1>
-                      </div>
-
-                      {/* Search bar and action buttons */}
-                      <div className="mb-6 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                      {/* Search bar and New Agent button */}
+                      <div className="mb-6 flex gap-3">
                         <FeedSearchForm
                           handleSearch={setSearchQuery}
-                          className="max-w-md flex-1"
+                          className="flex-1 md:flex-initial md:w-[420px]"
                         />
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsAgentSelectorOpen(true)}
-                            className="gap-2"
-                          >
+                        <Button asChild size="default" className="gap-2">
+                          <Link href="/new/agent">
                             <UserPlus className="w-4 h-4" />
-                            Select Agent
-                          </Button>
-                          <Button asChild size="sm" className="gap-2">
-                            <Link href="/new/agent">
-                              <Plus className="w-4 h-4" />
-                              Create Agent
-                            </Link>
-                          </Button>
-                        </div>
+                            New Agent
+                          </Link>
+                        </Button>
                       </div>
 
                       {/* Agents grid - 2 rows, 3 columns */}
@@ -250,6 +266,16 @@ const HomePage = () => {
                       </div>
                     </>
                   )}
+
+                  {/* Featured Agents Section */}
+                  <div className="mb-8">
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold tracking-tight">
+                        Featured Agents
+                      </h2>
+                    </div>
+                    <FeaturedAgents />
+                  </div>
 
                   {/* Explore Agents Section */}
                   <div className="mb-8">

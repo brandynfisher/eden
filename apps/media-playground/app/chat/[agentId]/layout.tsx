@@ -1,5 +1,6 @@
 'use client'
 
+import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -9,6 +10,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import TaskFormModal from '@/features/sessions/components/task-form-modal'
 import { ViewMode } from '@/features/sessions/components/types'
 import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
@@ -20,7 +22,7 @@ import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
-import { EditIcon, MenuIcon } from 'lucide-react'
+import { CalendarClockIcon, EditIcon, MenuIcon } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   FC,
@@ -43,6 +45,7 @@ const SessionChatSidebarContent: FC<{
   onSettingsClick?: () => void
   onSidebarToggle?: () => void
   isCollapsed?: boolean
+  isMobileSidebar?: boolean
 }> = ({
   onItemClick,
   agentId,
@@ -53,6 +56,7 @@ const SessionChatSidebarContent: FC<{
   onSettingsClick,
   onSidebarToggle,
   isCollapsed,
+  isMobileSidebar,
 }) => {
   return (
     <>
@@ -68,6 +72,7 @@ const SessionChatSidebarContent: FC<{
         onSettingsClick={onSettingsClick}
         onSidebarToggle={onSidebarToggle}
         isCollapsed={isCollapsed}
+        isMobileSidebar={isMobileSidebar}
       />
     </>
   )
@@ -91,6 +96,7 @@ const SessionChatLayout = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
 
   const { agent } = useAgentQuery({ key: agentId, enabled: !!agentId })
 
@@ -261,6 +267,22 @@ const SessionChatLayout = ({
               <MenuIcon className="w-5 h-5 text-muted-foreground" />
             </button>
 
+            {/* Tasks title - only show in tasks view */}
+            {viewMode === 'tasks' && (
+              <h1 className="text-xl font-bold">Tasks</h1>
+            )}
+
+            {/* Create Task button - only show in tasks view */}
+            {viewMode === 'tasks' && (
+              <button
+                onClick={() => setIsTaskModalOpen(true)}
+                className="ml-auto p-2 hover:bg-muted/50 rounded-lg transition-colors shrink-0"
+                aria-label="Create Task"
+              >
+                <CalendarClockIcon className="w-5 h-5 text-muted-foreground" />
+              </button>
+            )}
+
             {/* New Chat button - only show in creations view */}
             {viewMode === 'creations' && (
               <button
@@ -293,19 +315,51 @@ const SessionChatLayout = ({
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetContent
               side="left"
-              className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
+              className="flex flex-col max-h-full pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
             >
               <SheetTitle className="sr-only">Session List</SheetTitle>
-              <SessionChatSidebarContent
-                agent={agent}
-                agentId={agentId}
-                onItemClick={() => setIsSheetOpen(false)}
-                viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-                onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                onSettingsClick={() => setSettingsAgentId(agentId)}
-                onSidebarToggle={handleSidebarToggle}
-              />
+              {/* Mobile sticky header with logo and new chat button */}
+              <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
+                <button
+                  onClick={() => {
+                    setIsSheetOpen(false)
+                    router.push('/')
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <EdenLogoBw className="w-[28px]" />
+                </button>
+                <button
+                  onClick={() => {
+                    setIsSheetOpen(false)
+                    // If on /chat route (no agent selected), open agent selector
+                    if (!agentId) {
+                      setIsAgentSelectorOpen(true)
+                    } else {
+                      // If on specific agent route, create new chat with that agent
+                      handleNewChat()
+                    }
+                  }}
+                  className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+                  aria-label="New Chat"
+                >
+                  <EditIcon className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+              {/* Scrollable sidebar content */}
+              <div className="flex-1 overflow-y-auto pl-3">
+                <SessionChatSidebarContent
+                  agent={agent}
+                  agentId={agentId}
+                  onItemClick={() => setIsSheetOpen(false)}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                  onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                  onSettingsClick={() => setSettingsAgentId(agentId)}
+                  onSidebarToggle={handleSidebarToggle}
+                  isMobileSidebar={true}
+                />
+              </div>
             </SheetContent>
           </Sheet>
 
@@ -403,6 +457,19 @@ const SessionChatLayout = ({
             agentId={settingsAgentId}
             open={!!settingsAgentId}
             onOpenChange={open => !open && setSettingsAgentId(null)}
+          />
+        )}
+
+        {/* Task Form Modal */}
+        {agent && (
+          <TaskFormModal
+            agent={agent}
+            open={isTaskModalOpen}
+            onOpenChange={setIsTaskModalOpen}
+            onSave={() => {
+              setIsTaskModalOpen(false)
+              // The triggers query will automatically refetch
+            }}
           />
         )}
 

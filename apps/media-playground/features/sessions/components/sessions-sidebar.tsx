@@ -13,6 +13,12 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -22,7 +28,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatar from '@/components/user/user-avatar'
+import { UserSettingsModal } from '@/features/account/user-settings-modal'
 import { ViewMode } from '@/features/sessions/components/types'
+import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
@@ -45,6 +53,7 @@ import {
   ActivityIcon,
   BookmarkIcon,
   BotIcon,
+  BrainIcon,
   CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
@@ -560,7 +569,7 @@ const MainLeft = ({
   agent?: Agent | null | undefined
   pathname?: string | null
 }) => {
-  const { isSignedIn, verifyAuth, user } = useAuthState()
+  const { isSignedIn, user } = useAuthState()
   const router = useRouter()
   const params = useParams()
   const currentSessionId =
@@ -705,12 +714,12 @@ const MainLeft = ({
         </div>
       ) : (
         <>
-          {isSignedIn ? (
+          {isSignedIn && (
             <>
               {/* Sessions header - collapsible */}
               <button
                 onClick={() => setIsSessionsCollapsed(!isSessionsCollapsed)}
-                className="sticky top-0 z-10 pb-1 mb-1 bg-accent flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="pb-1 mb-1 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ChevronRightIcon
                   className={cn(
@@ -778,14 +787,6 @@ const MainLeft = ({
                 </nav>
               )}
             </>
-          ) : (
-            <Button
-              className="text-muted-foreground text-center"
-              variant="link"
-              onClick={verifyAuth}
-            >
-              Not signed in
-            </Button>
           )}
         </>
       )}
@@ -796,9 +797,18 @@ const MainLeft = ({
 // Current Agent Display for /chat/{agentId}
 const CurrentAgentDisplay: FC<{
   agent: Agent
+  userId?: string
   onAgentClick: () => void
   onSettingsClick: () => void
-}> = ({ agent, onAgentClick, onSettingsClick }) => {
+  onMemoriesClick: () => void
+}> = ({ agent, userId, onAgentClick, onSettingsClick, onMemoriesClick }) => {
+  // Check if user has edit permissions (owner or editor)
+  const isOwner = agent.owner?._id === userId
+  const isEditor = agent.editors?.some(
+    (editor: { _id: string }) => editor._id === userId,
+  )
+  const canEdit = isOwner || isEditor
+
   return (
     <div className="mr-2 mb-2">
       <div className="flex justify-between font-normal items-center gap-1 rounded-md transition-all text-sm p-0.5 border border-transparent hover:bg-muted/50">
@@ -838,16 +848,29 @@ const CurrentAgentDisplay: FC<{
             <path d="m9 18 6-6-6-6" />
           </svg>
         </button>
-        <button
-          onClick={e => {
-            e.stopPropagation()
-            onSettingsClick()
-          }}
-          className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
-          title="Agent Settings"
-        >
-          <SettingsIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-        </button>
+        {canEdit ? (
+          <button
+            onClick={e => {
+              e.stopPropagation()
+              onSettingsClick()
+            }}
+            className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
+            title="Agent Settings"
+          >
+            <SettingsIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+          </button>
+        ) : (
+          <button
+            onClick={e => {
+              e.stopPropagation()
+              onMemoriesClick()
+            }}
+            className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
+            title="Memories"
+          >
+            <BrainIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+          </button>
+        )}
       </div>
     </div>
   )
@@ -866,7 +889,6 @@ ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 // User Profile component for sidebar bottom
 const SidebarUserProfile = () => {
   const { isSignedIn } = useAuth()
-  const pathname = usePathname()
   const { user, balance } = useMe({
     isAuthenticated: !!isSignedIn,
   })
@@ -877,12 +899,14 @@ const SidebarUserProfile = () => {
 
   const logout = async () => {
     if (isSignedIn) {
-      await signOut({ redirectUrl: pathname || '/' })
+      await signOut()
+      window.location.href = '/'
     }
   }
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [hasOpenDialog, setHasOpenDialog] = useState(false)
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
   const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
   const focusRef = useRef<HTMLButtonElement | null>(null)
 
@@ -921,9 +945,14 @@ const SidebarUserProfile = () => {
               name={user?.username}
               className="w-8 h-8"
             />
-            <span className="text-sm font-medium truncate flex-1 text-left">
-              {user?.username}
-            </span>
+            <div className="flex flex-col flex-1 min-w-0 text-left">
+              <span className="text-sm font-medium truncate">
+                {user?.username}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {Number((balance || 0).toFixed(0)).toLocaleString()} manna
+              </span>
+            </div>
             <ChevronDownIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
           </button>
         </DropdownMenuTrigger>
@@ -1053,11 +1082,15 @@ const SidebarUserProfile = () => {
           >
             <RedeemVoucherForm />
           </DialogMenuItem>
-          <DropdownMenuItem className="cursor-pointer" asChild>
-            <Link href={`/settings/account`}>
-              <SettingsIcon className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </Link>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onSelect={() => {
+              setSettingsModalOpen(true)
+              setDropdownOpen(false)
+            }}
+          >
+            <SettingsIcon className="mr-2 h-4 w-4" />
+            <span>Settings</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer" asChild>
@@ -1106,6 +1139,14 @@ const SidebarUserProfile = () => {
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* User Settings Modal */}
+      {settingsModalOpen && (
+        <UserSettingsModal
+          open={settingsModalOpen}
+          onOpenChange={setSettingsModalOpen}
+        />
+      )}
     </div>
   )
 }
@@ -1122,6 +1163,7 @@ export const SessionsSidebarContent = ({
   onSidebarToggle,
   isCollapsed = false,
   mode = 'sessions',
+  isMobileSidebar = false,
 }: {
   onItemClick?: () => void
   agentId?: string
@@ -1134,6 +1176,7 @@ export const SessionsSidebarContent = ({
   onSidebarToggle?: () => void
   isCollapsed?: boolean
   mode?: 'sessions' | 'explore' | 'create'
+  isMobileSidebar?: boolean
 }) => {
   const { user } = useAuthState()
   const searchParams = useSearchParams()
@@ -1145,6 +1188,9 @@ export const SessionsSidebarContent = ({
   // Get permissions for settings sidebar
   const { isOriginalOwner, hasOwnerAccess, hasEditAccess } =
     useAgentPermissions(agent, user?._id)
+
+  // State for memories modal
+  const [isMemoriesModalOpen, setIsMemoriesModalOpen] = React.useState(false)
 
   // Get active tab from URL for settings mode
   const activeSettingsTab = searchParams?.get('tab') || 'profile'
@@ -1282,10 +1328,12 @@ export const SessionsSidebarContent = ({
           )}
         </div>
 
-        {/* Mobile sidebar header with navigation - only show in mobile sidebar */}
-        <div className="md:hidden flex-shrink-0">
-          <MobileSidebarHeader onItemClick={onItemClick} />
-        </div>
+        {/* Mobile sidebar header with navigation - only show in mobile sidebar when NOT in Sheet */}
+        {!isMobileSidebar && (
+          <div className="md:hidden flex-shrink-0">
+            <MobileSidebarHeader onItemClick={onItemClick} />
+          </div>
+        )}
 
         <div className="flex-1 min-h-0">
           <SettingsSidebar
@@ -1326,140 +1374,149 @@ export const SessionsSidebarContent = ({
         )}
       </div>
 
-      {/* Mobile sidebar header with navigation - only show in mobile sidebar */}
-      <div className="md:hidden">
-        <MobileSidebarHeader onItemClick={onItemClick} />
-      </div>
+      {/* Mobile sidebar header with navigation - only show in mobile sidebar when NOT in Sheet */}
+      {!isMobileSidebar && (
+        <div className="md:hidden">
+          <MobileSidebarHeader onItemClick={onItemClick} />
+        </div>
+      )}
 
-      {/* Mobile: Navigation Buttons */}
-      <div className="mb-4 mr-2 flex-col gap-2 md:hidden flex">
-        {/* Chat button */}
-        <Button
-          variant="ghost"
-          onClick={() => {
-            onItemClick?.()
-            router.push('/chat')
-          }}
-          className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname === '/chat' ||
-              pathname === '/' ||
-              pathname?.startsWith('/chat/')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-          )}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4"
+      {/* Mobile: Navigation Buttons - scrollable when in sheet, shown outside scroll container when NOT in sheet */}
+      {!isMobileSidebar && (
+        <div className="mb-4 mr-2 flex-col gap-2 md:hidden flex">
+          {/* Chat button */}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onItemClick?.()
+              router.push('/chat')
+            }}
+            className={cn(
+              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              pathname === '/chat' ||
+                pathname === '/' ||
+                pathname?.startsWith('/chat/')
+                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            )}
           >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-          <span>Chat</span>
-        </Button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>Chat</span>
+          </Button>
 
-        {/* Sessions button */}
-        <Button
-          variant="ghost"
-          onClick={() => {
-            onItemClick?.()
-            router.push('/sessions')
-          }}
-          className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/sessions')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-          )}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4"
+          {/* Sessions button */}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onItemClick?.()
+              router.push('/sessions')
+            }}
+            className={cn(
+              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              pathname?.startsWith('/sessions')
+                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            )}
           >
-            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-          </svg>
-          <span>Sessions</span>
-        </Button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+            </svg>
+            <span className="flex items-center gap-1.5">
+              Sessions
+              <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                BETA
+              </span>
+            </span>
+          </Button>
 
-        {/* Explore button */}
-        <Button
-          variant="ghost"
-          onClick={() => {
-            onItemClick?.()
-            router.push('/explore?type=agents')
-          }}
-          className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/explore')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-          )}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4"
+          {/* Explore button */}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onItemClick?.()
+              router.push('/explore?type=creations')
+            }}
+            className={cn(
+              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              pathname?.startsWith('/explore')
+                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            )}
           >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <span>Explore</span>
-        </Button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <span>Explore</span>
+          </Button>
 
-        {/* Tools button */}
-        <Button
-          variant="ghost"
-          onClick={() => {
-            onItemClick?.()
-            router.push('/create')
-          }}
-          className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/create') || pathname?.startsWith('/tools')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-          )}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4"
+          {/* Tools button */}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onItemClick?.()
+              router.push('/create')
+            }}
+            className={cn(
+              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              pathname?.startsWith('/create') || pathname?.startsWith('/tools')
+                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            )}
           >
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-          </svg>
-          <span>Tools</span>
-        </Button>
-      </div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+            </svg>
+            <span>Tools</span>
+          </Button>
+        </div>
+      )}
 
       {/* Desktop: Navigation Buttons - don't close sidebar on desktop */}
       <div className="mb-4 mr-2 flex-col gap-2 hidden md:flex">
@@ -1522,14 +1579,19 @@ export const SessionsSidebarContent = ({
           >
             <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
           </svg>
-          <span>Sessions</span>
+          <span className="flex items-center gap-1.5">
+            Sessions
+            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+              BETA
+            </span>
+          </span>
         </Button>
 
         {/* Explore button */}
         <Button
           variant="ghost"
           onClick={() => {
-            router.push('/explore?type=agents')
+            router.push('/explore?type=creations')
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
@@ -1592,6 +1654,144 @@ export const SessionsSidebarContent = ({
         id="sidebar-scroll-container"
         className="flex-1 min-h-0 overflow-y-auto"
       >
+        {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
+        {isMobileSidebar && (
+          <div className="mb-4 mr-2 flex-col gap-2 flex pt-3">
+            {/* Chat button */}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onItemClick?.()
+                router.push('/chat')
+              }}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                pathname === '/chat' ||
+                  pathname === '/' ||
+                  pathname?.startsWith('/chat/')
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-4"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>Chat</span>
+            </Button>
+
+            {/* Sessions button */}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onItemClick?.()
+                router.push('/sessions')
+              }}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                pathname?.startsWith('/sessions')
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-4"
+              >
+                <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+              </svg>
+              <span className="flex items-center gap-1.5">
+                Sessions
+                <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  BETA
+                </span>
+              </span>
+            </Button>
+
+            {/* Explore button */}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onItemClick?.()
+                router.push('/explore?type=creations')
+              }}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                pathname?.startsWith('/explore')
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-4"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <span>Explore</span>
+            </Button>
+
+            {/* Tools button */}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onItemClick?.()
+                router.push('/create')
+              }}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                pathname?.startsWith('/create') ||
+                  pathname?.startsWith('/tools')
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-4"
+              >
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+              <span>Tools</span>
+            </Button>
+          </div>
+        )}
+
         {mode === 'sessions' && (
           <>
             {/* Show CurrentAgentDisplay for /chat/{agentId} routes */}
@@ -1601,28 +1801,32 @@ export const SessionsSidebarContent = ({
                 <>
                   <CurrentAgentDisplay
                     agent={agent}
+                    userId={user?._id}
                     onAgentClick={() => onAgentSelect?.()}
                     onSettingsClick={() => onSettingsClick?.()}
+                    onMemoriesClick={() => setIsMemoriesModalOpen(true)}
                   />
                   {/* Tasks and Creations buttons for /chat/{agent} */}
                   <div className="mr-2 mb-4 flex flex-col gap-2">
-                    {/* Tasks button */}
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        onItemClick?.()
-                        router.push(`/chat/${agentId}?page=tasks`)
-                      }}
-                      className={cn(
-                        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                        viewMode === 'tasks'
-                          ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-                      )}
-                    >
-                      <ClockIcon className="size-4" />
-                      <span>Tasks</span>
-                    </Button>
+                    {/* Tasks button - only show if user has edit access */}
+                    {hasEditAccess && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          onItemClick?.()
+                          router.push(`/chat/${agentId}?page=tasks`)
+                        }}
+                        className={cn(
+                          'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                          viewMode === 'tasks'
+                            ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                            : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                        )}
+                      >
+                        <ClockIcon className="size-4" />
+                        <span>Tasks</span>
+                      </Button>
+                    )}
                     {/* Creations button */}
                     <Button
                       variant="ghost"
@@ -1661,7 +1865,7 @@ export const SessionsSidebarContent = ({
             </div>
             <Button
               variant="ghost"
-              onClick={() => router.push('/explore?type=agents')}
+              onClick={() => router.push('/explore?type=creations')}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
                 searchParams?.get('type') === 'agents'
@@ -1709,10 +1913,28 @@ export const SessionsSidebarContent = ({
             </Button>
           </div>
         )}
+
+        {/* User Profile Section - Inside scroll container when in mobile sheet */}
+        {isMobileSidebar && <SidebarUserProfile />}
       </div>
 
-      {/* User Profile Section - Bottom of sidebar */}
-      <SidebarUserProfile />
+      {/* User Profile Section - Outside scroll container when NOT in mobile sheet */}
+      {!isMobileSidebar && <SidebarUserProfile />}
+
+      {/* Memories Modal for non-editor users */}
+      {agent && (
+        <Dialog
+          open={isMemoriesModalOpen}
+          onOpenChange={setIsMemoriesModalOpen}
+        >
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Memories - {agent.name}</DialogTitle>
+            </DialogHeader>
+            <AgentMemoryView agent={agent} />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }

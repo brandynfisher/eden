@@ -18,6 +18,7 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { QueryKey } from '@tanstack/react-query'
 import {
   CheckIcon,
+  GlobeIcon,
   MessageSquareIcon,
   SquareMousePointerIcon,
 } from 'lucide-react'
@@ -49,8 +50,8 @@ const AgentCard = ({
         className={cn([
           'relative overflow-hidden border-2 border-border/60 z-10 transition-all group cursor-pointer bg-card/80 h-full w-full max-w-full',
           onClick
-            ? 'hover:bg-muted/80 hover:shadow-md hover:border-border/80'
-            : 'hover:ring-2 ring-primary/40 hover:shadow-lg hover:shadow-primary/10',
+            ? 'hover:bg-muted/80 hover:shadow-md hover:border-primary/60'
+            : 'hover:border-primary/60 hover:shadow-lg hover:shadow-primary/10',
           isSelected && 'ring-2 ring-primary ring-offset-2',
           className,
         ])}
@@ -68,9 +69,9 @@ const AgentCard = ({
           prefetch={false}
           className={cn('block w-full', onClick && 'pointer-events-none')}
         >
-          <div className="flex items-center p-4 gap-3 h-full min-h-[140px] w-full max-w-full overflow-hidden">
-            {/* Avatar on the left - vertically centered */}
-            <div className="flex-shrink-0 flex items-center w-20">
+          <div className="flex items-start p-4 gap-3 h-full min-h-[160px] w-full max-w-full overflow-hidden">
+            {/* Avatar and message count column on the left */}
+            <div className="flex-shrink-0 w-20 flex flex-col items-center gap-2">
               <Avatar className="w-20 h-20">
                 <AvatarImage
                   src={
@@ -85,35 +86,56 @@ const AgentCard = ({
                   {agent.name?.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-            </div>
 
-            {/* Metadata on the right - strict width control */}
-            <div className="flex-1 min-w-0 flex flex-col justify-between h-full space-y-2 overflow-hidden">
-              <div className="space-y-1 overflow-hidden">
-                {/* Name - strictly truncated */}
-                <h3 className="font-semibold text-base leading-tight truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                  {agent.name}
-                </h3>
-
-                {/* Owner - strictly truncated */}
-                <p className="text-xs text-muted-foreground truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                  By{' '}
-                  <span className="font-medium">@{agent.owner.username}</span>
-                </p>
-
-                {/* Description - limited to 2 lines */}
-                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed overflow-hidden">
-                  {agent.description}
-                </p>
-              </div>
-
-              {/* Chat count - aligned to bottom */}
-              <div className="flex items-center gap-1 mt-auto flex-shrink-0">
+              {/* Message count under avatar */}
+              <div className="flex items-center gap-1">
                 <MessageSquareIcon className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                 <span className="text-xs text-muted-foreground">
                   {formatCompactNumber(agent.stats?.messageCount || 0)}
                 </span>
               </div>
+            </div>
+
+            {/* Metadata on the right - strict width control */}
+            <div className="flex-1 min-w-0 flex flex-col space-y-1 overflow-hidden">
+              {/* Name - strictly truncated */}
+              <h3 className="font-semibold text-base leading-tight truncate overflow-hidden text-ellipsis whitespace-nowrap">
+                {agent.name}
+              </h3>
+
+              {/* Owner - strictly truncated */}
+              <p className="text-xs text-muted-foreground truncate overflow-hidden text-ellipsis whitespace-nowrap">
+                By <span className="font-medium">@{agent.owner.username}</span>
+              </p>
+
+              {/* Description - limited to 3 lines */}
+              <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed overflow-hidden">
+                {agent.description}
+              </p>
+
+              {/* Website link if available */}
+              {agent.website && (
+                <div className="pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    asChild
+                    aria-label="Visit website"
+                    className="h-7 gap-1.5 text-xs pointer-events-auto"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <Link
+                      href={agent.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Visit website"
+                    >
+                      <GlobeIcon className="w-3 h-3" />
+                      Website
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </Link>
@@ -185,6 +207,26 @@ const AgentCard = ({
       </Link>
       <div className="absolute bottom-0 right-0 p-2 flex items-center justify-between shrink-0 pointer-events-none">
         <div className="flex items-center gap-1 ml-auto">
+          {/* Website link icon */}
+          {agent.website && (
+            <Button
+              size="icon"
+              variant="outline"
+              asChild
+              aria-label="Visit website"
+              className="pointer-events-auto h-9 w-9 bg-muted-darker/60 text-muted-foreground hover:text-primary"
+            >
+              <Link
+                href={agent.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Visit website"
+                onClick={e => e.stopPropagation()}
+              >
+                <GlobeIcon className="w-4 h-4" />
+              </Link>
+            </Button>
+          )}
           {/* <LikeButton
             type="agent"
             id={agent._id}

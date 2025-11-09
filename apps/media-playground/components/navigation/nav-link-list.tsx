@@ -16,6 +16,7 @@ const NavLinkList = ({ items, segments, inSheet }: Props) => {
           label={item.label}
           segments={item.segments}
           href={item.href}
+          badge={item.badge}
           active={
             item.active !== undefined
               ? item.active

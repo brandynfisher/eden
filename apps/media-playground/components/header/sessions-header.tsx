@@ -34,6 +34,8 @@ import { useState } from 'react'
 
 // Sessions header for /sessions route with double navbar structure
 
+// Sessions header for /sessions route with double navbar structure
+
 type SessionsHeaderProps = {
   onChatClick?: () => void
   isSidebarCollapsed?: boolean
@@ -64,10 +66,13 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
     onChatClick?.()
   }
 
+  // Check if we're on the main sessions list page
+  const isSessionsListPage = pathname === '/sessions'
+
   return (
     <>
       {/* Mobile: Single navbar */}
-      <header className="md:hidden sticky z-50 top-0 flex h-16 items-center gap-2 border-b bg-background px-2">
+      <header className="md:hidden sticky z-50 top-0 flex h-12 items-center gap-2 border-b bg-background px-2">
         {/* Hamburger menu - show on mobile always, but not on share routes */}
         {!isShareRoute && (
           <button
@@ -79,10 +84,11 @@ const SessionsHeader = ({ onChatClick }: SessionsHeaderProps) => {
           </button>
         )}
 
-        {/* Left section - Agent avatars and session title */}
+        {/* Left section - Show "Sessions" on list page, or agent avatars + title on individual session */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {/* Agent avatars and session title - only show if not share route */}
-          {!isShareRoute && session?.agents && session.agents.length > 0 ? (
+          {isSessionsListPage ? (
+            <h1 className="text-xl font-bold">Sessions</h1>
+          ) : !isShareRoute && session?.agents && session.agents.length > 0 ? (
             <>
               <Popover>
                 <PopoverTrigger asChild>

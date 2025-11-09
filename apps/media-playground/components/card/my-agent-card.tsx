@@ -45,7 +45,7 @@ const MyAgentCard = ({
   return (
     <Card
       className={cn([
-        'relative overflow-hidden border-2 border-border/60 transition-all group bg-card/80 h-full w-full max-w-full hover:shadow-lg hover:border-border/80',
+        'relative overflow-hidden border-2 border-border/60 transition-all group bg-card/80 h-full w-full max-w-full hover:shadow-lg hover:border-primary/60',
         className,
       ])}
     >

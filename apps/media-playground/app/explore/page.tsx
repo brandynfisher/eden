@@ -29,9 +29,9 @@ const ExplorePage = () => {
   const pathname = usePathname()
   const creationsFeedRef = useRef<CreationsFeedHandle>(null)
 
-  // Initialize state from URL parameters
+  // Initialize state from URL parameters - default to creations
   const initialContentType =
-    (searchParams?.get('type') as ContentType) || 'agents'
+    (searchParams?.get('type') as ContentType) || 'creations'
   const initialCreatorType =
     (searchParams?.get('creator') as CreatorType) || 'public'
 
@@ -61,10 +61,10 @@ const ExplorePage = () => {
       pathname?.startsWith('/models/') ||
       pathname?.startsWith('/agents/')
 
-    // If no type parameter, redirect to type=agents (but not during modal state)
+    // If no type parameter, redirect to type=creations (but not during modal state)
     if (!urlContentType && !isModalState) {
       const params = new URLSearchParams(searchParams?.toString() || '')
-      params.set('type', 'agents')
+      params.set('type', 'creations')
       router.replace(`/explore?${params.toString()}`)
       return
     }
@@ -242,15 +242,58 @@ const ExplorePage = () => {
   return (
     <div className="p-4 md:p-6 lg:p-8">
       {/* Main Title with Action Button */}
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">{pageInfo.title}</h1>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold tracking-tight hidden md:block">
+            {pageInfo.title}
+          </h1>
+        </div>
+
+        {/* Action button - icon on mobile, full button on desktop */}
         {pageInfo.actionButton && (
-          <div className="flex-shrink-0">{pageInfo.actionButton}</div>
+          <>
+            {/* Mobile icon button */}
+            <div className="md:hidden">
+              {contentType === 'agents' && (
+                <Button size="icon" asChild>
+                  <Link href="/new/agent">
+                    <Plus className="h-5 w-5" />
+                  </Link>
+                </Button>
+              )}
+              {contentType === 'models' && (
+                <Button size="icon" asChild>
+                  <Link href="/train">
+                    <Zap className="h-5 w-5" />
+                  </Link>
+                </Button>
+              )}
+              {contentType === 'creations' && (
+                <Button size="icon" asChild>
+                  <Link href="/create/image/flux_dev">
+                    <Plus className="h-5 w-5" />
+                  </Link>
+                </Button>
+              )}
+              {contentType === 'tools' && (
+                <Button size="icon" asChild>
+                  <Link href="/create/image/flux_dev">
+                    <Zap className="h-5 w-5" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+
+            {/* Desktop full button */}
+            <div className="hidden md:block flex-shrink-0">
+              {pageInfo.actionButton}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Subtitle */}
-      <div className="mb-6">
+      {/* Subtitle - hidden on mobile */}
+      <div className="mb-6 hidden md:block">
         <p className="text-lg text-muted-foreground">{pageInfo.description}</p>
       </div>
 
@@ -346,17 +389,14 @@ const ExplorePage = () => {
             <AgentsFeed
               query={agentsQuery}
               minCols={1}
-              maxCols={6}
+              maxCols={4}
               hideCreateButton={true}
               improvedLayout={true}
               hideContextMenu={true}
               breakpoints={[
-                { minWidth: 1920, columns: 6 },
-                { minWidth: 1536, columns: 5 },
                 { minWidth: 1280, columns: 4 },
                 { minWidth: 1024, columns: 3 },
                 { minWidth: 768, columns: 2 },
-                { minWidth: 640, columns: 2 },
                 { minWidth: 0, columns: 1 },
               ]}
             />

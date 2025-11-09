@@ -10,6 +10,7 @@ export type NavLinkProps = {
   description?: string
   mediaUrl?: string
   href?: string // Custom href override
+  badge?: string // Optional badge text (e.g., "BETA")
 }
 
 const NavLink = ({
@@ -18,8 +19,20 @@ const NavLink = ({
   active,
   inSheet,
   href: customHref,
+  badge,
 }: NavLinkProps) => {
   const href = customHref || `/${segments.join('/')}`
+
+  const content = badge ? (
+    <span className="flex items-center gap-1.5">
+      {label}
+      <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+        {badge}
+      </span>
+    </span>
+  ) : (
+    label
+  )
 
   if (inSheet) {
     return (
@@ -32,7 +45,7 @@ const NavLink = ({
           )}
           href={href}
         >
-          {label}
+          {content}
         </Link>
       </SheetClose>
     )
@@ -47,7 +60,7 @@ const NavLink = ({
       )}
       href={href}
     >
-      {label}
+      {content}
     </Link>
   )
 }

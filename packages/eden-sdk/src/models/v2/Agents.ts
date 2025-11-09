@@ -78,6 +78,7 @@ export type Agent = Omit<
   }[]
   discordId?: string
   voice?: string
+  website?: string
   model?: {
     lora: ModelV2
     use_when?: string
@@ -142,6 +143,7 @@ export interface AgentsCreateArguments extends WebAPICallOptions {
   tools?: { [key: string]: boolean }
   discordId?: string
   voice?: string
+  website?: string
   models?: Array<{
     lora: string
     use_when?: string
@@ -165,6 +167,7 @@ export interface AgentsUpdateArguments extends WebAPICallOptions {
   discordId?: string
   public?: boolean
   voice?: string
+  website?: string
   models?: Array<{
     lora: string
     use_when?: string

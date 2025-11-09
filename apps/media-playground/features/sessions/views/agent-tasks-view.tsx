@@ -304,12 +304,12 @@ const AgentTasksView: FC<{
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-semibold">Tasks</h2>
+            <h2 className="text-2xl font-semibold hidden md:block">Tasks</h2>
             <p className="text-muted-foreground">
               Schedule automated tasks for {agent.name}
             </p>
           </div>
-          <Button onClick={handleCreateNew} className="gap-2">
+          <Button onClick={handleCreateNew} className="gap-2 hidden md:flex">
             <PlusIcon className="w-4 h-4" />
             Create Task
           </Button>

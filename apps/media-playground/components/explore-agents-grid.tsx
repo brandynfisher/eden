@@ -39,7 +39,7 @@ export function ExploreAgentsGrid({ query }: ExploreAgentsGridProps) {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(15)].map((_, i) => (
           <div key={i} className="h-40 bg-muted animate-pulse rounded-lg" />
         ))}
@@ -56,7 +56,7 @@ export function ExploreAgentsGrid({ query }: ExploreAgentsGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {agents.map(agent => (
         <AgentCard
           key={agent._id}
