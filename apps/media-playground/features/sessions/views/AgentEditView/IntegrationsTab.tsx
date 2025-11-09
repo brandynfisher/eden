@@ -6,6 +6,7 @@ import { CaptionsDeploymentForm } from '@/features/agent/deployment-sheet/captio
 import { DiscordDeploymentForm } from '@/features/agent/deployment-sheet/discord-deployment-form'
 import { EmailDeploymentForm } from '@/features/agent/deployment-sheet/email-deployment-form'
 import { FarcasterDeploymentForm } from '@/features/agent/deployment-sheet/farcaster-deployment-form'
+import { GmailDeploymentForm } from '@/features/agent/deployment-sheet/gmail-deployment-form'
 import { PrintifyDeploymentForm } from '@/features/agent/deployment-sheet/printify-deployment-form'
 import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify-deployment-form'
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
@@ -150,6 +151,9 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
   isLoading,
   isError,
 }) => {
+  const gmailDeployment = deployments?.find(
+    deployment => deployment.platform === 'gmail',
+  )
   if (isLoading) {
     return (
       <div className="flex items-center justify-center mt-10">
@@ -241,6 +245,12 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
                 deployment => deployment.platform === 'email',
               )}
             />
+            {gmailDeployment && (
+              <GmailDeploymentForm
+                agentId={agent._id}
+                deployment={gmailDeployment}
+              />
+            )}
           </div>
         </div>
 
