@@ -1,5 +1,6 @@
 'use client'
 
+import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -43,6 +44,7 @@ const SessionChatSidebarContent: FC<{
   onSettingsClick?: () => void
   onSidebarToggle?: () => void
   isCollapsed?: boolean
+  isMobileSidebar?: boolean
 }> = ({
   onItemClick,
   agentId,
@@ -53,6 +55,7 @@ const SessionChatSidebarContent: FC<{
   onSettingsClick,
   onSidebarToggle,
   isCollapsed,
+  isMobileSidebar,
 }) => {
   return (
     <>
@@ -68,6 +71,7 @@ const SessionChatSidebarContent: FC<{
         onSettingsClick={onSettingsClick}
         onSidebarToggle={onSidebarToggle}
         isCollapsed={isCollapsed}
+        isMobileSidebar={isMobileSidebar}
       />
     </>
   )
@@ -293,19 +297,51 @@ const SessionChatLayout = ({
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetContent
               side="left"
-              className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
+              className="flex flex-col max-h-full pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
             >
               <SheetTitle className="sr-only">Session List</SheetTitle>
-              <SessionChatSidebarContent
-                agent={agent}
-                agentId={agentId}
-                onItemClick={() => setIsSheetOpen(false)}
-                viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-                onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                onSettingsClick={() => setSettingsAgentId(agentId)}
-                onSidebarToggle={handleSidebarToggle}
-              />
+              {/* Mobile sticky header with logo and new chat button */}
+              <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
+                <button
+                  onClick={() => {
+                    setIsSheetOpen(false)
+                    router.push('/')
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <EdenLogoBw className="w-[28px]" />
+                </button>
+                <button
+                  onClick={() => {
+                    setIsSheetOpen(false)
+                    // If on /chat route (no agent selected), open agent selector
+                    if (!agentId) {
+                      setIsAgentSelectorOpen(true)
+                    } else {
+                      // If on specific agent route, create new chat with that agent
+                      handleNewChat()
+                    }
+                  }}
+                  className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+                  aria-label="New Chat"
+                >
+                  <EditIcon className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+              {/* Scrollable sidebar content */}
+              <div className="flex-1 overflow-y-auto pl-3">
+                <SessionChatSidebarContent
+                  agent={agent}
+                  agentId={agentId}
+                  onItemClick={() => setIsSheetOpen(false)}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                  onAgentSelect={() => setIsAgentSelectorOpen(true)}
+                  onSettingsClick={() => setSettingsAgentId(agentId)}
+                  onSidebarToggle={handleSidebarToggle}
+                  isMobileSidebar={true}
+                />
+              </div>
             </SheetContent>
           </Sheet>
 

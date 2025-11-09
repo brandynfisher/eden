@@ -1,6 +1,7 @@
 'use client'
 
 import SessionsHeader from '@/components/header/sessions-header'
+import EdenLogoBw from '@/components/logo/eden-logo-bw'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -11,11 +12,13 @@ import { SessionsSidebarContent } from '@/features/sessions/components/sessions-
 import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { cn } from '@/lib/utils'
-import { usePathname } from 'next/navigation'
+import { EditIcon } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
 import { PropsWithChildren, useEffect, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const pathname = usePathname()
+  const router = useRouter()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
@@ -81,12 +84,38 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetContent
                 side="left"
-                className="flex flex-col max-h-full pt-3 pl-3 pr-0 pb-0 bg-accent border-r gap-0"
+                className="flex flex-col max-h-full pt-0 pl-0 pr-0 pb-0 bg-accent border-r gap-0 [&>button]:hidden"
               >
                 <SheetTitle className="sr-only">Sessions</SheetTitle>
-                <SessionsSidebarContent
-                  onItemClick={() => setIsSheetOpen(false)}
-                />
+                {/* Mobile sticky header with logo and new session button */}
+                <div className="sticky top-0 z-50 bg-accent border-b px-3 py-3 flex items-center justify-between shrink-0">
+                  <button
+                    onClick={() => {
+                      setIsSheetOpen(false)
+                      router.push('/')
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <EdenLogoBw className="w-[28px]" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsSheetOpen(false)
+                      router.push('/sessions/new')
+                    }}
+                    className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+                    aria-label="New Session"
+                  >
+                    <EditIcon className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                </div>
+                {/* Scrollable sidebar content */}
+                <div className="flex-1 overflow-y-auto pl-3">
+                  <SessionsSidebarContent
+                    onItemClick={() => setIsSheetOpen(false)}
+                    isMobileSidebar={true}
+                  />
+                </div>
               </SheetContent>
             </Sheet>
           )}
