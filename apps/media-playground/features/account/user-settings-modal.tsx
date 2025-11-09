@@ -52,9 +52,9 @@ interface UserSettingsModalProps {
 }
 
 // Connections Tab Component
-const ConnectionsTab: FC<{ user: ReturnType<typeof useMe>['user'] }> = ({
-  user,
-}) => {
+const ConnectionsTab: FC<{
+  user: ReturnType<typeof useMe>['user']
+}> = ({ user }) => {
   return (
     <div className="space-y-4">
       <Card>
