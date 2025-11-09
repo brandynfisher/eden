@@ -31,7 +31,6 @@ import UserAvatar from '@/components/user/user-avatar'
 import { UserSettingsModal } from '@/features/account/user-settings-modal'
 import { ViewMode } from '@/features/sessions/components/types'
 import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
-import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
@@ -555,87 +554,6 @@ const MobileSidebarHeader: FC<{
   )
 }
 
-// Featured Agents component for non-logged-in users
-const FeaturedAgents: FC<{ onItemClick?: () => void }> = ({ onItemClick }) => {
-  const router = useRouter()
-  const featuredAgentIds = [
-    'eve',
-    'abraham',
-    'verdelis',
-    'eden_gigabrain',
-    'hypotheticards',
-    'mechanical_duck',
-  ]
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      {featuredAgentIds.map(agentId => (
-        <FeaturedAgentItem
-          key={agentId}
-          agentId={agentId}
-          onItemClick={onItemClick}
-        />
-      ))}
-    </div>
-  )
-}
-
-// Featured Agent Item component
-const FeaturedAgentItem: FC<{
-  agentId: string
-  onItemClick?: () => void
-}> = ({ agentId, onItemClick }) => {
-  const router = useRouter()
-  const { agent, isLoading } = useAgentQuery({
-    key: agentId,
-    enabled: true,
-    refetchOnWindowFocus: false,
-  })
-
-  if (isLoading) {
-    return <Skeleton className="w-full h-12 rounded-md" />
-  }
-
-  if (!agent) {
-    return null
-  }
-
-  return (
-    <button
-      onClick={() => {
-        onItemClick?.()
-        router.push(`/chat/${agent.username}`)
-      }}
-      className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-muted/50 transition-colors text-left"
-    >
-      <Avatar className="w-8 h-8 flex-shrink-0">
-        <AvatarImage
-          src={
-            agent.userImage && agent.userImage.trim()
-              ? getCloudfrontOriginalUrl(agent.userImage)
-              : undefined
-          }
-          alt={agent.name || agent.username}
-          className="object-cover"
-        />
-        <AvatarFallback className="bg-muted text-xs font-medium">
-          {(agent.name || agent.username)?.slice(0, 2).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex flex-col min-w-0 flex-1">
-        <span className="text-sm font-medium truncate">
-          {agent.name || agent.username}
-        </span>
-        {agent.description && (
-          <span className="text-xs text-muted-foreground truncate">
-            {agent.description}
-          </span>
-        )}
-      </div>
-    </button>
-  )
-}
-
 const MainLeft = ({
   onItemClick,
   agentId,
@@ -651,7 +569,7 @@ const MainLeft = ({
   agent?: Agent | null | undefined
   pathname?: string | null
 }) => {
-  const { isSignedIn, verifyAuth, user } = useAuthState()
+  const { isSignedIn, user } = useAuthState()
   const router = useRouter()
   const params = useParams()
   const currentSessionId =
@@ -796,7 +714,7 @@ const MainLeft = ({
         </div>
       ) : (
         <>
-          {isSignedIn ? (
+          {isSignedIn && (
             <>
               {/* Sessions header - collapsible */}
               <button
@@ -869,14 +787,6 @@ const MainLeft = ({
                 </nav>
               )}
             </>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {/* Featured Agents section */}
-              <div className="text-xs font-medium text-muted-foreground mb-1">
-                Featured Agents
-              </div>
-              <FeaturedAgents onItemClick={onItemClick} />
-            </div>
           )}
         </>
       )}
@@ -979,7 +889,6 @@ ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 // User Profile component for sidebar bottom
 const SidebarUserProfile = () => {
   const { isSignedIn } = useAuth()
-  const pathname = usePathname()
   const { user, balance } = useMe({
     isAuthenticated: !!isSignedIn,
   })
@@ -990,7 +899,8 @@ const SidebarUserProfile = () => {
 
   const logout = async () => {
     if (isSignedIn) {
-      await signOut({ redirectUrl: pathname || '/' })
+      await signOut()
+      window.location.href = '/'
     }
   }
 
@@ -1548,7 +1458,7 @@ export const SessionsSidebarContent = ({
             variant="ghost"
             onClick={() => {
               onItemClick?.()
-              router.push('/explore?type=agents')
+              router.push('/explore?type=creations')
             }}
             className={cn(
               'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
@@ -1681,7 +1591,7 @@ export const SessionsSidebarContent = ({
         <Button
           variant="ghost"
           onClick={() => {
-            router.push('/explore?type=agents')
+            router.push('/explore?type=creations')
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
@@ -1821,7 +1731,7 @@ export const SessionsSidebarContent = ({
               variant="ghost"
               onClick={() => {
                 onItemClick?.()
-                router.push('/explore?type=agents')
+                router.push('/explore?type=creations')
               }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
@@ -1955,7 +1865,7 @@ export const SessionsSidebarContent = ({
             </div>
             <Button
               variant="ghost"
-              onClick={() => router.push('/explore?type=agents')}
+              onClick={() => router.push('/explore?type=creations')}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
                 searchParams?.get('type') === 'agents'

@@ -14,7 +14,7 @@ import ToolsFeed from '@/features/feed/tools-feed'
 import { ToolsFilter } from '@/features/feed/tools-filter'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { env } from '@/lib/config'
-import { MenuIcon, Plus, Zap } from 'lucide-react'
+import { Plus, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -29,7 +29,7 @@ const ExplorePage = () => {
   const pathname = usePathname()
   const creationsFeedRef = useRef<CreationsFeedHandle>(null)
 
-  // Initialize state from URL parameters
+  // Initialize state from URL parameters - default to creations
   const initialContentType =
     (searchParams?.get('type') as ContentType) || 'creations'
   const initialCreatorType =
@@ -244,20 +244,7 @@ const ExplorePage = () => {
       {/* Main Title with Action Button */}
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {/* Mobile menu button - only visible on mobile */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => {
-              // This will be handled by the layout/sidebar context
-              const event = new CustomEvent('toggle-sidebar')
-              window.dispatchEvent(event)
-            }}
-          >
-            <MenuIcon className="h-5 w-5" />
-          </Button>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight hidden md:block">
             {pageInfo.title}
           </h1>
         </div>

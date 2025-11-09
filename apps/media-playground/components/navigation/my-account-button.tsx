@@ -51,7 +51,6 @@ ThemeToggleForwardWrap.displayName = 'ThemeToggleForwardWrap'
 
 const AccountDropdown = () => {
   const { isSignedIn } = useAuth()
-  const pathname = usePathname()
   const { user, balance } = useMe({
     isAuthenticated: !!isSignedIn,
   })
@@ -61,7 +60,8 @@ const AccountDropdown = () => {
 
   const logout = async () => {
     if (isSignedIn) {
-      await signOut({ redirectUrl: pathname || '/' })
+      await signOut()
+      window.location.href = '/'
     }
   }
 

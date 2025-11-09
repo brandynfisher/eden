@@ -112,6 +112,30 @@ const AgentCard = ({
               <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed overflow-hidden">
                 {agent.description}
               </p>
+
+              {/* Website link if available */}
+              {agent.website && (
+                <div className="pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    asChild
+                    aria-label="Visit website"
+                    className="h-7 gap-1.5 text-xs pointer-events-auto"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <Link
+                      href={agent.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Visit website"
+                    >
+                      <GlobeIcon className="w-3 h-3" />
+                      Website
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </Link>
