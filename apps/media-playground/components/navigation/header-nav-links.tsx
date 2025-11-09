@@ -49,10 +49,12 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
       <NavLinkList
         items={[
           {
-            label: 'Agents',
+            label: 'Creations',
             segments: [`explore`],
-            href: '/explore?type=agents',
-            active: segments?.[0] === 'explore' && contentType === 'agents',
+            href: '/explore?type=creations',
+            active:
+              segments?.[0] === 'explore' &&
+              (contentType === 'creations' || !contentType),
           },
         ]}
         segments={segments}
@@ -81,12 +83,10 @@ const HeaderNavLinks = ({ inSheet }: Props) => {
       <NavLinkList
         items={[
           {
-            label: 'Creations',
+            label: 'Agents',
             segments: [`explore`],
-            href: '/explore?type=creations',
-            active:
-              segments[0] === 'explore' &&
-              (contentType === 'creations' || !contentType),
+            href: '/explore?type=agents',
+            active: segments[0] === 'explore' && contentType === 'agents',
           },
         ]}
         segments={segments}

@@ -206,9 +206,17 @@ const AccountDropdown = () => {
         {isPreviewUser && (
           <>
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link href="/sessions">
-                <MessageSquareIcon className="mr-2 h-4 w-4" />
-                <span>Sessions</span>
+              <Link
+                href="/sessions"
+                className="flex items-center justify-between w-full"
+              >
+                <div className="flex items-center">
+                  <MessageSquareIcon className="mr-2 h-4 w-4" />
+                  <span>Sessions</span>
+                </div>
+                <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  BETA
+                </span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" asChild>

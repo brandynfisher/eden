@@ -31,7 +31,7 @@ const ExplorePage = () => {
 
   // Initialize state from URL parameters
   const initialContentType =
-    (searchParams?.get('type') as ContentType) || 'agents'
+    (searchParams?.get('type') as ContentType) || 'creations'
   const initialCreatorType =
     (searchParams?.get('creator') as CreatorType) || 'public'
 
@@ -61,10 +61,10 @@ const ExplorePage = () => {
       pathname?.startsWith('/models/') ||
       pathname?.startsWith('/agents/')
 
-    // If no type parameter, redirect to type=agents (but not during modal state)
+    // If no type parameter, redirect to type=creations (but not during modal state)
     if (!urlContentType && !isModalState) {
       const params = new URLSearchParams(searchParams?.toString() || '')
-      params.set('type', 'agents')
+      params.set('type', 'creations')
       router.replace(`/explore?${params.toString()}`)
       return
     }

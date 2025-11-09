@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import TaskFormModal from '@/features/sessions/components/task-form-modal'
 import { ViewMode } from '@/features/sessions/components/types'
 import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
@@ -21,7 +22,7 @@ import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
-import { EditIcon, MenuIcon } from 'lucide-react'
+import { CalendarClockIcon, EditIcon, MenuIcon } from 'lucide-react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import React, {
   FC,
@@ -95,6 +96,7 @@ const SessionChatLayout = ({
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null)
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
 
   const { agent } = useAgentQuery({ key: agentId, enabled: !!agentId })
 
@@ -264,6 +266,22 @@ const SessionChatLayout = ({
             >
               <MenuIcon className="w-5 h-5 text-muted-foreground" />
             </button>
+
+            {/* Tasks title - only show in tasks view */}
+            {viewMode === 'tasks' && (
+              <h1 className="text-xl font-bold">Tasks</h1>
+            )}
+
+            {/* Create Task button - only show in tasks view */}
+            {viewMode === 'tasks' && (
+              <button
+                onClick={() => setIsTaskModalOpen(true)}
+                className="ml-auto p-2 hover:bg-muted/50 rounded-lg transition-colors shrink-0"
+                aria-label="Create Task"
+              >
+                <CalendarClockIcon className="w-5 h-5 text-muted-foreground" />
+              </button>
+            )}
 
             {/* New Chat button - only show in creations view */}
             {viewMode === 'creations' && (
@@ -439,6 +457,19 @@ const SessionChatLayout = ({
             agentId={settingsAgentId}
             open={!!settingsAgentId}
             onOpenChange={open => !open && setSettingsAgentId(null)}
+          />
+        )}
+
+        {/* Task Form Modal */}
+        {agent && (
+          <TaskFormModal
+            agent={agent}
+            open={isTaskModalOpen}
+            onOpenChange={setIsTaskModalOpen}
+            onSave={() => {
+              setIsTaskModalOpen(false)
+              // The triggers query will automatically refetch
+            }}
           />
         )}
 
