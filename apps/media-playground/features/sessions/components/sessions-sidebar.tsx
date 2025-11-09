@@ -30,7 +30,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import UserAvatar from '@/components/user/user-avatar'
 import { UserSettingsModal } from '@/features/account/user-settings-modal'
 import { ViewMode } from '@/features/sessions/components/types'
-import CollectiveMemory from '@/features/sessions/views/collective-memory'
+import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
@@ -1453,7 +1453,12 @@ export const SessionsSidebarContent = ({
             >
               <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
             </svg>
-            <span>Sessions</span>
+            <span className="flex items-center gap-1.5">
+              Sessions
+              <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                BETA
+              </span>
+            </span>
           </Button>
 
           {/* Explore button */}
@@ -1582,7 +1587,12 @@ export const SessionsSidebarContent = ({
           >
             <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
           </svg>
-          <span>Sessions</span>
+          <span className="flex items-center gap-1.5">
+            Sessions
+            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+              BETA
+            </span>
+          </span>
         </Button>
 
         {/* Explore button */}
@@ -1924,11 +1934,7 @@ export const SessionsSidebarContent = ({
             <DialogHeader>
               <DialogTitle>Memories - {agent.name}</DialogTitle>
             </DialogHeader>
-            <CollectiveMemory
-              agent={agent}
-              hasAccess={false}
-              showTabToggle={false}
-            />
+            <AgentMemoryView agent={agent} />
           </DialogContent>
         </Dialog>
       )}
