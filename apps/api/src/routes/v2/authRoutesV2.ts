@@ -1,4 +1,5 @@
 import {
+  DiscordOAuthQuery,
   createFarcasterManagedSigner,
   disconnectTikTok,
   disconnectTwitter,
@@ -14,7 +15,9 @@ import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
 const authRoutes: FastifyPluginAsync = async server => {
-  server.get('/v2/auth/discord/callback', {
+  server.get<{
+    Querystring: DiscordOAuthQuery
+  }>('/v2/auth/discord/callback', {
     schema: {
       tags: ['Auth'],
       summary: 'Discord OAuth Callback',
@@ -24,6 +27,7 @@ const authRoutes: FastifyPluginAsync = async server => {
       querystring: Type.Object({
         code: Type.String(),
         state: Type.String(),
+        mode: Type.Optional(Type.String()),
       }),
     },
     handler: (request, reply) => discordOAuth(server, request, reply),

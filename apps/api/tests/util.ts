@@ -4,14 +4,22 @@ import { Character, CharacterInput } from '../src/models/Character'
 import { Creation } from '../src/models/Creation'
 import { Generator, GeneratorSchema } from '../src/models/Generator'
 import { User } from '../src/models/User'
+import { TaskHandlers } from '../src/plugins/tasks'
 import createServer, { CreateServerOpts } from '../src/server'
 import { MediaType } from '@edenlabs/eden-sdk'
 import { FastifyInstance } from 'fastify'
 import { ObjectId } from 'mongodb'
 
+const noopTaskHandlers: TaskHandlers = {
+  submitTask: async () => 'noop-task',
+  receiveTaskUpdate: async () => {},
+  getTransactionCost: () => 0,
+}
+
 export const createTestServer = async () => {
   const opts: CreateServerOpts = {
     mongoUri: globalThis.__MONGO_URI__ + 'test',
+    taskHandlers: noopTaskHandlers,
   }
   const server = await createServer(opts)
   return server

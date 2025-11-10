@@ -6,6 +6,10 @@ import { ChangeStreamDocument, UpdateDescription } from 'mongodb'
 
 const WATCHED_COLLECTION = 'tasks3'
 export const registerEden2TaskUpdates: FastifyPluginAsync = async fastify => {
+  if (fastify.config.NODE_ENV === 'test') {
+    fastify.log.info('Skipping Eden2TaskUpdates registration in test env')
+    return
+  }
   try {
     const task2Collection =
       fastify.mongoose.connection.db.collection(WATCHED_COLLECTION)

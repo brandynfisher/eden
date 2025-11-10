@@ -1,7 +1,7 @@
 import { CollectionDocument } from './Collection'
 import { CreationDocument } from './Creation'
 import { FeatureFlag } from '@edenlabs/eden-sdk'
-import { Schema, model } from 'mongoose'
+import { Schema, Types, model } from 'mongoose'
 import aggregatePaginate from 'mongoose-aggregate-paginate-v2'
 import mongooseDelete, {
   SoftDeleteDocument,
@@ -14,6 +14,7 @@ export interface BaseUserSchema {
   userId: string
   username: string
   userImage?: string
+  eden_user_id?: Types.ObjectId
   featureFlags?: FeatureFlag[]
   creations: CreationDocument[]
   collections: CollectionDocument[]
@@ -21,6 +22,7 @@ export interface BaseUserSchema {
   followerCount: number
   followingCount: number
   discordId?: string
+  discordUsername?: string
   twitterHandle?: string
   twitterId?: string
   instagramHandle?: string
@@ -46,6 +48,12 @@ const BaseUserSchema = new Schema<BaseUserDocument>(
     userImage: {
       type: String,
       maxlength: 1000,
+    },
+    eden_user_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      index: true,
+      default: null,
     },
     featureFlags: [
       {
@@ -78,6 +86,9 @@ const BaseUserSchema = new Schema<BaseUserDocument>(
       default: 0,
     },
     discordId: {
+      type: String,
+    },
+    discordUsername: {
       type: String,
     },
     twitterHandle: {
