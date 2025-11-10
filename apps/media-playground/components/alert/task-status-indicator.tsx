@@ -12,29 +12,19 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuthState } from '@/hooks/use-auth-state'
 import customImageLoader from '@/image-loader'
-import { useNotificationContext } from '@/providers/notification-provider'
+import { cn } from '@/lib/utils'
 import { useTaskStatus } from '@/providers/task-status-provider'
+import { TaskV2, TaskV2Status } from '@edenlabs/eden-sdk'
 import {
-  NotificationPriority,
-  NotificationType,
-  TaskV2Status,
-} from '@edenlabs/eden-sdk'
-import {
-  AlertCircleIcon,
   BanIcon,
-  BellIcon,
-  CheckIcon,
   CircleCheckIcon,
-  ExternalLinkIcon,
   InboxIcon,
-  InfoIcon,
   TriangleAlertIcon,
-  XIcon,
 } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Image from 'next/image'
-import Link from 'next/link'
-import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 const TaskStatusIndicator = () => {
   const { isSignedIn } = useAuthState()
@@ -45,63 +35,48 @@ const TaskStatusIndicator = () => {
     completedTasks,
     cancelledTasks,
   } = useTaskStatus()
-  const { notifications, unreadCount, markAsRead, archiveNotifications } =
-    useNotificationContext()
   const [open, setOpen] = useState(false)
   const { TimeAgo } = useTimeAgo()
+  const router = useRouter()
 
-  const getNotificationIcon = (
-    type: NotificationType,
-    priority: NotificationPriority,
-  ) => {
-    const iconClass = 'mr-1.5 h-4 w-4'
-
-    switch (type) {
-      case 'trigger_complete':
-        return <CircleCheckIcon className={`${iconClass} text-green-500`} />
-      case 'trigger_failed':
-        return <TriangleAlertIcon className={`${iconClass} text-red-500`} />
-      case 'session_complete':
-        return <CircleCheckIcon className={`${iconClass} text-blue-500`} />
-      case 'session_failed':
-        return <AlertCircleIcon className={`${iconClass} text-red-500`} />
-      case 'system_alert':
-        return priority === 'high' || priority === 'urgent' ? (
-          <TriangleAlertIcon className={`${iconClass} text-orange-500`} />
-        ) : (
-          <InfoIcon className={`${iconClass} text-blue-500`} />
-        )
-      default:
-        return <BellIcon className={`${iconClass} text-gray-500`} />
-    }
-  }
-
-  const handleMarkAsRead = async (notificationIds: string[]) => {
-    await markAsRead(notificationIds)
-  }
-
-  const handleArchive = async (notificationIds: string[]) => {
-    await archiveNotifications(notificationIds)
-  }
-
-  const handleMarkAllAsRead = async () => {
-    await markAsRead()
-  }
+  const hasAnyTaskSummary = [
+    pendingRunningTasks?.length,
+    completedTasks?.length,
+    failedTasks?.length,
+    cancelledTasks?.length,
+  ].some(count => !!count)
 
   if (!isSignedIn) {
     return null
   }
 
+  const getFirstCreationId = (task: TaskV2) => {
+    if (!task.result) return null
+    for (const result of task.result) {
+      for (const output of result.output || []) {
+        const creationId = output?.creation?._id
+        if (creationId) {
+          return creationId
+        }
+      }
+    }
+    return null
+  }
+
+  const handleTaskSelect = (task: TaskV2) => {
+    const creationId = getFirstCreationId(task)
+    if (!creationId) return
+    router.push(`/creations/${creationId}`)
+  }
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger title="View recent tasks and notifications" asChild>
+      <DropdownMenuTrigger title="View recent tasks" asChild>
         <Button
           variant="ghost"
           className="flex px-2 gap-2 focus:!ring-0 relative"
         >
-          {(!pendingRunningTasks || !pendingRunningTasks.length) &&
-          (!completedTasks || !completedTasks.length) &&
-          (!notifications || !notifications.length) ? (
+          {!hasAnyTaskSummary ? (
             <div className="flex items-center">
               <InboxIcon className="mr-1 h-4 w-4" />0
             </div>
@@ -119,10 +94,16 @@ const TaskStatusIndicator = () => {
                   <span className="text-sm">{completedTasks.length}</span>
                 </div>
               ) : null}
-              {notifications && notifications.length ? (
-                <div className="flex items-center text-purple-500">
-                  <BellIcon className="mr-1 h-4 w-4" />
-                  <span className="text-sm">{notifications.length}</span>
+              {failedTasks && failedTasks.length ? (
+                <div className="flex items-center text-red-500">
+                  <TriangleAlertIcon className="mr-1 h-4 w-4" />
+                  <span className="text-sm">{failedTasks.length}</span>
+                </div>
+              ) : null}
+              {cancelledTasks && cancelledTasks.length ? (
+                <div className="flex items-center text-yellow-500">
+                  <BanIcon className="mr-1 h-4 w-4" />
+                  <span className="text-sm">{cancelledTasks.length}</span>
                 </div>
               ) : null}
             </>
@@ -131,226 +112,40 @@ const TaskStatusIndicator = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="bg-popover shadow-md rounded-md w-80">
-        <DropdownMenuItem className="cursor-pointer group" asChild>
-          <Link
-            href={'/create/image/flux_schnell'}
-            prefetch={false}
-            className="text-sm px-2 py-1"
-          >
-            <div className="flex w-full justify-between items-center gap-2">
-              <div className=" flex gap-1 items-center">
-                <div className="group-hover:underline">View all Tasks</div>
-                <ExternalLinkIcon className="ml-1 h-4 w-4" />
-              </div>
-              <div className="px-2 py-1">
-                <div className="flex space-x-2 justify-between">
-                  {pendingRunningTasks && pendingRunningTasks.length ? (
-                    <div className="flex text-blue-500 items-center">
-                      <span className={'mr-1.5 h-4 w-4 loading loading-ring'} />
-                      <span className="text-xs">
-                        {pendingRunningTasks.length}
-                      </span>
-                    </div>
-                  ) : null}
-                  {completedTasks && completedTasks.length ? (
-                    <div className="flex text-green-500 items-center">
-                      <CircleCheckIcon className="mr-1.5 h-4 w-4" />
-                      <span className="text-xs">{completedTasks.length}</span>
-                    </div>
-                  ) : null}
-                  {failedTasks && failedTasks.length ? (
-                    <div className="flex text-red-500 items-center">
-                      <TriangleAlertIcon className="mr-1.5 h-4 w-4" />
-                      <span className="text-xs">{failedTasks.length}</span>
-                    </div>
-                  ) : null}
-                  {cancelledTasks && cancelledTasks.length ? (
-                    <div className="flex text-yellow-500 items-center">
-                      <BanIcon className="mr-1.5 h-4 w-4" />
-                      <span className="text-xs">{cancelledTasks.length}</span>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <div className="overflow-y-auto overflow-x-hidden max-h-[calc(100dvh_-_240px)] md:max-h-[calc(100dvh_-_120px)]">
-          {/* Notifications Section */}
-          {notifications && notifications.length > 0 && (
-            <>
-              <div className="px-3 py-2 text-xs font-medium text-muted-foreground flex items-center justify-between">
-                <span>Notifications</span>
-                {unreadCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleMarkAllAsRead}
-                    className="text-xs px-2 py-1 h-6"
-                  >
-                    Mark all read
-                  </Button>
-                )}
-              </div>
-              {notifications.map(notification => (
-                <div key={notification._id}>
-                  <DropdownMenuItem
-                    className="px-2 py-2 hover:bg-muted rounded cursor-pointer"
-                    asChild
-                  >
-                    {notification.action_url ? (
-                      <Link
-                        href={`${process.env.NEXT_PUBLIC_HOST || ''}${
-                          notification.action_url
-                        }`}
-                        prefetch={false}
-                        className="w-full"
-                      >
-                        <div className="flex flex-col w-full">
-                          <div className="flex items-center gap-2 mb-1">
-                            {getNotificationIcon(
-                              notification.type,
-                              notification.priority,
-                            )}
-                            <div className="text-xs text-accent-foreground">
-                              {notification.title}
-                            </div>
-                            <div
-                              className="text-xs text-muted-foreground/50 ml-auto"
-                              title={new Date(
-                                notification.createdAt,
-                              ).toLocaleString()}
-                            >
-                              <TimeAgo
-                                date={notification.createdAt}
-                                locale="en-short"
-                              />
-                            </div>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              {!notification.read && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={e => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleMarkAsRead([notification._id])
-                                  }}
-                                  className="h-6 w-6 p-0"
-                                  title="Mark as read"
-                                >
-                                  <CheckIcon className="h-3 w-3" />
-                                </Button>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={e => {
-                                  e.preventDefault()
-                                  e.stopPropagation()
-                                  handleArchive([notification._id])
-                                }}
-                                className="h-6 w-6 p-0"
-                                title="Dismiss"
-                              >
-                                <XIcon className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="text-xs line-clamp-2 text-muted-foreground">
-                            {notification.message}
-                          </div>
-                        </div>
-                      </Link>
-                    ) : (
-                      <div className="w-full">
-                        <div className="flex flex-col w-full">
-                          <div className="flex items-center gap-2 mb-1">
-                            {getNotificationIcon(
-                              notification.type,
-                              notification.priority,
-                            )}
-                            <div className="text-xs text-accent-foreground">
-                              {notification.title}
-                            </div>
-                            <div
-                              className="text-xs text-muted-foreground/50 ml-auto"
-                              title={new Date(
-                                notification.createdAt,
-                              ).toLocaleString()}
-                            >
-                              <TimeAgo
-                                date={notification.createdAt}
-                                locale="en-short"
-                              />
-                            </div>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              {!notification.read && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={e => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleMarkAsRead([notification._id])
-                                  }}
-                                  className="h-6 w-6 p-0"
-                                  title="Mark as read"
-                                >
-                                  <CheckIcon className="h-3 w-3" />
-                                </Button>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={e => {
-                                  e.preventDefault()
-                                  e.stopPropagation()
-                                  handleArchive([notification._id])
-                                }}
-                                className="h-6 w-6 p-0"
-                                title="Dismiss"
-                              >
-                                <XIcon className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="text-xs line-clamp-2 text-muted-foreground">
-                            {notification.message}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </div>
-              ))}
-            </>
-          )}
-
-          {/* Tasks Section */}
-          {allTasks.length > 0 && (
+          {allTasks.length > 0 ? (
             <div className="px-3 py-2 text-xs font-medium text-muted-foreground">
               Tasks
             </div>
-          )}
+          ) : null}
 
-          {allTasks.length === 0 &&
-          (!notifications || notifications.length === 0) ? (
+          {allTasks.length === 0 ? (
             <DropdownMenuItem className="px-2 py-3 bg-muted/20 text-muted-foreground/50 hover:bg-muted rounded cursor-pointer">
-              No recent activity
+              No recent tasks
             </DropdownMenuItem>
           ) : (
-            allTasks.map(task => (
-              <div key={task._id}>
-                <DropdownMenuItem
-                  className="px-2 py-2 hover:bg-muted rounded cursor-pointer"
-                  asChild
-                >
-                  <Link
-                    href={`/create/${task.output_type}/${task.tool}`}
-                    prefetch={false}
+            allTasks.map(task => {
+              const isInteractive =
+                task.status === TaskV2Status.Completed &&
+                Boolean(getFirstCreationId(task))
+
+              return (
+                <div key={task._id}>
+                  <DropdownMenuItem
+                    className={cn(
+                      'px-2 py-2 rounded',
+                      isInteractive
+                        ? 'cursor-pointer hover:bg-muted'
+                        : 'cursor-not-allowed opacity-60',
+                    )}
+                    disabled={!isInteractive}
+                    onSelect={event => {
+                      if (!isInteractive) {
+                        event.preventDefault()
+                        return
+                      }
+                      handleTaskSelect(task)
+                    }}
                   >
                     <div className="flex flex-col w-full">
                       <div className="flex items-center gap-2 mb-1">
@@ -411,11 +206,11 @@ const TaskStatusIndicator = () => {
                         </div>
                       </div>
                     </div>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </div>
-            ))
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </div>
+              )
+            })
           )}
         </div>
       </DropdownMenuContent>

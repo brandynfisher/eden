@@ -30,7 +30,7 @@ import { calculateCost } from '@/utils/cost.util'
 import { ToolV2 } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import { CoinsIcon, Loader2, MenuIcon, PlusIcon } from 'lucide-react'
+import { CoinsIcon, Loader2, PlusIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as React from 'react'
@@ -40,7 +40,6 @@ import { z } from 'zod'
 
 type Props = {
   tool: ToolV2
-  hideBurgerButton?: boolean
 }
 
 const RUNWAY_TOOL_KEYS = ['runway', 'reel']
@@ -48,7 +47,7 @@ const RUNWAY_TOOL_KEYS = ['runway', 'reel']
 const MASKING_PARAMETER_NAMES = ['mask_image', 'masking_prompt']
 const SAMPLE_COUNT_PARAMETER_NAME = 'n_samples'
 
-const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
+const CreationUIContainer = ({ tool }: Props) => {
   const { isSignedIn, verifyAuth, refetchMe, balance } = useAuthState()
   const { isAllowed: isAllowedPrivacy } = useSubscriptionGate(
     GatedActions.MakePrivate,
@@ -351,35 +350,8 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
       >
         <Form {...form}>
           <form className="w-full flex flex-col justify-start h-full min-w-full min-h-0">
-            <div className="flex items-start gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
-              {/* Mobile: Hamburger menu */}
-              {isMobile && mobileIsFormVisible ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setToolSelectorOpen(true)}
-                  className="p-2 h-10 w-10 flex-shrink-0 mt-1"
-                >
-                  <MenuIcon className="h-5 w-5" />
-                </Button>
-              ) : !hideBurgerButton ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setToolSelectorOpen(true)}
-                  className="p-2 h-10 w-10 flex-shrink-0 mt-1"
-                >
-                  <MenuIcon className="h-5 w-5" />
-                </Button>
-              ) : null}
-
-              <div
-                className={`flex flex-col flex-1 min-w-0 ${
-                  hideBurgerButton ? '' : ''
-                }`}
-              >
+            <div className="flex items-start justify-between gap-3 p-2 bg-secondary border border-b-gray-300 dark:border-b-gray-700">
+              <div className="flex flex-col flex-1 min-w-0">
                 <div className="flex items-center justify-between">
                   <TypographyH4 className="text-sm lg:text-base">
                     {tool.name}
@@ -409,11 +381,23 @@ const CreationUIContainer = ({ tool, hideBurgerButton = false }: Props) => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setMobileIsFormVisible(false)}
-                  className="p-2 h-10 w-10 flex-shrink-0 mt-1"
+                  className="p-2 h-10 w-10 flex-shrink-0"
                 >
                   ✕
                 </Button>
               )}
+            </div>
+
+            <div className="px-3 pb-3 pt-3 border-b border-secondary bg-muted-darker">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="w-full justify-center bg-primary/15 text-primary-foreground border border-primary/40 hover:bg-primary/25"
+                onClick={() => setToolSelectorOpen(true)}
+              >
+                Select another tool
+              </Button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 py-4 flex flex-col justify-start min-h-0">
