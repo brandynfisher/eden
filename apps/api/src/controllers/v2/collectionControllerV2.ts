@@ -6,6 +6,7 @@ import {
 import { CreationV2, CreationV2Document } from '../../models/v2/CreationV2'
 import { s3ThumbnailUrl, s3Url } from '../../plugins/s3Plugin'
 import CollectionV2Repository from '../../repositories/CollectionV2Repository'
+import CreationV2Repository from '../../repositories/CreationV2Repository'
 import { downloadZip } from '../../utils/downloader'
 import {
   CollectionsV2AddCreationsArguments,
@@ -19,13 +20,24 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
 import { UpdateQuery, UpdateWriteOpResult } from 'mongoose'
 
+type PaginationQuery = {
+  page?: number
+  limit?: number
+  orderBy?: string
+  direction?: number
+}
+
 export const getUserCollectionsLight = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const currentUserId = request.user.userId
+  const { page, limit, orderBy, direction } =
+    (request.query as PaginationQuery) || {}
 
   const collectionsRepository = new CollectionV2Repository(CollectionV2)
+  const sortDirection = direction === 1 ? 1 : -1
+  const sortField = orderBy || 'updatedAt'
   const collections = await collectionsRepository.query(
     {
       $or: [{ user: currentUserId }, { contributors: currentUserId }],
@@ -33,11 +45,18 @@ export const getUserCollectionsLight = async (
     },
     {
       select: '_id name creations public contributors',
-      sort: { updatedAt: -1 },
+      sort: {
+        [sortField]: sortDirection,
+        ...(sortField !== 'updatedAt' ? { updatedAt: -1 } : {}),
+      },
+      page,
+      limit,
     },
   )
 
-  return reply.status(200).send({ collections: collections.docs })
+  return reply
+    .status(200)
+    .send({ ...collections, collections: collections.docs })
 }
 
 export const getCollection = async (
@@ -98,6 +117,8 @@ export const getCollectionCreations = async (
   reply: FastifyReply,
 ) => {
   const { collectionId } = request.params as CollectionsV2GetArguments
+  const { page, limit, orderBy, direction } =
+    (request.query as PaginationQuery) || {}
 
   const collectionsRepository = new CollectionV2Repository(CollectionV2)
   const collection = await collectionsRepository.findById(collectionId)
@@ -108,20 +129,40 @@ export const getCollectionCreations = async (
     })
   }
 
-  const creations = await CreationV2.find(
+  const sortDirection = direction === 1 ? 1 : -1
+  const sortField = orderBy || 'createdAt'
+  const creationsRepository = new CreationV2Repository(CreationV2)
+  const paginatedCreations = await creationsRepository.query(
     {
-      _id: { $in: collection.creations },
-      deleted: false,
+      _id: collection.creations,
     },
-    '_id mediaAttributes filename thumbnail url',
+    {
+      select: '_id mediaAttributes filename thumbnail url',
+      sort: {
+        [sortField]: sortDirection,
+        ...(sortField !== 'createdAt' ? { createdAt: -1 } : {}),
+        _id: -1,
+      },
+      page,
+      limit,
+    },
   )
 
-  creations.forEach(creation => {
-    creation.thumbnail = s3ThumbnailUrl(server, creation.filename || '', 1024)
-    creation.url = s3Url(server, creation.filename || '')
+  const docsWithAssets = paginatedCreations.docs.map(creation => {
+    const creationDoc =
+      typeof creation.toObject === 'function' ? creation.toObject() : creation
+    return {
+      ...creationDoc,
+      thumbnail: s3ThumbnailUrl(server, creationDoc.filename || '', 1024),
+      url: s3Url(server, creationDoc.filename || ''),
+    }
   })
 
-  return reply.status(200).send({ creations })
+  return reply.status(200).send({
+    ...paginatedCreations,
+    docs: docsWithAssets,
+    creations: docsWithAssets,
+  })
 }
 
 export const createCollection = async (
