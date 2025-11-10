@@ -45,6 +45,10 @@ const extractModifiedMessages = (
 }
 
 export const registerEden2ThreadUpdates: FastifyPluginAsync = async fastify => {
+  if (fastify.config.NODE_ENV === 'test') {
+    fastify.log.info('Skipping Eden2ThreadUpdates registration in test env')
+    return
+  }
   try {
     const threadCollection =
       fastify.mongoose.connection.db.collection(WATCHED_COLLECTION)

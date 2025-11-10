@@ -20,8 +20,11 @@ const createAdmin = async () => {
     username: 'admin',
     isWeb2: false,
     isAdmin: true,
+    email: 'admin@eden.test',
+    normalizedEmail: 'admin@eden.test',
   }
   const user = new User(userData)
+  user.eden_user_id = user._id
   await user.save()
 
   const apiKeyData: ApiKeyInput = {
@@ -48,8 +51,11 @@ const createFreeUser = async () => {
     username: 'user',
     isWeb2: false,
     isAdmin: false,
+    email: 'user@eden.test',
+    normalizedEmail: 'user@eden.test',
   }
   const user = new User(userData)
+  user.eden_user_id = user._id
   await user.save()
 
   const apiKeyData: ApiKeyInput = {
@@ -74,8 +80,11 @@ const createBasicUser = async () => {
     username: 'basicuser',
     isWeb2: false,
     isAdmin: false,
+    email: 'basicuser@eden.test',
+    normalizedEmail: 'basicuser@eden.test',
   }
   const user = new User(userData)
+  user.eden_user_id = user._id
   user.subscriptionTier = SubscriptionTier.Basic
   await user.save()
 
@@ -101,8 +110,11 @@ const createProUser = async () => {
     username: 'prouser',
     isWeb2: false,
     isAdmin: false,
+    email: 'prouser@eden.test',
+    normalizedEmail: 'prouser@eden.test',
   }
   const user = new User(userData)
+  user.eden_user_id = user._id
   user.subscriptionTier = SubscriptionTier.Pro
   await user.save()
 
@@ -128,8 +140,11 @@ const createBelieverUser = async () => {
     username: 'believeruser',
     isWeb2: false,
     isAdmin: false,
+    email: 'believeruser@eden.test',
+    normalizedEmail: 'believeruser@eden.test',
   }
   const user = new User(userData)
+  user.eden_user_id = user._id
   user.subscriptionTier = SubscriptionTier.Believer
   await user.save()
 
@@ -155,8 +170,11 @@ const createPreviewUser = async () => {
     username: 'previewUser',
     isWeb2: false,
     isAdmin: false,
+    email: 'previewuser@eden.test',
+    normalizedEmail: 'previewuser@eden.test',
   }
   const user = new User(userData)
+  user.eden_user_id = user._id
   user.featureFlags = [FeatureFlag.Preview]
   await user.save()
 
@@ -186,21 +204,6 @@ const createCollection = async () => {
   await Collection.create(collection)
 }
 
-// const createReplicateGenerator = async (db: Db) => {
-//   const generator: GeneratorSchema = {
-//     generatorName: "abraham-ai/eden-stable-diffusion",
-//     versions: [
-//       {
-//         versionId: "latest",
-//         defaultConfig: StableDiffusionDefaults,
-//         isDeprecated: false,
-//         createdAt: new Date(),
-//       },
-//     ],
-//   };
-//   await db.collection("generators").insertOne(generator);
-// }
-
 beforeAll(async () => {
   await setup()
   process.env.MONGO_URI = globalThis.__MONGO_URI__
@@ -208,11 +211,6 @@ beforeAll(async () => {
   client.db('eden')
   mongoose.set('strictQuery', true)
   await mongoose.connect(process.env.MONGO_URI as string)
-
-  // const replicateDb = client.db("replicate");
-  // await createAdmin(replicateDb);
-  // await createUser(replicateDb);
-  // await createReplicateGenerator(replicateDb);
 })
 
 beforeEach(async () => {

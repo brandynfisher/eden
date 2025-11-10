@@ -1,8 +1,4 @@
-import {
-  claimDailyLoginBonus,
-  disconnectDiscord,
-  discordOAuth,
-} from '../controllers/auth/authController'
+import { claimDailyLoginBonus } from '../controllers/auth/authController'
 import { receiveUserUpdate } from '../controllers/auth/clerkController'
 import { isAuth } from '../middleware/authMiddleware'
 import { Type } from '@sinclair/typebox'
@@ -19,34 +15,6 @@ const authRoutes: FastifyPluginAsync = async server => {
     },
 
     handler: (request, reply) => receiveUserUpdate(server, request, reply),
-  })
-  server.get('/auth/discord/callback', {
-    schema: {
-      tags: ['Auth'],
-      summary: 'Discord OAuth Callback',
-      description:
-        'Handle Discord OAuth2 authentication callback to link Discord account with user profile.',
-      hide: true,
-      querystring: Type.Object({
-        code: Type.String(),
-        state: Type.String(),
-      }),
-    },
-    handler: (request, reply) => discordOAuth(server, request, reply),
-  })
-  server.get('/auth/discord/disconnect', {
-    schema: {
-      tags: ['Auth'],
-      summary: 'Disconnect Discord Account',
-      description:
-        'Unlink Discord account from the authenticated user profile.',
-      hide: true,
-      response: {
-        200: Type.Object({}),
-      },
-    },
-    preHandler: [(request, reply) => isAuth(server, request, reply)],
-    handler: (request, reply) => disconnectDiscord(request, reply),
   })
   server.post('/auth/daily-login', {
     schema: {

@@ -102,6 +102,7 @@
     "swagger2openapi": "^7.0.8",
     "tsx": "^3.12.7",
     "typescript": "^5",
-    "vite": "^4.3.5"
+    "vite": "^4.3.5",
+    "vitest": "^4.0.8"
   }
 }

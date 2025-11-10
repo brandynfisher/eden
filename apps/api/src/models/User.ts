@@ -1,6 +1,6 @@
 import { BaseUser, BaseUserDocument, BaseUserSchema } from './BaseUser'
 import { SubscriptionTier } from '@edenlabs/eden-sdk'
-import { Schema } from 'mongoose'
+import { Schema, Types } from 'mongoose'
 
 export interface UserSchema extends BaseUserSchema {
   userId: string
@@ -32,6 +32,7 @@ export type UserInput = {
   email?: string
   normalizedEmail?: string
   type?: 'agent' | 'user'
+  eden_user_id?: Types.ObjectId | string
 }
 
 export interface UserDocument extends UserSchema, BaseUserDocument {}

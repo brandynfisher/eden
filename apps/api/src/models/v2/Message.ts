@@ -15,6 +15,7 @@ export interface MessageSchema {
   _id: string
   session: SessionDocument
   sender: UserDocument | AgentDocument
+  eden_user_id?: Schema.Types.ObjectId | null
   role: MessageRole
   eden_message_data?: EdenMessageData
   content: string
@@ -44,6 +45,12 @@ const messageSchema = new Schema<MessageDocument>(
       type: Schema.Types.ObjectId,
       ref: 'users3',
       required: true,
+    },
+    eden_user_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      index: true,
+      default: null,
     },
     role: {
       type: Schema.Types.String,
@@ -98,5 +105,18 @@ messageSchema.index({ session: 1, createdAt: 1 })
 
 // Index for querying messages by sender
 messageSchema.index({ sender: 1, createdAt: 1 })
+messageSchema.index({ eden_user_id: 1, createdAt: 1 })
+
+messageSchema.pre<MessageDocument>('save', function (next) {
+  if (!this.eden_user_id && this.sender) {
+    const senderValue = this.sender as any
+    if (senderValue instanceof Schema.Types.ObjectId) {
+      this.eden_user_id = senderValue
+    } else if (senderValue?._id) {
+      this.eden_user_id = senderValue._id
+    }
+  }
+  next()
+})
 
 export const Message = model<MessageDocument>('messages', messageSchema)
