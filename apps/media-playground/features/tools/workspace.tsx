@@ -63,7 +63,7 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
     >
       {/* Timeline - always visible, full width on mobile */}
       <div className="order-1 lg:order-2 px-2 sm:px-4 lg:px-2 lg:pt-4 flex flex-col gap-y-4 flex-1 min-h-0 overflow-y-auto pb-6">
-        <div className="flex items-center justify-end">
+        <div className="sticky top-0 lg:-top-4 z-10 flex items-center justify-end bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border/40 pb-2">
           <ErrorBoundary>
             <TaskStatusIndicator />
           </ErrorBoundary>
