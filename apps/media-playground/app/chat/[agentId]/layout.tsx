@@ -19,6 +19,7 @@ import AgentEditView from '@/features/sessions/views/agent-edit-view'
 import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
 import AgentTasksView from '@/features/sessions/views/agent-tasks-view'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -100,6 +101,9 @@ const SessionChatLayout = ({
 
   const { agent } = useAgentQuery({ key: agentId, enabled: !!agentId })
 
+  // Check if user has edit access (original owner, co-owner, or co-editor)
+  const { hasEditAccess } = useAgentPermissions(agent, user?._id)
+
   // Mount effect
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -125,10 +129,6 @@ const SessionChatLayout = ({
     }
   }, [])
 
-  const isOwner = useMemo(() => {
-    return user?._id === agent?.owner._id
-  }, [user, agent])
-
   // Handle query parameters for view mode
   useEffect(() => {
     if (!searchParams) return
@@ -150,12 +150,12 @@ const SessionChatLayout = ({
     }
   }, [searchParams])
 
-  // Redirect if not owner and trying to access restricted views
+  // Redirect if user doesn't have edit access and trying to access restricted views
   useEffect(() => {
-    if (agent && user && !isOwner && viewMode === 'settings') {
+    if (agent && user && !hasEditAccess && viewMode === 'settings') {
       router.push(`/chat/${agentId}`)
     }
-  }, [agent, user, isOwner, viewMode, agentId, router])
+  }, [agent, user, hasEditAccess, viewMode, agentId, router])
 
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
 
