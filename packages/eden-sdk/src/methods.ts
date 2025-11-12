@@ -49,6 +49,8 @@ import {
   PaymentsProductsResponse,
   PaymentsSubscriptionArguments,
   PaymentsSubscriptionResponse,
+  UserPreferencesGetArguments,
+  UserPreferencesGetResponse,
   adminAuthChallengeRequestConfig,
   adminMannaModifyRequestConfig,
   adminMannaVouchersCreateRequestConfig,
@@ -72,6 +74,7 @@ import {
   paymentsCreateRequestConfig,
   paymentsProductsRequestConfig,
   paymentsSubscriptionRequestConfig,
+  userPreferencesGetRequestConfig,
 } from './models'
 import {
   AgentsCreateTriggerArguments,
@@ -592,6 +595,13 @@ export abstract class Methods {
     meV2: bindApiCall<WebAPICallOptions, CreatorsGetMeResponse>(
       this,
       creatorsGetMeV2RequestConfig,
+    ),
+  }
+
+  public readonly userPreferences = {
+    get: bindApiCall<UserPreferencesGetArguments, UserPreferencesGetResponse>(
+      this,
+      userPreferencesGetRequestConfig,
     ),
   }
 

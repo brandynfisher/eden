@@ -1,8 +1,9 @@
 import { MessageInput } from './message-input'
+import { QuickSwitchAgents } from '@/components/agent/quick-switch-agents'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React from 'react'
 
 type Variant = 'chat' | 'session'
 
@@ -31,55 +32,6 @@ interface SessionVariantProps extends BaseProps {
 type SessionWelcomeProps = ChatVariantProps | SessionVariantProps
 
 const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
-  // Move all hooks to the top
-  const [showAll /*setShowAll*/] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [, /*visibleCount*/ setVisibleCount] = useState(
-    props.variant === 'chat' ? (props.agent?.suggestions || []).length : 0,
-  )
-
-  const measureAndUpdate = useCallback(() => {
-    if (props.variant !== 'chat') return
-    const container = containerRef.current
-    if (!container) return
-
-    const welcomeCenter = container.closest('.aui-thread-welcome-center')
-    if (!welcomeCenter) return
-
-    const containerWidth = welcomeCenter.clientWidth - 86
-    const items = Array.from(container.querySelectorAll('.suggestion-item'))
-
-    let totalWidth = 0
-    let count = items.length
-
-    for (let i = 0; i < items.length; i++) {
-      const itemWidth = items[i].getBoundingClientRect().width + 8
-      if (totalWidth + itemWidth > containerWidth) {
-        count = Math.max(1, i)
-        break
-      }
-      totalWidth += itemWidth
-    }
-
-    setVisibleCount(count)
-  }, [props.variant])
-
-  useEffect(() => {
-    if (props.variant !== 'chat') return
-    const container = containerRef.current
-    if (!container) return
-    const welcomeCenter = container.closest('.aui-thread-welcome-center')
-    if (!welcomeCenter) return
-
-    const resizeObserver = new ResizeObserver(() => {
-      if (!showAll) measureAndUpdate()
-    })
-
-    resizeObserver.observe(welcomeCenter)
-    measureAndUpdate()
-    return () => resizeObserver.disconnect()
-  }, [showAll, props.variant, measureAndUpdate])
-
   // Handle different variants
   const onAgentSelectorOpen =
     'onAgentSelectorOpen' in props ? props.onAgentSelectorOpen : undefined
@@ -114,12 +66,11 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
   }
 
   // Chat variant logic
-  const { agent, isLoading, onSendMessage } = props
-  const suggestions = agent?.suggestions || []
+  const { agent, onSendMessage } = props
 
   return (
     <div className="aui-thread-welcome min-h-full flex items-center justify-center">
-      <div className="aui-thread-welcome-center flex flex-col items-center justify-center min-h-full">
+      <div className="aui-thread-welcome-center flex flex-col items-center justify-center min-h-full w-full max-w-7xl">
         <div className="relative flex flex-col items-center p-2 ">
           <div className="absolute inset-0 rounded-full blur-3xl scale-150 opacity-60 animate-pulse" />
           <div className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 tracking-wide">
@@ -140,6 +91,8 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
               </AvatarFallback>
             </Avatar>
           </div>
+          {/* Quick switch to recent agents */}
+          <QuickSwitchAgents currentAgentId={agent._id} className="mt-4" />
         </div>
 
         <div className="mb-8">
@@ -148,38 +101,13 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
           </p>
         </div>
 
-        <div className="w-full px-4 mb-6">
+        <div className="w-full max-w-4xl px-4 mb-6">
           <MessageInput
             sessionId={'new'}
             onStreamingMessage={onSendMessage}
             enableLiveAudio={true}
             agent={agent}
           />
-        </div>
-
-        <div className=" w-full flex flex-wrap gap-3 justify-center mb-3">
-          {suggestions.length > 0 && (
-            <div className="w-full  mx-auto relative" ref={containerRef}>
-              <div
-                className={`gap-3 flex flex-row gap-2 flex-wrap justify-center transition-[height,opacity] duration-200`}
-              >
-                {suggestions.map((suggestion, index) => (
-                  <div
-                    className="suggestion-item hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/4 flex-shrink-0 border border-border rounded-full bg-gradient-to-br from-card to-muted/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10"
-                    key={`${suggestion.prompt}-${index}`}
-                  >
-                    <button
-                      className="px-4 py-2.5 rounded-full text-sm"
-                      onClick={() => onSendMessage(suggestion.label)}
-                      disabled={isLoading}
-                    >
-                      {suggestion.label}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
