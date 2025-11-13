@@ -380,7 +380,7 @@ export function LightboxImageTrigger({
         <img
           src={lowResSrc}
           alt={alt}
-          className="absolute inset-0 object-contain w-full h-full transition-opacity duration-300 bg-muted/10 pointer-events-none object-center"
+          className="absolute inset-0 object-contain object-top w-full h-full transition-opacity duration-300 bg-muted/10 pointer-events-none"
           draggable={false}
         />
       ) : null}
@@ -388,7 +388,7 @@ export function LightboxImageTrigger({
         <img
           src={blurDataUrl}
           alt=""
-          className="absolute inset-0 object-contain w-full h-full transition-opacity duration-300 pointer-events-none object-center"
+          className="absolute inset-0 object-contain object-top w-full h-full transition-opacity duration-300 pointer-events-none"
           draggable={false}
         />
       ) : null}
@@ -397,7 +397,7 @@ export function LightboxImageTrigger({
         src={src}
         alt={alt}
         className={cn(
-          'object-contain w-full h-full !bg-contain transition-opacity duration-300 object-center',
+          'object-contain object-top w-full h-full !bg-contain transition-opacity duration-300',
           lowResSrc && !isHighResLoaded ? 'opacity-0' : 'opacity-100',
         )}
         blurDataURL={!lowResSrc ? blurDataUrl : undefined}
