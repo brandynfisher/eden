@@ -204,46 +204,11 @@ const ExplorePage = () => {
           </h1>
         </div>
 
-        {/* Action button - icon on mobile, full button on desktop */}
-        {pageInfo.actionButton && (
-          <>
-            {/* Mobile icon button */}
-            <div className="md:hidden">
-              {contentType === 'agents' && (
-                <Button size="icon" asChild>
-                  <Link href="/new/agent">
-                    <Plus className="h-5 w-5" />
-                  </Link>
-                </Button>
-              )}
-              {contentType === 'models' && (
-                <Button size="icon" asChild>
-                  <Link href="/train">
-                    <Zap className="h-5 w-5" />
-                  </Link>
-                </Button>
-              )}
-              {contentType === 'creations' && (
-                <Button size="icon" asChild>
-                  <Link href="/create/image/flux_dev">
-                    <Plus className="h-5 w-5" />
-                  </Link>
-                </Button>
-              )}
-              {contentType === 'tools' && (
-                <Button size="icon" asChild>
-                  <Link href="/create/image/flux_dev">
-                    <Zap className="h-5 w-5" />
-                  </Link>
-                </Button>
-              )}
-            </div>
-
-            {/* Desktop full button */}
-            <div className="hidden md:block flex-shrink-0">
-              {pageInfo.actionButton}
-            </div>
-          </>
+        {/* Action button - desktop only */}
+        {pageInfo.actionButton && contentType !== 'creations' && (
+          <div className="hidden md:block flex-shrink-0">
+            {pageInfo.actionButton}
+          </div>
         )}
       </div>
 

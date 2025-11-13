@@ -289,7 +289,8 @@ export const SessionPostEmbed: React.FC<SessionPostEmbedProps> = ({
       )}
 
       {/* Small tool badge - always visible at bottom right using ToolHoverMenu */}
-      {toolName && toolArgs && (
+      {/* Only show for session post tools - other tools show this in ToolResultActionBar */}
+      {toolName && toolArgs && sessionId && (
         <div className="flex justify-end mt-2">
           <ToolHoverMenu toolName={toolName} args={toolArgs} result={results} />
         </div>

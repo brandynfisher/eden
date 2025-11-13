@@ -802,12 +802,9 @@ const CurrentAgentDisplay: FC<{
   onSettingsClick: () => void
   onMemoriesClick: () => void
 }> = ({ agent, userId, onAgentClick, onSettingsClick, onMemoriesClick }) => {
-  // Check if user has edit permissions (owner or editor)
-  const isOwner = agent.owner?._id === userId
-  const isEditor = agent.editors?.some(
-    (editor: { _id: string }) => editor._id === userId,
-  )
-  const canEdit = isOwner || isEditor
+  // Check if user has edit permissions using the agent permissions hook
+  // This checks: original owner, co-owners, and co-editors in agent_permissions
+  const { hasEditAccess } = useAgentPermissions(agent, userId)
 
   return (
     <div className="mr-2 mb-2">
@@ -848,7 +845,7 @@ const CurrentAgentDisplay: FC<{
             <path d="m9 18 6-6-6-6" />
           </svg>
         </button>
-        {canEdit ? (
+        {hasEditAccess ? (
           <button
             onClick={e => {
               e.stopPropagation()
@@ -1859,13 +1856,16 @@ export const SessionsSidebarContent = ({
         )}
 
         {mode === 'explore' && (
-          <div className="hidden md:flex flex-col gap-2 mr-2">
+          <div className="flex flex-col gap-2 mr-2">
             <div className="text-xs font-medium text-muted-foreground mb-1">
               Browse
             </div>
             <Button
               variant="ghost"
-              onClick={() => router.push('/explore?type=creations')}
+              onClick={() => {
+                onItemClick?.()
+                router.push('/explore?type=agents')
+              }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
                 searchParams?.get('type') === 'agents'
@@ -1877,7 +1877,10 @@ export const SessionsSidebarContent = ({
             </Button>
             <Button
               variant="ghost"
-              onClick={() => router.push('/explore?type=models')}
+              onClick={() => {
+                onItemClick?.()
+                router.push('/explore?type=models')
+              }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
                 searchParams?.get('type') === 'models'
@@ -1889,7 +1892,10 @@ export const SessionsSidebarContent = ({
             </Button>
             <Button
               variant="ghost"
-              onClick={() => router.push('/explore?type=creations')}
+              onClick={() => {
+                onItemClick?.()
+                router.push('/explore?type=creations')
+              }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
                 searchParams?.get('type') === 'creations'
@@ -1901,7 +1907,10 @@ export const SessionsSidebarContent = ({
             </Button>
             <Button
               variant="ghost"
-              onClick={() => router.push('/explore?type=tools')}
+              onClick={() => {
+                onItemClick?.()
+                router.push('/explore?type=tools')
+              }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
                 searchParams?.get('type') === 'tools'

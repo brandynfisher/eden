@@ -234,21 +234,26 @@ const AgentEditView: FC<{
     if (hasEditAccess) {
       tabs.push({ key: 'profile', label: 'Profile', icon: UserIcon })
     }
-    if (hasOwnerAccess && isPreviewUser) {
+    // Tasks - accessible to editors (preview only)
+    if (hasEditAccess && isPreviewUser) {
       tabs.push({ key: 'tasks', label: 'Tasks', icon: ClockIcon })
     }
     if (hasEditAccess) {
       tabs.push({ key: 'dashboard', label: 'Dashboard', icon: BarChart3Icon })
     }
-    if (hasOwnerAccess) {
+    // Concepts - accessible to editors
+    if (hasEditAccess) {
       tabs.push({ key: 'concepts', label: 'Concepts', icon: ImageIcon })
     }
-    if (hasOwnerAccess && isPreviewUser) {
+    // Memories - accessible to editors (preview only)
+    if (hasEditAccess && isPreviewUser) {
       tabs.push({ key: 'memories', label: 'Memories', icon: BrainIcon })
     }
-    if (hasOwnerAccess) {
+    // Tools - accessible to editors
+    if (hasEditAccess) {
       tabs.push({ key: 'tools', label: 'Tools', icon: WrenchIcon })
     }
+    // Integrations - restricted to owners only
     if (hasOwnerAccess && isPreviewUser) {
       tabs.push({
         key: 'integrations',
@@ -256,6 +261,7 @@ const AgentEditView: FC<{
         icon: SettingsIcon,
       })
     }
+    // Permissions - restricted to original owner only
     if (isOriginalOwner && isPreviewUser) {
       tabs.push({ key: 'permissions', label: 'Permissions', icon: KeyIcon })
     }
@@ -319,7 +325,7 @@ const AgentEditView: FC<{
                   <ProfileTab form={form} agent={agent} />
                 )}
 
-                {activeTab === 'tools' && hasOwnerAccess && (
+                {activeTab === 'tools' && hasEditAccess && (
                   <ToolsTab
                     form={form}
                     hasDeployments={
@@ -329,7 +335,7 @@ const AgentEditView: FC<{
                     user={user}
                   />
                 )}
-                {activeTab === 'concepts' && hasOwnerAccess && (
+                {activeTab === 'concepts' && hasEditAccess && (
                   <ConceptsTab form={form} agent={agent} />
                 )}
                 {activeTab === 'integrations' &&
@@ -342,14 +348,12 @@ const AgentEditView: FC<{
                       isError={deploymentsQuery.isError}
                     />
                   )}
-                {activeTab === 'memories' &&
-                  hasOwnerAccess &&
-                  isPreviewUser && (
-                    <div className="-m-6">
-                      <AgentMemoryView agent={agent} />
-                    </div>
-                  )}
-                {activeTab === 'tasks' && hasOwnerAccess && isPreviewUser && (
+                {activeTab === 'memories' && hasEditAccess && isPreviewUser && (
+                  <div className="-m-6">
+                    <AgentMemoryView agent={agent} />
+                  </div>
+                )}
+                {activeTab === 'tasks' && hasEditAccess && isPreviewUser && (
                   <div className="-m-6">
                     <AgentTasksView agent={agent} />
                   </div>

@@ -54,8 +54,8 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
       })
     }
 
-    // 2. Tasks - Preview users with owner access
-    if (hasOwnerAccess && isPreviewUser) {
+    // 2. Tasks - Preview users with edit access
+    if (hasEditAccess && isPreviewUser) {
       tabs.push({
         key: 'tasks',
         label: 'Tasks',
@@ -74,8 +74,8 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
       })
     }
 
-    // 4. Concepts - Owners only
-    if (hasOwnerAccess) {
+    // 4. Concepts - Accessible to editors
+    if (hasEditAccess) {
       tabs.push({
         key: 'concepts',
         label: 'Concepts',
@@ -84,8 +84,8 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
       })
     }
 
-    // 5. Memories - Preview users with owner access
-    if (hasOwnerAccess && isPreviewUser) {
+    // 5. Memories - Preview users with edit access
+    if (hasEditAccess && isPreviewUser) {
       tabs.push({
         key: 'memories',
         label: 'Memories',
@@ -94,8 +94,8 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
       })
     }
 
-    // 6. Tools - Owners only
-    if (hasOwnerAccess) {
+    // 6. Tools - Accessible to editors
+    if (hasEditAccess) {
       tabs.push({
         key: 'tools',
         label: 'Tools',
@@ -104,7 +104,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
       })
     }
 
-    // 7. Integrations - Preview users with owner access
+    // 7. Integrations - Restricted to owners only
     if (hasOwnerAccess && isPreviewUser) {
       tabs.push({
         key: 'integrations',
@@ -114,7 +114,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = ({
       })
     }
 
-    // 8. Permissions - Original owner only (preview users)
+    // 8. Permissions - Restricted to original owner only (preview users)
     if (isOriginalOwner && isPreviewUser) {
       tabs.push({
         key: 'permissions',
