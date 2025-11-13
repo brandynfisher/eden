@@ -4,6 +4,7 @@ import CreationCard from '@/components/card/creation-card'
 import MasonryVirtualizerVertical, {
   MasonryVirtualizerHandle,
 } from '@/components/masonry/masonry-virtualizer-vertical'
+import { useScrollContainer } from '@/contexts/scroll-container-context'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { RowItem } from '@/lib/query/cache-updates'
 import { useCreationDetailModalStore } from '@/zustand/creation-detail-modal-store'
@@ -56,6 +57,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
     const { isSignedIn } = useAuthState()
     const queryClient = useQueryClient()
     const openCreationDetail = useCreationDetailModalStore(state => state.open)
+    const layoutScrollRef = useScrollContainer()
     const virtualizerRef = useRef<MasonryVirtualizerHandle>(null)
 
     const defaultQuery: FeedCreationsCursorArguments = useMemo(
@@ -164,7 +166,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
         maxCols={maxCols || undefined}
         onItemsLoaded={handleItemsLoaded}
         setFetchNextPage={setFetchNextPage}
-        scrollRef={scrollRef}
+        scrollRef={scrollRef ?? layoutScrollRef ?? undefined}
         initialScrollIndex={effectiveScrollIndex}
         onScrollRestored={handleScrollRestored}
         showSkeleton={showSkeleton}
