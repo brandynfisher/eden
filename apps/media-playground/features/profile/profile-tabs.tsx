@@ -4,9 +4,7 @@ import RouterTabs, { RouterTab } from '@/components/tabs/router-tabs'
 import { Button } from '@/components/ui/button'
 import AgentsFeed from '@/features/feed/agents-feed'
 import CollectionsFeed from '@/features/feed/collections-feed'
-import CreationsFeed, {
-  CreationsFeedHandle,
-} from '@/features/feed/creations-feed'
+import CreationsFeed from '@/features/feed/creations-feed'
 import ModelsFeed from '@/features/feed/models-feed'
 import { SortMenu } from '@/features/feed/sort-menu'
 import { ProfileAgentsFilter } from '@/features/profile/profile-agents-filter'
@@ -22,61 +20,14 @@ import { LightningBoltIcon } from '@radix-ui/react-icons'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { usePathname, useRouter } from 'next/navigation'
-import { useCallback, useEffect, useRef } from 'react'
 
 const ProfileTabs = () => {
   const params = useParams<{ name: string }>()
   const { user, isSignedIn } = useAuthState()
   const { creator } = useCreatorQuery({ key: params?.name })
   const { user: meUser } = useMe({ isAuthenticated: !!isSignedIn })
-  const pathname = usePathname()
-  const router = useRouter()
-  const creationsFeedRef = useRef<CreationsFeedHandle>(null)
-
   // NOTE: We intentionally place all hooks (useEffect/useCallback/etc.) before
   // any conditional returns to avoid changing the number/order of hooks between renders.
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Only handle navigation if we're viewing a creation modal
-      if (!pathname?.startsWith('/creations/')) return
-
-      const creationId = pathname.split('/creations/')[1]
-      if (!creationId || !creationsFeedRef.current) return
-
-      let targetId: string | null = null
-
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault()
-        targetId = creationsFeedRef.current.getAdjacentCreationId(
-          creationId,
-          'prev',
-        )
-      } else if (event.key === 'ArrowRight') {
-        event.preventDefault()
-        targetId = creationsFeedRef.current.getAdjacentCreationId(
-          creationId,
-          'next',
-        )
-      }
-
-      if (targetId) {
-        router.push(`/creations/${targetId}`)
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [pathname, router])
-
-  const handleCreationNavigation = useCallback(
-    (creationId: string) => {
-      // This could be used for programmatic navigation if needed
-      router.push(`/creations/${creationId}`)
-    },
-    [router],
-  )
 
   const isOwnProfile = creator ? user?._id === creator._id : false
   const isPreviewUser = meUser?.featureFlags?.includes(FeatureFlag.Preview)
@@ -101,13 +52,11 @@ const ProfileTabs = () => {
       canSearch: true,
       content: (
         <CreationsFeed
-          ref={creationsFeedRef}
           // For agent profiles we passed agent id in baseQuery.
           // Other feeds below still rely on user id semantics.
           query={baseQuery}
           maxCols={7}
           multiselect={isOwnProfile}
-          onNavigate={handleCreationNavigation}
         />
       ),
       actionButton: isOwnProfile ? (

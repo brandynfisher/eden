@@ -1,17 +1,6 @@
 import ErrorBoundary from '@/components/error-boundary'
-import CreationsFeed, {
-  CreationsFeedHandle,
-} from '@/features/feed/creations-feed'
-import { useRouter } from 'next/navigation'
-import { usePathname } from 'next/navigation'
-import React, {
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
-import { Suspense } from 'react'
+import CreationsFeed from '@/features/feed/creations-feed'
+import { RefObject, Suspense, useEffect, useRef, useState } from 'react'
 
 type Props = {
   query: Record<string, string>
@@ -28,50 +17,6 @@ export default function RecentCreationsFeed({
 }: Props) {
   const [shouldLoadCreations, setShouldLoadCreations] = useState<boolean>(false)
   const observedRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
-  const pathname = usePathname()
-  const creationsFeedRef = useRef<CreationsFeedHandle>(null)
-
-  // Handle arrow key navigation for creation modals
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Only handle navigation if we're viewing a creation modal
-      if (!pathname?.startsWith('/creations/')) return
-
-      const creationId = pathname.split('/creations/')[1]
-      if (!creationId || !creationsFeedRef.current) return
-
-      let targetId: string | null = null
-
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault()
-        targetId = creationsFeedRef.current.getAdjacentCreationId(
-          creationId,
-          'prev',
-        )
-      } else if (event.key === 'ArrowRight') {
-        event.preventDefault()
-        targetId = creationsFeedRef.current.getAdjacentCreationId(
-          creationId,
-          'next',
-        )
-      }
-
-      if (targetId) {
-        router.push(`/creations/${targetId}`)
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [pathname, router])
-  const handleCreationNavigation = useCallback(
-    (creationId: string) => {
-      // This could be used for programmatic navigation if needed
-      router.push(`/creations/${creationId}`)
-    },
-    [router],
-  )
   useEffect(() => {
     let observer: IntersectionObserver
     const currentObservedRef = observedRef.current
@@ -121,7 +66,6 @@ export default function RecentCreationsFeed({
                 initialScrollIndex={initialScrollIndex}
                 onScrollRestored={onScrollRestored}
                 showSkeleton
-                onNavigate={handleCreationNavigation}
               />
             </ErrorBoundary>
           </Suspense>

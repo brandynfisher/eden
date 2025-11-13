@@ -4,6 +4,7 @@ import ModelCard from '@/components/card/model-card'
 import MasonryVirtualizerVertical, {
   BreakpointConfig,
 } from '@/components/masonry/masonry-virtualizer-vertical'
+import { useScrollContainer } from '@/contexts/scroll-container-context'
 import { RowItem } from '@/lib/query/cache-updates'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { FeedConceptsCursorArguments, ModelV2 } from '@edenlabs/eden-sdk'
@@ -39,6 +40,7 @@ const ModelsFeed = ({
   variant = 'default',
 }: Props) => {
   const router = useRouter()
+  const layoutScrollRef = useScrollContainer()
 
   const defaultQuery: FeedConceptsCursorArguments = useMemo(
     () => ({
@@ -76,7 +78,7 @@ const ModelsFeed = ({
 
   return (
     <MasonryVirtualizerVertical
-      scrollRef={scrollRef}
+      scrollRef={scrollRef ?? layoutScrollRef ?? undefined}
       key={`models_${JSON.stringify(query)}`}
       apiEndpoint={'/api/feed/models'}
       queryKey={queryKey}

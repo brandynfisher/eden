@@ -333,7 +333,8 @@ export const LightboxTrigger = React.forwardRef<
         />
       ) : (
         <LightboxImageTrigger
-          src={slide.thumbnail ?? slide.url}
+          src={slide.url}
+          lowResSrc={slide.thumbnail}
           width={slide.width}
           height={slide.height}
           {...imageProps}
@@ -347,6 +348,7 @@ LightboxTrigger.displayName = 'LightboxTrigger'
 // Image Trigger Component
 type LightboxImageTriggerProps = {
   src?: string
+  lowResSrc?: string
   alt?: string
   blurhash?: string
   loading?: 'eager' | 'lazy'
@@ -355,6 +357,7 @@ type LightboxImageTriggerProps = {
 
 export function LightboxImageTrigger({
   src = siteConfig.mediaErrorUrl,
+  lowResSrc,
   alt = '',
   blurhash,
   className,
@@ -365,20 +368,47 @@ export function LightboxImageTrigger({
   const width = props?.width ? +props.width : 1024
   const height = props?.height ? +props.height : 1024
   const blurDataUrl = useBlurDataUrl(blurhash, width, height)
+  const [isHighResLoaded, setIsHighResLoaded] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsHighResLoaded(false)
+  }, [src])
 
   return (
-    <NextImage
-      loader={!customLoader ? undefined : customImageLoader}
-      src={src}
-      alt={alt}
-      className={cn('object-contain w-full h-full !bg-contain', className)}
-      blurDataURL={blurDataUrl}
-      placeholder={blurDataUrl ? 'blur' : undefined}
-      loading={loading ?? 'eager'}
-      {...props}
-      width={width}
-      height={height}
-    />
+    <div className={cn('relative w-full h-full', className)}>
+      {!isHighResLoaded && lowResSrc ? (
+        <img
+          src={lowResSrc}
+          alt={alt}
+          className="absolute inset-0 object-contain object-top w-full h-full transition-opacity duration-300 bg-muted/10 pointer-events-none"
+          draggable={false}
+        />
+      ) : null}
+      {!lowResSrc && !isHighResLoaded && blurDataUrl ? (
+        <img
+          src={blurDataUrl}
+          alt=""
+          className="absolute inset-0 object-contain object-top w-full h-full transition-opacity duration-300 pointer-events-none"
+          draggable={false}
+        />
+      ) : null}
+      <NextImage
+        loader={!customLoader ? undefined : customImageLoader}
+        src={src}
+        alt={alt}
+        className={cn(
+          'object-contain object-top w-full h-full !bg-contain transition-opacity duration-300',
+          lowResSrc && !isHighResLoaded ? 'opacity-0' : 'opacity-100',
+        )}
+        blurDataURL={!lowResSrc ? blurDataUrl : undefined}
+        placeholder={!lowResSrc && blurDataUrl ? 'blur' : undefined}
+        loading={loading ?? 'eager'}
+        onLoad={() => setIsHighResLoaded(true)}
+        {...props}
+        width={width}
+        height={height}
+      />
+    </div>
   )
 }
 
