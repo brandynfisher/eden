@@ -6,10 +6,10 @@ import MasonryVirtualizerVertical, {
 } from '@/components/masonry/masonry-virtualizer-vertical'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { RowItem } from '@/lib/query/cache-updates'
+import { useCreationDetailModalStore } from '@/zustand/creation-detail-modal-store'
 import { useActiveFeedStore, useFeedStore } from '@/zustand/feed-store'
 import { CreationV2, FeedCreationsCursorArguments } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
 import {
   RefObject,
   forwardRef,
@@ -29,7 +29,6 @@ type Props = {
   initialScrollIndex?: number | null
   onScrollRestored?: () => void
   showSkeleton?: boolean
-  onNavigate?: (creationId: string, direction: 'prev' | 'next') => void
 }
 
 export type CreationsFeedHandle = {
@@ -56,7 +55,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
   ) => {
     const { isSignedIn } = useAuthState()
     const queryClient = useQueryClient()
-    const router = useRouter()
+    const openCreationDetail = useCreationDetailModalStore(state => state.open)
     const virtualizerRef = useRef<MasonryVirtualizerHandle>(null)
 
     const defaultQuery: FeedCreationsCursorArguments = useMemo(
@@ -122,8 +121,7 @@ const CreationsFeed = forwardRef<CreationsFeedHandle, Props>(
       // Invalidate immediately so full query runs to get complete data
       queryClient.invalidateQueries({ queryKey: ['creations', item._id] })
 
-      // Navigate to creation - modal opens via parallel route
-      router.push(`/creations/${item._id}`)
+      openCreationDetail({ creationId: item._id, initialCreation: item })
     }
 
     const handleScrollRestored = useCallback(() => {

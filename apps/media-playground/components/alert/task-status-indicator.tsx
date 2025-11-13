@@ -14,6 +14,7 @@ import { useAuthState } from '@/hooks/use-auth-state'
 import customImageLoader from '@/image-loader'
 import { cn } from '@/lib/utils'
 import { useTaskStatus } from '@/providers/task-status-provider'
+import { useCreationDetailModalStore } from '@/zustand/creation-detail-modal-store'
 import { TaskV2, TaskV2Status } from '@edenlabs/eden-sdk'
 import {
   BanIcon,
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react'
 import { useTimeAgo } from 'next-timeago'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 const TaskStatusIndicator = () => {
@@ -37,7 +37,7 @@ const TaskStatusIndicator = () => {
   } = useTaskStatus()
   const [open, setOpen] = useState(false)
   const { TimeAgo } = useTimeAgo()
-  const router = useRouter()
+  const openCreationDetail = useCreationDetailModalStore(state => state.open)
 
   const hasAnyTaskSummary = [
     pendingRunningTasks?.length,
@@ -66,7 +66,7 @@ const TaskStatusIndicator = () => {
   const handleTaskSelect = (task: TaskV2) => {
     const creationId = getFirstCreationId(task)
     if (!creationId) return
-    router.push(`/creations/${creationId}`)
+    openCreationDetail({ creationId })
   }
 
   return (

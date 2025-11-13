@@ -55,6 +55,7 @@ type Props = {
 
 const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
   const { user: creator } = item || {}
+  const creationItem = type === 'creation' ? (item as CreationV2) : undefined
   const { prompt, text_input, prompt_text, lora, lora2, ...remainingArgs } =
     item?.task.args || {}
   const { TimeAgo } = useTimeAgo()
@@ -337,14 +338,18 @@ const DetailSidebar = ({ item, type, queryKey, inModal }: Props) => {
         </div>
 
         {type === 'creation' &&
-        item &&
-        (item as CreationV2).agent &&
-        (item as CreationV2).agent?._id !== item.user._id ? (
+        creationItem &&
+        creationItem.agent &&
+        creationItem.agent._id &&
+        creationItem.agent._id !== creationItem.user._id &&
+        (creationItem.agent.name ||
+          creationItem.agent.username ||
+          creationItem.agent.userImage) ? (
           <div className="pb-4 text-sm">
             <div className="h-9 flex items-center justify-between font-bold">
               Made with
             </div>
-            <AgentLink agent={(item as CreationV2).agent} hideName={false} />
+            <AgentLink agent={creationItem.agent} hideName={false} />
           </div>
         ) : null}
 
