@@ -365,8 +365,9 @@ export function LightboxImageTrigger({
   customLoader,
   ...props
 }: LightboxImageTriggerProps) {
-  const width = props?.width ? +props.width : 1024
-  const height = props?.height ? +props.height : 1024
+  const { width: ignoredWidth, height: ignoredHeight, ...restProps } = props
+  const width = typeof ignoredWidth === 'number' ? ignoredWidth : 1024
+  const height = typeof ignoredHeight === 'number' ? ignoredHeight : 1024
   const blurDataUrl = useBlurDataUrl(blurhash, width, height)
   const [isHighResLoaded, setIsHighResLoaded] = React.useState(false)
 
@@ -374,40 +375,48 @@ export function LightboxImageTrigger({
     setIsHighResLoaded(false)
   }, [src])
 
+  const placeholderSrc = lowResSrc || blurDataUrl || undefined
+  const showPlaceholder = Boolean(placeholderSrc)
+
   return (
-    <div className={cn('relative w-full h-full', className)}>
-      {!isHighResLoaded && lowResSrc ? (
-        <img
-          src={lowResSrc}
+    <div
+      className={cn('relative w-full', className)}
+      style={
+        height && width ? { aspectRatio: `${width}/${height}` } : undefined
+      }
+    >
+      <div className="absolute inset-0">
+        {showPlaceholder ? (
+          <img
+            src={placeholderSrc}
+            alt={alt}
+            className={cn(
+              'absolute inset-0 object-contain w-full h-full bg-muted/10 pointer-events-none',
+              isHighResLoaded ? 'opacity-0' : 'opacity-100',
+            )}
+            draggable={false}
+          />
+        ) : null}
+        <NextImage
+          loader={!customLoader ? undefined : customImageLoader}
+          src={src}
           alt={alt}
-          className="absolute inset-0 object-contain object-top w-full h-full transition-opacity duration-300 bg-muted/10 pointer-events-none"
-          draggable={false}
+          className={cn(
+            'absolute inset-0 object-contain w-full h-full !bg-contain',
+            isHighResLoaded ? 'opacity-100' : 'opacity-0',
+          )}
+          fill
+          sizes="100vw"
+          style={{ objectFit: 'contain', objectPosition: 'center' }}
+          blurDataURL={!lowResSrc ? blurDataUrl : undefined}
+          placeholder={!lowResSrc && blurDataUrl ? 'blur' : undefined}
+          loading={loading ?? 'eager'}
+          onLoad={() => {
+            setIsHighResLoaded(true)
+          }}
+          {...restProps}
         />
-      ) : null}
-      {!lowResSrc && !isHighResLoaded && blurDataUrl ? (
-        <img
-          src={blurDataUrl}
-          alt=""
-          className="absolute inset-0 object-contain object-top w-full h-full transition-opacity duration-300 pointer-events-none"
-          draggable={false}
-        />
-      ) : null}
-      <NextImage
-        loader={!customLoader ? undefined : customImageLoader}
-        src={src}
-        alt={alt}
-        className={cn(
-          'object-contain object-top w-full h-full !bg-contain transition-opacity duration-300',
-          lowResSrc && !isHighResLoaded ? 'opacity-0' : 'opacity-100',
-        )}
-        blurDataURL={!lowResSrc ? blurDataUrl : undefined}
-        placeholder={!lowResSrc && blurDataUrl ? 'blur' : undefined}
-        loading={loading ?? 'eager'}
-        onLoad={() => setIsHighResLoaded(true)}
-        {...props}
-        width={width}
-        height={height}
-      />
+      </div>
     </div>
   )
 }
