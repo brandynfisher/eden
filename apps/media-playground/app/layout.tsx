@@ -1,5 +1,6 @@
 import '@/styles/globals.scss'
 import 'photoswipe/dist/photoswipe.css'
+import 'react-farcaster-embed/dist/styles.css'
 
 import Providers from '@/app/providers'
 import CollectionSelectionDialog from '@/components/dialog/collection-selection-dialog'
