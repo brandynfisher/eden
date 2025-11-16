@@ -5,6 +5,7 @@ import {
   SessionPermissionLevel,
 } from '../../models/SessionPermission'
 import { User } from '../../models/User'
+import { UserPreferences } from '../../models/UserPreferences'
 import { Message } from '../../models/v2/Message'
 import { SessionShare } from '../../models/v2/SessionShareV2'
 import { Session } from '../../models/v2/SessionV2'
@@ -26,6 +27,7 @@ import {
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+import { Schema } from 'mongoose'
 
 // Helper function to create eden messages for agent operations
 const createEdenMessage = async (
@@ -561,6 +563,20 @@ export const createSessionMessage = async (
         )
         reply.raw.end()
       })
+
+      // Update user preferences with last agents (don't await to avoid blocking the stream)
+      if (session.agents && session.agents.length > 0) {
+        const userObjectId = new Schema.Types.ObjectId(userId.toString())
+        for (const agent of session.agents) {
+          const agentId =
+            typeof agent === 'object' && '_id' in agent
+              ? new Schema.Types.ObjectId(agent._id.toString())
+              : new Schema.Types.ObjectId(agent as string)
+          UserPreferences.updateLastAgent(userObjectId, agentId).catch(err => {
+            console.error('Error updating user preferences:', err)
+          })
+        }
+      }
     } else {
       // Non-streaming response
       const modalResponse = await axios.post(
@@ -581,6 +597,23 @@ export const createSessionMessage = async (
 
       const message_id =
         modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
+
+      // Update user preferences with last agents
+      if (session.agents && session.agents.length > 0) {
+        try {
+          const userObjectId = new Schema.Types.ObjectId(userId.toString())
+          for (const agent of session.agents) {
+            const agentId =
+              typeof agent === 'object' && '_id' in agent
+                ? new Schema.Types.ObjectId(agent._id.toString())
+                : new Schema.Types.ObjectId(agent as string)
+            await UserPreferences.updateLastAgent(userObjectId, agentId)
+          }
+        } catch (err) {
+          console.error('Error updating user preferences:', err)
+          // Continue even if preference update fails
+        }
+      }
 
       return reply.status(200).send({
         session_id: modalResponse.data.session_id,

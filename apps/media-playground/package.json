@@ -86,6 +86,7 @@
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
+    "react-farcaster-embed": "^1.11.0",
     "react-hook-form": "^7.52.1",
     "react-markdown": "^9.0.3",
     "react-photoswipe-gallery": "^3.0.2",

@@ -5,6 +5,7 @@ import authRoutes from './authRoutes'
 import mannaRoutes from './mannaRoutes'
 import mediaRoutes from './mediaRoutes'
 import paymentRoutes from './paymentRoutes'
+import userPreferencesRoutes from './userPreferencesRoutes'
 import { TSchema, Type } from '@sinclair/typebox'
 
 export const paginatedResponse = (docs: TSchema) => {
@@ -64,4 +65,5 @@ export const routes = [
   mediaRoutes,
   paymentRoutes,
   agentCreationRoutes,
+  userPreferencesRoutes,
 ]

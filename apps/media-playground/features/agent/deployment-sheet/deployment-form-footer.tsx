@@ -104,7 +104,8 @@ export const DeploymentFormFooter = ({
       } else if (platform === 'farcaster') {
         config = {
           farcaster: {
-            auto_reply: data.autoReply,
+            enable_cast: data.enableCast,
+            instructions: data.instructions,
           },
         }
       } else if (platform === 'twitter') {

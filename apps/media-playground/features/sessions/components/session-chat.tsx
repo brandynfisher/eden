@@ -119,7 +119,7 @@ const SessionChat: FC<{ onOpenSidebar?: () => void }> = ({ onOpenSidebar }) => {
   // Otherwise show the welcome screen
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
-      <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
+      <div className="flex-1 overflow-y-auto p-4 mx-auto w-full">
         <SessionWelcome
           variant="chat"
           agent={agent as Agent}
