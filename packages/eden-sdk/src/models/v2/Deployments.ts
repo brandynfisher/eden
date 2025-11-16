@@ -49,7 +49,8 @@ export type DeploymentSecretsTelegram = {
 // Farcaster Types
 export type DeploymentSettingsFarcaster = {
   webhook_id?: string
-  auto_reply?: boolean
+  enable_cast?: boolean
+  instructions?: string
 }
 
 export type DeploymentSecretsFarcaster = {

@@ -34,6 +34,7 @@ import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
+import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
@@ -1175,12 +1176,17 @@ export const SessionsSidebarContent = ({
   mode?: 'sessions' | 'explore' | 'create'
   isMobileSidebar?: boolean
 }) => {
-  const { user } = useAuthState()
+  const { user, isSignedIn } = useAuthState()
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
+
+  // Get user preferences for last agent
+  const { lastAgents } = useUserPreferencesQuery({ enabled: !!isSignedIn })
+  const lastAgent =
+    lastAgents.length > 0 ? lastAgents[0].username || lastAgents[0]._id : 'eve'
 
   // Get permissions for settings sidebar
   const { isOriginalOwner, hasOwnerAccess, hasEditAccess } =
@@ -1225,18 +1231,14 @@ export const SessionsSidebarContent = ({
           <EdenLogoBw className="w-[20px]" />
         </button>
 
-        {/* Chat icon */}
+        {/* New Chat icon */}
         <button
-          onClick={() => router.push('/chat')}
+          onClick={() => router.push(`/chat/${lastAgent}`)}
           className={cn(
             'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
-            pathname === '/chat' ||
-              pathname === '/' ||
-              pathname?.startsWith('/chat/')
-              ? 'bg-primary/20 text-primary-foreground'
-              : 'hover:bg-muted/20',
+            'hover:bg-muted/20',
           )}
-          title="Chat"
+          title="New Chat"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -1250,6 +1252,35 @@ export const SessionsSidebarContent = ({
             strokeLinejoin="round"
           >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+
+        {/* Agents icon */}
+        <button
+          onClick={() => router.push('/agents')}
+          className={cn(
+            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+            pathname === '/agents' || pathname?.startsWith('/agents/')
+              ? 'bg-primary/20 text-primary-foreground'
+              : 'hover:bg-muted/20',
+          )}
+          title="Agents"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
         </button>
 
@@ -1381,20 +1412,16 @@ export const SessionsSidebarContent = ({
       {/* Mobile: Navigation Buttons - scrollable when in sheet, shown outside scroll container when NOT in sheet */}
       {!isMobileSidebar && (
         <div className="mb-4 mr-2 flex-col gap-2 md:hidden flex">
-          {/* Chat button */}
+          {/* New Chat button */}
           <Button
             variant="ghost"
             onClick={() => {
               onItemClick?.()
-              router.push('/chat')
+              router.push(`/chat/${lastAgent}`)
             }}
             className={cn(
               'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              pathname === '/chat' ||
-                pathname === '/' ||
-                pathname?.startsWith('/chat/')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
             )}
           >
             <svg
@@ -1411,7 +1438,41 @@ export const SessionsSidebarContent = ({
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-            <span>Chat</span>
+            <span>New Chat</span>
+          </Button>
+
+          {/* Agents button */}
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onItemClick?.()
+              router.push('/agents')
+            }}
+            className={cn(
+              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+              pathname === '/agents' || pathname?.startsWith('/agents/')
+                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            )}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span>Agents</span>
           </Button>
 
           {/* Sessions button */}
@@ -1517,19 +1578,15 @@ export const SessionsSidebarContent = ({
 
       {/* Desktop: Navigation Buttons - don't close sidebar on desktop */}
       <div className="mb-4 mr-2 flex-col gap-2 hidden md:flex">
-        {/* Chat button */}
+        {/* New Chat button */}
         <Button
           variant="ghost"
           onClick={() => {
-            router.push('/chat')
+            router.push(`/chat/${lastAgent}`)
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname === '/chat' ||
-              pathname === '/' ||
-              pathname?.startsWith('/chat/')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
           )}
         >
           <svg
@@ -1546,7 +1603,40 @@ export const SessionsSidebarContent = ({
           >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
-          <span>Chat</span>
+          <span>New Chat</span>
+        </Button>
+
+        {/* Agents button */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push('/agents')
+          }}
+          className={cn(
+            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+            pathname === '/agents' || pathname?.startsWith('/agents/')
+              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+          )}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+          <span>Agents</span>
         </Button>
 
         {/* Sessions button */}
@@ -1654,20 +1744,16 @@ export const SessionsSidebarContent = ({
         {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
         {isMobileSidebar && (
           <div className="mb-4 mr-2 flex-col gap-2 flex pt-3">
-            {/* Chat button */}
+            {/* New Chat button */}
             <Button
               variant="ghost"
               onClick={() => {
                 onItemClick?.()
-                router.push('/chat')
+                router.push(`/chat/${lastAgent}`)
               }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname === '/chat' ||
-                  pathname === '/' ||
-                  pathname?.startsWith('/chat/')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
               )}
             >
               <svg
@@ -1684,7 +1770,41 @@ export const SessionsSidebarContent = ({
               >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
-              <span>Chat</span>
+              <span>New Chat</span>
+            </Button>
+
+            {/* Agents button */}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onItemClick?.()
+                router.push('/agents')
+              }}
+              className={cn(
+                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
+                pathname === '/agents' || pathname?.startsWith('/agents/')
+                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
+                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-4"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span>Agents</span>
             </Button>
 
             {/* Sessions button */}

@@ -3,6 +3,7 @@
 import ErrorBoundary from '@/components/error-boundary'
 import { CollectionAddedEmbed } from '@/features/sessions/tools/collection-added-embed'
 import { CovenantEmbed } from '@/features/sessions/tools/covenant-embed'
+import { FarcasterCastEmbed } from '@/features/sessions/tools/farcaster-cast-embed'
 import { SeedEmbed } from '@/features/sessions/tools/seed-embed'
 import { SessionPostEmbed } from '@/features/sessions/tools/session-post-embed'
 import { SocialContentEmbed } from '@/features/sessions/tools/social-content-embed'
@@ -128,6 +129,7 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
       tool as keyof typeof SOCIAL_TOOLS.WEB_SEARCH_TOOLS
     ]
 
+  const isFarcasterCast = tool === 'farcaster_cast'
   const isSocialPost = !!postToolConfig
   const isSessionPost = !!sessionPostToolConfig
   const isCovenantTool = !!covenantToolConfig
@@ -153,8 +155,13 @@ export const TaskResultTool: React.FC<TaskResultToolProps> = ({
   return (
     <div className="mb-2 max-w-full">
       <ErrorBoundary>
-        {isSocialPost ? (
-          // Handle social post results (Discord, Telegram, Tweet, Farcaster, Shopify, Printify, TikTok)
+        {isFarcasterCast ? (
+          // Handle Farcaster cast with embedded preview
+          <div className="mb-2 relative group">
+            <FarcasterCastEmbed results={toolResults || []} />
+          </div>
+        ) : isSocialPost ? (
+          // Handle social post results (Discord, Telegram, Tweet, Shopify, Printify, TikTok)
           <div className="mb-2 relative group">
             <SocialPostEmbed
               results={toolResults || []}
