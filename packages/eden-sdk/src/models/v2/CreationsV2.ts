@@ -243,6 +243,7 @@ export type CreationsV2SearchResponse = WebAPICallResult &
 export type CreationV2 = MediaOutput & {
   _id: string
   user: Creator
+  eden_user_id?: string
   agent?: Agent
   task: TaskV2
   output_type: ToolOutputTypeV2

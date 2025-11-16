@@ -4,6 +4,7 @@ import AgentCard from '@/components/card/agent-card'
 import GridVirtualizerVertical from '@/components/grid/grid-virtualizer-vertical'
 import { BreakpointConfig } from '@/components/masonry/masonry-virtualizer-vertical'
 import { Button } from '@/components/ui/button'
+import { useScrollContainer } from '@/contexts/scroll-container-context'
 import { useSharedAgentsQuery } from '@/hooks/query/use-shared-agents-query'
 import { RowItem } from '@/lib/query/cache-updates'
 import { updateAgentFormSheet } from '@/stores/dialogs/dialogs.slice'
@@ -43,6 +44,7 @@ const AgentsFeed = ({
   improvedLayout = false,
 }: Props) => {
   const dispatch = useAppDispatch()
+  const layoutScrollRef = useScrollContainer()
   const defaultQuery: FeedAgentCursorArguments = useMemo(
     () => ({
       limit: 35,
@@ -169,7 +171,7 @@ const AgentsFeed = ({
         breakpoints={breakpoints}
         onItemsLoaded={handleItemsLoaded}
         setFetchNextPage={setFetchNextPage}
-        scrollRef={scrollRef}
+        scrollRef={scrollRef ?? layoutScrollRef ?? undefined}
         render={(item: RowItem) => (
           <AgentCard
             agent={item as Agent}

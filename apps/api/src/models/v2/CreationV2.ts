@@ -10,6 +10,7 @@ import paginate from 'mongoose-paginate-v2'
 
 export interface CreationV2Schema extends MediaOutput {
   user: ObjectId
+  eden_user_id?: ObjectId | null
   agent?: ObjectId
   task: ObjectId
   args: TaskV2Args
@@ -27,6 +28,7 @@ export interface CreationV2Schema extends MediaOutput {
 
 export interface CreationV2Input extends MediaOutput {
   user: ObjectId
+  eden_user_id?: ObjectId
   agent?: ObjectId
   task: ObjectId
   args: TaskV2Args
@@ -44,6 +46,12 @@ export const creationSchema = new Schema<CreationV2Document>(
       type: Schema.Types.ObjectId,
       ref: 'users3',
       required: true,
+    },
+    eden_user_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      index: true,
+      default: null,
     },
     agent: {
       type: Schema.Types.ObjectId,
@@ -123,6 +131,7 @@ export const creationSchema = new Schema<CreationV2Document>(
 
 creationSchema.index({ task: 1 })
 creationSchema.index({ createdAt: -1 })
+creationSchema.index({ eden_user_id: 1, createdAt: -1 })
 creationSchema.index({ deleted: -1, createdAt: -1 })
 creationSchema.index({
   'attributes.discordId': -1,
@@ -167,6 +176,13 @@ creationSchema.plugin(paginate)
 creationSchema.plugin(aggregatePaginate)
 creationSchema.plugin(mongooseDelete, {
   overrideMethods: ['find', 'findOne', 'countDocuments', 'count'],
+})
+
+creationSchema.pre<CreationV2Document>('save', function (next) {
+  if (!this.eden_user_id && this.user) {
+    this.eden_user_id = this.user as unknown as ObjectId
+  }
+  next()
 })
 
 export const CreationV2 = model<CreationV2Document>(

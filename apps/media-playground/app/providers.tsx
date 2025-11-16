@@ -1,3 +1,4 @@
+import CreationDetailModalContainer from '@/components/modal/creation-detail-modal-container'
 import { env } from '@/lib/config'
 import { DailyLoginProvider } from '@/providers/daily-login-provider'
 import { NotificationProvider } from '@/providers/notification-provider'
@@ -39,7 +40,10 @@ export default function Providers({ children }: PropsWithChildren) {
             <ReduxProvider>
               <TaskStatusProvider>
                 <NotificationProvider>
-                  <DailyLoginProvider>{children}</DailyLoginProvider>
+                  <DailyLoginProvider>
+                    {children}
+                    <CreationDetailModalContainer />
+                  </DailyLoginProvider>
                 </NotificationProvider>
               </TaskStatusProvider>
             </ReduxProvider>

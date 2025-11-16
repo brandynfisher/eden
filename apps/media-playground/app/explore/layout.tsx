@@ -1,23 +1,27 @@
 'use client'
 
 import EdenLogoBw from '@/components/logo/eden-logo-bw'
+import { Button } from '@/components/ui/button'
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { cn } from '@/lib/utils'
-import { MenuIcon } from 'lucide-react'
+import { MenuIcon, UserPlus, Zap } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useEffect, useRef, useState } from 'react'
 
 export default function ExploreLayout({ children }: PropsWithChildren) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Get content type from URL
   const contentType = searchParams?.get('type') || 'creations'
@@ -60,6 +64,24 @@ export default function ExploreLayout({ children }: PropsWithChildren) {
           <MenuIcon className="w-5 h-5 text-muted-foreground" />
         </button>
         <h1 className="text-xl font-bold">Explore {getContentLabel()}</h1>
+
+        {/* Action buttons in navbar */}
+        <div className="ml-auto">
+          {contentType === 'agents' && (
+            <Button size="icon" variant="ghost" asChild>
+              <Link href="/new/agent" title="New Agent">
+                <UserPlus className="h-5 w-5 text-muted-foreground" />
+              </Link>
+            </Button>
+          )}
+          {contentType === 'models' && (
+            <Button size="icon" variant="ghost" asChild>
+              <Link href="/train" title="Train Model">
+                <Zap className="h-5 w-5 text-muted-foreground" />
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* MOBILE LEFT BAR SHEET */}
@@ -131,11 +153,16 @@ export default function ExploreLayout({ children }: PropsWithChildren) {
             defaultSize={80}
             className="relative flex flex-col bg-background -ml-px"
           >
-            <div className="flex flex-col h-full overflow-hidden">
-              <div className="mx-auto flex flex-col h-full w-full overflow-y-auto">
-                {children}
+            <ScrollContainerProvider value={scrollRef}>
+              <div className="flex flex-col h-full overflow-hidden">
+                <div
+                  ref={scrollRef}
+                  className="mx-auto flex flex-col h-full w-full overflow-y-auto"
+                >
+                  {children}
+                </div>
               </div>
-            </div>
+            </ScrollContainerProvider>
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

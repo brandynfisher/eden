@@ -97,6 +97,7 @@ export type TasksGetResponse = WebAPICallResult & {
 export type Task = {
   _id: string
   user: string
+  eden_user_id?: string
   character?: string
   generator: Generator
   versionId: string

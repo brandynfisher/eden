@@ -12,6 +12,7 @@ import paginate from 'mongoose-paginate-v2'
 
 export interface TaskV2Schema {
   user: UserDocument
+  eden_user_id?: ObjectId | null
   agent: UserDocument
   tool: string
   args: TaskV2Args
@@ -30,6 +31,7 @@ export interface TaskV2Schema {
 
 export interface TaskV2Input {
   user: ObjectId
+  eden_user_id?: ObjectId
   agent: ObjectId
   tool: string
   args: TaskV2Args
@@ -51,6 +53,12 @@ export const taskSchema = new Schema<TaskV2Document>(
     user: {
       type: Schema.Types.ObjectId,
       ref: 'users3',
+    },
+    eden_user_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'users3',
+      index: true,
+      default: null,
     },
     agent: {
       type: Schema.Types.ObjectId,
@@ -144,10 +152,18 @@ taskSchema.index({
   output_type: 1,
   createdAt: -1,
 })
+taskSchema.index({ eden_user_id: 1, createdAt: -1 })
 taskSchema.index({ status: 1, createdAt: -1 })
 taskSchema.index({ cost: 1, status: 1, createdAt: -1 })
 taskSchema.index({ user: 1, createdAt: -1, tool: 1 })
 taskSchema.plugin(paginate)
 taskSchema.plugin(aggregatePaginate)
+
+taskSchema.pre<TaskV2Document>('save', function (next) {
+  if (!this.eden_user_id && this.user) {
+    this.eden_user_id = this.user as unknown as ObjectId
+  }
+  next()
+})
 
 export const TaskV2 = model<TaskV2Document>('tasks3', taskSchema)

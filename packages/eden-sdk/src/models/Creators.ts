@@ -216,6 +216,7 @@ export type CreatorsGetMeResponse = WebAPICallResult & {
 export type Creator = {
   _id: string
   userId: string
+  eden_user_id?: string
   username?: string
   userImage?: string
   type?: 'agent' | 'user'
@@ -237,6 +238,7 @@ export type Creator = {
   lastDailyLoginBonus?: Date
   discordLinkBonusClaimed?: boolean
   discordId?: string
+  discordUsername?: string
   twitterHandle?: string
   twitterId?: string
   instagramHandle?: string

@@ -10,6 +10,10 @@ const WATCHED_COLLECTION = 'messages'
 
 export const registerEden2SessionUpdates: FastifyPluginAsync =
   async fastify => {
+    if (fastify.config.NODE_ENV === 'test') {
+      fastify.log.info('Skipping Eden2SessionUpdates registration in test env')
+      return
+    }
     try {
       const messagesCollection =
         fastify.mongoose.connection.db.collection(WATCHED_COLLECTION)

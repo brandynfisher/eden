@@ -225,6 +225,7 @@ export type TaskV2Result = {
 export type TaskV2 = {
   _id: string
   user: Creator
+  eden_user_id?: string
   tool: string
   output_type?: ToolOutputTypeV2
   model?: string

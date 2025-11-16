@@ -7,6 +7,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
@@ -19,6 +20,7 @@ import AgentEditView from '@/features/sessions/views/agent-edit-view'
 import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
 import AgentTasksView from '@/features/sessions/views/agent-tasks-view'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { cn } from '@/lib/utils'
 import { Agent } from '@edenlabs/eden-sdk'
@@ -100,6 +102,9 @@ const SessionChatLayout = ({
 
   const { agent } = useAgentQuery({ key: agentId, enabled: !!agentId })
 
+  // Check if user has edit access (original owner, co-owner, or co-editor)
+  const { hasEditAccess } = useAgentPermissions(agent, user?._id)
+
   // Mount effect
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -125,10 +130,6 @@ const SessionChatLayout = ({
     }
   }, [])
 
-  const isOwner = useMemo(() => {
-    return user?._id === agent?.owner._id
-  }, [user, agent])
-
   // Handle query parameters for view mode
   useEffect(() => {
     if (!searchParams) return
@@ -150,14 +151,15 @@ const SessionChatLayout = ({
     }
   }, [searchParams])
 
-  // Redirect if not owner and trying to access restricted views
+  // Redirect if user doesn't have edit access and trying to access restricted views
   useEffect(() => {
-    if (agent && user && !isOwner && viewMode === 'settings') {
+    if (agent && user && !hasEditAccess && viewMode === 'settings') {
       router.push(`/chat/${agentId}`)
     }
-  }, [agent, user, isOwner, viewMode, agentId, router])
+  }, [agent, user, hasEditAccess, viewMode, agentId, router])
 
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const handleSidebarToggle = () => {
     if (isSidebarCollapsed) {
@@ -421,32 +423,39 @@ const SessionChatLayout = ({
               order={2}
               className="relative flex flex-col bg-aui-background"
             >
-              <div className="flex flex-col h-full">
-                <div className="mx-auto flex flex-col flex-1 w-full h-full overflow-hidden">
-                  {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}
-                  {viewMode === 'creations'
-                    ? agent && <AgentCreationsView agent={agent} user={user} />
-                    : viewMode === 'tasks'
-                    ? agent && <AgentTasksView agent={agent} />
-                    : viewMode === 'settings'
-                    ? agent && (
-                        <AgentEditView
-                          agent={agent}
-                          user={user}
-                          sessionId={sessionId}
-                          onBackToChat={handleBackToChat}
-                          onNewChat={handleNewChat}
-                        />
-                      )
-                    : viewMode === 'memories'
-                    ? agent && <AgentMemoryView agent={agent} />
-                    : React.isValidElement(children)
-                    ? React.cloneElement(children as React.ReactElement, {
-                        onOpenSidebar: () => setIsSheetOpen(true),
-                      })
-                    : children}
+              <ScrollContainerProvider value={scrollRef}>
+                <div className="flex flex-col h-full">
+                  <div
+                    ref={scrollRef}
+                    className="mx-auto flex flex-col flex-1 w-full h-full overflow-y-auto"
+                  >
+                    {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}
+                    {viewMode === 'creations'
+                      ? agent && (
+                          <AgentCreationsView agent={agent} user={user} />
+                        )
+                      : viewMode === 'tasks'
+                      ? agent && <AgentTasksView agent={agent} />
+                      : viewMode === 'settings'
+                      ? agent && (
+                          <AgentEditView
+                            agent={agent}
+                            user={user}
+                            sessionId={sessionId}
+                            onBackToChat={handleBackToChat}
+                            onNewChat={handleNewChat}
+                          />
+                        )
+                      : viewMode === 'memories'
+                      ? agent && <AgentMemoryView agent={agent} />
+                      : React.isValidElement(children)
+                      ? React.cloneElement(children as React.ReactElement, {
+                          onOpenSidebar: () => setIsSheetOpen(true),
+                        })
+                      : children}
+                  </div>
                 </div>
-              </div>
+              </ScrollContainerProvider>
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

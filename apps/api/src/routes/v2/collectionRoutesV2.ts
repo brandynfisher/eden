@@ -10,6 +10,7 @@ import {
   updateCollection,
 } from '../../controllers/v2/collectionControllerV2'
 import { isAuth, maybeAuth } from '../../middleware/authMiddleware'
+import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
 import { FastifyPluginAsync } from 'fastify'
 
@@ -25,10 +26,19 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
           apiKey: [],
         },
       ],
-      response: {
-        200: {
-          collections: Type.Array(Type.Any()),
+      querystring: {
+        type: 'object',
+        properties: {
+          ...paginationProperties(),
         },
+      },
+      response: {
+        200: Type.Intersect([
+          paginatedResponse(Type.Any()),
+          Type.Object({
+            collections: Type.Array(Type.Any()),
+          }),
+        ]),
       },
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
@@ -73,10 +83,19 @@ const collectionRoutesV2: FastifyPluginAsync = async server => {
       params: {
         collectionId: Type.String(),
       },
-      response: {
-        200: {
-          creations: Type.Array(Type.Any()),
+      querystring: {
+        type: 'object',
+        properties: {
+          ...paginationProperties(),
         },
+      },
+      response: {
+        200: Type.Intersect([
+          paginatedResponse(Type.Any()),
+          Type.Object({
+            creations: Type.Array(Type.Any()),
+          }),
+        ]),
       },
     },
     preHandler: [request => maybeAuth(server, request)],

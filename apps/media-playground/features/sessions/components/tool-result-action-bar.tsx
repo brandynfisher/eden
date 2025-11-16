@@ -196,8 +196,11 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
   // Get completed tool calls with results that have creation IDs
   // Exclude session post tools and tools with child_session (they render their own badge)
   const completedToolCallsWithCreations =
-    message.tool_calls?.filter(
-      toolCall =>
+    message.tool_calls?.filter(toolCall => {
+      // Normalize tool name for comparison (trim whitespace and lowercase)
+      const normalizedToolName = (toolCall.tool || '').trim().toLowerCase()
+
+      return (
         toolCall.status === 'completed' &&
         toolCall.result &&
         toolCall.result.length > 0 &&
@@ -209,9 +212,10 @@ const ToolResultActionBar = ({ message }: ToolResultActionBarProps) => {
               (output: TasksV2ResultOutput) => output.creation,
             ),
         ) &&
-        !SESSION_POST_TOOLS.includes(toolCall.tool || '') &&
-        !toolCall.child_session,
-    ) || []
+        !SESSION_POST_TOOLS.includes(normalizedToolName) &&
+        !toolCall.child_session
+      )
+    }) || []
 
   // Get all creation IDs from completed tool calls
   const creationIds = completedToolCallsWithCreations.flatMap(

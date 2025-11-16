@@ -1,5 +1,6 @@
 'use client'
 
+import TaskStatusIndicator from '@/components/alert/task-status-indicator'
 import ErrorBoundary from '@/components/error-boundary'
 import Timeline from '@/components/timeline/timeline'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -58,19 +59,15 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
   return (
     <div
       data-test-id="workspace"
-      className="flex flex-col lg:flex-row lg:items-start w-full h-[calc(100vh-theme(spacing.16))]"
+      className="flex flex-col lg:flex-row w-full h-full flex-1 min-h-0"
     >
-      {/* Tool Form: Only on desktop, creation-ui-container handles mobile as overlay */}
-      <div className="hidden lg:flex lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex-col justify-start items-start lg:self-start h-[calc(100vh-theme(spacing.16))]">
-        <Suspense fallback={<Skeleton className="h-full w-full" />}>
-          <ErrorBoundary>
-            <CreationUiContainer key={presetKey} tool={tool} />
-          </ErrorBoundary>
-        </Suspense>
-      </div>
-
       {/* Timeline - always visible, full width on mobile */}
-      <div className="mb-8 px-2 sm:px-4 lg:px-2 lg:pt-4 flex flex-col gap-y-4 flex-1 h-[calc(100vh-theme(spacing.16))] overflow-y-auto">
+      <div className="order-1 lg:order-2 px-2 sm:px-4 lg:px-2 lg:pt-4 flex flex-col gap-y-4 flex-1 min-h-0 overflow-y-auto pb-6">
+        <div className="sticky top-0 lg:-top-4 z-10 flex items-center justify-end bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border/40 pb-2">
+          <ErrorBoundary>
+            <TaskStatusIndicator />
+          </ErrorBoundary>
+        </div>
         <Suspense>
           <ErrorBoundary>
             <Timeline tool={tool} />
@@ -78,8 +75,8 @@ const Workspace = ({ toolKey, toolSSRData }: Props) => {
         </Suspense>
       </div>
 
-      {/* Mobile form (floating + overlay) - rendered separately for mobile */}
-      <div className="lg:hidden">
+      {/* Tool form: CreationUiContainer renders desktop panel + mobile overlay */}
+      <div className="order-2 lg:order-1 lg:pr-2 min-w-[324px] w-full lg:w-[420px] flex flex-col justify-start items-start lg:self-start lg:h-full">
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
           <ErrorBoundary>
             <CreationUiContainer key={presetKey} tool={tool} />
