@@ -871,3 +871,67 @@ export const getAgentMemoryContext = async (
     return reply.status(500).send({ error: 'Internal server error' })
   }
 }
+
+export const getAgentMemoryContext = async (
+  server: FastifyInstance,
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { agentId } = request.params as { agentId: string }
+  const userId = request.user?.userId
+
+  if (!userId) {
+    return reply.status(401).send({ error: 'User not authenticated' })
+  }
+
+  try {
+    const { agent, error } = await validateAgentAccess(agentId)
+    if (error) {
+      return reply.status(404).send({ error })
+    }
+
+    const agentObjectId = createAgentObjectId(agentId, agent, server.mongoose)
+    let userMemoryContent = ''
+    let collectiveMemoryShards: Array<{ shard_name: string; content: string }> =
+      []
+
+    // Query user memory only if user_memory_enabled is true
+    if (agent?.user_memory_enabled) {
+      const memoryUserCollection =
+        server.mongoose.connection.db.collection('memory_user')
+      const userMemory = await memoryUserCollection.findOne({
+        agent_id: agentObjectId,
+        user_id: new server.mongoose.Types.ObjectId(userId),
+      })
+
+      userMemoryContent = userMemory?.fully_formed_memory || ''
+    }
+
+    // Query collective memory (active shards)
+    const memoryAgentCollection =
+      server.mongoose.connection.db.collection('memory_agent')
+    const activeShards = await memoryAgentCollection
+      .find({
+        agent_id: agentObjectId,
+        is_active: true,
+      })
+      .toArray()
+
+    collectiveMemoryShards = activeShards
+      .filter(
+        shard => shard.fully_formed_memory && shard.fully_formed_memory.trim(),
+      )
+      .map(shard => ({
+        shard_name: shard.shard_name || 'unnamed_shard',
+        content: shard.fully_formed_memory,
+      }))
+
+    return reply.status(200).send({
+      userMemory: userMemoryContent,
+      collectiveMemory: collectiveMemoryShards,
+    })
+  } catch (error) {
+    server.log.error('Error fetching agent memory context:', error)
+    return reply.status(500).send({ error: 'Internal server error' })
+  }
+}
