@@ -7,17 +7,19 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { cn } from '@/lib/utils'
 import { MenuIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useEffect, useRef, useState } from 'react'
 
 const PageLayout = ({ children }: PropsWithChildren) => {
   const pathname = usePathname()
   const router = useRouter()
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Main /create page gets padding, tool pages get no padding
   const isMainPage = pathname === '/create'
@@ -116,11 +118,20 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             defaultSize={80}
             className="relative flex flex-col bg-background -ml-px"
           >
-            <div className="flex flex-col h-full overflow-hidden">
-              <div className="mx-auto flex flex-col h-full w-full overflow-y-auto">
-                {isMainPage ? <div className="p-4">{children}</div> : children}
+            <ScrollContainerProvider value={scrollRef}>
+              <div className="flex flex-col h-full overflow-hidden">
+                <div
+                  ref={scrollRef}
+                  className="mx-auto flex flex-col h-full w-full overflow-y-auto"
+                >
+                  {isMainPage ? (
+                    <div className="p-4">{children}</div>
+                  ) : (
+                    children
+                  )}
+                </div>
               </div>
-            </div>
+            </ScrollContainerProvider>
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

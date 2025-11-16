@@ -8,13 +8,14 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import { SessionsLayoutContext } from '@/features/sessions/context/sessions-layout-context'
 import { LiveAudioProvider } from '@/features/sessions/live-audio'
 import { cn } from '@/lib/utils'
 import { EditIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useEffect, useRef, useState } from 'react'
 
 export default function SessionsLayout({ children }: PropsWithChildren) {
   const pathname = usePathname()
@@ -22,6 +23,7 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [forceHideSidebar, setForceHideSidebar] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Hide sidebar on share routes only
   const isShareRoute = pathname?.includes('/sessions/share/')
@@ -44,9 +46,14 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
 
         <div className="flex flex-col fixed inset-x-0 bottom-0 top-16 md:top-0">
           {/* Main content without sidebar */}
-          <div className="flex-1 overflow-y-auto bg-background">
-            <div className="mx-auto w-full max-w-4xl h-full">{children}</div>
-          </div>
+          <ScrollContainerProvider value={scrollRef}>
+            <div
+              className="flex-1 overflow-y-auto bg-background"
+              ref={scrollRef}
+            >
+              <div className="mx-auto w-full max-w-4xl h-full">{children}</div>
+            </div>
+          </ScrollContainerProvider>
         </div>
       </LiveAudioProvider>
     )
@@ -160,18 +167,28 @@ export default function SessionsLayout({ children }: PropsWithChildren) {
                 defaultSize={80}
                 className="relative flex flex-col bg-aui-background -ml-px"
               >
-                <div className="flex flex-col h-full overflow-hidden">
-                  <div className="mx-auto flex flex-col h-full w-full overflow-hidden">
-                    {children}
+                <ScrollContainerProvider value={scrollRef}>
+                  <div className="flex flex-col h-full overflow-hidden">
+                    <div
+                      ref={scrollRef}
+                      className="mx-auto flex flex-col h-full w-full overflow-y-auto"
+                    >
+                      {children}
+                    </div>
                   </div>
-                </div>
+                </ScrollContainerProvider>
               </ResizablePanel>
             </ResizablePanelGroup>
           ) : (
             /* Main sessions page without sidebar */
-            <div className="flex-1 overflow-y-auto bg-background">
-              <div className="w-full h-full">{children}</div>
-            </div>
+            <ScrollContainerProvider value={scrollRef}>
+              <div
+                className="flex-1 overflow-y-auto bg-background"
+                ref={scrollRef}
+              >
+                <div className="w-full h-full">{children}</div>
+              </div>
+            </ScrollContainerProvider>
           )}
         </div>
       </LiveAudioProvider>

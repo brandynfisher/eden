@@ -7,6 +7,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { ScrollContainerProvider } from '@/contexts/scroll-container-context'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
@@ -158,6 +159,7 @@ const SessionChatLayout = ({
   }, [agent, user, hasEditAccess, viewMode, agentId, router])
 
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const handleSidebarToggle = () => {
     if (isSidebarCollapsed) {
@@ -421,32 +423,39 @@ const SessionChatLayout = ({
               order={2}
               className="relative flex flex-col bg-aui-background"
             >
-              <div className="flex flex-col h-full">
-                <div className="mx-auto flex flex-col flex-1 w-full h-full overflow-hidden">
-                  {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}
-                  {viewMode === 'creations'
-                    ? agent && <AgentCreationsView agent={agent} user={user} />
-                    : viewMode === 'tasks'
-                    ? agent && <AgentTasksView agent={agent} />
-                    : viewMode === 'settings'
-                    ? agent && (
-                        <AgentEditView
-                          agent={agent}
-                          user={user}
-                          sessionId={sessionId}
-                          onBackToChat={handleBackToChat}
-                          onNewChat={handleNewChat}
-                        />
-                      )
-                    : viewMode === 'memories'
-                    ? agent && <AgentMemoryView agent={agent} />
-                    : React.isValidElement(children)
-                    ? React.cloneElement(children as React.ReactElement, {
-                        onOpenSidebar: () => setIsSheetOpen(true),
-                      })
-                    : children}
+              <ScrollContainerProvider value={scrollRef}>
+                <div className="flex flex-col h-full">
+                  <div
+                    ref={scrollRef}
+                    className="mx-auto flex flex-col flex-1 w-full h-full overflow-y-auto"
+                  >
+                    {/* CONDITIONAL CONTENT BASED ON VIEW MODE */}
+                    {viewMode === 'creations'
+                      ? agent && (
+                          <AgentCreationsView agent={agent} user={user} />
+                        )
+                      : viewMode === 'tasks'
+                      ? agent && <AgentTasksView agent={agent} />
+                      : viewMode === 'settings'
+                      ? agent && (
+                          <AgentEditView
+                            agent={agent}
+                            user={user}
+                            sessionId={sessionId}
+                            onBackToChat={handleBackToChat}
+                            onNewChat={handleNewChat}
+                          />
+                        )
+                      : viewMode === 'memories'
+                      ? agent && <AgentMemoryView agent={agent} />
+                      : React.isValidElement(children)
+                      ? React.cloneElement(children as React.ReactElement, {
+                          onOpenSidebar: () => setIsSheetOpen(true),
+                        })
+                      : children}
+                  </div>
                 </div>
-              </div>
+              </ScrollContainerProvider>
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

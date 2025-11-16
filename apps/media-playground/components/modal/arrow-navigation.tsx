@@ -1,8 +1,10 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { useCreationDetailModalStore } from '@/zustand/creation-detail-modal-store'
 import { useFeedStore } from '@/zustand/feed-store'
 import { useActiveFeedStore } from '@/zustand/feed-store'
+import { CreationV2 } from '@edenlabs/eden-sdk'
 import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeftIcon, ArrowRightIcon } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
@@ -13,12 +15,16 @@ interface ArrowNavigationProps {
 }
 
 const ArrowNavigation = ({ basePath, onIdChange }: ArrowNavigationProps) => {
-  const { getActiveFeedId, removeLastFromHistory } = useActiveFeedStore()
+  const { getActiveFeedId } = useActiveFeedStore()
   const activeFeedId = getActiveFeedId()
   const feedStore = useFeedStore(activeFeedId || 'default')
   const { items, activeIndexMap, goNext, goPrevious } = feedStore
   const activeIndex = activeIndexMap[activeFeedId || 'default'] ?? null
   const queryClient = useQueryClient()
+  const closeModal = useCreationDetailModalStore(state => state.close)
+  const setInitialCreation = useCreationDetailModalStore(
+    state => state.setInitialCreation,
+  )
 
   const handleNext = useCallback(async () => {
     if (activeIndex === null || !items[activeIndex]) return
@@ -30,6 +36,8 @@ const ArrowNavigation = ({ basePath, onIdChange }: ArrowNavigationProps) => {
     queryClient.setQueryData(['creations', nextItem._id], {
       creation: nextItem,
     })
+
+    setInitialCreation(nextItem as CreationV2)
 
     // Invalidate immediately so full query runs to get complete data
     queryClient.invalidateQueries({ queryKey: ['creations', nextItem._id] })
@@ -58,6 +66,8 @@ const ArrowNavigation = ({ basePath, onIdChange }: ArrowNavigationProps) => {
     queryClient.setQueryData(['creations', previousItem._id], {
       creation: previousItem,
     })
+
+    setInitialCreation(previousItem as CreationV2)
 
     // Invalidate immediately so full query runs to get complete data
     queryClient.invalidateQueries({ queryKey: ['creations', previousItem._id] })
@@ -92,7 +102,9 @@ const ArrowNavigation = ({ basePath, onIdChange }: ArrowNavigationProps) => {
         handlePrevious()
       }
       if (e.key === 'Escape') {
-        removeLastFromHistory()
+        e.preventDefault()
+        e.stopPropagation()
+        closeModal()
       }
     }
 
@@ -100,7 +112,7 @@ const ArrowNavigation = ({ basePath, onIdChange }: ArrowNavigationProps) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown, { capture: true })
     }
-  }, [handlePrevious, handleNext, removeLastFromHistory])
+  }, [handlePrevious, handleNext, closeModal])
 
   if (activeIndex === null || !items[activeIndex]) {
     return null
