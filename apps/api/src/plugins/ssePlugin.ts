@@ -6,7 +6,7 @@ export const registerSSE = async (fastify: FastifyInstance) => {
     await fastify.register(FastifySSEPlugin)
     fastify.log.info('Successfully registered plugin: SSE')
   } catch (err) {
-    fastify.log.error('Plugin: SSE, error on register', err)
+    fastify.log.error({ err }, 'Plugin: SSE, error on register')
   }
 }
 

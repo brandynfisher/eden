@@ -9,7 +9,7 @@ export const registerReplicate = async (fastify: FastifyInstance) => {
     fastify.decorate('replicate', replicate)
     fastify.log.info('Successfully registered plugin: Replicate')
   } catch (err) {
-    fastify.log.error('Plugin: Replicate, error on register', err)
+    fastify.log.error({ err }, 'Plugin: Replicate, error on register')
   }
 }
 

@@ -445,7 +445,9 @@ const MaskingCanvas: React.FC<MaskingCanvasProps> = ({
     const [header, base64Data] = dataUrl.split(',')
     const mimeType = extractMimeType(header)
     const byteArray = decodeBase64ToUint8Array(base64Data)
-    return new File([byteArray], fileName, { type: mimeType })
+    return new File([byteArray.buffer as ArrayBuffer], fileName, {
+      type: mimeType,
+    })
   }
 
   const exportCanvasToDataUrl = (overlayCanvas: HTMLCanvasElement) => {

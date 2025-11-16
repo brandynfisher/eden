@@ -98,8 +98,8 @@ export const createNotification = async (
       }
     } catch (broadcastError) {
       request.log.error(
+        { err: broadcastError },
         '[NOTIFICATIONS] Failed to broadcast notification-created event:',
-        broadcastError,
       )
       // Don't fail the request if broadcast fails
     }
@@ -109,7 +109,10 @@ export const createNotification = async (
       message: 'Notification created successfully',
     })
   } catch (error) {
-    request.log.error('[NOTIFICATIONS] ❌ Error creating notification:', error)
+    request.log.error(
+      { err: error },
+      '[NOTIFICATIONS] ❌ Error creating notification:',
+    )
     // Log the full error details
     if (error instanceof Error) {
       request.log.error(`[NOTIFICATIONS] Error message: ${error.message}`)
@@ -415,8 +418,8 @@ export const markSessionNotificationsRead = async (
         }
       } catch (broadcastError) {
         server.log.error(
+          { err: broadcastError },
           '[NOTIFICATIONS] Failed to broadcast WebSocket event:',
-          broadcastError,
         )
         // Don't fail the request if broadcast fails
       }
@@ -431,8 +434,8 @@ export const markSessionNotificationsRead = async (
     })
   } catch (error) {
     server.log.error(
+      { err: error },
       '[NOTIFICATIONS] ❌ Error marking session notifications as read:',
-      error,
     )
     return reply.status(500).send({
       error: 'Failed to mark session notifications as read',

@@ -14,8 +14,7 @@ export const registerMultipart = async (fastify: FastifyInstance) => {
     })
     fastify.log.info('Successfully registered plugin: Multipart')
   } catch (err) {
-    fastify.log.error(err)
-    fastify.log.error('Plugin: Multipart, error on register', err)
+    fastify.log.error({ err }, 'Plugin: Multipart, error on register')
   }
 }
 

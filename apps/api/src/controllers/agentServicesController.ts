@@ -526,7 +526,7 @@ export const executeAgentTrigger = async (
       chat_response: response.chat_response,
     })
   } catch (error) {
-    server.log.error('Error executing trigger:', error)
+    server.log.error({ err: error }, 'Error executing trigger:')
 
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || 500
@@ -1368,7 +1368,7 @@ export const getDashboardData = async (
 
     return reply.status(200).send(responseData)
   } catch (error) {
-    server.log.error('Error fetching dashboard data:', error)
+    server.log.error({ err: error }, 'Error fetching dashboard data:')
     return reply.status(500).send({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error',

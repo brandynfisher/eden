@@ -26,7 +26,11 @@ export function useBlurDataUrl(
 
     if (!ctx) return
 
-    const imageData = new ImageData(pixels, blurWidth, blurHeight)
+    const imageData = new ImageData(
+      new Uint8ClampedArray(pixels.buffer as ArrayBuffer),
+      blurWidth,
+      blurHeight,
+    )
 
     if (!imageData) return
 

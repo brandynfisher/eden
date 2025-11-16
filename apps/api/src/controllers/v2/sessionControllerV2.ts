@@ -1958,7 +1958,7 @@ export const updateSessionStatus = async (
 
     return reply.status(200).send(response)
   } catch (error) {
-    server.log.error('Error updating session status:', error)
+    server.log.error({ err: error }, 'Error updating session status:')
 
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || 500

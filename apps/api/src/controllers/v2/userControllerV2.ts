@@ -121,7 +121,10 @@ export const requestAccountDeletion = async (
       requestId: deletionRequest._id,
     })
   } catch (error) {
-    request.server.log.error('Failed to request account deletion', error)
+    request.server.log.error(
+      { err: error },
+      'Failed to request account deletion',
+    )
     return reply.status(500).send({
       message: 'Failed to submit account deletion request',
     })

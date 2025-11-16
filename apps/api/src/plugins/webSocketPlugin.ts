@@ -14,7 +14,7 @@ const registerWebSocket: FastifyPluginAsync = async (
   try {
     const websocketOptions: WebsocketPluginOptions = {
       errorHandler: (error, socket, req, reply) => {
-        fastify.log.error('Websocket ErrorHandler', { error, req, reply })
+        fastify.log.error({ error, req, reply }, 'Websocket ErrorHandler')
         socket.terminate()
       },
       options: {
@@ -25,13 +25,16 @@ const registerWebSocket: FastifyPluginAsync = async (
             info.origin !== fastify.config.FRONTEND_URL &&
             info.origin !== fastify.config.EDEN2_FRONTEND_URL
           ) {
-            fastify.log.warn('WebSocket connection rejected', {
-              origin: info.origin,
-              allowedOrigin: [
-                fastify.config.FRONTEND_URL,
-                fastify.config.EDEN2_FRONTEND_URL,
-              ],
-            })
+            fastify.log.warn(
+              {
+                origin: info.origin,
+                allowedOrigin: [
+                  fastify.config.FRONTEND_URL,
+                  fastify.config.EDEN2_FRONTEND_URL,
+                ],
+              },
+              'WebSocket connection rejected',
+            )
             return next(false)
           }
           next(true)
@@ -66,7 +69,7 @@ const registerWebSocket: FastifyPluginAsync = async (
     await fastify.register(FastifyWebSocket, websocketOptions)
     fastify.log.info('Successfully registered plugin: WebSocket')
   } catch (err) {
-    fastify.log.error('Plugin: WebSocket, error on register', err)
+    fastify.log.error({ err }, 'Plugin: WebSocket, error on register')
   }
 }
 

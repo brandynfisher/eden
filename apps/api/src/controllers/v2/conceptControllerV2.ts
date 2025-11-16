@@ -156,8 +156,8 @@ export const createConcept = async (
       )
     } catch (error) {
       server.log.error(
+        { err: error },
         'Failed to notify Eve Admin API about concept creation:',
-        error,
       )
       // Continue even if admin API call fails
     }
@@ -251,8 +251,8 @@ export const updateConcept = async (
     )
   } catch (error) {
     server.log.error(
+      { err: error },
       'Failed to notify Eve Admin API about concept update:',
-      error,
     )
     // Continue even if admin API call fails
   }

@@ -1,7 +1,7 @@
-import { Schema, model } from 'mongoose'
+import { Schema, Types, model } from 'mongoose'
 
 export interface DiscordAgentSchema {
-  agentId: string
+  agentId: Types.ObjectId
   channelId: string
   createdAt: Date
   updatedAt: Date

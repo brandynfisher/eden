@@ -18,7 +18,7 @@ export const registerMongo = async (
 
     fastify.log.info('Successfully registered plugin: Mongo')
   } catch (err) {
-    fastify.log.error('Plugin: Mongo, error on register', err)
+    fastify.log.error({ err }, 'Plugin: Mongo, error on register')
   }
 }
 

@@ -95,7 +95,7 @@ export const createThreadMessage = async (
     )
 
     if (!modalResponse) {
-      server.log.error('empty response', modalResponse)
+      server.log.error({ response: modalResponse }, 'empty response')
       return reply.status(500).send({
         message: `Empty response from compute api`,
       })
@@ -103,8 +103,8 @@ export const createThreadMessage = async (
 
     if (!modalResponse.data) {
       server.log.error(
+        { response: modalResponse },
         'malformed response, data missing from response',
-        modalResponse,
       )
       return reply.status(500).send({
         message: `Unexpected response from compute api`,
@@ -113,8 +113,8 @@ export const createThreadMessage = async (
 
     if (!modalResponse.data.thread_id) {
       server.log.error(
+        { response: modalResponse },
         'malformed response, thread_id missing from response',
-        modalResponse,
       )
       return reply.status(500).send({
         message: `Missing thread_id`,

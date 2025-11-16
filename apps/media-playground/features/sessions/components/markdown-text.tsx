@@ -218,13 +218,13 @@ const MarkdownTextImpl: FC<MarkdownTextProps> = ({ children }) => {
             return (
               <div className="relative">
                 <CodeHeader language={language} code={code} />
+                {/* @ts-expect-error - SyntaxHighlighter has React 19 incompatibility */}
                 <SyntaxHighlighter
                   language={language}
-                  // @ts-ignore
-                  style={vscDarkPlus}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  style={vscDarkPlus as any}
                   PreTag="div"
                   className="!mt-0 !rounded-t-none rounded-b-lg"
-                  {...props}
                 >
                   {code}
                 </SyntaxHighlighter>

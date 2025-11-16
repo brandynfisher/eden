@@ -13,8 +13,7 @@ export const registerSentry = async (fastify: FastifyInstance) => {
     })
     fastify.log.info('Successfully registered plugin: Sentry')
   } catch (err) {
-    fastify.log.error(err)
-    fastify.log.error('Plugin: Sentry, error on register', err)
+    fastify.log.error({ err }, 'Plugin: Sentry, error on register')
   }
 }
 

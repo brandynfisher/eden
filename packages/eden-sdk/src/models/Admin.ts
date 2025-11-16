@@ -83,7 +83,7 @@ export const adminAuthChallengeRequestConfig = (
 export const adminMediaUploadRequestConfig = (
   args: AdminMediaUploadArguments,
 ) => {
-  const blob = new Blob([args.media])
+  const blob = new Blob([new Uint8Array(args.media)])
   const form = new FormData()
   form.append('file', blob)
   return {
