@@ -12,6 +12,7 @@ import {
   FormLabel,
 } from '@/components/ui/form'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { cn } from '@/lib/utils'
@@ -25,7 +26,8 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const schema = z.object({
-  autoReply: z.boolean().default(false),
+  enableCast: z.boolean().default(false),
+  instructions: z.string().optional(),
 })
 
 type DeploymentFormDto = z.infer<typeof schema>
@@ -54,7 +56,8 @@ export const FarcasterDeploymentForm = ({
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
     defaultValues: {
-      autoReply: deployment?.config?.farcaster?.auto_reply ?? false,
+      enableCast: deployment?.config?.farcaster?.enable_cast ?? false,
+      instructions: deployment?.config?.farcaster?.instructions ?? '',
     },
   })
 
@@ -68,14 +71,21 @@ export const FarcasterDeploymentForm = ({
   useEffect(() => {
     if (!isDeployed) {
       form.reset({
-        autoReply: false,
+        enableCast: false,
+        instructions: '',
       })
     } else {
       form.reset({
-        autoReply: deployment?.config?.farcaster?.auto_reply ?? false,
+        enableCast: deployment?.config?.farcaster?.enable_cast ?? false,
+        instructions: deployment?.config?.farcaster?.instructions ?? '',
       })
     }
-  }, [isDeployed, deployment?.config?.farcaster?.auto_reply, form])
+  }, [
+    isDeployed,
+    deployment?.config?.farcaster?.enable_cast,
+    deployment?.config?.farcaster?.instructions,
+    form,
+  ])
 
   // Start polling if deployment exists but signer not approved
   useEffect(() => {
@@ -152,13 +162,15 @@ export const FarcasterDeploymentForm = ({
           if (isNewSigner) {
             // Create deployment now that signer is approved
             try {
-              const autoReplyValue = form.getValues('autoReply')
+              const enableCastValue = form.getValues('enableCast')
+              const instructionsValue = form.getValues('instructions')
               const deploymentPayload = {
                 agentId,
                 platform: 'farcaster',
                 config: {
                   farcaster: {
-                    auto_reply: autoReplyValue,
+                    enable_cast: enableCastValue,
+                    instructions: instructionsValue,
                   },
                 },
                 secrets: {
@@ -302,13 +314,16 @@ export const FarcasterDeploymentForm = ({
               <>
                 <FormField
                   control={form.control}
-                  name="autoReply"
+                  name="enableCast"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-base">Auto Reply</FormLabel>
+                        <FormLabel className="text-base">
+                          Enable Casting
+                        </FormLabel>
                         <FormDescription>
-                          Automatically reply to mentions and casts
+                          Enable your agent to cast on behalf of this Farcaster
+                          account
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -321,6 +336,30 @@ export const FarcasterDeploymentForm = ({
                     </FormItem>
                   )}
                 />
+                {form.watch('enableCast') && (
+                  <FormField
+                    control={form.control}
+                    name="instructions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base">
+                          Casting Instructions
+                        </FormLabel>
+                        <FormDescription>
+                          Control how your agent should interact with Farcaster
+                        </FormDescription>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="Enter casting instructions..."
+                            className="min-h-[100px] resize-y"
+                            disabled={form.formState.isSubmitting}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                )}
                 <DeploymentFormFooter
                   form={form}
                   agentId={agentId}

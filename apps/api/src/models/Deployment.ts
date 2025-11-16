@@ -50,7 +50,8 @@ export interface DeploymentSecretsTelegram {
 // Farcaster Types
 export interface DeploymentSettingsFarcaster {
   webhook_id?: string
-  auto_reply?: boolean
+  enable_cast?: boolean
+  instructions?: string
 }
 
 export interface DeploymentSecretsFarcaster {
