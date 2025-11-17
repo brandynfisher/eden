@@ -3,6 +3,7 @@
  * These types define a common interface for voice conversation providers
  * (e.g., ElevenLabs, OpenAI, etc.)
  */
+import type { ConversationConfigOverride } from './agent-config'
 
 export type ConnectionStatus =
   | 'disconnected'
@@ -27,8 +28,11 @@ export interface DebugLog {
 export interface VoiceProviderConfig {
   provider: 'elevenlabs' // Can extend to 'openai' | 'other' in future
   agentPrompt: string
-  temperature?: number
-  settings?: Record<string, unknown> // Provider-specific settings
+  /**
+   * Optional ElevenLabs conversation config overrides
+   * This matches the ElevenLabs API structure and allows overriding any settings
+   */
+  conversationConfig?: ConversationConfigOverride
 }
 
 export interface VoiceConversationState {

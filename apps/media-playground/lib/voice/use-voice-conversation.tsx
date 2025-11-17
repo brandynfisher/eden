@@ -1,5 +1,6 @@
 'use client'
 
+import { DEFAULT_AGENT_CONFIG, mergeAgentConfig } from './agent-config'
 import {
   ConnectionStatus,
   DebugLog,
@@ -62,26 +63,96 @@ export function useVoiceConversation(
     isUpdatingRef.current = true
 
     try {
-      addDebugLog('Updating agent configuration...', 'info')
+      addDebugLog('Checking agent configuration...', 'info')
 
       const client = new ElevenLabsClient({
         apiKey,
       })
 
-      await client.conversationalAi.agents.update(agentId, {
-        conversationConfig: {
-          agent: {
-            prompt: {
-              prompt: config.agentPrompt,
-              llm: 'gpt-4o',
-              temperature: config.temperature || 0.75,
-              maxTokens: 10000,
-            },
+      // Fetch current agent configuration
+      const currentAgent = await client.conversationalAi.agents.get(agentId)
+
+      // The API returns conversationConfig (camelCase) not conversation_config (snake_case)
+      const currentPromptConfig = currentAgent.conversationConfig?.agent?.prompt
+
+      // Merge default config with user overrides to get desired config
+      const baseConfig = {
+        ...DEFAULT_AGENT_CONFIG,
+        agent: {
+          ...DEFAULT_AGENT_CONFIG.agent,
+          prompt: {
+            ...DEFAULT_AGENT_CONFIG.agent.prompt,
+            prompt: config.agentPrompt, // Set the dynamic prompt
           },
         },
-      })
+      }
 
-      addDebugLog('Agent configuration updated successfully', 'success')
+      const desiredConfig = mergeAgentConfig(
+        baseConfig,
+        config.conversationConfig,
+      )
+
+      // Compare all relevant config settings
+      const differences: string[] = []
+
+      if (currentPromptConfig?.prompt !== desiredConfig.agent.prompt.prompt) {
+        const currentLength = currentPromptConfig?.prompt?.length || 0
+        const desiredLength = desiredConfig.agent.prompt.prompt.length
+        differences.push(
+          `prompt (current: ${currentLength} chars, "${currentPromptConfig?.prompt?.substring(
+            0,
+            50,
+          )}..." | desired: ${desiredLength} chars, "${desiredConfig.agent.prompt.prompt.substring(
+            0,
+            50,
+          )}...")`,
+        )
+      }
+      if (currentPromptConfig?.llm !== desiredConfig.agent.prompt.llm) {
+        differences.push(
+          `llm (current: ${currentPromptConfig?.llm} | desired: ${desiredConfig.agent.prompt.llm})`,
+        )
+      }
+      if (
+        currentPromptConfig?.temperature !==
+        desiredConfig.agent.prompt.temperature
+      ) {
+        differences.push(
+          `temperature (current: ${currentPromptConfig?.temperature} | desired: ${desiredConfig.agent.prompt.temperature})`,
+        )
+      }
+      if (
+        currentPromptConfig?.maxTokens !== desiredConfig.agent.prompt.maxTokens
+      ) {
+        differences.push(
+          `maxTokens (current: ${currentPromptConfig?.maxTokens} | desired: ${desiredConfig.agent.prompt.maxTokens})`,
+        )
+      }
+
+      const needsUpdate = differences.length > 0
+
+      if (needsUpdate) {
+        addDebugLog(
+          `Configuration differs in ${differences.length} field(s):`,
+          'info',
+        )
+        differences.forEach(diff => {
+          addDebugLog(`  - ${diff}`, 'info')
+        })
+        addDebugLog('Updating agent...', 'info')
+
+        await client.conversationalAi.agents.update(agentId, {
+          conversationConfig: desiredConfig,
+        })
+
+        addDebugLog('Agent configuration updated successfully', 'success')
+      } else {
+        addDebugLog(
+          'Agent configuration already up to date, skipping update',
+          'success',
+        )
+      }
+
       setIsAgentUpdated(true)
     } catch (error: unknown) {
       const errorMessage =
@@ -95,7 +166,7 @@ export function useVoiceConversation(
     apiKey,
     agentId,
     config.agentPrompt,
-    config.temperature,
+    config.conversationConfig,
     isAgentUpdated,
     addDebugLog,
   ])

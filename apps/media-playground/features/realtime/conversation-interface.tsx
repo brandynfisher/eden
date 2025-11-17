@@ -26,10 +26,18 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   const agentPrompt = buildAgentPrompt(agentContext, { name: agentName })
 
   // Initialize voice conversation with ElevenLabs provider
+  // All settings come from DEFAULT_AGENT_CONFIG in lib/voice/agent-config.ts
+  // Override here only if this specific conversation needs different settings
   const conversation = useVoiceConversation({
     provider: 'elevenlabs',
     agentPrompt,
-    temperature: 0.75,
+    // conversationConfig: {
+    //   agent: {
+    //     prompt: {
+    //       llm: 'claude-haiku-4-5', // Uncomment to override the default LLM
+    //     },
+    //   },
+    // },
   })
 
   // Toggle fullscreen by removing dev=true from URL

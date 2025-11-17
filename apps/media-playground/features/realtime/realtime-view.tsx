@@ -1,5 +1,7 @@
 'use client'
 
+import AnimatedBackground from './components/animated-background'
+import AudioReactiveAvatar from './components/audio-reactive-avatar'
 import ConversationInterface from './conversation-interface'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
@@ -118,18 +120,16 @@ const RealtimeView: FC = () => {
   if (!isDevMode) {
     return (
       <main className="fixed inset-0 bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-8">
-          {/* Agent Avatar */}
-          <Avatar className="w-40 h-40 ring-4 ring-primary/25">
-            <AvatarImage
-              className="object-cover"
-              src={getCloudfrontOriginalUrl(agent?.userImage)}
-              alt={agent?.name}
-            />
-            <AvatarFallback className="w-40 h-40 text-4xl font-bold bg-gradient-to-br from-primary/15 to-primary/8 text-primary">
-              {agent?.name?.charAt(0)?.toUpperCase() || 'A'}
-            </AvatarFallback>
-          </Avatar>
+        {/* Animated Background */}
+        <AnimatedBackground />
+
+        <div className="flex flex-col items-center gap-8 relative z-10">
+          {/* Audio-Reactive Agent Avatar */}
+          <AudioReactiveAvatar
+            imageSrc={getCloudfrontOriginalUrl(agent?.userImage)}
+            name={agent?.name || 'Agent'}
+            className="w-40 h-40"
+          />
 
           {/* Agent Name */}
           <h1 className="text-3xl font-bold text-foreground">{agent?.name}</h1>
