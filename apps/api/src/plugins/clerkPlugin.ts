@@ -36,6 +36,8 @@ export const registerClerk = async (fastify: FastifyInstance) => {
       request.user = {
         userId: user._id,
         subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
+        highestMonthlySubscriptionTier:
+          user.highestMonthlySubscriptionTier || SubscriptionTier.Free,
         featureFlags: user.featureFlags || [],
         isAdmin: user.isAdmin || false,
       }

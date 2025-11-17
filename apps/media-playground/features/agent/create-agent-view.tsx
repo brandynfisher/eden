@@ -1,6 +1,7 @@
 'use client'
 
 import ModelMiniCard from '@/components/card/model-mini-card'
+import GatedPrivacySwitch from '@/components/form/gated-privacy-switch'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
@@ -67,6 +68,7 @@ const CreateAgentView = () => {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('profile')
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false)
+  const subscriptionUrl = 'http://localhost:3000/settings/subscription'
 
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
@@ -380,7 +382,7 @@ const CreateAgentView = () => {
                           control={form.control}
                           name="public"
                           render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card mb-6">
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card mb-6 gap-4">
                               <div className="space-y-0.5">
                                 <FormLabel className="text-base font-medium">
                                   Make Agent Public
@@ -390,10 +392,13 @@ const CreateAgentView = () => {
                                   interact with your agent
                                 </FormDescription>
                               </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
+                              <FormControl className="flex justify-end">
+                                <GatedPrivacySwitch
+                                  checked={field.value || false}
                                   onCheckedChange={field.onChange}
+                                  disabled={form.formState.isSubmitting}
+                                  subscriptionUrl={subscriptionUrl}
+                                  entityLabel="agents"
                                 />
                               </FormControl>
                             </FormItem>

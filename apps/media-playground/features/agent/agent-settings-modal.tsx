@@ -21,7 +21,6 @@ import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
-import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -32,9 +31,11 @@ import {
   KeyIcon,
   Loader2,
   SettingsIcon,
+  Trash2Icon,
   UserIcon,
   WrenchIcon,
 } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -55,11 +56,19 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   onOpenChange,
   initialTab = 'profile',
 }) => {
+  const router = useRouter()
+  const pathname = usePathname()
   const { user } = useAuthState()
-  const { agent, isLoading: isAgentLoading } = useAgentQuery({ key: agentId })
-  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
+  const {
+    agent,
+    isLoading: isAgentLoading,
+    invalidate,
+  } = useAgentQuery({
+    key: agentId,
+  })
 
   const [activeTab, setActiveTab] = useState(initialTab)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Reset active tab when modal opens
   useEffect(() => {
@@ -167,6 +176,52 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     }
   }
 
+  const handleDeleteAgent = async () => {
+    if (!agent) return
+
+    const confirmed = window.confirm(
+      'Delete this agent? This action cannot be undone.',
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await axios.delete(`/api/agents/${agent._id}`)
+      await invalidate()
+
+      toast.success('Agent deleted', {
+        description: `"${agent.name}" has been deleted.`,
+        richColors: true,
+        dismissible: true,
+      })
+
+      onOpenChange(false)
+
+      const segments = pathname?.split('/').filter(Boolean) ?? []
+      if (segments[0] === 'chat' && segments[1] === agentId) {
+        router.push('/agents')
+      } else {
+        router.refresh()
+      }
+    } catch (error) {
+      const errorMessage =
+        (error as AxiosError<{ message?: string }>).response?.data?.message ||
+        (error as AxiosError).message ||
+        'Please try again later.'
+
+      toast.error('Agent deletion failed', {
+        description: errorMessage,
+        richColors: true,
+        dismissible: true,
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   const {
     isOriginalOwner,
     hasOwnerAccess,
@@ -197,11 +252,11 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
       tabs.push({ key: 'tools', label: 'Tools', icon: WrenchIcon })
     }
     // Memories - accessible to editors (preview only)
-    if (hasEditAccess && isPreviewUser) {
+    if (hasEditAccess) {
       tabs.push({ key: 'memories', label: 'Memories', icon: BrainIcon })
     }
     // Integrations - restricted to owners only
-    if (hasOwnerAccess && isPreviewUser) {
+    if (hasOwnerAccess) {
       tabs.push({
         key: 'integrations',
         label: 'Integrations',
@@ -209,12 +264,15 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
       })
     }
     // Tasks - accessible to editors (preview only)
-    if (hasEditAccess && isPreviewUser) {
+    if (hasEditAccess) {
       tabs.push({ key: 'tasks', label: 'Tasks', icon: ClockIcon })
     }
     // Permissions - restricted to original owner only
-    if (isOriginalOwner && isPreviewUser) {
+    if (isOriginalOwner) {
       tabs.push({ key: 'permissions', label: 'Permissions', icon: KeyIcon })
+    }
+    if (hasOwnerAccess) {
+      tabs.push({ key: 'manage', label: 'Manage', icon: Trash2Icon })
     }
 
     return tabs
@@ -241,6 +299,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
     activeTab !== 'memories' &&
     activeTab !== 'permissions' &&
     activeTab !== 'concepts' &&
+    activeTab !== 'manage' &&
     activeTab !== 'dashboard'
 
   return (
@@ -341,40 +400,67 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
                       <ConceptsTab form={form} agent={agent} />
                     )}
 
-                    {activeTab === 'integrations' &&
-                      hasOwnerAccess &&
-                      isPreviewUser && (
-                        <IntegrationsTab
-                          agent={agent}
-                          deployments={deploymentsQuery.deployments}
-                          isLoading={deploymentsQuery.isPending}
-                          isError={deploymentsQuery.isError}
-                        />
-                      )}
+                    {activeTab === 'integrations' && hasOwnerAccess && (
+                      <IntegrationsTab
+                        agent={agent}
+                        deployments={deploymentsQuery.deployments}
+                        isLoading={deploymentsQuery.isPending}
+                        isError={deploymentsQuery.isError}
+                      />
+                    )}
 
-                    {activeTab === 'memories' &&
-                      hasEditAccess &&
-                      isPreviewUser && (
-                        <div className="-m-6">
-                          <AgentMemoryView agent={agent} />
-                        </div>
-                      )}
+                    {activeTab === 'memories' && hasEditAccess && (
+                      <div className="-m-6">
+                        <AgentMemoryView agent={agent} />
+                      </div>
+                    )}
 
-                    {activeTab === 'tasks' &&
-                      hasEditAccess &&
-                      isPreviewUser && (
-                        <div className="-m-6">
-                          <AgentTasksView agent={agent} />
-                        </div>
-                      )}
+                    {activeTab === 'tasks' && hasEditAccess && (
+                      <div className="-m-6">
+                        <AgentTasksView agent={agent} />
+                      </div>
+                    )}
 
-                    {activeTab === 'permissions' &&
-                      isOriginalOwner &&
-                      isPreviewUser && <PermissionsTab agent={agent} />}
+                    {activeTab === 'permissions' && isOriginalOwner && (
+                      <PermissionsTab agent={agent} />
+                    )}
 
                     {activeTab === 'dashboard' && hasEditAccess && (
                       <div className="-m-6">
                         <AgentDashboardView agent={agent} />
+                      </div>
+                    )}
+
+                    {activeTab === 'manage' && hasOwnerAccess && (
+                      <div className="space-y-4">
+                        <div className="rounded-xl border border-destructive/60 bg-background/40 p-6">
+                          <p className="text-base font-semibold text-destructive">
+                            Permanently delete this agent
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            This will remove the agent, its deployments, and any
+                            associated data. This action cannot be undone.
+                          </p>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleDeleteAgent}
+                            disabled={isDeleting}
+                            className="mt-4 w-full md:w-auto"
+                          >
+                            {isDeleting ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Deleting Agent...
+                              </>
+                            ) : (
+                              <>
+                                <Trash2Icon className="w-4 h-4 mr-2" />
+                                Delete Agent Permanently
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </form>
@@ -382,23 +468,25 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
               </div>
             </ScrollArea>
 
-            {/* Save Button Footer */}
-            {showSaveButton && (
-              <div className="border-t p-4 bg-background">
-                <Button
-                  onClick={form.handleSubmit(handleSubmit)}
-                  disabled={form.formState.isSubmitting}
-                  className="w-full"
-                >
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Updating Agent...
-                    </>
-                  ) : (
-                    'Save Changes'
-                  )}
-                </Button>
+            {/* Action Footer */}
+            {(showSaveButton || hasOwnerAccess) && (
+              <div className="border-t p-4 bg-background flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
+                {showSaveButton && (
+                  <Button
+                    onClick={form.handleSubmit(handleSubmit)}
+                    disabled={form.formState.isSubmitting || isDeleting}
+                    className="w-full md:w-auto"
+                  >
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Updating Agent...
+                      </>
+                    ) : (
+                      'Save Changes'
+                    )}
+                  </Button>
+                )}
               </div>
             )}
           </div>

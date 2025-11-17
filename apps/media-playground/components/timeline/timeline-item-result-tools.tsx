@@ -129,8 +129,8 @@ const TimelineItemResultTools = ({ output, queryKey, className }: Props) => {
       className={cn([`relative text-sm mt-2`, className])}
     >
       <TooltipProvider delayDuration={0}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1">
             {creationWithLikeStatus && (
               <>
                 <Tooltip>
@@ -207,7 +207,7 @@ const TimelineItemResultTools = ({ output, queryKey, className }: Props) => {
             )}
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1 justify-end">
             <Suspense>
               <div className="[&_button]:h-8 [&_button]:bg-black/40 [&_button]:hover:bg-black/60 [&_button]:text-white [&_button]:border-0 [&_button]:p-0.5">
                 <PrivacyToggle
