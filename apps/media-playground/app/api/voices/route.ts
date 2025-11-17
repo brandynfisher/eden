@@ -1,4 +1,4 @@
-import { ElevenLabsClient } from 'elevenlabs'
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
@@ -11,8 +11,8 @@ export async function GET() {
   try {
     const client = new ElevenLabsClient({ apiKey })
     const voices = await client.voices.search({
-      include_total_count: true,
-      page_size: 200,
+      includeTotalCount: true,
+      pageSize: 200,
     })
 
     return NextResponse.json(voices)

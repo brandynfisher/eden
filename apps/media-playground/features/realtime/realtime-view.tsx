@@ -1,23 +1,16 @@
 'use client'
 
+import ConversationInterface from './conversation-interface'
 import AlertDestructive from '@/components/alert/alert-destructive'
 import LoadingIndicator from '@/components/loading-indicator'
 import { AlertDescription } from '@/components/ui/alert'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAgentQuery } from '@/hooks/query/use-agent-query'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
+import { AgentContext } from '@/lib/voice/build-agent-prompt'
 import axios from 'axios'
 import { useParams } from 'next/navigation'
 import { FC, useEffect, useState } from 'react'
-
-interface AgentContext {
-  description: string
-  persona: string
-  memory: {
-    userMemory: string
-    collectiveMemory: Array<{ shard_name: string; content: string }>
-  }
-}
 
 const RealtimeView: FC = () => {
   const params = useParams()
@@ -138,53 +131,12 @@ const RealtimeView: FC = () => {
           </div>
         </div>
 
-        {/* Agent Context Debug Box */}
-        {agentContext && (
-          <div className="max-w-4xl mx-auto w-full space-y-4">
-            <div className="border border-border rounded-lg p-4 bg-card">
-              <h3 className="text-sm font-semibold mb-2">Description:</h3>
-              <pre className="text-xs whitespace-pre-wrap break-words">
-                {agentContext.description || '(empty)'}
-              </pre>
-            </div>
-
-            <div className="border border-border rounded-lg p-4 bg-card">
-              <h3 className="text-sm font-semibold mb-2">Persona:</h3>
-              <pre className="text-xs whitespace-pre-wrap break-words">
-                {agentContext.persona || '(empty)'}
-              </pre>
-            </div>
-
-            <div className="border border-border rounded-lg p-4 bg-card">
-              <h3 className="text-sm font-semibold mb-2">User Memory:</h3>
-              <pre className="text-xs whitespace-pre-wrap break-words">
-                {agentContext.memory.userMemory || '(empty)'}
-              </pre>
-            </div>
-
-            <div className="border border-border rounded-lg p-4 bg-card">
-              <h3 className="text-sm font-semibold mb-2">
-                Collective Memory ({agentContext.memory.collectiveMemory.length}{' '}
-                shards):
-              </h3>
-              {agentContext.memory.collectiveMemory.length === 0 ? (
-                <pre className="text-xs">(empty)</pre>
-              ) : (
-                <div className="space-y-2">
-                  {agentContext.memory.collectiveMemory.map((shard, index) => (
-                    <div key={index} className="border-l-2 border-primary pl-3">
-                      <div className="text-xs font-semibold text-primary mb-1">
-                        {shard.shard_name}
-                      </div>
-                      <pre className="text-xs whitespace-pre-wrap break-words">
-                        {shard.content}
-                      </pre>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Conversation Interface */}
+        {agentContext && agent && (
+          <ConversationInterface
+            agentName={agent.name}
+            agentContext={agentContext}
+          />
         )}
       </div>
     </main>
