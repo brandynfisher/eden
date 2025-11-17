@@ -78,15 +78,8 @@ const TimelineItem = ({ item, queryKey }: Props) => {
           className={cn([
             'grid gap-2 auto-cols-fr',
             !num_samples || num_samples === 1
-              ? 'grid-flow-col grid-cols-1'
-              : num_samples > 2
-              ? (item.args.width ?? 1024) > (item.args.height ?? 1024)
-                ? 'grid-cols-2 grid-rows-2 md:grid-cols-2 md:grid-rows-2 justify-items-center'
-                : 'grid-flow-col auto-cols-[minmax(0,_1fr)] grid-cols-2 grid-rows-2 md:grid-cols-4 md:grid-rows-1 lg:grid-cols-2 lg:grid-rows-2 xl:grid-cols-4 xl:grid-rows-1 justify-items-center'
-              : 'grid-cols-2 justify-items-center',
-            num_samples === 3
-              ? 'md:!grid-cols-3 xl:!grid-cols-3 md:!grid-rows-1'
-              : '',
+              ? 'grid-cols-1'
+              : 'grid-cols-1 sm:grid-cols-2 justify-items-center',
             item.output_type === 'lora' ? 'flex flex-col gap-0' : '',
           ])}
         >

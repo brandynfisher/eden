@@ -12,7 +12,8 @@ import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
-import { Agent, Deployment } from '@edenlabs/eden-sdk'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { Agent, Deployment, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { FC, useState } from 'react'
@@ -151,6 +152,8 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
   isLoading,
   isError,
 }) => {
+  const { user } = useAuthState()
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
   const gmailDeployment = deployments?.find(
     deployment => deployment.platform === 'gmail',
   )
@@ -200,59 +203,63 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
                 deployment => deployment.platform === 'twitter',
               )}
             />
-            <TiktokDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'tiktok',
-              )}
-            />
             <FarcasterDeploymentForm
               agentId={agent._id}
               deployment={deployments?.find(
                 deployment => deployment.platform === 'farcaster',
               )}
             />
-          </div>
-        </div>
-
-        {/* Utilities Section */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium mb-4 text-foreground">
-            Utilities
-          </h2>
-          <div className="space-y-4">
-            <ShopifyDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'shopify',
-              )}
-            />
-            <PrintifyDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'printify',
-              )}
-            />
-            <CaptionsDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'captions',
-              )}
-            />
-            <EmailDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'email',
-              )}
-            />
-            {gmailDeployment && (
-              <GmailDeploymentForm
+            {isPreviewUser && (
+              <TiktokDeploymentForm
                 agentId={agent._id}
-                deployment={gmailDeployment}
+                deployment={deployments?.find(
+                  deployment => deployment.platform === 'tiktok',
+                )}
               />
             )}
           </div>
         </div>
+
+        {/* Utilities Section */}
+        {isPreviewUser && (
+          <div className="mb-8">
+            <h2 className="text-lg font-medium mb-4 text-foreground">
+              Utilities
+            </h2>
+            <div className="space-y-4">
+              <ShopifyDeploymentForm
+                agentId={agent._id}
+                deployment={deployments?.find(
+                  deployment => deployment.platform === 'shopify',
+                )}
+              />
+              <PrintifyDeploymentForm
+                agentId={agent._id}
+                deployment={deployments?.find(
+                  deployment => deployment.platform === 'printify',
+                )}
+              />
+              <CaptionsDeploymentForm
+                agentId={agent._id}
+                deployment={deployments?.find(
+                  deployment => deployment.platform === 'captions',
+                )}
+              />
+              <EmailDeploymentForm
+                agentId={agent._id}
+                deployment={deployments?.find(
+                  deployment => deployment.platform === 'email',
+                )}
+              />
+              {gmailDeployment && (
+                <GmailDeploymentForm
+                  agentId={agent._id}
+                  deployment={gmailDeployment}
+                />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Integration Settings - Inline version to avoid form nesting */}
         <div className="mt-8 space-y-4 rounded-lg">

@@ -221,6 +221,8 @@ type ToolAccessCheckResult = {
   message?: string
 }
 
+const TOOL_ACCESS_CHECKS_ENABLED = false
+
 export const toolAccessCheck = async (
   request: FastifyRequest,
   tool: ToolV2Document,
@@ -228,7 +230,11 @@ export const toolAccessCheck = async (
   const { featureFlags } = request.user
   const { key } = tool
 
-  if (key === 'veo3' && !featureFlags.includes(FeatureFlag.ToolAccessVeo3)) {
+  if (
+    TOOL_ACCESS_CHECKS_ENABLED &&
+    key === 'veo3' &&
+    !featureFlags.includes(FeatureFlag.ToolAccessVeo3)
+  ) {
     return { status: 'error', message: 'Tool not available' }
   }
 
