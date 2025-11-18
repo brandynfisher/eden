@@ -16,6 +16,7 @@ import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
 import { FeaturedAgents } from '@/features/agent/featured-agents'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
+import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { createCursorPaginationRoute, fetcher } from '@/lib/fetcher'
 import {
@@ -24,6 +25,7 @@ import {
   useUpdateThrottle,
   useWhyDidYouUpdate,
 } from '@/lib/performance-debug'
+import { sortMyAgentsByPreference } from '@/lib/sort-agents-by-preference'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
@@ -39,6 +41,9 @@ const AgentsPage = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const [isAgentSelectorOpen, setIsAgentSelectorOpen] = useState(false)
+
+  // Get user preferences for agent sorting
+  const { lastAgents } = useUserPreferencesQuery({ enabled: !!user })
 
   // Performance debugging - remove after diagnosing
   useRenderCount('AgentsPage')
@@ -75,11 +80,13 @@ const AgentsPage = () => {
     enabled: !!user?._id,
   })
 
-  // Get agents from pages
+  // Get agents from pages and sort by user preference
   const myAgents = useMemo(() => {
     if (!data?.pages) return []
-    return data.pages.flatMap(page => page.docs || []).slice(0, 6) as Agent[]
-  }, [data])
+    const allAgents = data.pages.flatMap(page => page.docs || []) as Agent[]
+    // Sort by last_agents preference, with fallback to message count
+    return sortMyAgentsByPreference(allAgents, lastAgents, user?._id, 6)
+  }, [data, lastAgents, user?._id])
 
   // More performance debugging
   useWhyDidYouUpdate('AgentsPage', {

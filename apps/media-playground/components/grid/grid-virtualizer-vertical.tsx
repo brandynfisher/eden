@@ -69,6 +69,7 @@ type Props = {
   onScrollRestored?: () => void
   showSkeleton?: boolean
   itemHeight?: number
+  customSort?: (items: RowItem[]) => RowItem[]
 }
 
 export const GridSkeleton = () => {
@@ -131,6 +132,7 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
       onScrollRestored,
       showSkeleton = false,
       itemHeight = 156,
+      customSort,
     },
     ref,
   ) => {
@@ -296,8 +298,15 @@ const GridVirtualizerVertical = forwardRef<GridVirtualizerHandle, Props>(
         }
       })
 
-      return Array.from(uniqueMap.values())
-    }, [data])
+      const uniqueItems = Array.from(uniqueMap.values())
+
+      // Apply custom sort if provided
+      if (customSort) {
+        return customSort(uniqueItems)
+      }
+
+      return uniqueItems
+    }, [data, customSort])
 
     // --- Calculations needed for virtualizer ---
     const previousRowCount = useRef(allRows.length)

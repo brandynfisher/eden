@@ -28,6 +28,7 @@ type Props = {
   scrollRef?: RefObject<HTMLDivElement>
   hideContextMenu?: boolean
   improvedLayout?: boolean
+  customSort?: (agents: RowItem[]) => RowItem[]
 }
 
 const AgentsFeed = ({
@@ -42,6 +43,7 @@ const AgentsFeed = ({
   scrollRef,
   hideContextMenu = false,
   improvedLayout = false,
+  customSort,
 }: Props) => {
   const dispatch = useAppDispatch()
   const layoutScrollRef = useScrollContainer()
@@ -172,6 +174,7 @@ const AgentsFeed = ({
         onItemsLoaded={handleItemsLoaded}
         setFetchNextPage={setFetchNextPage}
         scrollRef={scrollRef ?? layoutScrollRef ?? undefined}
+        customSort={customSort}
         render={(item: RowItem) => (
           <AgentCard
             agent={item as Agent}
