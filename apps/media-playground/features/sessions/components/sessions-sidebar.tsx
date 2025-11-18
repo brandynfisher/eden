@@ -1488,42 +1488,6 @@ export const SessionsSidebarContent = ({
             <span>Agents</span>
           </Button>
 
-          {/* Sessions button */}
-          <Button
-            variant="ghost"
-            onClick={() => {
-              onItemClick?.()
-              router.push('/sessions')
-            }}
-            className={cn(
-              'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              pathname?.startsWith('/sessions')
-                ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-            )}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-4"
-            >
-              <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-            </svg>
-            <span className="flex items-center gap-1.5">
-              Sessions
-              <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                BETA
-              </span>
-            </span>
-          </Button>
-
           {/* Explore button */}
           <Button
             variant="ghost"
@@ -1650,41 +1614,6 @@ export const SessionsSidebarContent = ({
             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
           <span>Agents</span>
-        </Button>
-
-        {/* Sessions button */}
-        <Button
-          variant="ghost"
-          onClick={() => {
-            router.push('/sessions')
-          }}
-          className={cn(
-            'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/sessions')
-              ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-              : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-          )}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4"
-          >
-            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-          </svg>
-          <span className="flex items-center gap-1.5">
-            Sessions
-            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-              BETA
-            </span>
-          </span>
         </Button>
 
         {/* Explore button */}
@@ -1818,42 +1747,6 @@ export const SessionsSidebarContent = ({
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
               <span>Agents</span>
-            </Button>
-
-            {/* Sessions button */}
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/sessions')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname?.startsWith('/sessions')
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="size-4"
-              >
-                <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-              </svg>
-              <span className="flex items-center gap-1.5">
-                Sessions
-                <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                  BETA
-                </span>
-              </span>
             </Button>
 
             {/* Explore button */}
