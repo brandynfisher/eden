@@ -138,3 +138,25 @@ export const isAllowedAccess = (server: FastifyInstance, userId: string) => {
   )
   return false
 }
+
+type PrivateObjectUser = {
+  highestMonthlySubscriptionTier?: SubscriptionTier
+  featureFlags?: FeatureFlag[]
+}
+
+export const canUserCreatePrivateObject = (
+  user?: PrivateObjectUser,
+): boolean => {
+  if (!user) {
+    return false
+  }
+
+  const highestTier =
+    user.highestMonthlySubscriptionTier ?? SubscriptionTier.Free
+
+  if (highestTier >= SubscriptionTier.Basic) {
+    return true
+  }
+
+  return (user.featureFlags || []).includes(FeatureFlag.Preview)
+}

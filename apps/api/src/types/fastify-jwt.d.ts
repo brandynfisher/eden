@@ -12,6 +12,7 @@ declare module '@fastify/jwt' {
       character?: CharacterDocument
       featureFlags: FeatureFlag[]
       subscriptionTier: SubscriptionTier
+      highestMonthlySubscriptionTier: SubscriptionTier
       isAdmin: boolean
       apiKeyId?: ObjectId
     }

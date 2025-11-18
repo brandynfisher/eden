@@ -10,10 +10,16 @@ type UseFilteredToolsQueryParams = {
   output_type?: ToolOutputTypeV2[]
 }
 
+const TOOL_ACCESS_FILTERS_ENABLED = false
+
 const toolAccessFilter = (
   tools: ToolV2[],
   featureFlags: FeatureFlag[] | undefined,
 ) => {
+  if (!TOOL_ACCESS_FILTERS_ENABLED) {
+    return tools
+  }
+
   return tools.filter(tool => {
     if (
       tool.key === 'veo3' &&
