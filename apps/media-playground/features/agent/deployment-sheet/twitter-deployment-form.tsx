@@ -20,7 +20,7 @@ import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { CheckCircle } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -54,6 +54,26 @@ export const TwitterDeploymentForm = ({
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
+
+  // Reset form when deployment changes
+  useEffect(() => {
+    if (!isDeployed) {
+      form.reset({
+        enableTweet: false,
+        instructions: '',
+      })
+    } else {
+      form.reset({
+        enableTweet: deployment?.config?.twitter?.enable_tweet ?? false,
+        instructions: deployment?.config?.twitter?.instructions ?? '',
+      })
+    }
+  }, [
+    isDeployed,
+    deployment?.config?.twitter?.enable_tweet,
+    deployment?.config?.twitter?.instructions,
+    form,
+  ])
 
   // Treat any existing deployment as a connected account (tokens are encrypted server-side)
   const isConnected = Boolean(deployment)
