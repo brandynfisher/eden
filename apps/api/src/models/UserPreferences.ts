@@ -43,8 +43,8 @@ userPreferencesSchema.index({ user: 1 })
 
 // Static method to update last agents for a user
 userPreferencesSchema.statics.updateLastAgent = async function (
-  userId: Schema.Types.ObjectId,
-  agentId: Schema.Types.ObjectId,
+  userId: mongoose.Types.ObjectId,
+  agentId: mongoose.Types.ObjectId,
 ) {
   const userPrefs = await this.findOne({ user: userId })
 
@@ -75,8 +75,8 @@ export const UserPreferences = mongoose.model<
   UserPreferencesDocument,
   mongoose.Model<UserPreferencesDocument> & {
     updateLastAgent: (
-      userId: Schema.Types.ObjectId,
-      agentId: Schema.Types.ObjectId,
+      userId: mongoose.Types.ObjectId,
+      agentId: mongoose.Types.ObjectId,
     ) => Promise<void>
   }
 >('UserPreferences', userPreferencesSchema)

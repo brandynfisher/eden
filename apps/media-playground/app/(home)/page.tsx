@@ -50,9 +50,10 @@ const HomePage = () => {
   useRenderTime('HomePage')
 
   // Query for user's agents - filter by owner, sort by message count
+  // Fetch more than display limit to ensure we get all last_agents for sorting
   const query: FeedAgentCursorArguments = useMemo(
     () => ({
-      limit: 6,
+      limit: 20, // Fetch more to ensure we get all last_agents, then slice to 6 after sorting
       ...(user?._id ? { owner: user._id } : {}),
       ...(searchQuery ? { search: searchQuery } : {}),
       sort: ['stats.messageCount;-1'],
@@ -71,7 +72,7 @@ const HomePage = () => {
       const paginationRoute = createCursorPaginationRoute('/api/feed/agents', {
         ...query,
         cursor: (pageParam as string) || '',
-        limit: 6,
+        limit: 20, // Match query limit
       })
       return fetcher(paginationRoute)
     },
@@ -84,8 +85,9 @@ const HomePage = () => {
   const myAgents = useMemo(() => {
     if (!data?.pages) return []
     const allAgents = data.pages.flatMap(page => page.docs || []) as Agent[]
-    // Sort by last_agents preference, with fallback to message count
-    return sortMyAgentsByPreference(allAgents, lastAgents, user?._id, 6)
+    // Presort: top 5 from last_agents first, then by message count. Limit to 6 for display
+    const sorted = sortMyAgentsByPreference(allAgents, lastAgents, user?._id)
+    return sorted.slice(0, 6)
   }, [data, lastAgents, user?._id])
 
   // More performance debugging

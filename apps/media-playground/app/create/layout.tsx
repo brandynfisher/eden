@@ -72,7 +72,6 @@ const PageLayout = ({ children }: PropsWithChildren) => {
           <div className="flex-1 overflow-y-auto pl-3">
             <SessionsSidebarContent
               onItemClick={() => setIsSheetOpen(false)}
-              mode="create"
               isMobileSidebar={true}
             />
           </div>
@@ -105,7 +104,6 @@ const PageLayout = ({ children }: PropsWithChildren) => {
             ) : (
               <SessionsSidebarContent
                 onSidebarToggle={() => setIsSidebarCollapsed(true)}
-                mode="create"
               />
             )}
           </ResizablePanel>

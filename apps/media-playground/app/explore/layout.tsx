@@ -107,7 +107,6 @@ export default function ExploreLayout({ children }: PropsWithChildren) {
           <div className="flex-1 overflow-y-auto pl-3">
             <SessionsSidebarContent
               onItemClick={() => setIsSheetOpen(false)}
-              mode="explore"
               isMobileSidebar={true}
             />
           </div>
@@ -140,7 +139,6 @@ export default function ExploreLayout({ children }: PropsWithChildren) {
             ) : (
               <SessionsSidebarContent
                 onSidebarToggle={() => setIsSidebarCollapsed(true)}
-                mode="explore"
               />
             )}
           </ResizablePanel>

@@ -27,7 +27,7 @@ import {
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
-import { Schema } from 'mongoose'
+import mongoose from 'mongoose'
 
 // Helper function to create eden messages for agent operations
 const createEdenMessage = async (
@@ -348,12 +348,19 @@ export const createSessionMessage = async (
   }>,
   reply: FastifyReply,
 ) => {
+  console.log('=====================================')
+  console.log('[SESSION] createSessionMessage called!')
+  console.log('[SESSION] Body:', JSON.stringify(request.body, null, 2))
+  console.log('=====================================')
+
   const { userId } = request.user || {}
   if (!userId) {
     return reply.status(400).send({
       message: 'User missing from request',
     })
   }
+
+  console.log('[SESSION] userId:', userId.toString())
 
   const {
     session_id,
@@ -566,16 +573,45 @@ export const createSessionMessage = async (
 
       // Update user preferences with last agents (don't await to avoid blocking the stream)
       if (session.agents && session.agents.length > 0) {
-        const userObjectId = new Schema.Types.ObjectId(userId.toString())
+        console.log(
+          '[UserPreferences] Updating preferences for user:',
+          userId.toString(),
+        )
+        console.log('[UserPreferences] Session agents:', session.agents)
+
+        const userOid =
+          userId instanceof mongoose.Types.ObjectId
+            ? userId
+            : new mongoose.Types.ObjectId(userId.toString())
+
         for (const agent of session.agents) {
-          const agentId =
-            typeof agent === 'object' && '_id' in agent
-              ? new Schema.Types.ObjectId(agent._id.toString())
-              : new Schema.Types.ObjectId(agent as string)
-          UserPreferences.updateLastAgent(userObjectId, agentId).catch(err => {
-            console.error('Error updating user preferences:', err)
-          })
+          const agentOid =
+            agent instanceof mongoose.Types.ObjectId
+              ? agent
+              : new mongoose.Types.ObjectId(agent.toString())
+
+          console.log(
+            '[UserPreferences] Updating with agent:',
+            agentOid.toString(),
+          )
+          UserPreferences.updateLastAgent(userOid, agentOid)
+            .then(() => {
+              console.log(
+                '[UserPreferences] Successfully updated with agent:',
+                agentOid.toString(),
+              )
+            })
+            .catch(err => {
+              console.error(
+                '[UserPreferences] Error updating user preferences:',
+                err,
+              )
+            })
         }
+      } else {
+        console.log(
+          '[UserPreferences] Skipped - no agents in session or agents array empty',
+        )
       }
     } else {
       // Non-streaming response
@@ -601,18 +637,44 @@ export const createSessionMessage = async (
       // Update user preferences with last agents
       if (session.agents && session.agents.length > 0) {
         try {
-          const userObjectId = new Schema.Types.ObjectId(userId.toString())
+          console.log(
+            '[UserPreferences] Updating preferences for user:',
+            userId.toString(),
+          )
+          console.log('[UserPreferences] Session agents:', session.agents)
+
+          const userOid =
+            userId instanceof mongoose.Types.ObjectId
+              ? userId
+              : new mongoose.Types.ObjectId(userId.toString())
+
           for (const agent of session.agents) {
-            const agentId =
-              typeof agent === 'object' && '_id' in agent
-                ? new Schema.Types.ObjectId(agent._id.toString())
-                : new Schema.Types.ObjectId(agent as string)
-            await UserPreferences.updateLastAgent(userObjectId, agentId)
+            const agentOid =
+              agent instanceof mongoose.Types.ObjectId
+                ? agent
+                : new mongoose.Types.ObjectId(agent.toString())
+
+            console.log(
+              '[UserPreferences] Updating with agent:',
+              agentOid.toString(),
+            )
+            await UserPreferences.updateLastAgent(userOid, agentOid)
+            console.log(
+              '[UserPreferences] Successfully updated with agent:',
+              agentOid.toString(),
+            )
           }
         } catch (err) {
-          console.error('Error updating user preferences:', err)
+          console.error(
+            '[UserPreferences] Error updating user preferences:',
+            err,
+          )
           // Continue even if preference update fails
         }
+      } else {
+        console.log(
+          '[UserPreferences] Skipped - no agents in session or agents array empty',
+        )
       }
 
       return reply.status(200).send({

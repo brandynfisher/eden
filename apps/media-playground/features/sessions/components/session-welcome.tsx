@@ -1,9 +1,14 @@
 import { MessageInput } from './message-input'
 import { QuickSwitchAgents } from '@/components/agent/quick-switch-agents'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
+import { useAgentPermissions } from '@/hooks/use-agent-permissions'
+import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { Agent } from '@edenlabs/eden-sdk'
-import React from 'react'
+import { Settings } from 'lucide-react'
+import React, { useState } from 'react'
 
 type Variant = 'chat' | 'session'
 
@@ -32,9 +37,16 @@ interface SessionVariantProps extends BaseProps {
 type SessionWelcomeProps = ChatVariantProps | SessionVariantProps
 
 const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const { user } = useAuthState()
+
   // Handle different variants
   const onAgentSelectorOpen =
     'onAgentSelectorOpen' in props ? props.onAgentSelectorOpen : undefined
+
+  // Get agent permissions for chat variant
+  const currentAgent = props.variant === 'chat' ? props.agent : undefined
+  const { hasEditAccess } = useAgentPermissions(currentAgent, user?._id)
 
   if (props.variant === 'session') {
     const { agents, sessionTitle } = props
@@ -72,9 +84,22 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
     <div className="aui-thread-welcome min-h-full flex items-center justify-center">
       <div className="aui-thread-welcome-center flex flex-col items-center justify-center min-h-full w-full max-w-7xl">
         <div className="relative flex flex-col items-center p-2 ">
-          <div className="absolute inset-0 rounded-full blur-3xl scale-150 opacity-60 animate-pulse" />
-          <div className="text-lg md:text-xl font-semibold text-foreground mb-4 md:mb-6 tracking-wide">
-            {agent.name}
+          <div className="absolute inset-0 rounded-full blur-3xl scale-150 opacity-60 animate-pulse pointer-events-none" />
+          <div className="flex items-center gap-2 mb-4 md:mb-6 relative z-10">
+            <div className="text-lg md:text-xl font-semibold text-foreground tracking-wide">
+              {agent.name}
+            </div>
+            {hasEditAccess && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSettingsOpen(true)}
+                className="h-8 w-8 rounded-full hover:bg-muted/20"
+                title="Agent Settings"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           <div
             className="relative group mb-4 cursor-pointer"
@@ -110,6 +135,15 @@ const SessionWelcome: React.FC<SessionWelcomeProps> = props => {
           />
         </div>
       </div>
+
+      {/* Agent Settings Modal */}
+      {agent && (
+        <AgentSettingsModal
+          agentId={agent.username || agent._id}
+          open={isSettingsOpen}
+          onOpenChange={setIsSettingsOpen}
+        />
+      )}
     </div>
   )
 }

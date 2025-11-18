@@ -194,6 +194,13 @@ const ExplorePage = () => {
 
   const pageInfo = getPageInfo()
 
+  // Handle content type change
+  const handleContentTypeChange = (value: string) => {
+    const params = new URLSearchParams(searchParams?.toString())
+    params.set('type', value)
+    router.push(`/explore?${params.toString()}`)
+  }
+
   return (
     <div className="p-4 md:p-6 lg:p-8">
       {/* Main Title with Action Button */}
@@ -219,9 +226,39 @@ const ExplorePage = () => {
 
       {/* Content with filters bar */}
       <div className="w-full">
-        <div className="flex flex-wrap gap-2 lg:gap-3 w-full mb-6 items-center">
+        <div className="flex flex-col md:flex-row flex-wrap gap-2 lg:gap-3 w-full mb-6 items-start md:items-center">
+          {/* Content Type Tabs */}
+          <Tabs value={contentType} onValueChange={handleContentTypeChange}>
+            <TabsList className="flex justify-stretch w-full md:w-auto md:min-w-[400px]">
+              <TabsTrigger
+                value="agents"
+                className="flex-1 text-sm px-2 lg:px-3"
+              >
+                Agents
+              </TabsTrigger>
+              <TabsTrigger
+                value="models"
+                className="flex-1 text-sm px-2 lg:px-3"
+              >
+                Models
+              </TabsTrigger>
+              <TabsTrigger
+                value="creations"
+                className="flex-1 text-sm px-2 lg:px-3"
+              >
+                Creations
+              </TabsTrigger>
+              <TabsTrigger
+                value="tools"
+                className="flex-1 text-sm px-2 lg:px-3"
+              >
+                Tools
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           {/* Filter controls */}
-          <div className="flex flex-wrap gap-2 lg:gap-3 items-center">
+          <div className="flex flex-wrap gap-2 lg:gap-3 items-center w-full md:w-auto">
             {/* Ownership Type Tabs - only show for non-tools content types and when user is logged in */}
             {contentType !== 'tools' && user && (
               <Tabs

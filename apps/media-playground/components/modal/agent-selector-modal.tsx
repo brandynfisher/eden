@@ -112,12 +112,11 @@ const AgentSelectorModal = ({
       // Cast items to agents for sorting
       const agents = items as Agent[]
       if (currentTab === 'user') {
-        // For "My Agents", presort by last_agents (owned by user only)
+        // For "My Agents", presort by last_agents (top 5, owned by user only)
         return sortMyAgentsByPreference(
           agents,
           lastAgents,
           user?._id,
-          100,
         ) as RowItem[]
       } else {
         // For "Public Agents", presort by last_agents (all agents)

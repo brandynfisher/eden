@@ -44,7 +44,6 @@ const SessionChatSidebarContent: FC<{
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
   onAgentSelect?: () => void
-  onSettingsClick?: () => void
   onSidebarToggle?: () => void
   isCollapsed?: boolean
   isMobileSidebar?: boolean
@@ -55,7 +54,6 @@ const SessionChatSidebarContent: FC<{
   viewMode,
   onViewModeChange,
   onAgentSelect,
-  onSettingsClick,
   onSidebarToggle,
   isCollapsed,
   isMobileSidebar,
@@ -71,7 +69,6 @@ const SessionChatSidebarContent: FC<{
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
         onAgentSelect={onAgentSelect}
-        onSettingsClick={onSettingsClick}
         onSidebarToggle={onSidebarToggle}
         isCollapsed={isCollapsed}
         isMobileSidebar={isMobileSidebar}
@@ -357,7 +354,6 @@ const SessionChatLayout = ({
                   viewMode={viewMode}
                   onViewModeChange={handleViewModeChange}
                   onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                  onSettingsClick={() => setSettingsAgentId(agentId)}
                   onSidebarToggle={handleSidebarToggle}
                   isMobileSidebar={true}
                 />
@@ -395,7 +391,6 @@ const SessionChatLayout = ({
                   viewMode={viewMode}
                   onViewModeChange={handleViewModeChange}
                   onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                  onSettingsClick={() => setSettingsAgentId(agentId)}
                   onSidebarToggle={handleSidebarToggle}
                   isCollapsed={true}
                 />
@@ -407,7 +402,6 @@ const SessionChatLayout = ({
                   viewMode={viewMode}
                   onViewModeChange={handleViewModeChange}
                   onAgentSelect={() => setIsAgentSelectorOpen(true)}
-                  onSettingsClick={() => setSettingsAgentId(agentId)}
                   onSidebarToggle={handleSidebarToggle}
                 />
               )}
@@ -451,6 +445,8 @@ const SessionChatLayout = ({
                       : React.isValidElement(children)
                       ? React.cloneElement(children as React.ReactElement, {
                           onOpenSidebar: () => setIsSheetOpen(true),
+                          onOpenAgentSettings: (agentId: string) =>
+                            setSettingsAgentId(agentId),
                         })
                       : children}
                   </div>

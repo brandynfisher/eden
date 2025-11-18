@@ -3,12 +3,14 @@ import { Manna } from '../../models/Manna'
 import { Transaction } from '../../models/Transaction'
 import { User } from '../../models/User'
 import { UserFeedbackRequest } from '../../models/UserFeedbackRequest'
+import { UserPreferences } from '../../models/UserPreferences'
 import TransactionRepository from '../../repositories/TransactionRepository'
 import {
   sendAccountDeletionRequestEmail,
   sendUserFeedbackEmail,
 } from '../../utils/mailchimp'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import mongoose from 'mongoose'
 
 export type SubmitFeedbackBody = {
   message: string
@@ -136,6 +138,53 @@ export const requestAccountDeletion = async (
     request.server.log.error('Failed to request account deletion', error)
     return reply.status(500).send({
       message: 'Failed to submit account deletion request',
+    })
+  }
+}
+
+export const addLastAgent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { agent_id } = request.body as { agent_id: string }
+  if (!agent_id) {
+    return reply.status(400).send({
+      message: 'agent_id is required',
+    })
+  }
+
+  try {
+    // Convert IDs to mongoose.Types.ObjectId
+    const userOid =
+      userId instanceof mongoose.Types.ObjectId
+        ? userId
+        : new mongoose.Types.ObjectId(userId.toString())
+
+    const agentOid = new mongoose.Types.ObjectId(agent_id)
+
+    // Use the static method on the model to update last_agents
+    await UserPreferences.updateLastAgent(userOid, agentOid)
+
+    // Fetch and return the updated preferences
+    const updatedPreferences = await UserPreferences.findOne({
+      user: userId,
+    }).populate('last_agents', '_id username')
+
+    return reply.status(200).send({
+      message: 'Successfully updated last agents',
+      preferences: updatedPreferences,
+    })
+  } catch (error) {
+    request.server.log.error('Failed to update last agent', error)
+    return reply.status(500).send({
+      message: 'Failed to update last agent',
     })
   }
 }
