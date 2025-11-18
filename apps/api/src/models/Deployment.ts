@@ -63,6 +63,8 @@ export interface DeploymentSecretsFarcaster {
 // Twitter Types
 export interface DeploymentSettingsTwitter {
   username?: string
+  enable_tweet?: boolean
+  instructions?: string
 }
 
 export interface DeploymentSecretsTwitter {

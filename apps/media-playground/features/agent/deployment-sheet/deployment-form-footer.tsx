@@ -112,6 +112,8 @@ export const DeploymentFormFooter = ({
         config = {
           twitter: {
             username: data.username,
+            enable_tweet: data.enableTweet,
+            instructions: data.instructions,
           },
         }
       } else if (platform === 'shopify') {
