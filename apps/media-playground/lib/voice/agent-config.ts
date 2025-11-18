@@ -66,8 +66,8 @@ export const DEFAULT_AGENT_CONFIG: ConversationConfig = {
   agent: {
     prompt: {
       prompt: '', // will be set dynamically from agent context
-      llm: 'claude-haiku-4-5', // Main LLM model to use
-      temperature: 0.75, // Creativity level (0-1)
+      llm: 'claude-sonnet-4-5', // Main LLM model to use
+      temperature: 0.7, // Creativity level (0-1)
       maxTokens: 4096, // Max tokens per response
     },
   },
