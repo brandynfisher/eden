@@ -58,35 +58,34 @@ export function sortAgentsByPreference(
 
 /**
  * Filters and sorts agents for "My Agents" section
- * Shows last_agents owned by user first, then fills remaining slots with top agents by message count
+ * Shows top 5 from last_agents (owned by user) first, then remaining agents sorted by message count
  */
 export function sortMyAgentsByPreference(
   agents: Agent[],
   lastAgents: Array<{ _id: string; username?: string }>,
   userId?: string,
-  limit = 6,
 ): Agent[] {
-  if (!userId) return agents.slice(0, limit)
+  if (!userId) return agents
 
   // Filter to only agents owned by the user
   const ownedAgents = agents.filter(
     agent => agent.owner === userId || agent.owner?._id === userId,
   )
 
-  // Sort owned agents by preference
-  const sorted = sortAgentsByPreference(ownedAgents, lastAgents)
+  // Sort owned agents by preference (prioritize top 5 from last_agents, then show all remaining)
+  const sorted = sortAgentsByPreference(ownedAgents, lastAgents.slice(0, 5))
 
-  return sorted.slice(0, limit)
+  return sorted
 }
 
 /**
  * Filters and sorts agents for "All Agents" section
- * Shows last_agents not owned by user first, then other agents by message count
+ * Shows top 5 from last_agents first, then remaining agents sorted by message count
  */
 export function sortAllAgentsByPreference(
   agents: Agent[],
   lastAgents: Array<{ _id: string; username?: string }>,
 ): Agent[] {
-  // Sort all agents by preference
-  return sortAgentsByPreference(agents, lastAgents)
+  // Sort all agents by preference (prioritize top 5 from last_agents, then show all remaining)
+  return sortAgentsByPreference(agents, lastAgents.slice(0, 5))
 }

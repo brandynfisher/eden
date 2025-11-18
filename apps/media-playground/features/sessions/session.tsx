@@ -31,7 +31,7 @@ import { getCloudfrontUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
 import { Agent, Message } from '@edenlabs/eden-sdk'
 import axios from 'axios'
-import { EditIcon, MenuIcon } from 'lucide-react'
+import { EditIcon, MenuIcon, Settings } from 'lucide-react'
 import {
   useParams,
   usePathname,
@@ -45,6 +45,7 @@ const Session = ({
   pendingMessage,
   onSessionLoaded,
   onOpenSidebar,
+  onOpenAgentSettings,
 }: {
   optimisticSessionId?: string
   pendingMessage?: {
@@ -54,6 +55,7 @@ const Session = ({
   }
   onSessionLoaded?: () => void
   onOpenSidebar?: () => void
+  onOpenAgentSettings?: (agentId: string) => void
 } = {}) => {
   const params = useParams()
   const router = useRouter()
@@ -1298,6 +1300,23 @@ const Session = ({
 
           {/* Right section - Icon-only buttons */}
           <div className="flex items-center gap-1 shrink-0">
+            {/* Settings button - only show for single agent in chat route */}
+            {ischatRoute &&
+              session.agents?.length === 1 &&
+              onOpenAgentSettings && (
+                <button
+                  onClick={() =>
+                    onOpenAgentSettings(
+                      session.agents[0].username || session.agents[0]._id,
+                    )
+                  }
+                  className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+                  title="Agent Settings"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+              )}
+
             {/* Share button - icon only */}
             {isOwner && (
               <SessionShareButton
@@ -1401,6 +1420,23 @@ const Session = ({
                 }}
               />
             )}
+
+            {/* Settings button - only show for single agent in chat route */}
+            {ischatRoute &&
+              session.agents?.length === 1 &&
+              onOpenAgentSettings && (
+                <button
+                  onClick={() =>
+                    onOpenAgentSettings(
+                      session.agents[0].username || session.agents[0]._id,
+                    )
+                  }
+                  className="h-8 w-8 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
+                  title="Agent Settings"
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                </button>
+              )}
 
             {/* Share button */}
             {isOwner && (

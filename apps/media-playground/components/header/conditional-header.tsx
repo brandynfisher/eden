@@ -14,6 +14,7 @@ const ConditionalHeader = () => {
     pathname?.startsWith('/explore') ||
     pathname?.startsWith('/create') ||
     pathname?.startsWith('/agents') ||
+    pathname?.startsWith('/tasks') ||
     pathname === '/'
   ) {
     return null

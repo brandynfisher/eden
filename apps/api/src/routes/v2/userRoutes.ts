@@ -1,4 +1,5 @@
 import {
+  addLastAgent,
   listTransactions,
   requestAccountDeletion,
 } from '../../controllers/v2/userControllerV2'
@@ -55,6 +56,33 @@ const userRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => requestAccountDeletion(request, reply),
+  })
+
+  server.post('/v2/user-preferences/add-last-agent', {
+    schema: {
+      tags: ['User'],
+      summary: 'Add Last Agent',
+      description:
+        'Update user preferences by adding an agent to the last_agents list. Maintains a stack of up to 10 unique agents.',
+      hide: true,
+      body: Type.Object({
+        agent_id: Type.String(),
+      }),
+      response: {
+        200: Type.Object({
+          message: Type.String(),
+          preferences: Type.Any(),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request, reply) => addLastAgent(request, reply),
   })
 }
 
