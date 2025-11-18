@@ -49,6 +49,8 @@ import {
   PaymentsProductsResponse,
   PaymentsSubscriptionArguments,
   PaymentsSubscriptionResponse,
+  UserFeedbackSubmitArguments,
+  UserFeedbackSubmitResponse,
   UserPreferencesGetArguments,
   UserPreferencesGetResponse,
   adminAuthChallengeRequestConfig,
@@ -74,6 +76,7 @@ import {
   paymentsCreateRequestConfig,
   paymentsProductsRequestConfig,
   paymentsSubscriptionRequestConfig,
+  userFeedbackSubmitRequestConfig,
   userPreferencesGetRequestConfig,
 } from './models'
 import {
@@ -603,6 +606,13 @@ export abstract class Methods {
       this,
       userPreferencesGetRequestConfig,
     ),
+  }
+
+  public readonly userFeedback = {
+    submit: bindApiCall<
+      UserFeedbackSubmitArguments,
+      UserFeedbackSubmitResponse
+    >(this, userFeedbackSubmitRequestConfig),
   }
 
   public readonly feed_cursorV2 = {
