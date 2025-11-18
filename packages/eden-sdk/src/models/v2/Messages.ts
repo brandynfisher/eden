@@ -39,6 +39,9 @@ export type Message = {
   session: SessionV2
   sender: Creator | Agent
   eden_user_id?: string
+  triggering_user?: string
+  billed_user?: string
+  agent_owner?: string
   role: MessageRole
   eden_message_data?: EdenMessageData
   content: string

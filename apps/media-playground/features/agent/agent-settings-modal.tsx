@@ -21,6 +21,7 @@ import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { cn } from '@/lib/utils'
+import { FeatureFlag } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
 import {
@@ -66,6 +67,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
   } = useAgentQuery({
     key: agentId,
   })
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   const [activeTab, setActiveTab] = useState(initialTab)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -256,7 +258,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
       tabs.push({ key: 'memories', label: 'Memories', icon: BrainIcon })
     }
     // Integrations - restricted to owners only
-    if (hasOwnerAccess) {
+    if (hasOwnerAccess && isPreviewUser) {
       tabs.push({
         key: 'integrations',
         label: 'Integrations',
@@ -264,11 +266,11 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
       })
     }
     // Tasks - accessible to editors (preview only)
-    if (hasEditAccess) {
+    if (hasEditAccess && isPreviewUser) {
       tabs.push({ key: 'tasks', label: 'Tasks', icon: ClockIcon })
     }
     // Permissions - restricted to original owner only
-    if (isOriginalOwner) {
+    if (isOriginalOwner && isPreviewUser) {
       tabs.push({ key: 'permissions', label: 'Permissions', icon: KeyIcon })
     }
     if (hasOwnerAccess) {
