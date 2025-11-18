@@ -13,11 +13,17 @@ import {
 } from '@/components/ui/dialog'
 import { ToggleGroup } from '@/components/ui/toggle-group'
 import AgentsFeed from '@/features/feed/agents-feed'
+import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { RowItem } from '@/lib/query/cache-updates'
+import {
+  sortAllAgentsByPreference,
+  sortMyAgentsByPreference,
+} from '@/lib/sort-agents-by-preference'
 import { Agent } from '@edenlabs/eden-sdk'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import * as React from 'react'
 
 const SingleAgentSelectorModal: FC<{
@@ -30,6 +36,9 @@ const SingleAgentSelectorModal: FC<{
   const [isNavigating, setIsNavigating] = useState(false)
   const { user } = useAuthState()
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Get user preferences for agent sorting
+  const { lastAgents } = useUserPreferencesQuery({ enabled: !!user })
 
   // Reset state when modal closes
   useEffect(() => {
@@ -46,6 +55,27 @@ const SingleAgentSelectorModal: FC<{
     // Sort by total number of messages
     sort: ['stats.messageCount;-1'],
   }
+
+  // Custom sort function based on current tab
+  const customSort = useCallback(
+    (items: RowItem[]): RowItem[] => {
+      // Cast items to agents for sorting
+      const agents = items as Agent[]
+      if (currentTab === 'user') {
+        // For "My Agents", presort by last_agents (owned by user only)
+        return sortMyAgentsByPreference(
+          agents,
+          lastAgents,
+          user?._id,
+          35,
+        ) as RowItem[]
+      } else {
+        // For "All Agents", presort by last_agents (all agents)
+        return sortAllAgentsByPreference(agents, lastAgents) as RowItem[]
+      }
+    },
+    [currentTab, lastAgents, user?._id],
+  )
 
   const handleAgentClick = (agent: Agent, event?: React.MouseEvent) => {
     event?.preventDefault()
@@ -126,6 +156,7 @@ const SingleAgentSelectorModal: FC<{
               isSelectable={true}
               hideContextMenu={true}
               improvedLayout={true}
+              customSort={customSort}
             />
           </div>
         </div>
