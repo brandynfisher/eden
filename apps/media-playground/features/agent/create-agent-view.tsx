@@ -87,7 +87,7 @@ const CreateAgentView = () => {
       tools: {
         create_image: true,
         create_video: true,
-        create_audio: true,
+        create_audio: false,
         vj_tools: false,
         manage_collections: false,
         social_media_tools: false,

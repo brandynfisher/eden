@@ -3,6 +3,18 @@ import mailchimpTransactional, {
 } from '@mailchimp/mailchimp_transactional'
 import { FastifyInstance } from 'fastify'
 
+const escapeHtml = (input?: string) => {
+  if (!input) {
+    return ''
+  }
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function sendLoraTrainingCompletedEmail(
   server: FastifyInstance,
   email: string,
@@ -180,6 +192,85 @@ export async function sendAccountDeletionRequestEmail(
     })
   } catch (error) {
     server.log.error('Failed to send account deletion request email', error)
+    throw error
+  }
+}
+
+export interface UserFeedbackEmailParams {
+  requestId: string
+  message: string
+  subject?: string
+  category?: string
+  username?: string
+  userEmail?: string
+  userObjectId: string
+  clerkUserId?: string
+}
+
+export async function sendUserFeedbackEmail(
+  server: FastifyInstance,
+  params: UserFeedbackEmailParams,
+): Promise<void> {
+  const apiKey = server.config.MAILCHIMP_API_KEY || ''
+
+  if (!apiKey) {
+    throw new Error('Mailchimp API key is required')
+  }
+
+  const client = mailchimpTransactional(apiKey)
+
+  const formattedMessage = escapeHtml(params.message).replace(/\n/g, '<br />')
+
+  try {
+    const message: MessagesSendRequest['message'] = {
+      to: [
+        {
+          email: 'support@eden.art',
+          type: 'to',
+        },
+      ],
+      from_email: server.config.EMAIL_FROM,
+      from_name: server.config.EMAIL_FROM_NAME,
+      subject: params.subject
+        ? `Feedback: ${params.subject}`
+        : 'New Eden Feedback Submission',
+      html: `
+        <p>A user submitted new feedback.</p>
+        <p><strong>Request ID:</strong> ${params.requestId}</p>
+        <p><strong>User:</strong> ${
+          escapeHtml(params.username) || 'Unknown'
+        }</p>
+        <p><strong>Email:</strong> ${escapeHtml(params.userEmail) || 'N/A'}</p>
+        <p><strong>Eden User Object ID:</strong> ${escapeHtml(
+          params.userObjectId,
+        )}</p>
+        ${
+          params.clerkUserId
+            ? `<p><strong>Clerk User ID:</strong> ${escapeHtml(
+                params.clerkUserId,
+              )}</p>`
+            : ''
+        }
+        ${
+          params.category
+            ? `<p><strong>Category:</strong> ${escapeHtml(params.category)}</p>`
+            : ''
+        }
+        ${
+          params.subject
+            ? `<p><strong>Subject:</strong> ${escapeHtml(params.subject)}</p>`
+            : ''
+        }
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-wrap; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px;">${formattedMessage}</p>
+      `,
+    }
+
+    await client.messages.send({
+      message,
+    })
+  } catch (error) {
+    server.log.error('Failed to send user feedback email', error)
     throw error
   }
 }

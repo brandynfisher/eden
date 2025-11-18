@@ -1,12 +1,14 @@
 import {
+  SubmitFeedbackBody,
   addLastAgent,
   listTransactions,
   requestAccountDeletion,
+  submitUserFeedback,
 } from '../../controllers/v2/userControllerV2'
 import { isAuth } from '../../middleware/authMiddleware'
 import { paginatedResponse, paginationProperties } from '../index'
 import { Type } from '@sinclair/typebox'
-import { FastifyPluginAsync } from 'fastify'
+import { FastifyPluginAsync, FastifyRequest } from 'fastify'
 
 const userRoutes: FastifyPluginAsync = async server => {
   server.get('/v2/user/transactions', {
@@ -83,6 +85,39 @@ const userRoutes: FastifyPluginAsync = async server => {
     },
     preHandler: [(request, reply) => isAuth(server, request, reply)],
     handler: (request, reply) => addLastAgent(request, reply),
+  })
+
+  server.post('/v2/user/feedback', {
+    schema: {
+      tags: ['User'],
+      summary: 'Submit Feedback',
+      description:
+        'Submit a feedback request that notifies Eden support. Limited to five submissions per day.',
+      body: Type.Object({
+        message: Type.String({ minLength: 5, maxLength: 5000 }),
+        subject: Type.Optional(Type.String({ maxLength: 200 })),
+        category: Type.Optional(Type.String({ maxLength: 120 })),
+      }),
+      response: {
+        201: Type.Object({
+          message: Type.String(),
+          feedbackId: Type.String(),
+          remainingSubmissionsToday: Type.Number(),
+        }),
+        400: Type.Object({
+          message: Type.String(),
+        }),
+        429: Type.Object({
+          message: Type.String(),
+        }),
+        500: Type.Object({
+          message: Type.String(),
+        }),
+      },
+    },
+    preHandler: [(request, reply) => isAuth(server, request, reply)],
+    handler: (request: FastifyRequest<{ Body: SubmitFeedbackBody }>, reply) =>
+      submitUserFeedback(request, reply),
   })
 }
 

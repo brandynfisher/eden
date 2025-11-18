@@ -26,6 +26,10 @@ import { Task, TaskDocument } from './Task'
 import { Transaction, TransactionDocument } from './Transaction'
 import { Trigger, TriggerDocument } from './Trigger'
 import { User, UserDocument } from './User'
+import {
+  UserFeedbackRequest,
+  UserFeedbackRequestDocument,
+} from './UserFeedbackRequest'
 import { UserMigration, UserMigrationDocument } from './UserMigration'
 import { CollectionV2Document } from './v2/CollectionV2'
 import { CollectionV2 } from './v2/CollectionV2'
@@ -73,6 +77,7 @@ export interface Database {
   Challenge: Model<ChallengeDocument>
   Session: Model<SessionDocument>
   SessionEvent: Model<SessionEventDocument>
+  UserFeedbackRequest: Model<UserFeedbackRequestDocument>
   UserMigration: Model<UserMigrationDocument>
   DiscordAgent: Model<DiscordAgentDocument>
   Trigger: Model<TriggerDocument>
@@ -112,6 +117,7 @@ export const models: Database = {
   Challenge,
   Session,
   SessionEvent,
+  UserFeedbackRequest,
   UserMigration,
   DiscordAgent,
   Trigger,

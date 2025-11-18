@@ -3,6 +3,7 @@
 import { AgentAvatars } from './agent-avatars'
 import { SessionShareButton } from './session-share-button'
 import { SettingsSidebar } from './settings-sidebar'
+import FeedbackForm from '@/components/form/feedback-form'
 import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
 import DiscordIcon from '@/components/icons/discord'
 import TwitterIcon from '@/components/icons/twitter'
@@ -980,6 +981,18 @@ const SidebarUserProfile = () => {
           <DropdownMenuItem className="cursor-pointer" asChild>
             <ThemeToggleForwardWrap />
           </DropdownMenuItem>
+          <DialogMenuItem
+            onSelect={handleDialogItemSelect}
+            onOpenChange={handleDialogItemOpenChange}
+            triggerChildren={
+              <>
+                <MessageSquareIcon className="mr-2 h-4 w-4" />
+                <span>Send Feedback</span>
+              </>
+            }
+          >
+            <FeedbackForm />
+          </DialogMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer" onClick={logout}>
             <LogOutIcon className="mr-2 h-4 w-4" />

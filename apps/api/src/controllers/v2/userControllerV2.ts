@@ -2,11 +2,23 @@ import { AccountDeletionRequest } from '../../models/AccountDeletionRequest'
 import { Manna } from '../../models/Manna'
 import { Transaction } from '../../models/Transaction'
 import { User } from '../../models/User'
+import { UserFeedbackRequest } from '../../models/UserFeedbackRequest'
 import { UserPreferences } from '../../models/UserPreferences'
 import TransactionRepository from '../../repositories/TransactionRepository'
-import { sendAccountDeletionRequestEmail } from '../../utils/mailchimp'
+import {
+  sendAccountDeletionRequestEmail,
+  sendUserFeedbackEmail,
+} from '../../utils/mailchimp'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import mongoose from 'mongoose'
+
+export type SubmitFeedbackBody = {
+  message: string
+  subject?: string
+  category?: string
+}
+
+const MAX_FEEDBACK_SUBMISSIONS_PER_DAY = 5
 
 export const getUserIdByClerkUserId = async (
   request: FastifyRequest,
@@ -173,6 +185,88 @@ export const addLastAgent = async (
     request.server.log.error('Failed to update last agent', error)
     return reply.status(500).send({
       message: 'Failed to update last agent',
+    })
+  }
+}
+
+export const submitUserFeedback = async (
+  request: FastifyRequest<{ Body: SubmitFeedbackBody }>,
+  reply: FastifyReply,
+) => {
+  const { userId } = request.user || {}
+  if (!userId) {
+    return reply.status(400).send({
+      message: 'User missing from request',
+    })
+  }
+
+  const { message, subject, category } = request.body || {}
+
+  if (!message || typeof message !== 'string' || message.trim().length < 5) {
+    return reply.status(400).send({
+      message: 'Feedback message is required',
+    })
+  }
+
+  try {
+    const user = await User.findById(userId)
+    if (!user) {
+      return reply.status(404).send({
+        message: 'User not found',
+      })
+    }
+
+    const startOfDay = new Date()
+    startOfDay.setUTCHours(0, 0, 0, 0)
+
+    const submissionsToday = await UserFeedbackRequest.countDocuments({
+      user: userId,
+      createdAt: { $gte: startOfDay },
+    })
+
+    if (submissionsToday >= MAX_FEEDBACK_SUBMISSIONS_PER_DAY) {
+      return reply.status(429).send({
+        message:
+          'Feedback limit reached. Please try again tomorrow or email support@eden.art directly.',
+      })
+    }
+
+    const trimmedSubject =
+      subject && subject.trim().length > 0 ? subject.trim() : undefined
+    const trimmedCategory =
+      category && category.trim().length > 0 ? category.trim() : undefined
+    const trimmedMessage = message.trim()
+
+    const feedbackRequest = await UserFeedbackRequest.create({
+      user: userId,
+      username: user.username,
+      email: user.email,
+      subject: trimmedSubject,
+      category: trimmedCategory,
+      message: trimmedMessage,
+    })
+
+    await sendUserFeedbackEmail(request.server, {
+      requestId: feedbackRequest._id.toString(),
+      message: trimmedMessage,
+      subject: trimmedSubject,
+      category: trimmedCategory,
+      username: user.username,
+      userEmail: user.email,
+      userObjectId: user._id.toString(),
+      clerkUserId: user.userId,
+    })
+
+    return reply.status(201).send({
+      message: 'Feedback submitted successfully',
+      feedbackId: feedbackRequest._id.toString(),
+      remainingSubmissionsToday:
+        MAX_FEEDBACK_SUBMISSIONS_PER_DAY - (submissionsToday + 1),
+    })
+  } catch (error) {
+    request.server.log.error('Failed to submit user feedback', error)
+    return reply.status(500).send({
+      message: 'Failed to submit feedback',
     })
   }
 }
