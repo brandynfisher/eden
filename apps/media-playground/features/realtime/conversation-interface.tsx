@@ -87,88 +87,107 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   // Minimal UI for production mode
   if (!isDevMode) {
     return (
-      <div className="flex flex-col items-center gap-6 w-full max-w-md">
-        {/* Status Indicator */}
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-3 h-3 rounded-full ${
-              conversation.status === 'connected'
-                ? 'bg-green-500'
-                : conversation.status === 'connecting'
-                ? 'bg-yellow-500 animate-pulse'
-                : 'bg-gray-500'
-            }`}
-          />
-          <span className="text-sm font-medium text-muted-foreground">
-            {conversation.status}
-          </span>
+      <div className="flex-1 flex flex-col items-center justify-between w-full px-4 mt-8 min-h-0">
+        {/* Spacer to push content to center */}
+        <div className="flex-1 min-h-0" />
+
+        {/* Middle section - User Info Form and Volume */}
+        <div className="flex-shrink-0 w-full flex flex-col items-center gap-6">
+          {/* Microphone Volume Bar */}
+          {conversation.status === 'connected' && (
+            <div className="w-3/4 md:w-1/4">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary"
+                  style={{ width: `${conversation.inputVolume}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* User Info Form - only show when not connected */}
+          {conversation.status !== 'connected' && hasUserFields && (
+            <div className="flex flex-col gap-4 w-3/4 md:w-1/4">
+              {/* Dynamically generate input fields from config */}
+              {REALTIME_USER_FIELDS.map(field => {
+                const label =
+                  REALTIME_USER_FIELD_LABELS[field] ||
+                  field.charAt(0).toUpperCase() + field.slice(1)
+                const inputType = REALTIME_USER_FIELD_TYPES[field] || 'text'
+                const isFilled = userInfo[field]?.trim() !== ''
+
+                return (
+                  <div key={field} className="flex flex-col gap-2">
+                    <Label
+                      htmlFor={`user-${field}`}
+                      className={isFilled ? 'text-white' : 'text-orange-500'}
+                    >
+                      {label}:
+                    </Label>
+                    <Input
+                      id={`user-${field}`}
+                      type={inputType}
+                      placeholder={label}
+                      value={userInfo[field] || ''}
+                      onChange={e => updateUserInfoField(field, e.target.value)}
+                      disabled={conversation.status === 'connecting'}
+                      required
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
-        {/* User Info Form or Action Button */}
-        {conversation.status !== 'connected' ? (
-          <>
-            {/* Dynamic User Info Form - only show if fields configured */}
-            {hasUserFields && (
-              <div className="flex flex-col gap-4 w-full">
-                <div className="text-center mb-2">
-                  <h3 className="text-lg font-semibold mb-1">
-                    Before we start
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Please provide your information to continue
-                  </p>
-                </div>
+        {/* Spacer to push content to center */}
+        <div className="flex-1 min-h-0" />
 
-                {/* Dynamically generate input fields from config */}
-                {REALTIME_USER_FIELDS.map(field => {
-                  const label =
-                    REALTIME_USER_FIELD_LABELS[field] ||
-                    field.charAt(0).toUpperCase() + field.slice(1)
-                  const inputType = REALTIME_USER_FIELD_TYPES[field] || 'text'
-
-                  return (
-                    <div key={field} className="flex flex-col gap-2">
-                      <Label htmlFor={`user-${field}`}>{label}</Label>
-                      <Input
-                        id={`user-${field}`}
-                        type={inputType}
-                        placeholder={label}
-                        value={userInfo[field] || ''}
-                        onChange={e =>
-                          updateUserInfoField(field, e.target.value)
-                        }
-                        disabled={conversation.status === 'connecting'}
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Start Button */}
+        {/* Bottom section - Button and Status */}
+        <div className="flex-shrink-0 flex flex-col items-center gap-6 w-3/4 md:w-1/4 mb-4">
+          {/* Start/Stop Button */}
+          {conversation.status !== 'connected' ? (
             <Button
               onClick={conversation.startConversation}
-              className="bg-primary hover:bg-primary/90 w-full"
+              className={`w-full h-16 text-xl ${
+                conversation.status === 'connecting' || !canStartConversation
+                  ? 'bg-muted text-muted-foreground'
+                  : 'bg-primary hover:bg-primary/90'
+              }`}
               size="lg"
               disabled={
                 conversation.status === 'connecting' || !canStartConversation
               }
             >
-              {conversation.status === 'connecting'
-                ? 'Connecting...'
-                : 'Start Conversation'}
+              {conversation.status === 'connecting' ? 'Connecting...' : 'Start'}
             </Button>
-          </>
-        ) : (
-          <Button
-            onClick={handleStopConversation}
-            variant="destructive"
-            size="lg"
-            className="w-full"
-          >
-            Stop Conversation
-          </Button>
-        )}
+          ) : (
+            <Button
+              onClick={handleStopConversation}
+              variant="destructive"
+              size="lg"
+              className="w-full h-16 text-xl"
+            >
+              Stop
+            </Button>
+          )}
+
+          {/* Status Indicator */}
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-3 h-3 rounded-full ${
+                conversation.status === 'connected'
+                  ? 'bg-green-500'
+                  : conversation.status === 'connecting'
+                  ? 'bg-yellow-500 animate-pulse'
+                  : 'bg-gray-500'
+              }`}
+            />
+            <span className="text-sm font-medium text-muted-foreground">
+              {conversation.status}
+            </span>
+          </div>
+        </div>
       </div>
     )
   }
@@ -196,6 +215,21 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
               Fullscreen
             </Button>
           </div>
+
+          {/* Microphone Volume Bar */}
+          {conversation.status === 'connected' && (
+            <div className="w-full">
+              <div className="text-xs text-muted-foreground mb-1">
+                Microphone Input
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary"
+                  style={{ width: `${conversation.inputVolume}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Optional User Info Form (Dev Mode) - only show if fields configured */}
           {conversation.status !== 'connected' && hasUserFields && (
@@ -242,7 +276,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
               >
                 {conversation.status === 'connecting'
                   ? 'Connecting...'
-                  : 'Start Conversation'}
+                  : 'Start'}
               </Button>
             ) : (
               <Button
@@ -250,7 +284,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
                 variant="destructive"
                 size="lg"
               >
-                Stop Conversation
+                Stop
               </Button>
             )}
           </div>

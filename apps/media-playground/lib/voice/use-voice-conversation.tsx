@@ -22,7 +22,11 @@ export function useVoiceConversation(
   const [agentId, setAgentId] = useState<string | null>(null)
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([])
   const [debugLogs, setDebugLogs] = useState<DebugLog[]>([])
+  const [inputVolume, setInputVolume] = useState<number>(0)
   const sessionIdRef = useRef<string | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const animationFrameRef = useRef<number | null>(null)
 
   // Helper function to add debug logs
   const addDebugLog = useCallback(
@@ -32,6 +36,70 @@ export function useVoiceConversation(
     },
     [],
   )
+
+  // Helper function to monitor microphone volume
+  const startVolumeMonitoring = useCallback(
+    (stream: MediaStream) => {
+      try {
+        // Create audio context and analyser
+        const audioContext = new AudioContext()
+        const analyser = audioContext.createAnalyser()
+        const source = audioContext.createMediaStreamSource(stream)
+
+        // Smaller fftSize for faster response (128 = very responsive)
+        analyser.fftSize = 128
+        analyser.smoothingTimeConstant = 0.3 // Reduce smoothing for faster response
+        source.connect(analyser)
+
+        audioContextRef.current = audioContext
+        analyserRef.current = analyser
+
+        // Function to continuously read volume using time domain data (faster than frequency data)
+        const dataArray = new Uint8Array(analyser.fftSize)
+        const updateVolume = () => {
+          if (analyserRef.current) {
+            // Use time domain data for immediate amplitude response
+            analyserRef.current.getByteTimeDomainData(dataArray)
+
+            // Calculate RMS (Root Mean Square) for volume
+            let sum = 0
+            for (let i = 0; i < dataArray.length; i++) {
+              const normalized = (dataArray[i] - 128) / 128 // Normalize to -1 to 1
+              sum += normalized * normalized
+            }
+            const rms = Math.sqrt(sum / dataArray.length)
+
+            // Amplify and normalize to 0-100 range with more sensitivity
+            const normalizedVolume = Math.min(100, rms * 300)
+
+            setInputVolume(normalizedVolume)
+            animationFrameRef.current = requestAnimationFrame(updateVolume)
+          }
+        }
+
+        updateVolume()
+        addDebugLog('Volume monitoring started', 'success')
+      } catch (error) {
+        addDebugLog('Failed to start volume monitoring', 'warning')
+      }
+    },
+    [addDebugLog],
+  )
+
+  // Helper function to stop volume monitoring
+  const stopVolumeMonitoring = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close()
+      audioContextRef.current = null
+    }
+    analyserRef.current = null
+    setInputVolume(0)
+    addDebugLog('Volume monitoring stopped', 'info')
+  }, [addDebugLog])
 
   // Helper function to log messages to Eden session
   const logMessageToSession = useCallback(
@@ -116,13 +184,16 @@ export function useVoiceConversation(
 
     // Build first message with precedence:
     // 1. Explicit override from conversationConfig has highest priority
-    // 2. Otherwise, personalize with user name if provided
-    let firstMessage = config.conversationConfig?.agent?.firstMessage
-    if (!firstMessage) {
-      const userName = filledUserInfo['name'] || filledUserInfo['Name']
-      if (userName) {
-        firstMessage = `Hello ${userName}! I'm ${config.agentName}. How can I help you today?`
-      }
+    // 2. Fall back to DEFAULT_AGENT_CONFIG firstMessage
+    // 3. Prepend personalized greeting if user name is provided
+    let firstMessage =
+      config.conversationConfig?.agent?.firstMessage ||
+      DEFAULT_AGENT_CONFIG.agent.firstMessage
+
+    // Prepend personalized greeting if user name exists
+    const userName = filledUserInfo['name'] || filledUserInfo['Name']
+    if (userName && firstMessage) {
+      firstMessage = `Heey ${userName}! ${firstMessage}`
     }
 
     // Merge with base config and user overrides
@@ -257,8 +328,11 @@ export function useVoiceConversation(
       addDebugLog('Requesting microphone access...', 'info')
 
       // Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true })
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       addDebugLog('Microphone access granted', 'success')
+
+      // Start monitoring microphone volume
+      startVolumeMonitoring(stream)
 
       // Create Eden session with user info
       try {
@@ -326,12 +400,14 @@ export function useVoiceConversation(
     config.edenAgentId,
     buildConversationOverrides,
     addDebugLog,
+    startVolumeMonitoring,
   ])
 
   const endConversation = useCallback(async () => {
     try {
       addDebugLog('Stopping conversation...', 'info')
       await conversation.endSession()
+      stopVolumeMonitoring()
       addDebugLog('Conversation stopped', 'success')
       sessionIdRef.current = null
     } catch (error: unknown) {
@@ -339,7 +415,7 @@ export function useVoiceConversation(
         error instanceof Error ? error.message : 'Unknown error'
       addDebugLog(`Error stopping: ${errorMessage}`, 'error')
     }
-  }, [conversation, addDebugLog])
+  }, [conversation, addDebugLog, stopVolumeMonitoring])
 
   // Map ElevenLabs status to our generic status type
   const status: ConnectionStatus = conversation.status || 'disconnected'
@@ -350,6 +426,7 @@ export function useVoiceConversation(
     canSendFeedback: conversation.canSendFeedback || false,
     transcript,
     debugLogs,
+    inputVolume,
     startConversation,
     endConversation,
     addDebugLog,

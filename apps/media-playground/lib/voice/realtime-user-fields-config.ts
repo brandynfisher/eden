@@ -64,7 +64,7 @@ export interface ConversationConfigOverride {
 export const DEFAULT_AGENT_CONFIG: ConversationConfig = {
   agent: {
     firstMessage:
-      'Heey! Ik ben het Collectieve Brein van Broehaha. Een levend geheugen van alle gesprekken hier dit weekend. Ik luister naar iedereen die langskomt, ontdek waar mensen en ideeen overlappen en leg connecties. Zin om jezelf even voor te stellen?',
+      'Ik ben het Collectieve Brein van Broehaha. Een levend geheugen van alle gesprekken hier dit weekend. Ik luister naar iedereen die langskomt, ontdek waar mensen en ideeen overlappen en leg connecties. Zin om jezelf even voor te stellen?',
     language: 'nl',
     prompt: {
       // prompt is always populated dynamically from agent persona + memory

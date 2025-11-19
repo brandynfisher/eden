@@ -50,6 +50,7 @@ export interface VoiceConversationState {
   canSendFeedback: boolean
   transcript: TranscriptMessage[]
   debugLogs: DebugLog[]
+  inputVolume: number // 0-100 representing microphone input volume
 }
 
 export interface VoiceConversationActions {

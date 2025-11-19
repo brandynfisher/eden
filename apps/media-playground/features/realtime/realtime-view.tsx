@@ -120,22 +120,28 @@ const RealtimeView: FC = () => {
   // Minimal full-screen UI for production mode
   if (!isDevMode) {
     return (
-      <main className="fixed inset-0 bg-background flex items-center justify-center">
+      <main className="fixed inset-0 bg-background">
         {/* Animated Background */}
         <AnimatedBackground />
 
-        <div className="flex flex-col items-center gap-8 relative z-10">
-          {/* Audio-Reactive Agent Avatar */}
-          <AudioReactiveAvatar
-            imageSrc={getCloudfrontOriginalUrl(agent?.userImage)}
-            name={agent?.name || 'Agent'}
-            className="w-40 h-40"
-          />
+        {/* Single vertical container from 5% top to 5% bottom */}
+        <div className="absolute top-[5%] bottom-[5%] left-1/2 -translate-x-1/2 w-full flex flex-col items-center z-10">
+          {/* Agent Avatar and Name */}
+          <div className="flex flex-col items-center gap-4 flex-shrink-0">
+            {/* Audio-Reactive Agent Avatar */}
+            <AudioReactiveAvatar
+              imageSrc={getCloudfrontOriginalUrl(agent?.userImage)}
+              name={agent?.name || 'Agent'}
+              className="w-40 h-40"
+            />
 
-          {/* Agent Name */}
-          <h1 className="text-3xl font-bold text-foreground">{agent?.name}</h1>
+            {/* Agent Name */}
+            <h1 className="text-3xl font-bold text-foreground">
+              {agent?.name}
+            </h1>
+          </div>
 
-          {/* Conversation Interface - Minimal Mode */}
+          {/* Conversation Interface */}
           {agentContext && agent && (
             <ConversationInterface
               agentName={agent.name}
