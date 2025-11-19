@@ -21,7 +21,7 @@ import { AgentContext } from '@/lib/voice/build-agent-prompt'
 import axios from 'axios'
 import { MenuIcon } from 'lucide-react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { FC, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 
 const RealtimeView: FC = () => {
   const params = useParams()
@@ -40,7 +40,7 @@ const RealtimeView: FC = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
   // Fetch agent context function
-  const fetch_agent_context = async (): Promise<AgentContext> => {
+  const fetch_agent_context = useCallback(async (): Promise<AgentContext> => {
     if (!agent) {
       return {
         description: '',
@@ -71,6 +71,7 @@ const RealtimeView: FC = () => {
         collectiveMemory: response.data.collectiveMemory || [],
       }
     } catch (error) {
+      console.error('Failed to fetch agent memory context:', error)
       // Return empty memory on error
     }
 
@@ -79,7 +80,7 @@ const RealtimeView: FC = () => {
       persona,
       memory,
     }
-  }
+  }, [agent])
 
   // Load agent context when agent is available
   useEffect(() => {
@@ -90,7 +91,7 @@ const RealtimeView: FC = () => {
       }
     }
     loadContext()
-  }, [agent])
+  }, [agent, fetch_agent_context])
 
   // Show loading if we're waiting for agent data
   if (!agent && !agentError) {

@@ -9,6 +9,20 @@ interface AudioReactiveAvatarProps {
   className?: string
 }
 
+// Audio analysis configuration
+const AUDIO_CONFIG = {
+  FPS_LIMIT: 40,
+  FFT_SIZE: 128,
+  SMOOTHING: 0.3,
+  SCALE_MIN: 0.9,
+  SCALE_MAX: 1.1,
+  SENSITIVITY: 3.0,
+  BASELINE_UPDATE_INTERVAL: 60, // frames (~1.5 seconds at 40fps)
+  BASELINE_PULL_FACTOR: 0.1,
+  BASELINE_MIN_THRESHOLD: 0.001,
+  BASELINE_DEFAULT: 0.02,
+} as const
+
 /**
  * Avatar that pulses in size based on audio output volume
  * - Tracks baseline RMS and pulls towards scale = 1.0
@@ -30,8 +44,7 @@ const AudioReactiveAvatar: FC<AudioReactiveAvatarProps> = ({
 
   useEffect(() => {
     let mounted = true
-    const FPS_LIMIT = 40
-    const FRAME_INTERVAL = 1000 / FPS_LIMIT
+    const FRAME_INTERVAL = 1000 / AUDIO_CONFIG.FPS_LIMIT
 
     const initAudioAnalysis = async () => {
       try {
@@ -53,8 +66,8 @@ const AudioReactiveAvatar: FC<AudioReactiveAvatarProps> = ({
 
         // Create analyser with lower FFT size (we only care about total volume)
         const analyser = audioContext.createAnalyser()
-        analyser.fftSize = 128 // Lower FFT size for better performance
-        analyser.smoothingTimeConstant = 0.3 // Less smoothing for more responsive pulsing
+        analyser.fftSize = AUDIO_CONFIG.FFT_SIZE // Lower FFT size for better performance
+        analyser.smoothingTimeConstant = AUDIO_CONFIG.SMOOTHING // Less smoothing for more responsive pulsing
         analyserRef.current = analyser
 
         // Function to connect an audio element
@@ -125,12 +138,11 @@ const AudioReactiveAvatar: FC<AudioReactiveAvatarProps> = ({
       const bufferLength = analyserRef.current.frequencyBinCount
       const dataArray = new Uint8Array(bufferLength)
       let frameCount = 0
-      const BASELINE_UPDATE_INTERVAL = 60 // Update baseline every 60 frames (~1.5 seconds at 40fps)
 
       const analyzeVolume = (timestamp: number) => {
         if (!mounted || !analyserRef.current) return
 
-        // Limit to 40fps
+        // Limit to configured FPS
         if (timestamp - lastFrameTimeRef.current < FRAME_INTERVAL) {
           requestAnimationFrame(analyzeVolume)
           return
@@ -151,29 +163,31 @@ const AudioReactiveAvatar: FC<AudioReactiveAvatarProps> = ({
 
         // Update baseline (slowly pull towards current average)
         frameCount += 1
-        if (frameCount % BASELINE_UPDATE_INTERVAL === 0) {
+        if (frameCount % AUDIO_CONFIG.BASELINE_UPDATE_INTERVAL === 0) {
           // Pull baseline towards current RMS
-          const pullFactor = 0.1
           baselineRMSRef.current =
-            baselineRMSRef.current * (1 - pullFactor) + rms * pullFactor
+            baselineRMSRef.current * (1 - AUDIO_CONFIG.BASELINE_PULL_FACTOR) +
+            rms * AUDIO_CONFIG.BASELINE_PULL_FACTOR
 
           // Ensure baseline doesn't go to zero
-          if (baselineRMSRef.current < 0.001) {
-            baselineRMSRef.current = 0.02
+          if (baselineRMSRef.current < AUDIO_CONFIG.BASELINE_MIN_THRESHOLD) {
+            baselineRMSRef.current = AUDIO_CONFIG.BASELINE_DEFAULT
           }
         }
 
         // Calculate deviation from baseline
-        const baseline = Math.max(baselineRMSRef.current, 0.02)
+        const baseline = Math.max(
+          baselineRMSRef.current,
+          AUDIO_CONFIG.BASELINE_DEFAULT,
+        )
         const deviation = (rms - baseline) / baseline
 
-        // Map deviation to scale range (0.9 to 1.1)
-        const minScale = 0.9
-        const maxScale = 1.1
-        const sensitivity = 3.0 // Increased sensitivity
-
-        let newScale = 1.0 + deviation * sensitivity
-        newScale = Math.max(minScale, Math.min(maxScale, newScale))
+        // Map deviation to scale range
+        let newScale = 1.0 + deviation * AUDIO_CONFIG.SENSITIVITY
+        newScale = Math.max(
+          AUDIO_CONFIG.SCALE_MIN,
+          Math.min(AUDIO_CONFIG.SCALE_MAX, newScale),
+        )
 
         setScale(newScale)
 

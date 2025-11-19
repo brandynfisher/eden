@@ -36,6 +36,42 @@ export function useVoiceConversation(
     [],
   )
 
+  // Helper function to log messages to Eden session
+  const logMessageToSession = useCallback(
+    async (sessionId: string, role: 'user' | 'assistant', content: string) => {
+      const roleLabel = role === 'assistant' ? 'agent' : 'user'
+      addDebugLog(
+        `💾 Saving ${roleLabel} message to session ${sessionId}`,
+        'info',
+      )
+      try {
+        const response = await fetch('/api/realtime/session/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, role, content }),
+        })
+
+        if (response.ok) {
+          addDebugLog(`✅ ${roleLabel} message saved to session`, 'success')
+        } else {
+          const errorText = await response.text()
+          addDebugLog(
+            `❌ Failed to save ${roleLabel} message: ${response.status} ${errorText}`,
+            'error',
+          )
+        }
+      } catch (error) {
+        addDebugLog(
+          `❌ Error saving ${roleLabel} message: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+          'error',
+        )
+      }
+    },
+    [addDebugLog],
+  )
+
   // Fetch configuration on mount
   useEffect(() => {
     const fetchConfig = async () => {
@@ -49,7 +85,6 @@ export function useVoiceConversation(
         setAgentId(data.agentId)
         addDebugLog('Configuration loaded successfully', 'success')
       } catch (error) {
-        console.error('Error fetching configuration:', error)
         addDebugLog('Failed to fetch ElevenLabs configuration', 'error')
       }
     }
@@ -159,7 +194,6 @@ export function useVoiceConversation(
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error'
       addDebugLog(`Failed to update agent: ${errorMessage}`, 'error')
-      console.error('Error updating agent:', error)
     } finally {
       isUpdatingRef.current = false
     }
@@ -205,44 +239,11 @@ export function useVoiceConversation(
         // Log agent message to Eden session
         const currentSessionId = sessionIdRef.current
         if (currentSessionId) {
-          addDebugLog(
-            `💾 Saving agent message to session ${currentSessionId}`,
-            'info',
+          await logMessageToSession(
+            currentSessionId,
+            'assistant',
+            message.message,
           )
-          try {
-            const response = await fetch('/api/realtime/session/message', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                sessionId: currentSessionId,
-                role: 'assistant',
-                content: message.message,
-              }),
-            })
-
-            if (response.ok) {
-              addDebugLog('✅ Agent message saved to session', 'success')
-            } else {
-              const errorText = await response.text()
-              addDebugLog(
-                `❌ Failed to save agent message: ${response.status} ${errorText}`,
-                'error',
-              )
-              console.error(
-                'Failed to log agent message:',
-                response.status,
-                errorText,
-              )
-            }
-          } catch (error) {
-            addDebugLog(
-              `❌ Error saving agent message: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-              'error',
-            )
-            console.error('Failed to log agent message:', error)
-          }
         } else {
           addDebugLog('⚠️ No sessionId, skipping agent message save', 'warning')
         }
@@ -264,44 +265,7 @@ export function useVoiceConversation(
         // Log user message to Eden session
         const currentSessionId = sessionIdRef.current
         if (currentSessionId) {
-          addDebugLog(
-            `💾 Saving user message to session ${currentSessionId}`,
-            'info',
-          )
-          try {
-            const response = await fetch('/api/realtime/session/message', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                sessionId: currentSessionId,
-                role: 'user',
-                content: message.message,
-              }),
-            })
-
-            if (response.ok) {
-              addDebugLog('✅ User message saved to session', 'success')
-            } else {
-              const errorText = await response.text()
-              addDebugLog(
-                `❌ Failed to save user message: ${response.status} ${errorText}`,
-                'error',
-              )
-              console.error(
-                'Failed to log user message:',
-                response.status,
-                errorText,
-              )
-            }
-          } catch (error) {
-            addDebugLog(
-              `❌ Error saving user message: ${
-                error instanceof Error ? error.message : String(error)
-              }`,
-              'error',
-            )
-            console.error('Failed to log user message:', error)
-          }
+          await logMessageToSession(currentSessionId, 'user', message.message)
         } else {
           addDebugLog('⚠️ No sessionId, skipping user message save', 'warning')
         }
@@ -356,23 +320,16 @@ export function useVoiceConversation(
             sessionIdRef.current = newSessionId
             addDebugLog(`Eden session created: ${newSessionId}`, 'success')
           } else {
-            console.error('No session ID in response:', sessionData)
             addDebugLog('No session ID in response', 'warning')
           }
         } else {
           const errorText = await sessionResponse.text()
-          console.error(
-            'Session creation failed:',
-            sessionResponse.status,
-            errorText,
-          )
           addDebugLog(
             `Failed to create Eden session: ${sessionResponse.status} ${errorText}`,
             'warning',
           )
         }
       } catch (error) {
-        console.error('Error creating session:', error)
         addDebugLog('Error creating Eden session', 'warning')
       }
 
