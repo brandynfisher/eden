@@ -1,7 +1,17 @@
 'use client'
 
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useFilteredToolsQuery } from '@/hooks/use-filtered-tools-query'
+import { siteConfig } from '@/lib/config'
 import { cn } from '@/lib/utils'
+import { useMemo } from 'react'
 
 type ToolsFilterProps = {
   initialCategory: string
@@ -14,32 +24,83 @@ export const ToolsFilter = ({
   onChange,
   className,
 }: ToolsFilterProps) => {
-  const categories = [
-    { value: 'featured', label: 'Featured' },
-    { value: 'image', label: 'Image' },
-    { value: 'video', label: 'Video' },
-    { value: 'lora', label: 'Training' },
-    { value: 'audio', label: 'Audio' },
-    { value: 'classic', label: 'Classic' },
-  ]
+  const { tools } = useFilteredToolsQuery({
+    output_type: ['image', 'video', 'audio', 'lora'],
+  })
+
+  const categories = useMemo(() => {
+    const baseCategories = [
+      { value: 'featured', label: 'Featured' },
+      { value: 'image', label: 'Image' },
+      { value: 'video', label: 'Video' },
+      { value: 'lora', label: 'Training' },
+      { value: 'audio', label: 'Audio' },
+      { value: 'classic', label: 'Classic' },
+    ]
+
+    if (!tools) {
+      return baseCategories.map(category => ({ ...category, count: undefined }))
+    }
+
+    const getCount = (categoryValue: string) => {
+      switch (categoryValue) {
+        case 'featured':
+          return tools.filter(tool =>
+            siteConfig.featured.tools.includes(tool.key),
+          ).length
+        case 'image':
+          return tools.filter(
+            tool =>
+              tool.output_type === 'image' && !tool.key.includes('legacy'),
+          ).length
+        case 'video':
+          return tools.filter(
+            tool =>
+              tool.output_type === 'video' && !tool.key.includes('legacy'),
+          ).length
+        case 'audio':
+          return tools.filter(
+            tool =>
+              tool.output_type === 'audio' && !tool.key.includes('legacy'),
+          ).length
+        case 'lora':
+          return tools.filter(tool => tool.output_type === 'lora').length
+        case 'classic':
+          return tools.filter(
+            tool =>
+              tool.key.includes('legacy') &&
+              (tool.output_type === 'image' || tool.output_type === 'video'),
+          ).length
+        default:
+          return tools.length
+      }
+    }
+
+    return baseCategories.map(category => ({
+      ...category,
+      count: getCount(category.value),
+    }))
+  }, [tools])
 
   return (
-    <Tabs
-      value={initialCategory}
-      onValueChange={onChange}
-      className={cn('min-w-0 w-full', className)}
-    >
-      <TabsList className="flex min-w-0 w-full gap-1 overflow-x-auto rounded-xl bg-muted/40 p-1">
-        {categories.map(category => (
-          <TabsTrigger
-            key={category.value}
-            value={category.value}
-            className="w-full text-xs px-2 lg:px-3 lg:text-sm"
-          >
-            {category.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
+    <div className={cn('w-full', className)}>
+      <Select value={initialCategory} onValueChange={onChange}>
+        <SelectTrigger className="w-full sm:w-60">
+          <SelectValue placeholder="Select a category" />
+        </SelectTrigger>
+        <SelectContent>
+          {categories.map(category => (
+            <SelectItem key={category.value} value={category.value}>
+              <div className="flex items-center justify-between w-full gap-4">
+                <span>{category.label}</span>
+                <Badge variant="secondary" className="ml-auto text-xs">
+                  {typeof category.count === 'number' ? category.count : '--'}
+                </Badge>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   )
 }
