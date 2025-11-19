@@ -139,6 +139,7 @@ const RealtimeView: FC = () => {
             <ConversationInterface
               agentName={agent.name}
               agentContext={agentContext}
+              edenAgentId={agent._id}
               isDevMode={false}
             />
           )}
@@ -265,6 +266,7 @@ const RealtimeView: FC = () => {
                   <ConversationInterface
                     agentName={agent.name}
                     agentContext={agentContext}
+                    edenAgentId={agent._id}
                     isDevMode={true}
                   />
                 )}

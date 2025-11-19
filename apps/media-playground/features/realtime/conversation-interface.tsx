@@ -12,12 +12,14 @@ import { FC } from 'react'
 interface ConversationInterfaceProps {
   agentName: string
   agentContext: AgentContext
+  edenAgentId: string
   isDevMode?: boolean
 }
 
 const ConversationInterface: FC<ConversationInterfaceProps> = ({
   agentName,
   agentContext,
+  edenAgentId,
   isDevMode = true,
 }) => {
   const router = useRouter()
@@ -31,6 +33,7 @@ const ConversationInterface: FC<ConversationInterfaceProps> = ({
   const conversation = useVoiceConversation({
     provider: 'elevenlabs',
     agentPrompt,
+    edenAgentId,
     // conversationConfig: {
     //   agent: {
     //     prompt: {
