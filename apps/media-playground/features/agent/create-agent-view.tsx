@@ -1,6 +1,7 @@
 'use client'
 
 import ModelMiniCard from '@/components/card/model-mini-card'
+import GatedPrivacySwitch from '@/components/form/gated-privacy-switch'
 import ModelSelectorModal from '@/components/modal/model-selector-modal'
 import { Button } from '@/components/ui/button'
 import { AutosizeTextarea } from '@/components/ui/custom/autoresize-textarea'
@@ -14,13 +15,6 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
 import { SlickUsernamePicker } from '@/components/ui/slick-username-picker'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -36,19 +30,10 @@ import {
   AGENT_FIELD_GUIDANCE,
   AGENT_FIELD_LIMITS,
 } from '@/features/sessions/views/agent-constants'
-import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios, { AxiosError } from 'axios'
-import {
-  ChevronRightIcon,
-  Loader2,
-  SettingsIcon,
-  UserIcon,
-  WrenchIcon,
-  XIcon,
-} from 'lucide-react'
+import { Loader2, XIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -65,8 +50,7 @@ function CharacterCount({ current, max }: { current: number; max: number }) {
 
 const CreateAgentView = () => {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState('profile')
-  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false)
+  const subscriptionUrl = 'http://localhost:3000/settings/subscription'
 
   const form = useForm<AgentFormDto>({
     resolver: zodResolver(agentSchema),
@@ -85,7 +69,7 @@ const CreateAgentView = () => {
       tools: {
         create_image: true,
         create_video: true,
-        create_audio: true,
+        create_audio: false,
         vj_tools: false,
         manage_collections: false,
         social_media_tools: false,
@@ -131,240 +115,299 @@ const CreateAgentView = () => {
     }
   }
 
-  // Sidebar content component for reuse
-  const SidebarContent = () => (
-    <>
-      <div className="p-4 border-b border-border">
-        <h2 className="text-lg font-semibold">Create New Agent</h2>
-        <p className="text-sm text-muted-foreground">Configure your agent</p>
-      </div>
-      <div className="flex-1 p-2">
-        <div className="space-y-1">
-          <button
-            onClick={() => {
-              setActiveTab('profile')
-              setIsMobileSheetOpen(false)
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              activeTab === 'profile'
-                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-            )}
-          >
-            <UserIcon className="w-4 h-4" />
-            Profile
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('concepts')
-              setIsMobileSheetOpen(false)
-            }}
-            className={cn(
-              'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-              activeTab === 'concepts'
-                ? 'bg-primary/40 hover:bg-primary/20 border-primary/60 hover:border-primary'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-            )}
-          >
-            <WrenchIcon className="w-4 h-4" />
-            Tools
-          </button>
-        </div>
-      </div>
-    </>
-  )
-
   return (
-    <div
-      className="
-     flex flex-col
-     fixed
-     inset-x-0
-     bottom-0
-     top-16
-   "
-    >
-      <div className="flex-1 overflow-auto bg-accent">
-        <div className="w-full h-full flex">
-          {/* Desktop Sidebar */}
-          <div className="hidden lg:flex w-64 bg-accent border-r border-border flex-col">
-            <SidebarContent />
-          </div>
+    <div className="flex h-full min-h-0 w-full flex-col bg-background">
+      <div className="mx-auto w-full max-w-4xl px-6 py-8">
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+          Create a new agent
+        </h1>
+      </div>
 
-          {/* Main content */}
-          <div className="flex-1 flex flex-col">
-            {/* Mobile Navigation Bar */}
-            <div className="lg:hidden bg-accent border-b border-border p-4 flex items-center justify-between">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-2"
-                onClick={() => setIsMobileSheetOpen(true)}
-              >
-                <SettingsIcon className="w-4 h-4" />
-                <span className="capitalize">{activeTab}</span>
-                <ChevronRightIcon className="w-4 h-4" />
-              </Button>
-              <div className="text-sm text-muted-foreground">
-                Create New Agent
+      <div className="flex-1">
+        <Form {...form}>
+          <form
+            className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-6 py-8 pb-12"
+            onSubmit={form.handleSubmit(handleSubmit)}
+          >
+            <div className="rounded-xl border border-border bg-card p-6">
+              <div className="flex flex-col gap-6 lg:flex-row">
+                <div className="lg:min-w-[220px]">
+                  <div className="mt-3 flex flex-col items-center gap-3">
+                    <FormField
+                      control={form.control}
+                      name="image"
+                      render={({ field }) => (
+                        <FormItem className="w-full">
+                          <FormControl>
+                            <Input
+                              className="hidden"
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              value={
+                                field.value === null ? '' : field.value || ''
+                              }
+                            />
+                          </FormControl>
+                          <ProfileImageUploader
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex-1 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium">
+                          Name
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            placeholder="Display name"
+                            {...field}
+                            onChange={e => {
+                              field.onChange(e.target.value.slice(0, 42))
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="key"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium">
+                          Username
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <SlickUsernamePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            displayName={form.watch('name')}
+                            onBlur={field.onBlur}
+                            disabled={form.formState.isSubmitting}
+                            autoGenerateOnDisplayNameChange={true}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Mobile Navigation Sheet */}
-            <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-              <SheetContent side="left" className="w-full sm:max-w-md">
-                <SheetHeader>
-                  <SheetTitle>Create New Agent</SheetTitle>
-                  <SheetDescription>
-                    Configure your agent by selecting a section below
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="mt-6 space-y-4">
-                  <div
-                    className={cn(
-                      'p-4 rounded-lg border cursor-pointer transition-colors',
-                      activeTab === 'profile'
-                        ? 'bg-primary/40 border-primary/60'
-                        : 'bg-card border-border hover:bg-accent',
-                    )}
-                    onClick={() => {
-                      setActiveTab('profile')
-                      setIsMobileSheetOpen(false)
-                    }}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <UserIcon className="w-5 h-5" />
-                      <h3 className="font-medium">Profile</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Set up your agent's basic information, including name,
-                      description, persona, and greeting message.
-                    </p>
+            <FormField
+              control={form.control}
+              name="public"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6 md:flex-row md:items-center md:justify-between">
+                  <div className="space-y-1">
+                    <FormLabel className="text-base font-medium">
+                      Make Agent Public
+                    </FormLabel>
+                    <FormDescription>
+                      Allow other Eden users to discover and chat with this
+                      agent.
+                    </FormDescription>
                   </div>
+                  <FormControl className="flex justify-end">
+                    <GatedPrivacySwitch
+                      checked={field.value || false}
+                      onCheckedChange={field.onChange}
+                      disabled={form.formState.isSubmitting}
+                      subscriptionUrl={subscriptionUrl}
+                      entityLabel="agents"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
-                  <div
-                    className={cn(
-                      'p-4 rounded-lg border cursor-pointer transition-colors',
-                      activeTab === 'concepts'
-                        ? 'bg-primary/40 border-primary/60'
-                        : 'bg-card border-border hover:bg-accent',
-                    )}
-                    onClick={() => {
-                      setActiveTab('concepts')
-                      setIsMobileSheetOpen(false)
-                    }}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <WrenchIcon className="w-5 h-5" />
-                      <h3 className="font-medium">Tools</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Configure your agent's voice, AI models, and tools.
-                    </p>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem className="rounded-xl border border-border bg-card p-6">
+                  <FormLabel className="text-base font-medium">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help">
+                            Description
+                            <span className="text-red-500 ml-1">*</span>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs">
+                            {AGENT_FIELD_GUIDANCE.DESCRIPTION}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </FormLabel>
+                  <FormControl>
+                    <AutosizeTextarea
+                      placeholder="Short description of the agent shown on profile and cards."
+                      {...field}
+                      className="min-h-[80px]"
+                    />
+                  </FormControl>
+                  <div className="flex justify-end mt-2">
+                    <CharacterCount
+                      current={field.value?.length || 0}
+                      max={AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS}
+                    />
                   </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="persona"
+              render={({ field }) => (
+                <FormItem className="rounded-xl border border-border bg-card p-6">
+                  <FormLabel className="text-base font-medium">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help">
+                            Instructions
+                            <span className="text-red-500 ml-1">*</span>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs whitespace-pre-wrap">
+                            {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </FormLabel>
+                  <FormControl>
+                    <AutosizeTextarea
+                      placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
+                      {...field}
+                      className="min-h-[240px]"
+                      variant="xl"
+                    />
+                  </FormControl>
+                  <div className="flex justify-end mt-2">
+                    <CharacterCount
+                      current={field.value?.length || 0}
+                      max={AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS}
+                    />
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="greeting"
+              render={({ field }) => (
+                <FormItem className="rounded-xl border border-border bg-card p-6">
+                  <FormLabel className="text-base font-medium">
+                    Greeting
+                  </FormLabel>
+                  <FormDescription className="mt-1 mb-3">
+                    This will be displayed to users when they first interact
+                    with the agent.
+                  </FormDescription>
+                  <FormControl>
+                    <AutosizeTextarea
+                      placeholder="Hello, how can I help you today?"
+                      {...field}
+                      className="min-h-[60px]"
+                    />
+                  </FormControl>
+                  <div className="flex justify-end mt-2">
+                    <CharacterCount
+                      current={field.value?.length || 0}
+                      max={140}
+                    />
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="rounded-xl border border-border bg-card p-6">
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-semibold">
+                    Capabilities & tools
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Control which LoRA models, voices, and creation tools this
+                    agent can access.
+                  </p>
                 </div>
-              </SheetContent>
-            </Sheet>
 
-            {/* Scrollable form content */}
-            <div className="flex-1 overflow-auto">
-              <div className="mx-auto max-w-3xl pt-6">
-                <Form {...form}>
-                  <form
-                    className="w-full space-y-4"
-                    onSubmit={form.handleSubmit(handleSubmit)}
-                  >
-                    {activeTab === 'profile' && (
-                      <div className="space-y-6">
-                        {/* Combined Profile Section */}
-                        <div className="p-6 bg-card rounded-xl border border-border mb-6">
-                          <div className="flex flex-col lg:flex-row gap-6">
-                            {/* Profile Image */}
-                            <div className="flex-shrink-0">
-                              <div className="text-center mb-2">
-                                <h3 className="text-sm font-medium">
-                                  Profile picture
-                                </h3>
+                <FormField
+                  control={form.control}
+                  name="models"
+                  render={() => (
+                    <FormItem className="space-y-4 rounded-lg border border-border/60 bg-secondary/40 p-4">
+                      <FormLabel>Custom Models</FormLabel>
+                      <FormDescription>
+                        Give your agent a unique aesthetic using up to 10 custom
+                        models.
+                      </FormDescription>
+                      <div>
+                        {models.fields.map((model, index) => (
+                          <div
+                            key={model.lora}
+                            className="relative mb-4 rounded-lg border border-border/50 bg-background p-4 transition-colors hover:border-primary/50"
+                          >
+                            <div className="space-y-4">
+                              <div className="flex items-stretch gap-2 min-h-[82px]">
+                                <div className="flex-grow">
+                                  <ModelMiniCard
+                                    className="h-full w-full"
+                                    modelId={model.lora}
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  className="h-auto hover:bg-destructive hover:text-destructive-foreground"
+                                  size="icon"
+                                  onClick={() => models.remove(index)}
+                                >
+                                  <XIcon className="size-4" />
+                                </Button>
                               </div>
                               <FormField
                                 control={form.control}
-                                name="image"
+                                name={`models.${index}.use_when`}
                                 render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input
-                                        className={'hidden'}
-                                        onChange={field.onChange}
-                                        onBlur={field.onBlur}
-                                        value={
-                                          field.value === null
-                                            ? ''
-                                            : field.value || ''
-                                        }
-                                      />
-                                    </FormControl>
-                                    <ProfileImageUploader
-                                      value={field.value}
-                                      onChange={field.onChange}
-                                    />
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-
-                            {/* Username and Display Name */}
-                            <div className="flex-1 space-y-4">
-                              {/* Display Name Field */}
-                              <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-base font-medium">
-                                      Name
-                                      <span className="text-red-500 ml-1">
-                                        *
-                                      </span>
+                                  <FormItem className="flex-1">
+                                    <FormLabel className="text-sm text-muted-foreground">
+                                      When to use this model
                                     </FormLabel>
                                     <FormControl>
                                       <Input
                                         type="text"
-                                        placeholder="Display name"
+                                        placeholder='e.g., "use for realistic portraits"'
                                         {...field}
-                                        onChange={e => {
-                                          field.onChange(
-                                            e.target.value.slice(0, 42),
-                                          )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-
-                              {/* Username Field */}
-                              <FormField
-                                control={form.control}
-                                name="key"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-base font-medium">
-                                      Username
-                                      <span className="text-red-500 ml-1">
-                                        *
-                                      </span>
-                                    </FormLabel>
-                                    <FormControl>
-                                      <SlickUsernamePicker
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        displayName={form.watch('name')}
-                                        onBlur={field.onBlur}
-                                        disabled={form.formState.isSubmitting}
-                                        autoGenerateOnDisplayNameChange={true}
                                       />
                                     </FormControl>
                                     <FormMessage />
@@ -373,375 +416,137 @@ const CreateAgentView = () => {
                               />
                             </div>
                           </div>
-                        </div>
-
-                        {/* Public/Private Toggle Section */}
-                        <FormField
-                          control={form.control}
-                          name="public"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 bg-card mb-6">
-                              <div className="space-y-0.5">
-                                <FormLabel className="text-base font-medium">
-                                  Make Agent Public
-                                </FormLabel>
-                                <FormDescription>
-                                  When public, other users can discover and
-                                  interact with your agent
-                                </FormDescription>
-                              </div>
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Description Field */}
-                        <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }) => (
-                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                              <FormLabel className="text-base font-medium">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="cursor-help">
-                                        Description
-                                        <span className="text-red-500 ml-1">
-                                          *
-                                        </span>
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="max-w-xs">
-                                        {AGENT_FIELD_GUIDANCE.DESCRIPTION}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <AutosizeTextarea
-                                  placeholder="Short description of the agent shown on profile and cards."
-                                  {...field}
-                                  className="min-h-[80px]"
-                                />
-                              </FormControl>
-                              <div className="flex justify-end mt-2">
-                                <CharacterCount
-                                  current={field.value?.length || 0}
-                                  max={AGENT_FIELD_LIMITS.DESCRIPTION_MAX_CHARS}
-                                />
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Persona Field */}
-                        <FormField
-                          control={form.control}
-                          name="persona"
-                          render={({ field }) => (
-                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                              <FormLabel className="text-base font-medium">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="cursor-help">
-                                        Instructions
-                                        <span className="text-red-500 ml-1">
-                                          *
-                                        </span>
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="max-w-xs whitespace-pre-wrap">
-                                        {AGENT_FIELD_GUIDANCE.INSTRUCTIONS}
-                                      </p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <AutosizeTextarea
-                                  placeholder="Describe your agent's persona, traits, goals, backstory, rules, and other such details."
-                                  {...field}
-                                  className="min-h-[240px]"
-                                  variant="xl"
-                                />
-                              </FormControl>
-                              <div className="flex justify-end mt-2">
-                                <CharacterCount
-                                  current={field.value?.length || 0}
-                                  max={
-                                    AGENT_FIELD_LIMITS.INSTRUCTIONS_MAX_CHARS
-                                  }
-                                />
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Greeting Field */}
-                        <FormField
-                          control={form.control}
-                          name="greeting"
-                          render={({ field }) => (
-                            <FormItem className="p-6 bg-card rounded-xl border border-border mb-6">
-                              <FormLabel className="text-base font-medium">
-                                Greeting
-                              </FormLabel>
-                              <FormDescription className="mt-1 mb-3">
-                                This will be displayed to users when they first
-                                interact with the agent.
-                              </FormDescription>
-                              <FormControl>
-                                <AutosizeTextarea
-                                  placeholder="Hello, how can I help you today?"
-                                  {...field}
-                                  className="min-h-[60px]"
-                                />
-                              </FormControl>
-                              <div className="flex justify-end mt-2">
-                                <CharacterCount
-                                  current={field.value?.length || 0}
-                                  max={140}
-                                />
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                        ))}
+                        <ModelSelectorModal
+                          className="w-full p-4 md:p-8"
+                          title="Select LoRA Model"
+                          description="Pick a LoRA model to add to this agent"
+                          currentValue=""
+                          selectedIds={models.fields.map(m => m.lora)}
+                          onChange={id => {
+                            const modelId = typeof id === 'string' ? id : id[0]
+                            if (!modelId) return
+                            if (models.fields.some(m => m.lora === modelId)) {
+                              toast.error('This model is already added')
+                              return
+                            }
+                            form.setValue('models', [
+                              ...models.fields,
+                              { lora: modelId, use_when: '' },
+                            ])
+                          }}
+                          trigger={
+                            <Button
+                              type="button"
+                              disabled={models.fields.length >= 10}
+                              className="w-full"
+                            >
+                              Add LoRA Model
+                            </Button>
+                          }
                         />
                       </div>
-                    )}
-
-                    {activeTab === 'concepts' && (
-                      <div className="space-y-6">
-                        <div>
-                          {/* Custom Models / LoRA Field */}
-                          <FormField
-                            control={form.control}
-                            name="models"
-                            render={() => (
-                              <FormItem className="p-4 bg-secondary rounded-lg mb-4">
-                                <FormLabel>Custom Models</FormLabel>
-                                <FormDescription>
-                                  Give your agent a unique aesthetic using up to
-                                  10 custom models.
-                                </FormDescription>
-                                <div>
-                                  {models.fields.map((model, index) => (
-                                    <div
-                                      key={model.lora}
-                                      className="relative mb-4 p-4 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
-                                    >
-                                      <div className="space-y-4">
-                                        <div className="flex items-stretch gap-2 min-h-[82px]">
-                                          <div className="flex-grow">
-                                            <ModelMiniCard
-                                              className="w-full h-full"
-                                              modelId={model.lora}
-                                            />
-                                          </div>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            className="hover:bg-destructive hover:text-destructive-foreground h-auto"
-                                            size="icon"
-                                            onClick={() => models.remove(index)}
-                                          >
-                                            <XIcon className="size-4" />
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <FormField
-                                            control={form.control}
-                                            name={`models.${index}.use_when`}
-                                            render={({ field }) => (
-                                              <FormItem className="flex-1">
-                                                <FormLabel className="text-sm text-muted-foreground">
-                                                  When to use this model
-                                                </FormLabel>
-                                                <FormControl>
-                                                  <Input
-                                                    type="text"
-                                                    placeholder="e.g., 'when user asks for realistic images' or 'for anime style'"
-                                                    {...field}
-                                                  />
-                                                </FormControl>
-                                                <FormMessage />
-                                              </FormItem>
-                                            )}
-                                          />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                  <div className="mt-4">
-                                    <ModelSelectorModal
-                                      className="p-4 md:p-8 w-full"
-                                      title="Select LoRA Model"
-                                      description="Pick a LoRA model to add to this agent"
-                                      currentValue=""
-                                      selectedIds={models.fields.map(
-                                        m => m.lora,
-                                      )}
-                                      onChange={id => {
-                                        const modelId =
-                                          typeof id === 'string' ? id : id[0]
-                                        if (!modelId) return
-                                        // Check if model already exists
-                                        if (
-                                          models.fields.some(
-                                            m => m.lora === modelId,
-                                          )
-                                        ) {
-                                          toast.error(
-                                            'This model is already added',
-                                          )
-                                          return
-                                        }
-                                        form.setValue('models', [
-                                          ...models.fields,
-                                          { lora: modelId, use_when: '' },
-                                        ])
-                                      }}
-                                      trigger={
-                                        <Button
-                                          type="button"
-                                          disabled={models.fields.length >= 10}
-                                          className="w-full"
-                                        >
-                                          Add LoRA Model
-                                        </Button>
-                                      }
-                                    />
-                                  </div>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Voice Field */}
-                          <FormField
-                            control={form.control}
-                            name="voice"
-                            render={({ field }) => (
-                              <FormItem className="p-4 bg-secondary rounded-lg mb-4">
-                                <FormLabel>Voice</FormLabel>
-                                <FormDescription>
-                                  Your agent will speak with this voice.
-                                </FormDescription>
-                                <FormControl>
-                                  <VoiceSelector
-                                    value={field.value || ''}
-                                    onChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Tools Field */}
-                          <FormField
-                            control={form.control}
-                            name="tools"
-                            render={({ field }) => (
-                              <FormItem className="p-4 bg-secondary rounded-lg mt-4">
-                                <FormLabel>Tools</FormLabel>
-                                <FormDescription>
-                                  Select which tools this agent can use to help
-                                  users.
-                                </FormDescription>
-                                <FormControl>
-                                  <div className="space-y-3">
-                                    {[
-                                      {
-                                        key: 'create_image',
-                                        label: 'Create images and videos',
-                                      },
-                                      {
-                                        key: 'create_audio',
-                                        label:
-                                          'Create Audio (including music and speech)',
-                                      },
-                                      {
-                                        key: 'vj_tools',
-                                        label:
-                                          'VJ Tools (Texture Flow and Video FX)',
-                                      },
-                                      {
-                                        key: 'manage_collections',
-                                        label: 'Manage collections',
-                                      },
-                                    ].map(tool => (
-                                      <div
-                                        key={tool.key}
-                                        className="flex items-center space-x-2"
-                                      >
-                                        <Switch
-                                          checked={Boolean(
-                                            field.value?.[tool.key],
-                                          )}
-                                          onCheckedChange={checked => {
-                                            const currentTools =
-                                              field.value || {}
-                                            field.onChange({
-                                              ...currentTools,
-                                              [tool.key]: checked,
-                                            })
-                                          }}
-                                        />
-                                        <label className="text-sm font-medium">
-                                          {tool.label}
-                                        </label>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </form>
-                </Form>
-              </div>
-            </div>
-
-            {/* Sticky Footer */}
-            <div className="border-t border-border p-6 ">
-              <div className="mx-auto max-w-3xl lg:max-w-3xl">
-                <Button
-                  type="submit"
-                  disabled={form.formState.isSubmitting}
-                  className="w-full"
-                  onClick={form.handleSubmit(handleSubmit)}
-                >
-                  {form.formState.isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating Agent...
-                    </>
-                  ) : (
-                    'Create Agent'
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </Button>
+                />
+
+                <FormField
+                  control={form.control}
+                  name="voice"
+                  render={({ field }) => (
+                    <FormItem className="rounded-lg border border-border/60 bg-secondary/40 p-4">
+                      <FormLabel>Voice</FormLabel>
+                      <FormDescription>
+                        Your agent will speak with this voice.
+                      </FormDescription>
+                      <FormControl>
+                        <VoiceSelector
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tools"
+                  render={({ field }) => (
+                    <FormItem className="rounded-lg border border-border/60 bg-secondary/40 p-4">
+                      <FormLabel>Tools</FormLabel>
+                      <FormDescription>
+                        Select which tools this agent can use to help users.
+                      </FormDescription>
+                      <FormControl>
+                        <div className="space-y-3">
+                          {[
+                            {
+                              key: 'create_image',
+                              label: 'Create images and videos',
+                            },
+                            {
+                              key: 'create_audio',
+                              label:
+                                'Create Audio (including music and speech)',
+                            },
+                            {
+                              key: 'vj_tools',
+                              label: 'VJ Tools (Texture Flow and Video FX)',
+                            },
+                            {
+                              key: 'manage_collections',
+                              label: 'Manage collections',
+                            },
+                          ].map(tool => (
+                            <div
+                              key={tool.key}
+                              className="flex items-center space-x-2"
+                            >
+                              <Switch
+                                checked={Boolean(field.value?.[tool.key])}
+                                onCheckedChange={checked => {
+                                  const currentTools = field.value || {}
+                                  field.onChange({
+                                    ...currentTools,
+                                    [tool.key]: checked,
+                                  })
+                                }}
+                              />
+                              <label className="text-sm font-medium">
+                                {tool.label}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
-          </div>
-        </div>
+
+            <div className="border-t border-dashed border-border pt-6">
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="w-full"
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating Agent...
+                  </>
+                ) : (
+                  'Create Agent'
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
   )

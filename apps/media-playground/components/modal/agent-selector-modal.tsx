@@ -14,11 +14,23 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AgentsFeed from '@/features/feed/agents-feed'
 import { MAX_AGENTS } from '@/features/sessions/session-config'
+import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAuthState } from '@/hooks/use-auth-state'
+import { RowItem } from '@/lib/query/cache-updates'
+import {
+  sortAllAgentsByPreference,
+  sortMyAgentsByPreference,
+} from '@/lib/sort-agents-by-preference'
 import { cn } from '@/lib/utils'
 import { Agent, FeedAgentCursorArguments } from '@edenlabs/eden-sdk'
 import { CheckIcon, XIcon } from 'lucide-react'
-import { PropsWithChildren, ReactNode, useRef, useState } from 'react'
+import {
+  PropsWithChildren,
+  ReactNode,
+  useCallback,
+  useRef,
+  useState,
+} from 'react'
 
 type Props = {
   title?: ReactNode
@@ -46,6 +58,9 @@ const AgentSelectorModal = ({
   const [searchQuery, setSearchQuery] = useState('')
   const [tempSelectedAgents, setTempSelectedAgents] =
     useState<Agent[]>(selectedAgents)
+
+  // Get user preferences for agent sorting
+  const { lastAgents } = useUserPreferencesQuery({ enabled: !!user })
 
   const handleAgentToggle = (agent: Agent) => {
     setTempSelectedAgents(prev => {
@@ -90,6 +105,26 @@ const AgentSelectorModal = ({
     ...(currentTab === 'user' && user?._id ? { user: user._id } : {}),
     ...(searchQuery ? { search: searchQuery } : {}),
   }
+
+  // Custom sort function based on current tab
+  const customSort = useCallback(
+    (items: RowItem[]): RowItem[] => {
+      // Cast items to agents for sorting
+      const agents = items as Agent[]
+      if (currentTab === 'user') {
+        // For "My Agents", presort by last_agents (top 5, owned by user only)
+        return sortMyAgentsByPreference(
+          agents,
+          lastAgents,
+          user?._id,
+        ) as RowItem[]
+      } else {
+        // For "Public Agents", presort by last_agents (all agents)
+        return sortAllAgentsByPreference(agents, lastAgents) as RowItem[]
+      }
+    },
+    [currentTab, lastAgents, user?._id],
+  )
 
   // Get selected agent IDs for feed component
   const selectedAgentIds = tempSelectedAgents.map(agent => agent._id)
@@ -177,6 +212,7 @@ const AgentSelectorModal = ({
               hideCreateButton={true}
               hideContextMenu={true}
               improvedLayout={true}
+              customSort={customSort}
             />
           </div>
         </div>

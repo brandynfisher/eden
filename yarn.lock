@@ -20797,6 +20797,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"linkify-react@npm:^4.1.3":
+  version: 4.3.2
+  resolution: "linkify-react@npm:4.3.2"
+  peerDependencies:
+    linkifyjs: ^4.0.0
+    react: ">= 15.0.0"
+  checksum: 10c0/6f1e5fa28129bfa2c9fe7568a63c4cc8453cfa7de9f401a33b9bf6826b8d7ecccbb054cfe54c0b3f7c39d36b410189a9adcf438667c3e6443afda8bd2e4b36df
+  languageName: node
+  linkType: hard
+
+"linkifyjs@npm:^4.1.3":
+  version: 4.3.2
+  resolution: "linkifyjs@npm:4.3.2"
+  checksum: 10c0/1a85e6b368304a4417567fe5e38651681e3e82465590836942d1b4f3c834cc35532898eb1e2479f6337d9144b297d418eb708b6be8ed0b3dc3954a3588e07971
+  languageName: node
+  linkType: hard
+
 "lint-staged@npm:^15.2.2":
   version: 15.5.2
   resolution: "lint-staged@npm:15.5.2"
@@ -21640,6 +21657,7 @@ __metadata:
     react-device-detect: "npm:^2.2.3"
     react-dom: "npm:^18.2.0"
     react-dropzone: "npm:^14.2.3"
+    react-farcaster-embed: "npm:^1.11.0"
     react-hook-form: "npm:^7.52.1"
     react-markdown: "npm:^9.0.3"
     react-photoswipe-gallery: "npm:^3.0.2"
@@ -25968,6 +25986,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-farcaster-embed@npm:^1.11.0":
+  version: 1.11.0
+  resolution: "react-farcaster-embed@npm:1.11.0"
+  dependencies:
+    linkify-react: "npm:^4.1.3"
+    linkifyjs: "npm:^4.1.3"
+    server-only: "npm:^0.0.1"
+  peerDependencies:
+    react: ^16.8 || ^17.0 || ^18.0
+    react-dom: ^16.8 || ^17.0 || ^18.0
+  checksum: 10c0/689f20efaac4b40449a2b8ed2033d9b4faf90fe76b8d3828b571427a74c3327edec2fe4910efabf5dd50bd8b8bda4cbf1b791806bad38904e20faba884504c0b
+  languageName: node
+  linkType: hard
+
 "react-hook-form@npm:^7.52.1":
   version: 7.66.0
   resolution: "react-hook-form@npm:7.66.0"
@@ -27680,7 +27712,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"server-only@npm:0.0.1":
+"server-only@npm:0.0.1, server-only@npm:^0.0.1":
   version: 0.0.1
   resolution: "server-only@npm:0.0.1"
   checksum: 10c0/4704f0ef85da0be981af6d4ed8e739d39bcfd265b9c246a684060acda5642d0fdc6daffc2308e71e2682c5f508090978802eae0a77623c9b90a49f9ae68048d6

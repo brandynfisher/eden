@@ -795,6 +795,39 @@ export const updateAgentDeployment = async (
       }
     }
 
+    // For Twitter only, update the deployment directly in MongoDB
+    // Twitter doesn't have a workload running in the compute API
+    if (platform === 'twitter') {
+      const updateData: any = {}
+
+      if (config) {
+        // Deep merge the twitter config to preserve existing fields like username
+        updateData.config = {
+          ...deployment.config,
+          twitter: {
+            ...deployment.config?.twitter,
+            ...configPayload.twitter,
+          },
+        }
+      }
+
+      if (secrets && Object.keys(secretsPayload).length > 0) {
+        updateData.secrets = {
+          ...deployment.secrets,
+          ...secretsPayload,
+        }
+      }
+
+      await Deployment.findByIdAndUpdate(deployment._id, updateData, {
+        new: true,
+      })
+
+      return reply.status(200).send({
+        deploymentId: deployment._id,
+      })
+    }
+
+    // For all other platforms (including Farcaster), send to compute API
     const modalRequest = {
       endpoint: `${server.config.EDEN_COMPUTE_API_URL}/v2/deployments/update`,
       data: {

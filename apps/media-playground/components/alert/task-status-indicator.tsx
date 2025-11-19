@@ -53,7 +53,8 @@ const TaskStatusIndicator = () => {
   const getFirstCreationId = (task: TaskV2) => {
     if (!task.result) return null
     for (const result of task.result) {
-      for (const output of result.output || []) {
+      const outputs = Array.isArray(result.output) ? result.output : []
+      for (const output of outputs) {
         const creationId = output?.creation?._id
         if (creationId) {
           return creationId

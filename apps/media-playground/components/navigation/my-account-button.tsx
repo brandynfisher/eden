@@ -1,5 +1,6 @@
 'use client'
 
+import FeedbackForm from '@/components/form/feedback-form'
 import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
 import DiscordIcon from '@/components/icons/discord'
 import TwitterIcon from '@/components/icons/twitter'
@@ -17,11 +18,10 @@ import UserAvatar from '@/components/user/user-avatar'
 import { useMe } from '@/hooks/use-me'
 import { siteConfig } from '@/lib/config'
 import { subscriptionTierNameMap } from '@/lib/strings'
+import { useNotificationContext } from '@/providers/notification-provider'
 import { SignedIn, SignedOut, useAuth, useClerk } from '@clerk/nextjs'
 import { dark } from '@clerk/themes'
 import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
-import * as Sentry from '@sentry/nextjs'
-import { feedbackIntegration } from '@sentry/nextjs'
 import {
   ActivityIcon,
   BookmarkIcon,
@@ -37,7 +37,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import * as React from 'react'
 import { forwardRef, useRef, useState } from 'react'
 
 const ThemeToggleForwardWrap = forwardRef<HTMLDivElement>(
@@ -55,6 +54,7 @@ const AccountDropdown = () => {
     isAuthenticated: !!isSignedIn,
   })
   const { signOut } = useClerk()
+  const { unreadCount } = useNotificationContext()
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
@@ -69,10 +69,6 @@ const AccountDropdown = () => {
   const [hasOpenDialog, setHasOpenDialog] = useState(false)
   const dropdownTriggerRef = useRef<HTMLButtonElement | null>(null)
   const focusRef = useRef<HTMLButtonElement | null>(null)
-  const [feedback, setFeedback] =
-    useState<ReturnType<typeof feedbackIntegration>>()
-  const feedbackButtonRef = useRef<HTMLDivElement>(null)
-
   function handleDialogItemSelect() {
     focusRef.current = dropdownTriggerRef.current
   }
@@ -83,22 +79,6 @@ const AccountDropdown = () => {
       setDropdownOpen(false)
     }
   }
-
-  React.useEffect(() => {
-    setFeedback(Sentry.getFeedback())
-  }, [])
-
-  React.useEffect(() => {
-    let unsubscribe: () => void
-
-    if (feedback && feedbackButtonRef && feedbackButtonRef.current) {
-      unsubscribe = feedback.attachTo(feedbackButtonRef.current)
-    }
-
-    return () => {
-      unsubscribe && unsubscribe()
-    }
-  }, [feedback])
 
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -114,6 +94,11 @@ const AccountDropdown = () => {
             name={user?.username}
             className="w-10 h-10"
           />
+          {unreadCount > 0 ? (
+            <span className="absolute -top-1 -right-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-background bg-destructive px-1 text-[11px] font-semibold leading-none text-white shadow">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          ) : null}
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
@@ -240,6 +225,18 @@ const AccountDropdown = () => {
             <span>Subscription</span>
           </Link>
         </DropdownMenuItem>
+        <DialogMenuItem
+          onSelect={handleDialogItemSelect}
+          onOpenChange={handleDialogItemOpenChange}
+          triggerChildren={
+            <>
+              <MessageSquareIcon className="mr-2 h-4 w-4" />
+              <span>Send Feedback</span>
+            </>
+          }
+        >
+          <FeedbackForm />
+        </DialogMenuItem>
         <DialogMenuItem
           onSelect={handleDialogItemSelect}
           onOpenChange={handleDialogItemOpenChange}

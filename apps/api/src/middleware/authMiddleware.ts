@@ -43,6 +43,8 @@ const apiKeyVerify = async (
     userId: user._id,
     character: apiKey.character,
     subscriptionTier: user.subscriptionTier || SubscriptionTier.Free,
+    highestMonthlySubscriptionTier:
+      user.highestMonthlySubscriptionTier || SubscriptionTier.Free,
     featureFlags: user.featureFlags || [],
     isAdmin: user.isAdmin || false,
     apiKeyId: apiKey._id,

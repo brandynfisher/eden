@@ -21,9 +21,7 @@ export function AgentDashboardModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl w-full max-h-[90vh] p-0 overflow-hidden flex flex-col">
-        <DialogTitle className="sr-only">
-          {agent?.name ? `${agent.name} Dashboard` : 'Agent Dashboard'}
-        </DialogTitle>
+        <DialogTitle className="sr-only">{'Dashboard'}</DialogTitle>
 
         {isLoading ? (
           <div className="flex items-center justify-center h-full min-h-[400px]">

@@ -1,3 +1,4 @@
+import { canUserCreatePrivateObject } from '../lib/authorization'
 import { Agent, AgentDocument } from '../models/Agent'
 import {
   AgentPermission,
@@ -49,7 +50,6 @@ import {
   AgentsDeleteArguments,
   AgentsListArguments,
   AgentsUpdateArguments,
-  SubscriptionTier,
 } from '@edenlabs/eden-sdk'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId, UpdateResult } from 'mongodb'
@@ -300,6 +300,12 @@ export const createAgent = async (
 
   const currentUserId = request.user.userId
 
+  if (isPublic === false && !canUserCreatePrivateObject(request.user)) {
+    return reply.status(401).send({
+      error: 'You are not authorized to make an agent private',
+    })
+  }
+
   if (models && models.length > 10) {
     return reply.status(422).send({
       error: 'Cannot have more than 10 models',
@@ -391,8 +397,7 @@ export const updateAgent = async (
   }
 
   if (isPublic === false) {
-    const user = request.user
-    if (user.subscriptionTier === SubscriptionTier.Free) {
+    if (!canUserCreatePrivateObject(request.user)) {
       return reply.status(401).send({
         error: 'You are not authorized to make an agent private',
       })

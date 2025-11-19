@@ -12,7 +12,10 @@ import { Agent } from '@edenlabs/eden-sdk'
 import { useParams, useRouter } from 'next/navigation'
 import { FC, useCallback, useState } from 'react'
 
-const SessionChat: FC<{ onOpenSidebar?: () => void }> = ({ onOpenSidebar }) => {
+const SessionChat: FC<{
+  onOpenSidebar?: () => void
+  onOpenAgentSettings?: (agentId: string) => void
+}> = ({ onOpenSidebar, onOpenAgentSettings }) => {
   const params = useParams()
   const agentId = params?.agentId as string | undefined
   const sessionId = params?.id as string | undefined
@@ -93,7 +96,12 @@ const SessionChat: FC<{ onOpenSidebar?: () => void }> = ({ onOpenSidebar }) => {
 
   // If we have a sessionId in the URL, render normal session
   if (sessionId && agent) {
-    return <Session onOpenSidebar={onOpenSidebar} />
+    return (
+      <Session
+        onOpenSidebar={onOpenSidebar}
+        onOpenAgentSettings={onOpenAgentSettings}
+      />
+    )
   }
 
   const handleAgentSelect = (selectedAgent: {
@@ -119,7 +127,7 @@ const SessionChat: FC<{ onOpenSidebar?: () => void }> = ({ onOpenSidebar }) => {
   // Otherwise show the welcome screen
   return (
     <main className="flex-1 overflow-hidden flex flex-col">
-      <div className="flex-1 overflow-y-auto p-4 max-w-[--aui-thread-max-width] mx-auto w-full">
+      <div className="flex-1 overflow-y-auto p-4 mx-auto w-full">
         <SessionWelcome
           variant="chat"
           agent={agent as Agent}

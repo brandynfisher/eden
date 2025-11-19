@@ -3,6 +3,7 @@
 import { AgentAvatars } from './agent-avatars'
 import { SessionShareButton } from './session-share-button'
 import { SettingsSidebar } from './settings-sidebar'
+import FeedbackForm from '@/components/form/feedback-form'
 import RedeemVoucherForm from '@/components/form/redeem-voucher-form'
 import DiscordIcon from '@/components/icons/discord'
 import TwitterIcon from '@/components/icons/twitter'
@@ -34,6 +35,7 @@ import AgentMemoryView from '@/features/sessions/views/agent-memory-view'
 import { useSessionListQuery } from '@/hooks/query/use-session-list-query'
 import { useSessionNotificationsQuery } from '@/hooks/query/use-session-notifications-query'
 import { useSessionQuery } from '@/hooks/query/use-session-query'
+import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
 import { useAgentPermissions } from '@/hooks/use-agent-permissions'
 import { useAuthState } from '@/hooks/use-auth-state'
 import { useMe } from '@/hooks/use-me'
@@ -41,21 +43,15 @@ import { siteConfig } from '@/lib/config'
 import { getCloudfrontOriginalUrl } from '@/lib/media'
 import { subscriptionTierNameMap } from '@/lib/strings'
 import { cn } from '@/lib/utils'
+import { useNotificationContext } from '@/providers/notification-provider'
 import { useAuth, useClerk } from '@clerk/nextjs'
-import {
-  Agent,
-  FeatureFlag,
-  SessionType,
-  SubscriptionTier,
-} from '@edenlabs/eden-sdk'
+import { Agent, FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import {
   ActivityIcon,
   BookmarkIcon,
   BotIcon,
-  BrainIcon,
   CheckIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
   ComponentIcon,
@@ -559,15 +555,13 @@ const MainLeft = ({
   agentId,
   isChat,
   onViewModeChange,
-  agent,
-  pathname,
+  scrollContainerRef,
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
   onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
-  agent?: Agent | null | undefined
-  pathname?: string | null
+  scrollContainerRef?: React.MutableRefObject<HTMLDivElement | null>
 }) => {
   const { isSignedIn, user } = useAuthState()
   const router = useRouter()
@@ -575,16 +569,8 @@ const MainLeft = ({
   const currentSessionId =
     (params?.id as string) || (params?.sessionId as string)
 
-  // Determine the label for the sessions section
-  const sessionsLabel = React.useMemo(() => {
-    if (pathname?.startsWith('/chat') || pathname === '/') {
-      if (agentId && agent) {
-        return `Chats with ${agent.name || agent.username}`
-      }
-      return 'Chats'
-    }
-    return 'Sessions'
-  }, [pathname, agentId, agent])
+  // Always show "Recent Chats" label
+  const sessionsLabel = 'Recent Chats'
   const [isSessionsCollapsed, setIsSessionsCollapsed] = useState(false)
   const {
     isLoading,
@@ -595,7 +581,7 @@ const MainLeft = ({
     updatePinStatus,
   } = useSessionListQuery({
     enabled: !!isSignedIn,
-    agent_id: agentId,
+    // Don't filter by agent - show all chats
   })
 
   // Get unread notification counts for sessions
@@ -626,63 +612,41 @@ const MainLeft = ({
 
   // Scroll-based pagination
   useEffect(() => {
-    // Small delay to ensure DOM is ready
-    const timeoutId = setTimeout(() => {
-      const container = document.getElementById('sidebar-scroll-container')
-      if (!container) {
-        return
+    const container = scrollContainerRef?.current
+    if (!container) {
+      return
+    }
+
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+
+      // Fetch when within 200px of bottom
+      if (
+        distanceFromBottom <= 200 &&
+        hasMoreRef.current &&
+        !isFetchingRef.current
+      ) {
+        fetchNextPage()
       }
+    }
 
-      const handleScroll = () => {
-        const scrollTop = container.scrollTop
-        const scrollHeight = container.scrollHeight
-        const clientHeight = container.clientHeight
-        const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-
-        // Fetch when within 200px of bottom
-        if (
-          distanceFromBottom <= 200 &&
-          hasMoreRef.current &&
-          !isFetchingRef.current
-        ) {
-          fetchNextPage()
-        }
-      }
-
-      container.addEventListener('scroll', handleScroll)
-
-      // Cleanup function
-      return () => {
-        container.removeEventListener('scroll', handleScroll)
-      }
-    }, 100)
+    container.addEventListener('scroll', handleScroll)
 
     return () => {
-      clearTimeout(timeoutId)
+      container.removeEventListener('scroll', handleScroll)
     }
-  }, [fetchNextPage])
+  }, [fetchNextPage, scrollContainerRef])
 
   // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
   const allSessions = React.useMemo(() => {
+    // Show ALL chats for all routes (no session_type filtering)
     const filteredSessions = sessions.filter(
       (session): session is NonNullable<typeof session> => {
         if (!session) return false
-
-        // For /chat route, show sessions that are NOT "passive" or "automatic"
-        // (includes chat, undefined, null - i.e., single-agent chats)
-        if (pathname?.startsWith('/chat') || pathname === '/') {
-          return (
-            session.session_type !== SessionType.PASSIVE &&
-            session.session_type !== SessionType.AUTOMATIC
-          )
-        }
-
-        // For /sessions route, show only "passive" or "automatic" sessions
-        // (multi-agent sessions)
-        return (
-          session.session_type === SessionType.PASSIVE ||
-          session.session_type === SessionType.AUTOMATIC
-        )
+        return true
       },
     )
 
@@ -702,7 +666,7 @@ const MainLeft = ({
 
     // Combine pinned and unpinned sessions with pinned first
     return [...pinnedSessions, ...unpinnedSessions]
-  }, [sessions, isChat, pathname])
+  }, [sessions])
 
   return (
     <div className="flex flex-col text-sm font-medium flex-1 min-h-0 mr-2">
@@ -750,10 +714,7 @@ const MainLeft = ({
                       onPinToggle={handlePinToggle}
                       unreadCount={unreadCounts?.get(session._id) || 0}
                       userId={user?._id}
-                      hideAvatars={
-                        (pathname?.startsWith('/chat') || pathname === '/') &&
-                        !!agentId
-                      }
+                      hideAvatars={false}
                       onItemClick={() => {
                         onItemClick?.()
                         if (isChat) {
@@ -794,85 +755,6 @@ const MainLeft = ({
   )
 }
 
-// Current Agent Display for /chat/{agentId}
-const CurrentAgentDisplay: FC<{
-  agent: Agent
-  userId?: string
-  onAgentClick: () => void
-  onSettingsClick: () => void
-  onMemoriesClick: () => void
-}> = ({ agent, userId, onAgentClick, onSettingsClick, onMemoriesClick }) => {
-  // Check if user has edit permissions using the agent permissions hook
-  // This checks: original owner, co-owners, and co-editors in agent_permissions
-  const { hasEditAccess } = useAgentPermissions(agent, userId)
-
-  return (
-    <div className="mr-2 mb-2">
-      <div className="flex justify-between font-normal items-center gap-1 rounded-md transition-all text-sm p-0.5 border border-transparent hover:bg-muted/50">
-        <button
-          onClick={onAgentClick}
-          className="flex items-center gap-2 flex-1 min-w-0 px-2 py-2"
-        >
-          <Avatar className="w-8 h-8 flex-shrink-0">
-            <AvatarImage
-              src={
-                agent.userImage && agent.userImage.trim()
-                  ? getCloudfrontOriginalUrl(agent.userImage)
-                  : undefined
-              }
-              alt={agent.name}
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-muted text-xs font-medium">
-              {agent.name?.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-base font-semibold truncate flex-1 text-left">
-            {agent.name}
-          </span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="flex-shrink-0 text-muted-foreground"
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </button>
-        {hasEditAccess ? (
-          <button
-            onClick={e => {
-              e.stopPropagation()
-              onSettingsClick()
-            }}
-            className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
-            title="Agent Settings"
-          >
-            <SettingsIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-          </button>
-        ) : (
-          <button
-            onClick={e => {
-              e.stopPropagation()
-              onMemoriesClick()
-            }}
-            className="flex-shrink-0 p-2 opacity-100 hover:bg-muted/30 rounded-md transition-colors"
-            title="Memories"
-          >
-            <BrainIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
-
 // ThemeToggle wrapper for forwardRef
 const ThemeToggleForwardWrap = React.forwardRef<HTMLDivElement>(
   ({ ...rest }, ref) => (
@@ -891,6 +773,7 @@ const SidebarUserProfile = () => {
   })
   const { signOut } = useClerk()
   const { verifyAuth } = useAuthState()
+  const { unreadCount } = useNotificationContext()
 
   const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
 
@@ -921,7 +804,7 @@ const SidebarUserProfile = () => {
   // Show sign-in button when not signed in
   if (!isSignedIn || !user) {
     return (
-      <div className="border-t bg-background p-3 md:-ml-3 md:w-[calc(100%+0.75rem)]">
+      <div className="border-t bg-background p-3 md:-ml-3 md:w-[calc(100%+0.75rem)] flex-shrink-0">
         <Button onClick={verifyAuth} className="w-full" variant="default">
           Sign In
         </Button>
@@ -930,7 +813,7 @@ const SidebarUserProfile = () => {
   }
 
   return (
-    <div className="border-t bg-background -ml-3 md:w-[calc(100%+0.75rem)] w-full">
+    <div className="border-t bg-background -ml-3 md:w-[calc(100%+0.75rem)] w-full flex-shrink-0">
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <button
@@ -950,7 +833,11 @@ const SidebarUserProfile = () => {
                 {Number((balance || 0).toFixed(0)).toLocaleString()} manna
               </span>
             </div>
-            <ChevronDownIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            {unreadCount > 0 ? (
+              <span className="ml-2 flex h-5 min-w-[22px] items-center justify-center rounded-full border border-background bg-destructive px-1 text-[11px] font-semibold leading-none text-white">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            ) : null}
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -1093,6 +980,18 @@ const SidebarUserProfile = () => {
           <DropdownMenuItem className="cursor-pointer" asChild>
             <ThemeToggleForwardWrap />
           </DropdownMenuItem>
+          <DialogMenuItem
+            onSelect={handleDialogItemSelect}
+            onOpenChange={handleDialogItemOpenChange}
+            triggerChildren={
+              <>
+                <MessageSquareIcon className="mr-2 h-4 w-4" />
+                <span>Send Feedback</span>
+              </>
+            }
+          >
+            <FeedbackForm />
+          </DialogMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer" onClick={logout}>
             <LogOutIcon className="mr-2 h-4 w-4" />
@@ -1156,10 +1055,8 @@ export const SessionsSidebarContent = ({
   viewMode,
   onViewModeChange,
   onAgentSelect,
-  onSettingsClick,
   onSidebarToggle,
   isCollapsed = false,
-  mode = 'sessions',
   isMobileSidebar = false,
 }: {
   onItemClick?: () => void
@@ -1169,18 +1066,28 @@ export const SessionsSidebarContent = ({
   viewMode?: ViewMode
   onViewModeChange?: (mode: ViewMode) => void
   onAgentSelect?: () => void
-  onSettingsClick?: () => void
   onSidebarToggle?: () => void
   isCollapsed?: boolean
-  mode?: 'sessions' | 'explore' | 'create'
   isMobileSidebar?: boolean
 }) => {
-  const { user } = useAuthState()
+  const { user, isSignedIn } = useAuthState()
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null)
+
+  // Get user preferences for last agent
+  const { lastAgents } = useUserPreferencesQuery({ enabled: !!isSignedIn })
+  const lastAgent =
+    lastAgents.length > 0 ? lastAgents[0].username || lastAgents[0]._id : 'eve'
+  const agentUsername = agent?.username
+
+  const handleNewChatNavigation = useCallback(() => {
+    const targetAgentKey = agentUsername || agentId || lastAgent
+    router.push(`/chat/${targetAgentKey}`)
+  }, [agentUsername, agentId, lastAgent, router])
 
   // Get permissions for settings sidebar
   const { isOriginalOwner, hasOwnerAccess, hasEditAccess } =
@@ -1199,10 +1106,101 @@ export const SessionsSidebarContent = ({
     router.replace(url.pathname + url.search, { scroll: false })
   }
 
+  const collapsedNavItems = React.useMemo(
+    () => [
+      {
+        title: 'Agents',
+        onClick: () => router.push('/agents'),
+        isActive: pathname === '/agents' || pathname?.startsWith('/agents/'),
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Tasks',
+        onClick: () => router.push('/tasks'),
+        isActive: pathname === '/tasks' || pathname?.startsWith('/tasks/'),
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Explore',
+        onClick: () => router.push('/explore?type=creations'),
+        isActive: pathname?.startsWith('/explore'),
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        ),
+      },
+      {
+        title: 'Create',
+        onClick: () => router.push('/create'),
+        isActive: pathname?.startsWith('/create'),
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+          </svg>
+        ),
+      },
+    ],
+    [pathname, router],
+  )
+
   // Show collapsed sidebar with icons only
   if (isCollapsed) {
     return (
-      <div className="flex flex-col items-center gap-2 h-full pt-2">
+      <div className="flex flex-col items-center gap-2 h-full min-h-0 pt-2">
         {/* Expand button */}
         {onSidebarToggle && (
           <Button
@@ -1225,18 +1223,14 @@ export const SessionsSidebarContent = ({
           <EdenLogoBw className="w-[20px]" />
         </button>
 
-        {/* Chat icon */}
+        {/* New Chat icon */}
         <button
-          onClick={() => router.push('/chat')}
+          onClick={handleNewChatNavigation}
           className={cn(
             'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
-            pathname === '/chat' ||
-              pathname === '/' ||
-              pathname?.startsWith('/chat/')
-              ? 'bg-primary/20 text-primary-foreground'
-              : 'hover:bg-muted/20',
+            'hover:bg-muted/20',
           )}
-          title="Chat"
+          title="New Chat"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -1253,31 +1247,22 @@ export const SessionsSidebarContent = ({
           </svg>
         </button>
 
-        {/* Sessions icon */}
-        <button
-          onClick={() => router.push('/sessions')}
-          className={cn(
-            'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
-            pathname?.startsWith('/sessions')
-              ? 'bg-primary/20 text-primary-foreground'
-              : 'hover:bg-muted/20',
-          )}
-          title="Sessions"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {/* Navigation icons */}
+        {collapsedNavItems.map(item => (
+          <button
+            key={item.title}
+            onClick={item.onClick}
+            className={cn(
+              'flex items-center justify-center h-9 w-9 rounded-md transition-colors',
+              item.isActive
+                ? 'bg-primary/20 text-primary-foreground'
+                : 'hover:bg-muted/20',
+            )}
+            title={item.title}
           >
-            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
-          </svg>
-        </button>
+            {item.icon}
+          </button>
+        ))}
 
         {/* Spacer to push profile to bottom */}
         <div className="flex-1" />
@@ -1305,7 +1290,7 @@ export const SessionsSidebarContent = ({
     return (
       <div className="flex flex-col h-full min-h-0">
         {/* Desktop: Eden logo + close button at the top */}
-        <div className="hidden md:flex items-center justify-between mb-4 mr-2 pt-3">
+        <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
           <button
             onClick={() => router.push('/')}
             className="flex items-center gap-2"
@@ -1349,9 +1334,9 @@ export const SessionsSidebarContent = ({
 
   // Show regular chat sidebar for all other modes
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Desktop: Eden logo + close button at the top */}
-      <div className="hidden md:flex items-center justify-between mb-4 mr-2 pt-3">
+      <div className="hidden md:flex flex-shrink-0 items-center justify-between mb-4 mr-2 pt-3">
         <button
           onClick={() => router.push('/')}
           className="flex items-center gap-2"
@@ -1381,18 +1366,66 @@ export const SessionsSidebarContent = ({
       {/* Mobile: Navigation Buttons - scrollable when in sheet, shown outside scroll container when NOT in sheet */}
       {!isMobileSidebar && (
         <div className="mb-4 mr-2 flex-col gap-2 md:hidden flex">
-          {/* Chat button */}
+          {/* New Chat button with selected agent avatar */}
+          <div className="flex w-full justify-between items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                onItemClick?.()
+                handleNewChatNavigation()
+              }}
+              className={cn(
+                'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',
+                '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+              )}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-4"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>New Chat</span>
+            </Button>
+            {agentId && agent && (
+              <button
+                onClick={() => {
+                  onItemClick?.()
+                  onAgentSelect?.()
+                }}
+                className="shrink-0"
+              >
+                <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src={getCloudfrontOriginalUrl(agent.userImage)}
+                    alt={agent.name || agent.username}
+                  />
+                  <AvatarFallback>
+                    {(agent.name || agent.username)?.[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            )}
+          </div>
+
+          {/* Agents button */}
           <Button
             variant="ghost"
             onClick={() => {
               onItemClick?.()
-              router.push('/chat')
+              router.push('/agents')
             }}
             className={cn(
               'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              pathname === '/chat' ||
-                pathname === '/' ||
-                pathname?.startsWith('/chat/')
+              pathname === '/agents' || pathname?.startsWith('/agents/')
                 ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
                 : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
             )}
@@ -1409,21 +1442,24 @@ export const SessionsSidebarContent = ({
               strokeLinejoin="round"
               className="size-4"
             >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            <span>Chat</span>
+            <span>Agents</span>
           </Button>
 
-          {/* Sessions button */}
+          {/* Tasks button */}
           <Button
             variant="ghost"
             onClick={() => {
               onItemClick?.()
-              router.push('/sessions')
+              router.push('/tasks')
             }}
             className={cn(
               'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              pathname?.startsWith('/sessions')
+              pathname === '/tasks' || pathname?.startsWith('/tasks/')
                 ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
                 : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
             )}
@@ -1440,14 +1476,10 @@ export const SessionsSidebarContent = ({
               strokeLinejoin="round"
               className="size-4"
             >
-              <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
             </svg>
-            <span className="flex items-center gap-1.5">
-              Sessions
-              <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                BETA
-              </span>
-            </span>
+            <span>Tasks</span>
           </Button>
 
           {/* Explore button */}
@@ -1482,7 +1514,7 @@ export const SessionsSidebarContent = ({
             <span>Explore</span>
           </Button>
 
-          {/* Tools button */}
+          {/* Create button */}
           <Button
             variant="ghost"
             onClick={() => {
@@ -1491,7 +1523,7 @@ export const SessionsSidebarContent = ({
             }}
             className={cn(
               'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-              pathname?.startsWith('/create') || pathname?.startsWith('/tools')
+              pathname?.startsWith('/create')
                 ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
                 : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
             )}
@@ -1510,24 +1542,63 @@ export const SessionsSidebarContent = ({
             >
               <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
             </svg>
-            <span>Tools</span>
+            <span>Create</span>
           </Button>
         </div>
       )}
 
       {/* Desktop: Navigation Buttons - don't close sidebar on desktop */}
-      <div className="mb-4 mr-2 flex-col gap-2 hidden md:flex">
-        {/* Chat button */}
+      <div className="mb-4 mr-2 flex-shrink-0 flex-col gap-2 hidden md:flex">
+        {/* New Chat button with selected agent avatar */}
+        <div className="flex w-full justify-between items-center gap-2">
+          <Button
+            variant="ghost"
+            onClick={handleNewChatNavigation}
+            className={cn(
+              'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',
+              '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+            )}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-4"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>New Chat</span>
+          </Button>
+          {agentId && agent && (
+            <button onClick={() => onAgentSelect?.()} className="shrink-0">
+              <Avatar className="h-10 w-10">
+                <AvatarImage
+                  src={getCloudfrontOriginalUrl(agent.userImage)}
+                  alt={agent.name || agent.username}
+                />
+                <AvatarFallback>
+                  {(agent.name || agent.username)?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          )}
+        </div>
+
+        {/* Agents button */}
         <Button
           variant="ghost"
           onClick={() => {
-            router.push('/chat')
+            router.push('/agents')
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname === '/chat' ||
-              pathname === '/' ||
-              pathname?.startsWith('/chat/')
+            pathname === '/agents' || pathname?.startsWith('/agents/')
               ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
               : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
           )}
@@ -1544,20 +1615,23 @@ export const SessionsSidebarContent = ({
             strokeLinejoin="round"
             className="size-4"
           >
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
-          <span>Chat</span>
+          <span>Agents</span>
         </Button>
 
-        {/* Sessions button */}
+        {/* Tasks button */}
         <Button
           variant="ghost"
           onClick={() => {
-            router.push('/sessions')
+            router.push('/tasks')
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/sessions')
+            pathname === '/tasks' || pathname?.startsWith('/tasks/')
               ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
               : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
           )}
@@ -1574,14 +1648,10 @@ export const SessionsSidebarContent = ({
             strokeLinejoin="round"
             className="size-4"
           >
-            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
           </svg>
-          <span className="flex items-center gap-1.5">
-            Sessions
-            <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-              BETA
-            </span>
-          </span>
+          <span>Tasks</span>
         </Button>
 
         {/* Explore button */}
@@ -1615,7 +1685,7 @@ export const SessionsSidebarContent = ({
           <span>Explore</span>
         </Button>
 
-        {/* Tools button */}
+        {/* Create button */}
         <Button
           variant="ghost"
           onClick={() => {
@@ -1623,7 +1693,7 @@ export const SessionsSidebarContent = ({
           }}
           className={cn(
             'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-            pathname?.startsWith('/create') || pathname?.startsWith('/tools')
+            pathname?.startsWith('/create')
               ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
               : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
           )}
@@ -1642,30 +1712,79 @@ export const SessionsSidebarContent = ({
           >
             <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
           </svg>
-          <span>Tools</span>
+          <span>Create</span>
         </Button>
       </div>
 
       {/* Content area based on mode */}
       <div
         id="sidebar-scroll-container"
+        ref={scrollContainerRef}
         className="flex-1 min-h-0 overflow-y-auto"
       >
         {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
         {isMobileSidebar && (
           <div className="mb-4 mr-2 flex-col gap-2 flex pt-3">
-            {/* Chat button */}
+            {/* New Chat button with selected agent avatar */}
+            <div className="flex w-full justify-between items-center gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  onItemClick?.()
+                  handleNewChatNavigation()
+                }}
+                className={cn(
+                  'flex flex-1 justify-start items-center gap-2 rounded-md font-medium transition-colors h-10 px-3',
+                  '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
+                )}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="size-4"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <span>New Chat</span>
+              </Button>
+              {agentId && agent && (
+                <button
+                  onClick={() => {
+                    onItemClick?.()
+                    onAgentSelect?.()
+                  }}
+                  className="shrink-0"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={getCloudfrontOriginalUrl(agent.userImage)}
+                      alt={agent.name || agent.username}
+                    />
+                    <AvatarFallback>
+                      {(agent.name || agent.username)?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              )}
+            </div>
+
+            {/* Agents button */}
             <Button
               variant="ghost"
               onClick={() => {
                 onItemClick?.()
-                router.push('/chat')
+                router.push('/agents')
               }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname === '/chat' ||
-                  pathname === '/' ||
-                  pathname?.startsWith('/chat/')
+                pathname === '/agents' || pathname?.startsWith('/agents/')
                   ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
                   : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
               )}
@@ -1682,21 +1801,24 @@ export const SessionsSidebarContent = ({
                 strokeLinejoin="round"
                 className="size-4"
               >
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
-              <span>Chat</span>
+              <span>Agents</span>
             </Button>
 
-            {/* Sessions button */}
+            {/* Tasks button */}
             <Button
               variant="ghost"
               onClick={() => {
                 onItemClick?.()
-                router.push('/sessions')
+                router.push('/tasks')
               }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname?.startsWith('/sessions')
+                pathname === '/tasks' || pathname?.startsWith('/tasks/')
                   ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
                   : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
               )}
@@ -1713,14 +1835,10 @@ export const SessionsSidebarContent = ({
                 strokeLinejoin="round"
                 className="size-4"
               >
-                <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
               </svg>
-              <span className="flex items-center gap-1.5">
-                Sessions
-                <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                  BETA
-                </span>
-              </span>
+              <span>Tasks</span>
             </Button>
 
             {/* Explore button */}
@@ -1755,7 +1873,7 @@ export const SessionsSidebarContent = ({
               <span>Explore</span>
             </Button>
 
-            {/* Tools button */}
+            {/* Create button */}
             <Button
               variant="ghost"
               onClick={() => {
@@ -1764,8 +1882,7 @@ export const SessionsSidebarContent = ({
               }}
               className={cn(
                 'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                pathname?.startsWith('/create') ||
-                  pathname?.startsWith('/tools')
+                pathname?.startsWith('/create')
                   ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
                   : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
               )}
@@ -1784,151 +1901,22 @@ export const SessionsSidebarContent = ({
               >
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
               </svg>
-              <span>Tools</span>
+              <span>Create</span>
             </Button>
           </div>
         )}
 
-        {mode === 'sessions' && (
-          <>
-            {/* Show CurrentAgentDisplay for /chat/{agentId} routes */}
-            {(pathname?.startsWith('/chat') || pathname === '/') &&
-              agentId &&
-              agent && (
-                <>
-                  <CurrentAgentDisplay
-                    agent={agent}
-                    userId={user?._id}
-                    onAgentClick={() => onAgentSelect?.()}
-                    onSettingsClick={() => onSettingsClick?.()}
-                    onMemoriesClick={() => setIsMemoriesModalOpen(true)}
-                  />
-                  {/* Tasks and Creations buttons for /chat/{agent} */}
-                  <div className="mr-2 mb-4 flex flex-col gap-2">
-                    {/* Tasks button - only show if user has edit access */}
-                    {hasEditAccess && (
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          onItemClick?.()
-                          router.push(`/chat/${agentId}?page=tasks`)
-                        }}
-                        className={cn(
-                          'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                          viewMode === 'tasks'
-                            ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                            : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-                        )}
-                      >
-                        <ClockIcon className="size-4" />
-                        <span>Tasks</span>
-                      </Button>
-                    )}
-                    {/* Creations button */}
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        onItemClick?.()
-                        router.push(`/chat/${agentId}?page=creations`)
-                      }}
-                      className={cn(
-                        'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                        viewMode === 'creations'
-                          ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                          : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-                      )}
-                    >
-                      <ImageIcon className="size-4" />
-                      <span>Creations</span>
-                    </Button>
-                  </div>
-                </>
-              )}
-            <MainLeft
-              onItemClick={onItemClick}
-              agentId={agentId}
-              isChat={isChat}
-              onViewModeChange={onViewModeChange}
-              agent={agent}
-              pathname={pathname}
-            />
-          </>
-        )}
-
-        {mode === 'explore' && (
-          <div className="flex flex-col gap-2 mr-2">
-            <div className="text-xs font-medium text-muted-foreground mb-1">
-              Browse
-            </div>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=agents')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                searchParams?.get('type') === 'agents'
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              Agents
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=models')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                searchParams?.get('type') === 'models'
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              Models
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=creations')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                searchParams?.get('type') === 'creations'
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              Creations
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                onItemClick?.()
-                router.push('/explore?type=tools')
-              }}
-              className={cn(
-                'flex w-full justify-start gap-2 rounded-md font-medium transition-colors h-10',
-                searchParams?.get('type') === 'tools'
-                  ? 'bg-primary/20 hover:bg-primary/25 border border-primary/40 text-primary-foreground'
-                  : '!bg-muted/[0.25] hover:!bg-muted/50 text-foreground',
-              )}
-            >
-              Tools
-            </Button>
-          </div>
-        )}
-
-        {/* User Profile Section - Inside scroll container when in mobile sheet */}
-        {isMobileSidebar && <SidebarUserProfile />}
+        <MainLeft
+          onItemClick={onItemClick}
+          agentId={agentId}
+          isChat={isChat}
+          onViewModeChange={onViewModeChange}
+          scrollContainerRef={scrollContainerRef}
+        />
       </div>
 
-      {/* User Profile Section - Outside scroll container when NOT in mobile sheet */}
-      {!isMobileSidebar && <SidebarUserProfile />}
+      {/* User Profile Section - Always outside scroll container to stay sticky at bottom */}
+      <SidebarUserProfile />
 
       {/* Memories Modal for non-editor users */}
       {agent && (
@@ -1962,7 +1950,7 @@ export const SessionsSidebar = React.memo(
     return (
       <div
         className={cn(
-          'hidden md:flex md:flex-col bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
+          'hidden md:flex md:flex-col h-full min-h-0 bg-accent border-r p-3 pr-0 transition-all duration-300 ease-in-out',
           'max-w-[320px]',
           isSidebarCollapsed && 'p-0 border-none',
         )}

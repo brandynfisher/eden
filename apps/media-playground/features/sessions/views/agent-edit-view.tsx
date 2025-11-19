@@ -272,6 +272,9 @@ const AgentEditView: FC<{
   const availableTabs = getAvailableTabs()
   const currentTab =
     availableTabs.find(tab => tab.key === activeTab) || availableTabs[0]
+  const currentTabLabel = currentTab?.label || 'Profile'
+  const agentIdentifier =
+    agent.username || agent.name || agent._id || 'Agent Details'
 
   return (
     <div className="flex-1 bg-background flex flex-col h-full">
@@ -313,6 +316,19 @@ const AgentEditView: FC<{
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
+            <div className="mt-4 flex flex-col gap-1 text-left">
+              <h2 className="text-2xl font-semibold">{currentTabLabel}</h2>
+              <p className="text-sm text-muted-foreground break-words">
+                {agentIdentifier}
+              </p>
+            </div>
+          </div>
+
+          <div className="mx-auto max-w-4xl hidden md:flex flex-col gap-1 text-left lg:flex-row lg:items-baseline lg:justify-between lg:gap-3 mb-8">
+            <h1 className="text-3xl font-semibold">{currentTabLabel}</h1>
+            <p className="text-base text-muted-foreground break-words">
+              {agentIdentifier}
+            </p>
           </div>
 
           <div className="mx-auto max-w-4xl">
@@ -349,22 +365,16 @@ const AgentEditView: FC<{
                     />
                   )}
                 {activeTab === 'memories' && hasEditAccess && isPreviewUser && (
-                  <div className="-m-6">
-                    <AgentMemoryView agent={agent} />
-                  </div>
+                  <AgentMemoryView agent={agent} variant="panel" />
                 )}
                 {activeTab === 'tasks' && hasEditAccess && isPreviewUser && (
-                  <div className="-m-6">
-                    <AgentTasksView agent={agent} />
-                  </div>
+                  <AgentTasksView agent={agent} variant="panel" />
                 )}
                 {activeTab === 'permissions' &&
                   isOriginalOwner &&
                   isPreviewUser && <PermissionsTab agent={agent} />}
                 {activeTab === 'dashboard' && hasEditAccess && (
-                  <div className="-m-6">
-                    <AgentDashboardView agent={agent} />
-                  </div>
+                  <AgentDashboardView agent={agent} variant="panel" />
                 )}
               </form>
             </Form>

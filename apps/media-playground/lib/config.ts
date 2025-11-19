@@ -94,7 +94,6 @@ export const siteConfig: SiteConfig = {
     '/creations',
     '/models',
     '/agents',
-    '/tools',
   ],
   featured: {
     tools: [

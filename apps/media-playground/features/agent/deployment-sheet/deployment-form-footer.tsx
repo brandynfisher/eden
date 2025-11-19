@@ -104,13 +104,16 @@ export const DeploymentFormFooter = ({
       } else if (platform === 'farcaster') {
         config = {
           farcaster: {
-            auto_reply: data.autoReply,
+            enable_cast: data.enableCast,
+            instructions: data.instructions,
           },
         }
       } else if (platform === 'twitter') {
         config = {
           twitter: {
             username: data.username,
+            enable_tweet: data.enableTweet,
+            instructions: data.instructions,
           },
         }
       } else if (platform === 'shopify') {

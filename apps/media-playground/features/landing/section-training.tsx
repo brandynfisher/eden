@@ -151,7 +151,7 @@ export default function SectionTraining() {
         Personalize your agent by training a custom model on your own aesthetic,
         character, or brand assets.{' '}
         <Link
-          href="/train"
+          href="/create/lora/flux_trainer"
           className="text-purple-500 font-bold hover:text-purple-400"
         >
           Train your own.

@@ -49,6 +49,10 @@ import {
   PaymentsProductsResponse,
   PaymentsSubscriptionArguments,
   PaymentsSubscriptionResponse,
+  UserFeedbackSubmitArguments,
+  UserFeedbackSubmitResponse,
+  UserPreferencesGetArguments,
+  UserPreferencesGetResponse,
   adminAuthChallengeRequestConfig,
   adminMannaModifyRequestConfig,
   adminMannaVouchersCreateRequestConfig,
@@ -72,6 +76,8 @@ import {
   paymentsCreateRequestConfig,
   paymentsProductsRequestConfig,
   paymentsSubscriptionRequestConfig,
+  userFeedbackSubmitRequestConfig,
+  userPreferencesGetRequestConfig,
 } from './models'
 import {
   AgentsCreateTriggerArguments,
@@ -593,6 +599,20 @@ export abstract class Methods {
       this,
       creatorsGetMeV2RequestConfig,
     ),
+  }
+
+  public readonly userPreferences = {
+    get: bindApiCall<UserPreferencesGetArguments, UserPreferencesGetResponse>(
+      this,
+      userPreferencesGetRequestConfig,
+    ),
+  }
+
+  public readonly userFeedback = {
+    submit: bindApiCall<
+      UserFeedbackSubmitArguments,
+      UserFeedbackSubmitResponse
+    >(this, userFeedbackSubmitRequestConfig),
   }
 
   public readonly feed_cursorV2 = {

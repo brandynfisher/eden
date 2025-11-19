@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuthState } from '@/hooks/use-auth-state'
-import { SubscriptionTier } from '@edenlabs/eden-sdk'
+import { FeatureFlag, SubscriptionTier } from '@edenlabs/eden-sdk'
 import { useEffect, useState } from 'react'
 
 export enum GatedActions {
@@ -13,11 +13,12 @@ const minimumTierMap: Record<GatedActions, SubscriptionTier> = {
 }
 
 export const useSubscriptionGate = (action: GatedActions) => {
-  const { hasMinimumSubscriptionTier } = useAuthState()
+  const { hasMinimumSubscriptionTier, user } = useAuthState()
   const [isAllowed, setIsAllowed] = useState(false)
   const [minimumTier, setMinimumTier] = useState<SubscriptionTier>(
     SubscriptionTier.Free,
   )
+  const hasPreviewAccess = user?.featureFlags?.includes(FeatureFlag.Preview)
 
   useEffect(() => {
     const requiredTier = minimumTierMap[action] || SubscriptionTier.Admin // Default to Admin if action not mapped
@@ -25,7 +26,9 @@ export const useSubscriptionGate = (action: GatedActions) => {
 
     switch (action) {
       case GatedActions.MakePrivate: {
-        setIsAllowed(hasMinimumSubscriptionTier(requiredTier))
+        setIsAllowed(
+          hasMinimumSubscriptionTier(requiredTier) || !!hasPreviewAccess,
+        )
         return
       }
       default: {
@@ -33,7 +36,7 @@ export const useSubscriptionGate = (action: GatedActions) => {
         return
       }
     }
-  }, [action, hasMinimumSubscriptionTier])
+  }, [action, hasMinimumSubscriptionTier, hasPreviewAccess])
 
   return {
     isAllowed,

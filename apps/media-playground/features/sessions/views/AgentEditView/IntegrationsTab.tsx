@@ -12,7 +12,8 @@ import { ShopifyDeploymentForm } from '@/features/agent/deployment-sheet/shopify
 import { TelegramDeploymentForm } from '@/features/agent/deployment-sheet/telegram-deployment-form'
 import { TiktokDeploymentForm } from '@/features/agent/deployment-sheet/tiktok-deployment-form'
 import { TwitterDeploymentForm } from '@/features/agent/deployment-sheet/twitter-deployment-form'
-import { Agent, Deployment } from '@edenlabs/eden-sdk'
+import { useAuthState } from '@/hooks/use-auth-state'
+import { Agent, Deployment, FeatureFlag } from '@edenlabs/eden-sdk'
 import axios from 'axios'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { FC, useState } from 'react'
@@ -77,7 +78,7 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
 
   return (
     <div className="space-y-4">
-      <div className="bg-background border p-4 rounded-lg">
+      <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
         <div className="flex flex-col gap-3">
           <label className="text-sm font-medium">Cover Usage Costs</label>
           <div className="space-y-2">
@@ -151,6 +152,8 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
   isLoading,
   isError,
 }) => {
+  const { user } = useAuthState()
+  const isPreviewUser = user?.featureFlags?.includes(FeatureFlag.Preview)
   const gmailDeployment = deployments?.find(
     deployment => deployment.platform === 'gmail',
   )
@@ -175,51 +178,49 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
 
   return (
     <div className="space-y-6">
-      <div>
-        {/* Social Platforms Section */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium mb-4 text-foreground">
-            Social Platforms
-          </h2>
-          <div className="space-y-4">
-            <DiscordDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'discord',
-              )}
-            />
-            <TelegramDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'telegram',
-              )}
-            />
-            <TwitterDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'twitter',
-              )}
-            />
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <h2 className="text-lg font-medium text-foreground">
+          Social Platforms
+        </h2>
+        <div className="space-y-4">
+          <DiscordDeploymentForm
+            agentId={agent._id}
+            deployment={deployments?.find(
+              deployment => deployment.platform === 'discord',
+            )}
+          />
+          <TelegramDeploymentForm
+            agentId={agent._id}
+            deployment={deployments?.find(
+              deployment => deployment.platform === 'telegram',
+            )}
+          />
+          <TwitterDeploymentForm
+            agentId={agent._id}
+            deployment={deployments?.find(
+              deployment => deployment.platform === 'twitter',
+            )}
+          />
+          <FarcasterDeploymentForm
+            agentId={agent._id}
+            deployment={deployments?.find(
+              deployment => deployment.platform === 'farcaster',
+            )}
+          />
+          {isPreviewUser && (
             <TiktokDeploymentForm
               agentId={agent._id}
               deployment={deployments?.find(
                 deployment => deployment.platform === 'tiktok',
               )}
             />
-            <FarcasterDeploymentForm
-              agentId={agent._id}
-              deployment={deployments?.find(
-                deployment => deployment.platform === 'farcaster',
-              )}
-            />
-          </div>
+          )}
         </div>
+      </div>
 
-        {/* Utilities Section */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium mb-4 text-foreground">
-            Utilities
-          </h2>
+      {isPreviewUser && (
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <h2 className="text-lg font-medium text-foreground">Utilities</h2>
           <div className="space-y-4">
             <ShopifyDeploymentForm
               agentId={agent._id}
@@ -253,12 +254,11 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
             )}
           </div>
         </div>
+      )}
 
-        {/* Integration Settings - Inline version to avoid form nesting */}
-        <div className="mt-8 space-y-4 rounded-lg">
-          <h2 className="text-lg font-medium">Integration Settings</h2>
-          <DeploymentSettingsInline agent={agent} />
-        </div>
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <h2 className="text-lg font-medium">Integration Settings</h2>
+        <DeploymentSettingsInline agent={agent} />
       </div>
     </div>
   )

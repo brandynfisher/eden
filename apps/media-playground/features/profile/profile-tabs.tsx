@@ -80,7 +80,7 @@ const ProfileTabs = () => {
       ),
       actionButton: isOwnProfile ? (
         <Button asChild size="lg" className="gap-2">
-          <Link href="/train/flux_trainer">
+          <Link href="/create/lora/flux_trainer">
             <LightningBoltIcon className="h-4 w-4" />
             Train Model
           </Link>
@@ -95,7 +95,7 @@ const ProfileTabs = () => {
     },
     {
       key: 'agents',
-      title: 'My Agents',
+      title: isOwnProfile ? 'My Agents' : 'Agents',
       filterMenu: ProfileAgentsFilter,
       canSearch: true,
       sortMenu: props => <SortMenu {...props} variant="agent" />,

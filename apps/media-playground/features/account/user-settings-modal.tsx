@@ -23,6 +23,13 @@ import {
 } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useMe } from '@/hooks/use-me'
 import { cn } from '@/lib/utils'
 import { updateDeleteDialog } from '@/stores/dialogs/dialogs.slice'
@@ -421,7 +428,7 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
             </ScrollArea>
           </div>
 
-          {/* Mobile Header with Horizontal Tabs */}
+          {/* Mobile Header with Dropdown Tabs */}
           <div className="md:hidden border-b bg-background">
             <div className="p-4 border-b">
               <h2 className="font-semibold text-base">
@@ -432,27 +439,28 @@ export const UserSettingsModal: FC<UserSettingsModalProps> = ({
                 </span>
               </h2>
             </div>
-            <div className="w-full">
-              <div className="flex flex-wrap gap-1 p-2">
-                {availableTabs.map(tab => {
-                  const Icon = tab.icon
-                  return (
-                    <button
-                      key={tab.key}
-                      onClick={() => setActiveTab(tab.key)}
-                      className={cn(
-                        'flex items-center gap-2 px-3 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap',
-                        activeTab === tab.key
-                          ? 'bg-primary/10 text-primary border border-primary/20'
-                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                      )}
-                    >
-                      <Icon className="h-3.5 w-3.5 shrink-0" />
-                      {tab.label}
-                    </button>
-                  )
-                })}
-              </div>
+            <div className="w-full px-4 py-3">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger
+                  className="w-full"
+                  aria-label="Select account tab"
+                >
+                  <SelectValue placeholder="Select tab" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTabs.map(tab => {
+                    const Icon = tab.icon
+                    return (
+                      <SelectItem key={tab.key} value={tab.key}>
+                        <span className="inline-flex items-center gap-2">
+                          <Icon className="h-3.5 w-3.5" />
+                          {tab.label}
+                        </span>
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

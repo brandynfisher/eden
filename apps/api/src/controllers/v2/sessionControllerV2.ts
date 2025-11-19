@@ -5,6 +5,7 @@ import {
   SessionPermissionLevel,
 } from '../../models/SessionPermission'
 import { User } from '../../models/User'
+import { UserPreferences } from '../../models/UserPreferences'
 import { Message } from '../../models/v2/Message'
 import { SessionShare } from '../../models/v2/SessionShareV2'
 import { Session } from '../../models/v2/SessionV2'
@@ -26,6 +27,7 @@ import {
 import axios from 'axios'
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ObjectId } from 'mongodb'
+import mongoose from 'mongoose'
 
 // Helper function to create eden messages for agent operations
 const createEdenMessage = async (
@@ -346,12 +348,19 @@ export const createSessionMessage = async (
   }>,
   reply: FastifyReply,
 ) => {
+  console.log('=====================================')
+  console.log('[SESSION] createSessionMessage called!')
+  console.log('[SESSION] Body:', JSON.stringify(request.body, null, 2))
+  console.log('=====================================')
+
   const { userId } = request.user || {}
   if (!userId) {
     return reply.status(400).send({
       message: 'User missing from request',
     })
   }
+
+  console.log('[SESSION] userId:', userId.toString())
 
   const {
     session_id,
@@ -561,6 +570,49 @@ export const createSessionMessage = async (
         )
         reply.raw.end()
       })
+
+      // Update user preferences with last agents (don't await to avoid blocking the stream)
+      if (session.agents && session.agents.length > 0) {
+        console.log(
+          '[UserPreferences] Updating preferences for user:',
+          userId.toString(),
+        )
+        console.log('[UserPreferences] Session agents:', session.agents)
+
+        const userOid =
+          userId instanceof mongoose.Types.ObjectId
+            ? userId
+            : new mongoose.Types.ObjectId(userId.toString())
+
+        for (const agent of session.agents) {
+          const agentOid =
+            agent instanceof mongoose.Types.ObjectId
+              ? agent
+              : new mongoose.Types.ObjectId(agent.toString())
+
+          console.log(
+            '[UserPreferences] Updating with agent:',
+            agentOid.toString(),
+          )
+          UserPreferences.updateLastAgent(userOid, agentOid)
+            .then(() => {
+              console.log(
+                '[UserPreferences] Successfully updated with agent:',
+                agentOid.toString(),
+              )
+            })
+            .catch(err => {
+              console.error(
+                '[UserPreferences] Error updating user preferences:',
+                err,
+              )
+            })
+        }
+      } else {
+        console.log(
+          '[UserPreferences] Skipped - no agents in session or agents array empty',
+        )
+      }
     } else {
       // Non-streaming response
       const modalResponse = await axios.post(
@@ -581,6 +633,49 @@ export const createSessionMessage = async (
 
       const message_id =
         modalResponse.data.message_id || modalResponse.data.messages?.[0]?.id
+
+      // Update user preferences with last agents
+      if (session.agents && session.agents.length > 0) {
+        try {
+          console.log(
+            '[UserPreferences] Updating preferences for user:',
+            userId.toString(),
+          )
+          console.log('[UserPreferences] Session agents:', session.agents)
+
+          const userOid =
+            userId instanceof mongoose.Types.ObjectId
+              ? userId
+              : new mongoose.Types.ObjectId(userId.toString())
+
+          for (const agent of session.agents) {
+            const agentOid =
+              agent instanceof mongoose.Types.ObjectId
+                ? agent
+                : new mongoose.Types.ObjectId(agent.toString())
+
+            console.log(
+              '[UserPreferences] Updating with agent:',
+              agentOid.toString(),
+            )
+            await UserPreferences.updateLastAgent(userOid, agentOid)
+            console.log(
+              '[UserPreferences] Successfully updated with agent:',
+              agentOid.toString(),
+            )
+          }
+        } catch (err) {
+          console.error(
+            '[UserPreferences] Error updating user preferences:',
+            err,
+          )
+          // Continue even if preference update fails
+        }
+      } else {
+        console.log(
+          '[UserPreferences] Skipped - no agents in session or agents array empty',
+        )
+      }
 
       return reply.status(200).send({
         session_id: modalResponse.data.session_id,

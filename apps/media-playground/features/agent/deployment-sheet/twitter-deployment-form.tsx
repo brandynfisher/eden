@@ -2,8 +2,17 @@
 
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
-import { Form } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import { DeploymentCollapsibleTrigger } from '@/features/agent/deployment-sheet/deployment-collapsible-trigger'
 import { DeploymentFormFooter } from '@/features/agent/deployment-sheet/deployment-form-footer'
 import { cn } from '@/lib/utils'
@@ -11,12 +20,15 @@ import { Agent, Deployment } from '@edenlabs/eden-sdk'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { CheckCircle } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const schema = z.object({})
+const schema = z.object({
+  enableTweet: z.boolean().default(false),
+  instructions: z.string().optional(),
+})
 
 type DeploymentFormDto = z.infer<typeof schema>
 
@@ -33,12 +45,35 @@ export const TwitterDeploymentForm = ({
 
   const form = useForm<DeploymentFormDto>({
     resolver: zodResolver(schema),
-    defaultValues: {},
+    defaultValues: {
+      enableTweet: deployment?.config?.twitter?.enable_tweet ?? false,
+      instructions: deployment?.config?.twitter?.instructions ?? '',
+    },
   })
 
   const isDeployed = useMemo(() => {
     return deployment !== undefined
   }, [deployment])
+
+  // Reset form when deployment changes
+  useEffect(() => {
+    if (!isDeployed) {
+      form.reset({
+        enableTweet: false,
+        instructions: '',
+      })
+    } else {
+      form.reset({
+        enableTweet: deployment?.config?.twitter?.enable_tweet ?? false,
+        instructions: deployment?.config?.twitter?.instructions ?? '',
+      })
+    }
+  }, [
+    isDeployed,
+    deployment?.config?.twitter?.enable_tweet,
+    deployment?.config?.twitter?.instructions,
+    form,
+  ])
 
   // Treat any existing deployment as a connected account (tokens are encrypted server-side)
   const isConnected = Boolean(deployment)
@@ -141,14 +176,64 @@ export const TwitterDeploymentForm = ({
               )}
 
               {isDeployed && (
-                <DeploymentFormFooter
-                  agentId={agentId}
-                  platform="twitter"
-                  form={form}
-                  isDeployed={isDeployed}
-                  valid={deployment?.valid}
-                  guideUrl="https://docs.eden.art/integrations/twitter"
-                />
+                <>
+                  <FormField
+                    control={form.control}
+                    name="enableTweet"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">
+                            Enable Tweeting
+                          </FormLabel>
+                          <FormDescription>
+                            Enable your agent to tweet on behalf of this Twitter
+                            account
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={form.formState.isSubmitting}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  {form.watch('enableTweet') && (
+                    <FormField
+                      control={form.control}
+                      name="instructions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base">
+                            Tweeting Instructions
+                          </FormLabel>
+                          <FormDescription>
+                            Control how your agent should interact with Twitter
+                          </FormDescription>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder="Enter tweeting instructions..."
+                              className="min-h-[100px] resize-y"
+                              disabled={form.formState.isSubmitting}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  <DeploymentFormFooter
+                    agentId={agentId}
+                    platform="twitter"
+                    form={form}
+                    isDeployed={isDeployed}
+                    valid={deployment?.valid}
+                    guideUrl="https://docs.eden.art/integrations/twitter"
+                  />
+                </>
               )}
             </div>
           </form>
