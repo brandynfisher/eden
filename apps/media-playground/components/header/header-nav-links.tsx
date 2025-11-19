@@ -1,3 +1,5 @@
+'use client'
+
 import { Separator } from '@/components/ui/separator'
 import { useLastAgent } from '@/hooks/use-last-agent'
 import { cn } from '@/lib/utils'

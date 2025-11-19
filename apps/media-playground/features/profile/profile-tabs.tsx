@@ -95,7 +95,7 @@ const ProfileTabs = () => {
     },
     {
       key: 'agents',
-      title: 'My Agents',
+      title: isOwnProfile ? 'My Agents' : 'Agents',
       filterMenu: ProfileAgentsFilter,
       canSearch: true,
       sortMenu: props => <SortMenu {...props} variant="agent" />,

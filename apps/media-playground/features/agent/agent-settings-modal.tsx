@@ -306,7 +306,7 @@ export const AgentSettingsModal: FC<AgentSettingsModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0">
+      <DialogContent className="max-w-6xl h-[90vh] p-0 gap-0 [&>button]:hidden">
         <DialogTitle className="sr-only">Agent Settings</DialogTitle>
         <div className="flex flex-col md:flex-row h-full overflow-hidden">
           {/* Desktop Sidebar - Hidden on mobile */}

@@ -1,3 +1,5 @@
+'use client'
+
 import { MessageAttachment } from './message-attachment'
 import { LightboxGallery } from '@/components/media/lightbox'
 import { cn } from '@/lib/utils'
