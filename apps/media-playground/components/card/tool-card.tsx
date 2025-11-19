@@ -4,6 +4,7 @@ import ImageWithFallback from '@/components/media/image-with-fallback'
 import { Card } from '@/components/ui/card'
 import TypographyH6 from '@/components/ui/typography/TypographyH6'
 import { cn } from '@/lib/utils'
+import { Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
   image: string
   link: string
   priority?: boolean
+  outputType?: string
 }
 
 type ToolCardMediaProps = {
@@ -39,7 +41,9 @@ export const ToolCardMedia = ({
           playsInline={variant === 'thumbnail' ? false : true}
           className={cn(
             'absolute object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10',
-            variant === 'thumbnail' ? 'w-12 h-12' : 'w-full h-full',
+            variant === 'thumbnail'
+              ? 'w-12 h-12'
+              : 'w-full h-full transition-transform duration-500 group-hover:scale-105',
           )}
           onLoadedMetadata={event => {
             event.currentTarget.setAttribute('data-loaded', 'true')
@@ -65,36 +69,86 @@ export const ToolCardMedia = ({
               ? undefined
               : '(max-width: 640px) 95vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw'
           }
-          className="object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10"
+          className={cn(
+            'object-cover data-[loaded=false]:animate-pulse data-[loaded=false]:bg-gray-950/20 dark:data-[loaded=false]:bg-gray-500/10',
+            variant === 'thumbnail'
+              ? ''
+              : 'transition-transform duration-500 group-hover:scale-105',
+          )}
         />
       )}
     </>
   )
 }
 
-const ToolCard = ({ title, image, link, description, priority }: Props) => {
-  return (
-    <Link prefetch={false} href={link} className="group">
-      <Card className="overflow-hidden border  hover:border-purple-500/50 transition-all duration-300 h-full w-full">
-        <div className="p-2 flex items-center gap-2">
-          <div className="relative w-48 aspect-[4/3] flex-shrink-0 overflow-hidden rounded-sm">
-            <ToolCardMedia
-              mediaUrl={image}
-              title={title}
-              priority={priority}
-              variant="full"
-            />
-          </div>
+const startCase = (value?: string | null) => {
+  if (!value) return undefined
+  return value
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ')
+}
 
-          {/* Content Container - Takes remaining space */}
-          <div className="flex-1 min-w-0 p-3 flex flex-col justify-between">
-            <TypographyH6 className="text-white text-base font-medium mb-1 line-clamp-1">
-              {title}
-            </TypographyH6>
-            <div className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
-              {description}
+const formatOutputType = (outputType?: string) => {
+  if (!outputType) return 'Creative Tool'
+  return startCase(outputType) || 'Creative Tool'
+}
+
+const getRouteContext = (link: string, fallbackLabel: string) => {
+  const segments = link.split('?')[0]?.split('/').filter(Boolean) || []
+  const [root, output] = segments
+
+  if (root === 'train') return 'Model Trainer'
+  if (root === 'create' && output) return `${startCase(output)}`
+  if (root === 'create') return 'Creation workspace'
+
+  return fallbackLabel
+}
+
+const ToolCard = ({
+  title,
+  image,
+  link,
+  description,
+  priority,
+  outputType,
+}: Props) => {
+  const formattedOutputType = formatOutputType(outputType)
+  const routeContext = getRouteContext(link, formattedOutputType)
+
+  const fallbackDescription =
+    'See the guardrails, inputs, and costs for this workflow before you launch it.'
+
+  return (
+    <Link prefetch={false} href={link} className="group block h-full">
+      <Card className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-b from-[#0B0B12] via-[#040406] to-[#050507] text-white transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/70 hover:shadow-[0px_35px_60px_-35px_rgba(0,0,0,0.85)]">
+        <div className="relative aspect-[5/3] w-full overflow-hidden">
+          <ToolCardMedia
+            mediaUrl={image}
+            title={title}
+            priority={priority}
+            variant="full"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/5 via-black/65 to-black/95 transition-opacity duration-500 group-hover:via-black/60 group-hover:to-black/90" />
+          <div className="pointer-events-none absolute inset-0 flex flex-col justify-between px-4 pt-4 pb-2">
+            <div className="flex flex-wrap gap-2"></div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.35em] text-white/70">
+                <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+                <span>{routeContext}</span>
+              </div>
+              <TypographyH6 className="text-xl font-semibold leading-tight text-white">
+                {title}
+              </TypographyH6>
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-1 flex-col px-4 pb-5 -mt-1">
+          <p className="text-sm text-white/70 line-clamp-3">
+            {description || fallbackDescription}
+          </p>
         </div>
       </Card>
     </Link>

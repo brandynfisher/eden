@@ -28,6 +28,7 @@ const ToolsGridSection = ({ tools, priority }: GridSectionProps) => {
                   : `create/${tool.output_type}`
               }/${tool.key}`}
               priority={priority}
+              outputType={tool.output_type}
             />
           ))}
         </>

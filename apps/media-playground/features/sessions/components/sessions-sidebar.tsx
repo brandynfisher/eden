@@ -555,11 +555,13 @@ const MainLeft = ({
   agentId,
   isChat,
   onViewModeChange,
+  scrollContainerRef,
 }: {
   onItemClick?: () => void
   agentId?: string
   isChat?: boolean
   onViewModeChange?: (mode: 'chat' | 'creations' | 'tasks' | 'settings') => void
+  scrollContainerRef?: React.MutableRefObject<HTMLDivElement | null>
 }) => {
   const { isSignedIn, user } = useAuthState()
   const router = useRouter()
@@ -610,41 +612,33 @@ const MainLeft = ({
 
   // Scroll-based pagination
   useEffect(() => {
-    // Small delay to ensure DOM is ready
-    const timeoutId = setTimeout(() => {
-      const container = document.getElementById('sidebar-scroll-container')
-      if (!container) {
-        return
+    const container = scrollContainerRef?.current
+    if (!container) {
+      return
+    }
+
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop
+      const scrollHeight = container.scrollHeight
+      const clientHeight = container.clientHeight
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+
+      // Fetch when within 200px of bottom
+      if (
+        distanceFromBottom <= 200 &&
+        hasMoreRef.current &&
+        !isFetchingRef.current
+      ) {
+        fetchNextPage()
       }
+    }
 
-      const handleScroll = () => {
-        const scrollTop = container.scrollTop
-        const scrollHeight = container.scrollHeight
-        const clientHeight = container.clientHeight
-        const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-
-        // Fetch when within 200px of bottom
-        if (
-          distanceFromBottom <= 200 &&
-          hasMoreRef.current &&
-          !isFetchingRef.current
-        ) {
-          fetchNextPage()
-        }
-      }
-
-      container.addEventListener('scroll', handleScroll)
-
-      // Cleanup function
-      return () => {
-        container.removeEventListener('scroll', handleScroll)
-      }
-    }, 100)
+    container.addEventListener('scroll', handleScroll)
 
     return () => {
-      clearTimeout(timeoutId)
+      container.removeEventListener('scroll', handleScroll)
     }
-  }, [fetchNextPage])
+  }, [fetchNextPage, scrollContainerRef])
 
   // Separate pinned and unpinned sessions - memoized to avoid recomputing on every render
   const allSessions = React.useMemo(() => {
@@ -1077,6 +1071,7 @@ export const SessionsSidebarContent = ({
   const router = useRouter()
   const isPreviewUser =
     user?.featureFlags?.includes(FeatureFlag.Preview) ?? false
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null)
 
   // Get user preferences for last agent
   const { lastAgents } = useUserPreferencesQuery({ enabled: !!isSignedIn })
@@ -1697,6 +1692,7 @@ export const SessionsSidebarContent = ({
       {/* Content area based on mode */}
       <div
         id="sidebar-scroll-container"
+        ref={scrollContainerRef}
         className="flex-1 min-h-0 overflow-y-auto"
       >
         {/* Mobile: Navigation Buttons - inside scroll container when in mobile sheet */}
@@ -1893,6 +1889,7 @@ export const SessionsSidebarContent = ({
           agentId={agentId}
           isChat={isChat}
           onViewModeChange={onViewModeChange}
+          scrollContainerRef={scrollContainerRef}
         />
       </div>
 

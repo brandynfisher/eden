@@ -13,7 +13,6 @@ import {
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { AgentDashboardModal } from '@/features/agent/agent-dashboard-modal'
 import { AgentSettingsModal } from '@/features/agent/agent-settings-modal'
-import { FeaturedAgents } from '@/features/agent/featured-agents'
 import { SessionsSidebarContent } from '@/features/sessions/components/sessions-sidebar'
 import SingleAgentSelectorModal from '@/features/sessions/components/single-agent-selector-modal'
 import { useUserPreferencesQuery } from '@/hooks/query/use-user-preferences-query'
@@ -275,16 +274,6 @@ const AgentsPage = () => {
                       </div>
                     </>
                   )}
-
-                  {/* Featured Agents Section */}
-                  <div className="mb-8">
-                    <div className="mb-6">
-                      <h2 className="text-2xl font-bold tracking-tight">
-                        Featured Agents
-                      </h2>
-                    </div>
-                    <FeaturedAgents />
-                  </div>
 
                   {/* Explore Agents Section */}
                   <div className="mb-8">
