@@ -53,7 +53,7 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
           control={form.control}
           name="models"
           render={() => (
-            <FormItem className="p-4 bg-secondary rounded-lg mb-4">
+            <FormItem className="rounded-xl border border-border bg-card p-6 space-y-4">
               <FormLabel>Custom Models</FormLabel>
               <FormDescription>
                 Give your agent a unique aesthetic using up to 10 custom models.
@@ -149,7 +149,7 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
         {/* LLM Preferences */}
 
         {showReasoningOption && (
-          <div className="p-4 bg-secondary rounded-lg mb-4">
+          <div className="rounded-xl border border-border bg-card p-6 space-y-6">
             <div className="mb-6">
               <h3 className="text-base font-medium">LLM Preference</h3>
               {/* <p className="text-sm text-muted-foreground">
@@ -441,7 +441,7 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
           control={form.control}
           name="voice"
           render={({ field }) => (
-            <FormItem className="p-4 bg-secondary rounded-lg mb-4">
+            <FormItem className="rounded-xl border border-border bg-card p-6 space-y-4">
               <FormLabel>Voice</FormLabel>
               <FormDescription>
                 Your agent will speak with this voice.
@@ -462,7 +462,7 @@ export const ToolsTab: FC<ToolsTabProps> = ({ form, hasDeployments, user }) => {
           control={form.control}
           name="tools"
           render={({ field }) => (
-            <FormItem className="p-4 bg-secondary rounded-lg mt-4">
+            <FormItem className="rounded-xl border border-border bg-card p-6 space-y-4">
               <FormLabel>Tools</FormLabel>
               <FormDescription>
                 Select which tools this agent can use to help users.

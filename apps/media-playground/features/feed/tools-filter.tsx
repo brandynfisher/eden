@@ -27,9 +27,9 @@ export const ToolsFilter = ({
     <Tabs
       value={initialCategory}
       onValueChange={onChange}
-      className={cn('min-w-0 w-full sm:w-auto', className)}
+      className={cn('min-w-0 w-full', className)}
     >
-      <TabsList className="flex justify-stretch min-w-0 w-full sm:w-auto sm:min-w-[200px] lg:min-w-[400px] gap-1">
+      <TabsList className="flex min-w-0 w-full gap-1 overflow-x-auto rounded-xl bg-muted/40 p-1">
         {categories.map(category => (
           <TabsTrigger
             key={category.value}

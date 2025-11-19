@@ -78,7 +78,7 @@ export const DeploymentSettingsInline: FC<{ agent: Agent }> = ({ agent }) => {
 
   return (
     <div className="space-y-4">
-      <div className="bg-background border p-4 rounded-lg">
+      <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
         <div className="flex flex-col gap-3">
           <label className="text-sm font-medium">Cover Usage Costs</label>
           <div className="space-y-2">
@@ -178,94 +178,87 @@ export const IntegrationsTab: FC<IntegrationsTabProps> = ({
 
   return (
     <div className="space-y-6">
-      <div>
-        {/* Social Platforms Section */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium mb-4 text-foreground">
-            Social Platforms
-          </h2>
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <h2 className="text-lg font-medium text-foreground">
+          Social Platforms
+        </h2>
+        <div className="space-y-4">
+          <DiscordDeploymentForm
+            agentId={agent._id}
+            deployment={deployments?.find(
+              deployment => deployment.platform === 'discord',
+            )}
+          />
+          <TelegramDeploymentForm
+            agentId={agent._id}
+            deployment={deployments?.find(
+              deployment => deployment.platform === 'telegram',
+            )}
+          />
+          <TwitterDeploymentForm
+            agentId={agent._id}
+            deployment={deployments?.find(
+              deployment => deployment.platform === 'twitter',
+            )}
+          />
+          <FarcasterDeploymentForm
+            agentId={agent._id}
+            deployment={deployments?.find(
+              deployment => deployment.platform === 'farcaster',
+            )}
+          />
+          {isPreviewUser && (
+            <TiktokDeploymentForm
+              agentId={agent._id}
+              deployment={deployments?.find(
+                deployment => deployment.platform === 'tiktok',
+              )}
+            />
+          )}
+        </div>
+      </div>
+
+      {isPreviewUser && (
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <h2 className="text-lg font-medium text-foreground">Utilities</h2>
           <div className="space-y-4">
-            <DiscordDeploymentForm
+            <ShopifyDeploymentForm
               agentId={agent._id}
               deployment={deployments?.find(
-                deployment => deployment.platform === 'discord',
+                deployment => deployment.platform === 'shopify',
               )}
             />
-            <TelegramDeploymentForm
+            <PrintifyDeploymentForm
               agentId={agent._id}
               deployment={deployments?.find(
-                deployment => deployment.platform === 'telegram',
+                deployment => deployment.platform === 'printify',
               )}
             />
-            <TwitterDeploymentForm
+            <CaptionsDeploymentForm
               agentId={agent._id}
               deployment={deployments?.find(
-                deployment => deployment.platform === 'twitter',
+                deployment => deployment.platform === 'captions',
               )}
             />
-            <FarcasterDeploymentForm
+            <EmailDeploymentForm
               agentId={agent._id}
               deployment={deployments?.find(
-                deployment => deployment.platform === 'farcaster',
+                deployment => deployment.platform === 'email',
               )}
             />
-            {isPreviewUser && (
-              <TiktokDeploymentForm
+            {gmailDeployment && (
+              <GmailDeploymentForm
                 agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'tiktok',
-                )}
+                deployment={gmailDeployment}
               />
             )}
           </div>
         </div>
+      )}
 
-        {/* Utilities Section */}
-        {isPreviewUser && (
-          <div className="mb-8">
-            <h2 className="text-lg font-medium mb-4 text-foreground">
-              Utilities
-            </h2>
-            <div className="space-y-4">
-              <ShopifyDeploymentForm
-                agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'shopify',
-                )}
-              />
-              <PrintifyDeploymentForm
-                agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'printify',
-                )}
-              />
-              <CaptionsDeploymentForm
-                agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'captions',
-                )}
-              />
-              <EmailDeploymentForm
-                agentId={agent._id}
-                deployment={deployments?.find(
-                  deployment => deployment.platform === 'email',
-                )}
-              />
-              {gmailDeployment && (
-                <GmailDeploymentForm
-                  agentId={agent._id}
-                  deployment={gmailDeployment}
-                />
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Integration Settings - Inline version to avoid form nesting */}
-        <div className="mt-8 space-y-4 rounded-lg">
-          <h2 className="text-lg font-medium">Integration Settings</h2>
-          <DeploymentSettingsInline agent={agent} />
-        </div>
+      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <h2 className="text-lg font-medium">Integration Settings</h2>
+        <DeploymentSettingsInline agent={agent} />
       </div>
     </div>
   )

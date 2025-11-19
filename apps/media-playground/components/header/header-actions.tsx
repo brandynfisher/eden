@@ -3,6 +3,7 @@ import ErrorBoundary from '@/components/error-boundary'
 import MannaBalance from '@/components/header/manna-balance'
 import LoadingIndicator from '@/components/loading-indicator'
 import MyAccountButton from '@/components/navigation/my-account-button'
+import NotificationDropdown from '@/components/notifications/notification-dropdown'
 import { Separator } from '@/components/ui/separator'
 import { Suspense } from 'react'
 
@@ -24,11 +25,14 @@ const HeaderActions = ({
   return (
     <div className={className}>
       {showNotifications && (
-        <Suspense fallback={<LoadingIndicator />}>
-          <ErrorBoundary>
-            <TaskStatusIndicator />
-          </ErrorBoundary>
-        </Suspense>
+        <>
+          <Suspense fallback={<LoadingIndicator />}>
+            <ErrorBoundary>
+              <TaskStatusIndicator />
+            </ErrorBoundary>
+          </Suspense>
+          <NotificationDropdown />
+        </>
       )}
       {showManna && (
         <Suspense fallback={<LoadingIndicator />}>
